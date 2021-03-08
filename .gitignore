@@ -36,3 +36,4 @@ obj-*/
 *.smx
 *.swp
 *.gdb_history
+objdir

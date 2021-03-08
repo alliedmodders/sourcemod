@@ -37,6 +37,8 @@
 
 #define SMINTERFACE_BINTOOLS_NAME		"IBinTools"
 #define SMINTERFACE_BINTOOLS_VERSION	4
+// Backwards incompatible change for x64 support.
+#define SMINTERFACE_BINTOOLS_MIN_VERSION 4
 
 /**
  * @brief Function calling encoding utilities
@@ -183,6 +185,15 @@ namespace SourceMod
 		virtual unsigned int GetInterfaceVersion()
 		{
 			return SMINTERFACE_BINTOOLS_VERSION;
+		}
+		virtual bool IsVersionCompatible(unsigned int version)
+		{
+			if (version < SMINTERFACE_BINTOOLS_MIN_VERSION || version > SMINTERFACE_BINTOOLS_VERSION)
+			{
+				return false;
+			}
+
+			return true;
 		}
 	public:
 		/**

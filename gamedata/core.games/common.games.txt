@@ -20,6 +20,11 @@
 				"class"			"CBasePlayer"
 				"prop"			"m_lifeState"
 			}
+			"CSendPropExtra_UtlVector::m_Offset"
+			{
+				"windows"		"16"
+				"linux"			"16"
+			}
 		}
 	}
 	
@@ -96,10 +101,10 @@
 			"engine"			"alienswarm"
 			"engine"			"blade"
 			"engine"			"insurgency"
+			"engine"			"doi"
 			"engine"			"csgo"
 			"engine"			"sdk2013"
 			"engine"			"contagion"
-			"engine"			"bms"
 		}
 		
 		"Offsets"
@@ -107,10 +112,29 @@
 			"GetDataDescMap"
 			{
 				"windows"		"11"
+				"windows64"		"11"
 				"linux"			"12"
 				"linux64"		"12"
 				"mac"			"12"
 				"mac64"			"12"
+			}
+		}
+	}
+	
+	"#default"
+	{
+		"#supported"
+		{
+			"engine"			"bms"
+		}
+		
+		"Offsets"
+		{
+			"GetDataDescMap"
+			{
+				"windows"		"13"
+				"linux"			"14"
+				"mac"			"14"
 			}
 		}
 	}
@@ -164,6 +188,7 @@
 			"game"					"kz"
 			"game"					"doi"
 			"game"					"bms"
+			"game"					"iosoccer"
 		}
 
 		"Keys"
@@ -213,6 +238,7 @@
 			"game"					"kz"
 			"game"					"doi"
 			"game"					"bms"
+			"game"					"iosoccer"
 		}
 		
 		"Keys"
@@ -272,6 +298,7 @@
 			"game"					"kz"
 			"game"					"csgo"
 			"game"					"reactivedrop"
+			"game"					"FortressForever"
 		}
 		
 		"Keys"

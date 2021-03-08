@@ -217,7 +217,7 @@
 	}
 	"game.ios.txt"
 	{
-		"game"		"ios"
+		"game"		"iosoccer"
 	}
 	"game.left4dead2.txt"
 	{

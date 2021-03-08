@@ -31,8 +31,10 @@
 
 #include <stdlib.h>
 #include <string.h>
+
+#include <memory>
+
 #include "CDataPack.h"
-#include <amtl/am-autoptr.h>
 
 CDataPack::CDataPack()
 {
@@ -44,49 +46,15 @@ CDataPack::~CDataPack()
 	Initialize();
 }
 
-static ke::Vector<ke::AutoPtr<CDataPack>> sDataPackCache;
-
-IDataPack *CDataPack::New()
-{
-  if (sDataPackCache.empty())
-    return new CDataPack();
-
-  CDataPack *pack = sDataPackCache.back().take();
-  sDataPackCache.pop();
-  pack->Initialize();
-  return pack;
-}
-
-void
-CDataPack::Free(IDataPack *pack)
-{
-  sDataPackCache.append(static_cast<CDataPack *>(pack));
-}
-
 void CDataPack::Initialize()
 {
-	for (size_t index = 0; index < elements.length(); ++index)
+	position = 0;
+	
+	do
 	{
-		switch (elements[index].type)
-		{
-			case CDataPackType::Raw:
-			{
-				delete elements[index].pData.vval;
-				elements.remove(index--);
-				break;
-			}
-
-			case CDataPackType::String:
-			{
-				delete elements[index].pData.sval;
-				elements.remove(index--);
-				break;
-			}
-		}
-	}
+	} while (this->RemoveItem());
 
 	elements.clear();
-	position = 0;
 }
 
 void CDataPack::ResetSize()
@@ -100,7 +68,7 @@ size_t CDataPack::CreateMemory(size_t size, void **addr)
 	val.type = CDataPackType::Raw;
 	val.pData.vval = new uint8_t[size + sizeof(size)];
 	reinterpret_cast<size_t *>(val.pData.vval)[0] = size;
-	elements.insert(position, val);
+	elements.emplace(elements.begin() + position, val);
 
 	return position++;
 }
@@ -110,7 +78,8 @@ void CDataPack::PackCell(cell_t cell)
 	InternalPack val;
 	val.type = CDataPackType::Cell;
 	val.pData.cval = cell;
-	elements.insert(position++, val);
+	elements.emplace(elements.begin() + position, val);
+	position++;
 }
 
 void CDataPack::PackFunction(cell_t function)
@@ -118,7 +87,8 @@ void CDataPack::PackFunction(cell_t function)
 	InternalPack val;
 	val.type = CDataPackType::Function;
 	val.pData.cval = function;
-	elements.insert(position++, val);
+	elements.emplace(elements.begin() + position, val);
+	position++;
 }
 
 void CDataPack::PackFloat(float floatval)
@@ -126,16 +96,42 @@ void CDataPack::PackFloat(float floatval)
 	InternalPack val;
 	val.type = CDataPackType::Float;
 	val.pData.fval = floatval;
-	elements.insert(position++, val);
+	elements.emplace(elements.begin() + position, val);
+	position++;
 }
 
 void CDataPack::PackString(const char *string)
 {
 	InternalPack val;
 	val.type = CDataPackType::String;
-	ke::AString *sval = new ke::AString(string);
+	std::string *sval = new std::string(string);
 	val.pData.sval = sval;
-	elements.insert(position++, val);
+	elements.emplace(elements.begin() + position, val);
+	position++;
+}
+
+void CDataPack::PackCellArray(cell_t const *vals, cell_t count)
+{
+	InternalPack val;
+	val.type = CDataPackType::CellArray;
+
+	val.pData.aval = new cell_t [count + 1];
+	memcpy(&val.pData.aval[1], vals, sizeof(cell_t) * (count + 1));
+	val.pData.aval[0] = count;
+	elements.emplace(elements.begin() + position, val);
+	position++;
+}
+
+void CDataPack::PackFloatArray(cell_t const *vals, cell_t count)
+{
+	InternalPack val;
+	val.type = CDataPackType::FloatArray;
+
+	val.pData.aval = new cell_t [count + 1];
+	memcpy(&val.pData.aval[1], vals, sizeof(cell_t) * (count + 1));
+	val.pData.aval[0] = count;
+	elements.emplace(elements.begin() + position, val);
+	position++;
 }
 
 void CDataPack::Reset() const
@@ -150,7 +146,7 @@ size_t CDataPack::GetPosition() const
 
 bool CDataPack::SetPosition(size_t pos) const
 {
-	if (pos > elements.length())
+	if (pos > elements.size())
 		return false;
 
 	position = pos;
@@ -183,7 +179,7 @@ float CDataPack::ReadFloat() const
 
 bool CDataPack::IsReadable(size_t bytes) const
 {
-	return (position < elements.length());
+	return (position < elements.size());
 }
 
 const char *CDataPack::ReadString(size_t *len) const
@@ -196,16 +192,51 @@ const char *CDataPack::ReadString(size_t *len) const
 		return nullptr;
 	}
 
-	const ke::AString &val = *elements[position++].pData.sval;
+	const std::string &val = *elements[position++].pData.sval;
 	if (len)
-		*len = val.length();
+		*len = val.size();
 
-	return val.chars();
+	return val.c_str();
 }
 
-void *CDataPack::GetMemory() const
+cell_t *CDataPack::ReadCellArray(cell_t *size) const
 {
-	return nullptr;
+	if (!IsReadable() || elements[position].type != CDataPackType::CellArray)
+	{
+		if(size)
+			*size = 0;
+		
+		return nullptr;
+	}
+
+	cell_t *val = elements[position].pData.aval;
+	cell_t *ptr = &(val[1]);
+	++position;
+
+	if (size)
+		*size = val[0];
+
+	return ptr;
+}
+
+cell_t *CDataPack::ReadFloatArray(cell_t *size) const
+{
+	if (!IsReadable() || elements[position].type != CDataPackType::FloatArray)
+	{
+		if(size)
+			*size = 0;
+		
+		return nullptr;
+	}
+
+	cell_t *val = elements[position].pData.aval;
+	cell_t *ptr = &(val[1]);
+	++position;
+
+	if (size)
+		*size = val[0];
+
+	return ptr;
 }
 
 void *CDataPack::ReadMemory(size_t *size) const
@@ -222,4 +253,52 @@ void *CDataPack::ReadMemory(size_t *size) const
 		*size = val[0]; /* Egor!!!! */
 
 	return ptr;
+}
+
+bool CDataPack::RemoveItem(size_t pos)
+{
+	if (!elements.size())
+	{
+		return false;
+	}
+
+	if (pos == static_cast<size_t>(-1))
+	{
+		pos = position;
+	}
+	
+	if (pos >= elements.size())
+	{
+		return false;
+	}
+
+	if (pos < position) // we're deleting under us, step back
+	{
+		--position;
+	}
+
+	switch (elements[pos].type)
+	{
+		case CDataPackType::Raw:
+		{
+			delete [] elements[pos].pData.vval;
+			break;
+		}
+
+		case CDataPackType::String:
+		{
+			delete elements[pos].pData.sval;
+			break;
+		}
+
+		case CDataPackType::CellArray:
+		case CDataPackType::FloatArray:
+		{
+			delete elements[pos].pData.aval;
+			break;
+		}
+	}
+
+	elements.erase(elements.begin() + pos);
+	return true;
 }

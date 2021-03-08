@@ -34,21 +34,23 @@
 #include "HandleSys.h"
 #include "ExtensionSys.h"
 #include "PluginSys.h"
+#include <chrono>
+#include <amtl/am-thread.h>
 #include <stdlib.h>
 #include <IThreader.h>
 #include <bridge/include/ILogger.h>
+#include <bridge/include/CoreProvider.h>
+
+using namespace std::chrono_literals;
 
 #define DBPARSE_LEVEL_NONE		0
 #define DBPARSE_LEVEL_MAIN		1
 #define DBPARSE_LEVEL_DATABASE	2
 
 DBManager g_DBMan;
-static bool s_OneTimeThreaderErrorMsg = false;
 
 DBManager::DBManager() 
 	: m_Terminate(false),
-	  m_ParseLevel(0),
-	  m_ParseState(0),
 	  m_pDefault(NULL)
 {
 }
@@ -65,38 +67,29 @@ void DBManager::OnSourceModAllInitialized()
 	g_HandleSys.InitAccessDefaults(NULL, &sec);
 	sec.access[HandleAccess_Delete] |= HANDLE_RESTRICT_IDENTITY;
 	sec.access[HandleAccess_Clone] |= HANDLE_RESTRICT_IDENTITY;
-	
+
 	m_DriverType = g_HandleSys.CreateType("IDriver", this, 0, NULL, &sec, g_pCoreIdent, NULL);
 	m_DatabaseType = g_HandleSys.CreateType("IDatabase", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 
 	g_ShareSys.AddInterface(NULL, this);
 
 	g_pSM->BuildPath(Path_SM, m_Filename, sizeof(m_Filename), "configs/databases.cfg");
-
-	g_PluginSys.AddPluginsListener(this);
+	m_Builder.SetPath(m_Filename);
 	
+	g_PluginSys.AddPluginsListener(this);
+
 	g_pSM->AddGameFrameHook(&FrameHook);
+
+	auto sm_reload_databases = [this] (int client, const ICommandArgs *args) -> bool {
+		m_Builder.StartParse();
+		return true;
+	};
+	bridge->DefineCommand("sm_reload_databases", "Reparse database configurations file", sm_reload_databases);
 }
 
 void DBManager::OnSourceModLevelChange(const char *mapName)
 {
-	SMCError err;
-	SMCStates states = {0, 0};
-
-	/* We lock and don't give up the lock until we're done.
-	 * This way the thread's search won't be searching through a
-	 * potentially empty/corrupt list, which would be very bad.
-	 */
-	ke::AutoLock lock(&m_ConfigLock);
-	if ((err = textparsers->ParseFile_SMC(m_Filename, this, &states)) != SMCError_Okay)
-	{
-		logger->LogError("[SM] Detected parse error(s) in file \"%s\"", m_Filename);
-		if (err != SMCError_Custom)
-		{
-			const char *txt = textparsers->GetSMCErrorString(err);
-			logger->LogError("[SM] Line %d: %s", states.line, txt);
-		}
-	}
+	m_Builder.StartParse();
 }
 
 void DBManager::OnSourceModShutdown()
@@ -106,7 +99,6 @@ void DBManager::OnSourceModShutdown()
 	g_PluginSys.RemovePluginsListener(this);
 	g_HandleSys.RemoveType(m_DatabaseType, g_pCoreIdent);
 	g_HandleSys.RemoveType(m_DriverType, g_pCoreIdent);
-	ClearConfigs();
 }
 
 unsigned int DBManager::GetInterfaceVersion()
@@ -134,136 +126,10 @@ void DBManager::OnHandleDestroy(HandleType_t type, void *object)
 	}
 }
 
-void DBManager::ReadSMC_ParseStart()
-{
-	ClearConfigs();
-	m_ParseLevel = 0;
-	m_ParseState = DBPARSE_LEVEL_NONE;
-	m_DefDriver.clear();
-}
-
-void DBManager::ClearConfigs()
-{
-	List<ConfDbInfo *>::iterator iter;
-	for (iter=m_confs.begin(); iter!=m_confs.end(); iter++)
-		delete (*iter);
-	m_confs.clear();
-}
-
-ConfDbInfo s_CurInfo;
-SMCResult DBManager::ReadSMC_NewSection(const SMCStates *states, const char *name)
-{
-	if (m_ParseLevel)
-	{
-		m_ParseLevel++;
-		return SMCResult_Continue;
-	}
-
-	if (m_ParseState == DBPARSE_LEVEL_NONE)
-	{
-		if (strcmp(name, "Databases") == 0)
-		{
-			m_ParseState = DBPARSE_LEVEL_MAIN;
-		} else {
-			m_ParseLevel++;
-		}
-	} else if (m_ParseState == DBPARSE_LEVEL_MAIN) {
-		s_CurInfo = ConfDbInfo();
-		s_CurInfo.name = name;
-		m_ParseState = DBPARSE_LEVEL_DATABASE;
-	} else if (m_ParseState == DBPARSE_LEVEL_DATABASE) {
-		m_ParseLevel++;
-	}
-
-	return SMCResult_Continue;
-}
-
-SMCResult DBManager::ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value)
-{
-	if (m_ParseLevel)
-	{
-		return SMCResult_Continue;
-	}
-
-	if (m_ParseState == DBPARSE_LEVEL_MAIN)
-	{
-		if (strcmp(key, "driver_default") == 0)
-		{
-			m_DefDriver.assign(value);
-		}
-	} else if (m_ParseState == DBPARSE_LEVEL_DATABASE) {
-		if (strcmp(key, "driver") == 0)
-		{
-			if (strcmp(value, "default") != 0)
-			{
-				s_CurInfo.driver = value;
-			}
-		} else if (strcmp(key, "database") == 0) {
-			s_CurInfo.database = value;
-		} else if (strcmp(key, "host") == 0) {
-			s_CurInfo.host = value;
-		} else if (strcmp(key, "user") == 0) {
-			s_CurInfo.user = value;
-		} else if (strcmp(key, "pass") == 0) {
-			s_CurInfo.pass = value;
-		} else if (strcmp(key, "timeout") == 0) {
-			s_CurInfo.info.maxTimeout = atoi(value);
-		} else if (strcmp(key, "port") == 0) {
-			s_CurInfo.info.port = atoi(value);
-		}
-	}
-
-	return SMCResult_Continue;
-}
-
-SMCResult DBManager::ReadSMC_LeavingSection(const SMCStates *states)
-{
-	if (m_ParseLevel)
-	{
-		m_ParseLevel--;
-		return SMCResult_Continue;
-	}
-
-	if (m_ParseState == DBPARSE_LEVEL_DATABASE)
-	{
-		ConfDbInfo *cdb = new ConfDbInfo();
-
-		cdb->name = s_CurInfo.name;
-		cdb->driver = s_CurInfo.driver;
-		cdb->host = s_CurInfo.host;
-		cdb->user = s_CurInfo.user;
-		cdb->pass = s_CurInfo.pass;
-		cdb->database = s_CurInfo.database;
-		cdb->realDriver = s_CurInfo.realDriver;
-		cdb->info.maxTimeout = s_CurInfo.info.maxTimeout;
-		cdb->info.port = s_CurInfo.info.port;
-
-		cdb->info.driver = cdb->driver.c_str();
-		cdb->info.database = cdb->database.c_str();
-		cdb->info.host = cdb->host.c_str();
-		cdb->info.user = cdb->user.c_str();
-		cdb->info.pass = cdb->pass.c_str();
-		
-		/* Save it.. */
-		m_confs.push_back(cdb);
-
-		/* Go up one level */
-		m_ParseState = DBPARSE_LEVEL_MAIN;
-	} else if (m_ParseState == DBPARSE_LEVEL_MAIN) {
-		m_ParseState = DBPARSE_LEVEL_NONE;
-		return SMCResult_Halt;
-	}
-
-	return SMCResult_Continue;
-}
-
-void DBManager::ReadSMC_ParseEnd(bool halted, bool failed)
-{
-}
-
 bool DBManager::Connect(const char *name, IDBDriver **pdr, IDatabase **pdb, bool persistent, char *error, size_t maxlength)
 {
-	ConfDbInfo *pInfo = GetDatabaseConf(name);
+	ConfDbInfoList *list = m_Builder.GetConfigList();
+	ke::RefPtr<ConfDbInfo> pInfo = list->GetDatabaseConf(name);
 
 	if (!pInfo)
 	{
@@ -282,11 +148,12 @@ bool DBManager::Connect(const char *name, IDBDriver **pdr, IDatabase **pdb, bool
 		/* Try to assign a real driver pointer */
 		if (pInfo->info.driver[0] == '\0')
 		{
-			if (!m_pDefault && m_DefDriver.size() > 0)
+			std::string defaultDriver = list->GetDefaultDriver();
+			if (!m_pDefault && defaultDriver.length() > 0)
 			{
-				m_pDefault = FindOrLoadDriver(m_DefDriver.c_str());
+				m_pDefault = FindOrLoadDriver(defaultDriver.c_str());
 			}
-			dname = m_DefDriver.size() ? m_DefDriver.c_str() : "default";
+			dname = defaultDriver.length() ? defaultDriver.c_str() : "default";
 			pInfo->realDriver = m_pDefault;
 		} else {
 			pInfo->realDriver = FindOrLoadDriver(pInfo->info.driver);
@@ -310,7 +177,6 @@ bool DBManager::Connect(const char *name, IDBDriver **pdr, IDatabase **pdb, bool
 	*pdb = NULL;
 
 	g_pSM->Format(error, maxlength, "Driver \"%s\" not found", dname);
-
 	return false;
 }
 
@@ -323,7 +189,7 @@ void DBManager::AddDriver(IDBDriver *pDriver)
 	  */
 	KillWorkerThread();
 
-	 m_drivers.push_back(pDriver);
+	m_drivers.push_back(pDriver);
 }
 
 void DBManager::RemoveDriver(IDBDriver *pDriver)
@@ -343,16 +209,16 @@ void DBManager::RemoveDriver(IDBDriver *pDriver)
 		}
 	}
 
-	/* Make sure NOTHING references this! */
-	List<ConfDbInfo *>::iterator iter;
-	for (iter=m_confs.begin(); iter!=m_confs.end(); iter++)
+	ConfDbInfoList *list = m_Builder.GetConfigList();
+	for (size_t i = 0; i < list->size(); i++)
 	{
-		ConfDbInfo &db = *(*iter);
-		if (db.realDriver == pDriver)
+		ke::RefPtr<ConfDbInfo> current = list->at(i);
+		if (current->realDriver == pDriver)
 		{
-			db.realDriver = NULL;
+			current->realDriver = NULL;
 		}
 	}
+
 
 	/* Someone unloaded the default driver? Silly.. */
 	if (pDriver == m_pDefault)
@@ -389,9 +255,11 @@ void DBManager::RemoveDriver(IDBDriver *pDriver)
 
 IDBDriver *DBManager::GetDefaultDriver()
 {
-	if (!m_pDefault && m_DefDriver.size() > 0)
+	ConfDbInfoList *list = m_Builder.GetConfigList();
+	std::string defaultDriver = list->GetDefaultDriver();
+	if (!m_pDefault && defaultDriver.length() > 0)
 	{
-		m_pDefault = FindOrLoadDriver(m_DefDriver.c_str());
+		m_pDefault = FindOrLoadDriver(defaultDriver.c_str());
 	}
 
 	return m_pDefault;
@@ -454,10 +322,16 @@ IDBDriver *DBManager::GetDriver(unsigned int index)
 
 const DatabaseInfo *DBManager::FindDatabaseConf(const char *name)
 {
-	ConfDbInfo *info = GetDatabaseConf(name);
+	ConfDbInfoList *list = m_Builder.GetConfigList();
+	ke::RefPtr<ConfDbInfo> info = list->GetDatabaseConf(name);
 	if (!info)
 	{
-		return NULL;
+		// couldn't find requested conf, return default if exists
+		info = list->GetDefaultConfiguration();
+		if (!info)
+		{
+			return NULL;
+		}
 	}
 
 	return &info->info;
@@ -465,18 +339,9 @@ const DatabaseInfo *DBManager::FindDatabaseConf(const char *name)
 
 ConfDbInfo *DBManager::GetDatabaseConf(const char *name)
 {
-	List<ConfDbInfo *>::iterator iter;
-
-	for (iter=m_confs.begin(); iter!=m_confs.end(); iter++)
-	{
-		ConfDbInfo &conf = *(*iter);
-		if (conf.name == name)
-		{
-			return &conf;
-		}
-	}
-
-	return NULL;
+	ConfDbInfoList *list = m_Builder.GetConfigList();
+	ke::RefPtr<ConfDbInfo> info(list->GetDatabaseConf(name));
+	return info;
 }
 
 IDBDriver *DBManager::FindOrLoadDriver(const char *name)
@@ -515,13 +380,12 @@ void DBManager::KillWorkerThread()
 	if (m_Worker)
 	{
 		{
-			ke::AutoLock lock(&m_QueueEvent);
+			std::lock_guard<std::mutex> lock(m_Lock);
 			m_Terminate = true;
-			m_QueueEvent.Notify();
+			m_QueueEvent.notify_all();
 		}
-		m_Worker->Join();
+		m_Worker->join();
 		m_Worker = nullptr;
-		s_OneTimeThreaderErrorMsg = false;
 		m_Terminate = false;
 	}
 }
@@ -537,27 +401,17 @@ bool DBManager::AddToThreadQueue(IDBThreadOperation *op, PrioQueueLevel prio)
 
 	if (!m_Worker)
 	{
-		m_Worker = new ke::Thread([this]() -> void {
+		m_Worker = ke::NewThread("SM Database Worker", [this]() -> void {
 			Run();
-		}, "SM SQL Worker");
-		if (!m_Worker->Succeeded())
-		{
-			if (!s_OneTimeThreaderErrorMsg)
-			{
-				logger->LogError("[SM] Unable to create db threader (error unknown)");
-				s_OneTimeThreaderErrorMsg = true;
-			}
-			m_Worker = nullptr;
-			return false;
-		}
+		});
 	}
 
 	/* Add to the queue */
 	{
-		ke::AutoLock lock(&m_QueueEvent);
+		std::lock_guard<std::mutex> lock(m_Lock);
 		Queue<IDBThreadOperation *> &queue = m_OpQueue.GetQueue(prio);
 		queue.push(op);
-		m_QueueEvent.Notify();
+		m_QueueEvent.notify_one();
 	}
 
 	return true;
@@ -588,7 +442,7 @@ void DBManager::Run()
 
 void DBManager::ThreadMain()
 {
-	ke::AutoLock lock(&m_QueueEvent);
+	std::unique_lock<std::mutex> lock(m_Lock);
 
 	while (true) {
 		// The lock has been acquired. Grab everything we can out of the
@@ -596,46 +450,43 @@ void DBManager::ThreadMain()
 		// we process all operations we can before checking to terminate.
 		// There's no risk of starvation since the main thread blocks on us
 		// terminating.
-		while (true)
-		{
-			Queue<IDBThreadOperation *> &queue = m_OpQueue.GetLikelyQueue();
-			if (queue.empty())
-				break;
+		auto queue = &m_OpQueue.GetLikelyQueue();
+		if (queue->empty()) {
+			// If the queue is empty and we've been asked to stop, leave now.
+			if (m_Terminate)
+				return;
 
-			IDBThreadOperation *op = queue.first();
-			queue.pop();
-
-			// Unlock the queue when we run the query, so the main thread can
-			// keep pumping events. We re-acquire the lock to check for more
-			// items. It's okay if we terminate while unlocked; the main
-			// thread would be blocked and we'd need to flush the queue
-			// anyway, so after we've depleted the queue here, we'll just
-			// reach the terminate at the top of the loop.
-			{
-				ke::AutoUnlock unlock(&m_QueueEvent);
-				op->RunThreadPart();
-
-				ke::AutoLock lock(&m_ThinkLock);
-				m_ThinkQueue.push(op);
-			}
-			
-			
-			if (!m_Terminate)
-			{
-				ke::AutoUnlock unlock(&m_QueueEvent);
-#ifdef _WIN32
-				Sleep(20);
-#else
-				usleep(20000);
-#endif
-			}
+			// Otherwise, wait for something to happen.
+			m_QueueEvent.wait(lock);
+			continue;
 		}
 
-		if (m_Terminate)
-			return;
+		IDBThreadOperation *op = queue->first();
+		queue->pop();
 
-		// Release the lock and wait for a signal.
-		m_QueueEvent.Wait();
+		// Unlock the queue when we run the query, so the main thread can
+		// keep pumping events. We re-acquire the lock to check for more
+		// items. It's okay if we terminate while unlocked; the main
+		// thread would be blocked and we'd need to flush the queue
+		// anyway, so after we've depleted the queue here, we'll just
+		// reach the terminate at the top of the loop.
+		lock.unlock();
+		op->RunThreadPart();
+
+		// Re-acquire the lock and give the data back to the main thread
+		// immediately. We use a separate lock to minimize game thread
+		// contention.
+		{
+			std::lock_guard<std::mutex> think_lock(m_ThinkLock);
+			m_ThinkQueue.push(op);
+		}
+
+		// Note that we add a 20ms delay after processing a query. This is
+		// questionable but the intent is to avoid starving the game thread.
+		if (!m_Terminate)
+			std::this_thread::sleep_for(20ms);
+
+		lock.lock();
 	}
 }
 
@@ -650,7 +501,7 @@ void DBManager::RunFrame()
 	/* Dump one thing per-frame so the server stays sane. */
 	IDBThreadOperation *op;
 	{
-		ke::AutoLock lock(&m_ThinkLock);
+		std::lock_guard<std::mutex> lock(m_ThinkLock);
 		op = m_ThinkQueue.first();
 		m_ThinkQueue.pop();
 	}
@@ -729,23 +580,13 @@ void DBManager::OnPluginWillUnload(IPlugin *plugin)
 	}
 }
 
-void DBManager::LockConfig()
+std::string DBManager::GetDefaultDriverName()
 {
-	m_ConfigLock.Lock();
-}
-
-void DBManager::UnlockConfig()
-{
-	m_ConfigLock.Unlock();
-}
-
-const char *DBManager::GetDefaultDriverName()
-{
-	return m_DefDriver.c_str();
+	ConfDbInfoList *list = m_Builder.GetConfigList();
+	return list->GetDefaultDriver();
 }
 
 void DBManager::AddDependency(IExtension *myself, IDBDriver *driver)
 {
 	g_Extensions.AddRawDependency(myself, driver->GetIdentity(), driver);
 }
-

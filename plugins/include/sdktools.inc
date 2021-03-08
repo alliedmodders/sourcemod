@@ -9,7 +9,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -31,7 +31,7 @@
  */
 
 #if defined _sdktools_included
-  #endinput
+ #endinput
 #endif
 #define _sdktools_included
 
@@ -55,86 +55,86 @@
 
 enum SDKCallType
 {
-	SDKCall_Static,		/**< Static call */
-	SDKCall_Entity,		/**< CBaseEntity call */
-	SDKCall_Player,		/**< CBasePlayer call */
-	SDKCall_GameRules,	/**< CGameRules call */
-	SDKCall_EntityList,	/**< CGlobalEntityList call */ 
-	SDKCall_Raw,		/**< |this| pointer with an arbitrary address */ 
+	SDKCall_Static,         /**< Static call */
+	SDKCall_Entity,         /**< CBaseEntity call */
+	SDKCall_Player,         /**< CBasePlayer call */
+	SDKCall_GameRules,      /**< CGameRules call */
+	SDKCall_EntityList,     /**< CGlobalEntityList call */
+	SDKCall_Raw             /**< |this| pointer with an arbitrary address */
 };
 
 enum SDKLibrary
 {
-	SDKLibrary_Server,	/**< server.dll/server_i486.so */
-	SDKLibrary_Engine,	/**< engine.dll/engine_*.so */
+	SDKLibrary_Server,      /**< server.dll/server_i486.so */
+	SDKLibrary_Engine       /**< engine.dll/engine_*.so */
 };
 
 enum SDKFuncConfSource
 {
-	SDKConf_Virtual = 0,	/**< Read a virtual index from the Offsets section */
-	SDKConf_Signature = 1,	/**< Read a signature from the Signatures section */
-	SDKConf_Address = 2,	/**< Read an address from the Addresses section */
+	SDKConf_Virtual = 0,    /**< Read a virtual index from the Offsets section */
+	SDKConf_Signature = 1,  /**< Read a signature from the Signatures section */
+	SDKConf_Address = 2     /**< Read an address from the Addresses section */
 };
 
 enum SDKType
 {
-	SDKType_CBaseEntity,	/**< CBaseEntity (always as pointer) */
-	SDKType_CBasePlayer,	/**< CBasePlayer (always as pointer) */
-	SDKType_Vector,			/**< Vector (pointer, byval, or byref) */
-	SDKType_QAngle,			/**< QAngles (pointer, byval, or byref) */
-	SDKType_PlainOldData,	/**< Integer/generic data <=32bit (any) */
-	SDKType_Float,			/**< Float (any) */
-	SDKType_Edict,			/**< edict_t (always as pointer) */
-	SDKType_String,			/**< NULL-terminated string (always as pointer) */
-	SDKType_Bool,			/**< Boolean (any) */
+	SDKType_CBaseEntity,    /**< CBaseEntity (always as pointer) */
+	SDKType_CBasePlayer,    /**< CBasePlayer (always as pointer) */
+	SDKType_Vector,         /**< Vector (pointer, byval, or byref) */
+	SDKType_QAngle,         /**< QAngles (pointer, byval, or byref) */
+	SDKType_PlainOldData,   /**< Integer/generic data <=32bit (any) */
+	SDKType_Float,          /**< Float (any) */
+	SDKType_Edict,          /**< edict_t (always as pointer) */
+	SDKType_String,         /**< NULL-terminated string (always as pointer) */
+	SDKType_Bool            /**< Boolean (any) */
 };
 
 enum SDKPassMethod
 {
-	SDKPass_Pointer,		/**< Pass as a pointer */
-	SDKPass_Plain,			/**< Pass as plain data */
-	SDKPass_ByValue,		/**< Pass an object by value */
-	SDKPass_ByRef,			/**< Pass an object by reference */
+	SDKPass_Pointer,        /**< Pass as a pointer */
+	SDKPass_Plain,          /**< Pass as plain data */
+	SDKPass_ByValue,        /**< Pass an object by value */
+	SDKPass_ByRef           /**< Pass an object by reference */
 };
 
-#define VDECODE_FLAG_ALLOWNULL		(1<<0)		/**< Allow NULL for pointers */
-#define VDECODE_FLAG_ALLOWNOTINGAME	(1<<1)		/**< Allow players not in game */
-#define VDECODE_FLAG_ALLOWWORLD		(1<<2)		/**< Allow World entity */
-#define VDECODE_FLAG_BYREF			(1<<3)		/**< Floats/ints by reference */
+#define VDECODE_FLAG_ALLOWNULL      (1<<0)    /**< Allow NULL for pointers */
+#define VDECODE_FLAG_ALLOWNOTINGAME (1<<1)    /**< Allow players not in game */
+#define VDECODE_FLAG_ALLOWWORLD     (1<<2)    /**< Allow World entity */
+#define VDECODE_FLAG_BYREF          (1<<3)    /**< Floats/ints by reference */
 
-#define VENCODE_FLAG_COPYBACK		(1<<0)		/**< Copy back data once done */
+#define VENCODE_FLAG_COPYBACK       (1<<0)    /**< Copy back data once done */
 
 /**
  * Starts the preparation of an SDK call.
  *
- * @param type			Type of function call this will be.
+ * @param type          Type of function call this will be.
  */
 native void StartPrepSDKCall(SDKCallType type);
 
 /**
  * Sets the virtual index of the SDK call if it is virtual.
  *
- * @param vtblidx		Virtual table index.
+ * @param vtblidx       Virtual table index.
  */
 native void PrepSDKCall_SetVirtual(int vtblidx);
 
 /**
  * Finds an address in a library and sets it as the address to use for the SDK call.
  *
- * @param lib			Library to use.
- * @param signature		Binary data to search for in the library.  If it starts with '@',
- *						the bytes parameter is ignored and the signature is interpreted
- *						as a symbol lookup in the library.
- * @param bytes			Number of bytes in the binary search string.
- * @return				True on success, false if nothing was found.
+ * @param lib           Library to use.
+ * @param signature     Binary data to search for in the library.  If it starts with '@',
+ *                      the bytes parameter is ignored and the signature is interpreted
+ *                      as a symbol lookup in the library.
+ * @param bytes         Number of bytes in the binary search string.
+ * @return              True on success, false if nothing was found.
  */
 native bool PrepSDKCall_SetSignature(SDKLibrary lib, const char[] signature, int bytes);
 
 /**
  * Uses the given function address for the SDK call.
  *
- * @param addr			Address of function to use.
- * @return				True on success, false on failure.
+ * @param addr          Address of function to use.
+ * @return              True on success, false on failure.
  */
 native bool PrepSDKCall_SetAddress(Address addr);
 
@@ -142,39 +142,39 @@ native bool PrepSDKCall_SetAddress(Address addr);
  * Finds an address or virtual function index in a GameConfig file and sets it as
  * the calling information for the SDK call.
  *
- * @param gameconf		GameConfig Handle, or INVALID_HANDLE to use sdktools.games.txt.
- * @param source		Whether to look in Offsets or Signatures.
- * @param name			Name of the property to find.
- * @return				True on success, false if nothing was found.
+ * @param gameconf      GameConfig Handle, or INVALID_HANDLE to use sdktools.games.txt.
+ * @param source        Whether to look in Offsets or Signatures.
+ * @param name          Name of the property to find.
+ * @return              True on success, false if nothing was found.
  */
 native bool PrepSDKCall_SetFromConf(Handle gameconf, SDKFuncConfSource source, const char[] name);
 
 /**
  * Sets the return information of an SDK call.  Do not call this if there is no return data.
- * This must be called if there is a return value (i.e. it is not necessarily safe to ignore 
+ * This must be called if there is a return value (i.e. it is not necessarily safe to ignore
  * the data).
  *
- * @param type			Data type to convert to/from.
- * @param pass			How the data is passed in C++.
- * @param decflags		Flags on decoding from the plugin to C++.
- * @param encflags		Flags on encoding from C++ to the plugin.
+ * @param type          Data type to convert to/from.
+ * @param pass          How the data is passed in C++.
+ * @param decflags      Flags on decoding from the plugin to C++.
+ * @param encflags      Flags on encoding from C++ to the plugin.
  */
 native void PrepSDKCall_SetReturnInfo(SDKType type, SDKPassMethod pass, int decflags=0, int encflags=0);
 
 /**
  * Adds a parameter to the calling convention.  This should be called in normal ascending order.
  *
- * @param type			Data type to convert to/from.
- * @param pass			How the data is passed in C++.
- * @param decflags		Flags on decoding from the plugin to C++.
- * @param encflags		Flags on encoding from C++ to the plugin.
+ * @param type          Data type to convert to/from.
+ * @param pass          How the data is passed in C++.
+ * @param decflags      Flags on decoding from the plugin to C++.
+ * @param encflags      Flags on encoding from C++ to the plugin.
  */
 native void PrepSDKCall_AddParameter(SDKType type, SDKPassMethod pass, int decflags=0, int encflags=0);
 
 /**
  * Finalizes an SDK call preparation and returns the resultant Handle.
  *
- * @return				A new SDKCall Handle on success, or INVALID_HANDLE on failure.
+ * @return              A new SDKCall Handle on success, or INVALID_HANDLE on failure.
  */
 native Handle EndPrepSDKCall();
 
@@ -186,24 +186,24 @@ native Handle EndPrepSDKCall();
  * If the return value is a Vector or QAngles, the SECOND parameter must be a Float[3].
  * If the return value is a string, the THIRD parameter must be a String buffer, and the
  *  FOURTH parameter must be the maximum length.
- * All parameters must be passed after the above is followed.  Failure to follow these 
+ * All parameters must be passed after the above is followed.  Failure to follow these
  *  rules will result in crashes or wildly unexpected behavior!
  *
  * If the return value is a float or integer, the return value will be this value.
  * If the return value is a CBaseEntity, CBasePlayer, or edict, the return value will
- *   always be the entity index, or -1 for NULL.
+ *  always be the entity index, or -1 for NULL.
  *
- * @param call			SDKCall Handle.
- * @param ...			Call Parameters.
- * @return				Simple return value, if any.
- * @error				Invalid Handle or internal decoding error.
+ * @param call          SDKCall Handle.
+ * @param ...           Call Parameters.
+ * @return              Simple return value, if any.
+ * @error               Invalid Handle or internal decoding error.
  */
 native any SDKCall(Handle call, any ...);
 
 /**
  * Returns the entity index of the player resource/manager entity.
  *
- * @return				Index of resource entity or -1 if not found.
+ * @return              Index of resource entity or -1 if not found.
  */
 native int GetPlayerResourceEntity();
 
@@ -212,7 +212,7 @@ native int GetPlayerResourceEntity();
 /**
  * Do not edit below this line!
  */
-public Extension __ext_sdktools = 
+public Extension __ext_sdktools =
 {
 	name = "SDKTools",
 	file = "sdktools.ext",

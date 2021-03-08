@@ -462,7 +462,7 @@ static cell_t smn_TESend(IPluginContext *pContext, const cell_t *params)
 		{
 			return pContext->ThrowNativeError("Client index %d is invalid", client);
 		} else if (!pPlayer->IsInGame()) {
-			return pContext->ThrowNativeError("Client %d is not connected", client);
+			return pContext->ThrowNativeError("Client %d is not in game", client);
 		}
 	}
 

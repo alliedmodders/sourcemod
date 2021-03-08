@@ -313,7 +313,7 @@ void VoteMenuClose()
 
 float GetVotePercent(int votes, int totalVotes)
 {
-	return FloatDiv(float(votes),float(totalVotes));
+	return float(votes) / float(totalVotes);
 }
 
 bool TestVoteDelay(int client)
@@ -324,7 +324,7 @@ bool TestVoteDelay(int client)
  	{
  		if (delay > 60)
  		{
- 			ReplyToCommand(client, "[SM] %t", "Vote Delay Minutes", delay % 60);
+ 			ReplyToCommand(client, "[SM] %t", "Vote Delay Minutes", (delay / 60));
  		}
  		else
  		{

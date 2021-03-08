@@ -33,11 +33,11 @@
  
 void FireOnClientMute(int client, bool muteState)
 {
- 	static Handle hForward;
+ 	static GlobalForward hForward;
 	
 	if(hForward == null)
 	{
-		hForward = CreateGlobalForward("BaseComm_OnClientMute", ET_Ignore, Param_Cell, Param_Cell);
+		hForward = new GlobalForward("BaseComm_OnClientMute", ET_Ignore, Param_Cell, Param_Cell);
 	}
 	
 	Call_StartForward(hForward);
@@ -48,11 +48,11 @@ void FireOnClientMute(int client, bool muteState)
  
 void FireOnClientGag(int client, bool gagState)
 {
- 	static Handle hForward;
+ 	static GlobalForward hForward;
 	
 	if(hForward == null)
 	{
-		hForward = CreateGlobalForward("BaseComm_OnClientGag", ET_Ignore, Param_Cell, Param_Cell);
+		hForward = new GlobalForward("BaseComm_OnClientGag", ET_Ignore, Param_Cell, Param_Cell);
 	}
 	
 	Call_StartForward(hForward);

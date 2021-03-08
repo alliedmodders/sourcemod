@@ -40,7 +40,7 @@ public:
 	void Register(ICallWrapper *pWrapper);
 	void UnregisterAll();
 private:
-	ke::Vector<ICallWrapper *> m_Natives;
+	std::vector<ICallWrapper *> m_Natives;
 };
 
 extern RegNatives g_RegNatives;

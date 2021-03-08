@@ -66,7 +66,12 @@ void InitializeValveGlobals()
 		{
 			return;
 		}
+#ifdef PLATFORM_X86
 		g_ppGameRules = *reinterpret_cast<void ***>(addr + offset);
+#else
+		int32_t varOffset = *(int32_t *) ((unsigned char *) addr + offset);
+		g_ppGameRules = *reinterpret_cast<void ***>((unsigned char *) addr + offset + sizeof(int32_t) + varOffset);
+#endif
 	}
 }
 

@@ -121,8 +121,6 @@ private:
 
 	const char *FindOutputName(void *pOutput, CBaseEntity *pCaller);
 
-	//Maps CEntityOutput * to a OutputNameStruct
-	IBasicTrie *EntityOutputs;
 	// Maps classname to a ClassNameStruct
 	IBasicTrie *ClassNames;
 

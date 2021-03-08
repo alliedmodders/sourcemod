@@ -67,7 +67,7 @@
 			"StartTouch"
 			{
 				"windows"	"100"
-				"linux"		"101
+				"linux"		"101"
 			}
 			"Think"
 			{

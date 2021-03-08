@@ -9,7 +9,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -31,21 +31,21 @@
  */
 
 #if defined _sdktools_entinput_included
-  #endinput
+ #endinput
 #endif
 #define _sdktools_entinput_included
 
 /**
- * Invokes a named input method on an entity.  
+ * Invokes a named input method on an entity.
  *
  * After completion (successful or not), the current global variant is re-initialized.
  *
- * @param dest		Destination entity index.
- * @param input		Input action.
- * @param activator	Entity index which initiated the sequence of actions (-1 for a NULL entity).
- * @param caller	Entity index from which this event is sent (-1 for a NULL entity).
- * @param outputid	Unknown.
- * @return		True if successful otherwise false.
- * @error		Invalid entity index or no mod support.
+ * @param dest          Destination entity index.
+ * @param input         Input action.
+ * @param activator     Entity index which initiated the sequence of actions (-1 for a NULL entity).
+ * @param caller        Entity index from which this event is sent (-1 for a NULL entity).
+ * @param outputid      Unknown.
+ * @return              True if successful otherwise false.
+ * @error               Invalid entity index or no mod support.
  */
 native bool AcceptEntityInput(int dest, const char[] input, int activator=-1, int caller=-1, int outputid=0);

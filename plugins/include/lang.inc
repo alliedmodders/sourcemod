@@ -9,7 +9,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -35,13 +35,13 @@
 #endif
 #define _lang_included
 
-#define LANG_SERVER		0		/**< Translate using the server's language */
+#define LANG_SERVER 0      /**< Translate using the server's language */
 
 /**
  * Loads a translation file for the plugin calling this native.
  * If no extension is specified, .txt is assumed.
  *
- * @param file		Translation file.
+ * @param file          Translation file.
  */
 native void LoadTranslations(const char[] file);
 
@@ -51,67 +51,67 @@ native void LoadTranslations(const char[] file);
  * indexes can be specified but the error will occur during translation,
  * not during this function call.
  *
- * @param client	Client index or LANG_SERVER.
+ * @param client        Client index or LANG_SERVER.
  */
 native void SetGlobalTransTarget(int client);
 
 /**
  * Retrieves the language number of a client.
  *
- * @param client	Client index.
- * @return			Language number client is using.
- * @error			Invalid client index or client not connected.
+ * @param client        Client index.
+ * @return              Language number client is using.
+ * @error               Invalid client index or client not connected.
  */
 native int GetClientLanguage(int client);
 
 /**
  * Retrieves the server's language.
  *
- * @return			Language number server is using.
+ * @return              Language number server is using.
  */
 native int GetServerLanguage();
 
 /**
  * Returns the number of languages known in languages.cfg.
  *
- * @return			Language count.
+ * @return              Language count.
  */
 native int GetLanguageCount();
 
 /**
  * Retrieves info about a given language number.
  *
- * @param language	Language number.
- * @param code		Language code buffer (2-3 characters usually).
- * @param codeLen	Maximum length of the language code buffer.
- * @param name		Language name buffer.
- * @param nameLen	Maximum length of the language name buffer.
- * @error			Invalid language number.
+ * @param language      Language number.
+ * @param code          Language code buffer (2-3 characters usually).
+ * @param codeLen       Maximum length of the language code buffer.
+ * @param name          Language name buffer.
+ * @param nameLen       Maximum length of the language name buffer.
+ * @error               Invalid language number.
  */
 native void GetLanguageInfo(int language, char[] code="", int codeLen=0, char[] name="", int nameLen=0);
 
 /**
  * Sets the language number of a client.
  *
- * @param client	Client index.
- * @param language	Language number.
- * @error			Invalid client index or client not connected.
+ * @param client        Client index.
+ * @param language      Language number.
+ * @error               Invalid client index or client not connected.
  */
 native void SetClientLanguage(int client, int language);
 
 /**
  * Retrieves the language number from a language code.
  *
- * @param code		Language code (2-3 characters usually).
- * @return			Language number. -1 if not found.
+ * @param code          Language code (2-3 characters usually).
+ * @return              Language number. -1 if not found.
  */
 native int GetLanguageByCode(const char[] code);
 
 /**
  * Retrieves the language number from a language name.
  *
- * @param name		Language name (case insensitive).
- * @return			Language number. -1 if not found.
+ * @param name          Language name (case insensitive).
+ * @return              Language number. -1 if not found.
  */
 native int GetLanguageByName(const char[] name);
 
@@ -119,16 +119,16 @@ native int GetLanguageByName(const char[] name);
  * Determines if the specified phrase exists within the plugin's
  * translation cache.
  *
- * @param phrase	Phrase to look for.
- * @return			True if phrase exists.
+ * @param phrase        Phrase to look for.
+ * @return              True if phrase exists.
  */
 native bool TranslationPhraseExists(const char[] phrase);
 
 /**
  * Determines if there is a translation for the specified language.
  *
- * @param phrase	Phrase to check.
- * @param language	Language number.
- * @return			True if translation exists.
+ * @param phrase        Phrase to check.
+ * @param language      Language number.
+ * @return              True if translation exists.
  */
 native bool IsTranslatedForLanguage(const char[] phrase, int language);

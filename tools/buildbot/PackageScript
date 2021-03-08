@@ -38,11 +38,11 @@ folder_list = [
   'cfg/sourcemod',
 ]
 
-if 'x64' in SM.archs:
+if 'x86_64' in SM.target_archs:
   folder_list.extend([
     'addons/sourcemod/bin/x64',
     'addons/sourcemod/extensions/x64',
-  ])		
+  ])
 
 # Create the distribution folder hierarchy.
 folder_map = {}
@@ -52,17 +52,24 @@ for folder in folder_list:
 
 # Copy binaries.
 for cxx_task in SM.binaries:
-  binpath = cxx_task.binary.path
-  if '.x64' + os.sep in binpath and not 'sourcemod_mm' in binpath:
+  # mms expects our loader (sourcemod_mm) to exist in /bin/
+  if cxx_task.target.arch == 'x86_64' and not 'sourcemod_mm' in cxx_task.binary.path:
     builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/bin/x64'])
   else:
     builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/bin'])
 for cxx_task in SM.extensions:
-  if '.x64' + os.sep in cxx_task.binary.path:
+  if cxx_task.target.arch == 'x86_64':
     builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/extensions/x64'])
   else:
     builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/extensions'])
-    
+for cxx_task in SM.spvm:
+  if cxx_task.target.arch == 'x86':
+    dest_path = os.path.join('addons/sourcemod/bin',
+                             'sourcepawn.jit.x86' + os.path.splitext(cxx_task.binary.path)[1])
+    builder.AddCopy(cxx_task.binary, dest_path)
+  elif cxx_task.target.arch == 'x86_64':
+    builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/bin/x64'])
+
 def lipo(binaries, outFolder):
   bins = []
   binPaths = []
@@ -75,15 +82,16 @@ def lipo(binaries, outFolder):
   builder.AddCommand(
     argv = argv + binPaths + ['-output', outputPath],
     inputs = bins,
-	outputs = [os.path.join(outFolder, binary)],
+    outputs = [os.path.join(outFolder, binary)],
   )
 
-if builder.target.platform == 'mac' and len(SM.archs) > 1:
+if builder.host.platform == 'mac' and len(SM.target_archs) > 1:
   lipo(SM.spcomp_bins, 'addons/sourcemod/scripting')
 else:
   for bin_task in SM.spcomp_bins:
-    if '.x64' + os.sep in bin_task.binary.path:
-      file = os.path.basename(bin_task.binary.path) + '64'
+    if bin_task.target.arch == 'x86_64':
+      root, ext = os.path.splitext(os.path.basename(bin_task.binary.path))
+      file = root + '64' + ext
       builder.AddCopy(bin_task.binary, os.path.normpath('addons/sourcemod/scripting/' + file))
     else:
       builder.AddCopy(bin_task.binary, folder_map['addons/sourcemod/scripting'])
@@ -197,9 +205,9 @@ CopyFiles('gamedata/sdkhooks.games', 'addons/sourcemod/gamedata/sdkhooks.games',
     'game.hidden.txt',
     'game.hl2ctf.txt',
     'game.insurgency.txt',
-	'game.kz.txt',
+    'game.kz.txt',
     'game.l4d2.txt',
-	'game.modularcombat.txt',
+    'game.modularcombat.txt',
     'game.neotokyo.txt',
     'game.nmrih.txt',
     'game.nucleardawn.txt',
@@ -252,9 +260,9 @@ CopyFiles('gamedata/sdktools.games', 'addons/sourcemod/gamedata/sdktools.games',
     'game.hl2mp.txt',
     'game.insurgency.txt',
     'game.ios.txt',
-	'game.kz.txt',
+    'game.kz.txt',
     'game.left4dead2.txt',
-	'game.modularcombat.txt',
+    'game.modularcombat.txt',
     'game.neotokyo.txt',
     'game.nmrih.txt',
     'game.nucleardawn.txt',
@@ -272,7 +280,7 @@ CopyFiles('gamedata/sdktools.games', 'addons/sourcemod/gamedata/sdktools.games',
   ]
 )
 CopyFiles('gamedata/core.games', 'addons/sourcemod/gamedata/core.games',
-  [ 'blacklist.plugins.txt',
+  [ 'blocklist.plugins.txt',
     'common.games.txt',
     'engine.bgt.txt',
     'engine.blade.txt',
@@ -420,7 +428,7 @@ CopyFiles('translations', 'addons/sourcemod/translations',
     'sqladmins.phrases.txt',
   ]
 )
-CopyFiles('public/licenses', 'addons/sourcemod',
+CopyFiles('licenses', 'addons/sourcemod',
   [ 'GPLv2.txt',
     'GPLv3.txt',
     'LICENSE.txt'
@@ -510,7 +518,7 @@ CopyFiles('plugins/playercommands', 'addons/sourcemod/scripting/playercommands',
   ]
 )
 
-if builder.target.platform == 'windows':
+if builder.host.platform == 'windows':
   CopyFiles('tools/batchtool', 'addons/sourcemod/scripting', ['compile.exe'])
 else:
   CopyFiles('plugins', 'addons/sourcemod/scripting', ['compile.sh'])

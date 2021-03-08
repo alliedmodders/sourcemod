@@ -66,15 +66,16 @@ static const char *g_pParseEngine = NULL;
 #define PSTATE_GAMEDEFS_OFFSETS			3
 #define PSTATE_GAMEDEFS_OFFSETS_OFFSET	4
 #define PSTATE_GAMEDEFS_KEYS			5
-#define PSTATE_GAMEDEFS_SUPPORTED		6
-#define PSTATE_GAMEDEFS_SIGNATURES		7
-#define PSTATE_GAMEDEFS_SIGNATURES_SIG	8
-#define PSTATE_GAMEDEFS_CRC				9
-#define PSTATE_GAMEDEFS_CRC_BINARY		10
-#define PSTATE_GAMEDEFS_CUSTOM			11
-#define PSTATE_GAMEDEFS_ADDRESSES		12
-#define PSTATE_GAMEDEFS_ADDRESSES_ADDRESS	13
-#define PSTATE_GAMEDEFS_ADDRESSES_ADDRESS_READ	14
+#define PSTATE_GAMEDEFS_KEYS_PLATFORM	6
+#define PSTATE_GAMEDEFS_SUPPORTED		7
+#define PSTATE_GAMEDEFS_SIGNATURES		8
+#define PSTATE_GAMEDEFS_SIGNATURES_SIG	9
+#define PSTATE_GAMEDEFS_CRC				10
+#define PSTATE_GAMEDEFS_CRC_BINARY		11
+#define PSTATE_GAMEDEFS_CUSTOM			12
+#define PSTATE_GAMEDEFS_ADDRESSES		13
+#define PSTATE_GAMEDEFS_ADDRESSES_ADDRESS	14
+#define PSTATE_GAMEDEFS_ADDRESSES_ADDRESS_READ	15
 
 #if defined PLATFORM_X86
 #define PLATFORM_ARCH_SUFFIX		""
@@ -152,12 +153,31 @@ static inline bool IsPlatformCompatible(const char *platform, bool *hadPrimaryMa
 	return false;
 }
 
+static inline time_t GetFileModTime(const char *path)
+{
+	char filepath[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_SM, filepath, sizeof(filepath), "gamedata/%s.txt", path);
+#ifdef PLATFORM_WINDOWS
+	struct _stat64 s;
+	if (_stat64(filepath, &s) != 0)
+#elif defined PLATFORM_POSIX
+	struct stat s;
+	if (stat(filepath, &s) != 0)
+#endif
+	{
+		return 0;
+	}
+	return s.st_mtime;
+}
+
 CGameConfig::CGameConfig(const char *file, const char *engine)
 {
 	strncopy(m_File, file, sizeof(m_File));
 
 	m_CustomLevel = 0;
 	m_CustomHandler = NULL;
+
+	m_ModTime = GetFileModTime(file);
 
 	if (!engine)
 		m_pEngine = bridge->GetSourceEngineName();
@@ -258,6 +278,13 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			}
 			break;
 		}
+	case PSTATE_GAMEDEFS_KEYS:
+		{
+			strncopy(m_Key, name, sizeof(m_Key));
+			m_ParseState = PSTATE_GAMEDEFS_KEYS_PLATFORM;
+			matched_platform = false;
+			break;
+		}
 	case PSTATE_GAMEDEFS_OFFSETS:
 		{
 			m_Prop[0] = '\0';
@@ -356,7 +383,7 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 		}
 	/* No sub-sections allowed:
 	 case PSTATE_GAMEDEFS_OFFSETS_OFFSET:
-	 case PSTATE_GAMEDEFS_KEYS:
+	 case PSTATE_GAMEDEFS_KEYS_PLATFORM:
 	 case PSTATE_GAMEDEFS_SUPPORTED:
 	 case PSTATE_GAMEDEFS_SIGNATURES_SIG:
 	 case PSTATE_GAMEDEFS_CRC_BINARY:
@@ -391,8 +418,15 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 			m_Offsets.replace(m_offset, atoi(value));
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_KEYS) {
-		ke::AString vstr(value);
-		m_Keys.replace(key, ke::Move(vstr));
+		std::string vstr(value);
+		m_Keys.replace(key, std::move(vstr));
+	}
+	else if (m_ParseState == PSTATE_GAMEDEFS_KEYS_PLATFORM) {
+		if (IsPlatformCompatible(key, &matched_platform))
+		{
+			std::string vstr(value);
+			m_Keys.replace(m_Key, std::move(vstr));
+		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_SUPPORTED) {
 		if (strcmp(key, "game") == 0)
 		{
@@ -504,6 +538,11 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 	case PSTATE_GAMEDEFS_OFFSETS:
 		{
 			m_ParseState = PSTATE_GAMEDEFS;
+			break;
+		}
+	case PSTATE_GAMEDEFS_KEYS_PLATFORM:
+		{
+			m_ParseState = PSTATE_GAMEDEFS_KEYS;
 			break;
 		}
 	case PSTATE_GAMEDEFS_OFFSETS_OFFSET:
@@ -981,10 +1020,10 @@ bool CGameConfig::GetOffset(const char *key, int *value)
 
 const char *CGameConfig::GetKeyValue(const char *key)
 {
-	StringHashMap<ke::AString>::Result r = m_Keys.find(key);
+	StringHashMap<std::string>::Result r = m_Keys.find(key);
 	if (!r.found())
 		return NULL;
-	return r->value.chars();
+	return r->value.c_str();
 }
 
 //memory addresses below 0x10000 are automatically considered invalid for dereferencing
@@ -1112,9 +1151,17 @@ bool GameConfigManager::LoadGameConfigFile(const char *file, IGameConfig **_pCon
 
 	if (m_Lookup.retrieve(file, &pConfig))
 	{
+		bool ret = true;
+		time_t modtime = GetFileModTime(file);
+		if (pConfig->m_ModTime != modtime)
+		{
+			pConfig->m_ModTime = modtime;
+			ret = pConfig->Reparse(error, maxlength);
+		}
+
 		pConfig->AddRef();
 		*_pConfig = pConfig;
-		return true;
+		return ret;
 	}
 
 	pConfig = new CGameConfig(file);

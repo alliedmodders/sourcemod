@@ -50,7 +50,6 @@ class IProviderCallbacks;
 class IExtensionSys;
 class ITextParsers;
 class ILogger;
-class IDataPack;
 class ICellArray;
 
 struct sm_logic_t
@@ -70,8 +69,6 @@ struct sm_logic_t
 	void			(*GenerateError)(IPluginContext *, cell_t, int, const char *, ...);
 	void			(*AddNatives)(sp_nativeinfo_t *natives);
 	void            (*RegisterProfiler)(IProfilingTool *tool);
-	IDataPack *     (*CreateDataPack)();
-	void            (*FreeDataPack)(IDataPack *pack);
 	ICellArray *    (*CreateCellArray)(size_t blocksize);
 	void            (*FreeCellArray)(ICellArray *arr);
 	void *			(*FromPseudoAddress)(uint32_t pseudoAddr);

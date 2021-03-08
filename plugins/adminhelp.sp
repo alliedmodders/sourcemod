@@ -58,13 +58,18 @@ public void OnPluginStart()
 
 public Action HelpCmd(int client, int args)
 {
+	if (client && !IsClientInGame(client))
+	{
+		return Plugin_Handled;
+	}
+	
 	char arg[64], CmdName[20];
 	int PageNum = 1;
 	bool DoSearch;
 
 	GetCmdArg(0, CmdName, sizeof(CmdName));
 
-	if (GetCmdArgs() >= 1)
+	if (args >= 1)
 	{
 		GetCmdArg(1, arg, sizeof(arg));
 		StringToIntEx(arg, PageNum);

@@ -39,13 +39,16 @@
  * Given a maximum string size (including the null terminator),
  * returns the number of cells required to fit that string.
  *
- * @param size			Number of bytes.
- * @return				Minimum number of cells required to fit the byte count.
+ * @param size          Number of bytes.
+ * @return              Minimum number of cells required to fit the byte count.
  */
 stock int ByteCountToCells(int size)
 {
 	if (!size)
+	{
 		return 1;
+	}
+	
 	return (size + 3) / 4;
 }
 
@@ -92,7 +95,6 @@ methodmap ArrayList < Handle {
 	// @param value         Value to push.
 	// @return              Index of the new entry.
 	// @error               Invalid Handle or out of memory.
-	//
 	public native int Push(any value);
 
 	// Pushes a string onto the end of an array, truncating it if it is too big.
@@ -203,10 +205,22 @@ methodmap ArrayList < Handle {
 	// value cannot be located, -1 will be returned.
 	//
 	// @param item          Value to search for
-    // @param block         Optionally which block to search in
+	// @param block         Optionally which block to search in
 	// @return              Array index, or -1 on failure
 	// @error               Invalid block index
 	public native int FindValue(any item, int block=0);
+
+	// Sort an ADT Array. Specify the type as Integer, Float, or String.
+	//
+	// @param order         Sort order to use, same as other sorts.
+	// @param type          Data type stored in the ADT Array
+	public native void Sort(SortOrder order, SortType type);
+
+	// Custom sorts an ADT Array. You must pass in a comparison function.
+	//
+	// @param sortfunc      Sort comparison function to use
+	// @param hndl          Optional Handle to pass through the comparison calls.
+	public native void SortCustom(SortFuncADTArray sortfunc, Handle hndl=INVALID_HANDLE); 
 
 	// Retrieve the size of the array.
 	property int Length {
@@ -228,20 +242,20 @@ methodmap ArrayList < Handle {
  * The "blocksize" determines how many cells each array slot has; it cannot
  * be changed after creation.
  *
- * @param blocksize		The number of cells each member of the array can
- *						hold.  For example, 32 cells is equivalent to:
- *						new Array[X][32]
- * @param startsize		Initial size of the array.  Note that data will
- *						NOT be auto-initialized.
- * @return				New Handle to the array object.
+ * @param blocksize     The number of cells each member of the array can
+ *                      hold.  For example, 32 cells is equivalent to:
+ *                      new Array[X][32]
+ * @param startsize     Initial size of the array.  Note that data will
+ *                      NOT be auto-initialized.
+ * @return              New Handle to the array object.
  */
 native ArrayList CreateArray(int blocksize=1, int startsize=0);
 
 /**
  * Clears an array of all entries.  This is the same as ResizeArray(0).
  *
- * @param array			Array Handle.
- * @error				Invalid Handle.
+ * @param array         Array Handle.
+ * @error               Invalid Handle.
  */
 native void ClearArray(Handle array);
 
@@ -250,9 +264,9 @@ native void ClearArray(Handle array);
  * be confused with CloneHandle. This is a completely new handle with the same data but
  * no relation to the original. You MUST close it.
  *
- * @param array			Array handle to be cloned
- * @return				New handle to the cloned array object
- * @error				Invalid Handle
+ * @param array         Array handle to be cloned
+ * @return              New handle to the cloned array object
+ * @error               Invalid Handle
  */
 native Handle CloneArray(Handle array);
 
@@ -261,18 +275,18 @@ native Handle CloneArray(Handle array);
  * the array is truncated.  If the size is larger than the current size,
  * the data at the additional indexes will not be initialized.
  *
- * @param array			Array Handle.
- * @param newsize		New size.
- * @error				Invalid Handle or out of memory.
+ * @param array         Array Handle.
+ * @param newsize       New size.
+ * @error               Invalid Handle or out of memory.
  */
 native void ResizeArray(Handle array, int newsize);
 
 /**
  * Returns the array size.
  *
- * @param array			Array Handle.
- * @return				Number of elements in the array.
- * @error				Invalid Handle.
+ * @param array         Array Handle.
+ * @return              Number of elements in the array.
+ * @error               Invalid Handle.
  */
 native int GetArraySize(Handle array);
 
@@ -282,10 +296,10 @@ native int GetArraySize(Handle array);
  * This may safely be used even if the array has a blocksize
  * greater than 1.
  *
- * @param array			Array Handle.
- * @param value			Value to push.
- * @return				Index of the new entry.
- * @error				Invalid Handle or out of memory.
+ * @param array         Array Handle.
+ * @param value         Value to push.
+ * @return              Index of the new entry.
+ * @error               Invalid Handle or out of memory.
  */
 native int PushArrayCell(Handle array, any value);
 
@@ -293,10 +307,10 @@ native int PushArrayCell(Handle array, any value);
  * Pushes a string onto the end of an array, truncating it
  * if it is too big.
  *
- * @param array			Array Handle.
- * @param value			String to push.
- * @return				Index of the new entry.
- * @error				Invalid Handle or out of memory.
+ * @param array         Array Handle.
+ * @param value         String to push.
+ * @return              Index of the new entry.
+ * @error               Invalid Handle or out of memory.
  */
 native int PushArrayString(Handle array, const char[] value);
 
@@ -305,88 +319,88 @@ native int PushArrayString(Handle array, const char[] value);
  * are pushed as a block (i.e. the entire array sits at the index),
  * rather than pushing each cell individually.
  *
- * @param array			Array Handle.
- * @param values		Block of values to copy.
- * @param size			If not set, the number of elements copied from the array
- *						will be equal to the blocksize.  If set higher than the
- *						blocksize, the operation will be truncated.
- * @return				Index of the new entry.
- * @error				Invalid Handle or out of memory.
+ * @param array         Array Handle.
+ * @param values        Block of values to copy.
+ * @param size          If not set, the number of elements copied from the array
+ *                      will be equal to the blocksize.  If set higher than the
+ *                      blocksize, the operation will be truncated.
+ * @return              Index of the new entry.
+ * @error               Invalid Handle or out of memory.
  */
 native int PushArrayArray(Handle array, const any[] values, int size=-1);
 
 /**
  * Retrieves a cell value from an array.
  *
- * @param array			Array Handle.
- * @param index			Index in the array.
- * @param block			Optionally specify which block to read from
- *						(useful if the blocksize > 0).
- * @param asChar		Optionally read as a byte instead of a cell.
- * @return				Value read.
- * @error				Invalid Handle, invalid index, or invalid block.
+ * @param array         Array Handle.
+ * @param index         Index in the array.
+ * @param block         Optionally specify which block to read from
+ *                      (useful if the blocksize > 0).
+ * @param asChar        Optionally read as a byte instead of a cell.
+ * @return              Value read.
+ * @error               Invalid Handle, invalid index, or invalid block.
  */
 native any GetArrayCell(Handle array, int index, int block=0, bool asChar=false);
 
 /**
  * Retrieves a string value from an array.
  *
- * @param array			Array Handle.
- * @param index			Index in the array.
- * @param buffer		Buffer to copy to.
- * @param maxlength		Maximum size of the buffer.
- * @return				Number of characters copied.
- * @error				Invalid Handle or invalid index.
+ * @param array         Array Handle.
+ * @param index         Index in the array.
+ * @param buffer        Buffer to copy to.
+ * @param maxlength     Maximum size of the buffer.
+ * @return              Number of characters copied.
+ * @error               Invalid Handle or invalid index.
  */
 native int GetArrayString(Handle array, int index, char[] buffer, int maxlength);
 
 /**
  * Retrieves an array of cells from an array.
  *
- * @param array			Array Handle.
- * @param index			Index in the array.
- * @param buffer		Buffer to store the array in.
- * @param size			If not set, assumes the buffer size is equal to the
- *						blocksize.  Otherwise, the size passed is used.
- * @return				Number of cells copied.
- * @error				Invalid Handle or invalid index.
+ * @param array         Array Handle.
+ * @param index         Index in the array.
+ * @param buffer        Buffer to store the array in.
+ * @param size          If not set, assumes the buffer size is equal to the
+ *                      blocksize.  Otherwise, the size passed is used.
+ * @return              Number of cells copied.
+ * @error               Invalid Handle or invalid index.
  */
 native int GetArrayArray(Handle array, int index, any[] buffer, int size=-1);
 
 /**
  * Sets a cell value in an array.
  *
- * @param array			Array Handle.
- * @param index			Index in the array.
- * @param value			Cell value to set.
- * @param block			Optionally specify which block to write to
- *						(useful if the blocksize > 0).
- * @param asChar		Optionally set as a byte instead of a cell.
- * @error				Invalid Handle, invalid index, or invalid block.
+ * @param array         Array Handle.
+ * @param index         Index in the array.
+ * @param value         Cell value to set.
+ * @param block         Optionally specify which block to write to
+ *                      (useful if the blocksize > 0).
+ * @param asChar        Optionally set as a byte instead of a cell.
+ * @error               Invalid Handle, invalid index, or invalid block.
  */
 native void SetArrayCell(Handle array, int index, any value, int block=0, bool asChar=false);
 
 /**
  * Sets a string value in an array.
  *
- * @param array			Array Handle.
- * @param index			Index in the array.
- * @param value			String value to set.
- * @return				Number of characters copied.
- * @error				Invalid Handle or invalid index.
+ * @param array         Array Handle.
+ * @param index         Index in the array.
+ * @param value         String value to set.
+ * @return              Number of characters copied.
+ * @error               Invalid Handle or invalid index.
  */
 native int SetArrayString(Handle array, int index, const char[] value);
 
 /**
  * Sets an array of cells in an array.
  *
- * @param array			Array Handle.
- * @param index			Index in the array.
- * @param values		Array to copy.
- * @param size			If not set, assumes the buffer size is equal to the
- *						blocksize.  Otherwise, the size passed is used.
- * @return				Number of cells copied.
- * @error				Invalid Handle or invalid index.
+ * @param array         Array Handle.
+ * @param index         Index in the array.
+ * @param values        Array to copy.
+ * @param size          If not set, assumes the buffer size is equal to the
+ *                      blocksize.  Otherwise, the size passed is used.
+ * @return              Number of cells copied.
+ * @error               Invalid Handle or invalid index.
  */
 native int SetArrayArray(Handle array, int index, const any[] values, int size=-1);
 
@@ -395,9 +409,9 @@ native int SetArrayArray(Handle array, int index, const any[] values, int size=-
  * index are shifted up by one, and the given index is then "free."
  * After shifting, the contents of the given index is undefined.
  *
- * @param array			Array Handle.
- * @param index			Index in the array to shift up from.
- * @error				Invalid Handle or invalid index.
+ * @param array         Array Handle.
+ * @param index         Index in the array to shift up from.
+ * @error               Invalid Handle or invalid index.
  */
 native void ShiftArrayUp(Handle array, int index);
 
@@ -406,19 +420,19 @@ native void ShiftArrayUp(Handle array, int index);
  * on.  For example, if item 8 of 10 is removed, the last 3 items will then be
  * (6,7,8) instead of (7,8,9), and all indexes before 8 will remain unchanged.
  *
- * @param array			Array Handle.
- * @param index			Index in the array to remove at.
- * @error				Invalid Handle or invalid index.
+ * @param array         Array Handle.
+ * @param index         Index in the array to remove at.
+ * @error               Invalid Handle or invalid index.
  */
 native void RemoveFromArray(Handle array, int index);
 
 /**
  * Swaps two items in the array.
  *
- * @param array			Array Handle.
- * @param index1		First index.
- * @param index2		Second index.
- * @error				Invalid Handle or invalid index.
+ * @param array         Array Handle.
+ * @param index1        First index.
+ * @param index2        Second index.
+ * @error               Invalid Handle or invalid index.
  */
 native void SwapArrayItems(Handle array, int index1, int index2);
 
@@ -426,10 +440,10 @@ native void SwapArrayItems(Handle array, int index1, int index2);
  * Returns the index for the first occurrence of the provided string. If the string
  * cannot be located, -1 will be returned.
  *
- * @param array			Array Handle.
- * @param item			String to search for
- * @return				Array index, or -1 on failure
- * @error				Invalid Handle
+ * @param array         Array Handle.
+ * @param item          String to search for
+ * @return              Array index, or -1 on failure
+ * @error               Invalid Handle
  */
 native int FindStringInArray(Handle array, const char[] item);
 
@@ -437,19 +451,19 @@ native int FindStringInArray(Handle array, const char[] item);
  * Returns the index for the first occurrence of the provided value. If the value
  * cannot be located, -1 will be returned.
  *
- * @param array			Array Handle.
- * @param item			Value to search for
- * @param block			Optionally which block to search in
- * @return				Array index, or -1 on failure
- * @error				Invalid Handle or invalid block
+ * @param array         Array Handle.
+ * @param item          Value to search for
+ * @param block         Optionally which block to search in
+ * @return              Array index, or -1 on failure
+ * @error               Invalid Handle or invalid block
  */
 native int FindValueInArray(Handle array, any item, int block=0);
 
 /**
  * Returns the blocksize the array was created with.
  *
- * @param array			Array Handle.
- * @return 				The blocksize of the array.
- * @error				Invalid Handle
+ * @param array         Array Handle.
+ * @return              The blocksize of the array.
+ * @error               Invalid Handle
  */
 native int GetArrayBlockSize(Handle array);

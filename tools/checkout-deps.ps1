@@ -18,11 +18,21 @@ param(
         'tf2',
         'insurgency',
         'sdk2013',
-        'dota'
+        'dota',
+        'orangebox',
+        'blade',
+        'episode1',
+        'bms',
+        'darkm',
+        'swarm',
+        'bgt',
+        'eye',
+        'contagion',
+        'doi'
         )
 )
 
-Function Checkout-Repo
+Function Get-Repository
 {
     param(
         [Parameter(Mandatory=$true)][string]$Name,
@@ -37,16 +47,23 @@ Function Checkout-Repo
         If ($Origin)
         {
             Set-Location $Name
-            & git  remote rm origin 2>&1 | Write-Host
-            & git remote add origin $Origin 2>&1 | Write-Host
+            & git remote set-url origin $Origin 2>&1 | Write-Host
             Set-Location ..
         }
     }
     Else
     {
         Set-Location $Name
+        If ($Origin)
+        {
+            & git remote set-url origin ..\$Repo 2>&1 | Write-Host
+        }
         & git checkout $Branch 2>&1 | Write-Host
         & git pull origin $Branch 2>&1 | Write-Host
+        If ($Origin)
+        {
+            & git remote set-url origin $Origin 2>&1 | Write-Host
+        }
         Set-Location ..
     }
 }
@@ -57,7 +74,7 @@ if (-not (Test-Path "sourcemod" -PathType Container))
     Exit 1
 }
 
-Checkout-Repo -Name "mmsource-1.10" -Branch "1.10-dev" -Repo "https://github.com/alliedmodders/metamod-source.git"
+Get-Repository -Name "mmsource-1.10" -Branch "1.10-dev" -Repo "https://github.com/alliedmodders/metamod-source.git"
 
 if (-not (Test-Path "hl2sdk-proxy-repo" -PathType Container))
 {
@@ -70,12 +87,49 @@ else
     Set-Location ..
 }
 
-$SDKS | % {
-    Checkout-Repo -Name "hl2sdk-$_" -Branch $_ "hl2sdk-proxy-repo" -Repo "https://github.com/alliedmodders/hl2sdk.git"
+$SDKS | ForEach-Object {
+    Get-Repository -Name "hl2sdk-$_" -Branch $_ -Repo "hl2sdk-proxy-repo" "https://github.com/alliedmodders/hl2sdk.git"
 }
 
-Checkout-Repo -Name "ambuild" -Branch "master" -Repo "https://github.com/alliedmodders/ambuild.git"
-Set-Location ambuild
-& python setup.py install
+# Find a suitable installation of Python
+$PYTHON_CMD = Get-Command 'python3' -ErrorAction SilentlyContinue
+if ($NULL -eq $PYTHON_CMD)
+{
+    $PYTHON_CMD = Get-Command 'python' -ErrorAction SilentlyContinue
+    if ($NULL -eq $PYTHON_CMD)
+    {
+        $PYTHON_CMD = Get-Command 'py' -ErrorAction SilentlyContinue
+        if ($NULL -eq $PYTHON_CMD)
+        {
+            Write-Error 'No suitable installation of Python detected'
+            Exit 1
+        }
+    }
+}
 
-Set-Location ..
+$PYTHON_CMD = $PYTHON_CMD.Source # Convert the result into a string path.
+
+& $PYTHON_CMD -c 'import ambuild2' 2>&1 1>$NULL
+if ($LastExitCode -eq 1)
+{
+    Write-Host -ForegroundColor Red "AMBuild is required to build SourceMod"
+
+    # Ensure PIP is installed, otherwise, install it.
+    & $PYTHON_CMD -m pip --version 2>&1 1>$NULL # We use PIP's '--version' as it's the least verbose.
+    if ($LastExitCode -eq 1) {
+        Write-Host -ForegroundColor Red 'The detected Python installation does not have PIP'
+        Write-Host 'Installing the latest version of PIP available (VIA "get-pip.py")'
+
+        $GET_PIP = Join-Path $(Resolve-Path './') 'get-pip.py'
+        Invoke-WebRequest -Uri "https://bootstrap.pypa.io/get-pip.py" -OutFile $GET_PIP
+
+        & $PYTHON_CMD $GET_PIP
+        if ($LastExitCode -eq 1) {
+            Write-Error 'Installation of PIP has failed'
+            Exit 1
+        }
+    }
+
+    Get-Repository -Name "ambuild" -Branch "master" -Repo "https://github.com/alliedmodders/ambuild.git"
+    & $PYTHON_CMD -m pip install ./ambuild
+}

@@ -63,7 +63,7 @@ class CommandHook : public ke::Refcounted<CommandHook>
 {
 public:
 	// return false to RETURN_META(MRES_IGNORED), or true to SUPERCEDE.
-	typedef ke::Lambda<bool(int, const ICommandArgs *)> Callback;
+	typedef ke::Function<bool(int, const ICommandArgs *)> Callback;
 
 public:
 	CommandHook(ConCommand *cmd, const Callback &callback, bool post);
@@ -114,11 +114,11 @@ private:
 	void SetCommandClient(int client);
 
 private:
-	class HookList : public ke::Vector<int>
+	class HookList : public std::vector<int>
 	{
 	public:
 		HookList &operator += (int hook_id) {
-			this->append(hook_id);
+			this->push_back(hook_id);
 			return *this;
 		}
 	};

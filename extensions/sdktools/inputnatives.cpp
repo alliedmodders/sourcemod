@@ -32,6 +32,7 @@
 #include "extension.h"
 #include "variant-t.h"
 #include <datamap.h>
+#include <sm_argbuffer.h>
 
 ICallWrapper *g_pAcceptInput = NULL;
 
@@ -79,9 +80,6 @@ static cell_t AcceptEntityInput(IPluginContext *pContext, const cell_t *params)
 	CBaseEntity *pActivator, *pCaller, *pDest;
 
 	char *inputname;
-	unsigned char vstk[sizeof(void *) + sizeof(const char *) + sizeof(CBaseEntity *)*2 + SIZEOF_VARIANT_T + sizeof(int)];
-	unsigned char *vptr = vstk;
-
 	ENTINDEX_TO_CBASEENTITY(params[1], pDest);
 	pContext->LocalToString(params[2], &inputname);
 	if (params[3] == -1)
@@ -97,19 +95,9 @@ static cell_t AcceptEntityInput(IPluginContext *pContext, const cell_t *params)
 		ENTINDEX_TO_CBASEENTITY(params[4], pCaller);
 	}
 
-	*(void **)vptr = pDest;
-	vptr += sizeof(void *);
-	*(const char **)vptr = inputname;
-	vptr += sizeof(const char *);
-	*(CBaseEntity **)vptr = pActivator;
-	vptr += sizeof(CBaseEntity *);
-	*(CBaseEntity **)vptr = pCaller;
-	vptr += sizeof(CBaseEntity *);
-	memcpy(vptr, g_Variant_t, SIZEOF_VARIANT_T);
-	vptr += SIZEOF_VARIANT_T;
-	*(int *)vptr = params[5];
+	ArgBuffer<void*, const char*, CBaseEntity*, CBaseEntity*, decltype(g_Variant_t), int> vstk(pDest, inputname, pActivator, pCaller, g_Variant_t, params[5]);
 
-	bool ret;
+	bool ret = false;
 	g_pAcceptInput->Execute(vstk, &ret);
 
 	_init_variant_t();

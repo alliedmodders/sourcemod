@@ -32,6 +32,7 @@
 #include "MyDriver.h"
 #include "MyDatabase.h"
 #include "smsdk_ext.h"
+#include "am-string.h"
 
 MyDriver g_MyDriver;
 
@@ -133,7 +134,7 @@ MYSQL *Connect(const DatabaseInfo *info, char *error, size_t maxlength)
 		M_CLIENT_MULTI_RESULTS))
 	{
 		/* :TODO: expose UTIL_Format from smutil! */
-		snprintf(error, maxlength, "[%d]: %s", mysql_errno(mysql), mysql_error(mysql));
+		ke::SafeSprintf(error, maxlength, "[%d]: %s", mysql_errno(mysql), mysql_error(mysql));
 		mysql_close(mysql);
 		return NULL;
 	}
@@ -159,7 +160,7 @@ bool CompareField(const char *str1, const char *str2)
 
 IDatabase *MyDriver::Connect(const DatabaseInfo *info, bool persistent, char *error, size_t maxlength)
 {
-	ke::AutoLock lock(&m_Lock);
+	std::lock_guard<std::mutex> lock(m_Lock);
 
 	if (persistent)
 	{
@@ -201,7 +202,7 @@ IDatabase *MyDriver::Connect(const DatabaseInfo *info, bool persistent, char *er
 
 void MyDriver::RemoveFromList(MyDatabase *pdb, bool persistent)
 {
-	ke::AutoLock lock(&m_Lock);
+	std::lock_guard<std::mutex> lock(m_Lock);
 	if (persistent)
 	{
 		m_PermDbs.remove(pdb);
@@ -223,7 +224,7 @@ void MyDriver::ShutdownThreadSafety()
 	mysql_thread_end();
 }
 
-unsigned int strncopy(char *dest, const char *src, size_t count)
+size_t strncopy(char *dest, const char *src, size_t count)
 {
 	if (!count)
 	{

@@ -1,7 +1,7 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-project = SM.HL2Project(builder, 'sdkhooks.ext')
+project = builder.LibraryProject('sdkhooks.ext')
 project.sources += [
   'extension.cpp',
   'natives.cpp',
@@ -13,11 +13,11 @@ project.sources += [
 for sdk_name in SM.sdks:
   sdk = SM.sdks[sdk_name]
 
-  for arch in SM.archs:
-    if not arch in sdk.platformSpec[builder.target.platform]:
+  for cxx in builder.targets:
+    if not cxx.target.arch in sdk.platformSpec[cxx.target.platform]:
       continue
   
-    binary = SM.HL2Config(project, 'sdkhooks.ext.' + sdk.ext, sdk, arch)
+    binary = SM.HL2ExtConfig(project, builder, cxx, 'sdkhooks.ext.' + sdk.ext, sdk)
     binary.compiler.cxxincludes += [
       os.path.join(sdk.path, 'game', 'shared')
     ]

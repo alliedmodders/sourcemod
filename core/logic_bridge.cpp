@@ -45,34 +45,14 @@
 #include "ConCmdManager.h"
 #include "IDBDriver.h"
 #include "provider.h"
-#if SOURCE_ENGINE >= SE_ALIENSWARM
-# include "convar_sm_swarm.h"
-#elif SOURCE_ENGINE >= SE_LEFT4DEAD
-# include "convar_sm_l4d.h"
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
-# include "convar_sm_ob.h"
-#else
-# include "convar_sm.h"
-#endif
+#include "sm_convar.h"
 #include <amtl/os/am-shared-library.h>
 #include <amtl/os/am-path.h>
 #include <bridge/include/IVEngineServerBridge.h>
 #include <bridge/include/IPlayerInfoBridge.h>
 #include <bridge/include/IFileSystemBridge.h>
-
-#if defined _WIN32
-# define MATCHMAKINGDS_SUFFIX	""
-# define MATCHMAKINGDS_EXT	"dll"
-#elif defined __APPLE__
-# define MATCHMAKINGDS_SUFFIX	""
-# define MATCHMAKINGDS_EXT	"dylib"
-#elif defined __linux__
-#if SOURCE_ENGINE < SE_LEFT4DEAD2
-# define MATCHMAKINGDS_SUFFIX	"_i486"
-#else
-# define MATCHMAKINGDS_SUFFIX	""
-#endif
-# define MATCHMAKINGDS_EXT	"so"
+#if PROTOBUF_PROXY_ENABLE
+# include "pb_handle.h"
 #endif
 
 sm_logic_t logicore;
@@ -650,15 +630,7 @@ void CoreProviderImpl::InitializeBridge()
 	this->serverFactory = (void *)g_SMAPI->GetServerFactory(false);
 	this->listeners = SMGlobalClass::head;
 
-	char path[PLATFORM_MAX_PATH];
-
-	ke::path::Format(path, sizeof(path),
-	                 "%s/bin/" PLATFORM_FOLDER "matchmaking_ds%s.%s",
-                     g_SMAPI->GetBaseDir(),
-                     MATCHMAKINGDS_SUFFIX,
-                     MATCHMAKINGDS_EXT);
-
-	if (ke::RefPtr<ke::SharedLib> mmlib = ke::SharedLib::Open(path, NULL, 0)) {
+	if (ke::RefPtr<ke::SharedLib> mmlib = ke::SharedLib::Open(FORMAT_SOURCE_BIN_NAME("matchmaking_ds"), NULL, 0)) {
 		this->matchmakingDSFactory =
 		  mmlib->get<decltype(sCoreProviderImpl.matchmakingDSFactory)>("CreateInterface");
 	}
@@ -684,6 +656,41 @@ void CoreProviderImpl::InitializeBridge()
 	rootmenu = logicore.rootmenu;
 }
 
+bool CoreProviderImpl::LoadProtobufProxy(char *error, size_t maxlength)
+{
+#if !defined(PROTOBUF_PROXY_ENABLE)
+	return false;
+#else
+	char file[PLATFORM_MAX_PATH];
+
+#if !defined(PROTOBUF_PROXY_BINARY_NAME)
+# error "No engine suffix defined"
+#endif
+
+	/* Now it's time to load the logic binary */
+	g_SMAPI->PathFormat(file,
+		sizeof(file),
+		"%s/bin/" PLATFORM_ARCH_FOLDER PROTOBUF_PROXY_BINARY_NAME PLATFORM_LIB_EXT,
+		g_SourceMod.GetSourceModPath());
+
+	char myerror[255];
+	pbproxy_ = ke::SharedLib::Open(file, myerror, sizeof(myerror));
+	if (!pbproxy_) {
+		ke::SafeSprintf(error, maxlength, "failed to load %s: %s", file, myerror);
+		return false;
+	}
+
+	auto fn = pbproxy_->get<GetProtobufProxyFn>("GetProtobufProxy");
+	if (!fn) {
+		ke::SafeStrcpy(error, maxlength, "could not find GetProtobufProxy function");
+		return false;
+	}
+
+	gProtobufProxy = fn();
+	return true;
+#endif
+}
+
 bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)
 {
 	char file[PLATFORM_MAX_PATH];
@@ -704,7 +711,7 @@ bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)
 	LogicLoadFunction llf = logic_->get<decltype(llf)>("logic_load");
 	if (!llf) {
 		logic_ = nullptr;
-		ke::SafeSprintf(error, maxlength, "could not find logic_load function");
+		ke::SafeStrcpy(error, maxlength, "could not find logic_load function");
 		return false;
 	}
 
@@ -713,7 +720,7 @@ bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)
 
 	logic_init_ = llf(SM_LOGIC_MAGIC);
 	if (!logic_init_) {
-		ke::SafeSprintf(error, maxlength, "component version mismatch");
+		ke::SafeStrcpy(error, maxlength, "component version mismatch");
 		return false;
 	}
 	return true;
@@ -761,7 +768,7 @@ CoreProviderImpl::DefineCommand(const char *name, const char *help, const Comman
 	ke::RefPtr<CommandHook> hook = AddCommandHook(cmd, callback);
 
 	ke::RefPtr<CommandImpl> impl = new CommandImpl(cmd, hook);
-	commands_.append(impl);
+	commands_.push_back(impl);
 }
 
 void CoreProviderImpl::InitializeHooks()

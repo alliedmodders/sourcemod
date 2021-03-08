@@ -29,8 +29,6 @@
  * Version: $Id$
  */
 
-#include <am-moveable.h>
-
 #ifndef _include_sourcemod_namehashset_h_
 #define _include_sourcemod_namehashset_h_
 
@@ -48,10 +46,12 @@
 namespace SourceMod
 {
 
-// The HashPolicy type must have this method:
+// The HashPolicy type must have these methods:
 // 		static bool matches(const char *key, const T &value);
+// 		static uint32_t hash(const CharsAndLength &key);
 //
-// Depending on what lookup types are used.
+// Depending on what lookup types are used, and how hashing should be done.
+// Most of the time, key hashing will just call the key's hash() method.
 //
 // If these members are available on T, then the HashPolicy type can be left
 // default. It is okay to use |T *|, the functions will still be looked up
@@ -69,12 +69,12 @@ class NameHashSet : public ke::SystemAllocatorPolicy
 
 		static uint32_t hash(const CharsAndLength &key)
 		{
-			return key.hash();
+			return KeyPolicyType::hash(key);
 		}
 
 		static bool matches(const CharsAndLength &key, const KeyType &value)
 		{
-			return KeyPolicyType::matches(key.chars(), value);
+			return KeyPolicyType::matches(key.c_str(), value);
 		}
 	};
 
@@ -85,14 +85,14 @@ class NameHashSet : public ke::SystemAllocatorPolicy
 	{
 		typedef KeyType *Payload;
 
-		static uint32_t hash(const detail::CharsAndLength &key)
+		static uint32_t hash(const CharsAndLength &key)
 		{
-			return key.hash();
+			return KeyType::hash(key);
 		}
 
 		static bool matches(const CharsAndLength &key, const KeyType *value)
 		{
-			return KeyType::matches(key.chars(), value);
+			return KeyType::matches(key.c_str(), value);
 		}
 	};
 
@@ -122,7 +122,7 @@ public:
 	template <typename U>
 	bool add(Insert &i, U &&value)
 	{
-		return table_.add(i, ke::Forward<U>(value));
+		return table_.add(i, std::forward<U>(value));
 	}
 
 	bool retrieve(const char *aKey, T *value)
@@ -142,7 +142,7 @@ public:
 		Insert i = table_.findForAdd(key);
 		if (i.found())
 			return false;
-		return table_.add(i, ke::Forward<U>(value));
+		return table_.add(i, std::forward<U>(value));
 	}
 
 	bool contains(const char *aKey)

@@ -43,6 +43,7 @@
 #include <sp_vm_api.h>
 #include <sm_platform.h>
 #include <ISourceMod.h>
+#include "am-string.h"
 #if defined SMEXT_ENABLE_FORWARDSYS
 #include <IForwardSys.h>
 #endif //SMEXT_ENABLE_FORWARDSYS
@@ -327,7 +328,7 @@ extern IServerGameDLL *gamedll;
 	{ \
 		if (error != NULL && maxlength) \
 		{ \
-			size_t len = snprintf(error, maxlength, "Could not find interface: %s", SMINTERFACE_##prefix##_NAME); \
+			size_t len = ke::SafeSprintf(error, maxlength, "Could not find interface: %s", SMINTERFACE_##prefix##_NAME); \
 			if (len >= maxlength) \
 			{ \
 				error[maxlength - 1] = '\0'; \
@@ -344,7 +345,7 @@ extern IServerGameDLL *gamedll;
 	{ \
 		if (error != NULL && maxlength) \
 		{ \
-			size_t len = snprintf(error, maxlength, "Could not find interface: %s", SMINTERFACE_##prefix##_NAME); \
+			size_t len = ke::SafeSprintf(error, maxlength, "Could not find interface: %s", SMINTERFACE_##prefix##_NAME); \
 			if (len >= maxlength) \
 			{ \
 				error[maxlength - 1] = '\0'; \

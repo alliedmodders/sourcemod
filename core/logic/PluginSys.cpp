@@ -31,7 +31,6 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#include <ctype.h>
 #include "PluginSys.h"
 #include "ShareSys.h"
 #include <ILibrarySys.h>
@@ -46,8 +45,6 @@
 #include "Logger.h"
 #include "frame_tasks.h"
 #include <amtl/am-string.h>
-#include <amtl/am-linkedlist.h>
-#include <amtl/am-uniqueptr.h>
 #include <bridge/include/IVEngineServerBridge.h>
 #include <bridge/include/CoreProvider.h>
 
@@ -77,11 +74,11 @@ CPlugin::CPlugin(const char *file)
 	m_serial = ++MySerial;
 	m_errormsg[0] = '\0';
 	m_DateTime[0] = '\0';
-	ke::SafeSprintf(m_filename, sizeof(m_filename), "%s", file);
+	ke::SafeStrcpy(m_filename, sizeof(m_filename), file);
 
 	memset(&m_info, 0, sizeof(m_info));
 
-	m_pPhrases = g_Translator.CreatePhraseCollection();
+	m_pPhrases.reset(g_Translator.CreatePhraseCollection());
 }
 
 CPlugin::~CPlugin()
@@ -229,7 +226,7 @@ bool CPlugin::SetProperty(const char *prop, void *ptr)
 
 IPluginRuntime *CPlugin::GetRuntime()
 {
-	return m_pRuntime;
+	return m_pRuntime.get();
 }
 
 void CPlugin::EvictWithError(PluginStatus status, const char *error_fmt, ...)
@@ -278,7 +275,7 @@ bool CPlugin::ReadInfo()
 		sm_plugininfo_c_t *cinfo;
 		cell_t local_addr;
 
-		auto update_field = [base](cell_t addr, ke::AString *dest) {
+		auto update_field = [base](cell_t addr, std::string *dest) {
 			const char* ptr;
 			if (base->LocalToString(addr, (char **)&ptr) == SP_ERROR_NONE)
 				*dest = ptr;
@@ -485,7 +482,7 @@ bool CPlugin::TryCompile()
 	g_pSM->BuildPath(Path_SM, fullpath, sizeof(fullpath), "plugins/%s", m_filename);
 
 	char loadmsg[255];
-	m_pRuntime = g_pSourcePawn2->LoadBinaryFromFile(fullpath, loadmsg, sizeof(loadmsg));
+	m_pRuntime.reset(g_pSourcePawn2->LoadBinaryFromFile(fullpath, loadmsg, sizeof(loadmsg)));
 	if (!m_pRuntime) {
 		EvictWithError(Plugin_BadLoad, "Unable to load plugin (%s)", loadmsg);
 		return false;
@@ -526,11 +523,11 @@ PluginType CPlugin::GetType()
 
 const sm_plugininfo_t *CPlugin::GetPublicInfo()
 {
-	m_info.author = info_author_.chars();
-	m_info.description = info_description_.chars();
-	m_info.name = info_name_.chars();
-	m_info.url = info_url_.chars();
-	m_info.version = info_version_.chars();
+	m_info.author = info_author_.c_str();
+	m_info.description = info_description_.c_str();
+	m_info.name = info_name_.c_str();
+	m_info.url = info_url_.c_str();
+	m_info.version = info_version_.c_str();
 	return &m_info;
 }
 
@@ -660,7 +657,7 @@ time_t CPlugin::GetFileTimeStamp()
 
 IPhraseCollection *CPlugin::GetPhrases()
 {
-	return m_pPhrases;
+	return m_pPhrases.get();
 }
 
 void CPlugin::DependencyDropped(CPlugin *pOwner)
@@ -676,7 +673,7 @@ void CPlugin::DependencyDropped(CPlugin *pOwner)
 	}
 
 	unsigned int unbound = 0;
-	for (size_t i = 0; i < pOwner->m_fakes.length(); i++)
+	for (size_t i = 0; i < pOwner->m_fakes.size(); i++)
 	{
 		ke::RefPtr<Native> entry(pOwner->m_fakes[i]);
 
@@ -775,13 +772,13 @@ bool CPlugin::AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKEN
 	if (!entry)
 		return false;
 
-	m_fakes.append(entry);
+	m_fakes.push_back(entry);
 	return true;
 }
 
 void CPlugin::BindFakeNativesTo(CPlugin *other)
 {
-	for (size_t i = 0; i < m_fakes.length(); i++)
+	for (size_t i = 0; i < m_fakes.size(); i++)
 		g_ShareSys.BindNativeToPlugin(other, m_fakes[i]);
 }
 
@@ -792,7 +789,7 @@ void CPlugin::BindFakeNativesTo(CPlugin *other)
 CPluginManager::CPluginIterator::CPluginIterator(ReentrantList<CPlugin *>& in)
 {
 	for (PluginIter iter(in); !iter.done(); iter.next())
-		mylist.append(*iter);
+		mylist.push_back(*iter);
 	current = mylist.begin();
 	g_PluginSys.AddPluginsListener(this);
 }
@@ -849,11 +846,7 @@ CPluginManager::~CPluginManager()
 
 void CPluginManager::Shutdown()
 {
-	List<CPlugin *>::iterator iter;
-
-	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
-		UnloadPlugin(*iter);
-	}
+	UnloadAll();
 }
 
 void CPluginManager::LoadAll(const char *config_path, const char *plugins_path)
@@ -907,7 +900,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 			if (localpath == NULL)
 			{
 				/* If no path yet, don't add a former slash */
-				ke::SafeSprintf(new_local, sizeof(new_local), "%s", dir->GetEntryName());
+				ke::SafeStrcpy(new_local, sizeof(new_local), dir->GetEntryName());
 			} else {
 				libsys->PathFormat(new_local, sizeof(new_local), "%s/%s", localpath, dir->GetEntryName());
 			}
@@ -922,7 +915,7 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 				char plugin[PLATFORM_MAX_PATH];
 				if (localpath == NULL)
 				{
-					ke::SafeSprintf(plugin, sizeof(plugin), "%s", name);
+					ke::SafeStrcpy(plugin, sizeof(plugin), name);
 				} else {
 					libsys->PathFormat(plugin, sizeof(plugin), "%s/%s", localpath, name);
 				}
@@ -934,38 +927,16 @@ void CPluginManager::LoadPluginsFromDir(const char *basedir, const char *localpa
 	libsys->CloseDirectory(dir);
 }
 
-#if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
-char *strdup_tolower(const char *input)
-{
-	char *str = strdup(input);
-	
-	for (char *c = str; *c; c++)
-	{
-		*c = tolower((unsigned char)*c);
-	}
-	
-	return str;
-}
-#endif
-
 LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool debug, PluginType type)
 {
 	if (m_LoadingLocked)
 		return LoadRes_NeverLoad;
 
-/* For windows & mac, we convert the path to lower-case in order to avoid duplicate plugin loading */
-#if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
-	ke::UniquePtr<char> finalPath = ke::UniquePtr<char>(strdup_tolower(path));
-#else 
-	ke::UniquePtr<char> finalPath = ke::UniquePtr<char>(strdup(path));
-#endif
-
-
 	/**
 	 * Does this plugin already exist?
 	 */
 	CPlugin *pPlugin;
-	if (m_LoadLookup.retrieve(finalPath.get(), &pPlugin))
+	if (m_LoadLookup.retrieve(path, &pPlugin))
 	{
 		/* Check to see if we should try reloading it */
 		if (pPlugin->GetStatus() == Plugin_BadLoad
@@ -978,12 +949,11 @@ LoadRes CPluginManager::LoadPlugin(CPlugin **aResult, const char *path, bool deb
 		{
 			if (aResult)
 				*aResult = pPlugin;
-			
 			return LoadRes_AlreadyLoaded;
 		}
 	}
 
-	CPlugin *plugin = CompileAndPrep(finalPath.get());
+	CPlugin *plugin = CompileAndPrep(path);
 
 	// Assign our outparam so we can return early. It must be set.
 	*aResult = plugin;
@@ -1004,6 +974,20 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 	LoadRes res;
 
 	*wasloaded = false;
+
+	if (strstr(path, "..") != NULL)
+	{
+		ke::SafeStrcpy(error, maxlength, "Cannot load plugins outside the \"plugins\" folder");
+		return NULL;
+	}
+
+	const char *ext = libsys->GetFileExtension(path);
+	if (!ext || strcmp(ext, "smx") != 0)
+	{
+		ke::SafeStrcpy(error, maxlength, "Plugin files must have the \".smx\" file extension");
+		return NULL;
+	}
+
 	if ((res=LoadPlugin(&pl, path, true, PluginType_MapUpdated)) == LoadRes_Failure)
 	{
 		ke::SafeStrcpy(error, maxlength, pl->GetErrorMsg());
@@ -1019,9 +1003,9 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 
 	if (res == LoadRes_NeverLoad) {
 		if (m_LoadingLocked)
-			ke::SafeSprintf(error, maxlength, "There is a global plugin loading lock in effect");
+			ke::SafeStrcpy(error, maxlength, "There is a global plugin loading lock in effect");
 		else
-			ke::SafeSprintf(error, maxlength, "This plugin is blocked from loading (see plugin_settings.cfg)");
+			ke::SafeStrcpy(error, maxlength, "This plugin is blocked from loading (see plugin_settings.cfg)");
 		return NULL;
 	}
 
@@ -1058,7 +1042,7 @@ void CPluginManager::LoadAutoPlugin(const char *plugin)
 
 void CPluginManager::AddPlugin(CPlugin *pPlugin)
 {
-	m_plugins.append(pPlugin);
+	m_plugins.push_back(pPlugin);
 	m_LoadLookup.insert(pPlugin->GetFilename(), pPlugin);
 
 	pPlugin->SetRegistered();
@@ -1190,7 +1174,7 @@ bool CPlugin::ForEachExtVar(const ExtVarCallback& callback)
 	return true;
 }
 
-void CPlugin::ForEachLibrary(ke::Lambda<void(const char *)> callback)
+void CPlugin::ForEachLibrary(ke::Function<void(const char *)> callback)
 {
 	for (auto iter = m_Libraries.begin(); iter != m_Libraries.end(); iter++)
 		callback((*iter).c_str());
@@ -1202,7 +1186,7 @@ void CPlugin::AddRequiredLib(const char *name)
 		m_RequiredLibs.push_back(name);
 }
 
-bool CPlugin::ForEachRequiredLib(ke::Lambda<bool(const char *)> callback)
+bool CPlugin::ForEachRequiredLib(ke::Function<bool(const char *)> callback)
 {
 	for (auto iter = m_RequiredLibs.begin(); iter != m_RequiredLibs.end(); iter++) {
 		if (!callback((*iter).c_str()))
@@ -1236,7 +1220,7 @@ void CPluginManager::LoadExtensions(CPlugin *pPlugin)
 		}
 		return true;
 	};
-	pPlugin->ForEachExtVar(ke::Move(callback));
+	pPlugin->ForEachExtVar(std::move(callback));
 }
 
 bool CPluginManager::RequireExtensions(CPlugin *pPlugin)
@@ -1272,7 +1256,7 @@ bool CPluginManager::RequireExtensions(CPlugin *pPlugin)
 		return true;
 	};
 
-	return pPlugin->ForEachExtVar(ke::Move(callback));
+	return pPlugin->ForEachExtVar(std::move(callback));
 }
 
 CPlugin *CPluginManager::CompileAndPrep(const char *path)
@@ -1302,7 +1286,7 @@ bool CPluginManager::MalwareCheckPass(CPlugin *pPlugin)
 	unsigned char *pCodeHash = pPlugin->GetRuntime()->GetCodeHash();
 
 	char codeHashBuf[40];
-	ke::SafeSprintf(codeHashBuf, 40, "plugin_");
+	ke::SafeStrcpy(codeHashBuf, sizeof(codeHashBuf), "plugin_");
 	for (int i = 0; i < 16; i++)
 		ke::SafeSprintf(codeHashBuf + 7 + (i * 2), 3, "%02x", pCodeHash[i]);
 
@@ -1561,12 +1545,12 @@ CPlugin *CPluginManager::GetPluginByCtx(const sp_context_t *ctx)
 
 unsigned int CPluginManager::GetPluginCount()
 {
-	return m_plugins.length();
+	return m_plugins.size();
 }
 
 void CPluginManager::AddPluginsListener(IPluginsListener *listener)
 {
-	m_listeners.append(listener);
+	m_listeners.push_back(listener);
 }
 
 void CPluginManager::RemovePluginsListener(IPluginsListener *listener)
@@ -1632,7 +1616,7 @@ ConfigResult CPluginManager::OnSourceModConfigChanged(const char *key,
 		} else if (strcasecmp(value, "no") == 0) {
 			m_bBlockBadPlugins = false;
 		} else {
-			ke::SafeSprintf(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
+			ke::SafeStrcpy(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
 			return ConfigResult_Reject;
 		}
 		return ConfigResult_Accept;
@@ -1726,6 +1710,9 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 			char buffer[256];
 			unsigned int id = 1;
 			int plnum = GetPluginCount();
+			char plstr[10];
+			ke::SafeSprintf(plstr, sizeof(plstr), "%d", plnum);
+			int plpadding = strlen(plstr);
 
 			if (!plnum)
 			{
@@ -1734,10 +1721,10 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 			}
 			else
 			{
-				rootmenu->ConsolePrint("[SM] Listing %d plugin%s:", GetPluginCount(), (plnum > 1) ? "s" : "");
+				rootmenu->ConsolePrint("[SM] Listing %d plugin%s:", plnum, (plnum > 1) ? "s" : "");
 			}
 
-			ke::LinkedList<CPlugin *> fail_list;
+			std::list<CPlugin *> fail_list;
 
 			for (PluginIter iter(m_plugins); !iter.done(); iter.next(), id++) {
 				CPlugin *pl = (*iter);
@@ -1746,19 +1733,19 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				const sm_plugininfo_t *info = pl->GetPublicInfo();
 				if (pl->GetStatus() != Plugin_Running && !pl->IsSilentlyFailed())
 				{
-					len += ke::SafeSprintf(buffer, sizeof(buffer), "  %02d <%s>", id, GetStatusText(pl->GetDisplayStatus()));
+					len += ke::SafeSprintf(buffer, sizeof(buffer), "  %0*d <%s>", plpadding, id, GetStatusText(pl->GetDisplayStatus()));
 
 					/* Plugin has failed to load. */
-					fail_list.append(pl);
+					fail_list.push_back(pl);
 				}
 				else
 				{
-					len += ke::SafeSprintf(buffer, sizeof(buffer), "  %02d", id);
+					len += ke::SafeSprintf(buffer, sizeof(buffer), "  %0*d", plpadding, id);
 				}
 				if (pl->GetStatus() < Plugin_Created || pl->GetStatus() == Plugin_Evicted)
 				{
 					if (pl->IsSilentlyFailed())
-						len += ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " Disabled:");
+						len += ke::SafeStrcpy(&buffer[len], sizeof(buffer)-len, " Disabled:");
 					len += ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " \"%s\"", (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
 					if (IS_STR_FILLED(info->version))
 					{
@@ -1867,11 +1854,11 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 			if (pl->GetStatus() < Plugin_Created)
 			{
 				const sm_plugininfo_t *info = pl->GetPublicInfo();
-				ke::SafeSprintf(name, sizeof(name), (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
+				ke::SafeStrcpy(name, sizeof(name), (IS_STR_FILLED(info->name)) ? info->name : pl->GetFilename());
 			}
 			else
 			{
-				ke::SafeSprintf(name, sizeof(name), "%s", pl->GetFilename());
+				ke::SafeStrcpy(name, sizeof(name), pl->GetFilename());
 			}
 
 			if (UnloadPlugin(pl))
@@ -1983,11 +1970,11 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				if (IPluginRuntime *runtime = pl->GetRuntime()) {
 				  unsigned char *pCodeHash = runtime->GetCodeHash();
 				  unsigned char *pDataHash = runtime->GetDataHash();
-				  
+
 				  char combinedHash[33];
 				  for (int i = 0; i < 16; i++)
 				  	ke::SafeSprintf(combinedHash + (i * 2), 3, "%02x", pCodeHash[i] ^ pDataHash[i]);
-				  
+
 				  rootmenu->ConsolePrint("  Hash: %s", combinedHash);
 				}
 			} else {
@@ -2055,7 +2042,8 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 					//the unload/reload attempt next frame will print a message
 					case PluginState::WaitingToUnload:
 					case PluginState::WaitingToUnloadAndReload:
-						return;
+						rootmenu->ConsolePrint("[SM] Plugin %s will be reloaded on the next frame.", name);
+						break;
 
 					default:
 						rootmenu->ConsolePrint("[SM] Failed to reload plugin %s.", name);
@@ -2085,7 +2073,7 @@ bool CPluginManager::ReloadPlugin(CPlugin *pl, bool print)
 	if (state == PluginState::WaitingToUnloadAndReload)
 		return false;
 
-	ke::AString filename(pl->GetFilename());
+	std::string filename(pl->GetFilename());
 	PluginType ptype = pl->GetType();
 
 	int id = 1;
@@ -2100,13 +2088,13 @@ bool CPluginManager::ReloadPlugin(CPlugin *pl, bool print)
 		{
 			pl->SetWaitingToUnload(true);
 			ScheduleTaskForNextFrame([this, id, filename, ptype, print]() -> void {
-				ReloadPluginImpl(id, filename.chars(), ptype, print);
+				ReloadPluginImpl(id, filename.c_str(), ptype, print);
 			});
 		}
 		return false;
 	}
 
-	ReloadPluginImpl(id, filename.chars(), ptype, false);
+	ReloadPluginImpl(id, filename.c_str(), ptype, false);
 	return true;
 }
 
@@ -2115,7 +2103,7 @@ void CPluginManager::ReloadPluginImpl(int id, const char filename[], PluginType 
 	char error[128];
 	bool wasloaded;
 	IPlugin *newpl = LoadPlugin(filename, true, ptype, error, sizeof(error), &wasloaded);
-	if (!newpl) 
+	if (!newpl)
 	{
 		rootmenu->ConsolePrint("[SM] Plugin %s failed to reload: %s.", filename, error);
 		return;
@@ -2230,7 +2218,6 @@ void CPluginManager::UnloadAll()
 int CPluginManager::GetOrderOfPlugin(IPlugin *pl)
 {
 	int id = 1;
-	List<CPlugin *>::iterator iter;
 
 	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 		if ((*iter) == pl)
@@ -2295,7 +2282,7 @@ void CPluginManager::FreePluginList(const CVector<SMPlugin *> *list)
 	delete const_cast<CVector<SMPlugin *> *>(list);
 }
 
-void CPluginManager::ForEachPlugin(ke::Lambda<void(CPlugin *)> callback)
+void CPluginManager::ForEachPlugin(ke::Function<void(CPlugin *)> callback)
 {
 	for (PluginIter iter(m_plugins); !iter.done(); iter.next())
 		callback(*iter);
@@ -2373,7 +2360,7 @@ public:
 	{
 		ke::RefPtr<PluginsListenerV1Wrapper> wrapper = new PluginsListenerV1Wrapper(listener);
 
-		v1_wrappers_.append(wrapper);
+		v1_wrappers_.push_back(wrapper);
 		g_PluginSys.AddPluginsListener(wrapper);
 	}
 

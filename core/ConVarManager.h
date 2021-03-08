@@ -43,6 +43,7 @@
 #include <compat_wrappers.h>
 #include "concmd_cleaner.h"
 #include "PlayerManager.h"
+#include <sm_stringhashmap.h>
 
 using namespace SourceHook;
 
@@ -63,10 +64,24 @@ struct ConVarInfo
 	ConVar *pVar;						/**< The actual convar */
 	List<IConVarChangeListener *> changeListeners;
 
-	static inline bool matches(const char *name, const ConVarInfo *info)
+	struct ConVarPolicy
 	{
-		return strcmp(name, info->pVar->GetName()) == 0;
-	}
+		static inline bool matches(const char *name, ConVarInfo *info)
+		{
+			const char *conVarChars = info->pVar->GetName();
+
+			std::string convarName = ke::Lowercase(conVarChars);
+			std::string input = ke::Lowercase(name);
+
+			return convarName == input;
+		}
+
+		static inline uint32_t hash(const detail::CharsAndLength &key)
+		{
+			std::string lower = ke::Lowercase(key.c_str());
+			return detail::CharsAndLength(lower.c_str()).hash();
+		}
+	};
 };
 
 /**

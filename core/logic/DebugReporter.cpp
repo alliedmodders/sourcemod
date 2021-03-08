@@ -29,11 +29,11 @@
  * Version: $Id$
  */
 
+#include <ISourceMod.h>
 #include <IPluginSys.h>
 #include <stdarg.h>
 #include "DebugReporter.h"
 #include "Logger.h"
-#include <am-string.h>
 
 DebugReport g_DbgReporter;
 
@@ -194,35 +194,53 @@ void DebugReport::ReportError(const IErrorReport &report, IFrameIterator &iter)
 		g_Logger.LogError("[SM] Blaming: %s", blame);
 	}
 
-	if (!iter.Done()) 
+	std::vector<std::string> arr = GetStackTrace(&iter);
+	for (size_t i = 0; i < arr.size(); i++)
 	{
-		g_Logger.LogError("[SM] Call stack trace:");
+		g_Logger.LogError("%s", arr[i].c_str());
+	}
+}
 
-		for (int index = 0; !iter.Done(); iter.Next(), index++) 
+std::vector<std::string> DebugReport::GetStackTrace(IFrameIterator *iter)
+{
+	char temp[3072];
+	std::vector<std::string> trace;
+	iter->Reset();
+	
+	if (!iter->Done())
+	{
+		trace.push_back("[SM] Call stack trace:");
+
+		for (int index = 0; !iter->Done(); iter->Next(), index++) 
 		{
-			const char *fn = iter.FunctionName();
+			const char *fn = iter->FunctionName();
 			if (!fn)
 			{
 				fn = "<unknown function>";
 			}
-			if (iter.IsNativeFrame()) 
+			if (iter->IsNativeFrame()) 
 			{
-				g_Logger.LogError("[SM]   [%d] %s", index, fn);
+				g_pSM->Format(temp, sizeof(temp), "[SM]   [%d] %s", index, fn);
+				trace.push_back(temp);
 				continue;
 			}
-			if (iter.IsScriptedFrame()) 
+			if (iter->IsScriptedFrame()) 
 			{
-				const char *file = iter.FilePath();
+				const char *file = iter->FilePath();
 				if (!file)
 				{
 					file = "<unknown>";
 				}
-				g_Logger.LogError("[SM]   [%d] Line %d, %s::%s",
+				g_pSM->Format(temp, sizeof(temp), "[SM]   [%d] Line %d, %s::%s",
 						index,
-						iter.LineNumber(),
+						iter->LineNumber(),
 						file,
 						fn);
+				
+				trace.push_back(temp);
 			}
 		}
 	}
+	
+	return trace;
 }

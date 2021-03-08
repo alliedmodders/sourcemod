@@ -9,7 +9,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -29,7 +29,7 @@
  *
  * Version: $Id$
  */
- 
+
 #if defined _float_included
  #endinput
 #endif
@@ -39,8 +39,8 @@
 /**
  * Converts an integer into a floating point value.
  *
- * @param value			Integer to convert.
- * @return				Floating point value.
+ * @param value         Integer to convert.
+ * @return              Floating point value.
  */
 native float float(int value);
 #endif
@@ -48,85 +48,101 @@ native float float(int value);
 /**
  * Multiplies two floats together.
  *
- * @param oper1			First value.
- * @param oper2			Second value.
- * @return				oper1*oper2.
+ * Note: This native is internal implementation. For multiplication use the '*' operator.
+ *
+ * @param oper1         First value.
+ * @param oper2         Second value.
+ * @return              oper1*oper2.
+ * @deprecated          This native is internal implementation. For multiplication use the '*' operator.
  */
+#pragma deprecated This native is internal implementation. For multiplication use the '*' operator.
 native float FloatMul(float oper1, float oper2);
 
 /**
  * Divides the dividend by the divisor.
  *
- * @param dividend		First value.
- * @param divisor		Second value.
- * @return				dividend/divisor.
+ * Note: This native is internal implementation. For division use the '/' operator.
+ *
+ * @param dividend      First value.
+ * @param divisor       Second value.
+ * @return              dividend/divisor.
+ * @deprecated          This native is internal implementation. For division use the '/' operator.
  */
+#pragma deprecated This native is internal implementation. For division use the '/' operator.
 native float FloatDiv(float dividend, float divisor);
 
 /**
  * Adds two floats together.
  *
- * @param oper1			First value.
- * @param oper2			Second value.
- * @return				oper1+oper2.
+ * Note: This native is internal implementation. For addition use the '+' operator.
+ *
+ * @param oper1         First value.
+ * @param oper2         Second value.
+ * @return              oper1+oper2.
+ * @deprecated          This native is internal implementation. For addition use the '+' operator.
  */
+#pragma deprecated This native is internal implementation. For addition use the '+' operator.
 native float FloatAdd(float oper1, float oper2);
 
 /**
  * Subtracts oper2 from oper1.
  *
- * @param oper1			First value.
- * @param oper2			Second value.
- * @return				oper1-oper2.
+ * Note: This native is internal implementation. For subtraction use the '-' operator.
+ *
+ * @param oper1         First value.
+ * @param oper2         Second value.
+ * @return              oper1-oper2.
+ * @deprecated          This native is internal implementation. For subtraction use the '-' operator.
  */
+#pragma deprecated This native is internal implementation. For subtraction use the '-' operator.
 native float FloatSub(float oper1, float oper2);
 
 /**
  * Returns the decimal part of a float.
  *
- * @param value			Input value.
- * @return				Decimal part.
+ * @param value         Input value.
+ * @return              Decimal part.
  */
 native float FloatFraction(float value);
 
 /**
  * Rounds a float to the closest integer to zero.
  *
- * @param value			Input value to be rounded.
- * @return				Rounded value.
+ * @param value         Input value to be rounded.
+ * @return              Rounded value.
  */
 native int RoundToZero(float value);
 
 /**
  * Rounds a float to the next highest integer value.
  *
- * @param value			Input value to be rounded.
- * @return				Rounded value.
+ * @param value         Input value to be rounded.
+ * @return              Rounded value.
  */
 native int RoundToCeil(float value);
 
 /**
  * Rounds a float to the next lowest integer value.
  *
- * @param value			Input value to be rounded.
- * @return				Rounded value.
+ * @param value         Input value to be rounded.
+ * @return              Rounded value.
  */
 native int RoundToFloor(float value);
 
 /**
  * Standard IEEE rounding.
  *
- * @param value			Input value to be rounded.
- * @return				Rounded value.
+ * @param value         Input value to be rounded.
+ * @return              Rounded value.
  */
 native int RoundToNearest(float value);
 
 /**
  * Compares two floats.
  *
- * @param fOne			First value.
- * @param fTwo			Second value.
- * @return				Returns 1 if the first argument is greater than the second argument.
+ * @param fOne          First value.
+ * @param fTwo          Second value.
+ * @return              Returns 1 if the first argument is greater than the second argument.
  *                      Returns -1 if the first argument is smaller than the second argument.
  *                      Returns 0 if both arguments are equal.
  */
@@ -135,107 +151,107 @@ native int FloatCompare(float fOne, float fTwo);
 /**
  * Returns the square root of the input value, equivalent to floatpower(value, 0.5).
  *
- * @param value			Input value.
- * @return				Square root of the value.
+ * @param value         Input value.
+ * @return              Square root of the value.
  */
 native float SquareRoot(float value);
 
 /**
  * Returns the value raised to the power of the exponent.
  *
- * @param value			Value to be raised.
- * @param exponent		Value to raise the base.
- * @return				value^exponent.
+ * @param value         Value to be raised.
+ * @param exponent      Value to raise the base.
+ * @return              value^exponent.
  */
 native float Pow(float value, float exponent);
 
 /**
  * Returns the value of raising the input by e.
  *
- * @param value			Input value.
- * @return				exp(value).
+ * @param value         Input value.
+ * @return              exp(value).
  */
 native float Exponential(float value);
 
 /**
  * Returns the logarithm of any base specified.
  *
- * @param value			Input value.
- * @param base			Logarithm base to use, default is 10.
- * @return				log(value)/log(base).
+ * @param value         Input value.
+ * @param base          Logarithm base to use, default is 10.
+ * @return              log(value)/log(base).
  */
 native float Logarithm(float value, float base=10.0);
 
 /**
  * Returns the sine of the argument.
  *
- * @param value			Input value in radians.
- * @return				sin(value).
+ * @param value         Input value in radians.
+ * @return              sin(value).
  */
 native float Sine(float value);
 
 /**
  * Returns the cosine of the argument.
  *
- * @param value			Input value in radians.
- * @return				cos(value).
+ * @param value         Input value in radians.
+ * @return              cos(value).
  */
 native float Cosine(float value);
 
 /**
  * Returns the tangent of the argument.
  *
- * @param value			Input value in radians.
- * @return				tan(value).
+ * @param value         Input value in radians.
+ * @return              tan(value).
  */
 native float Tangent(float value);
 
 /**
  * Returns an absolute value.
  *
- * @param value			Input value.
- * @return				Absolute value of the input.
+ * @param value         Input value.
+ * @return              Absolute value of the input.
  */
 native float FloatAbs(float value);
 
 /**
  * Returns the arctangent of the input value.
  *
- * @param angle			Input value.
- * @return				atan(value) in radians.
+ * @param angle         Input value.
+ * @return              atan(value) in radians.
  */
 native float ArcTangent(float angle);
 
 /**
  * Returns the arccosine of the input value.
  *
- * @param angle			Input value.
- * @return				acos(value) in radians.
+ * @param angle         Input value.
+ * @return              acos(value) in radians.
  */
 native float ArcCosine(float angle);
 
 /**
  * Returns the arcsine of the input value.
  *
- * @param angle			Input value.
- * @return				asin(value) in radians.
+ * @param angle         Input value.
+ * @return              asin(value) in radians.
  */
 native float ArcSine(float angle);
 
 /**
  * Returns the arctangent2 of the input values.
  *
- * @param x				Horizontal value.
- * @param y				Vertical value.
- * @return				atan2(value) in radians.
+ * @param x             Horizontal value.
+ * @param y             Vertical value.
+ * @return              atan2(value) in radians.
  */
 native float ArcTangent2(float x, float y);
 
 /**
  * Rounds a floating point number using the "round to nearest" algorithm.
  *
- * @param value			Floating point value to round.
- * @return				The value rounded to the nearest integer.
+ * @param value         Floating point value to round.
+ * @return              The value rounded to the nearest integer.
  */
 stock int RoundFloat(float value)
 {
@@ -247,6 +263,12 @@ stock int RoundFloat(float value)
  */
 #if !defined __sourcepawn2__
 #pragma rational Float
+
+// Internal aliases for backwards compatability.
+native float __FLOAT_MUL__(float a, float b) = FloatMul;
+native float __FLOAT_DIV__(float a, float b) = FloatDiv;
+native float __FLOAT_ADD__(float a, float b) = FloatAdd;
+native float __FLOAT_SUB__(float a, float b) = FloatSub;
 
 native bool __FLOAT_GT__(float a, float b);
 native bool __FLOAT_GE__(float a, float b);
@@ -280,37 +302,39 @@ stock float operator--(float oper)
 
 stock float operator-(float oper)
 {
-	return oper^view_as<float>(cellmin);				/* IEEE values are sign/magnitude */
+	return oper^view_as<float>(cellmin);                /* IEEE values are sign/magnitude */
 }
+
+// The stocks below are int->float converting versions of the above natives.
 
 stock float operator*(float oper1, int oper2)
 {
-	return FloatMul(oper1, float(oper2));			/* "*" is commutative */
+	return __FLOAT_MUL__(oper1, float(oper2));          /* "*" is commutative */
 }
 
 stock float operator/(float oper1, int oper2)
 {
-	return FloatDiv(oper1, float(oper2));
+	return __FLOAT_DIV__(oper1, float(oper2));
 }
 
 stock float operator/(int oper1, float oper2)
 {
-	return FloatDiv(float(oper1), oper2);
+	return __FLOAT_DIV__(float(oper1), oper2);
 }
 
 stock float operator+(float oper1, int oper2)
 {
-	return FloatAdd(oper1, float(oper2));			/* "+" is commutative */
+	return __FLOAT_ADD__(oper1, float(oper2));          /* "+" is commutative */
 }
 
 stock float operator-(float oper1, int oper2)
 {
-	return FloatSub(oper1, float(oper2));
+	return __FLOAT_SUB__(oper1, float(oper2));
 }
 
 stock float operator-(int oper1, float oper2)
 {
-	return FloatSub(float(oper1), oper2);
+	return __FLOAT_SUB__(float(oper1), oper2);
 }
 
 stock bool operator==(float oper1, int oper2)
@@ -376,8 +400,8 @@ forward operator%(int oper1, float oper2);
 /**
  * Converts degrees to radians.
  *
- * @param angle		Degrees.
- * @return			Radians.
+ * @param angle         Degrees.
+ * @return              Radians.
  */
 stock float DegToRad(float angle)
 {
@@ -387,8 +411,8 @@ stock float DegToRad(float angle)
 /**
  * Converts radians to degrees.
  *
- * @param angle		Radians.
- * @return			Degrees.
+ * @param angle         Radians.
+ * @return              Degrees.
  */
 stock float RadToDeg(float angle)
 {
@@ -400,7 +424,7 @@ stock float RadToDeg(float angle)
  *
  * Note: Uniform random number streams are seeded automatically per-plugin.
  *
- * @return			Random integer.
+ * @return              Random integer.
  */
 native int GetURandomInt();
 
@@ -409,7 +433,7 @@ native int GetURandomInt();
  *
  * Note: Uniform random number streams are seeded automatically per-plugin.
  *
- * @return			Uniform random floating-point number.
+ * @return              Uniform random floating-point number.
  */
 native float GetURandomFloat();
 
@@ -417,8 +441,8 @@ native float GetURandomFloat();
  * Seeds a plugin's uniform random number stream. This is done automatically,
  * so normally it is totally unnecessary to call this.
  *
- * @param seeds		Array of numbers to use as seeding data.
- * @param numSeeds	Number of seeds in the seeds array.
+ * @param seeds         Array of numbers to use as seeding data.
+ * @param numSeeds      Number of seeds in the seeds array.
  */
 native void SetURandomSeed(const int[] seeds, int numSeeds);
 
