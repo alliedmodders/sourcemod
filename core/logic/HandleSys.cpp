@@ -241,6 +241,11 @@ HandleType_t HandleSystem::CreateType(const char *name,
 		pType->children = 0;
 	}
 
+	if (err)
+	{
+		*err = HandleError_None;
+	}
+
 	return index;
 }
 
