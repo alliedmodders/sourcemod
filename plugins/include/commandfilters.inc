@@ -132,16 +132,23 @@ stock void ReplyToTargetError(int client, int reason)
 	}
 }
 
+#define FEATURECAP_MULTITARGETFILTER_CLIENTPARAM    "SourceMod MultiTargetFilter ClientParam"
+
 /**
  * Adds clients to a multi-target filter.
  *
  * @param pattern       Pattern name.
  * @param clients       Array to fill with unique, valid client indexes.
+ * @param client        Client that triggered this filter.
  * @return              True if pattern was recognized, false otherwise.
+ *
+ * @note To see if the client param is available, use FeatureType_Capability and FEATURECAP_MULTITARGETFILTER_CLIENTPARAM.
  */
 typeset MultiTargetFilter {
 	function bool (const char[] pattern, Handle clients);
 	function bool (const char[] pattern, ArrayList clients);
+	function bool (const char[] pattern, Handle clients, int client);
+	function bool (const char[] pattern, ArrayList clients, int client);
 }
 
 /**
