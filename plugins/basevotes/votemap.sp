@@ -41,7 +41,7 @@ bool g_VoteMapInUse;
 
 void DisplayVoteMapMenu(int client, int mapCount, char[][] maps)
 {
-	char maps_list[MAPS_COUNT * PLATFORM_MAX_PATH] = "";
+	char maps_list[MAPS_COUNT * (PLATFORM_MAX_PATH + 1)];
 	
 	for (int i = 0; i < mapCount; i++)
 	{
