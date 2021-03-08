@@ -264,4 +264,43 @@
 			}
 		}
 	}
+	
+	"#default"
+	{
+		"Addresses"
+		{
+			// Offset from NET_SendPacket sig to MTU
+			"MaxMTU"
+			{
+				"windows"
+				{
+					"signature"	"NET_SendPacket"
+					"offset"	"6"
+				}
+				"linux"
+				{
+					"signature"	"NET_SendPacket"
+					"offset"	"5"
+				}
+				"linux64"
+				{
+					"signature"	"NET_SendPacket"
+					"offset"	"4"
+				}
+			}
+		}
+		"Signatures"
+		{
+			// This isn't the start of the function, but closer to where we want to patch, including the exact bytes we will replace
+			"NET_SendPacket"
+			{
+				"library"	"engine"
+				// "[NET] Cannot send %d-byte packet to %s.  MTU is %u.  %02x %02x %02x %02x %02x\n"
+				"windows"	"\x89\x4C\x24\x14\x81\xFF\xB0\x04\x00\x00\x7E"
+				// _Z14NET_SendPacketP11INetChanneliRK10ns_addressPKhiP8bf_writebj
+				"linux"		"\x8B\x7D\x10\x81\xFE\xB0\x04\x00\x00\x0F"
+				"linux64"	"\x31\xC0\x81\xF9\xB0\x04\x00\x00\x0F"
+			}
+		}
+	}
 }
