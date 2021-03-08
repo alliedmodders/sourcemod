@@ -198,10 +198,12 @@ void RulesFix::FixSteam()
 		const char *pInternalFuncName = "SteamInternal_CreateInterface";
 
 		ILibrary *pLibrary = libsys->OpenLibrary(
-#if defined _WIN32
+#if defined ( PLATFORM_WINDOWS )
 			"steam_api.dll"
-#elif defined( _LINUX )
+#elif defined( PLATFORM_LINUX )
 			"libsteam_api.so"
+#elif defined( PLATFORM_APPLE )
+			"libsteam_api.dylib"
 #else
 #error Unsupported platform
 #endif
