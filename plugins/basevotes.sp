@@ -52,6 +52,7 @@ public Plugin myinfo =
 #define VOTE_YES "###yes###"
 
 #define GENERIC_COUNT 5
+#define ANSWER_SIZE 64
 
 Menu g_hVoteMenu = null;
 
@@ -184,12 +185,12 @@ public Action Command_Vote(int client, int args)
 	char text[256];
 	GetCmdArgString(text, sizeof(text));
 
-	char answers[GENERIC_COUNT][64];
+	char answers[GENERIC_COUNT][ANSWER_SIZE];
 	int answerCount;	
 	int len = BreakString(text, g_voteArg, sizeof(g_voteArg));
 	int pos = len;
 	
-	char answers_list[GENERIC_COUNT * 64] = "";
+	char answers_list[GENERIC_COUNT * (ANSWER_SIZE + 3)];
 	
 	while (args > 1 && pos != -1 && answerCount < GENERIC_COUNT)
 	{	
