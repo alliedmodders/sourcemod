@@ -57,21 +57,12 @@ void SetMTUMax(int iValue)
 
 	if (m_pMaxMTU == nullptr)
 	{
-		void *pAddr;
-		if (!g_pGameConf->GetMemSig("NET_SendPacket", &pAddr))
+		if (!g_pGameConf->GetAddress("MaxMTU", (void **)&m_pMaxMTU))
 		{
 			g_pSM->LogMessage(myself, "[CStrike] Failed to locate NET_SendPacket signature.");
 			return;
 		}
 
-		int offset;
-		if (!g_pGameConf->GetOffset("MaxMTU", &offset))
-		{
-			g_pSM->LogMessage(myself, "[CStrike] Failed to locate MaxMTU offset.");
-			return;
-		}
-
-		m_pMaxMTU = (int *)((intp)pAddr + offset);
 		SourceHook::SetMemAccess(m_pMaxMTU, sizeof(int), SH_MEM_READ | SH_MEM_WRITE | SH_MEM_EXEC);
 
 		iOriginalValue = *m_pMaxMTU;
