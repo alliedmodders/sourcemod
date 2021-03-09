@@ -247,7 +247,7 @@ void ConVarManager::OnClientDisconnected(int client)
 			{
 				cell_t ret;
 
-				pCallback->PushCell(0);
+				pCallback->PushCell(query.cookie);
 				pCallback->PushCell(client);
 				pCallback->PushCell(eQueryCvarValueStatus_Cancelled);
 				pCallback->PushString("");
