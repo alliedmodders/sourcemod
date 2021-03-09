@@ -1,49 +1,54 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-for arch in SM.archs:
-  binary = SM.ExtLibrary(builder, 'dbi.pgsql.ext', arch)
-  binary.compiler.cxxincludes += [
+for cxx in builder.targets:
+  arch = cxx.target.arch
+  binary = SM.ExtLibrary(builder, cxx, 'dbi.pgsql.ext')
+  compiler = binary.compiler
+  compiler.cxxincludes += [
     os.path.join(SM.mms_root, 'core', 'sourcehook')
   ]
-  if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
-    binary.compiler.cxxflags += ['-fno-rtti']
-  elif binary.compiler.family == 'msvc':
-    binary.compiler.cxxflags += ['/GR-']
+  if compiler.family == 'gcc' or compiler.family == 'clang':
+    compiler.cxxflags += ['-fno-rtti']
+  elif compiler.family == 'msvc':
+    compiler.cxxflags += ['/GR-']
 
-  if builder.target.platform == 'linux' or builder.target.platform == 'mac':
-    binary.compiler.postlink += [
+  if compiler.target.platform == 'linux' or compiler.target.platform == 'mac':
+    compiler.postlink += [
       '-lz',
       '-lpthread',
       '-lm'
     ]
-  if builder.target.platform == 'linux':
+  if compiler.target.platform == 'linux':
     if arch == 'x86':
       path = os.path.join(builder.sourcePath, 'extensions', 'pgsql', 'lib_linux')
     elif arch == 'x64':
       path = os.path.join(builder.sourcePath, 'extensions', 'pgsql', 'lib_linux64')
-    binary.compiler.postlink += [
+    compiler.postlink += [
       os.path.join(path, 'libpq.a'),
       '-lrt'
     ]
-  elif builder.target.platform == 'windows':
-    path = os.path.join(builder.sourcePath, 'extensions', 'pgsql', 'lib_win')
-    binary.compiler.postlink += [
+  elif compiler.target.platform == 'windows':
+    if arch == 'x86':
+      path = os.path.join(builder.sourcePath, 'extensions', 'pgsql', 'lib_win')
+    elif arch == 'x86_64':
+      path = os.path.join(builder.sourcePath, 'extensions', 'pgsql', 'lib_win64')
+    compiler.postlink += [
       os.path.join(path, 'libpq.lib'),
       'wsock32.lib',
       'ws2_32.lib',
       'secur32.lib'
     ]
-  elif builder.target.platform == 'mac':
+  elif compiler.target.platform == 'mac':
     if arch == 'x86':
       path = os.path.join(builder.sourcePath, 'extensions', 'pgsql', 'lib_darwin')
     elif arch == 'x64':
       path = os.path.join(builder.sourcePath, 'extensions', 'pgsql', 'lib_darwin64')
-    binary.compiler.postlink += [
+    compiler.postlink += [
       os.path.join(path, 'libpq.a')
     ]
 
-  binary.compiler.cxxincludes += [path]
+  compiler.cxxincludes += [path]
 
   binary.sources += [
     os.path.join('..', '..', 'public', 'smsdk_ext.cpp'),
