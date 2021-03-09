@@ -22,7 +22,7 @@ for cxx in builder.targets:
   if compiler.target.platform == 'linux':
     if arch == 'x86':
       path = os.path.join(builder.sourcePath, 'extensions', 'pgsql', 'lib_linux')
-    elif arch == 'x64':
+    elif arch == 'x86_64':
       path = os.path.join(builder.sourcePath, 'extensions', 'pgsql', 'lib_linux64')
     compiler.postlink += [
       os.path.join(path, 'libpq.a'),
@@ -42,7 +42,7 @@ for cxx in builder.targets:
   elif compiler.target.platform == 'mac':
     if arch == 'x86':
       path = os.path.join(builder.sourcePath, 'extensions', 'pgsql', 'lib_darwin')
-    elif arch == 'x64':
+    elif arch == 'x86_64':
       path = os.path.join(builder.sourcePath, 'extensions', 'pgsql', 'lib_darwin64')
     compiler.postlink += [
       os.path.join(path, 'libpq.a')
