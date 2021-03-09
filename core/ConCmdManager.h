@@ -80,10 +80,11 @@ struct CmdHook : public ke::InlineListNode<CmdHook>
 		Client
 	};
 
-	CmdHook(Type type, ConCmdInfo *cmd, IPluginFunction *fun, const char *description)
+	CmdHook(Type type, ConCmdInfo *cmd, IPluginFunction *fun, const char *description, IPlugin *plugin)
 		: type(type),
 		  info(cmd),
 		  pf(fun),
+		  plugin(plugin),
 		  helptext(description)
 	{
 	}
@@ -91,6 +92,7 @@ struct CmdHook : public ke::InlineListNode<CmdHook>
 	Type type;
 	ConCmdInfo *info;
 	IPluginFunction *pf;				/* function hook */
+	IPlugin *plugin;					/* owning plugin */
 	std::string helptext;				/* help text */
 	std::unique_ptr<AdminCmdInfo> admin;	/* admin requirements, if any */
 };

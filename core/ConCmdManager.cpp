@@ -121,8 +121,13 @@ void ConCmdManager::OnPluginDestroyed(IPlugin *plugin)
 		if (hook->admin)
 			hook->admin->group->hooks.remove(hook);
 
-		if (hook->info->hooks.empty())
+		if (hook->info->hooks.empty()) {
 			RemoveConCmd(hook->info, hook->info->pCmd->GetName(), true);
+		}
+		else { // update plugin reference to next hook in line
+			auto next = *hook->info->hooks.begin();
+			next->info->pPlugin = next->plugin;
+		}
 
 		iter = pList->erase(iter);
 		delete hook;
@@ -360,7 +365,7 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 	}
 	RefPtr<CommandGroup> cmdgroup = i->value;
 
-	CmdHook *pHook = new CmdHook(CmdHook::Client, pInfo, pFunction, description);
+	CmdHook *pHook = new CmdHook(CmdHook::Client, pInfo, pFunction, description, pPlugin);
 	pHook->admin = std::make_unique<AdminCmdInfo>(cmdgroup, adminflags);
 
 	/* First get the command group override, if any */
@@ -399,7 +404,7 @@ bool ConCmdManager::AddServerCommand(IPluginFunction *pFunction,
 	if (!pInfo)
 		return false;
 
-	CmdHook *pHook = new CmdHook(CmdHook::Server, pInfo, pFunction, description);
+	CmdHook *pHook = new CmdHook(CmdHook::Server, pInfo, pFunction, description, pPlugin);
 
 	pInfo->hooks.append(pHook);
 	RegisterInPlugin(pHook);
