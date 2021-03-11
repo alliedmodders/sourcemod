@@ -35,6 +35,10 @@
 #endif
 #define _geoip_included
 
+// The system of measurement for calculate the distance between geographical coordinates
+#define SYSTEM_METRIC   0 // kilometers
+#define SYSTEM_IMPERIAL 1 // statute miles
+
 #include <core>
 
 /**
@@ -93,7 +97,7 @@ native bool GeoipCountry(const char[] ip, char[] name, int maxlength);
  * @param ip			Ip to determine the country code.
  * @param name			Destination string buffer to store the country name.
  * @param maxlength			Maximum length of output string buffer.
- * @param lang			Which language to the output of result the geoip2 lookup.
+ * @param lang			The desired language of the output as a language code.
  * @return				True on success, false if no country found.
  */
 native bool GeoipCountryEx(const char[] ip, char[] name, int maxlength, const char[] lang = "en");
@@ -104,7 +108,7 @@ native bool GeoipCountryEx(const char[] ip, char[] name, int maxlength, const ch
  * @param ip			Ip to determine the continent code.
  * @param name			Destination string buffer to store the continent name.
  * @param maxlength			Maximum length of output string buffer.
- * @param lang			Which language to the output of result the geoip2 lookup.
+ * @param lang			The desired language of the output as a language code.
  * @return				True on success, false if no continent found.
  */
 native bool GeoipContinent(const char[] ip, char[] name, int maxlength, const char[] lang = "en");
@@ -115,7 +119,7 @@ native bool GeoipContinent(const char[] ip, char[] name, int maxlength, const ch
  * @param ip			Ip to determine the region code.
  * @param name			Destination string buffer to store the region name.
  * @param maxlength			Maximum length of output string buffer.
- * @param lang			Which language to the output of result the geoip2 lookup.
+ * @param lang			The desired language of the output as a language code.
  * @return				True on success, false if no region found.
  */
 native bool GeoipRegion(const char[] ip, char[] name, int maxlength, const char[] lang = "en");
@@ -126,7 +130,7 @@ native bool GeoipRegion(const char[] ip, char[] name, int maxlength, const char[
  * @param ip			Ip to determine the city code.
  * @param name			Destination string buffer to store the city name.
  * @param maxlength			Maximum length of output string buffer.
- * @param lang			Which language to the output of result the geoip2 lookup.
+ * @param lang			The desired language of the output as a language code.
  * @return				True on success, false if no city found.
  */
 native bool GeoipCity(const char[] ip, char[] name, int maxlength, const char[] lang = "en");
@@ -168,10 +172,6 @@ native float GeoipLongitude(const char[] ip);
  *
  * @return           The distance as result in specified system of measurement.
  */
-
-#define SYSTEM_METRIC   0 // kilometers
-#define SYSTEM_IMPERIAL 1 // statute miles
-
 native float GeoipDistance(float lat1, float lon1, float lat2, float lon2, system = SYSTEM_METRIC);
 
 /**
