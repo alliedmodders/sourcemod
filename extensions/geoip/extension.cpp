@@ -244,8 +244,6 @@ static cell_t sm_Geoip_CountryEx(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToString(params[4], &lang);
 	StripPort(ip);
 
-	if (strlen(lang) == 0) strcpy(lang, "en");
-
 	const char *path[] = {"country", "names", lang, NULL};
 	std::string str = lookupString(ip, path);
 	const char *ccode = str.c_str();
@@ -262,8 +260,6 @@ static cell_t sm_Geoip_Continent(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToString(params[1], &ip);
 	pCtx->LocalToString(params[4], &lang);
 	StripPort(ip);
-
-	if (strlen(lang) == 0) strcpy(lang, "en");
 
 	const char *path[] = {"continent", "names", lang, NULL};
 	std::string str = lookupString(ip, path);
@@ -282,8 +278,6 @@ static cell_t sm_Geoip_Region(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToString(params[4], &lang);
 	StripPort(ip);
 
-	if (strlen(lang) == 0) strcpy(lang, "en");
-
 	const char *path[] = {"subdivisions", "0", "names", lang, NULL};
 	std::string str = lookupString(ip, path);
 	const char *ccode = str.c_str();
@@ -300,8 +294,6 @@ static cell_t sm_Geoip_City(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToString(params[1], &ip);
 	pCtx->LocalToString(params[4], &lang);
 	StripPort(ip);
-
-	if (strlen(lang) == 0) strcpy(lang, "en");
 
 	const char *path[] = {"city", "names", lang, NULL};
 	std::string str = lookupString(ip, path);
