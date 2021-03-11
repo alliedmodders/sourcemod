@@ -177,6 +177,17 @@ bool TQueryOp::BindParamsAndRun()
 					 safe_desc,
 					 m_params.cookie->access);
 			}
+			else if (g_DriverType == Driver_PgSQL)
+			{
+				// just insert. Returns error on already exists, so ignore the error.
+				g_pSM->Format(query,
+					sizeof(query),
+					"INSERT INTO sm_cookies (name, description, access) \
+					VALUES ('%s', '%s', %d)",
+					safe_name,
+					safe_desc,
+					m_params.cookie->access);
+			}
 
 			if (!m_database->DoSimpleQuery(query))
 			{
@@ -245,6 +256,18 @@ bool TQueryOp::BindParamsAndRun()
 					"INSERT OR REPLACE INTO sm_cookie_cache						\
 					 (player, cookie_id, value, timestamp)						\
 					 VALUES ('%s', %d, '%s', %d)",
+					safe_id,
+					m_params.cookieId,
+					safe_val,
+					(unsigned int)m_params.data->timestamp);
+			}
+			else if (g_DriverType == Driver_PgSQL)
+			{
+				// Using a PL/Pgsql function, called add_or_update_cookie(),
+				// since Postgres does not have an 'OR REPLACE' functionality.
+				g_pSM->Format(query,
+					sizeof(query),
+					"SELECT add_or_update_cookie ('%s', %d, '%s', %d)",
 					safe_id,
 					m_params.cookieId,
 					safe_val,

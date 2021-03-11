@@ -729,6 +729,7 @@ BuildScripts = [
   'extensions/cstrike/AMBuilder',
   'extensions/geoip/AMBuilder',
   'extensions/mysql/AMBuilder',
+  'extensions/pgsql/AMBuilder',
   'extensions/regex/AMBuilder',
   'extensions/sdkhooks/AMBuilder',
   'extensions/sdktools/AMBuilder',
