@@ -172,7 +172,7 @@ native float GeoipLongitude(const char[] ip);
  *
  * @return           The distance as result in specified system of measurement.
  */
-native float GeoipDistance(float lat1, float lon1, float lat2, float lon2, system = SYSTEM_METRIC);
+native float GeoipDistance(float lat1, float lon1, float lat2, float lon2, int system = SYSTEM_METRIC);
 
 /**
  * @endsection
