@@ -484,7 +484,7 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 				{
 					m_AddressLastIsOffset = true;
 				}
-				m_AddressRead[m_AddressReadCount] = atoi(value);
+				m_AddressRead[m_AddressReadCount] = static_cast<int>(strtol(value, NULL, 0));
 				m_AddressReadCount++;
 			}
 			else
