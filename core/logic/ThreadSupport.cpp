@@ -376,6 +376,7 @@ void CompatThread::Run()
 		// There should be no handles outstanding, so it's safe to self-destruct.
 		thread_->detach();
 		delete this;
+		return;
 	}
 
 	lock.lock();
