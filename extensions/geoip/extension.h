@@ -122,6 +122,7 @@ public:
 };
 
 extern MMDB_s mmdb;
+extern int langCount;
 extern const sp_nativeinfo_t geoip_natives[];
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_

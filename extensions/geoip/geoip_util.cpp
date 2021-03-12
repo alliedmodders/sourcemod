@@ -126,6 +126,40 @@ double lookupDouble(const char *ip, const char **path)
 	return result.double_value;
 }
 
+const char *lookupLang(const char *code)
+{
+	bool hasLang = false;
+
+	if (langCount > 0)
+	{
+		for (size_t i = 0; i < langCount; i++)
+		{
+			if (strcmp(code, mmdb.metadata.languages.names[i]) == 0)
+			{
+				hasLang = true;
+				break;
+			}
+		}
+
+		if (!hasLang)
+		{
+			if (translator->GetLanguageInfo(translator->GetServerLanguage(), &code, NULL))
+			{
+				for (size_t i = 0; i < langCount; i++)
+				{
+					if (strcmp(code, mmdb.metadata.languages.names[i]) == 0)
+					{
+						hasLang = true;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	return hasLang ? code : "en";
+}
+
 std::string lookupString(const char *ip, const char **path)
 {
 	MMDB_entry_data_s result;

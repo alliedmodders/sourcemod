@@ -41,6 +41,7 @@
  * @brief Implement extension code here.
  */
 GeoIP_Extension g_GeoIP;
+int langCount;
 MMDB_s mmdb;
 
 SMEXT_LINK(&g_GeoIP);
@@ -104,21 +105,26 @@ bool GeoIP_Extension::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	g_pSM->LogMessage(myself, "GeoIP2 database loaded: %s (%s)", mmdb.metadata.database_type, date);
 
-	char buf[64];
-	for (size_t i = 0; i < mmdb.metadata.languages.count; i++)
-	{
-		if (i == 0)
-		{
-			strcpy(buf, mmdb.metadata.languages.names[i]);
-		}
-		else
-		{
-			strcat(buf, " ");
-			strcat(buf, mmdb.metadata.languages.names[i]);
-		}
-	}
+	langCount = mmdb.metadata.languages.count;
 
-	g_pSM->LogMessage(myself, "GeoIP2 supported languages: %s", buf);
+	if (langCount > 0)
+	{
+		char buf[64];
+		for (size_t i = 0; i < langCount; i++)
+		{
+			if (i == 0)
+			{
+				strcpy(buf, mmdb.metadata.languages.names[i]);
+			}
+			else
+			{
+				strcat(buf, " ");
+				strcat(buf, mmdb.metadata.languages.names[i]);
+			}
+		}
+
+		g_pSM->LogMessage(myself, "GeoIP2 supported languages: %s", buf);
+	}
 
 	return true;
 }
@@ -244,7 +250,7 @@ static cell_t sm_Geoip_CountryEx(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToString(params[4], &lang);
 	StripPort(ip);
 
-	const char *path[] = {"country", "names", lang, NULL};
+	const char *path[] = {"country", "names", lookupLang(lang), NULL};
 	std::string str = lookupString(ip, path);
 	const char *ccode = str.c_str();
 
@@ -261,7 +267,7 @@ static cell_t sm_Geoip_Continent(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToString(params[4], &lang);
 	StripPort(ip);
 
-	const char *path[] = {"continent", "names", lang, NULL};
+	const char *path[] = {"continent", "names", lookupLang(lang), NULL};
 	std::string str = lookupString(ip, path);
 	const char *ccode = str.c_str();
 
@@ -278,7 +284,7 @@ static cell_t sm_Geoip_Region(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToString(params[4], &lang);
 	StripPort(ip);
 
-	const char *path[] = {"subdivisions", "0", "names", lang, NULL};
+	const char *path[] = {"subdivisions", "0", "names", lookupLang(lang), NULL};
 	std::string str = lookupString(ip, path);
 	const char *ccode = str.c_str();
 
@@ -295,7 +301,7 @@ static cell_t sm_Geoip_City(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToString(params[4], &lang);
 	StripPort(ip);
 
-	const char *path[] = {"city", "names", lang, NULL};
+	const char *path[] = {"city", "names", lookupLang(lang), NULL};
 	std::string str = lookupString(ip, path);
 	const char *ccode = str.c_str();
 
