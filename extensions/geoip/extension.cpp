@@ -41,7 +41,6 @@
  * @brief Implement extension code here.
  */
 GeoIP_Extension g_GeoIP;
-int langCount;
 MMDB_s mmdb;
 
 SMEXT_LINK(&g_GeoIP);
@@ -105,12 +104,10 @@ bool GeoIP_Extension::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	g_pSM->LogMessage(myself, "GeoIP2 database loaded: %s (%s)", mmdb.metadata.database_type, date);
 
-	langCount = mmdb.metadata.languages.count;
-
-	if (langCount > 0)
+	if (mmdb.metadata.languages.count > 0)
 	{
 		char buf[64];
-		for (size_t i = 0; i < langCount; i++)
+		for (size_t i = 0; i < mmdb.metadata.languages.count; i++)
 		{
 			if (i == 0)
 			{

@@ -130,9 +130,9 @@ const char *lookupLang(const char *code)
 {
 	bool hasLang = false;
 
-	if (langCount > 0)
+	if (mmdb.metadata.languages.count > 0)
 	{
-		for (size_t i = 0; i < langCount; i++)
+		for (size_t i = 0; i < mmdb.metadata.languages.count; i++)
 		{
 			if (strcmp(code, mmdb.metadata.languages.names[i]) == 0)
 			{
@@ -145,7 +145,7 @@ const char *lookupLang(const char *code)
 		{
 			if (translator->GetLanguageInfo(translator->GetServerLanguage(), &code, NULL))
 			{
-				for (size_t i = 0; i < langCount; i++)
+				for (size_t i = 0; i < mmdb.metadata.languages.count; i++)
 				{
 					if (strcmp(code, mmdb.metadata.languages.names[i]) == 0)
 					{
