@@ -126,38 +126,74 @@ double lookupDouble(const char *ip, const char **path)
 	return result.double_value;
 }
 
-const char *lookupLang(const char *code)
+int getContinentId(const char *code)
 {
-	bool hasLang = false;
+	#define CONTINENT_UNKNOWN        0
+	#define CONTINENT_AFRICA         1
+	#define CONTINENT_ANTARCTICA     2
+	#define CONTINENT_ASIA           3
+	#define CONTINENT_EUROPE         4
+	#define CONTINENT_NORTH_AMERICA  5
+	#define CONTINENT_OCEANIA        6
+	#define CONTINENT_SOUTH_AMERICA  7
 
-	if (mmdb.metadata.languages.count > 0)
+	int index = CONTINENT_UNKNOWN;
+
+	if (code)
 	{
-		for (size_t i = 0; i < mmdb.metadata.languages.count; i++)
+		switch (code[0])
 		{
-			if (strcmp(code, mmdb.metadata.languages.names[i]) == 0)
+			case 'A':
 			{
-				hasLang = true;
+				switch (code[1])
+				{
+					case 'F': index = CONTINENT_AFRICA; break;
+					case 'N': index = CONTINENT_ANTARCTICA; break;
+					case 'S': index = CONTINENT_ASIA; break;
+				}
+
 				break;
 			}
+
+			case 'E': index = CONTINENT_EUROPE; break;
+			case 'O': index = CONTINENT_OCEANIA; break;
+			case 'N': index = CONTINENT_NORTH_AMERICA; break;
+			case 'S': index = CONTINENT_SOUTH_AMERICA; break;
+		}
+	}
+
+	return index;
+}
+
+const char *getLang(int target)
+{
+	if (target != -1 && mmdb.metadata.languages.count > 0)
+	{
+		unsigned int langid;
+		const char *code;
+
+		if (target != 0)
+		{
+			langid = translator->GetClientLanguage(target);
+		}
+		else
+		{
+			langid = translator->GetServerLanguage();
 		}
 
-		if (!hasLang)
+		if (translator->GetLanguageInfo(langid, &code, NULL))
 		{
-			if (translator->GetLanguageInfo(translator->GetServerLanguage(), &code, NULL))
+			for (size_t i = 0; i < mmdb.metadata.languages.count; i++)
 			{
-				for (size_t i = 0; i < mmdb.metadata.languages.count; i++)
+				if (strcmp(code, mmdb.metadata.languages.names[i]) == 0)
 				{
-					if (strcmp(code, mmdb.metadata.languages.names[i]) == 0)
-					{
-						hasLang = true;
-						break;
-					}
+					return code;
 				}
 			}
 		}
 	}
 
-	return hasLang ? code : "en";
+	return "en";
 }
 
 std::string lookupString(const char *ip, const char **path)

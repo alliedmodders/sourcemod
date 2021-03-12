@@ -221,7 +221,7 @@ static cell_t sm_Geoip_ContinentCode(IPluginContext *pCtx, const cell_t *params)
 
 	pCtx->StringToLocalUTF8(params[2], 3, ccode, NULL);
 
-	return (strlen(ccode) != 0) ? 1 : 0;
+	return getContinentId(ccode);
 }
 
 static cell_t sm_Geoip_Country(IPluginContext *pCtx, const cell_t *params)
@@ -242,12 +242,19 @@ static cell_t sm_Geoip_Country(IPluginContext *pCtx, const cell_t *params)
 static cell_t sm_Geoip_CountryEx(IPluginContext *pCtx, const cell_t *params)
 {
 	char *ip;
-	char *lang;
 	pCtx->LocalToString(params[1], &ip);
-	pCtx->LocalToString(params[4], &lang);
 	StripPort(ip);
 
-	const char *path[] = {"country", "names", lookupLang(lang), NULL};
+	if (params[4] > 0)
+	{
+		IGamePlayer *player = playerhelpers->GetGamePlayer(params[4]);
+		if (!player || !player->IsConnected())
+		{
+			return pCtx->ThrowNativeError("Invalid client index %d", params[4]);
+		}
+	}
+
+	const char *path[] = {"country", "names", getLang(params[4]), NULL};
 	std::string str = lookupString(ip, path);
 	const char *ccode = str.c_str();
 
@@ -259,12 +266,19 @@ static cell_t sm_Geoip_CountryEx(IPluginContext *pCtx, const cell_t *params)
 static cell_t sm_Geoip_Continent(IPluginContext *pCtx, const cell_t *params)
 {
 	char *ip;
-	char *lang;
 	pCtx->LocalToString(params[1], &ip);
-	pCtx->LocalToString(params[4], &lang);
 	StripPort(ip);
 
-	const char *path[] = {"continent", "names", lookupLang(lang), NULL};
+	if (params[4] > 0)
+	{
+		IGamePlayer *player = playerhelpers->GetGamePlayer(params[4]);
+		if (!player || !player->IsConnected())
+		{
+			return pCtx->ThrowNativeError("Invalid client index %d", params[4]);
+		}
+	}
+
+	const char *path[] = {"continent", "names", getLang(params[4]), NULL};
 	std::string str = lookupString(ip, path);
 	const char *ccode = str.c_str();
 
@@ -276,12 +290,19 @@ static cell_t sm_Geoip_Continent(IPluginContext *pCtx, const cell_t *params)
 static cell_t sm_Geoip_Region(IPluginContext *pCtx, const cell_t *params)
 {
 	char *ip;
-	char *lang;
 	pCtx->LocalToString(params[1], &ip);
-	pCtx->LocalToString(params[4], &lang);
 	StripPort(ip);
 
-	const char *path[] = {"subdivisions", "0", "names", lookupLang(lang), NULL};
+	if (params[4] > 0)
+	{
+		IGamePlayer *player = playerhelpers->GetGamePlayer(params[4]);
+		if (!player || !player->IsConnected())
+		{
+			return pCtx->ThrowNativeError("Invalid client index %d", params[4]);
+		}
+	}
+
+	const char *path[] = {"subdivisions", "0", "names", getLang(params[4]), NULL};
 	std::string str = lookupString(ip, path);
 	const char *ccode = str.c_str();
 
@@ -293,12 +314,19 @@ static cell_t sm_Geoip_Region(IPluginContext *pCtx, const cell_t *params)
 static cell_t sm_Geoip_City(IPluginContext *pCtx, const cell_t *params)
 {
 	char *ip;
-	char *lang;
 	pCtx->LocalToString(params[1], &ip);
-	pCtx->LocalToString(params[4], &lang);
 	StripPort(ip);
 
-	const char *path[] = {"city", "names", lookupLang(lang), NULL};
+	if (params[4] > 0)
+	{
+		IGamePlayer *player = playerhelpers->GetGamePlayer(params[4]);
+		if (!player || !player->IsConnected())
+		{
+			return pCtx->ThrowNativeError("Invalid client index %d", params[4]);
+		}
+	}
+
+	const char *path[] = {"city", "names", getLang(params[4]), NULL};
 	std::string str = lookupString(ip, path);
 	const char *ccode = str.c_str();
 
