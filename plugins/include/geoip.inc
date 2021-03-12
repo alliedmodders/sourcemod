@@ -109,13 +109,13 @@ native bool GeoipCountry(const char[] ip, char[] name, int maxlength);
  * @param ip			Ip to determine the country code.
  * @param name			Destination string buffer to store the country name.
  * @param maxlength			Maximum length of output string buffer.
- * @param id			Client index in order to return the result in the player's language
+ * @param client			Client index in order to return the result in the player's language
  * 						-1: the default language, which is english.
  * 						0: the server language. You can use LANG_SERVER define.
  *						>=1: the player's language.
  * @return				True on success, false otherwise.
  */
-native bool GeoipCountryEx(const char[] ip, char[] name, int maxlength, int id = -1);
+native bool GeoipCountryEx(const char[] ip, char[] name, int maxlength, int client = -1);
 
 /**
  * Gets the full continent name.
@@ -123,13 +123,13 @@ native bool GeoipCountryEx(const char[] ip, char[] name, int maxlength, int id =
  * @param ip			Ip to determine the continent code.
  * @param name			Destination string buffer to store the continent name.
  * @param maxlength			Maximum length of output string buffer.
- * @param id			Client index in order to return the result in the player's language
+ * @param client			Client index in order to return the result in the player's language
  * 						-1: the default language, which is english.
  * 						0: the server language. You can use LANG_SERVER define.
  *						>=1: the player's language.
  * @return				True on success, false otherwise.
  */
-native bool GeoipContinent(const char[] ip, char[] name, int maxlength, int id = -1);
+native bool GeoipContinent(const char[] ip, char[] name, int maxlength, int client = -1);
 
 /**
  * Gets the full region name.
@@ -137,13 +137,13 @@ native bool GeoipContinent(const char[] ip, char[] name, int maxlength, int id =
  * @param ip			Ip to determine the region code.
  * @param name			Destination string buffer to store the region name.
  * @param maxlength			Maximum length of output string buffer.
- * @param id			Client index in order to return the result in the player's language
+ * @param client			Client index in order to return the result in the player's language
  * 						-1: the default language, which is english.
  * 						0: the server language. You can use LANG_SERVER define.
  *						>=1: the player's language.
  * @return				True on success, false otherwise.
  */
-native bool GeoipRegion(const char[] ip, char[] name, int maxlength, int id = -1);
+native bool GeoipRegion(const char[] ip, char[] name, int maxlength, int client = -1);
 
 /**
  * Gets the city name.
@@ -151,13 +151,13 @@ native bool GeoipRegion(const char[] ip, char[] name, int maxlength, int id = -1
  * @param ip			Ip to determine the city code.
  * @param name			Destination string buffer to store the city name.
  * @param maxlength			Maximum length of output string buffer.
- * @param id			Client index in order to return the result in the player's language
+ * @param client			Client index in order to return the result in the player's language
  * 						-1: the default language, which is english.
  * 						0: the server language. You can use LANG_SERVER define.
  *						>=1: the player's language.
  * @return				True on success, false otherwise.
  */
-native bool GeoipCity(const char[] ip, char[] name, int maxlength, int id = -1);
+native bool GeoipCity(const char[] ip, char[] name, int maxlength, int client = -1);
 
 /**
  * Gets the timezone.
