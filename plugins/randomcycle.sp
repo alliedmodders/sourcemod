@@ -50,7 +50,6 @@ ConVar g_Cvar_ExcludeMaps;
 ArrayList g_MapList = null;
 ArrayList g_OldMapList = null;
 int g_mapListSerial = -1;
-Handle g_MapTimer = null;
 
 public void OnPluginStart()
 {
@@ -77,10 +76,7 @@ public void OnConfigsExecuted()
 		}
 	}
 	
-	if (g_MapTimer == null)
-	{
-		g_MapTimer = CreateTimer(5.0, Timer_RandomizeNextmap); // Small delay to give Nextmap time to complete OnMapStart()
-	}
+	CreateTimer(5.0, Timer_RandomizeNextmap, TIMER_FLAG_NO_MAPCHANGE); // Small delay to give Nextmap time to complete OnMapStart()
 }
 
 public Action Timer_RandomizeNextmap(Handle timer)
@@ -111,6 +107,5 @@ public Action Timer_RandomizeNextmap(Handle timer)
 
 	LogAction(-1, -1, "RandomCycle has chosen %s for the nextmap.", map);	
 
-	g_MapTimer = null;
 	return Plugin_Stop;
 }
