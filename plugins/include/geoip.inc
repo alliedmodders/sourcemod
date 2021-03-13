@@ -76,13 +76,13 @@ native bool GeoipCode2(const char[] ip, char ccode[3]);
 native bool GeoipCode3(const char[] ip, char ccode[4]);
 
 /**
- * Gets the two/three region code from an IP address. (IL, CHE, etc)
+ * Gets the region code with country code from an IP address. (US-IL, CH-CHE, etc)
  *
  * @param ip			Ip to determine the region code.
  * @param ccode			Destination string buffer to store the code.
  * @return				True on success, false otherwise.
  */
-native bool GeoipRegionCode(const char[] ip, char ccode[4]);
+native bool GeoipRegionCode(const char[] ip, char ccode[12]);
 
 /**
  * Gets the two character continent code from an IP address. (EU, AS, etc)
