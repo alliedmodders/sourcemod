@@ -203,14 +203,14 @@ static cell_t sm_Geoip_RegionCode(IPluginContext *pCtx, const cell_t *params)
 	char ccode[12];
 
 	const char *pathCountry[] = {"country", "iso_code", NULL};
-	std::string str = lookupString(ip, pathCountry);
-	const char *countryCode = str.c_str();
+	std::string strCountry = lookupString(ip, pathCountry);
+	const char *countryCode = strCountry.c_str();
 
 	if (strlen(countryCode) != 0)
 	{
 		const char *pathRegion[] = {"subdivisions", "0", "iso_code", NULL};
-		str = lookupString(ip, pathRegion);
-		const char *regionCode = str.c_str();
+		std::string strRegion = lookupString(ip, pathRegion);
+		const char *regionCode = strRegion.c_str();
 
 		if (strlen(regionCode) != 0)
 		{
