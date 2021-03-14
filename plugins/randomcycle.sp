@@ -76,7 +76,7 @@ public void OnConfigsExecuted()
 		}
 	}
 	
-	CreateTimer(5.0, Timer_RandomizeNextmap, TIMER_FLAG_NO_MAPCHANGE); // Small delay to give Nextmap time to complete OnMapStart()
+	CreateTimer(5.0, Timer_RandomizeNextmap, _, TIMER_FLAG_NO_MAPCHANGE); // Small delay to give Nextmap time to complete OnMapStart()
 }
 
 public Action Timer_RandomizeNextmap(Handle timer)
