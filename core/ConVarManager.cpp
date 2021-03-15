@@ -43,6 +43,10 @@ const ParamType CONVARCHANGE_PARAMS[] = {Param_Cell, Param_String, Param_String}
 typedef List<const ConVar *> ConVarList;
 NameHashSet<ConVarInfo *, ConVarInfo::ConVarPolicy> convar_cache;
 
+enum {
+	eQueryCvarValueStatus_Cancelled = -1,
+};
+
 class ConVarReentrancyGuard
 {
 	ConVar *cvar;
@@ -238,6 +242,19 @@ void ConVarManager::OnClientDisconnected(int client)
 		ConVarQuery &query = (*iter);
 		if (query.client == client)
 		{
+			IPluginFunction *pCallback = query.pCallback;
+			if (pCallback)
+			{
+				cell_t ret;
+
+				pCallback->PushCell(query.cookie);
+				pCallback->PushCell(client);
+				pCallback->PushCell(eQueryCvarValueStatus_Cancelled);
+				pCallback->PushString("");
+				pCallback->PushString("");
+				pCallback->PushCell(query.value);
+				pCallback->Execute(&ret);
+			}
 			iter = m_ConVarQueries.erase(iter);
 			continue;
 		}
