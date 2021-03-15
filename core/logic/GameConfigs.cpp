@@ -415,7 +415,7 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 		} else if (strcmp(key, "prop") == 0) {
 			strncopy(m_Prop, value, sizeof(m_Prop));
 		} else if (IsPlatformCompatible(key, &matched_platform)) {
-			m_Offsets.replace(m_offset, atoi(value));
+			m_Offsets.replace(m_offset, static_cast<int>(strtol(value, NULL, 0)));
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_KEYS) {
 		std::string vstr(value);
@@ -484,7 +484,7 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 				{
 					m_AddressLastIsOffset = true;
 				}
-				m_AddressRead[m_AddressReadCount] = atoi(value);
+				m_AddressRead[m_AddressReadCount] = static_cast<int>(strtol(value, NULL, 0));
 				m_AddressReadCount++;
 			}
 			else
