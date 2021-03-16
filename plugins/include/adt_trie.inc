@@ -280,6 +280,17 @@ native bool RemoveFromTrie(Handle map, const char[] key);
 native void ClearTrie(Handle map);
 
 /**
+ * Clones a map, returning a new handle with the same size and data.
+ * This should NOT be confused with CloneHandle. This is a completely new
+ * handle with the same data but no relation to the original. It should be
+ * closed when no longer needed with delete or CloseHandle().
+ *
+ * @param map           Map Handle.
+ * @return              New handle to the cloned string map
+ */
+native Handle CloneTrie(Handle map);
+
+/**
  * Retrieves the number of elements in a map.
  *
  * @param map           Map Handle.
