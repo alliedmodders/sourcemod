@@ -301,9 +301,12 @@ public Action Command_Cvar(int client, int args)
 	char value[255];
 	if (args < 2)
 	{
-		hndl.GetString(value, sizeof(value));
+		char description[255];
 
-		ReplyToCommand(client, "[SM] %t", "Value of cvar", cvarname, value);
+		hndl.GetString(value, sizeof(value));
+		hndl.GetDescription(description, sizeof(description));
+
+		ReplyToCommand(client, "[SM] %t", "Value of cvar", cvarname, value, description);
 		return Plugin_Handled;
 	}
 
