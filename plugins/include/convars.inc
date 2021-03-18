@@ -225,6 +225,12 @@ methodmap ConVar < Handle
 	// @param maxlength  Maximum length of string buffer.
 	public native void GetName(char[] name, int maxlength);
 
+	// Retrieves the description of a console variable.
+	//
+	// @param buffer     Buffer to store the description of the convar.
+	// @param maxlength  Maximum length of string buffer.
+	public native void GetDescription(char[] buffer, int maxlength);
+
 	// Replicates a convar value to a specific client. This does not change the actual convar value.
 	//
 	// @param client     Client index
@@ -445,6 +451,16 @@ native void SetConVarBounds(Handle convar, ConVarBounds type, bool set, float va
  * @error               Invalid or corrupt Handle.     
  */
 native void GetConVarName(Handle convar, char[] name, int maxlength);
+
+/**
+ * Retrieves the description of a console variable.
+ *
+ * @param convar        Handle to the convar.
+ * @param buffer        Buffer to store the description of the convar.
+ * @param maxlength     Maximum length of string buffer.
+ * @error               Invalid or corrupt Handle.
+ */
+native void GetConVarDescription(Handle convar, char[] buffer, int maxlength);
 
 /**
  * Replicates a convar value to a specific client. This does not change the actual convar value.
