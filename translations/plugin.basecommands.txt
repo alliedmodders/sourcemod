@@ -13,8 +13,8 @@
 	
 	"Value of cvar"
 	{
-		"#format"		"{1:s},{2:s},{3:s}"
-		"en"			"Value of cvar \"{1}\": \"{2}\" ({3})"
+		"#format"		"{1:s},{2:s}"
+		"en"			"Value of cvar \"{1}\": \"{2}\""
 	}
 	
 	"Cvar changed"
