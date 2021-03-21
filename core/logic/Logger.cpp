@@ -39,6 +39,7 @@
 #include <bridge/include/CoreProvider.h>
 
 Logger g_Logger;
+extern ConVar* g_datetime_format;
 
 ConfigResult Logger::OnSourceModConfigChanged(const char *key, 
 									  const char *value, 
@@ -153,9 +154,10 @@ void Logger::LogToOpenFileEx(FILE *fp, const char *msg, va_list ap)
 	ke::SafeVsprintf(buffer, sizeof(buffer), msg, ap);
 
 	char date[32];
+	const char* fmt = bridge->GetCvarString(g_datetime_format);
 	time_t t = g_pSM->GetAdjustedTime();
 	tm *curtime = localtime(&t);
-	strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
+	strftime(date, sizeof(date), fmt, curtime);
 
 	fprintf(fp, "L %s: %s\n", date, buffer);
 
@@ -175,9 +177,10 @@ void Logger::LogToFileOnlyEx(FILE *fp, const char *msg, va_list ap)
 	ke::SafeVsprintf(buffer, sizeof(buffer), msg, ap);
 
 	char date[32];
+	const char* fmt = bridge->GetCvarString(g_datetime_format);
 	time_t t = g_pSM->GetAdjustedTime();
 	tm *curtime = localtime(&t);
-	strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
+	strftime(date, sizeof(date), fmt, curtime);
 	fprintf(fp, "L %s: %s\n", date, buffer);
 
 	fflush(fp);
@@ -378,11 +381,12 @@ FILE *Logger::_OpenNormal()
 
 	if (!m_DamagedNormalFile)
 	{
+		const char* fmt = bridge->GetCvarString(g_datetime_format);
 		time_t t = g_pSM->GetAdjustedTime();
 		tm *curtime = localtime(&t);
 		char date[32];
 
-		strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
+		strftime(date, sizeof(date), fmt, curtime);
 		fprintf(pFile, "L %s: SourceMod log file session started (file \"%s\") (Version \"%s\")\n", date, m_NormalFileName.c_str(), SOURCEMOD_VERSION);
 		m_DamagedNormalFile = true;
 	}
@@ -403,11 +407,12 @@ FILE *Logger::_OpenError()
 
 	if (!m_DamagedErrorFile)
 	{
+		const char* fmt = bridge->GetCvarString(g_datetime_format);
 		time_t t = g_pSM->GetAdjustedTime();
 		tm *curtime = localtime(&t);
 
 		char date[32];
-		strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
+		strftime(date, sizeof(date), fmt, curtime);
 		fprintf(pFile, "L %s: SourceMod error session started\n", date);
 		fprintf(pFile, "L %s: Info (map \"%s\") (file \"%s\")\n", date, m_CurrentMapName.c_str(), m_ErrorFileName.c_str());
 		m_DamagedErrorFile = true;
