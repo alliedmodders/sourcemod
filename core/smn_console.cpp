@@ -1484,7 +1484,6 @@ REGISTER_NATIVES(consoleNatives)
 	{"SetConVarFlags",		sm_SetConVarFlags},
 	{"ResetConVar",			sm_ResetConVar},
 	{"GetConVarName",		sm_GetConVarName},
-	{"GetConVarDescription",sm_GetConVarDescription},
 	{"GetConVarBounds",		sm_GetConVarBounds},
 	{"SetConVarBounds",		sm_SetConVarBounds},
 	{"QueryClientConVar",	sm_QueryClientConVar},
