@@ -225,6 +225,12 @@ methodmap ConVar < Handle
 	// @param maxlength  Maximum length of string buffer.
 	public native void GetName(char[] name, int maxlength);
 
+	// Retrieves the description of a console variable.
+	//
+	// @param buffer     Buffer to store the description of the convar.
+	// @param maxlength  Maximum length of string buffer.
+	public native void GetDescription(char[] buffer, int maxlength);
+
 	// Replicates a convar value to a specific client. This does not change the actual convar value.
 	//
 	// @param client     Client index

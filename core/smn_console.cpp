@@ -650,6 +650,23 @@ static cell_t sm_GetConVarName(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t sm_GetConVarDescription(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError err;
+	ConVar *pConVar;
+
+	if ((err=g_ConVarManager.ReadConVarHandle(hndl, &pConVar))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
+	}
+
+	pContext->StringToLocalUTF8(params[2], params[3], pConVar->GetHelpText(), NULL);
+
+	return 1;
+}
+
 static bool s_QueryAlreadyWarned = false;
 
 static cell_t sm_QueryClientConVar(IPluginContext *pContext, const cell_t *params)
@@ -1510,6 +1527,7 @@ REGISTER_NATIVES(consoleNatives)
 	{"ConVar.GetBounds",		sm_GetConVarBounds},
 	{"ConVar.SetBounds",		sm_SetConVarBounds},
 	{"ConVar.GetName",			sm_GetConVarName},
+	{"ConVar.GetDescription",	sm_GetConVarDescription},
 	{"ConVar.ReplicateToClient",	ConVar_ReplicateToClient},
 	{"ConVar.AddChangeHook",	sm_HookConVarChange},
 	{"ConVar.RemoveChangeHook",	sm_UnhookConVarChange},
