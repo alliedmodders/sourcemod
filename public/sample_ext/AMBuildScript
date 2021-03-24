@@ -135,7 +135,7 @@ class ExtensionConfig(object):
     elif cxx.vendor == 'msvc':
       self.configure_msvc(cxx)
 
-    # Optimizaiton
+    # Optimization
     if builder.options.opt == '1':
       cxx.defines += ['NDEBUG']
 
