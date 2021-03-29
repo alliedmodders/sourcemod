@@ -1,0 +1,286 @@
+# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
+import os, sys
+
+# Simple extensions do not need to modify this file.
+
+def ResolveEnvPath(env, folder):
+  if env in os.environ:
+    path = os.environ[env]
+    if os.path.isdir(path):
+      return path
+    return None
+
+  head = os.getcwd()
+  oldhead = None
+  while head != None and head != oldhead:
+    path = os.path.join(head, folder)
+    if os.path.isdir(path):
+      return path
+    oldhead = head
+    head, tail = os.path.split(head)
+
+  return None
+
+def Normalize(path):
+  return os.path.abspath(os.path.normpath(path))
+
+class ExtensionConfig(object):
+  def __init__(self):
+    self.binaries = []
+    self.extensions = []
+    self.generated_headers = None
+    self.mms_root = None
+    self.sm_root = None
+
+  @property
+  def tag(self):
+    if builder.options.debug == '1':
+      return 'Debug'
+    return 'Release'
+
+  def detectSDKs(self):
+    if builder.options.sm_path:
+      self.sm_root = builder.options.sm_path
+    else:
+      self.sm_root = ResolveEnvPath('SOURCEMOD18', 'sourcemod-1.8')
+      if not self.sm_root:
+        self.sm_root = ResolveEnvPath('SOURCEMOD', 'sourcemod')
+      if not self.sm_root:
+        self.sm_root = ResolveEnvPath('SOURCEMOD_DEV', 'sourcemod-central')
+
+    if not self.sm_root or not os.path.isdir(self.sm_root):
+      raise Exception('Could not find a source copy of SourceMod')
+    self.sm_root = Normalize(self.sm_root)
+
+    if builder.options.mms_path:
+      self.mms_root = builder.options.mms_path
+    else:
+      self.mms_root = ResolveEnvPath('MMSOURCE110', 'mmsource-1.10')
+      if not self.mms_root:
+        self.mms_root = ResolveEnvPath('MMSOURCE', 'metamod-source')
+      if not self.mms_root:
+        self.mms_root = ResolveEnvPath('MMSOURCE_DEV', 'mmsource-central')
+
+    if not self.mms_root or not os.path.isdir(self.mms_root):
+      raise Exception('Could not find a source copy of Metamod:Source')
+    self.mms_root = Normalize(self.mms_root)
+
+  def configure(self):
+    cxx = builder.DetectCompilers()
+
+    if cxx.like('gcc'):
+      self.configure_gcc(cxx)
+    elif cxx.vendor == 'msvc':
+      self.configure_msvc(cxx)
+
+    # Optimization
+    if builder.options.opt == '1':
+      cxx.defines += ['NDEBUG']
+
+    # Debugging
+    if builder.options.debug == '1':
+      cxx.defines += ['DEBUG', '_DEBUG']
+
+    # Platform-specifics
+    if builder.target_platform == 'linux':
+      self.configure_linux(cxx)
+    elif builder.target_platform == 'mac':
+      self.configure_mac(cxx)
+    elif builder.target_platform == 'windows':
+      self.configure_windows(cxx)
+
+    # Finish up.
+    cxx.includes += [
+      os.path.join(self.sm_root, 'public'),
+    ]
+
+  def configure_gcc(self, cxx):
+    cxx.defines += [
+      'stricmp=strcasecmp',
+      '_stricmp=strcasecmp',
+      '_snprintf=snprintf',
+      '_vsnprintf=vsnprintf',
+      'HAVE_STDINT_H',
+      'GNUC',
+    ]
+    cxx.cflags += [
+      '-pipe',
+      '-fno-strict-aliasing',
+      '-Wall',
+      '-Werror',
+      '-Wno-unused',
+      '-Wno-switch',
+      '-Wno-array-bounds',
+      '-msse',
+      '-m32',
+      '-fvisibility=hidden',
+    ]
+    cxx.cxxflags += [
+      '-std=c++14',
+      '-fno-exceptions',
+      '-fno-threadsafe-statics',
+      '-Wno-non-virtual-dtor',
+      '-Wno-overloaded-virtual',
+      '-fvisibility-inlines-hidden',
+    ]
+    cxx.linkflags += ['-m32']
+
+    have_gcc = cxx.vendor == 'gcc'
+    have_clang = cxx.vendor == 'clang'
+    if cxx.version >= 'clang-3.6':
+      cxx.cxxflags += ['-Wno-inconsistent-missing-override']
+    if have_clang or (cxx.version >= 'gcc-4.6'):
+      cxx.cflags += ['-Wno-narrowing']
+    if have_clang or (cxx.version >= 'gcc-4.7'):
+      cxx.cxxflags += ['-Wno-delete-non-virtual-dtor']
+    if cxx.version >= 'gcc-4.8':
+      cxx.cflags += ['-Wno-unused-result']
+
+    if have_clang:
+      cxx.cxxflags += ['-Wno-implicit-exception-spec-mismatch']
+      if cxx.version >= 'apple-clang-5.1' or cxx.version >= 'clang-3.4':
+        cxx.cxxflags += ['-Wno-deprecated-register']
+      else:
+        cxx.cxxflags += ['-Wno-deprecated']
+      cxx.cflags += ['-Wno-sometimes-uninitialized']
+
+    if have_gcc:
+      cxx.cflags += ['-mfpmath=sse']
+
+    if builder.options.opt == '1':
+      cxx.cflags += ['-O3']
+
+  def configure_msvc(self, cxx):
+    if builder.options.debug == '1':
+      cxx.cflags += ['/MTd']
+      cxx.linkflags += ['/NODEFAULTLIB:libcmt']
+    else:
+      cxx.cflags += ['/MT']
+    cxx.defines += [
+      '_CRT_SECURE_NO_DEPRECATE',
+      '_CRT_SECURE_NO_WARNINGS',
+      '_CRT_NONSTDC_NO_DEPRECATE',
+      '_ITERATOR_DEBUG_LEVEL=0',
+    ]
+    cxx.cflags += [
+      '/W3',
+    ]
+    cxx.cxxflags += [
+      '/EHsc',
+      '/GR-',
+      '/TP',
+    ]
+    cxx.linkflags += [
+      '/MACHINE:X86',
+      'kernel32.lib',
+      'user32.lib',
+      'gdi32.lib',
+      'winspool.lib',
+      'comdlg32.lib',
+      'advapi32.lib',
+      'shell32.lib',
+      'ole32.lib',
+      'oleaut32.lib',
+      'uuid.lib',
+      'odbc32.lib',
+      'odbccp32.lib',
+    ]
+
+    if builder.options.opt == '1':
+      cxx.cflags += ['/Ox', '/Zo']
+      cxx.linkflags += ['/OPT:ICF', '/OPT:REF']
+
+    if builder.options.debug == '1':
+      cxx.cflags += ['/Od', '/RTC1']
+
+    # This needs to be after our optimization flags which could otherwise disable it.
+    # Don't omit the frame pointer.
+    cxx.cflags += ['/Oy-']
+
+  def configure_linux(self, cxx):
+    cxx.defines += ['_LINUX', 'POSIX']
+    cxx.linkflags += ['-Wl,--exclude-libs,ALL', '-lm']
+    if cxx.vendor == 'gcc':
+      cxx.linkflags += ['-static-libgcc']
+    elif cxx.vendor == 'clang':
+      cxx.linkflags += ['-lgcc_eh']
+
+  def configure_mac(self, cxx):
+    cxx.defines += ['OSX', '_OSX', 'POSIX']
+    cxx.cflags += ['-mmacosx-version-min=10.5']
+    cxx.linkflags += [
+      '-mmacosx-version-min=10.5',
+      '-arch', 'i386',
+      '-lstdc++',
+      '-stdlib=libstdc++',
+    ]
+    cxx.cxxflags += ['-stdlib=libstdc++']
+
+  def configure_windows(self, cxx):
+    cxx.defines += ['WIN32', '_WINDOWS']
+	
+  def ConfigureForExtension(self, context, compiler):
+    compiler.cxxincludes += [
+      os.path.join(context.currentSourcePath),
+      os.path.join(context.currentSourcePath, 'sdk'),
+      os.path.join(self.sm_root, 'public'),
+      os.path.join(self.sm_root, 'public', 'extensions'),
+      os.path.join(self.sm_root, 'sourcepawn', 'include'),
+      os.path.join(self.sm_root, 'public', 'amtl', 'amtl'),
+      os.path.join(self.sm_root, 'public', 'amtl'),
+    ]
+    return compiler
+
+  def ConfigureForHL2(self, binary):
+    compiler = binary.compiler
+
+    mms_path = os.path.join(self.mms_root, 'core')
+
+    compiler.cxxincludes += [
+      os.path.join(mms_path),
+      os.path.join(mms_path, 'sourcehook'),
+    ]
+
+    compiler.defines += ['META_NO_HL2SDK']
+
+    if compiler.like('msvc'):
+      compiler.defines += ['COMPILER_MSVC', 'COMPILER_MSVC32']
+    else:
+      compiler.defines += ['COMPILER_GCC']
+
+    if builder.target_platform == 'linux':
+      compiler.linkflags += ['-lstdc++']
+    elif builder.target_platform == 'mac':
+      compiler.linkflags.append('-liconv')
+
+    return binary
+
+  def HL2Library(self, context, name):
+    binary = context.compiler.Library(name)
+    self.ConfigureForExtension(context, binary.compiler)
+    return self.ConfigureForHL2(binary)
+
+  def HL2Project(self, context, name):
+    project = context.compiler.LibraryProject(name)
+    self.ConfigureForExtension(context, project.compiler)
+    return project
+
+  def HL2Config(self, project, name):
+    binary = project.Configure(name, '{0}'.format(self.tag))
+    return self.ConfigureForHL2(binary)
+
+Extension = ExtensionConfig()
+Extension.detectSDKs()
+Extension.configure()
+
+# Add additional buildscripts here
+BuildScripts = [
+  'AMBuilder',
+]
+
+if builder.backend == 'amb2':
+  BuildScripts += [
+    'PackageScript',
+  ]
+
+builder.RunBuildScripts(BuildScripts, { 'Extension': Extension})
