@@ -46,21 +46,21 @@ RulesFix::RulesFix() :
 {
 }
 
-void SetMTUMax(int iValue)
+bool SetMTUMax(int iValue)
 {
 	static int iOriginalValue = -1;
 	static int *m_pMaxMTU = nullptr;
 
 	//If we never changed skip resetting
 	if (iOriginalValue == -1 && iValue == -1)
-		return;
+		return true;
 
 	if (m_pMaxMTU == nullptr)
 	{
 		if (!g_pGameConf->GetAddress("MaxMTU", (void **)&m_pMaxMTU))
 		{
 			g_pSM->LogMessage(myself, "[CStrike] Failed to locate NET_SendPacket signature.");
-			return;
+			return false;
 		}
 
 		SourceHook::SetMemAccess(m_pMaxMTU, sizeof(int), SH_MEM_READ | SH_MEM_WRITE | SH_MEM_EXEC);
@@ -72,6 +72,7 @@ void SetMTUMax(int iValue)
 		*m_pMaxMTU = iOriginalValue;
 	else
 		*m_pMaxMTU = iValue;
+	return true;
 }
 
 void RulesFix::OnLoad()
@@ -79,11 +80,12 @@ void RulesFix::OnLoad()
 	host_rules_show = g_pCVar->FindVar("host_rules_show");
 	if (host_rules_show)
 	{
-		// Default to enabled. Explicit disable via cfg will still be obeyed.
-		host_rules_show->SetValue(true);
-
-		SetMTUMax(5000);
-		bPatched = true;
+		if (SetMTUMax(5000))
+		{
+			// Default to enabled. Explicit disable via cfg will still be obeyed.
+			host_rules_show->SetValue(true);
+			bPatched = true;
+		}
 	}
 
 	SH_ADD_HOOK(IServerGameDLL, GameServerSteamAPIActivated, gamedll, SH_MEMBER(this, &RulesFix::Hook_GameServerSteamAPIActivated), true);
@@ -122,17 +124,19 @@ static void OnConVarChanged(IConVar *var, const char *pOldValue, float flOldValu
 		{
 			if (!bPatched)
 			{
-				SetMTUMax(5000);
-				bPatched = true;
-				NotifyAllCVars();
+				if (SetMTUMax(5000))
+				{
+					bPatched = true;
+					NotifyAllCVars();
+				}
 			}
 		}
 		else
 		{
 			if (bPatched)
 			{
-				SetMTUMax(-1);
-				bPatched = false;
+				if (SetMTUMax(-1))
+					bPatched = false;
 			}
 		}
 	}
