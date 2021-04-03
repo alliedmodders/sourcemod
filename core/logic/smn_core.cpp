@@ -637,6 +637,34 @@ static cell_t FindPluginByNumber(IPluginContext *pContext, const cell_t *params)
 	return pPlugin->GetMyHandle();
 }
 
+static cell_t HookPluginUnload(IPluginContext *pContext, const cell_t *params)
+{
+	IPlugin *pPlugin = GetPluginFromHandle(pContext, params[1]);
+
+	if (!pPlugin)
+	{
+		return false;
+	}
+
+	IPluginFunction *pCallback = pContext->GetFunctionById(params[3]);
+
+	return scripts->HookPluginUnload(pPlugin, pCallback);
+}
+
+static cell_t UnhookPluginUnload(IPluginContext *pContext, const cell_t *params)
+{
+	IPlugin *pPlugin = GetPluginFromHandle(pContext, params[1]);
+
+	if (!pPlugin)
+	{
+		return false;
+	}
+
+	IPluginFunction *pCallback = pContext->GetFunctionById(params[3]);
+
+	return scripts->UnhookPluginUnload(pPlugin, pCallback);
+}
+
 static cell_t VerifyCoreVersion(IPluginContext *pContext, const cell_t *params)
 {
 	return 4;
@@ -969,6 +997,8 @@ REGISTER_NATIVES(coreNatives)
 	{"LogToFileEx",				LogToFileEx},
 	{"GetExtensionFileStatus",	GetExtensionFileStatus},
 	{"FindPluginByNumber",		FindPluginByNumber},
+	{"HookPluginUnload",		HookPluginUnload},
+	{"UnhookPluginUnload",		UnhookPluginUnload},
 	{"VerifyCoreVersion",		VerifyCoreVersion},
 	{"GetFeatureStatus",        GetFeatureStatus},
 	{"RequireFeature",          RequireFeature},
