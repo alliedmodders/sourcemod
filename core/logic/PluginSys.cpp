@@ -1505,6 +1505,8 @@ void CPluginManager::Purge(CPlugin *plugin)
 			(*iter)->OnPluginUnloaded(plugin);
 	}
 
+	CallUnloadHooks(plugin);
+
 	plugin->DropEverything();
 
 	for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
@@ -1601,6 +1603,19 @@ void CPluginManager::OnSourceModShutdown()
 
 	forwardsys->ReleaseForward(m_pOnLibraryAdded);
 	forwardsys->ReleaseForward(m_pOnLibraryRemoved);
+
+	{
+		std::list<PluginUnloadHookInfo>::iterator iter = m_PluginUnloadHooks.begin();
+	
+		while (iter!=m_PluginUnloadHooks.end())
+		{
+			forwardsys->ReleaseForward(iter->pForward);
+
+			iter++;
+		}
+
+		m_PluginUnloadHooks.clear();
+	}
 }
 
 ConfigResult CPluginManager::OnSourceModConfigChanged(const char *key,
@@ -2200,6 +2215,72 @@ bool CPluginManager::LibraryExists(const char *lib)
 	}
 
 	return false;
+}
+
+bool CPluginManager::HookPluginUnload(IPlugin *pPluginToHook, IPluginFunction *pHookFunction)
+{
+	{
+		std::list<PluginUnloadHookInfo>::iterator iter = m_PluginUnloadHooks.begin();
+
+		while (iter!=m_PluginUnloadHooks.end())
+		{
+			if(iter->pPluginTarget == pPluginToHook)
+			{
+				return iter->pForward->AddFunction(pHookFunction);
+			}
+
+			iter++;
+		}
+	}
+
+	IChangeableForward *pForward = forwardsys->CreateForwardEx(nullptr, ET_Hook, 1, nullptr, Param_Cell);
+
+	m_PluginUnloadHooks.push_back({pPluginToHook, pForward});
+
+	return pForward->AddFunction(pHookFunction);
+}
+
+bool CPluginManager::UnhookPluginUnload(IPlugin *pPluginToUnhook, IPluginFunction *pHookFunction)
+{
+	std::list<PluginUnloadHookInfo>::iterator iter = m_PluginUnloadHooks.begin();
+
+	while (iter!=m_PluginUnloadHooks.end())
+	{
+		if(iter->pPluginTarget == pPluginToUnhook)
+		{
+			return iter->pForward->RemoveFunction(pHookFunction);
+		}
+
+		iter++;
+	}
+
+	return false;
+}
+
+void CPluginManager::CallUnloadHooks(IPlugin *pTarget)
+{
+	std::list<PluginUnloadHookInfo>::iterator iter = m_PluginUnloadHooks.begin();
+
+	IChangeableForward *pForwardToCall;
+
+	while (iter!=m_PluginUnloadHooks.end())
+	{
+		// There can only be one unique
+		if(iter->pPluginTarget == pTarget)
+		{
+			pForwardToCall = iter->pForward;
+
+			pForwardToCall->PushCell((cell_t)pTarget);
+			pForwardToCall->Execute();
+
+			pForwardToCall->Cancel();
+			m_PluginUnloadHooks.erase(iter);
+
+			return;
+		}
+
+		iter++;
+	}
 }
 
 void CPluginManager::AllPluginsLoaded()
