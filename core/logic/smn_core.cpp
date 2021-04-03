@@ -646,7 +646,7 @@ static cell_t HookPluginUnload(IPluginContext *pContext, const cell_t *params)
 		return false;
 	}
 
-	IPluginFunction *pCallback = pContext->GetFunctionById(params[3]);
+	IPluginFunction *pCallback = pContext->GetFunctionById(params[2]);
 
 	return scripts->HookPluginUnload(pPlugin, pCallback);
 }
@@ -660,7 +660,7 @@ static cell_t UnhookPluginUnload(IPluginContext *pContext, const cell_t *params)
 		return false;
 	}
 
-	IPluginFunction *pCallback = pContext->GetFunctionById(params[3]);
+	IPluginFunction *pCallback = pContext->GetFunctionById(params[2]);
 
 	return scripts->UnhookPluginUnload(pPlugin, pCallback);
 }
