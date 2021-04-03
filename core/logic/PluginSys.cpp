@@ -2270,7 +2270,7 @@ void CPluginManager::CallUnloadHooks(IPlugin *pTarget)
 		{
 			pForwardToCall = iter->pForward;
 
-			pForwardToCall->PushCell((cell_t)pTarget);
+			pForwardToCall->PushCell((cell_t)pTarget->GetMyHandle());
 			pForwardToCall->Execute();
 
 			pForwardToCall->Cancel();
