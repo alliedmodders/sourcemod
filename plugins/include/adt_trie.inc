@@ -95,7 +95,6 @@ methodmap StringMap < Handle
 
 	// Retrieves an array in a Map.
 	//
-	// @param map        Map Handle.
 	// @param key        Key string.
 	// @param array      Buffer to store array.
 	// @param max_size   Maximum size of array buffer.
