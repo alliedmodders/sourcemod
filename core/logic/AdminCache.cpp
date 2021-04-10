@@ -2038,32 +2038,36 @@ bool AdminCache::CheckAdminCommandAccess(AdminId adm, const char *cmd, FlagBits 
 			return true;
 		}
 
-		/* Check for overrides
-		* :TODO: is it worth optimizing this?
-		*/
-		unsigned int groups = GetAdminGroupCount(adm);
-		GroupId gid;
-		OverrideRule rule;
-		bool override = false;
-		for (unsigned int i = 0; i<groups; i++)
+		if (cmd[0] != '\0')
 		{
-			gid = GetAdminGroup(adm, i, NULL);
-			/* First get group-level override */
-			override = GetGroupCommandOverride(gid, cmd, Override_CommandGroup, &rule);
-			/* Now get the specific command override */
-			if (GetGroupCommandOverride(gid, cmd, Override_Command, &rule))
+			/* Check for overrides if cmd name not empty
+			 * :TODO: is it worth optimizing this?
+			 */
+			unsigned int groups = GetAdminGroupCount(adm);
+			GroupId gid;
+			OverrideRule rule;
+			bool override = false;
+			for (unsigned int i = 0; i<groups; i++)
 			{
-				override = true;
-			}
-			if (override)
-			{
-				if (rule == Command_Allow)
+				gid = GetAdminGroup(adm, i, NULL);
+				/* First get group-level override */
+				override = GetGroupCommandOverride(gid, cmd, Override_CommandGroup, &rule);
+				/* Now get the specific command override */
+				if (!override && GetGroupCommandOverride(gid, cmd, Override_Command, &rule))
 				{
-					return true;
+					override = true;
 				}
-				else if (rule == Command_Deny)
+			
+				if (override)
 				{
-					return false;
+					if (rule == Command_Allow)
+					{
+						return true;
+					}
+					else if (rule == Command_Deny)
+					{
+						return false;
+					}
 				}
 			}
 		}
