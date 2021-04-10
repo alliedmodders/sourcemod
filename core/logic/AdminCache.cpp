@@ -2053,7 +2053,7 @@ bool AdminCache::CheckAdminCommandAccess(AdminId adm, const char *cmd, FlagBits 
 				/* First get group-level override */
 				override = GetGroupCommandOverride(gid, cmd, Override_CommandGroup, &rule);
 				/* Now get the specific command override */
-				if (!override && GetGroupCommandOverride(gid, cmd, Override_Command, &rule))
+				if (GetGroupCommandOverride(gid, cmd, Override_Command, &rule))
 				{
 					override = true;
 				}
