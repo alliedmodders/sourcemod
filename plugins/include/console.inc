@@ -543,8 +543,8 @@ native bool ReadCommandIterator(Handle iter,
  * flags using the override system.
  *
  * @param client        Client index.
- * @param command       Command name.  If the command is not found, the default 
- *                      flags are used.
+ * @param command       Command name.  If an empty string or if the command is not found, 
+ *                      the default flags are used.
  * @param flags         Flag string to use as a default, if the command or override 
  *                      is not found.
  * @param override_only If true, SourceMod will not attempt to find a matching 
