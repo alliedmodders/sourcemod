@@ -140,7 +140,7 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 
 public Action Event_PlayerTeam(Event event, const char[] name, bool dontBroadcast)
 {
-	if(!_Cvar_ExcludeSpectators.BoolValue)
+	if(!g_Cvar_ExcludeSpectators.BoolValue)
 		return;
 		
 	if(event.GetBool("disconnect"))
