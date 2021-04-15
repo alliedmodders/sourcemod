@@ -76,43 +76,25 @@ public void OnPluginStart()
 	g_Cvar_RTVPostVoteAction = CreateConVar("sm_rtv_postvoteaction", "0", "What to do with RTV's after a mapvote has completed. 0 - Allow, success = instant change, 1 - Deny", _, true, 0.0, true, 1.0);
 	g_Cvar_ExcludeSpectators = CreateConVar("sm_rtv_exclude_spectators", "0", "Should the plugin not count spectators as players on the decision of minimum players to rock the vote, and if the vote is sent to them. 0 - Spectators are regular players. 1 - Spectators are treated as away from keyboard, meaning they are treated as disconnected", _, true, 0.0, true, 1.0);
 	
+	HookEvent("player_team", Event_PlayerTeam);
+	
 	RegConsoleCmd("sm_rtv", Command_RTV);
 	
 	AutoExecConfig(true, "rtv");
 
 	OnMapEnd();
-
-	/* Handle late load */
-	for (int i=1; i<=MaxClients; i++)
-	{
-		if (IsClientConnected(i))
-		{
-			OnClientConnected(i);	
-		}	
-	}
 }
 
 public void OnMapEnd()
 {
 	g_RTVAllowed = false;
-	g_Voters = 0;
 	g_Votes = 0;
-	g_VotesNeeded = 0;
 	g_InChange = false;
 }
 
 public void OnConfigsExecuted()
 {
 	CreateTimer(g_Cvar_InitialDelay.FloatValue, Timer_DelayRTV, _, TIMER_FLAG_NO_MAPCHANGE);
-}
-
-public void OnClientConnected(int client)
-{
-	if (!IsFakeClient(client))
-	{
-		g_Voters++;
-		g_VotesNeeded = RoundToCeil(float(g_Voters) * g_Cvar_Needed.FloatValue);
-	}
 }
 
 public void OnClientDisconnect(int client)
@@ -123,11 +105,7 @@ public void OnClientDisconnect(int client)
 		g_Voted[client] = false;
 	}
 	
-	if (!IsFakeClient(client))
-	{
-		g_Voters--;
-		g_VotesNeeded = RoundToCeil(float(g_Voters) * g_Cvar_Needed.FloatValue);
-	}
+	CountVoteVariables();
 	
 	if (g_Votes && 
 		g_Voters && 
@@ -160,6 +138,47 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 	}
 }
 
+public Action Event_PlayerTeam(Event event, const char[] name, bool dontBroadcast)
+{
+	if(!_Cvar_ExcludeSpectators.BoolValue)
+		return;
+		
+	if(event.GetBool("disconnect"))
+		return;
+		
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	
+	if(client == 0)
+		return;
+		
+	int team = event.GetInt("team");
+	
+	if(team == 1)
+	{
+		if(g_Voted[client])
+		{
+			g_Votes--;
+			g_Voted[client] = false;
+		}
+	
+		CountVoteVariables();
+	
+		if (g_Votes && 
+			g_Voters && 
+			g_Votes >= g_VotesNeeded && 
+			g_RTVAllowed ) 
+		{
+			if (g_Cvar_RTVPostVoteAction.IntValue == 1 && HasEndOfMapVoteFinished())
+			{
+				return;
+			}
+			
+			StartRTV();
+		}	
+	}
+}
+
+
 public Action Command_RTV(int client, int args)
 {
 	if (!client)
@@ -186,7 +205,7 @@ void AttemptRTV(int client)
 		return;
 	}
 	
-	if (GetClientCount(true) < g_Cvar_MinPlayers.IntValue)
+	if (g_Voters < g_Cvar_MinPlayers.IntValue)
 	{
 		ReplyToCommand(client, "[SM] %t", "Minimal Players Not Met");
 		return;			
@@ -198,11 +217,19 @@ void AttemptRTV(int client)
 		return;
 	}	
 	
+	if(g_Cvar_ExcludeSpectators.BoolValue && GetClientTeam(client) == 1)
+	{
+		ReplyToCommand(client, "[SM] %t", "Spectators Cannot Vote");
+		return;
+	}
+	
 	char name[MAX_NAME_LENGTH];
 	GetClientName(client, name, sizeof(name));
 	
 	g_Votes++;
 	g_Voted[client] = true;
+	
+	CountVoteVariables();
 	
 	PrintToChatAll("[SM] %t", "RTV Requested", name, g_Votes, g_VotesNeeded);
 	
@@ -278,4 +305,23 @@ public Action Timer_ChangeMap(Handle hTimer)
 	}
 	
 	return Plugin_Stop;
+}
+
+void CountVoteVariables()
+{
+	g_Voters = 0;
+	
+	for (int i=1; i<=MaxClients; i++)
+	{
+		if(!IsClientInGame(i) || IsFakeClient(i))
+			continue;
+			
+		else if(g_Cvar_ExcludeSpectators.BoolValue && GetClientTeam(i) == 1)
+			continue;
+			
+		g_Voters++;
+	}
+	
+	g_VotesNeeded = RoundToCeil(float(g_Voters) * g_Cvar_Needed.FloatValue);
+	
 }
