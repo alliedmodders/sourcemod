@@ -32,6 +32,7 @@
  */
 
 #include <sourcemod>
+#include <sdktools>
 #include <mapchooser>
 #include <nextmap>
 
@@ -56,12 +57,15 @@ ConVar g_Cvar_RTVPostVoteAction;
 ConVar g_Cvar_ExcludeSpectators;
 
 bool g_RTVAllowed = false;	// True if RTV is available to players. Used to delay rtv votes.
-int g_Voters = 0;				// Total voters connected. Doesn't include fake clients.
-int g_Votes = 0;				// Total number of "say rtv" votes
-int g_VotesNeeded = 0;			// Necessary votes before map vote begins. (voters * percent_needed)
 bool g_Voted[MAXPLAYERS+1] = {false, ...};
 
 bool g_InChange = false;
+
+int g_Voters = 0;				// Total voters connected. Doesn't include fake clients.
+int g_Votes = 0;				// Total number of "say rtv" votes
+int g_VotesNeeded = 0;			// Necessary votes before map vote begins. (voters * percent_needed)
+
+int g_iSpectatorTeam;
 
 public void OnPluginStart()
 {
@@ -79,6 +83,8 @@ public void OnPluginStart()
 	HookEvent("player_team", Event_PlayerTeam);
 	
 	RegConsoleCmd("sm_rtv", Command_RTV);
+
+	g_iSpectatorTeam = FindTeamByName("spec");
 	
 	AutoExecConfig(true, "rtv");
 
@@ -217,7 +223,7 @@ void AttemptRTV(int client)
 		return;
 	}	
 	
-	if(g_Cvar_ExcludeSpectators.BoolValue && GetClientTeam(client) == 1)
+	if(g_Cvar_ExcludeSpectators.BoolValue && IsClientSpectatorTeam(client))
 	{
 		ReplyToCommand(client, "[SM] %t", "Spectators Cannot Vote");
 		return;
@@ -316,7 +322,7 @@ void CountVoteVariables()
 		if(!IsClientInGame(i) || IsFakeClient(i))
 			continue;
 			
-		else if(g_Cvar_ExcludeSpectators.BoolValue && GetClientTeam(i) == 1)
+		else if(g_Cvar_ExcludeSpectators.BoolValue && IsClientSpectatorTeam(i))
 			continue;
 			
 		g_Voters++;
@@ -324,4 +330,9 @@ void CountVoteVariables()
 	
 	g_VotesNeeded = RoundToCeil(float(g_Voters) * g_Cvar_Needed.FloatValue);
 	
+}
+
+stock int IsClientSpectatorTeam(int client)
+{
+	return GetClientTeam(client) == g_iSpectatorTeam;
 }
