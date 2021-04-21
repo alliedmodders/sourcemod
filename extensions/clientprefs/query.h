@@ -100,6 +100,7 @@ public:
 
 private:
 	IDatabase *m_database;
+	IDBDriver *m_driver;
 	IQuery *m_pResult;
 
 	/* Query type */

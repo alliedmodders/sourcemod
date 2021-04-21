@@ -37,6 +37,7 @@
 			
 			// SDKHooks
 			"Blocked"			"_ZN11CBaseEntity7BlockedEPS_"
+			"CanBeAutobalanced"		"_ZN22CBaseMultiplayerPlayer17CanBeAutobalancedEv"
 			"EndTouch"			"_ZN11CBaseEntity8EndTouchEPS_"
 			"FireBullets"		"_ZN11CBaseEntity11FireBulletsERK17FireBulletsInfo_t"
 			"GroundEntChanged"	"_ZN11CBaseEntity35NetworkStateChanged_m_hGroundEntityEPv"
@@ -84,6 +85,7 @@
 			// TF2 ext
 			"CalcIsAttackCriticalHelper"	"_ZN13CTFWeaponBase26CalcIsAttackCriticalHelperEv"
 			"CalcIsAttackCriticalHelperNoCrits"	"_ZN13CTFWeaponBase33CalcIsAttackCriticalHelperNoCritsEv"
+			"IsHolidayActive"		"_ZNK12CTFGameRules15IsHolidayActiveEi"
 
 			// CSSDM
 			"IPointsForKill"	"_ZN14CTeamplayRules14IPointsForKillEP11CBasePlayerS1_"
@@ -177,6 +179,67 @@
 			"CTeamplayRoundBasedRules::CleanUpMap"		"_ZN12CTFGameRules10CleanUpMapEv"
 
 			"IsValidObserverTarget"		"_ZN11CBasePlayer21IsValidObserverTargetEP11CBaseEntity"
+
+			// Pelipoika - TF2_NextBot tf2.pets.txt
+			"CTFPlayer::GetAmmoCount"					"_ZNK9CTFPlayer12GetAmmoCountEi"
+			"CTFWeaponBaseGun::GetWeaponID"				"_ZNK13CTFWeaponBase11GetWeaponIDEv"
+			"CTFWeaponBaseGun::HasAmmo"					"_ZN13CTFWeaponBase7HasAmmoEv"
+			"CTFWeaponBaseGun::GetProjectileSpeed"		"_ZN16CTFWeaponBaseGun18GetProjectileSpeedEv"
+			"CTFWeaponBaseGun::GetProjectileGravity"	"_ZN14CTFCompoundBow20GetProjectileGravityEv"
+			"CTFBaseBoss::GetCurrencyValue"				"_ZN11CTFBaseBoss16GetCurrencyValueEv"
+			"CBaseEntity::WorldSpaceCenter"				"_ZNK11CBaseEntity16WorldSpaceCenterEv"
+			"CBaseEntity::GetSmoothedVelocity"			"_ZN11CBaseEntity19GetSmoothedVelocityEv"
+			"CBaseEntity::MyNextBotPointer"				"_ZN11CBaseEntity16MyNextBotPointerEv"
+			"CBaseEntity::GetVectors"					"_ZNK11CBaseEntity10GetVectorsEP6VectorS1_S1_"
+			"CBaseAnimating::StudioFrameAdvance"		"_ZN14CBaseAnimating18StudioFrameAdvanceEv"
+			"CBaseAnimating::DispatchAnimEvents"		"_ZN14CBaseAnimating18DispatchAnimEventsEPS_"
+			"CBaseAnimating::HandleAnimEvent"			"_ZN14CBaseAnimating15HandleAnimEventEP11animevent_t"
+			"INextBot::GetLocomotionInterface"			"_ZNK8INextBot22GetLocomotionInterfaceEv"
+			"INextBot::GetBodyInterface"				"_ZNK8INextBot16GetBodyInterfaceEv"
+			"INextBot::GetVisionInterface"				"_ZNK8INextBot18GetVisionInterfaceEv"
+			"INextBot::Upkeep"							"_ZN8INextBot6UpkeepEv"
+			"INextBotComponent::GetBot"					"_ZNK17INextBotComponent6GetBotEv"
+			"ILocomotion::Approach"						"_ZN11ILocomotion8ApproachERK6Vectorf"
+			"ILocomotion::Run"							"_ZN11ILocomotion3RunEv"
+			"ILocomotion::FaceTowards"					"_ZN11ILocomotion11FaceTowardsERK6Vector"
+			"ILocomotion::IsAttemptingToMove"			"_ZNK11ILocomotion18IsAttemptingToMoveEv"
+			"ILocomotion::StuckMonitor"					"_ZN11ILocomotion12StuckMonitorEv"
+			"ILocomotion::ShouldCollideWith"			"_ZNK11ILocomotion17ShouldCollideWithEPK11CBaseEntity"
+			"ILocomotion::GetVelocity"					"_ZNK11ILocomotion11GetVelocityEv"
+			"ILocomotion::GetMotionVector"				"_ZNK11ILocomotion15GetMotionVectorEv"
+			"ILocomotion::GetGravity"					"_ZNK23NextBotGroundLocomotion10GetGravityEv"
+			"ILocomotion::GetGroundNormal"				"_ZNK11ILocomotion15GetGroundNormalEv"
+			"ILocomotion::Jump"							"_ZN11ILocomotion4JumpEv"
+			"ILocomotion::GetFrictionForward"			"_ZNK23NextBotGroundLocomotion18GetFrictionForwardEv"
+			"ILocomotion::GetFrictionSideways"			"_ZNK23NextBotGroundLocomotion19GetFrictionSidewaysEv"
+			"ILocomotion::IsOnGround"					"_ZNK11ILocomotion10IsOnGroundEv"
+			"ILocomotion::IsStuck"						"_ZNK11ILocomotion7IsStuckEv"
+			"ILocomotion::StuckMonitor"					"_ZN11ILocomotion12StuckMonitorEv"
+			"ILocomotion::ClearStuckStatus"				"_ZN11ILocomotion16ClearStuckStatusEPKc"
+			"ILocomotion::SetVelocity"					"_ZN23NextBotGroundLocomotion11SetVelocityERK6Vector"
+			"ILocomotion::GetMaxDeceleration"			"_ZNK11ILocomotion18GetMaxDecelerationEv"
+			"ILocomotion::ClimbUpToLedge" 				"_ZN11ILocomotion14ClimbUpToLedgeERK6VectorS2_PK11CBaseEntity"
+			"ILocomotion::JumpAcrossGap"				"_ZN11ILocomotion13JumpAcrossGapERK6VectorS2_"
+			"ILocomotion::IsGap"						"_ZNK11ILocomotion5IsGapERK6VectorS2_"
+			"ILocomotion::GetRunSpeed"					"_ZNK11ILocomotion11GetRunSpeedEv"
+			"ILocomotion::GetStepHeight"				"_ZNK11ILocomotion13GetStepHeightEv"
+			"ILocomotion::GetGroundSpeed"				"_ZNK11ILocomotion14GetGroundSpeedEv"
+			"ILocomotion::GetGroundMotionVector"		"_ZNK11ILocomotion21GetGroundMotionVectorEv"
+			"ILocomotion::GetMaxAcceleration"			"_ZNK11ILocomotion18GetMaxAccelerationEv"
+			"IVision::GetPrimaryKnownThreat"			"_ZNK7IVision21GetPrimaryKnownThreatEb"
+			"IVision::AddKnownEntity"					"_ZN7IVision14AddKnownEntityEP11CBaseEntity"
+			"IVision::GetKnown"							"_ZNK7IVision8GetKnownEPK11CBaseEntity"
+			"CKnownEntity::GetEntity"					"_ZNK12CKnownEntity9GetEntityEv"
+			"CKnownEntity::UpdatePosition"				"_ZN12CKnownEntity14UpdatePositionEv"
+			"CKnownEntity::UpdateVisibilityStatus"		"_ZN12CKnownEntity22UpdateVisibilityStatusEb"
+			"IBody::GetSolidMask"						"_ZNK5IBody12GetSolidMaskEv"
+			"IBody::StartActivity"						"_ZN5IBody13StartActivityE8Activityj"
+			"IBody::GetHullWidth"						"_ZNK5IBody12GetHullWidthEv"
+			"IBody::GetHullHeight"						"_ZNK5IBody13GetHullHeightEv"
+			"IBody::GetStandHullHeight"					"_ZNK5IBody18GetStandHullHeightEv"
+			"IBody::GetCrouchHullHeight"				"_ZNK5IBody19GetCrouchHullHeightEv"
+			"IBody::GetHullMins"						"_ZNK5IBody11GetHullMinsEv"
+			"IBody::GetHullMaxs"						"_ZNK5IBody11GetHullMaxsEv"
 		}
 		
 		"Options"
@@ -220,6 +283,11 @@
 			"EquipWearable"			"_ZN11CBasePlayer13EquipWearableEP13CEconWearable"
 			"RemoveWearable"		"_ZN11CBasePlayer14RemoveWearableEP13CEconWearable"
 			"GrenadeDetonate"		"_ZN12CBaseGrenade8DetonateEv"
+			"CTFPlayer::ShouldGib"		"_ZN9CTFPlayer9ShouldGibERK15CTakeDamageInfo"
+			"CTFBot::IsAllowedToPickUpFlag"		"_ZNK6CTFBot21IsAllowedToPickUpFlagEv"
+			"CTFPlayer::IsValidObserverTarget"	"_ZN9CTFPlayer21IsValidObserverTargetEP11CBaseEntity"
+			"CTFWeaponBase::GetMaxClip1"		"_ZNK13CTFWeaponBase11GetMaxClip1Ev"
+			"CCaptureFlag::PickUp"			"_ZN12CCaptureFlag6PickUpEP9CTFPlayerb"
 		}
 	}
 
@@ -230,6 +298,7 @@
 			"engine"	"css"
 			"engine"	"sdk2013"
 			"engine"	"orangebox_valve"
+			"engine"	"bms"
 		}
 
 		"Keys"
@@ -286,8 +355,13 @@
 		}
 	}
 
-	"insurgency"
+	"#default"
 	{
+		"#supported"
+		{
+			"engine"	"insurgency"
+		}
+
                 "Keys"
                 {
                         "GiveNamedItem" "_ZN11CBasePlayer13GiveNamedItemEPKcib"
@@ -343,7 +417,8 @@
 			"CalcDominationAndRevenge_Byte_Win"		"0F"
 			"CalcDominationAndRevenge_Byte_Lin"		"74"
 			"GetWeaponPrice_Offset"					"GetWeaponPriceFuncGDC"
-			"GetWeaponPrice_Byte_Win"				"E9"	
+			"GetWeaponPrice_Byte_Win"				"E9"
+			"GetWeaponPrice_Byte_Lin"				"E8"	
 		}
 	}
 	
@@ -375,6 +450,14 @@
 		"Keys"
 		{
 			"Ignite"	"_ZN14CBaseAnimating6IgniteEfbfbP11CBaseEntity8string_t"
+		}
+	}
+
+	"bms"
+	{
+		"Keys"
+		{
+			"GiveNamedItem"	"_ZN11CBasePlayer13GiveNamedItemEPKciii"
 		}
 	}
 }

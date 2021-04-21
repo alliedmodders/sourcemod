@@ -32,24 +32,30 @@
 			"s_pTempEntities"
 			{
 				"windows"	"4"
+				"linux"		"20"
+				"linux64"	"18"
+				"mac64"		"21"
 			}
 			"GetTEName"
 			{
 				"windows"	"4"
 				"linux"		"4"
-				"mac"		"4"
+				"linux64"	"8"
+				"mac64"		"8"
 			}
 			"GetTENext"
 			{
 				"windows"	"8"
 				"linux"		"8"
-				"mac"		"8"
+				"linux64"	"16"
+				"mac64"		"16"
 			}
 			"TE_GetServerClass"
 			{
 				"windows"	"0"
 				"linux"		"0"
-				"mac"		"0"
+				"linux64"	"0"
+				"mac64"		"0"
 			}
 		}
 
@@ -59,12 +65,9 @@
 			{
 				"library"	"server"
 				"windows"	"\x89\x41\x04\xA1\x2A\x2A\x2A\x2A\x89\x41\x08\x89\x0D\x2A\x2A\x2A\x2A\xC7"
-			}
-			"s_pTempEntities"
-			{
-				"library"	"server"
-				"linux"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
-				"mac"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
+				"linux"		"\x55\x89\xE5\x8B\x45\x08\x8B\x55\x0C\xC7\x00\x2A\x2A\x2A\x2A\x89\x50\x04\x8B\x15\x2A\x2A\x2A\x2A"
+				"linux64"	"\x48\x8D\x05\x2A\x2A\x2A\x2A\x55\x48\x89\x07\x48\x89\xE5\x5D\x48\x8B\x05\x2A\x2A\x2A\x2A"
+				"mac64"		"\x55\x48\x89\xE5\x48\x8D\x05\x2A\x2A\x2A\x2A\x48\x89\x07\x48\x89\x77\x08\x48\x8B\x05\x2A\x2A\x2A\x2A"
 			}
 		}
 	}
@@ -79,8 +82,9 @@
 			{
 				"library"	"server"
 				// Fallback to IServerTools method instead on Windows, lest we add custom logic since it's no longer a thiscall on Windows in CS:GO
-				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
-				"mac"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
+				"linux"		"\x55\x89\xE5\x57\x56\x53\x83\xEC\x1C\x8B\x45\x0C\x8B\x5D\x08\x8B\x7D\x10\x85\xC0\x0F\x84\x2A\x2A\x2A\x2A\x8B\x10\x89\x04\x24\xFF\x52\x0C\x8B\x10\xB8\xFF\x1F\x00\x00\x0F\xB7\xCA\x83\xFA\xFF\x0F\x45\xC1\x8D\x04\x40\x8B\x5C\xC3\x10\xEB\x2A\x90\x2A\x2A\x2A\x2A\x89"
+				"linux64"	"\x55\x48\x89\xE5\x41\x55\x49\x89\xD5\x41\x54\x53\x48\x89\xFB\x48\x83\xEC\x08\x48\x85\xF6\x0F\x84\xBC\x00\x00\x00"
+				"mac64"		"\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x54\x53\x49\x89\xD7\x48\x89\xFB\x48\x85\xF6\x74\x29\x48\x8B\x06\x48\x89\xF7\xFF\x50\x18\x8B\x00\x83\xF8\xFF\x0F\xB7\xC0\xB9\xFF\x1F\x00\x00\x48\x0F\x45\xC8\x48\x8D\x04\x49\x48\xC1\xE0\x04\x48\x8D\x5C\x03\x20\xEB\x07\x48\x81\xC3\x08\x00\x06\x00\x48\x8B\x1B\x45\x31\xE4\x48\x85\xDB\x74\x58\x4C\x8D\x35\x2A\x2A\x2A\x2A\x0F"
 			}
 		}
 	}
@@ -109,6 +113,9 @@
 			 * here.
 			 */
 			"CreateFakeClient_Windows"	"\x55\x8B\xEC\x56\xFF\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8B"
+			"CreateFakeClient_Linux"	"\x55\x89\xE5\x53\x83\xEC\x14\x8B\x45\x0C\xC7\x04\x24\x2A\x2A\x2A\x2A"
+			"CreateFakeClient_Linux64"	"\x55\x48\x89\xE5\x53\x48\x83\xEC\x08\x48\x8B\x3D\x2A\x2A\x2A\x2A\xE8"
+			"CreateFakeClient_Mac64"	"\x55\x48\x89\xE5\x53\x50\x48\x8D\x3D\x2A\x2A\x2A\x2A\x48\x8B\x07\xFF\x90\x78"
 		}
 		
 		"Offsets"
@@ -117,19 +124,12 @@
 			"sv"
 			{
 				"windows"	"8"
+				"linux"		"13"
+				"linux64"	"12"
+				"mac64"		"9"
 			}
 		}
 		
-		"Signatures"
-		{
-			/* CBaseServer object for IServer interface */
-			"sv"
-			{
-				"library"	"engine"
-				"linux"		"@sv"
-				"mac"		"@sv"
-			}
-		}
 	}
 	
 	/* EntityFactoryDictionary function */
@@ -137,17 +137,19 @@
 	{
 		"Signatures"
 		{
-			"EntityFactory"
-			{
-				"library"	"server"
-				"linux"		"@_Z23EntityFactoryDictionaryv"
-				"mac"		"@_Z23EntityFactoryDictionaryv"
-			}
 			
 			"EntityFactoryFinder"
 			{
 				"library"	"server"
-				"windows"	"\xFF\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x8B\xC8\xC7"
+				"windows"	"\xA1\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\x53\xFF\x50\x2A\xC7"
+			}
+			
+			"EntityFactoryCaller"
+			{
+				"library"	"server"
+				"linux"		"\x55\x89\xE5\x53\x83\xEC\x14\x8B\x5D\x08\xE8\x2A\x2A\x2A\x2A\x8B\x10\x89\x04\x24"
+				"linux64"	"\x55\x48\x89\xE5\x53\x48\x89\xFB\x48\x83\xEC\x08\xE8\x2A\x2A\x2A\x2A\x48\x89\xDE\x48\x8B\x10\x48\x89\xC7\xFF\x52\x08"
+				"mac64"		"\xE8\x2A\x2A\x2A\x2A\x48\x8B\x08\x48\x89\xC7\x4C\x89\xFE\xFF\x51\x08"
 			}
 		}
 		
@@ -155,7 +157,13 @@
 		{
 			"EntityFactoryOffset"
 			{
-				"windows" 	"4"
+				"windows" 	"1"
+			}
+			"EntityFactoryCallOffset"
+			{
+				"linux"		"11"
+				"linux64"	"13"
+				"mac64"		"1"
 			}
 		}
 	}
@@ -169,8 +177,9 @@
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\x2A\x2A\x81\xEC\x2A\x2A\x2A\x2A\x8B\xC1\x53\x56\x57\x8B\x2A\x2A\x89\x2A\x2A\x2A\x33"
-				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
-				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+				"linux"		"\x55\x89\xE5\x57\x56\x53\x81\xEC\x7C\x01\x00\x00\x8B\x55\x08\x8B\x75\x14"
+				"linux64"	"\x55\x48\x89\xE5\x41\x57\x41\x56\x49\x89\xF6\x41\x55\x41\x54\x49\x89\xCC\x53"
+				"mac64"		"\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x55\x41\x54\x53\x48\x81\xEC\x88\x01\x00\x00\xF3\x0F\x11\x85\x8C\xFE\xFF\xFF"
 			}
 		}
 	}
@@ -189,9 +198,10 @@
 			"SetUserCvar"
 			{
 				/* Not 100% sure on this, why would windows change and not linux - TEST ME */
-				"windows"	"29"
-				"linux"		"67"
-				"mac"		"67"
+				"windows"	"31"
+				"linux"		"69"
+				"linux64"	"69"
+				"mac64"		"69"
 			}
 			/**
 			 * CBaseClient::SetName(char  const*);
@@ -200,9 +210,10 @@
 			 */
 			"SetClientName"
 			{
-				"windows"	"28"
-				"linux"		"66"
-				"mac"		"66"
+				"windows"	"30"
+				"linux"		"68"
+				"linux64"	"68"
+				"mac64"		"68"
 			}
 			/**
 			 * Offset into CBaseClient - Used by CBaseServer::UpdateUserSettings to determine when changes have been made.
@@ -214,14 +225,15 @@
 			 */
 			"InfoChanged"
 			{
-				"windows"	"476"
-				"linux"		"456"
-				"mac"		"456"
+				"windows"	"488"
+				"linux"		"468"
+				"linux64"	"600"
+				"mac64"		"616"
 			}
 		}
 	}
 	
-	"csgo"
+	"#default"
 	{
 		"Keys"
 		{
@@ -232,93 +244,121 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"448"
-				"linux"		"449"
-				"mac"		"449"
+				"windows"	"457"
+				"linux"		"458"
+				"linux64"	"458"
+				"mac64"		"458"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"292"
-				"linux"		"293"
-				"mac"		"293"
+				"windows"	"296"
+				"linux"		"297"
+				"linux64"	"297"
+				"mac64"		"297"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"288"
-				"linux"		"289"
-				"mac"		"289"
+				"windows"	"292"
+				"linux"		"293"
+				"linux64"	"293"
+				"mac64"		"293"
 			}
 			"Ignite"
 			{
-				"windows"	"223"
-				"linux"		"224"
-				"mac"		"224"
+				"windows"	"226"
+				"linux"		"227"
+				"linux64"	"227"
+				"mac64"		"227"
 			}
 			"Extinguish"
 			{
-				"windows"	"226"
-				"linux"		"227"
-				"mac"		"227"
+				"windows"	"229"
+				"linux"		"230"
+				"linux64"	"230"
+				"mac64"		"230"
 			}
 			"Teleport"
 			{
-				"windows"	"113"
-				"linux"		"114"
-				"mac"		"114"
+				"windows"	"114"
+				"linux"		"115"
+				"linux64"	"115"
+				"mac64"		"115"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"498"
-				"linux"		"498"
-				"mac"		"498"
+				"windows"	"507"
+				"linux"		"507"
+				"linux64"	"507"
+				"mac64"		"507"
 			}
 			"GetVelocity"
 			{
-				"windows"	"138"
-				"linux"		"139"
-				"mac"		"139"
+				"windows"	"140"
+				"linux"		"141"
+				"linux64"	"141"
+				"mac64"		"141"
 			}
 			"EyeAngles"
 			{
-				"windows"	"129"
-				"linux"		"130"
-				"mac"		"130"
+				"windows"	"131"
+				"linux"		"132"
+				"linux64"	"132"
+				"mac64"		"132"
 			}
 			"AcceptInput"
 			{
-				"windows"	"40"
-				"linux"		"41"
-				"mac"		"41"
+				"windows"	"41"
+				"linux"		"42"
+				"linux64"	"42"
+				"mac64"		"42"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"26"
-				"linux"		"27"
-				"mac"		"27"
+				"windows"	"27"
+				"linux"		"28"
+				"linux64"	"28"
+				"mac64"		"28"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"281"
-				"linux"		"282"
-				"mac"		"282"
+				"windows"	"285"
+				"linux"		"286"
+				"linux64"	"286"
+				"mac64"		"286"
 			}
 			"Activate"
 			{
-				"windows"	"37"
-				"linux"		"38"
-				"mac"		"38"
+				"windows"	"38"
+				"linux"		"39"
+				"linux64"	"39"
+				"mac64"		"39"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"468"
-				"linux"		"469"
-				"mac"		"469"
+				"windows"	"477"
+				"linux"		"478"
+				"linux64"	"478"
+				"mac64"		"478"
 			}
 			"GiveAmmo"
 			{
-				"windows"	"274"
-				"linux"		"275"
-				"mac"		"275"
+				"windows"	"278"
+				"linux"		"279"
+				"linux64"	"279"
+				"mac64"		"279"
+			}
+		}
+		"Signatures"
+		{
+			/**
+			 *	CNetworkStringTableContainer::WriteBaselines
+			 *	"Index error writing string table baseline %s\n"
+			 */
+			"WriteBaselines"
+			{
+				"library"	"engine"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x60\x53\x56\x8B\xF1\x8B\x0D\x2A\x2A\x2A\x2A\x57\x89\x75\xF8\x8B\x81\x2A\x2A\x2A\x2A\x89\x45\xF4\x85\xC0"
+				"linux"		"\x55\x89\xE5\x57\x56\x53\x81\xEC\x8C\x00\x00\x00\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x75\x08\x8B\x5D\x0C\x8B\x7D\x10\x85\xC9\x0F\x95\xC0\x84\xC0\x88\x45\xE6\x74"
 			}
 		}
 	}

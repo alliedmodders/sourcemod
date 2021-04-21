@@ -32,9 +32,12 @@
 #ifndef _INCLUDE_SOURCEMOD_PLUGINSYSTEM_H_
 #define _INCLUDE_SOURCEMOD_PLUGINSYSTEM_H_
 
-#include <time.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <time.h>
+
+#include <memory>
+
 #include <IPluginSys.h>
 #include <IHandleSys.h>
 #include <IForwardSys.h>
@@ -129,10 +132,10 @@ public:
 		bool required;
 	};
 
-	typedef ke::Lambda<bool(const sp_pubvar_t *, const ExtVar& ext)> ExtVarCallback;
+	typedef ke::Function<bool(const sp_pubvar_t *, const ExtVar& ext)> ExtVarCallback;
 	bool ForEachExtVar(const ExtVarCallback& callback);
 
-	void ForEachLibrary(ke::Lambda<void(const char *)> callback);
+	void ForEachLibrary(ke::Function<void(const char *)> callback);
 public:
 	/**
 	 * Creates a plugin object with default values.
@@ -142,11 +145,6 @@ public:
 	 * a valid (but error-stated) CPlugin will be returned.
 	 */
 	static CPlugin *Create(const char *file);
-
-	static inline bool matches(const char *file, const CPlugin *plugin)
-	{
-		return strcmp(plugin->m_filename, file) == 0;
-	}
 
 public:
 	// Evicts the plugin from memory and sets an error state.
@@ -220,7 +218,7 @@ public:
 	}
 
 	void AddRequiredLib(const char *name);
-	bool ForEachRequiredLib(ke::Lambda<bool(const char *)> callback);
+	bool ForEachRequiredLib(ke::Function<bool(const char *)> callback);
 
 	bool HasMissingFakeNatives() const {
 		return m_FakeNativesMissing;
@@ -229,7 +227,7 @@ public:
 		return m_LibraryMissing;
 	}
 	bool HasFakeNatives() const {
-		return m_fakes.length() > 0;
+		return m_fakes.size() > 0;
 	}
 
 	// True if we got far enough into the second pass to call OnPluginLoaded
@@ -272,8 +270,8 @@ private:
 	char m_errormsg[256];
 
 	// Internal properties that must by reset if the runtime is evicted.
-	ke::AutoPtr<IPluginRuntime> m_pRuntime;
-	ke::AutoPtr<CPhraseCollection> m_pPhrases;
+	std::unique_ptr<IPluginRuntime> m_pRuntime;
+	std::unique_ptr<CPhraseCollection> m_pPhrases;
 	IPluginContext *m_pContext;
 	sp_pubvar_t *m_MaxClientsVar;
 	StringHashMap<void *> m_Props;
@@ -291,11 +289,11 @@ private:
 
 	// Cached.
 	sm_plugininfo_t m_info;
-	ke::AString info_name_;
-	ke::AString info_author_;
-	ke::AString info_description_;
-	ke::AString info_version_;
-	ke::AString info_url_;
+	std::string info_name_;
+	std::string info_author_;
+	std::string info_description_;
+	std::string info_version_;
+	std::string info_url_;
 };
 
 class CPluginManager : 
@@ -322,8 +320,8 @@ public:
 		void Release();
 		void OnPluginDestroyed(IPlugin *plugin) override;
 	private:
-		ke::LinkedList<CPlugin *> mylist;
-		ke::LinkedList<CPlugin *>::iterator current;
+		std::list<CPlugin *> mylist;
+		std::list<CPlugin *>::iterator current;
 	};
 	friend class CPluginManager::CPluginIterator;
 public: //IScriptManager
@@ -437,7 +435,7 @@ public:
 
 	void _SetPauseState(CPlugin *pPlugin, bool pause);
 
-	void ForEachPlugin(ke::Lambda<void(CPlugin *)> callback);
+	void ForEachPlugin(ke::Function<void(CPlugin *)> callback);
 private:
 	LoadRes LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type);
 
@@ -478,12 +476,39 @@ private:
 private:
 	ReentrantList<IPluginsListener *> m_listeners;
 	ReentrantList<CPlugin *> m_plugins;
-	ke::LinkedList<CPluginIterator *> m_iterators;
+	std::list<CPluginIterator *> m_iterators;
 
 	typedef decltype(m_listeners)::iterator ListenerIter;
 	typedef decltype(m_plugins)::iterator PluginIter;
 
-	NameHashSet<CPlugin *> m_LoadLookup;
+	struct CPluginPolicy
+	{
+		static inline uint32_t hash(const detail::CharsAndLength &key)
+		{
+/* For windows & mac, we convert the path to lower-case in order to avoid duplicate plugin loading */
+#if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
+			std::string lower = ke::Lowercase(key.c_str());
+			return detail::CharsAndLength(lower.c_str()).hash();
+#else
+			return key.hash();
+#endif
+		}
+		
+		static inline bool matches(const char *file, const CPlugin *plugin)
+		{
+			const char *pluginFileChars = const_cast<CPlugin*>(plugin)->GetFilename();
+#if defined PLATFORM_WINDOWS || defined PLATFORM_APPLE
+			std::string pluginFile = ke::Lowercase(pluginFileChars);
+			std::string input = ke::Lowercase(file);
+			
+			return pluginFile == input;
+#else
+			return strcmp(pluginFileChars, file) == 0;
+#endif
+		}
+	};
+	NameHashSet<CPlugin *, CPluginPolicy> m_LoadLookup;
+
 	bool m_AllPluginsLoaded;
 	IdentityToken_t *m_MyIdent;
 

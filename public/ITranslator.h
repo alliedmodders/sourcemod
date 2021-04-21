@@ -35,7 +35,7 @@
 #include <IShareSys.h>
 
 #define SMINTERFACE_TRANSLATOR_NAME		"ITranslator"
-#define SMINTERFACE_TRANSLATOR_VERSION	4
+#define SMINTERFACE_TRANSLATOR_VERSION	5
 
 #define MAX_TRANSLATE_PARAMS		32
 #define CORELANG_ENGLISH			0
@@ -113,6 +113,15 @@ namespace SourceMod
 		 * @return					File name.
 		 */
 		virtual const char *GetFilename() =0;
+		
+		/**
+		 * @brief Determines if a translation phrase exists within
+		 * the file.
+		 *
+		 * @param phrase				Phrase to search for.
+		 * @return						True if the phrase was found.
+		 */
+		virtual bool TranslationPhraseExists(const char* phrase) =0;
 	};
 
 	/**
@@ -221,6 +230,15 @@ namespace SourceMod
 			unsigned int numparams,
 			size_t *pOutLength,
 			const char **pFailPhrase) =0;
+			
+		/**
+		 * @brief Determines if a translation phrase exists within
+		 * the collection.
+		 *
+		 * @param phrase				Phrase to search for.
+		 * @return						True if the phrase was found.
+		 */
+		virtual bool TranslationPhraseExists(const char *phrase) =0;
 	};
 
 	/**

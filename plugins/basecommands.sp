@@ -308,6 +308,16 @@ public Action Command_Cvar(int client, int args)
 	}
 
 	GetCmdArg(2, value, sizeof(value));
+	
+	// The server passes the values of these directly into ServerCommand, following exec. Sanitize.
+	if (StrEqual(cvarname, "servercfgfile", false) || StrEqual(cvarname, "lservercfgfile", false))
+	{
+		int pos = StrContains(value, ";", true);
+		if (pos != -1)
+		{
+			value[pos] = '\0';
+		}
+	}
 
 	if ((hndl.Flags & FCVAR_PROTECTED) != FCVAR_PROTECTED)
 	{
@@ -385,10 +395,15 @@ public Action Command_Rcon(int client, int args)
 	if (client == 0) // They will already see the response in the console.
 	{
 		ServerCommand("%s", argstring);
-	} else {
+	}
+	else
+	{
 		char responseBuffer[4096];
 		ServerCommandEx(responseBuffer, sizeof(responseBuffer), "%s", argstring);
-		ReplyToCommand(client, responseBuffer);
+		if (IsClientConnected(client))
+		{
+			ReplyToCommand(client, responseBuffer);
+		}
 	}
 
 	return Plugin_Handled;

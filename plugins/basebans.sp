@@ -50,11 +50,15 @@ public Plugin myinfo =
 
 TopMenu hTopMenu;
 
-int g_BanTarget[MAXPLAYERS+1];
-int g_BanTargetUserId[MAXPLAYERS+1];
-int g_BanTime[MAXPLAYERS+1];
+enum struct PlayerInfo {
+	int banTarget;
+	int banTargetUserId;
+	int banTime;
+	int isWaitingForChatReason;
+}
 
-bool g_IsWaitingForChatReason[MAXPLAYERS+1];
+PlayerInfo playerinfo[MAXPLAYERS+1];
+
 KeyValues g_hKvBanReasons;
 char g_BanReasonsPath[PLATFORM_MAX_PATH];
 
@@ -86,7 +90,7 @@ public void OnPluginStart()
 	}
 }
 
-public void OnMapStart()
+public void OnConfigsExecuted()
 {
 	//(Re-)Load BanReasons
 	LoadBanReasons();
@@ -94,7 +98,7 @@ public void OnMapStart()
 
 public void OnClientDisconnect(int client)
 {
-	g_IsWaitingForChatReason[client] = false;
+	playerinfo[client].isWaitingForChatReason = false;
 }
 
 void LoadBanReasons()
@@ -299,6 +303,13 @@ public Action Command_AddBan(int client, int args)
 		return Plugin_Handled;
 	}
 
+	AdminId tid = FindAdminByIdentity("steam", authid);
+	if (client && !CanAdminTarget(GetUserAdmin(client), tid))
+	{
+		ReplyToCommand(client, "[SM] %t", "No Access");
+		return Plugin_Handled;
+	}
+
 	int minutes = StringToInt(time);
 
 	LogAction(client, 
@@ -358,9 +369,9 @@ public Action Command_AbortBan(int client, int args)
 		ReplyToCommand(client, "[SM] %t", "No Access");
 		return Plugin_Handled;
 	}
-	if(g_IsWaitingForChatReason[client])
+	if(playerinfo[client].isWaitingForChatReason)
 	{
-		g_IsWaitingForChatReason[client] = false;
+		playerinfo[client].isWaitingForChatReason = false;
 		ReplyToCommand(client, "[SM] %t", "AbortBan applied successfully");
 	}
 	else
@@ -373,10 +384,10 @@ public Action Command_AbortBan(int client, int args)
 
 public Action OnClientSayCommand(int client, const char[] command, const char[] sArgs)
 {
-	if(g_IsWaitingForChatReason[client])
+	if(playerinfo[client].isWaitingForChatReason)
 	{
-		g_IsWaitingForChatReason[client] = false;
-		PrepareBan(client, g_BanTarget[client], g_BanTime[client], sArgs);
+		playerinfo[client].isWaitingForChatReason = false;
+		PrepareBan(client, playerinfo[client].banTarget, playerinfo[client].banTime, sArgs);
 		return Plugin_Stop;
 	}
 

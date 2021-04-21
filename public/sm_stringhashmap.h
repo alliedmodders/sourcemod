@@ -44,11 +44,13 @@
  * NameHashSet instead.
  */
 
+#include <string.h>
+
+#include <utility>
+
 #include <am-allocator-policies.h>
 #include <am-hashmap.h>
 #include <am-string.h>
-#include <am-moveable.h>
-#include <string.h>
 
 namespace SourceMod
 {
@@ -73,7 +75,7 @@ namespace detail
 	  uint32_t hash() const {
 		  return hash_;
 	  }
-	  const char *chars() const {
+	  const char *c_str() const {
 		  return str_;
 	  }
 	  size_t length() const {
@@ -88,9 +90,9 @@ namespace detail
 
 	struct StringHashMapPolicy
 	{
-		static inline bool matches(const CharsAndLength &lookup, const ke::AString &key) {
+		static inline bool matches(const CharsAndLength &lookup, const std::string &key) {
 			return lookup.length() == key.length() &&
-				   memcmp(lookup.chars(), key.chars(), key.length()) == 0;
+				   memcmp(lookup.c_str(), key.c_str(), key.length()) == 0;
 		}
 		static inline uint32_t hash(const CharsAndLength &key) {
 			return key.hash();
@@ -102,7 +104,7 @@ template <typename T>
 class StringHashMap
 {
 	typedef detail::CharsAndLength CharsAndLength;
-	typedef ke::HashMap<ke::AString, T, detail::StringHashMapPolicy> Internal;
+	typedef ke::HashMap<std::string, T, detail::StringHashMapPolicy> Internal;
 
 public:
 	StringHashMap()
@@ -110,7 +112,7 @@ public:
 		  memory_used_(0)
 	{
 		if (!internal_.init())
-			internal_.reportOutOfMemory();
+			internal_.allocPolicy().reportOutOfMemory();
 	}
 
 	typedef typename Internal::Result Result;
@@ -129,6 +131,16 @@ public:
 		return true;
 	}
 
+	bool retrieve(const char *aKey, T **aResult)
+	{
+		CharsAndLength key(aKey);
+		Result r = internal_.find(key);
+		if (!r.found())
+			return false;
+		*aResult = &r->value;
+		return true;
+	}
+
 	Result find(const char *aKey)
 	{
 		CharsAndLength key(aKey);
@@ -142,32 +154,31 @@ public:
 		return r.found();
 	}
 
-	bool replace(const char *aKey, const T &value)
+	template <typename UV>
+	bool replace(const char *aKey, UV &&value)
 	{
 		CharsAndLength key(aKey);
 		Insert i = internal_.findForAdd(key);
 		if (!i.found())
 		{
 			memory_used_ += key.length() + 1;
-			if (!internal_.add(i))
+			if (!internal_.add(i, aKey))
 				return false;
-			i->key = aKey;
 		}
-		i->value = value;
+		i->value = std::forward<UV>(value);
 		return true;
 	}
 
-	bool insert(const char *aKey, const T &value)
+	template <typename UV>
+	bool insert(const char *aKey, UV &&value)
 	{
 		CharsAndLength key(aKey);
 		Insert i = internal_.findForAdd(key);
 		if (i.found())
 			return false;
-		if (!internal_.add(i))
+		if (!internal_.add(i, aKey, std::forward<UV>(value)))
 			return false;
 		memory_used_ += key.length() + 1;
-		i->key = aKey;
-		i->value = value;
 		return true;
 	}
 
@@ -225,9 +236,8 @@ public:
 	// Only value needs to be set after.
 	bool add(Insert &i, const char *aKey)
 	{
-		if (!internal_.add(i))
+		if (!internal_.add(i, aKey))
 			return false;
-		i->key = aKey;
 		return true;
 	}
 

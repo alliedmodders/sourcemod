@@ -116,6 +116,11 @@ static cell_t GetGameTickCount(IPluginContext *pContext, const cell_t *params)
 	return gpGlobals->tickcount;
 }
 
+static cell_t GetGameFrameTime(IPluginContext *pContext, const cell_t *params)
+{
+	return sp_ftoc(gpGlobals->frametime);
+}
+
 static cell_t CreateFakeClient(IPluginContext *pContext, const cell_t *params)
 {
 	if (!g_SourceMod.IsMapRunning())
@@ -484,9 +489,6 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 		return 10;
 	case SOURCE_ENGINE_EPISODEONE:
 		return 20;
-
-#if defined METAMOD_PLAPI_VERSION
-	/* Newer games. */
 	case SOURCE_ENGINE_DARKMESSIAH:
 		return 15;
 	case SOURCE_ENGINE_ORANGEBOX:
@@ -516,7 +518,6 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 		return 70;
 	case SOURCE_ENGINE_CSGO:
 		return 80;
-#endif
 	}
 
 	return 0;
@@ -525,7 +526,6 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 static cell_t GetEngineVersion(IPluginContext *pContext, const cell_t *params)
 {
 	int engineVer = g_SMAPI->GetSourceEngineBuild();
-#if defined METAMOD_PLAPI_VERSION
 	if (engineVer == SOURCE_ENGINE_ORANGEBOXVALVE_DEPRECATED)
 	{
 		const char *gamedir = g_SourceMod.GetGameFolderName();
@@ -538,7 +538,6 @@ static cell_t GetEngineVersion(IPluginContext *pContext, const cell_t *params)
 		else if (strcmp(gamedir, "hl2mp") == 0)
 			return SOURCE_ENGINE_HL2DM;
 	}
-#endif
 
 	return engineVer;
 }
@@ -613,6 +612,7 @@ REGISTER_NATIVES(halflifeNatives)
 	{"GetGameFolderName",		GetGameFolderName},
 	{"GetGameTime",				GetGameTime},
 	{"GetGameTickCount",		GetGameTickCount},
+	{"GetGameFrameTime",		GetGameFrameTime},
 	{"GetRandomFloat",			GetRandomFloat},
 	{"GetRandomInt",			GetRandomInt},
 	{"IsDedicatedServer",		IsDedicatedServer},

@@ -12,7 +12,7 @@
 
 "Games"
 {
-	/* GoldenEye: Source 4.2.4 */
+	/* GoldenEye: Source 5.0.1 */
 	"gesource"
 	{
 		"Offsets"

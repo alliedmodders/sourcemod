@@ -1,31 +1,34 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-binary = SM.ExtLibrary(builder, 'dbi.sqlite.ext')
-binary.compiler.cxxincludes += [
-  os.path.join(SM.mms_root, 'core', 'sourcehook'),
-]
-if binary.compiler.vendor == 'gcc' or binary.compiler.vendor == 'clang':
-  binary.compiler.cxxflags += ['-fno-rtti']
-elif binary.compiler.vendor == 'msvc':
-  binary.compiler.cxxflags += ['/GR-']
+for cxx in builder.targets:
+  binary = SM.ExtLibrary(builder, cxx, 'dbi.sqlite.ext')
+  binary.compiler.cxxincludes += [
+    os.path.join(SM.mms_root, 'core', 'sourcehook'),
+  ]
+  if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
+    binary.compiler.cxxflags += ['-fno-rtti']
+  elif binary.compiler.family == 'msvc':
+    binary.compiler.cxxflags += ['/GR-']
 
-binary.compiler.defines += [
-  'SQLITE_OMIT_LOAD_EXTENSION',
-  'SQLITE_THREADSAFE'
-]
-if builder.target_platform == 'linux':
-  binary.compiler.postlink += ['-ldl', '-lpthread']
+  binary.compiler.defines += [
+    'SQLITE_OMIT_LOAD_EXTENSION',
+    'SQLITE_THREADSAFE',
+    'SQLITE_USE_URI',
+    'SQLITE_ALLOW_URI_AUTHORITY',
+  ]
+  if binary.compiler.target.platform == 'linux':
+    binary.compiler.postlink += ['-ldl', '-lpthread']
 
-binary.sources += [
-  '../../public/smsdk_ext.cpp',
-  'extension.cpp',
-  'driver/SqDatabase.cpp',
-  'driver/SqDriver.cpp',
-  'driver/SqQuery.cpp',
-  'driver/SqResults.cpp',
-  'sqlite-source/sqlite3.c'
-]
+  binary.sources += [
+    '../../public/smsdk_ext.cpp',
+    'extension.cpp',
+    'driver/SqDatabase.cpp',
+    'driver/SqDriver.cpp',
+    'driver/SqQuery.cpp',
+    'driver/SqResults.cpp',
+    'sqlite-source/sqlite3.c'
+  ]
 
-SM.extensions += [builder.Add(binary)]
+  SM.extensions += [builder.Add(binary)]
 

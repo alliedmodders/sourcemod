@@ -33,13 +33,13 @@ PossibleSDKs = {
   'swarm':  SDK('HL2SDK-SWARM', '2.swarm', '16', 'ALIENSWARM', WinOnly, 'swarm'),
   'bgt':  SDK('HL2SDK-BGT', '2.bgt', '4', 'BLOODYGOODTIME', WinOnly, 'bgt'),
   'eye':  SDK('HL2SDK-EYE', '2.eye', '5', 'EYE', WinOnly, 'eye'),
-  'csgo': SDK('HL2SDKCSGO', '2.csgo', '20', 'CSGO', WinLinuxMac, 'csgo'),
-  'dota': SDK('HL2SDKDOTA', '2.dota', '21', 'DOTA', [], 'dota'),
+  'csgo': SDK('HL2SDKCSGO', '2.csgo', '21', 'CSGO', WinLinuxMac, 'csgo'),
   'portal2':  SDK('HL2SDKPORTAL2', '2.portal2', '17', 'PORTAL2', [], 'portal2'),
   'blade':  SDK('HL2SDKBLADE', '2.blade', '18', 'BLADE', WinLinux, 'blade'),
   'insurgency':  SDK('HL2SDKINSURGENCY', '2.insurgency', '19', 'INSURGENCY', WinLinuxMac, 'insurgency'),
   'contagion':  SDK('HL2SDKCONTAGION', '2.contagion', '14', 'CONTAGION', WinOnly, 'contagion'),
   'bms':  SDK('HL2SDKBMS', '2.bms', '10', 'BMS', WinLinux, 'bms'),
+  'doi':  SDK('HL2SDKDOI', '2.doi', '20', 'DOI', WinLinuxMac, 'doi'),
 }
 
 def ResolveEnvPath(env, folder):
@@ -135,7 +135,7 @@ class ExtensionConfig(object):
     elif cxx.vendor == 'msvc':
       self.configure_msvc(cxx)
 
-    # Optimizaiton
+    # Optimization
     if builder.options.opt == '1':
       cxx.defines += ['NDEBUG']
 
@@ -178,7 +178,7 @@ class ExtensionConfig(object):
       '-fvisibility=hidden',
     ]
     cxx.cxxflags += [
-      '-std=c++11',
+      '-std=c++14',
       '-fno-exceptions',
       '-fno-threadsafe-statics',
       '-Wno-non-virtual-dtor',
@@ -342,10 +342,10 @@ class ExtensionConfig(object):
 
     # For everything after Swarm, this needs to be defined for entity networking
     # to work properly with sendprop value changes.
-    if sdk.name in ['blade', 'insurgency', 'csgo', 'dota']:
+    if sdk.name in ['blade', 'insurgency', 'doi', 'csgo']:
       compiler.defines += ['NETWORK_VARS_ENABLED']
 
-    if sdk.name in ['css', 'hl2dm', 'dods', 'sdk2013', 'bms', 'tf2', 'l4d', 'nucleardawn', 'l4d2', 'dota']:
+    if sdk.name in ['css', 'hl2dm', 'dods', 'sdk2013', 'bms', 'tf2', 'l4d', 'nucleardawn', 'l4d2']:
       if builder.target_platform in ['linux', 'mac']:
         compiler.defines += ['NO_HOOK_MALLOC', 'NO_MALLOC_OVERRIDE']
 
@@ -380,14 +380,14 @@ class ExtensionConfig(object):
           compiler.Dep(os.path.join(lib_folder, 'mathlib_i486.a'))
         ]
 
-      if sdk.name in ['blade', 'insurgency', 'csgo', 'dota']:
+      if sdk.name in ['blade', 'insurgency', 'doi', 'csgo']:
         compiler.postlink += [compiler.Dep(os.path.join(lib_folder, 'interfaces_i486.a'))]
 
     dynamic_libs = []
     if builder.target_platform == 'linux':
-      if sdk.name in ['css', 'hl2dm', 'dods', 'tf2', 'sdk2013', 'bms', 'nucleardawn', 'l4d2', 'insurgency']:
+      if sdk.name in ['css', 'hl2dm', 'dods', 'tf2', 'sdk2013', 'bms', 'nucleardawn', 'l4d2', 'insurgency', 'doi']:
         dynamic_libs = ['libtier0_srv.so', 'libvstdlib_srv.so']
-      elif sdk.name in ['l4d', 'blade', 'insurgency', 'csgo', 'dota']:
+      elif sdk.name in ['l4d', 'blade', 'insurgency', 'doi', 'csgo']:
         dynamic_libs = ['libtier0.so', 'libvstdlib.so']
       else:
         dynamic_libs = ['tier0_i486.so', 'vstdlib_i486.so']
@@ -396,7 +396,7 @@ class ExtensionConfig(object):
       dynamic_libs = ['libtier0.dylib', 'libvstdlib.dylib']
     elif builder.target_platform == 'windows':
       libs = ['tier0', 'tier1', 'vstdlib', 'mathlib']
-      if sdk.name in ['swarm', 'blade', 'insurgency', 'csgo', 'dota']:
+      if sdk.name in ['swarm', 'blade', 'insurgency', 'doi', 'csgo']:
         libs.append('interfaces')
       for lib in libs:
         lib_path = os.path.join(sdk.path, 'lib', 'public', lib) + '.lib'

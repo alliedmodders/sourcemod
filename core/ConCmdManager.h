@@ -32,6 +32,14 @@
 #ifndef _INCLUDE_SOURCEMOD_CONCMDMANAGER_H_
 #define _INCLUDE_SOURCEMOD_CONCMDMANAGER_H_
 
+#include <list>
+#include <memory>
+
+#include <am-inlinelist.h>
+#include <am-refcounting.h>
+#include <am-utility.h>
+#include <sm_stringhashmap.h>
+
 #include "sm_globals.h"
 #include "sourcemm_api.h"
 #include <IForwardSys.h>
@@ -41,11 +49,6 @@
 #include <IAdminSystem.h>
 #include "concmd_cleaner.h"
 #include "GameHooks.h"
-#include <sm_stringhashmap.h>
-#include <am-utility.h>
-#include <am-inlinelist.h>
-#include <am-linkedlist.h>
-#include <am-refcounting.h>
 
 using namespace SourceHook;
 
@@ -54,7 +57,7 @@ struct ConCmdInfo;
 
 struct CommandGroup : public ke::Refcounted<CommandGroup>
 {
-	ke::LinkedList<CmdHook *> hooks;
+	std::list<CmdHook *> hooks;
 };
 
 struct AdminCmdInfo
@@ -77,10 +80,11 @@ struct CmdHook : public ke::InlineListNode<CmdHook>
 		Client
 	};
 
-	CmdHook(Type type, ConCmdInfo *cmd, IPluginFunction *fun, const char *description)
+	CmdHook(Type type, ConCmdInfo *cmd, IPluginFunction *fun, const char *description, IPlugin *plugin)
 		: type(type),
 		  info(cmd),
 		  pf(fun),
+		  plugin(plugin),
 		  helptext(description)
 	{
 	}
@@ -88,8 +92,9 @@ struct CmdHook : public ke::InlineListNode<CmdHook>
 	Type type;
 	ConCmdInfo *info;
 	IPluginFunction *pf;				/* function hook */
-	ke::AString helptext;				/* help text */
-	ke::AutoPtr<AdminCmdInfo> admin;	/* admin requirements, if any */
+	IPlugin *plugin;					/* owning plugin */
+	std::string helptext;				/* help text */
+	std::unique_ptr<AdminCmdInfo> admin;	/* admin requirements, if any */
 };
 
 typedef ke::InlineList<CmdHook> CmdHookList;
@@ -98,8 +103,9 @@ struct ConCmdInfo
 {
 	ConCmdInfo()
 	{
+		pPlugin = nullptr;
 		sourceMod = false;
-		pCmd = NULL;
+		pCmd = nullptr;
 		eflags = 0;
 	}
 	bool sourceMod;					/**< Determines whether or not concmd was created by a SourceMod plugin */
@@ -107,6 +113,7 @@ struct ConCmdInfo
 	CmdHookList hooks;				/**< Hook list */
 	FlagBits eflags;				/**< Effective admin flags */
 	ke::RefPtr<CommandHook> sh_hook;   /**< SourceHook hook, if any. */
+	IPlugin *pPlugin; 				/**< Owning plugin handle. */
 };
 
 typedef List<ConCmdInfo *> ConCmdList;
@@ -131,13 +138,14 @@ public: //IRootConsoleCommand
 public: //IConCommandTracker
 	void OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name) override;
 public:
-	bool AddServerCommand(IPluginFunction *pFunction, const char *name, const char *description, int flags);
+	bool AddServerCommand(IPluginFunction *pFunction, const char *name, const char *description, int flags, IPlugin *pPlugin);
 	bool AddAdminCommand(IPluginFunction *pFunction, 
 						 const char *name, 
 						 const char *group,
 						 int adminflags,
 						 const char *description, 
-						 int flags);
+						 int flags,
+						 IPlugin *pPlugin);
 	ResultType DispatchClientCommand(int client, const char *cmd, int args, ResultType type);
 	void UpdateAdminCmdFlags(const char *cmd, OverrideType type, FlagBits bits, bool remove);
 	bool LookForSourceModCommand(const char *cmd);
@@ -145,7 +153,7 @@ public:
 private:
 	bool InternalDispatch(int client, const ICommandArgs *args);
 	ResultType RunAdminCommand(ConCmdInfo *pInfo, int client, int args);
-	ConCmdInfo *AddOrFindCommand(const char *name, const char *description, int flags);
+	ConCmdInfo *AddOrFindCommand(const char *name, const char *description, int flags, IPlugin *pPlugin);
 	void AddToCmdList(ConCmdInfo *info);
 	void RemoveConCmd(ConCmdInfo *info, const char *cmd, bool untrack);
 	bool CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin);

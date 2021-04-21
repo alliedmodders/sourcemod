@@ -70,12 +70,8 @@ void CheckAndFinalizeConfigs();
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
 void Hook_ExecDispatchPre(const CCommand &cmd)
-#elif SOURCE_ENGINE == SE_DARKMESSIAH
-SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
-void Hook_ExecDispatchPre()
 #else
-extern int __SourceHook_FHAddConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
-extern bool __SourceHook_FHRemoveConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
+SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
 void Hook_ExecDispatchPre()
 #endif
 {
@@ -281,7 +277,7 @@ SMCResult CoreConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key,
 
 ConfigResult CoreConfig::SetConfigOption(const char *option, const char *value, ConfigSource source, char *error, size_t maxlength)
 {
-	ConfigResult result;
+	ConfigResult result = ConfigResult_Ignore;
 
 	/* Notify! */
 	SMGlobalClass *pBase = SMGlobalClass::head;
@@ -289,23 +285,23 @@ ConfigResult CoreConfig::SetConfigOption(const char *option, const char *value, 
 	{
 		if ((result = pBase->OnSourceModConfigChanged(option, value, source, error, maxlength)) != ConfigResult_Ignore)
 		{
-			return result;
+			break;
 		}
 		pBase = pBase->m_pGlobalClassNext;
 	}
 
-	ke::AString vstr(value);
-	m_KeyValues.replace(option, ke::Move(vstr));
+	std::string vstr(value);
+	m_KeyValues.replace(option, std::move(vstr));
 
-	return ConfigResult_Ignore;
+	return result;
 }
 
 const char *CoreConfig::GetCoreConfigValue(const char *key)
 {
-	StringHashMap<ke::AString>::Result r = m_KeyValues.find(key);
+	StringHashMap<std::string>::Result r = m_KeyValues.find(key);
 	if (!r.found())
 		return NULL;
-	return r->value.chars();
+	return r->value.c_str();
 }
 
 bool SM_AreConfigsExecuted()
@@ -416,8 +412,11 @@ bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 				for (iter = convars->begin(); iter != convars->end(); iter++)
 				{
 					const ConVar *cvar = (*iter);
-
-					if ((cvar->GetFlags() & FCVAR_DONTRECORD) == FCVAR_DONTRECORD)
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+					if (cvar->IsFlagSet(FCVAR_DONTRECORD))
+#else
+					if (cvar->IsBitSet(FCVAR_DONTRECORD))
+#endif
 					{
 						continue;
 					}

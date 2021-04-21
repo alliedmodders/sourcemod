@@ -672,6 +672,12 @@ TransError CPhraseFile::GetTranslation(const char *szPhrase, unsigned int lang_i
 	return Trans_Okay;
 }
 
+bool CPhraseFile::TranslationPhraseExists(const char *phrase)
+{
+	int address;
+	return m_PhraseLookup.retrieve(phrase, &address);
+}
+
 const char *CPhraseFile::GetFilename()
 {
 	return m_File.c_str();
@@ -934,7 +940,7 @@ bool Translator::AddLanguage(const char *langcode, const char *description)
 		Language *pLanguage = new Language;
 		idx = m_Languages.size();
 
-		ke::SafeSprintf(pLanguage->m_code2, sizeof(pLanguage->m_code2), "%s", langcode);
+		ke::SafeStrcpy(pLanguage->m_code2, sizeof(pLanguage->m_code2), langcode);
 		pLanguage->m_CanonicalName = m_pStringTab->AddString(lower);
 
 		m_LCodeLookup.insert(langcode, idx);

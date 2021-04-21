@@ -36,6 +36,31 @@
 #include <ISourceMod.h>
 #include <am-string.h>
 
+static cell_t sm_TranslationPhraseExists(IPluginContext *pCtx, const cell_t *params)
+{
+	IPlugin *pl = pluginsys->FindPluginByContext(pCtx->GetContext());
+	IPhraseCollection *collection = pl->GetPhrases();
+	
+	char *phrase;
+	pCtx->LocalToString(params[1], &phrase);
+
+	return collection->TranslationPhraseExists(phrase);
+}
+
+static cell_t sm_IsTranslatedForLanguage(IPluginContext *pCtx, const cell_t *params)
+{
+	IPlugin *pl = pluginsys->FindPluginByContext(pCtx->GetContext());
+	IPhraseCollection *collection = pl->GetPhrases();
+	
+	char *phrase;
+	pCtx->LocalToString(params[1], &phrase);
+	
+	int langid = params[2];
+
+	Translation trans;
+	return (collection->FindTranslation(phrase, langid, &trans) == Trans_Okay);
+}
+
 static cell_t sm_LoadTranslations(IPluginContext *pCtx, const cell_t *params)
 {
 	char *filename, *ext;
@@ -43,7 +68,7 @@ static cell_t sm_LoadTranslations(IPluginContext *pCtx, const cell_t *params)
 	IPlugin *pl = pluginsys->FindPluginByContext(pCtx->GetContext());
 
 	pCtx->LocalToString(params[1], &filename);
-	ke::SafeSprintf(buffer, sizeof(buffer), "%s", filename);
+	ke::SafeStrcpy(buffer, sizeof(buffer), filename);
 
 	/* Make sure there is no extension */
 	if ((ext = strstr(buffer, ".txt")) != NULL
@@ -147,6 +172,8 @@ static cell_t sm_GetLanguageByName(IPluginContext *pContext, const cell_t *param
 
 REGISTER_NATIVES(langNatives)
 {
+	{"IsTranslatedForLanguage",		sm_IsTranslatedForLanguage},
+	{"TranslationPhraseExists",		sm_TranslationPhraseExists},
 	{"LoadTranslations",			sm_LoadTranslations},
 	{"SetGlobalTransTarget",		sm_SetGlobalTransTarget},
 	{"GetClientLanguage",			sm_GetClientLanguage},

@@ -66,7 +66,12 @@ void InitializeValveGlobals()
 		{
 			return;
 		}
+#ifdef PLATFORM_X86
 		g_ppGameRules = *reinterpret_cast<void ***>(addr + offset);
+#else
+		int32_t varOffset = *(int32_t *) ((unsigned char *) addr + offset);
+		g_ppGameRules = *reinterpret_cast<void ***>((unsigned char *) addr + offset + sizeof(int32_t) + varOffset);
+#endif
 	}
 }
 
@@ -199,12 +204,18 @@ bool UTIL_VerifySignature(const void *addr, const char *sig, size_t len)
 	return true;
 }
 
+#ifdef PLATFORM_X64
+#define KEY_SUFFIX "64"
+#else
+#define KEY_SUFFIX ""
+#endif
+
 #if defined PLATFORM_WINDOWS
-#define FAKECLIENT_KEY "CreateFakeClient_Windows"
+#define FAKECLIENT_KEY "CreateFakeClient_Windows" KEY_SUFFIX
 #elif defined PLATFORM_LINUX
-#define FAKECLIENT_KEY "CreateFakeClient_Linux"
+#define FAKECLIENT_KEY "CreateFakeClient_Linux" KEY_SUFFIX
 #elif defined PLATFORM_APPLE
-#define FAKECLIENT_KEY "CreateFakeClient_Mac"
+#define FAKECLIENT_KEY "CreateFakeClient_Mac" KEY_SUFFIX
 #else
 #error "Unsupported platform"
 #endif
@@ -217,9 +228,10 @@ void GetIServer()
 	|| SOURCE_ENGINE == SE_CSS     \
 	|| SOURCE_ENGINE == SE_SDK2013 \
 	|| SOURCE_ENGINE == SE_BMS     \
+	|| SOURCE_ENGINE == SE_DOI     \
 	|| SOURCE_ENGINE == SE_INSURGENCY
 
-#if SOURCE_ENGINE != SE_INSURGENCY
+#if SOURCE_ENGINE != SE_INSURGENCY && SOURCE_ENGINE != SE_DOI
 	if (g_SMAPI->GetEngineFactory(false)("VEngineServer022", nullptr))
 #endif // !SE_INSURGENCY
 	{
@@ -272,7 +284,12 @@ void GetIServer()
 	}
 
 	/* Finally we have the interface we were looking for */
+#ifdef PLATFORM_X86
 	iserver = *reinterpret_cast<IServer **>(reinterpret_cast<unsigned char *>(vfunc) + offset);
+#elif defined PLATFORM_X64
+	int32_t varOffset = *reinterpret_cast<int32_t *>(reinterpret_cast<unsigned char *>(vfunc) + offset);
+	iserver = reinterpret_cast<IServer *>(reinterpret_cast<unsigned char *>(vfunc) + offset + sizeof(int32_t) + varOffset);
+#endif
 }
 
 void GetResourceEntity()

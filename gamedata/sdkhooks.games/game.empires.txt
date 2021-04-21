@@ -4,6 +4,11 @@
 	{
 		"Offsets"
 		{
+			"Blocked"
+			{
+				"windows"	"104"
+				"linux"		"105"
+			}
 			"EndTouch"
 			{
 				"windows"	"102"
@@ -14,6 +19,16 @@
 				"windows"	"114"
 				"linux"		"115"
 			}
+			"GetMaxHealth"
+			{
+				"windows"	"119"
+				"linux"		"120"
+			}
+			"GroundEntChanged"
+			{
+				"windows"	"182"
+				"linux"		"184"
+			}
 			"OnTakeDamage"
 			{
 				"windows"	"62"
@@ -21,18 +36,18 @@
 			}
 			"PreThink"
 			{
-				"windows"	"336"
-				"linux"		"337"
-			}
-			"PostThink"
-			{
 				"windows"	"337"
 				"linux"		"338"
 			}
+			"PostThink"
+			{
+				"windows"	"338"
+				"linux"		"339"
+			}
 			"Reload"
 			{
-				"windows"	"273"
-				"linux"		"274"
+				"windows"	"276"
+				"linux"		"277"
 			}
 			"SetTransmit"
 			{
@@ -52,7 +67,7 @@
 			"StartTouch"
 			{
 				"windows"	"100"
-				"linux"		"101
+				"linux"		"101"
 			}
 			"Think"
 			{
@@ -81,28 +96,28 @@
 			}
 			"Weapon_CanSwitchTo"
 			{
-				"windows"	"270"
-				"linux"		"271"
+				"windows"	"271"
+				"linux"		"272"
 			}
 			"Weapon_CanUse"
-			{
-				"windows"	"264"
-				"linux"		"265"
-			}
-			"Weapon_Drop"
-			{
-				"windows"	"267"
-				"linux"		"268"
-			}
-			"Weapon_Equip"
 			{
 				"windows"	"265"
 				"linux"		"266"
 			}
-			"Weapon_Switch"
+			"Weapon_Drop"
 			{
 				"windows"	"268"
 				"linux"		"269"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"266"
+				"linux"		"267"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"269"
+				"linux"		"270"
 			}
 		}
 	}

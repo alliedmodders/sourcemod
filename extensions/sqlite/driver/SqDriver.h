@@ -36,7 +36,7 @@
 #include <IDBDriver.h>
 #include <sh_list.h>
 #include <sh_string.h>
-#include <am-thread-utils.h>
+#include <mutex>
 #include "sqlite-source/sqlite3.h"
 
 using namespace SourceMod;
@@ -56,6 +56,7 @@ class SqDriver : public IDBDriver
 {
 public:
 	SqDriver();
+	~SqDriver();
 	void Initialize();
 	void Shutdown();
 public:
@@ -71,9 +72,10 @@ public:
 	void RemovePersistent(IDatabase *pdb);
 private:
 	Handle_t m_Handle;
-	ke::Mutex m_OpenLock;
+	std::mutex m_OpenLock;
 	List<SqDbInfo> m_Cache;
 	bool m_bThreadSafe;
+	bool m_bShutdown;
 };
 
 extern SqDriver g_SqDriver;

@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -50,10 +50,10 @@ public: //SMGlobalClass
 	void OnSourceModAllInitialized_Post();
 	void OnSourceModGameInitialized();
 	void OnSourceModShutdown();
-	ConfigResult OnSourceModConfigChanged(const char *key, 
-		const char *value, 
+	ConfigResult OnSourceModConfigChanged(const char *key,
+		const char *value,
 		ConfigSource source,
-		char *error, 
+		char *error,
 		size_t maxlength);
 private: //ConCommand
 	bool OnSayCommand_Pre(int client, const ICommandArgs *args);
@@ -64,13 +64,18 @@ public:
 	bool IsChatTrigger();
 	bool WasFloodedMessage();
 private:
+	enum ChatTriggerType {
+		ChatTrigger_Public,
+		ChatTrigger_Private,
+	};
+	void SetChatTrigger(ChatTriggerType type, const char *value);
 	bool PreProcessTrigger(edict_t *pEdict, const char *args);
 	bool ClientIsFlooding(int client);
 	cell_t CallOnClientSayCommand(int client);
 private:
-	ke::Vector<ke::RefPtr<CommandHook>> hooks_;
-	ke::AString m_PubTrigger;
-	ke::AString m_PrivTrigger;
+	std::vector<ke::RefPtr<CommandHook>> hooks_;
+	std::string m_PubTrigger;
+	std::string m_PrivTrigger;
 	bool m_bWillProcessInPost;
 	bool m_bIsChatTrigger;
 	bool m_bWasFloodedMessage;

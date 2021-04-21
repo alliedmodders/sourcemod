@@ -2,7 +2,7 @@
  * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2004-2017 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -37,12 +37,15 @@
 
 #include <ISourceMod.h>
 #include <ITranslator.h>
+#include <DebugReporter.h>
+#include <FrameIterator.h>
 
 #include <sourcehook.h>
 #include <sh_memory.h>
 
 #if defined PLATFORM_WINDOWS
 #include <windows.h>
+#include "sm_invalidparamhandler.h"
 #elif defined PLATFORM_POSIX
 #include <limits.h>
 #include <unistd.h>
@@ -59,10 +62,11 @@ using namespace SourcePawn;
 
 
 HandleType_t g_PlIter;
+HandleType_t g_FrameIter;
 
 IForward *g_OnLogAction = NULL;
 
-static ConVar *sm_datetime_format = NULL;
+ConVar *g_datetime_format = NULL;
 
 class CoreNativeHelpers : 
 	public SMGlobalClass,
@@ -76,6 +80,7 @@ public:
 		hacc.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY|HANDLE_RESTRICT_OWNER;
 
 		g_PlIter = handlesys->CreateType("PluginIterator", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+		g_FrameIter = handlesys->CreateType("FrameIterator", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 
 		g_OnLogAction = forwardsys->CreateForward("OnLogAction", 
 			ET_Hook, 
@@ -87,17 +92,25 @@ public:
 			Param_Cell,
 			Param_String);
 		
-		sm_datetime_format = bridge->FindConVar("sm_datetime_format");
+		g_datetime_format = bridge->FindConVar("sm_datetime_format");
 	}
 	void OnHandleDestroy(HandleType_t type, void *object)
 	{
-		IPluginIterator *iter = (IPluginIterator *)object;
-		iter->Release();
+		if (type == g_FrameIter)
+		{
+			delete (SafeFrameIterator *) object;
+		}
+		else if (type == g_PlIter)
+		{
+			IPluginIterator *iter = (IPluginIterator *)object;
+			iter->Release();
+		}
 	}
 	void OnSourceModShutdown()
 	{
 		forwardsys->ReleaseForward(g_OnLogAction);
 		handlesys->RemoveType(g_PlIter, g_pCoreIdent);
+		handlesys->RemoveType(g_FrameIter, g_pCoreIdent);
 	}
 } g_CoreNativeHelpers;
 
@@ -161,19 +174,6 @@ static cell_t GetTime(IPluginContext *pContext, const cell_t *params)
 	return static_cast<cell_t>(t);
 }
 
-#if defined SUBPLATFORM_SECURECRT
-void _ignore_invalid_parameter(
-						const wchar_t * expression,
-						const wchar_t * function, 
-						const wchar_t * file, 
-						unsigned int line,
-						uintptr_t pReserved
-						)
-{
-	/* Wow we don't care, thanks Microsoft. */
-}
-#endif
-
 static cell_t FormatTime(IPluginContext *pContext, const cell_t *params)
 {
 	char *format, *buffer;
@@ -182,19 +182,20 @@ static cell_t FormatTime(IPluginContext *pContext, const cell_t *params)
 
 	if (format == NULL)
 	{
-		format = const_cast<char *>(bridge->GetCvarString(sm_datetime_format));
+		format = const_cast<char *>(bridge->GetCvarString(g_datetime_format));
 	}
 
-#if defined SUBPLATFORM_SECURECRT
-	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
+	time_t t;
+	size_t written = 0;
+	
+	// scope for InvalidParameterHandler
+	{
+#ifdef PLATFORM_WINDOWS
+		InvalidParameterHandler p;
 #endif
-
-	time_t t = (params[4] == -1) ? g_pSM->GetAdjustedTime() : (time_t)params[4];
-	size_t written = strftime(buffer, params[2], format, localtime(&t));
-
-#if defined SUBPLATFORM_SECURECRT
-	_set_invalid_parameter_handler(handler);
-#endif
+		t = (params[4] == -1) ? g_pSM->GetAdjustedTime() : (time_t)params[4];
+		written = strftime(buffer, params[2], format, localtime(&t));
+	}
 
 	if (params[2] && format[0] != '\0' && !written)
 	{
@@ -696,7 +697,11 @@ enum NumberType
 
 static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
 {
+#ifdef PLATFORM_X86
 	void *addr = reinterpret_cast<void*>(params[1]);
+#else
+	void *addr = pseudoAddr.FromPseudoAddress(params[1]);
+#endif
 
 	if (addr == NULL)
 	{
@@ -724,7 +729,11 @@ static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
 
 static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 {
+#ifdef PLATFORM_X86
 	void *addr = reinterpret_cast<void*>(params[1]);
+#else
+	void *addr = pseudoAddr.FromPseudoAddress(params[1]);
+#endif
 
 	if (addr == NULL)
 	{
@@ -759,6 +768,184 @@ static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 	return 0;
 }
 
+static cell_t IsNullVector(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t *pNullVec = pContext->GetNullRef(SP_NULL_VECTOR);
+	if (!pNullVec)
+		return 0;
+	
+	cell_t *addr;
+	pContext->LocalToPhysAddr(params[1], &addr);
+
+	return addr == pNullVec;
+}
+
+static cell_t IsNullString(IPluginContext *pContext, const cell_t *params)
+{
+	char *str;
+	if (pContext->LocalToStringNULL(params[1], &str) != SP_ERROR_NONE)
+		return 0;
+
+	return str == nullptr;
+}
+
+static cell_t FrameIterator_Create(IPluginContext *pContext, const cell_t *params)
+{
+	IFrameIterator *it = pContext->CreateFrameIterator();
+	
+	SafeFrameIterator *iterator = new SafeFrameIterator(it);
+	
+	pContext->DestroyFrameIterator(it);
+	
+	Handle_t handle = handlesys->CreateHandle(g_FrameIter, iterator, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	if (handle == BAD_HANDLE)
+	{
+		delete iterator;
+		return BAD_HANDLE;
+	}
+	
+	return handle;
+}
+
+static cell_t FrameIterator_Next(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	SafeFrameIterator *iterator;
+
+	HandleSecurity sec;
+	sec.pIdentity = g_pCoreIdent;
+	sec.pOwner = pContext->GetIdentity();
+
+	if ((err=handlesys->ReadHandle(hndl, g_FrameIter, &sec, (void **)&iterator)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
+	}
+	
+	return iterator->Next();
+}
+
+static cell_t FrameIterator_Reset(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	SafeFrameIterator *iterator;
+
+	HandleSecurity sec;
+	sec.pIdentity = g_pCoreIdent;
+	sec.pOwner = pContext->GetIdentity();
+
+	if ((err=handlesys->ReadHandle(hndl, g_FrameIter, &sec, (void **)&iterator)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
+	}
+	
+	iterator->Reset();
+	return 0;
+}
+
+static cell_t FrameIterator_LineNumber(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	SafeFrameIterator *iterator;
+
+	HandleSecurity sec;
+	sec.pIdentity = g_pCoreIdent;
+	sec.pOwner = pContext->GetIdentity();
+
+	if ((err=handlesys->ReadHandle(hndl, g_FrameIter, &sec, (void **)&iterator)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
+	}
+	
+	int lineNum = iterator->LineNumber();
+	if (lineNum < 0)
+	{
+		return pContext->ThrowNativeError("Iterator out of bounds. Check return value of FrameIterator.Next");
+	}
+	
+	return lineNum;
+}
+
+static cell_t FrameIterator_GetFunctionName(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	SafeFrameIterator *iterator;
+
+	HandleSecurity sec;
+	sec.pIdentity = g_pCoreIdent;
+	sec.pOwner = pContext->GetIdentity();
+
+	if ((err=handlesys->ReadHandle(hndl, g_FrameIter, &sec, (void **)&iterator)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
+	}
+	
+	const char* functionName = iterator->FunctionName();
+	if (!functionName)
+	{
+		return pContext->ThrowNativeError("Iterator out of bounds. Check return value of FrameIterator.Next");
+	}
+	
+	char* buffer;
+	pContext->LocalToString(params[2], &buffer);
+	size_t size = static_cast<size_t>(params[3]);
+	
+	ke::SafeStrcpy(buffer, size, functionName);
+	return 0;
+}
+
+static cell_t FrameIterator_GetFilePath(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	SafeFrameIterator *iterator;
+
+	HandleSecurity sec;
+	sec.pIdentity = g_pCoreIdent;
+	sec.pOwner = pContext->GetIdentity();
+
+	if ((err=handlesys->ReadHandle(hndl, g_FrameIter, &sec, (void **)&iterator)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
+	}
+	
+	const char* filePath = iterator->FilePath();
+	if (!filePath)
+	{
+		return pContext->ThrowNativeError("Iterator out of bounds. Check return value of FrameIterator.Next");
+	}
+
+	char* buffer;
+	pContext->LocalToString(params[2], &buffer);
+	size_t size = static_cast<size_t>(params[3]);
+	
+	ke::SafeStrcpy(buffer, size, filePath);
+	return 0;
+}
+
+static cell_t LogStackTrace(IPluginContext *pContext, const cell_t *params)
+{
+	char buffer[512];
+	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
+
+	IFrameIterator *it = pContext->CreateFrameIterator();
+	std::vector<std::string> arr = g_DbgReporter.GetStackTrace(it);
+	pContext->DestroyFrameIterator(it);
+
+	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
+
+	g_Logger.LogError("[SM] Stack trace requested: %s", buffer);
+	g_Logger.LogError("[SM] Called from: %s", pPlugin->GetFilename());
+	for (size_t i = 0; i < arr.size(); ++i)
+	{
+		g_Logger.LogError("%s", arr[i].c_str());
+	}
+	return 0;
+}
+
 REGISTER_NATIVES(coreNatives)
 {
 	{"ThrowError",				ThrowError},
@@ -787,5 +974,15 @@ REGISTER_NATIVES(coreNatives)
 	{"RequireFeature",          RequireFeature},
 	{"LoadFromAddress",         LoadFromAddress},
 	{"StoreToAddress",          StoreToAddress},
+	{"IsNullVector",			IsNullVector},
+	{"IsNullString",			IsNullString},
+	{"LogStackTrace",           LogStackTrace},
+	
+	{"FrameIterator.FrameIterator",				FrameIterator_Create},
+	{"FrameIterator.Next",						FrameIterator_Next},
+	{"FrameIterator.Reset",						FrameIterator_Reset},
+	{"FrameIterator.LineNumber.get",			FrameIterator_LineNumber},
+	{"FrameIterator.GetFunctionName",			FrameIterator_GetFunctionName},
+	{"FrameIterator.GetFilePath",				FrameIterator_GetFilePath},
 	{NULL,						NULL},
 };

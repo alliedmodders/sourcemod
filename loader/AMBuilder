@@ -1,26 +1,31 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os.path
 
-if builder.target_platform in ['windows', 'mac']:
-  name = 'sourcemod_mm'
-  extra_ldflags = []
-elif builder.target_platform == 'linux':
-  name = 'sourcemod_mm_i486'
-  extra_ldflags = ['-ldl']
+for cxx in builder.targets:
+  if cxx.target.platform in ['windows', 'mac']:
+    name = 'sourcemod_mm'
+    extra_ldflags = []
+  elif cxx.target.platform == 'linux':
+    name = 'sourcemod_mm_i486'
+    extra_ldflags = ['-ldl']
 
-binary = SM.Library(builder, name)
-binary.compiler.cxxincludes += [
-  os.path.join(SM.mms_root, 'core'),
-  os.path.join(SM.mms_root, 'sourcehook')
-]
-if binary.compiler.vendor == 'gcc' or binary.compiler.vendor == 'clang':
-  binary.compiler.cxxflags += ['-fno-rtti']
-elif binary.compiler.vendor == 'msvc':
-  binary.compiler.cxxflags += ['/GR-']
-binary.compiler.linkflags += extra_ldflags
-binary.sources = [
-  'loader.cpp'
-]
+  if cxx.target.arch == 'x86_64':
+    name = 'sourcemod_mm.x64'
 
-nodes = builder.Add(binary)
-SM.binaries += [nodes]
+  binary = SM.Library(builder, cxx, name)
+  binary.compiler.cxxincludes += [
+    os.path.join(SM.mms_root, 'core'),
+    os.path.join(SM.mms_root, 'sourcehook')
+  ]
+  binary.compiler.defines += ['META_NO_HL2SDK']
+  if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
+    binary.compiler.cxxflags += ['-fno-rtti']
+  elif binary.compiler.family == 'msvc':
+    binary.compiler.cxxflags += ['/GR-']
+  binary.compiler.linkflags += extra_ldflags
+  binary.sources = [
+    'loader.cpp'
+  ]
+
+  nodes = builder.Add(binary)
+  SM.binaries += [nodes]

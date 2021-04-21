@@ -17,7 +17,7 @@
 		"#supported"
 		{
 			"game"		"swarm"
-			"game"		"dinodday"
+			"game"		"reactivedrop"
 		}
 		
 		"Offsets"

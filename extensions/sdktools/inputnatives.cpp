@@ -30,12 +30,11 @@
  */
 
 #include "extension.h"
+#include "variant-t.h"
 #include <datamap.h>
-
-#define SIZEOF_VARIANT_T		20
+#include <sm_argbuffer.h>
 
 ICallWrapper *g_pAcceptInput = NULL;
-unsigned char g_Variant_t[SIZEOF_VARIANT_T] = {0};
 
 #define ENTINDEX_TO_CBASEENTITY(ref, buffer) \
 	buffer = gamehelpers->ReferenceToEntity(ref); \
@@ -44,26 +43,6 @@ unsigned char g_Variant_t[SIZEOF_VARIANT_T] = {0};
 		return pContext->ThrowNativeError("Entity %d (%d) is not a CBaseEntity", gamehelpers->ReferenceToIndex(ref), ref); \
 	}
 
-/* Hack to init the variant_t object for the first time */
-class VariantFirstTimeInit
-{
-public:
-	VariantFirstTimeInit()
-	{
-		*(unsigned int *)(&g_Variant_t[12]) = INVALID_EHANDLE_INDEX;
-	}
-} g_VariantFirstTimeInit;
-
-inline void _init_variant_t()
-{
-	unsigned char *vptr = g_Variant_t;
-
-	*(int *)vptr = 0;
-	vptr += sizeof(int)*3;
-	*(unsigned long *)vptr = INVALID_EHANDLE_INDEX;
-	vptr += sizeof(unsigned long);
-	*(fieldtype_t *)vptr = FIELD_VOID;
-}
 
 static cell_t AcceptEntityInput(IPluginContext *pContext, const cell_t *params)
 {
@@ -101,9 +80,6 @@ static cell_t AcceptEntityInput(IPluginContext *pContext, const cell_t *params)
 	CBaseEntity *pActivator, *pCaller, *pDest;
 
 	char *inputname;
-	unsigned char vstk[sizeof(void *) + sizeof(const char *) + sizeof(CBaseEntity *)*2 + SIZEOF_VARIANT_T + sizeof(int)];
-	unsigned char *vptr = vstk;
-
 	ENTINDEX_TO_CBASEENTITY(params[1], pDest);
 	pContext->LocalToString(params[2], &inputname);
 	if (params[3] == -1)
@@ -119,19 +95,9 @@ static cell_t AcceptEntityInput(IPluginContext *pContext, const cell_t *params)
 		ENTINDEX_TO_CBASEENTITY(params[4], pCaller);
 	}
 
-	*(void **)vptr = pDest;
-	vptr += sizeof(void *);
-	*(const char **)vptr = inputname;
-	vptr += sizeof(const char *);
-	*(CBaseEntity **)vptr = pActivator;
-	vptr += sizeof(CBaseEntity *);
-	*(CBaseEntity **)vptr = pCaller;
-	vptr += sizeof(CBaseEntity *);
-	memcpy(vptr, g_Variant_t, SIZEOF_VARIANT_T);
-	vptr += SIZEOF_VARIANT_T;
-	*(int *)vptr = params[5];
+	ArgBuffer<void*, const char*, CBaseEntity*, CBaseEntity*, decltype(g_Variant_t), int> vstk(pDest, inputname, pActivator, pCaller, g_Variant_t, params[5]);
 
-	bool ret;
+	bool ret = false;
 	g_pAcceptInput->Execute(vstk, &ret);
 
 	_init_variant_t();
@@ -139,136 +105,8 @@ static cell_t AcceptEntityInput(IPluginContext *pContext, const cell_t *params)
 	return (ret) ? 1 : 0;
 }
 
-static cell_t SetVariantBool(IPluginContext *pContext, const cell_t *params)
-{
-	unsigned char *vptr = g_Variant_t;
-
-	*(bool *)vptr = (params[1]) ? true : false;
-	vptr += sizeof(int)*3 + sizeof(unsigned long);
-	*(fieldtype_t *)vptr = FIELD_BOOLEAN;
-
-	return 1;
-}
-
-static cell_t SetVariantString(IPluginContext *pContext, const cell_t *params)
-{
-	char *str;
-	unsigned char *vptr = g_Variant_t;
-
-	pContext->LocalToString(params[1], &str);
-
-	*(string_t *)vptr = MAKE_STRING(str);
-	vptr += sizeof(int)*3 + sizeof(unsigned long);
-	*(fieldtype_t *)vptr = FIELD_STRING;
-
-	return 1;
-}
-
-static cell_t SetVariantInt(IPluginContext *pContext, const cell_t *params)
-{
-	unsigned char *vptr = g_Variant_t;
-
-	*(int *)vptr = params[1];
-	vptr += sizeof(int)*3 + sizeof(unsigned long);
-	*(fieldtype_t *)vptr = FIELD_INTEGER;
-
-	return 1;
-}
-
-static cell_t SetVariantFloat(IPluginContext *pContext, const cell_t *params)
-{
-	unsigned char *vptr = g_Variant_t;
-
-	*(float *)vptr = sp_ctof(params[1]);
-	vptr += sizeof(int)*3 + sizeof(unsigned long);
-	*(fieldtype_t *)vptr = FIELD_FLOAT;
-
-	return 1;
-}
-
-static cell_t SetVariantVector3D(IPluginContext *pContext, const cell_t *params)
-{
-	cell_t *val;
-	unsigned char *vptr = g_Variant_t;
-
-	pContext->LocalToPhysAddr(params[1], &val);
-
-	*(float *)vptr = sp_ctof(val[0]);
-	vptr += sizeof(float);
-	*(float *)vptr = sp_ctof(val[1]);
-	vptr += sizeof(float);
-	*(float *)vptr = sp_ctof(val[2]);
-	vptr += sizeof(float) + sizeof(unsigned long);
-	*(fieldtype_t *)vptr = FIELD_VECTOR;
-
-	return 1;
-}
-
-static cell_t SetVariantPosVector3D(IPluginContext *pContext, const cell_t *params)
-{
-	cell_t *val;
-	unsigned char *vptr = g_Variant_t;
-
-	pContext->LocalToPhysAddr(params[1], &val);
-
-	*(float *)vptr = sp_ctof(val[0]);
-	vptr += sizeof(float);
-	*(float *)vptr = sp_ctof(val[1]);
-	vptr += sizeof(float);
-	*(float *)vptr = sp_ctof(val[2]);
-	vptr += sizeof(float) + sizeof(unsigned long);
-	*(fieldtype_t *)vptr = FIELD_POSITION_VECTOR;
-
-	return 1;
-}
-
-static cell_t SetVariantColor(IPluginContext *pContext, const cell_t *params)
-{
-	cell_t *val;
-	unsigned char *vptr = g_Variant_t;
-
-	pContext->LocalToPhysAddr(params[1], &val);
-
-	*(unsigned char *)vptr = val[0];
-	vptr += sizeof(unsigned char);
-	*(unsigned char *)vptr = val[1];
-	vptr += sizeof(unsigned char);
-	*(unsigned char *)vptr = val[2];
-	vptr += sizeof(unsigned char);
-	*(unsigned char *)vptr = val[3];
-	vptr += sizeof(unsigned char) + sizeof(int)*2 + sizeof(unsigned long);
-	*(fieldtype_t *)vptr = FIELD_COLOR32;
-
-	return 1;
-}
-
-static cell_t SetVariantEntity(IPluginContext *pContext, const cell_t *params)
-{
-	CBaseEntity *pEntity;
-	unsigned char *vptr = g_Variant_t;
-	CBaseHandle bHandle;
-
-	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
-	bHandle = reinterpret_cast<IHandleEntity *>(pEntity)->GetRefEHandle();
-
-	vptr += sizeof(int)*3;
-	*(unsigned long *)vptr = (unsigned long)(bHandle.ToInt());
-	vptr += sizeof(unsigned long);
-	*(fieldtype_t *)vptr = FIELD_EHANDLE;
-
-	return 1;
-}
-
 sp_nativeinfo_t g_EntInputNatives[] =
 {
 	{"AcceptEntityInput",			AcceptEntityInput},
-	{"SetVariantBool",				SetVariantBool},
-	{"SetVariantString",			SetVariantString},
-	{"SetVariantInt",				SetVariantInt},
-	{"SetVariantFloat",				SetVariantFloat},
-	{"SetVariantVector3D",			SetVariantVector3D},
-	{"SetVariantPosVector3D",		SetVariantPosVector3D},
-	{"SetVariantColor",				SetVariantColor},
-	{"SetVariantEntity",			SetVariantEntity},
 	{NULL,							NULL},
 };

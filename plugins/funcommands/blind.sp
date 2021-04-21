@@ -76,7 +76,7 @@ void PerformBlind(int client, int target, int amount)
 	
 	EndMessage();
 
-	LogAction(client, target, "\"%L\" set blind on \"%L\", amount %d.", client, target, amount);
+	LogAction(client, target, "\"%L\" set blind on \"%L\" (amount \"%d\")", client, target, amount);
 }
 
 public void AdminMenu_Blind(TopMenu topmenu, 
@@ -237,9 +237,7 @@ public Action Command_Blind(int client, int args)
 	int amount = 0;
 	if (args > 1)
 	{
-		char arg2[20];
-		GetCmdArg(2, arg2, sizeof(arg2));
-		if (StringToIntEx(arg2, amount) == 0)
+		if (!GetCmdArgIntEx(2, amount))
 		{
 			ReplyToCommand(client, "[SM] %t", "Invalid Amount");
 			return Plugin_Handled;

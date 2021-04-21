@@ -91,8 +91,6 @@ enum SortOrder
 
 void sort_random(cell_t *array, cell_t size)
 {
-	srand((unsigned int)time(NULL));
-
 	for (int i = size-1; i > 0; i--)
 	{
         int n = rand() % (i + 1);
@@ -442,8 +440,6 @@ void sort_adt_random(CellArray *cArray)
 {
 	size_t arraysize = cArray->size();
 
-	srand((unsigned int)time(NULL));
-
 	for (int i = arraysize-1; i > 0; i--)
 	{
         int n = rand() % (i + 1);
@@ -584,12 +580,16 @@ static cell_t sm_SortADTArrayCustom(IPluginContext *pContext, const cell_t *para
 
 REGISTER_NATIVES(sortNatives)
 {
-	{"SortIntegers",			sm_SortIntegers},
-	{"SortFloats",				sm_SortFloats},
-	{"SortStrings",				sm_SortStrings},
-	{"SortCustom1D",			sm_SortCustom1D},
-	{"SortCustom2D",			sm_SortCustom2D},
-	{"SortADTArray",			sm_SortADTArray},
-	{"SortADTArrayCustom",		sm_SortADTArrayCustom},
-	{NULL,						NULL},
+	{"SortIntegers",            sm_SortIntegers},
+	{"SortFloats",              sm_SortFloats},
+	{"SortStrings",             sm_SortStrings},
+	{"SortCustom1D",            sm_SortCustom1D},
+	{"SortCustom2D",            sm_SortCustom2D},
+	{"SortADTArray",            sm_SortADTArray},
+	{"SortADTArrayCustom",      sm_SortADTArrayCustom},
+	
+	{"ArrayList.Sort",          sm_SortADTArray},
+	{"ArrayList.SortCustom",    sm_SortADTArrayCustom},
+	
+	{NULL,                      NULL},
 };

@@ -194,80 +194,12 @@ static cell_t sm_formatex(IPluginContext *pCtx, const cell_t *params)
 	return static_cast<cell_t>(res);
 }
 
-class StaticCharBuf
-{
-    char *buffer;
-    size_t max_size;
-public:
-    StaticCharBuf() : buffer(NULL), max_size(0)
-    {
-    }
-    ~StaticCharBuf()
-    {
-        free(buffer);
-    }
-    char* GetWithSize(size_t len)
-    {
-        if (len > max_size)
-        {
-            buffer = (char *)realloc(buffer, len);
-            max_size = len;
-        }
-        return buffer;
-    }
-};
-
-static char g_formatbuf[2048];
-static StaticCharBuf g_extrabuf;
 static cell_t sm_format(IPluginContext *pCtx, const cell_t *params)
 {
-	char *buf, *fmt, *destbuf;
-	cell_t start_addr, end_addr, maxparam;
-	size_t res, maxlen;
-	int arg = 4;
-	bool copy = false;
-	char *__copy_buf;
-
-	pCtx->LocalToString(params[1], &destbuf);
-	pCtx->LocalToString(params[3], &fmt);
-
-	maxlen = static_cast<size_t>(params[2]);
-	start_addr = params[1];
-	end_addr = params[1] + maxlen;
-	maxparam = params[0];
-
-	for (cell_t i=3; i<=maxparam; i++)
-	{
-		if ((params[i] >= start_addr) && (params[i] <= end_addr))
-		{
-			copy = true;
-			break;
-		}
-	}
-
-	if (copy)
-	{
-		if (maxlen > sizeof(g_formatbuf))
-		{
-			__copy_buf = g_extrabuf.GetWithSize(maxlen);
-		}
-		else
-		{
-			__copy_buf = g_formatbuf;
-		}
-	}
-
-	buf = (copy) ? __copy_buf : destbuf;
-	res = atcprintf(buf, maxlen, fmt, pCtx, params, &arg);
-
-	if (copy)
-	{
-		memcpy(destbuf, __copy_buf, res+1);
-	}
-
-	return static_cast<cell_t>(res);
+	return InternalFormat(pCtx, params, 0);
 }
 
+static char g_vformatbuf[2048];
 static cell_t sm_vformat(IPluginContext *pContext, const cell_t *params)
 {
 	int vargPos = static_cast<int>(params[4]);
@@ -301,7 +233,7 @@ static cell_t sm_vformat(IPluginContext *pContext, const cell_t *params)
 
 	if (copy)
 	{
-		destination = g_formatbuf;
+		destination = g_vformatbuf;
 	} else {
 		pContext->LocalToString(params[1], &destination);
 	}
@@ -313,7 +245,7 @@ static cell_t sm_vformat(IPluginContext *pContext, const cell_t *params)
 	/* Perform copy-on-write if we need to */
 	if (copy)
 	{
-		pContext->StringToLocal(params[1], maxlen, g_formatbuf);
+		pContext->StringToLocal(params[1], maxlen, g_vformatbuf);
 	}
 
 	return total;

@@ -40,6 +40,7 @@
 #include <inetchannel.h>
 #include <iclient.h>
 #include "iserver.h"
+#include "am-string.h"
 
 SourceHook::List<ValveCall *> g_RegCalls;
 SourceHook::List<ICallWrapper *> g_CallWraps;
@@ -149,7 +150,7 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 		char *pWeaponName;
 		pContext->LocalToString(params[2], &pWeaponName);
 
-		// Don't allow knives other than weapon_knife,  weapon_knifegg, and wewapon_knife_t.
+		// Don't allow knives other than weapon_knife,  weapon_knifegg, and weapon_knife_t.
 		// Others follow pattern weapon_knife_*
 		size_t len = strlen(pWeaponName);
 		if (len >= 14 && strnicmp(pWeaponName, "weapon_knife_", 13) == 0 && !(pWeaponName[13] == 't' && pWeaponName[14] == '\0'))
@@ -161,13 +162,14 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 	static ValveCall *pCall = NULL;
 	if (!pCall)
 	{
-		ValvePassInfo pass[5];
+		ValvePassInfo pass[6];
 		InitPass(pass[0], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
 		InitPass(pass[1], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
 		InitPass(pass[2], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
 		InitPass(pass[3], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
 		InitPass(pass[4], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
-		if (!CreateBaseCall("GiveNamedItem", ValveCall_Player, &pass[4], pass, 4, &pCall))
+		InitPass(pass[5], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+		if (!CreateBaseCall("GiveNamedItem", ValveCall_Player, &pass[5], pass, 5, &pCall))
 		{
 			return pContext->ThrowNativeError("\"GiveNamedItem\" not supported by this mod");
 		} else if (!pCall) {
@@ -182,6 +184,7 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 	DECODE_VALVE_PARAM(3, vparams, 1);
 	*(CEconItemView **)(vptr + 12) = NULL;
 	*(bool *)(vptr + 16) = false;
+	*(void **)(vptr + 17) = NULL;
 	FINISH_CALL_SIMPLE(&pEntity);
 
 	return gamehelpers->EntityToBCompatRef(pEntity);
@@ -623,7 +626,7 @@ static cell_t SlapPlayer(IPluginContext *pContext, const cell_t *params)
 		int maxClients = playerhelpers->GetMaxClients();
 
 		int r = (rand() % s_sound_count) + 1;
-		snprintf(name, sizeof(name), "SlapSound%d", r);
+		ke::SafeSprintf(name, sizeof(name), "SlapSound%d", r);
 
 		if ((sound_name = g_pGameConf->GetKeyValue(name)) != NULL)
 		{
@@ -929,7 +932,16 @@ static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 
 	char *classname;
 	pContext->LocalToString(params[1], &classname);
+#if SOURCE_ENGINE != SE_CSGO
 	CBaseEntity *pEntity = (CBaseEntity *)servertools->CreateEntityByName(classname);
+#else
+	CBaseEntity *pEntity = (CBaseEntity *)servertools->CreateItemEntityByName(classname);
+
+	if(!pEntity)
+	{
+		pEntity = (CBaseEntity *)servertools->CreateEntityByName(classname);
+	}
+#endif
 	return gamehelpers->EntityToBCompatRef(pEntity);
 }
 #else
@@ -1340,8 +1352,8 @@ static cell_t SetClientName(IPluginContext *pContext, const cell_t *params)
 		}
 	}
 
-	// The IClient vtable is +4 from the CBaseClient vtable due to multiple inheritance.
-	void *pGameClient = (void *)((intptr_t)pClient - 4);
+	// The IClient vtable is +sizeof(void *) from the CBaseClient vtable due to multiple inheritance.
+	void *pGameClient = (void *)((intptr_t)pClient - sizeof(void *));
 
 	// Change the name in the engine.
 	START_CALL();
@@ -1418,7 +1430,7 @@ static cell_t SetClientInfo(IPluginContext *pContext, const cell_t *params)
 	}
 #endif
 
-	unsigned char *CGameClient = (unsigned char *)pClient - 4;
+	unsigned char *CGameClient = (unsigned char *)pClient - sizeof(void *);
 
 	START_CALL();
 	/* Not really a CBaseEntity* but this works */

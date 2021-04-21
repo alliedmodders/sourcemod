@@ -18,88 +18,71 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"336"
-				"linux"		"337"
+				"windows"	"337"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"234"
-				"linux"		"235"
+				"windows"	"235"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"232"
-				"linux"		"233"
+				"windows"	"233"
 			}
 			"Ignite"
 			{
-				"windows"	"196"
-				"linux"		"197"
+				"windows"	"197"
 			}
 			"Extinguish"
 			{
-				"windows"	"197"
-				"linux"		"198"
+				"windows"	"198"
 			}
 			"Teleport"
 			{
-				"windows"	"104"
-				"linux"		"105"
+				"windows"	"105"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"364"
-				"linux"		"365"
+				"windows"	"365"
 			}
 			"GetVelocity"
 			{
-				"windows"	"134"
-				"linux"		"135"
+				"windows"	"135"
 			}
 			"EyeAngles"
 			{
-				"windows"	"126"
-				"linux"		"127"
+				"windows"	"127"
 			}
 			"AcceptInput"
 			{
 				"windows"	"39"
-				"linux"		"40"
 			}
 			"DispatchKeyValue"
 			{
 				"windows"	"35"
-				"linux"		"34"
 			}
 			"DispatchKeyValueFloat"
 			{
 				"windows"	"34"
-				"linux"		"35"
 			}
 			"DispatchKeyValueVector"
 			{
 				"windows"	"33"
-				"linux"		"36"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"27"
-				"linux"		"28"
+				"windows"	"28"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"225"
-				"linux"		"226"
+				"windows"	"226"
 			}
 			"Activate"
 			{
 				"windows"	"36"
-				"linux"		"37"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"354"
-				"linux"		"355"
+				"windows"	"355"
 			}
 		}
 		

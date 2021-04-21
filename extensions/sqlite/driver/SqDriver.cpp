@@ -33,6 +33,7 @@
 #include "extension.h"
 #include "SqDriver.h"
 #include "SqDatabase.h"
+#include <am-string.h>
 
 SqDriver g_SqDriver;
 
@@ -67,6 +68,32 @@ SqDriver::SqDriver()
 {
 	m_Handle = BAD_HANDLE;
 	m_bThreadSafe = false;
+	m_bShutdown = false;
+}
+
+// The extension got unloaded. Remove any open database now to avoid a use-after-free
+// of g_SqDriver in SqDatabase's destructor.
+SqDriver::~SqDriver()
+{
+	std::lock_guard<std::mutex> lock(m_OpenLock);
+
+	List<SqDbInfo>::iterator iter;
+	SqDatabase *sqdb;
+	for (iter = m_Cache.begin(); iter != m_Cache.end(); iter++)
+	{
+		// Don't let SqDatabase try to remove itself from m_Cache
+		// now that we're gone.
+		sqdb = (SqDatabase *)(*iter).db;
+		sqdb->PrepareForForcedShutdown();
+
+		iter = m_Cache.erase(iter);
+	}
+	
+	if (!m_bShutdown)
+	{
+		dbi->RemoveDriver(&g_SqDriver);
+		Shutdown();
+	}
 }
 
 void SqDriver::Initialize()
@@ -76,6 +103,7 @@ void SqDriver::Initialize()
 
 void SqDriver::Shutdown()
 {
+	m_bShutdown = true;
 	if (m_bThreadSafe)
 	{
 		sqlite3_enable_shared_cache(0);
@@ -150,72 +178,81 @@ inline bool IsPathSepChar(char c)
 
 IDatabase *SqDriver::Connect(const DatabaseInfo *info, bool persistent, char *error, size_t maxlength)
 {
-	ke::AutoLock lock(&m_OpenLock);
-
-	/* Format our path */
-	char path[PLATFORM_MAX_PATH];
-	size_t len = libsys->PathFormat(path, sizeof(path), "sqlite/%s", info->database);
-
-	/* Chop any filename off */
-	for (size_t i = len-1;
-		 i <= len-1;
-		 i--)
-	{
-		if (IsPathSepChar(path[i]))
-		{
-			path[i] = '\0';
-			break;
-		}
-	}
-
-	/* Test the full path */
+	std::lock_guard<std::mutex> lock(m_OpenLock);
+	
+	/* Full path to the database file */
 	char fullpath[PLATFORM_MAX_PATH];
-	g_pSM->BuildPath(Path_SM, fullpath, sizeof(fullpath), "data/%s", path);
-	if (!libsys->IsPathDirectory(fullpath))
+
+	if (strcmp(info->database, ":memory:") == 0 || strncmp(info->database, "file:", 5) == 0)
 	{
-		/* Make sure the data folder exists */
-		len = g_pSM->BuildPath(Path_SM, fullpath, sizeof(fullpath), "data");
-		if (!libsys->IsPathDirectory(fullpath))
-		{
-			if (!libsys->CreateFolder(fullpath))
-			{
-				strncopy(error, "Could not create or open \"data\" folder\"", maxlength);
-				return NULL;
-			}
-		}
+		ke::SafeStrcpy(fullpath, sizeof(fullpath), info->database);
+	}
+	else
+	{
+		/* Format our path */
+		char path[PLATFORM_MAX_PATH];
+		size_t len = libsys->PathFormat(path, sizeof(path), "sqlite/%s", info->database);
 
-		/* The data folder exists - create each subdir as needed! */
-		char *cur_ptr = path;
-
-		do
+		/* Chop any filename off */
+		for (size_t i = len-1;
+			 i <= len-1;
+			 i--)
 		{
-			/* Find the next suitable path */
-			char *next_ptr = cur_ptr;
-			while (*next_ptr != '\0')
+			if (IsPathSepChar(path[i]))
 			{
-				if (IsPathSepChar(*next_ptr))
-				{
-					*next_ptr = '\0';
-					next_ptr++;
-					break;
-				}
-				next_ptr++;
-			}
-			if (*next_ptr == '\0')
-			{
-				next_ptr = NULL;
-			}
-			len += libsys->PathFormat(&fullpath[len], sizeof(fullpath)-len, "/%s", cur_ptr);
-			if (!libsys->IsPathDirectory(fullpath) && !libsys->CreateFolder(fullpath))
-			{
+				path[i] = '\0';
 				break;
 			}
-			cur_ptr = next_ptr;
-		} while (cur_ptr);
-	}
+		}
 
-	/* Build the FINAL path. */
-	g_pSM->BuildPath(Path_SM, fullpath, sizeof(fullpath), "data/sqlite/%s.sq3", info->database);
+		/* Test the full path */
+		g_pSM->BuildPath(Path_SM, fullpath, sizeof(fullpath), "data/%s", path);
+		if (!libsys->IsPathDirectory(fullpath))
+		{
+			/* Make sure the data folder exists */
+			len = g_pSM->BuildPath(Path_SM, fullpath, sizeof(fullpath), "data");
+			if (!libsys->IsPathDirectory(fullpath))
+			{
+				if (!libsys->CreateFolder(fullpath))
+				{
+					strncopy(error, "Could not create or open \"data\" folder\"", maxlength);
+					return NULL;
+				}
+			}
+
+			/* The data folder exists - create each subdir as needed! */
+			char *cur_ptr = path;
+
+			do
+			{
+				/* Find the next suitable path */
+				char *next_ptr = cur_ptr;
+				while (*next_ptr != '\0')
+				{
+					if (IsPathSepChar(*next_ptr))
+					{
+						*next_ptr = '\0';
+						next_ptr++;
+						break;
+					}
+					next_ptr++;
+				}
+				if (*next_ptr == '\0')
+				{
+					next_ptr = NULL;
+				}
+				len += libsys->PathFormat(&fullpath[len], sizeof(fullpath)-len, "/%s", cur_ptr);
+				if (!libsys->IsPathDirectory(fullpath) && !libsys->CreateFolder(fullpath))
+				{
+					break;
+				}
+				cur_ptr = next_ptr;
+			} while (cur_ptr);
+		}
+
+		/* Build the FINAL path. */
+		g_pSM->BuildPath(Path_SM, fullpath, sizeof(fullpath), "data/sqlite/%s.sq3", info->database);
+	}
 
 	/* If we're requesting a persistent connection, see if something is already open */
 	if (persistent)
@@ -259,7 +296,7 @@ IDatabase *SqDriver::Connect(const DatabaseInfo *info, bool persistent, char *er
 
 void SqDriver::RemovePersistent(IDatabase *pdb)
 {
-	ke::AutoLock lock(&m_OpenLock);
+	std::lock_guard<std::mutex> lock(m_OpenLock);
 
 	List<SqDbInfo>::iterator iter;
 	for (iter = m_Cache.begin(); iter != m_Cache.end(); iter++)

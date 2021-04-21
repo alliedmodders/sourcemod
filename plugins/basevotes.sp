@@ -51,9 +51,13 @@ public Plugin myinfo =
 #define VOTE_NO "###no###"
 #define VOTE_YES "###yes###"
 
+#define GENERIC_COUNT 5
+#define ANSWER_SIZE 64
+
 Menu g_hVoteMenu = null;
 
 ConVar g_Cvar_Limits[3] = {null, ...};
+ConVar g_Cvar_Voteban = null;
 //ConVar g_Cvar_VoteSay = null;
 
 enum voteType
@@ -69,9 +73,7 @@ voteType g_voteType = question;
 // Menu API does not provide us with a way to pass multiple peices of data with a single
 // choice, so some globals are used to hold stuff.
 //
-#define VOTE_CLIENTID	0
-#define VOTE_USERID	1
-int g_voteClient[2];		/* Holds the target's client id and user id */
+int g_voteTarget;		/* Holds the target's user id */
 
 #define VOTE_NAME	0
 #define VOTE_AUTHID	1
@@ -110,6 +112,9 @@ public void OnPluginStart()
 	g_Cvar_Limits[0] = CreateConVar("sm_vote_map", "0.60", "percent required for successful map vote.", 0, true, 0.05, true, 1.0);
 	g_Cvar_Limits[1] = CreateConVar("sm_vote_kick", "0.60", "percent required for successful kick vote.", 0, true, 0.05, true, 1.0);	
 	g_Cvar_Limits[2] = CreateConVar("sm_vote_ban", "0.60", "percent required for successful ban vote.", 0, true, 0.05, true, 1.0);		
+	g_Cvar_Voteban = CreateConVar("sm_voteban_time", "30", "length of ban in minutes.", 0, true, 0.0);	
+
+	AutoExecConfig(true, "basevotes");
 	
 	/* Account for late loading */
 	TopMenu topmenu;
@@ -180,12 +185,14 @@ public Action Command_Vote(int client, int args)
 	char text[256];
 	GetCmdArgString(text, sizeof(text));
 
-	char answers[5][64];
+	char answers[GENERIC_COUNT][ANSWER_SIZE];
 	int answerCount;	
 	int len = BreakString(text, g_voteArg, sizeof(g_voteArg));
 	int pos = len;
 	
-	while (args > 1 && pos != -1 && answerCount < 5)
+	char answers_list[GENERIC_COUNT * (ANSWER_SIZE + 3)];
+	
+	while (args > 1 && pos != -1 && answerCount < GENERIC_COUNT)
 	{	
 		pos = BreakString(text[len], answers[answerCount], sizeof(answers[]));
 		answerCount++;
@@ -195,10 +202,6 @@ public Action Command_Vote(int client, int args)
 			len += pos;
 		}	
 	}
-
-	LogAction(client, -1, "\"%L\" initiated a generic vote.", client);
-	ShowActivity2(client, "[SM] ", "%t", "Initiate Vote", g_voteArg);
-	
 	g_voteType = question;
 	
 	g_hVoteMenu = new Menu(Handler_VoteCallback, MENU_ACTIONS_ALL);
@@ -208,14 +211,19 @@ public Action Command_Vote(int client, int args)
 	{
 		g_hVoteMenu.AddItem(VOTE_YES, "Yes");
 		g_hVoteMenu.AddItem(VOTE_NO, "No");
+		Format(answers_list, sizeof(answers_list), " \"Yes\" \"No\"");
 	}
 	else
 	{
 		for (int i = 0; i < answerCount; i++)
 		{
 			g_hVoteMenu.AddItem(answers[i], answers[i]);
+			Format(answers_list, sizeof(answers_list), "%s \"%s\"", answers_list, answers[i]);
 		}	
 	}
+	
+	LogAction(client, -1, "\"%L\" initiated a generic vote (question \"%s\" / answers%s).", client, g_voteArg, answers_list);
+	ShowActivity2(client, "[SM] ", "%t", "Initiate Vote", g_voteArg);
 	
 	g_hVoteMenu.ExitButton = false;
 	g_hVoteMenu.DisplayVoteToAll(20);		
@@ -266,7 +274,7 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 	}	
 	else if (action == MenuAction_VoteEnd)
 	{
-		char item[64], display[64];
+		char item[PLATFORM_MAX_PATH], display[64];
 		float percent, limit;
 		int votes, totalVotes;
 
@@ -285,12 +293,10 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 			limit = g_Cvar_Limits[g_voteType].FloatValue;
 		}
 		
-		/* :TODO: g_voteClient[userid] needs to be checked */
-
 		// A multi-argument vote is "always successful", but have to check if its a Yes/No vote.
 		if ((strcmp(item, VOTE_YES) == 0 && FloatCompare(percent,limit) < 0 && param1 == 0) || (strcmp(item, VOTE_NO) == 0 && param1 == 1))
 		{
-			/* :TODO: g_voteClient[userid] should be used here and set to -1 if not applicable.
+			/* :TODO: g_voteTarget should be used here and set to -1 if not applicable.
 			 */
 			LogAction(-1, -1, "Vote failed.");
 			PrintToChatAll("[SM] %t", "Vote Failed", RoundToNearest(100.0*limit), RoundToNearest(100.0*percent), totalVotes);
@@ -325,15 +331,23 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 					
 				case (kick):
 				{
-					if (g_voteArg[0] == '\0')
+					int voteTarget;
+					if((voteTarget = GetClientOfUserId(g_voteTarget)) == 0)
 					{
-						strcopy(g_voteArg, sizeof(g_voteArg), "Votekicked");
+						LogAction(-1, -1, "Vote kick failed, unable to kick \"%s\" (reason \"%s\")", g_voteInfo[VOTE_NAME], "Player no longer available");
 					}
-					
-					PrintToChatAll("[SM] %t", "Kicked target", "_s", g_voteInfo[VOTE_NAME]);					
-					LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote kick successful, kicked \"%L\" (reason \"%s\")", g_voteClient[VOTE_CLIENTID], g_voteArg);
-					
-					ServerCommand("kickid %d \"%s\"", g_voteClient[VOTE_USERID], g_voteArg);					
+					else
+					{
+						if (g_voteArg[0] == '\0')
+						{
+							strcopy(g_voteArg, sizeof(g_voteArg), "Votekicked");
+						}
+						
+						PrintToChatAll("[SM] %t", "Kicked target", "_s", g_voteInfo[VOTE_NAME]);					
+						LogAction(-1, voteTarget, "Vote kick successful, kicked \"%L\" (reason \"%s\")", voteTarget, g_voteArg);
+						
+						ServerCommand("kickid %d \"%s\"", g_voteTarget, g_voteArg);					
+					}
 				}
 					
 				case (ban):
@@ -343,15 +357,32 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 						strcopy(g_voteArg, sizeof(g_voteArg), "Votebanned");
 					}
 					
-					PrintToChatAll("[SM] %t", "Banned player", g_voteInfo[VOTE_NAME], 30);
-					LogAction(-1, g_voteClient[VOTE_CLIENTID], "Vote ban successful, banned \"%L\" (minutes \"30\") (reason \"%s\")", g_voteClient[VOTE_CLIENTID], g_voteArg);
-
-					BanClient(g_voteClient[VOTE_CLIENTID],
-							  30,
-							  BANFLAG_AUTO,
-							  g_voteArg,
-							  "Banned by vote",
-							  "sm_voteban");
+					int minutes = g_Cvar_Voteban.IntValue;
+					
+					PrintToChatAll("[SM] %t", "Banned player", g_voteInfo[VOTE_NAME], minutes);
+					
+					int voteTarget;
+					if((voteTarget = GetClientOfUserId(g_voteTarget)) == 0)
+					{
+						LogAction(-1, -1, "Vote ban successful, banned \"%s\" (%s) (minutes \"%d\") (reason \"%s\")", g_voteInfo[VOTE_NAME], g_voteInfo[VOTE_AUTHID], minutes, g_voteArg);
+						
+						BanIdentity(g_voteInfo[VOTE_AUTHID],
+								  minutes,
+								  BANFLAG_AUTHID,
+								  g_voteArg,
+								  "sm_voteban");
+					}
+					else
+					{
+						LogAction(-1, voteTarget, "Vote ban successful, banned \"%L\" (minutes \"%d\") (reason \"%s\")", voteTarget, minutes, g_voteArg);
+						
+						BanClient(voteTarget,
+								  minutes,
+								  BANFLAG_AUTO,
+								  g_voteArg,
+								  "Banned by vote",
+								  "sm_voteban");
+					}
 				}
 			}
 		}
@@ -376,12 +407,11 @@ void VoteSelect(Menu menu, int param1, int param2 = 0)
 void VoteMenuClose()
 {
 	delete g_hVoteMenu;
-	g_hVoteMenu = null;
 }
 
 float GetVotePercent(int votes, int totalVotes)
 {
-	return FloatDiv(float(votes),float(totalVotes));
+	return float(votes) / float(totalVotes);
 }
 
 bool TestVoteDelay(int client)
@@ -392,7 +422,7 @@ bool TestVoteDelay(int client)
  	{
  		if (delay > 60)
  		{
- 			ReplyToCommand(client, "[SM] %t", "Vote Delay Minutes", delay % 60);
+ 			ReplyToCommand(client, "[SM] %t", "Vote Delay Minutes", (delay / 60));
  		}
  		else
  		{
@@ -407,7 +437,7 @@ bool TestVoteDelay(int client)
 
 public Action Timer_ChangeMap(Handle timer, DataPack dp)
 {
-	char mapname[65];
+	char mapname[PLATFORM_MAX_PATH];
 	
 	dp.Reset();
 	dp.ReadString(mapname, sizeof(mapname));

@@ -1,91 +1,92 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-binary = SM.Library(builder, 'sourcemod.logic')
-binary.compiler.cxxincludes += [
-  builder.sourcePath,
-  os.path.join(builder.sourcePath, 'core', 'logic'),
-  os.path.join(builder.sourcePath, 'public'),
-  os.path.join(builder.sourcePath, 'sourcepawn', 'include'),
-  os.path.join(builder.sourcePath, 'public', 'amtl', 'amtl'),
-  os.path.join(builder.sourcePath, 'public', 'amtl'),
-  os.path.join(SM.mms_root, 'core', 'sourcehook')
-]
-binary.compiler.defines += [
-  'SM_DEFAULT_THREADER',
-  'SM_LOGIC'
-]
+for cxx in builder.targets:
+  binary = SM.Library(builder, cxx, 'sourcemod.logic')
+  binary.compiler.cxxincludes += [
+    builder.sourcePath,
+    os.path.join(builder.sourcePath, 'core', 'logic'),
+    os.path.join(builder.sourcePath, 'public'),
+    os.path.join(builder.sourcePath, 'sourcepawn', 'include'),
+    os.path.join(builder.sourcePath, 'public', 'amtl', 'amtl'),
+    os.path.join(builder.sourcePath, 'public', 'amtl'),
+    os.path.join(SM.mms_root, 'core', 'sourcehook')
+  ]
+  binary.compiler.defines += [
+    'SM_DEFAULT_THREADER',
+    'SM_LOGIC'
+  ]
   
-if builder.target_platform == 'linux':
-  binary.compiler.postlink += ['-lpthread', '-lrt']
-elif builder.target_platform == 'mac':
-  binary.compiler.cflags += ['-Wno-deprecated-declarations']
-  binary.compiler.postlink += ['-framework', 'CoreServices']
+  if binary.compiler.target.platform == 'linux':
+    binary.compiler.postlink += ['-lpthread', '-lrt']
+  elif binary.compiler.target.platform == 'mac':
+    binary.compiler.cflags += ['-Wno-deprecated-declarations']
+    binary.compiler.postlink += ['-framework', 'CoreServices']
 
-if binary.compiler.vendor == 'gcc' or binary.compiler.vendor == 'clang':
-  binary.compiler.cxxflags += ['-fno-rtti']
-elif binary.compiler.vendor == 'msvc':
-  binary.compiler.cxxflags += ['/GR-']
+  if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
+    binary.compiler.cxxflags += ['-fno-rtti']
+  elif binary.compiler.family == 'msvc':
+    binary.compiler.cxxflags += ['/GR-']
 
-binary.sources += [
-  'common_logic.cpp',
-  'smn_adt_array.cpp',
-  'smn_sorting.cpp',
-  'smn_maplists.cpp',
-  'ADTFactory.cpp',
-  'smn_adt_stack.cpp',
-  'thread/ThreadWorker.cpp',
-  'thread/BaseWorker.cpp',
-  'ThreadSupport.cpp',
-  'smn_float.cpp',
-  'TextParsers.cpp',
-  'smn_textparse.cpp',
-  'smn_adt_trie.cpp',
-  'smn_functions.cpp',
-  'smn_timers.cpp',
-  'smn_players.cpp',
-  'MemoryUtils.cpp',
-  'smn_admin.cpp',
-  'smn_banning.cpp',
-  'smn_filesystem.cpp',
-  'stringutil.cpp',
-  'Translator.cpp',
-  'PhraseCollection.cpp',
-  'smn_lang.cpp',
-  'smn_string.cpp',
-  'smn_handles.cpp',
-  'smn_datapacks.cpp',
-  'smn_gameconfigs.cpp',
-  'smn_fakenatives.cpp',
-  'GameConfigs.cpp',
-  'sm_crc32.cpp',
-  'smn_profiler.cpp',
-  'ShareSys.cpp',
-  'PluginSys.cpp',
-  'HandleSys.cpp',
-  'NativeOwner.cpp',
-  'ExtensionSys.cpp',
-  'DebugReporter.cpp',
-  'Database.cpp',
-  'smn_database.cpp',
-  'ForwardSys.cpp',
-  'AdminCache.cpp',
-  'sm_trie.cpp',
-  'smn_console.cpp',
-  'ProfileTools.cpp',
-  'Logger.cpp',
-  'smn_core.cpp',
-  'smn_menus.cpp',
-  'sprintf.cpp',
-  'LibrarySys.cpp',
-  'RootConsoleMenu.cpp',
-  'CDataPack.cpp',
-  'frame_tasks.cpp',
-  'smn_halflife.cpp',
-]
-if builder.target_platform == 'windows':
-  binary.sources += ['thread/WinThreads.cpp']
-else:
-  binary.sources += ['thread/PosixThreads.cpp']
+  binary.sources += [
+    'common_logic.cpp',
+    'smn_adt_array.cpp',
+    'smn_sorting.cpp',
+    'smn_maplists.cpp',
+    'ADTFactory.cpp',
+    'smn_adt_stack.cpp',
+    'BaseWorker.cpp',
+    'ThreadSupport.cpp',
+    'smn_float.cpp',
+    'TextParsers.cpp',
+    'smn_textparse.cpp',
+    'smn_adt_trie.cpp',
+    'smn_functions.cpp',
+    'smn_timers.cpp',
+    'smn_players.cpp',
+    'MemoryUtils.cpp',
+    'smn_admin.cpp',
+    'smn_banning.cpp',
+    'smn_filesystem.cpp',
+    'stringutil.cpp',
+    'Translator.cpp',
+    'PhraseCollection.cpp',
+    'smn_lang.cpp',
+    'smn_string.cpp',
+    'smn_handles.cpp',
+    'smn_datapacks.cpp',
+    'smn_gameconfigs.cpp',
+    'smn_fakenatives.cpp',
+    'GameConfigs.cpp',
+    'sm_crc32.cpp',
+    'smn_profiler.cpp',
+    'ShareSys.cpp',
+    'PluginSys.cpp',
+    'HandleSys.cpp',
+    'NativeOwner.cpp',
+    'ExtensionSys.cpp',
+    'DebugReporter.cpp',
+    'Database.cpp',
+    'smn_database.cpp',
+    'ForwardSys.cpp',
+    'AdminCache.cpp',
+    'sm_trie.cpp',
+    'smn_console.cpp',
+    'ProfileTools.cpp',
+    'Logger.cpp',
+    'smn_core.cpp',
+    'smn_menus.cpp',
+    'sprintf.cpp',
+    'LibrarySys.cpp',
+    'RootConsoleMenu.cpp',
+    'CDataPack.cpp',
+    'frame_tasks.cpp',
+    'smn_halflife.cpp',
+    'FrameIterator.cpp',
+    'DatabaseConfBuilder.cpp',
+  ]
 
-SM.binaries += [builder.Add(binary)]
+  if binary.compiler.target.arch == 'x86_64':
+    binary.sources += ['PseudoAddrManager.cpp']
+
+  SM.binaries += [builder.Add(binary)]

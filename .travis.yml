@@ -1,33 +1,86 @@
-addons:
-  apt:
-    packages:
-    - lib32stdc++6
-    - lib32z1-dev
-    - libc6-dev-i386
-    - linux-libc-dev
-    - g++-multilib
-    - g++-4.8
-    sources:
-    - ubuntu-toolchain-r-test
-  cache:
-    directories:
-    - ../mysql-5.0
+git:
+  depth: 3
+
 language: cpp
-sudo: false
-compiler:
-  - clang
-env:
-  global:
-  - LLVM_ARCHIVE_URI=http://sourcemod.net/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
-before_install:
-  - wget -nc $LLVM_ARCHIVE_URI -O $HOME/clang+llvm.tar.xz
-  - mkdir -p $HOME/clang+llvm
-  - tar -xf $HOME/clang+llvm.tar.xz -C $HOME/clang+llvm --strip-components 1
-  - export PATH=$HOME/clang+llvm/bin:$PATH
+os: linux
+dist: xenial
+
+jobs:
+  fast_finish: true
+  include:
+    - os: linux
+      dist: trusty
+      language: cpp
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages: ['clang-3.8', 'lib32stdc++6', 'lib32z1-dev', 'libc6-dev-i386', 'linux-libc-dev:i386', 'g++-4.9-multilib', 'python3-pip']
+      env:
+        - MATRIX_EVAL="CC=clang-3.8 && CXX=clang++-3.8"
+        - SDKS=episode1,css,tf2,l4d2,csgo
+        - MODE=optimize
+        - ARCH=x86,x86_64
+
+    - os: linux
+      dist: trusty
+      language: cpp
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages: ['clang-3.4', 'lib32stdc++6', 'lib32z1-dev', 'libc6-dev-i386', 'linux-libc-dev:i386', 'g++-4.9-multilib', 'python3-pip']
+      env:
+        - MATRIX_EVAL="CC=clang && CXX=clang++"
+        - SDKS=episode1,css,tf2,l4d2,csgo
+        - MODE=optimize
+        - ARCH=x86,x86_64
+
+    - os: osx
+      osx_image: xcode7.2
+      language: cpp
+      env:
+        - MATRIX_EVAL="CC=clang && CXX=clang++"
+        - SDKS=episode1,css,tf2,l4d2,csgo
+        - MODE=optimize
+        - ARCH=x86_64,x86
+
+    # # This is a faster test for the latest g++.
+    # - os: linux
+    #   dist: bionic
+    #   sudo: false
+    #   language: cpp
+    #   addons:
+    #     apt:
+    #       packages: ['lib32stdc++6', 'lib32z1-dev', 'libc6-dev-i386', 'linux-libc-dev:i386', 'g++-multilib', 'g++']
+    #     cache:
+    #       directories: ['../mysql-5.0']
+    #   env:
+    #     - MATRIX_EVAL="CC=gcc && CXX=g++"
+    #     - SDKS=csgo
+    #     # GCC currently fails in opt builds trying to inline stuff in sqlite3.c.
+    #     - MODE=debug
+
+    # This is a faster test for the latest clang.
+    - os: linux
+      dist: bionic
+      language: cpp
+      addons:
+        apt:
+          packages: ['lib32stdc++6', 'lib32z1-dev', 'libc6-dev-i386', 'linux-libc-dev:i386', 'g++-multilib', 'clang']
+      env:
+        - MATRIX_EVAL="CC=clang && CXX=clang++"
+        - SDKS=csgo
+        - MODE=optimize
+        - ARCH=x86
+
 before_script:
-  - CHECKOUT_DIR=$PWD && cd .. && $CHECKOUT_DIR/tools/checkout-deps.sh && cd $CHECKOUT_DIR
+  - CHECKOUT_DIR=$PWD && cd .. && $CHECKOUT_DIR/tools/checkout-deps.sh -s ${SDKS} && cd $CHECKOUT_DIR
 script:
   - mkdir build && cd build
   - PATH="~/.local/bin:$PATH"
-  - CC=clang-3.8 CXX=clang-3.8 python ../configure.py --enable-optimize --sdks=episode1,tf2,l4d2,csgo,dota
+  - eval "${MATRIX_EVAL}"
+  - eval "${CC} --version"
+  - eval "${CXX} --version"
+  - python3 ../configure.py --enable-${MODE} --sdks=${SDKS} --targets=${ARCH}
   - ambuild

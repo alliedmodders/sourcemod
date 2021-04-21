@@ -214,7 +214,7 @@ inline void Write_Push_Params(JitWriter *jit,
 	IA32_Push_Reg(jit, kREG_EBX);
 
 	//push <pWrapper>
-	IA32_Push_Imm32(jit, (jit_int32_t)pWrapper);
+	IA32_Push_Imm32(jit, (jit_int32_t)(intptr_t)pWrapper);
 }
 
 inline void Write_Call_Handler(JitWriter *jit, void *addr)

@@ -64,17 +64,13 @@ const char *SqDatabase::GetError(int *errorCode/* =NULL */)
 
 bool SqDatabase::LockForFullAtomicOperation()
 {
-	if (!m_FullLock)
-		m_FullLock = new ke::Mutex();
-
-	m_FullLock->Lock();
+	m_FullLock.lock();
 	return true;
 }
 
 void SqDatabase::UnlockFromFullAtomicOperation()
 {
-	if (m_FullLock)
-		m_FullLock->Unlock();
+	m_FullLock.unlock();
 }
 
 IDBDriver *SqDatabase::GetDriver()
@@ -84,6 +80,18 @@ IDBDriver *SqDatabase::GetDriver()
 
 bool SqDatabase::QuoteString(const char *str, char buffer[], size_t maxlen, size_t *newSize)
 {
+	unsigned long size = static_cast<unsigned long>(strlen(str));
+	unsigned long needed = size * 2 + 1;
+
+	if (maxlen < needed)
+	{
+		if (newSize != NULL)
+		{
+			*newSize = (size_t)needed;
+		}
+		return false;
+	}
+
 	char *res = sqlite3_snprintf(static_cast<int>(maxlen), buffer, "%q", str);
 
 	if (res != NULL && newSize != NULL)

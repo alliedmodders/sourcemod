@@ -62,16 +62,10 @@
 # include <unistd.h>
 #endif
 
-#if SH_IMPL_VERSION >= 5
-# if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 	SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
-# else
-	SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
-# endif
 #else
-extern int __SourceHook_FHVPAddConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>,bool);
-extern int __SourceHook_FHAddConCommandDispatch(void *, bool, class fastdelegate::FastDelegate0<void>);
-extern bool __SourceHook_FHRemoveConCommandDispatch(void *, bool, class fastdelegate::FastDelegate0<void>);
+	SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
 #endif
 
 class GenericCommandHooker : public IConCommandLinkListener
@@ -313,13 +307,13 @@ bool ConsoleDetours::AddListener(IPluginFunction *fun, const char *command)
 	}
 	else
 	{
-		ke::AutoArray<char> str(UTIL_ToLowerCase(command));
+		std::unique_ptr<char[]> str(UTIL_ToLowerCase(command));
 		IChangeableForward *forward;
-		if (!m_Listeners.retrieve(str, &forward))
+		if (!m_Listeners.retrieve(str.get(), &forward))
 		{
 			forward = forwardsys->CreateForwardEx(NULL, ET_Hook, 3, NULL, Param_Cell,
 			                                     Param_String, Param_Cell);
-			m_Listeners.insert(str, forward);
+			m_Listeners.insert(str.get(), forward);
 		}
 		forward->AddFunction(fun);
 	}
@@ -335,9 +329,9 @@ bool ConsoleDetours::RemoveListener(IPluginFunction *fun, const char *command)
 	}
 	else
 	{
-		ke::AutoArray<char> str(UTIL_ToLowerCase(command));
+		std::unique_ptr<char[]> str(UTIL_ToLowerCase(command));
 		IChangeableForward *forward;
-		if (!m_Listeners.retrieve(str, &forward))
+		if (!m_Listeners.retrieve(str.get(), &forward))
 			return false;
 		return forward->RemoveFunction(fun);
 	}

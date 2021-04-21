@@ -43,18 +43,6 @@
 #include <mach-o/dyld_images.h>
 #include <mach-o/loader.h>
 #include <mach-o/nlist.h>
-
-/* Define things from 10.6 SDK for older SDKs */
-#ifndef MAC_OS_X_VERSION_10_6
-struct task_dyld_info
-{
-	mach_vm_address_t all_image_info_addr;
-	mach_vm_size_t all_image_info_size;
-};
-typedef struct task_dyld_info task_dyld_info_data_t;
-#define TASK_DYLD_INFO 17
-#define TASK_DYLD_INFO_COUNT (sizeof(task_dyld_info_data_t) / sizeof(natural_t))
-#endif // MAC_OS_X_VERSION_10_6
 #endif // PLATFORM_APPLE
 
 MemoryUtils g_MemUtils;
@@ -63,25 +51,10 @@ MemoryUtils::MemoryUtils()
 {
 #ifdef PLATFORM_APPLE
 
-	Gestalt(gestaltSystemVersionMajor, &m_OSXMajor);
-	Gestalt(gestaltSystemVersionMinor, &m_OSXMinor);
-
-	/* Get pointer to struct that describes all loaded mach-o images in process */
-	if ((m_OSXMajor == 10 && m_OSXMinor >= 6) || m_OSXMajor > 10)
-	{
-		task_dyld_info_data_t dyld_info;
-		mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
-		task_info(mach_task_self(), TASK_DYLD_INFO, (task_info_t)&dyld_info, &count);
-		m_ImageList = (struct dyld_all_image_infos *)dyld_info.all_image_info_addr;
-	}
-	else
-	{
-		struct nlist list[2];
-		memset(list, 0, sizeof(list));
-		list[0].n_un.n_name = (char *)"_dyld_all_image_infos";
-		nlist("/usr/lib/dyld", list);
-		m_ImageList = (struct dyld_all_image_infos *)list[0].n_value;
-	}
+	task_dyld_info_data_t dyld_info;
+	mach_msg_type_number_t count = TASK_DYLD_INFO_COUNT;
+	task_info(mach_task_self(), TASK_DYLD_INFO, (task_info_t)&dyld_info, &count);
+	m_ImageList = (struct dyld_all_image_infos *)dyld_info.all_image_info_addr;
 
 #endif
 }
@@ -147,13 +120,25 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 	
 #elif defined PLATFORM_LINUX
 
+#ifdef PLATFORM_X86
+	typedef Elf32_Ehdr ElfHeader;
+	typedef Elf32_Shdr ElfSHeader;
+	typedef Elf32_Sym ElfSymbol;
+	#define ELF_SYM_TYPE ELF32_ST_TYPE
+#else
+	typedef Elf64_Ehdr ElfHeader;
+	typedef Elf64_Shdr ElfSHeader;
+	typedef Elf64_Sym ElfSymbol;
+	#define ELF_SYM_TYPE ELF64_ST_TYPE
+#endif
+
 	struct link_map *dlmap;
 	struct stat dlstat;
 	int dlfile;
 	uintptr_t map_base;
-	Elf32_Ehdr *file_hdr;
-	Elf32_Shdr *sections, *shstrtab_hdr, *symtab_hdr, *strtab_hdr;
-	Elf32_Sym *symtab;
+	ElfHeader *file_hdr;
+	ElfSHeader *sections, *shstrtab_hdr, *symtab_hdr, *strtab_hdr;
+	ElfSymbol *symtab;
 	const char *shstrtab, *strtab;
 	uint16_t section_count;
 	uint32_t symbol_count;
@@ -204,7 +189,7 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 	}
 
 	/* Map library file into memory */
-	file_hdr = (Elf32_Ehdr *)mmap(NULL, dlstat.st_size, PROT_READ, MAP_PRIVATE, dlfile, 0);
+	file_hdr = (ElfHeader *)mmap(NULL, dlstat.st_size, PROT_READ, MAP_PRIVATE, dlfile, 0);
 	map_base = (uintptr_t)file_hdr;
 	if (file_hdr == MAP_FAILED)
 	{
@@ -219,7 +204,7 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 		return NULL;
 	}
 
-	sections = (Elf32_Shdr *)(map_base + file_hdr->e_shoff);
+	sections = (ElfSHeader *)(map_base + file_hdr->e_shoff);
 	section_count = file_hdr->e_shnum;
 	/* Get ELF section header string table */
 	shstrtab_hdr = &sections[file_hdr->e_shstrndx];
@@ -228,7 +213,7 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 	/* Iterate sections while looking for ELF symbol table and string table */
 	for (uint16_t i = 0; i < section_count; i++)
 	{
-		Elf32_Shdr &hdr = sections[i];
+		ElfSHeader &hdr = sections[i];
 		const char *section_name = shstrtab + hdr.sh_name;
 
 		if (strcmp(section_name, ".symtab") == 0)
@@ -248,15 +233,15 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 		return NULL;
 	}
 
-	symtab = (Elf32_Sym *)(map_base + symtab_hdr->sh_offset);
+	symtab = (ElfSymbol *)(map_base + symtab_hdr->sh_offset);
 	strtab = (const char *)(map_base + strtab_hdr->sh_offset);
 	symbol_count = symtab_hdr->sh_size / symtab_hdr->sh_entsize;
 
 	/* Iterate symbol table starting from the position we were at last time */
 	for (uint32_t i = libtable->last_pos; i < symbol_count; i++)
 	{
-		Elf32_Sym &sym = symtab[i];
-		unsigned char sym_type = ELF32_ST_TYPE(sym.st_info);
+		ElfSymbol &sym = symtab[i];
+		unsigned char sym_type = ELF_SYM_TYPE(sym.st_info);
 		const char *sym_name = strtab + sym.st_name;
 		Symbol *cur_sym;
 
@@ -280,14 +265,29 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 	return symbol_entry ? symbol_entry->address : NULL;
 
 #elif defined PLATFORM_APPLE
-	
+
+#ifdef PLATFORM_X86
+	typedef struct mach_header MachHeader;
+	typedef struct segment_command MachSegment;
+	typedef struct nlist MachSymbol;
+	const uint32_t MACH_LOADCMD_SEGMENT = LC_SEGMENT;
+#else
+	typedef struct mach_header_64 MachHeader;
+	typedef struct segment_command_64 MachSegment;
+	typedef struct nlist_64 MachSymbol;
+	const uint32_t MACH_LOADCMD_SEGMENT = LC_SEGMENT_64;
+#endif
+
+	typedef struct load_command MachLoadCmd;
+	typedef struct symtab_command MachSymHeader;
+
 	uintptr_t dlbase, linkedit_addr;
 	uint32_t image_count;
-	struct mach_header *file_hdr;
-	struct load_command *loadcmds;
-	struct segment_command *linkedit_hdr;
-	struct symtab_command *symtab_hdr;
-	struct nlist *symtab;
+	MachHeader *file_hdr;
+	MachLoadCmd *loadcmds;
+	MachSegment *linkedit_hdr;
+	MachSymHeader *symtab_hdr;
+	MachSymbol *symtab;
 	const char *strtab;
 	uint32_t loadcmd_count;
 	uint32_t symbol_count;
@@ -357,16 +357,16 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 	
 	/* If symbol isn't in our table, then we have to locate it in memory */
 	
-	file_hdr = (struct mach_header *)dlbase;
-	loadcmds = (struct load_command *)(dlbase + sizeof(struct mach_header));
+	file_hdr = (MachHeader *)dlbase;
+	loadcmds = (MachLoadCmd *)(dlbase + sizeof(MachHeader));
 	loadcmd_count = file_hdr->ncmds;
 	
 	/* Loop through load commands until we find the ones for the symbol table */
 	for (uint32_t i = 0; i < loadcmd_count; i++)
 	{
-		if (loadcmds->cmd == LC_SEGMENT && !linkedit_hdr)
+		if (loadcmds->cmd == MACH_LOADCMD_SEGMENT && !linkedit_hdr)
 		{
-			struct segment_command *seg = (struct segment_command *)loadcmds;
+			MachSegment *seg = (MachSegment *)loadcmds;
 			if (strcmp(seg->segname, "__LINKEDIT") == 0)
 			{
 				linkedit_hdr = seg;
@@ -378,7 +378,7 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 		}
 		else if (loadcmds->cmd == LC_SYMTAB)
 		{
-			symtab_hdr = (struct symtab_command *)loadcmds;
+			symtab_hdr = (MachSymHeader *)loadcmds;
 			if (linkedit_hdr)
 			{
 				break;
@@ -386,7 +386,7 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 		}
 
 		/* Load commands are not of a fixed size which is why we add the size */
-		loadcmds = (struct load_command *)((uintptr_t)loadcmds + loadcmds->cmdsize);
+		loadcmds = (MachLoadCmd *)((uintptr_t)loadcmds + loadcmds->cmdsize);
 	}
 	
 	if (!linkedit_hdr || !symtab_hdr || !symtab_hdr->symoff || !symtab_hdr->stroff)
@@ -396,14 +396,14 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 	}
 
 	linkedit_addr = dlbase + linkedit_hdr->vmaddr;
-	symtab = (struct nlist *)(linkedit_addr + symtab_hdr->symoff - linkedit_hdr->fileoff);
+	symtab = (MachSymbol *)(linkedit_addr + symtab_hdr->symoff - linkedit_hdr->fileoff);
 	strtab = (const char *)(linkedit_addr + symtab_hdr->stroff - linkedit_hdr->fileoff);
 	symbol_count = symtab_hdr->nsyms;
 	
 	/* Iterate symbol table starting from the position we were at last time */
 	for (uint32_t i = libtable->last_pos; i < symbol_count; i++)
 	{
-		struct nlist &sym = symtab[i];
+		MachSymbol &sym = symtab[i];
 		/* Ignore the prepended underscore on all symbols, so +1 here */
 		const char *sym_name = strtab + sym.n_un.n_strx + 1;
 		Symbol *cur_sym;
@@ -440,6 +440,14 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 
 #ifdef PLATFORM_WINDOWS
 
+#ifdef PLATFORM_X86
+	const WORD PE_FILE_MACHINE = IMAGE_FILE_MACHINE_I386;
+	const WORD PE_NT_OPTIONAL_HDR_MAGIC = IMAGE_NT_OPTIONAL_HDR32_MAGIC;
+#else
+	const WORD PE_FILE_MACHINE = IMAGE_FILE_MACHINE_AMD64;
+	const WORD PE_NT_OPTIONAL_HDR_MAGIC = IMAGE_NT_OPTIONAL_HDR64_MAGIC;
+#endif
+
 	MEMORY_BASIC_INFORMATION info;
 	IMAGE_DOS_HEADER *dos;
 	IMAGE_NT_HEADERS *pe;
@@ -460,15 +468,13 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 	opt = &pe->OptionalHeader;
 
 	/* Check PE magic and signature */
-	if (dos->e_magic != IMAGE_DOS_SIGNATURE || pe->Signature != IMAGE_NT_SIGNATURE || opt->Magic != IMAGE_NT_OPTIONAL_HDR32_MAGIC)
+	if (dos->e_magic != IMAGE_DOS_SIGNATURE || pe->Signature != IMAGE_NT_SIGNATURE || opt->Magic != PE_NT_OPTIONAL_HDR_MAGIC)
 	{
 		return false;
 	}
 
-	/* Check architecture, which is 32-bit/x86 right now
-	 * Should change this for 64-bit if Valve gets their act together
-	 */
-	if (file->Machine != IMAGE_FILE_MACHINE_I386)
+	/* Check architecture */
+	if (file->Machine != PE_FILE_MACHINE)
 	{
 		return false;
 	}
@@ -484,9 +490,21 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 
 #elif defined PLATFORM_LINUX
 
+#ifdef PLATFORM_X86
+	typedef Elf32_Ehdr ElfHeader;
+	typedef Elf32_Phdr ElfPHeader;
+	const unsigned char ELF_CLASS = ELFCLASS32;
+	const uint16_t ELF_MACHINE = EM_386;
+#else
+	typedef Elf64_Ehdr ElfHeader;
+	typedef Elf64_Phdr ElfPHeader;
+	const unsigned char ELF_CLASS = ELFCLASS64;
+	const uint16_t ELF_MACHINE = EM_X86_64;
+#endif
+
 	Dl_info info;
-	Elf32_Ehdr *file;
-	Elf32_Phdr *phdr;
+	ElfHeader *file;
+	ElfPHeader *phdr;
 	uint16_t phdrCount;
 
 	if (!dladdr(libPtr, &info))
@@ -501,7 +519,7 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 
 	/* This is for our insane sanity checks :o */
 	baseAddr = reinterpret_cast<uintptr_t>(info.dli_fbase);
-	file = reinterpret_cast<Elf32_Ehdr *>(baseAddr);
+	file = reinterpret_cast<ElfHeader *>(baseAddr);
 
 	/* Check ELF magic */
 	if (memcmp(ELFMAG, file->e_ident, SELFMAG) != 0)
@@ -514,11 +532,15 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 	{
 		return false;
 	}
+	
+	/* Check ELF endianness */
+	if (file->e_ident[EI_DATA] != ELFDATA2LSB)
+	{
+		return false;
+	}
 
-	/* Check ELF architecture, which is 32-bit/x86 right now
-	 * Should change this for 64-bit if Valve gets their act together
-	 */
-	if (file->e_ident[EI_CLASS] != ELFCLASS32 || file->e_machine != EM_386 || file->e_ident[EI_DATA] != ELFDATA2LSB)
+	/* Check ELF architecture */
+	if (file->e_ident[EI_CLASS] != ELF_CLASS || file->e_machine != ELF_MACHINE)
 	{
 		return false;
 	}
@@ -530,11 +552,11 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 	}
 
 	phdrCount = file->e_phnum;
-	phdr = reinterpret_cast<Elf32_Phdr *>(baseAddr + file->e_phoff);
+	phdr = reinterpret_cast<ElfPHeader *>(baseAddr + file->e_phoff);
 
 	for (uint16_t i = 0; i < phdrCount; i++)
 	{
-		Elf32_Phdr &hdr = phdr[i];
+		ElfPHeader &hdr = phdr[i];
 
 		/* We only really care about the segment with executable code */
 		if (hdr.p_type == PT_LOAD && hdr.p_flags == (PF_X|PF_R))
@@ -553,9 +575,25 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 
 #elif defined PLATFORM_APPLE
 
+#ifdef PLATFORM_X86
+	typedef struct mach_header MachHeader;
+	typedef struct segment_command MachSegment;
+	const uint32_t MACH_MAGIC = MH_MAGIC;
+	const uint32_t MACH_LOADCMD_SEGMENT = LC_SEGMENT;
+	const cpu_type_t MACH_CPU_TYPE = CPU_TYPE_I386;
+	const cpu_subtype_t MACH_CPU_SUBTYPE = CPU_SUBTYPE_I386_ALL;
+#else
+	typedef struct mach_header_64 MachHeader;
+	typedef struct segment_command_64 MachSegment;
+	const uint32_t MACH_MAGIC = MH_MAGIC_64;
+	const uint32_t MACH_LOADCMD_SEGMENT = LC_SEGMENT_64;
+	const cpu_type_t MACH_CPU_TYPE = CPU_TYPE_X86_64;
+	const cpu_subtype_t MACH_CPU_SUBTYPE = CPU_SUBTYPE_X86_64_ALL;
+#endif
+
 	Dl_info info;
-	struct mach_header *file;
-	struct segment_command *seg;
+	MachHeader *file;
+	MachSegment *seg;
 	uint32_t cmd_count;
 
 	if (!dladdr(libPtr, &info))
@@ -570,16 +608,16 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 
 	/* This is for our insane sanity checks :o */
 	baseAddr = (uintptr_t)info.dli_fbase;
-	file = (struct mach_header *)baseAddr;
+	file = (MachHeader *)baseAddr;
 
 	/* Check Mach-O magic */
-	if (file->magic != MH_MAGIC)
+	if (file->magic != MACH_MAGIC)
 	{
 		return false;
 	}
 
-	/* Check architecture (32-bit/x86) */
-	if (file->cputype != CPU_TYPE_I386 || file->cpusubtype != CPU_SUBTYPE_I386_ALL)
+	/* Check architecture */
+	if (file->cputype != MACH_CPU_TYPE || file->cpusubtype != MACH_CPU_SUBTYPE)
 	{
 		return false;
 	}
@@ -591,17 +629,17 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 	}
 
 	cmd_count = file->ncmds;
-	seg = (struct segment_command *)(baseAddr + sizeof(struct mach_header));
+	seg = (MachSegment *)(baseAddr + sizeof(MachHeader));
 	
 	/* Add up memory sizes of mapped segments */
 	for (uint32_t i = 0; i < cmd_count; i++)
 	{		
-		if (seg->cmd == LC_SEGMENT)
+		if (seg->cmd == MACH_LOADCMD_SEGMENT)
 		{
 			lib.memorySize += seg->vmsize;
 		}
 		
-		seg = (struct segment_command *)((uintptr_t)seg + seg->cmdsize);
+		seg = (MachSegment *)((uintptr_t)seg + seg->cmdsize);
 	}
 
 #endif

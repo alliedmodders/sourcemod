@@ -62,6 +62,11 @@ int CallPriceForward(int client, const char *weapon_name, int price);
 #define WEAPON_NIGHTVISION 33
 #endif
 
+#if SOURCE_ENGINE == SE_CSGO
+#define WEAPONDROP_GAMEDATA_NAME "CSWeaponDropBB"
+#else
+#define WEAPONDROP_GAMEDATA_NAME "CSWeaponDrop"
+#endif
 /**
  * @brief Sample implementation of the SDK Extension.
  * Note: Uncomment one of the pre-defined virtual functions in order to use it.
@@ -161,6 +166,7 @@ private:
 extern IBinTools *g_pBinTools;
 extern IGameConfig *g_pGameConf;
 extern ISDKTools *g_pSDKTools;
+extern CGlobalVars *gpGlobals;
 extern int g_msgHintText;
 extern bool g_pIgnoreTerminateDetour;
 extern bool g_pIgnoreCSWeaponDropDetour;

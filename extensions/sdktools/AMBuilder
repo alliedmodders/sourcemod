@@ -1,9 +1,10 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-project = SM.HL2Project(builder, 'sdktools.ext')
+project = builder.LibraryProject('sdktools.ext')
 project.sources += [
   'extension.cpp',
+  'variant-t.cpp',
   'inputnatives.cpp',
   'output.cpp',
   'outputnatives.cpp',
@@ -25,23 +26,34 @@ project.sources += [
   'vstringtable.cpp',
   '../../public/smsdk_ext.cpp',
   '../../public/CDetour/detours.cpp',
-  '../../public/asm/asm.c'
+  '../../public/asm/asm.c',
+  '../../public/libudis86/decode.c',
+  '../../public/libudis86/itab.c',
+  '../../public/libudis86/syn-att.c',
+  '../../public/libudis86/syn-intel.c',
+  '../../public/libudis86/syn.c',
+  '../../public/libudis86/udis86.c',
 ]
 
 for sdk_name in SM.sdks:
   sdk = SM.sdks[sdk_name]
 
-  binary = SM.HL2Config(project, 'sdktools.ext.' + sdk.ext, sdk)
-  binary.compiler.cxxincludes += [
-    os.path.join(sdk.path, 'game', 'shared'),
-    os.path.join(builder.sourcePath, 'public', 'jit'),
-    os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
-  ]
+  for cxx in builder.targets:
+    if not cxx.target.arch in sdk.platformSpec[cxx.target.platform]:
+      continue
 
-  if sdk.name != 'episode1':
-    binary.compiler.defines += ['HOOKING_ENABLED']
+    binary = SM.HL2ExtConfig(project, builder, cxx, 'sdktools.ext.' + sdk.ext, sdk)
+    binary.compiler.cxxincludes += [
+      os.path.join(sdk.path, 'game', 'shared'),
+      os.path.join(builder.sourcePath, 'public', 'jit'),
+      os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
+    ]
+    binary.compiler.defines += ['HAVE_STRING_H'];
 
-  if binary.compiler.cxx.behavior == 'gcc':
-    binary.compiler.cxxflags += ['-Wno-invalid-offsetof']
+    if sdk.name != 'episode1':
+      binary.compiler.defines += ['HOOKING_ENABLED']
+
+    if binary.compiler.behavior == 'gcc':
+      binary.compiler.cxxflags += ['-Wno-invalid-offsetof']
 
 SM.extensions += builder.Add(project)

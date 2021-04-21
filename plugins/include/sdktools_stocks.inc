@@ -31,7 +31,7 @@
  */
 
 #if defined _sdktools_stocks_included
-  #endinput
+ #endinput
 #endif
 #define _sdktools_stocks_included
 
@@ -42,10 +42,10 @@
  * first N characters of the team names, where N is the number of 
  * characters in the search pattern.
  *
- * @param name		Partial or full team name.  
- * @return			A valid team index on success.
- * 					-1 if no team matched.
- *					-2 if more than one team matched.
+ * @param name          Partial or full team name.  
+ * @return              A valid team index on success.
+ *                      -1 if no team matched.
+ *                      -2 if more than one team matched.
  */
 stock int FindTeamByName(const char[] name)
 {

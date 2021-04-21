@@ -4,19 +4,29 @@ import os
 if 'tf2' in SM.sdks:
   sdk = SM.sdks['tf2']
   
-  binary = SM.HL2Library(builder, 'game.tf2.ext.' + sdk.ext, sdk)
-  binary.sources += [
-		'extension.cpp',
-		'natives.cpp',
-		'RegNatives.cpp',
-		'util.cpp',
-		'criticals.cpp',
-		'holiday.cpp',
-		'teleporter.cpp',
-		'gameplayrules.cpp',
-		'conditions.cpp',
-		'../../public/smsdk_ext.cpp',
-		'../../public/CDetour/detours.cpp',
-		'../../public/asm/asm.c'
-  ]
-  SM.extensions += [builder.Add(binary)]
+  for cxx in builder.targets:
+    if not cxx.target.arch in sdk.platformSpec[cxx.target.platform]:
+      continue
+    binary = SM.HL2Library(builder, cxx, 'game.tf2.ext.' + sdk.ext, sdk)
+    binary.sources += [
+      'extension.cpp',
+      'natives.cpp',
+      'RegNatives.cpp',
+      'util.cpp',
+      'criticals.cpp',
+      'holiday.cpp',
+      'teleporter.cpp',
+      'gameplayrules.cpp',
+      'conditions.cpp',
+      '../../public/smsdk_ext.cpp',
+      '../../public/CDetour/detours.cpp',
+      '../../public/asm/asm.c',
+      '../../public/libudis86/decode.c',
+      '../../public/libudis86/itab.c',
+      '../../public/libudis86/syn-att.c',
+      '../../public/libudis86/syn-intel.c',
+      '../../public/libudis86/syn.c',
+      '../../public/libudis86/udis86.c',
+    ]
+    binary.compiler.defines += ['HAVE_STRING_H'];
+    SM.extensions += [builder.Add(binary)]

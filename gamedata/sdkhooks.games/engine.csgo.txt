@@ -6,147 +6,171 @@
 		{
 			"Blocked"
 			{
-				"windows"	"105"
-				"linux"		"106"
-				"mac"		"106"
+				"windows"	"106"
+				"linux"		"107"
+				"linux64"	"107"
+				"mac64"		"107"
 			}
 			"EndTouch"
 			{
-				"windows"	"103"
-				"linux"		"104"
-				"mac"		"104"
+				"windows"	"104"
+				"linux"		"105"
+				"linux64"	"105"
+				"mac64"		"105"
 			}
 			"FireBullets"
 			{
-				"windows"	"117"
-				"linux"		"118"
-				"mac"		"118"
+				"windows"	"118"
+				"linux"		"119"
+				"linux64"	"119"
+				"mac64"		"119"
 			}
 			"GetMaxHealth"
 			{
-				"windows"	"121"
-				"linux"		"122"
-				"mac"		"122"				
+				"windows"	"122"
+				"linux"		"123"
+				"linux64"	"123"
+				"mac64"		"123"			
 			}
 			"GroundEntChanged"
 			{
-				"windows"	"175"
-				"linux"		"177"
-				"mac"		"177"
+				"windows"	"177"
+				"linux"		"179"
+				"linux64"	"179"
+				"mac64"		"179"
 			}
 			"OnTakeDamage"
 			{
-				"windows"	"67"
-				"linux"		"68"
-				"mac"		"68"
+				"windows"	"68"
+				"linux"		"69"
+				"linux64"	"69"
+				"mac64"		"69"
 			}
 			"OnTakeDamage_Alive"
 			{
-				"windows"	"294"
-				"linux"		"295"
-				"mac"		"295"
+				"windows"	"298"
+				"linux"		"299"
+				"linux64"	"299"
+				"mac64"		"299"
 			}
 			"PreThink"
 			{
-				"windows"	"367"
-				"linux"		"368"
-				"mac"		"368"
+				"windows"	"371"
+				"linux"		"372"
+				"linux64"	"372"
+				"mac64"		"372"
 			}
 			"PostThink"
 			{
-				"windows"	"368"
-				"linux"		"369"
-				"mac"		"369"
+				"windows"	"372"
+				"linux"		"373"
+				"linux64"	"373"
+				"mac64"		"373"
 			}
 			"Reload"
 			{
-				"windows"	"306"
-				"linux"		"312"
-				"mac"		"312"
+				"windows"	"311"
+				"linux"		"317"
+				"linux64"	"317"
+				"mac64"		"317"
 			}
 			"SetTransmit"
 			{
-				"windows"	"22"
-				"linux"		"23"
-				"mac"		"23"
+				"windows"	"23"
+				"linux"		"24"
+				"linux64"	"24"
+				"mac64"		"24"
 			}
 			"ShouldCollide"
 			{
-				"windows"	"17"
-				"linux"		"18"
-				"mac"		"18"
+				"windows"	"18"
+				"linux"		"19"
+				"linux64"	"19"
+				"mac64"		"19"
 			}
 			"Spawn"
 			{
-				"windows"	"24"
-				"linux"		"25"
-				"mac"		"25"
+				"windows"	"25"
+				"linux"		"26"
+				"linux64"	"26"
+				"mac64"		"26"
 			}
 			"StartTouch"
 			{
-				"windows"	"101"
-				"linux"		"102"
-				"mac"		"102"
+				"windows"	"102"
+				"linux"		"103"
+				"linux64"	"103"
+				"mac64"		"103"
 			}
 			"Think"
 			{
-				"windows"	"51"
-				"linux"		"52"
-				"mac"		"52"
+				"windows"	"52"
+				"linux"		"53"
+				"linux64"	"53"
+				"mac64"		"53"
 			}
 			"Touch"
 			{
-				"windows"	"102"
-				"linux"		"103"
-				"mac"		"103"
+				"windows"	"103"
+				"linux"		"104"
+				"linux64"	"104"
+				"mac64"		"104"
 			}
 			"TraceAttack"
 			{
-				"windows"	"65"
-				"linux"		"66"
-				"mac"		"66"
+				"windows"	"66"
+				"linux"		"67"
+				"linux64"	"67"
+				"mac64"		"67"
 			}
 			"Use"
 			{
-				"windows"	"100"
-				"linux"		"101"
-				"mac"		"101"
+				"windows"	"101"
+				"linux"		"102"
+				"linux64"	"102"
+				"mac64"		"102"
 			}
 			"VPhysicsUpdate"
 			{
-				"windows"	"154"
-				"linux"		"155"
-				"mac"		"155"
+				"windows"	"156"
+				"linux"		"157"
+				"linux64"	"157"
+				"mac64"		"157"
 			}
 			"Weapon_CanSwitchTo"
 			{
-				"windows"	"286"
-				"linux"		"287"
-				"mac"		"287"
+				"windows"	"290"
+				"linux"		"291"
+				"linux64"	"291"
+				"mac64"		"291"
 			}
 			"Weapon_CanUse"
 			{
-				"windows"	"280"
-				"linux"		"281"
-				"mac"		"281"
+				"windows"	"284"
+				"linux"		"285"
+				"linux64"	"285"
+				"mac64"		"285"
 			}
 			"Weapon_Drop"
 			{
-				"windows"	"283"
-				"linux"		"284"
-				"mac"		"284"
+				"windows"	"287"
+				"linux"		"288"
+				"linux64"	"288"
+				"mac64"		"288"
 			}
 			"Weapon_Equip"
 			{
-				"windows"	"281"
-				"linux"		"282"
-				"mac"		"282"
+				"windows"	"285"
+				"linux"		"286"
+				"linux64"	"286"
+				"mac64"		"286"
 			}
 			"Weapon_Switch"
 			{
-				"windows"	"284"
-				"linux"		"285"
-				"mac"		"285"
+				"windows"	"288"
+				"linux"		"289"
+				"linux64"	"289"
+				"mac64"		"289"
 			}
 		}
 	}
@@ -158,7 +182,8 @@
 			"EntityListeners"
 			{
 				"linux"		"196644"
-				"mac"		"196644"
+				"linux64"	"393272"
+				"mac64"		"393272"
 			}
 		}
 		

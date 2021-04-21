@@ -34,11 +34,12 @@
 
 #include <jit_helpers.h>
 #include <x86_macros.h>
+#include <sm_platform.h>
 #include "CallWrapper.h"
-#include "HookWrapper.h"
 
 void *JIT_CallCompile(CallWrapper *pWrapper, FuncAddrMethod method);
-#if defined HOOKING_ENABLED
+
+#if 0
 void *JIT_HookCompile(HookWrapper *pWrapper);
 void JIT_FreeHook(void *addr);
 #endif

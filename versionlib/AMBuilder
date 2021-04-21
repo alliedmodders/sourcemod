@@ -1,15 +1,17 @@
 # vim: sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-lib = builder.compiler.StaticLibrary('version')
-lib.compiler.includes += [
-  os.path.join(builder.sourcePath, 'public')
-]
-lib.compiler.defines.remove('SM_USE_VERSIONLIB')
-lib.compiler.sourcedeps += SM.generated_headers
-lib.sources += [
-  'versionlib.cpp'
-]
-task = builder.Add(lib)
+rvalue = {}
+for cxx in builder.targets:
+  lib = SM.StaticLibrary(builder, cxx, 'version')
+  lib.compiler.includes += [
+    os.path.join(builder.sourcePath, 'public')
+  ]
+  lib.compiler.defines.remove('SM_USE_VERSIONLIB')
+  lib.compiler.sourcedeps += SM.generated_headers
+  lib.sources += [
+    'versionlib.cpp'
+  ]
+  task = builder.Add(lib)
 
-rvalue = task.binary
+  rvalue[lib.compiler.target.arch] = task.binary

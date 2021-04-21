@@ -27,23 +27,23 @@
 			}
 			"Teleport"
 			{
-				"windows"	"111"
+				"windows"	"113"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"469"
+				"windows"	"468"
 			}
 			"GetVelocity"
 			{
-				"windows"	"144"
+				"windows"	"138"
 			}
 			"EyeAngles"
 			{
-				"windows"	"135"
+				"windows"	"129"
 			}
 			"AcceptInput"
 			{
-				"windows"	"39"
+				"windows"	"40"
 			}
 			"SetEntityModel"
 			{
@@ -55,11 +55,11 @@
 			}
 			"Activate"
 			{
-				"windows"	"36"
+				"windows"	"37"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"445"
+				"windows"	"444"
 			}
 		}
 		

@@ -8,7 +8,9 @@ bool g_pIgnoreTerminateDetour = false;
 bool g_pIgnoreCSWeaponDropDetour = false;
 bool g_PriceDetoured = false;
 bool g_HandleBuyDetoured = false;
+#if SOURCE_ENGINE != SE_CSGO
 int lastclient = -1;
+#endif
 
 IForward *g_pHandleBuyForward = NULL;
 IForward *g_pPriceForward = NULL;
@@ -21,18 +23,71 @@ CDetour *DCSWeaponDrop = NULL;
 
 int weaponNameOffset = -1;
 
-//Windows CS:GO
-// int __userpurge HandleCommand_Buy_Internal<eax>(int a1<ecx>, float a2<xmm0>, int a3, int a4, char a5)
-// a1 - this
-// a2 - CCSGameRules::GetWarmupPeriodEndTime(g_pGameRules)
-// a3 - weapon
-// a4 - unknown
-// a5 - bRebuy
 #if SOURCE_ENGINE == SE_CSGO
-DETOUR_DECL_MEMBER3(DetourHandleBuy, int, const char *, weapon, int, iUnknown, bool, bRebuy)
+DETOUR_DECL_MEMBER4(DetourHandleBuy, int, int, iLoadoutSlot, void *, pWpnDataRef, bool, bRebuy, bool, bDrop)
+{
+	CBaseEntity *pEntity = reinterpret_cast<CBaseEntity *>(this);
+	int client = gamehelpers->EntityToBCompatRef(pEntity);
+
+	CEconItemView *pView = GetEconItemView(pEntity, iLoadoutSlot);
+
+	if (!pView)
+	{
+		return DETOUR_MEMBER_CALL(DetourHandleBuy)(iLoadoutSlot, pWpnDataRef, bRebuy, bDrop);
+	}
+
+	CCSWeaponData *pWpnData = GetCCSWeaponData(pView);
+
+	if (!pWpnData)
+	{
+		return DETOUR_MEMBER_CALL(DetourHandleBuy)(iLoadoutSlot, pWpnDataRef, bRebuy, bDrop);
+	}
+
+	const char *szClassname = *(const char **)((intptr_t)pWpnData + weaponNameOffset);
+
+	char weaponName[128];
+
+	if (strstr(szClassname, "knife"))
+	{
+		Q_strncpy(weaponName, "knife", sizeof(weaponName));
+	}
+	else
+	{
+		Q_strncpy(weaponName, GetWeaponNameFromClassname(szClassname), sizeof(weaponName));
+	}
+
+	cell_t result = Pl_Continue;
+
+	g_pHandleBuyForward->PushCell(client);
+	g_pHandleBuyForward->PushString(weaponName);
+	g_pHandleBuyForward->Execute(&result);
+
+	if (result != Pl_Continue)
+	{
+		return 0;
+	}
+	
+	int originalPrice = 0;
+
+	if (g_iPriceOffset != -1)
+	{
+		originalPrice = *(int *)((intptr_t)pWpnData + g_iPriceOffset);
+
+		int changedPrice = CallPriceForward(client, weaponName, originalPrice);
+
+		if (originalPrice != changedPrice)
+			*(int *)((intptr_t)pWpnData + g_iPriceOffset) = changedPrice;
+	}
+
+	int ret = DETOUR_MEMBER_CALL(DetourHandleBuy)(iLoadoutSlot, pWpnDataRef, bRebuy, bDrop);
+
+	if (g_iPriceOffset != -1)
+		*(int *)((intptr_t)pWpnData + g_iPriceOffset) = originalPrice;
+
+	return ret;
+}
 #else
 DETOUR_DECL_MEMBER1(DetourHandleBuy, int, const char *, weapon)
-#endif
 {
 	int client = gamehelpers->EntityToBCompatRef(reinterpret_cast<CBaseEntity *>(this));
 
@@ -50,31 +105,17 @@ DETOUR_DECL_MEMBER1(DetourHandleBuy, int, const char *, weapon)
 		return 0;
 	}
 
-#if SOURCE_ENGINE == SE_CSGO
-	int val = DETOUR_MEMBER_CALL(DetourHandleBuy)(weapon, iUnknown, bRebuy);
-#else
 	int val = DETOUR_MEMBER_CALL(DetourHandleBuy)(weapon);
-#endif
+
 	lastclient = -1;
 	return val;
 }
+#endif
 
 #if SOURCE_ENGINE != SE_CSGO
 DETOUR_DECL_MEMBER0(DetourWeaponPrice, int)
-#elif defined(WIN32)
-DETOUR_DECL_MEMBER2(DetourWeaponPrice, int, CEconItemView *, pEconItem, int, iUnknown)
-#else
-DETOUR_DECL_MEMBER3(DetourWeaponPrice, int, CEconItemView *, pEconItem, int, iUnknown, float, fUnknown)
-#endif
 {
-
-#if SOURCE_ENGINE != SE_CSGO
 	int price = DETOUR_MEMBER_CALL(DetourWeaponPrice)();
-#elif defined(WIN32)
-	int price = DETOUR_MEMBER_CALL(DetourWeaponPrice)(pEconItem, iUnknown);
-#else
-	int price = DETOUR_MEMBER_CALL(DetourWeaponPrice)(pEconItem, iUnknown, fUnknown);
-#endif
 	
 	if (lastclient == -1)
 		return price;
@@ -83,8 +124,9 @@ DETOUR_DECL_MEMBER3(DetourWeaponPrice, int, CEconItemView *, pEconItem, int, iUn
 
 	return CallPriceForward(lastclient, weapon_name, price);
 }
+#endif
 
-#if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
+#if SOURCE_ENGINE == SE_CSS
 DETOUR_DECL_MEMBER2(DetourTerminateRound, void, float, delay, int, reason)
 {
 	if (g_pIgnoreTerminateDetour)
@@ -93,20 +135,31 @@ DETOUR_DECL_MEMBER2(DetourTerminateRound, void, float, delay, int, reason)
 		DETOUR_MEMBER_CALL(DetourTerminateRound)(delay, reason);
 		return;
 	}
+#elif SOURCE_ENGINE == SE_CSGO && !defined(WIN32)
+DETOUR_DECL_MEMBER4(DetourTerminateRound, void, float, delay, int, reason, int, unknown, int, unknown2)
+{
+	if (g_pIgnoreTerminateDetour)
+	{
+		g_pIgnoreTerminateDetour = false;
+		DETOUR_MEMBER_CALL(DetourTerminateRound)(delay, reason, unknown, unknown2);
+		return;
+	}
 #else
 //Windows CSGO
 //char __userpurge TerminateRound(int a1@<ecx>, float a2@<xmm1>, int *a3)
 // a1 - this
 // a2 - delay
 // a3 - reason
-DETOUR_DECL_MEMBER1(DetourTerminateRound, void, int, reason)
+// a4 - unknown
+// a5 - unknown
+DETOUR_DECL_MEMBER3(DetourTerminateRound, void, int, reason, int, unknown, int, unknown2)
 {
 	float delay;
 
 	if (g_pIgnoreTerminateDetour)
 	{
 		g_pIgnoreTerminateDetour = false;
-		return DETOUR_MEMBER_CALL(DetourTerminateRound)(reason);
+		return DETOUR_MEMBER_CALL(DetourTerminateRound)(reason, unknown, unknown2);
 	}
 
 	//Save the delay
@@ -136,11 +189,16 @@ DETOUR_DECL_MEMBER1(DetourTerminateRound, void, int, reason)
 	reason++;
 #endif
 	
-#if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
+#if SOURCE_ENGINE == SE_CSS
 	if (result == Pl_Changed)
 		return DETOUR_MEMBER_CALL(DetourTerminateRound)(delay, reason);
 
 	return DETOUR_MEMBER_CALL(DetourTerminateRound)(orgdelay, orgreason);
+#elif SOURCE_ENGINE == SE_CSGO && !defined(WIN32)
+	if (result == Pl_Changed)
+		return DETOUR_MEMBER_CALL(DetourTerminateRound)(delay, reason, unknown, unknown2);
+
+	return DETOUR_MEMBER_CALL(DetourTerminateRound)(orgdelay, orgreason, unknown, unknown2);
 #else
 	if (result == Pl_Changed)
 	{
@@ -148,30 +206,22 @@ DETOUR_DECL_MEMBER1(DetourTerminateRound, void, int, reason)
 		{
 			movss xmm1, delay
 		}
-		return DETOUR_MEMBER_CALL(DetourTerminateRound)(reason);
+		return DETOUR_MEMBER_CALL(DetourTerminateRound)(reason, unknown, unknown2);
 	}
 	__asm
 	{
 		movss xmm1, orgdelay
 	}
-	return DETOUR_MEMBER_CALL(DetourTerminateRound)(orgreason);
+	return DETOUR_MEMBER_CALL(DetourTerminateRound)(orgreason, unknown, unknown2);
 #endif
 }
 
-#if SOURCE_ENGINE == SE_CSGO
-DETOUR_DECL_MEMBER3(DetourCSWeaponDrop, void, CBaseEntity *, weapon, Vector, vec, bool, unknown)
-#else
-DETOUR_DECL_MEMBER3(DetourCSWeaponDrop, void, CBaseEntity *, weapon, bool, bDropShield, bool, bThrowForward)
-#endif
+DETOUR_DECL_MEMBER2(DetourCSWeaponDrop, void, CBaseEntity *, weapon, bool, bThrowForward)
 {
 	if (g_pIgnoreCSWeaponDropDetour)
 	{
 		g_pIgnoreCSWeaponDropDetour = false;
-#if SOURCE_ENGINE == SE_CSGO
-		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, vec, unknown);
-#else
-		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, bDropShield, bThrowForward);
-#endif
+		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, bThrowForward);
 		return;
 	}
 
@@ -186,11 +236,7 @@ DETOUR_DECL_MEMBER3(DetourCSWeaponDrop, void, CBaseEntity *, weapon, bool, bDrop
 
 	if (result == Pl_Continue)
 	{
-#if SOURCE_ENGINE == SE_CSGO
-		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, vec, unknown);
-#else
-		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, bDropShield, bThrowForward);
-#endif
+		DETOUR_MEMBER_CALL(DetourCSWeaponDrop)(weapon, bThrowForward);
 	}
 
 	return;
@@ -198,6 +244,7 @@ DETOUR_DECL_MEMBER3(DetourCSWeaponDrop, void, CBaseEntity *, weapon, bool, bDrop
 
 bool CreateWeaponPriceDetour()
 {
+#if SOURCE_ENGINE != SE_CSGO
 	if (weaponNameOffset == -1)
 	{
 		if (!g_pGameConf->GetOffset("WeaponName", &weaponNameOffset))
@@ -207,18 +254,7 @@ bool CreateWeaponPriceDetour()
 		}
 	}
 
-#if SOURCE_ENGINE == SE_CSGO && defined(WIN32)
-	void *pGetWeaponPriceAddress = GetWeaponPriceFunction();
-
-	if(!pGetWeaponPriceAddress)
-	{
-		g_pSM->LogError(myself, "GetWeaponPrice detour could not be initialized - Disabled OnGetWeaponPrice forward.");
-	}
-
-	DWeaponPrice = DETOUR_CREATE_MEMBER(DetourWeaponPrice, pGetWeaponPriceAddress);
-#else
 	DWeaponPrice = DETOUR_CREATE_MEMBER(DetourWeaponPrice, "GetWeaponPrice");
-#endif
 	if (DWeaponPrice != NULL)
 	{
 		if (!CreateHandleBuyDetour())
@@ -230,7 +266,27 @@ bool CreateWeaponPriceDetour()
 		g_PriceDetoured = true;
 		return true;
 	}
+#else
+	if (g_iPriceOffset == -1)
+	{
+		if (!g_pGameConf->GetOffset("WeaponPrice", &g_iPriceOffset))
+		{
+			smutils->LogError(myself, "Could not find WeaponPrice offset - Disabled OnGetWeaponPrice forward");
+			return false;
+		}
+	}
 
+	if (!CreateHandleBuyDetour())
+	{
+		g_pSM->LogError(myself, "GetWeaponPrice detour could not be initialized - HandleCommand_Buy_Internal failed to detour, disabled OnGetWeaponPrice forward.");
+		return false;
+	}
+	else
+	{
+		g_PriceDetoured = true;
+		return true;
+	}
+#endif
 	g_pSM->LogError(myself, "GetWeaponPrice detour could not be initialized - Disabled OnGetWeaponPrice forward.");
 
 	return false;
@@ -255,6 +311,16 @@ bool CreateHandleBuyDetour()
 	if (g_HandleBuyDetoured)
 		return true;
 
+#if SOURCE_ENGINE == SE_CSGO
+	if (weaponNameOffset == -1)
+	{
+		if (!g_pGameConf->GetOffset("WeaponName", &weaponNameOffset))
+		{
+			smutils->LogError(myself, "Could not find WeaponName offset - Disabled OnBuyCommand forward");
+			return false;
+		}
+	}
+#endif
 	DHandleBuy = DETOUR_CREATE_MEMBER(DetourHandleBuy, "HandleCommand_Buy_Internal");
 
 	if (DHandleBuy != NULL)
@@ -269,7 +335,7 @@ bool CreateHandleBuyDetour()
 
 bool CreateCSWeaponDropDetour()
 {
-	DCSWeaponDrop = DETOUR_CREATE_MEMBER(DetourCSWeaponDrop, "CSWeaponDrop");
+	DCSWeaponDrop = DETOUR_CREATE_MEMBER(DetourCSWeaponDrop, WEAPONDROP_GAMEDATA_NAME);
 
 	if (DCSWeaponDrop != NULL)
 	{
@@ -324,6 +390,7 @@ void RemoveCSWeaponDropDetour()
 	}
 	g_pCSWeaponDropDetoured = false;
 }
+
 int CallPriceForward(int client, const char *weapon_name, int price)
 {
 	int changedprice = price;

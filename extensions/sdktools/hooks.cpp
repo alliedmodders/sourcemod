@@ -44,7 +44,11 @@
 CHookManager g_Hooks;
 static bool PRCH_enabled = false;
 static bool PRCH_used = false;
+static bool PRCHPost_used = false;
 static bool FILE_used = false;
+#if !defined CLIENTVOICE_HOOK_SUPPORT
+static bool PVD_used = false;
+#endif
 
 SH_DECL_MANUALHOOK2_void(PlayerRunCmdHook, 0, 0, 0, CUserCmd *, IMoveHelper *);
 SH_DECL_HOOK2(IBaseFileSystem, FileExists, SH_NOATTRIB, 0, bool, const char*, const char *);
@@ -53,6 +57,9 @@ SH_DECL_HOOK3(INetChannel, SendFile, SH_NOATTRIB, 0, bool, const char *, unsigne
 #else
 SH_DECL_HOOK2(INetChannel, SendFile, SH_NOATTRIB, 0, bool, const char *, unsigned int);
 #endif
+#if !defined CLIENTVOICE_HOOK_SUPPORT
+SH_DECL_HOOK1(IClientMessageHandler, ProcessVoiceData, SH_NOATTRIB, 0, bool, CLC_VoiceData *);
+#endif
 SH_DECL_HOOK2_void(INetChannel, ProcessPacket, SH_NOATTRIB, 0, struct netpacket_s *, bool);
 
 SourceHook::CallClass<IBaseFileSystem> *basefilesystemPatch = NULL; 
@@ -60,6 +67,7 @@ SourceHook::CallClass<IBaseFileSystem> *basefilesystemPatch = NULL;
 CHookManager::CHookManager()
 {
 	m_usercmdsFwd = NULL;
+	m_usercmdsPostFwd = NULL;
 	m_netFileSendFwd = NULL;
 	m_netFileReceiveFwd = NULL;
 	m_pActiveNetChannel = NULL;
@@ -99,11 +107,77 @@ void CHookManager::Initialize()
 		Param_CellByRef,	// tickcount
 		Param_CellByRef,	// seed
 		Param_Array);		// mouse[2]
+
+	m_usercmdsPostFwd = forwards->CreateForward("OnPlayerRunCmdPost", ET_Ignore, 11, NULL,
+		Param_Cell,			// client
+		Param_Cell,			// buttons
+		Param_Cell,			// impulse
+		Param_Array,		// Float:vel[3]
+		Param_Array,		// Float:angles[3]
+		Param_Cell,			// weapon
+		Param_Cell,			// subtype
+		Param_Cell,			// cmdnum
+		Param_Cell,			// tickcount
+		Param_Cell,			// seed
+		Param_Array);		// mouse[2]
 }
 
 void CHookManager::Shutdown()
 {
+	if (basefilesystemPatch)
+	{
+		SH_RELEASE_CALLCLASS(basefilesystemPatch);
+		basefilesystemPatch = NULL;
+	}
+
+	if (PRCH_used)
+	{
+		for (size_t i = 0; i < m_runUserCmdHooks.size(); ++i)
+		{
+			delete m_runUserCmdHooks[i];
+		}
+
+		m_runUserCmdHooks.clear();
+		PRCH_used = false;
+	}
+
+	if (PRCHPost_used)
+	{
+		for (size_t i = 0; i < m_runUserCmdPostHooks.size(); ++i)
+		{
+			delete m_runUserCmdPostHooks[i];
+		}
+
+		m_runUserCmdPostHooks.clear();
+		PRCHPost_used = false;
+	}
+
+	if (FILE_used)
+	{
+		for (size_t i = 0; i < m_netChannelHooks.size(); ++i)
+		{
+			delete m_netChannelHooks[i];
+		}
+
+		m_netChannelHooks.clear();
+		FILE_used = false;
+	}
+	
+#if !defined CLIENTVOICE_HOOK_SUPPORT
+	if (PVD_used)
+	{
+		for (size_t i = 0; i < m_netProcessVoiceData.size(); ++i)
+		{
+			delete m_netProcessVoiceData[i];
+		}
+
+		m_netProcessVoiceData.clear();
+		PVD_used = false;
+	}
+#endif
+
 	forwards->ReleaseForward(m_usercmdsFwd);
+	forwards->ReleaseForward(m_usercmdsPostFwd);
 	forwards->ReleaseForward(m_netFileSendFwd);
 	forwards->ReleaseForward(m_netFileReceiveFwd);
 
@@ -125,16 +199,46 @@ void CHookManager::OnClientConnect(int client)
 	NetChannelHook(client);
 }
 
+#if !defined CLIENTVOICE_HOOK_SUPPORT
+void CHookManager::OnClientConnected(int client)
+{
+	if (!PVD_used)
+	{
+		return;	
+	}
+
+	IClient *pClient = iserver->GetClient(client-1);
+	if (!pClient)
+	{
+		return;
+	}
+	
+	std::vector<CVTableHook *> &netProcessVoiceData = m_netProcessVoiceData;
+	CVTableHook hook(pClient);
+	for (size_t i = 0; i < netProcessVoiceData.size(); ++i)
+	{
+		if (hook == netProcessVoiceData[i])
+		{
+			return;
+		}
+	}
+	
+	int hookid = SH_ADD_VPHOOK(IClientMessageHandler, ProcessVoiceData, (IClientMessageHandler *)((intptr_t)(pClient) + 4), SH_MEMBER(this, &CHookManager::ProcessVoiceData), true);
+	hook.SetHookID(hookid);
+	netProcessVoiceData.push_back(new CVTableHook(hook));
+}
+#endif
+
 void CHookManager::OnClientPutInServer(int client)
 {
-	PlayerRunCmdHook(client);
+	if (PRCH_used)
+		PlayerRunCmdHook(client, false);
+	if (PRCHPost_used)
+		PlayerRunCmdHook(client, true);
 }
 
-void CHookManager::PlayerRunCmdHook(int client)
+void CHookManager::PlayerRunCmdHook(int client, bool post)
 {
-	if (!PRCH_used)
-		return;
-
 	edict_t *pEdict = PEntityOfEntIndex(client);
 	if (!pEdict)
 	{
@@ -153,22 +257,33 @@ void CHookManager::PlayerRunCmdHook(int client)
 		return;
 	}
 
+	std::vector<CVTableHook *> &runUserCmdHookVec = post ? m_runUserCmdPostHooks : m_runUserCmdHooks;
 	CVTableHook hook(pEntity);
-	for (size_t i = 0; i < m_runUserCmdHooks.length(); ++i)
+	for (size_t i = 0; i < runUserCmdHookVec.size(); ++i)
 	{
-		if (hook == m_runUserCmdHooks[i])
+		if (hook == runUserCmdHookVec[i])
 		{
 			return;
 		}
 	}
 
-	int hookid = SH_ADD_MANUALVPHOOK(PlayerRunCmdHook, pEntity, SH_MEMBER(this, &CHookManager::PlayerRunCmd), false);
+	int hookid;
+	if (post)
+		hookid = SH_ADD_MANUALVPHOOK(PlayerRunCmdHook, pEntity, SH_MEMBER(this, &CHookManager::PlayerRunCmdPost), true);
+	else
+		hookid = SH_ADD_MANUALVPHOOK(PlayerRunCmdHook, pEntity, SH_MEMBER(this, &CHookManager::PlayerRunCmd), false);
+
 	hook.SetHookID(hookid);
-	m_runUserCmdHooks.append(new CVTableHook(hook));
+	runUserCmdHookVec.push_back(new CVTableHook(hook));
 }
 
 void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 {
+	if (!ucmd)
+	{
+		RETURN_META(MRES_IGNORED);
+	}
+
 	if (m_usercmdsFwd->GetFunctionCount() == 0)
 	{
 		RETURN_META(MRES_IGNORED);
@@ -230,6 +345,53 @@ void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 	RETURN_META(MRES_IGNORED);
 }
 
+void CHookManager::PlayerRunCmdPost(CUserCmd *ucmd, IMoveHelper *moveHelper)
+{
+	if (!ucmd)
+	{
+		RETURN_META(MRES_IGNORED);
+	}
+
+	if (m_usercmdsPostFwd->GetFunctionCount() == 0)
+	{
+		RETURN_META(MRES_IGNORED);
+	}
+
+	CBaseEntity *pEntity = META_IFACEPTR(CBaseEntity);
+
+	if (!pEntity)
+	{
+		RETURN_META(MRES_IGNORED);
+	}
+
+	edict_t *pEdict = gameents->BaseEntityToEdict(pEntity);
+
+	if (!pEdict)
+	{
+		RETURN_META(MRES_IGNORED);
+	}
+
+	int client = IndexOfEdict(pEdict);
+	cell_t vel[3] = { sp_ftoc(ucmd->forwardmove), sp_ftoc(ucmd->sidemove), sp_ftoc(ucmd->upmove) };
+	cell_t angles[3] = { sp_ftoc(ucmd->viewangles.x), sp_ftoc(ucmd->viewangles.y), sp_ftoc(ucmd->viewangles.z) };
+	cell_t mouse[2] = { ucmd->mousedx, ucmd->mousedy };
+
+	m_usercmdsPostFwd->PushCell(client);
+	m_usercmdsPostFwd->PushCell(ucmd->buttons);
+	m_usercmdsPostFwd->PushCell(ucmd->impulse);
+	m_usercmdsPostFwd->PushArray(vel, 3);
+	m_usercmdsPostFwd->PushArray(angles, 3);
+	m_usercmdsPostFwd->PushCell(ucmd->weaponselect);
+	m_usercmdsPostFwd->PushCell(ucmd->weaponsubtype);
+	m_usercmdsPostFwd->PushCell(ucmd->command_number);
+	m_usercmdsPostFwd->PushCell(ucmd->tick_count);
+	m_usercmdsPostFwd->PushCell(ucmd->random_seed);
+	m_usercmdsPostFwd->PushArray(mouse, 2);
+	m_usercmdsPostFwd->Execute();
+
+	RETURN_META(MRES_IGNORED);
+}
+
 void CHookManager::NetChannelHook(int client)
 {
 	if (!FILE_used)
@@ -258,16 +420,16 @@ void CHookManager::NetChannelHook(int client)
 		}
 		else
 #endif
-		if (!m_netChannelHooks.length())
+		if (!m_netChannelHooks.size())
 		{
 			CVTableHook filehook(basefilesystem);
 
 			int hookid = SH_ADD_VPHOOK(IBaseFileSystem, FileExists, basefilesystem, SH_MEMBER(this, &CHookManager::FileExists), false);
 			filehook.SetHookID(hookid);
-			m_netChannelHooks.append(new CVTableHook(filehook));
+			m_netChannelHooks.push_back(new CVTableHook(filehook));
 		}
 
-		for (iter = 0; iter < m_netChannelHooks.length(); ++iter)
+		for (iter = 0; iter < m_netChannelHooks.size(); ++iter)
 		{
 			if (nethook == m_netChannelHooks[iter])
 			{
@@ -275,19 +437,19 @@ void CHookManager::NetChannelHook(int client)
 			}
 		}
 
-		if (iter == m_netChannelHooks.length())
+		if (iter == m_netChannelHooks.size())
 		{
 			int hookid = SH_ADD_VPHOOK(INetChannel, SendFile, pNetChannel, SH_MEMBER(this, &CHookManager::SendFile), false);
 			nethook.SetHookID(hookid);
-			m_netChannelHooks.append(new CVTableHook(nethook));
+			m_netChannelHooks.push_back(new CVTableHook(nethook));
 			
 			hookid = SH_ADD_VPHOOK(INetChannel, ProcessPacket, pNetChannel, SH_MEMBER(this, &CHookManager::ProcessPacket), false);
 			nethook.SetHookID(hookid);
-			m_netChannelHooks.append(new CVTableHook(nethook));
+			m_netChannelHooks.push_back(new CVTableHook(nethook));
 			
 			hookid = SH_ADD_VPHOOK(INetChannel, ProcessPacket, pNetChannel, SH_MEMBER(this, &CHookManager::ProcessPacket_Post), true);
 			nethook.SetHookID(hookid);
-			m_netChannelHooks.append(new CVTableHook(nethook));
+			m_netChannelHooks.push_back(new CVTableHook(nethook));
 		}
 	}
 }
@@ -385,18 +547,57 @@ bool CHookManager::SendFile(const char *filename, unsigned int transferID)
 	RETURN_META_VALUE(MRES_IGNORED, false);
 }
 
+#if !defined CLIENTVOICE_HOOK_SUPPORT
+bool CHookManager::ProcessVoiceData(CLC_VoiceData *msg)
+{
+	IClient *pClient = (IClient *)((intptr_t)(META_IFACEPTR(IClient)) - 4);
+	if (pClient == NULL)
+	{
+		return true;
+	}
+
+	int client = pClient->GetPlayerSlot() + 1;
+
+	if (g_hTimerSpeaking[client])
+	{
+		timersys->KillTimer(g_hTimerSpeaking[client]);
+	}
+
+	g_hTimerSpeaking[client] = timersys->CreateTimer(&g_SdkTools, 0.3f, (void *)(intptr_t)client, 0);
+
+	m_OnClientSpeaking->PushCell(client);
+	m_OnClientSpeaking->Execute();
+
+	return true;
+}
+#endif
+
 void CHookManager::OnPluginLoaded(IPlugin *plugin)
 {
-	if (PRCH_enabled && !PRCH_used && m_usercmdsFwd->GetFunctionCount())
+	if (PRCH_enabled)
 	{
-		PRCH_used = true;
-
-		int MaxClients = playerhelpers->GetMaxClients();
-		for (int i = 1; i <= MaxClients; i++)
+		bool changed = false;
+		if (!PRCH_used && (m_usercmdsFwd->GetFunctionCount() > 0))
 		{
-			if (playerhelpers->GetGamePlayer(i)->IsInGame())
+			PRCH_used = true;
+			changed = true;
+		}
+		if (!PRCHPost_used && (m_usercmdsPostFwd->GetFunctionCount() > 0))
+		{
+			PRCHPost_used = true;
+			changed = true;
+		}
+
+		// Only check the hooks on the players if a new hook is used by this plugin.
+		if (changed)
+		{
+			int MaxClients = playerhelpers->GetMaxClients();
+			for (int i = 1; i <= MaxClients; i++)
 			{
-				OnClientPutInServer(i);
+				if (playerhelpers->GetGamePlayer(i)->IsInGame())
+				{
+					OnClientPutInServer(i);
+				}
 			}
 		}
 	}
@@ -414,13 +615,29 @@ void CHookManager::OnPluginLoaded(IPlugin *plugin)
 			}
 		}
 	}
+	
+#if !defined CLIENTVOICE_HOOK_SUPPORT
+	if (!PVD_used && (m_OnClientSpeaking->GetFunctionCount() || m_OnClientSpeakingEnd->GetFunctionCount()))
+	{
+		PVD_used = true;
+
+		int MaxClients = playerhelpers->GetMaxClients();
+		for (int i = 1; i <= MaxClients; i++)
+		{
+			if (playerhelpers->GetGamePlayer(i)->IsConnected())
+			{
+				OnClientConnected(i);
+			}
+		}
+	}
+#endif
 }
 
 void CHookManager::OnPluginUnloaded(IPlugin *plugin)
 {
 	if (PRCH_used && !m_usercmdsFwd->GetFunctionCount())
 	{
-		for (size_t i = 0; i < m_runUserCmdHooks.length(); ++i)
+		for (size_t i = 0; i < m_runUserCmdHooks.size(); ++i)
 		{
 			delete m_runUserCmdHooks[i];
 		}
@@ -429,9 +646,20 @@ void CHookManager::OnPluginUnloaded(IPlugin *plugin)
 		PRCH_used = false;
 	}
 
+	if (PRCHPost_used && !m_usercmdsPostFwd->GetFunctionCount())
+	{
+		for (size_t i = 0; i < m_runUserCmdPostHooks.size(); ++i)
+		{
+			delete m_runUserCmdPostHooks[i];
+		}
+
+		m_runUserCmdPostHooks.clear();
+		PRCHPost_used = false;
+	}
+
 	if (FILE_used && !m_netFileSendFwd->GetFunctionCount() && !m_netFileReceiveFwd->GetFunctionCount())
 	{
-		for (size_t i = 0; i < m_netChannelHooks.length(); ++i)
+		for (size_t i = 0; i < m_netChannelHooks.size(); ++i)
 		{
 			delete m_netChannelHooks[i];
 		}
@@ -439,6 +667,19 @@ void CHookManager::OnPluginUnloaded(IPlugin *plugin)
 		m_netChannelHooks.clear();
 		FILE_used = false;
 	}
+	
+#if !defined CLIENTVOICE_HOOK_SUPPORT
+	if (PVD_used && !m_OnClientSpeaking->GetFunctionCount() && !m_OnClientSpeakingEnd->GetFunctionCount())
+	{
+		for (size_t i = 0; i < m_netProcessVoiceData.size(); ++i)
+		{
+			delete m_netProcessVoiceData[i];
+		}
+
+		m_netProcessVoiceData.clear();
+		PVD_used = false;
+	}
+#endif
 }
 
 FeatureStatus CHookManager::GetFeatureStatus(FeatureType type, const char *name)

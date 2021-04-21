@@ -40,10 +40,6 @@
 
 Logger g_Logger;
 
-/**
- * :TODO: This should be creating the log folder if it doesn't exist
- */
-
 ConfigResult Logger::OnSourceModConfigChanged(const char *key, 
 									  const char *value, 
 									  ConfigSource source,
@@ -60,7 +56,7 @@ ConfigResult Logger::OnSourceModConfigChanged(const char *key,
 		} else if (strcasecmp(value, "off") == 0) {
 			state = false;
 		} else {
-			ke::SafeSprintf(error, maxlength, "Invalid value: must be \"on\" or \"off\"");
+			ke::SafeStrcpy(error, maxlength, "Invalid value: must be \"on\" or \"off\"");
 			return ConfigResult_Reject;
 		}
 
@@ -68,7 +64,7 @@ ConfigResult Logger::OnSourceModConfigChanged(const char *key,
 		{
 			state ? EnableLogging() : DisableLogging();
 		} else {
-			m_InitialState = state;
+			m_Active = state;
 		}
 
 		return ConfigResult_Accept;
@@ -81,7 +77,7 @@ ConfigResult Logger::OnSourceModConfigChanged(const char *key,
 		} else if (strcasecmp(value, "game") == 0) {
 			m_Mode = LoggingMode_Game;
 		} else {
-			ke::SafeSprintf(error, maxlength, "Invalid value: must be [daily|map|game]");
+			ke::SafeStrcpy(error, maxlength, "Invalid value: must be [daily|map|game]");
 			return ConfigResult_Reject;
 		}
 
@@ -93,7 +89,12 @@ ConfigResult Logger::OnSourceModConfigChanged(const char *key,
 
 void Logger::OnSourceModStartup(bool late)
 {
-	InitLogger(m_Mode);
+	char buff[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_SM, buff, sizeof(buff), "logs");
+	if (!libsys->IsPathDirectory(buff))
+	{
+		libsys->CreateFolder(buff);
+	}
 }
 
 void Logger::OnSourceModAllShutdown()
@@ -103,132 +104,19 @@ void Logger::OnSourceModAllShutdown()
 
 void Logger::OnSourceModLevelChange(const char *mapName)
 {
-	MapChange(mapName);
-}
-
-void Logger::_NewMapFile()
-{
-	if (!m_Active)
-	{
-		return;
-	}
-
-	/* Append "Log file closed" to previous log file */
-	_CloseFile();
-	
-	char _filename[256];
-	int i = 0;
-
-	time_t t = g_pSM->GetAdjustedTime();
-	tm *curtime = localtime(&t);
-
-	while (true)
-	{
-		g_pSM->BuildPath(Path_SM, _filename, sizeof(_filename), "logs/L%02d%02d%03d.log", curtime->tm_mon + 1, curtime->tm_mday, i);
-		FILE *fp = fopen(_filename, "r");
-		if (!fp)
-		{
-			break;
-		}
-		fclose(fp);
-		i++;
-	}
-	m_NrmFileName.assign(_filename);
-
-	FILE *fp = fopen(m_NrmFileName.c_str(), "w");
-	if (!fp)
-	{
-		char error[255];
-		libsys->GetPlatformError(error, sizeof(error));
-		LogFatal("[SM] Unexpected fatal logging error (file \"%s\")", m_NrmFileName.c_str());
-		LogFatal("[SM] Platform returned error: \"%s\"", error);
-		LogFatal("[SM] Logging has been disabled.");
-		m_Active = false;
-		return;
-	} else {
-		char date[32];
-		strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
-		fprintf(fp, "L %s: SourceMod log file started (file \"L%02d%02d%03d.log\") (Version \"%s\")\n", date, curtime->tm_mon + 1, curtime->tm_mday, i, SOURCEMOD_VERSION);
-		fclose(fp);
-	}
-}
-
-void Logger::_CloseFile()
-{
-	if (!m_Active)
-	{
-		return;
-	}
-
-	FILE *fp = NULL;
-	if (!m_NrmFileName.empty())
-	{
-		fp = fopen(m_NrmFileName.c_str(), "r+");
-		if (fp)
-		{
-			fseek(fp, 0, SEEK_END);
-			LogMessage("Log file closed.");
-			fclose(fp);
-		}
-		m_NrmFileName.clear();
-	}
-
-	if (!m_ErrMapStart)
-	{
-		return;
-	}
-	fp = fopen(m_ErrFileName.c_str(), "r+");
-	if (fp)
-	{
-		fseek(fp, 0, SEEK_END);
-		LogError("Error log file session closed.");
-		fclose(fp);
-	}
-	m_ErrFileName.clear();
-}
-
-void Logger::InitLogger(LoggingMode mode)
-{
-	m_Mode = mode;
-	m_Active = m_InitialState;
-
-	time_t t = g_pSM->GetAdjustedTime();
-	tm *curtime = localtime(&t);
-	m_NrmCurDay = curtime->tm_mday;
-	m_ErrCurDay = curtime->tm_mday;
-
-	char _filename[256];
-	g_pSM->BuildPath(Path_SM, _filename, sizeof(_filename), "logs/errors_%04d%02d%02d.log", curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday);
-	m_ErrFileName.assign(_filename);
-
-	switch (m_Mode)
-	{
-	case LoggingMode_PerMap:
-		{
-			if (!m_Active)
-			{
-				m_DelayedStart = true;
-			}
-			break;
-		}
-	case LoggingMode_Daily:
-		{
-			g_pSM->BuildPath(Path_SM, _filename, sizeof(_filename), "logs/L%04d%02d%02d.log", curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday);
-			m_NrmFileName.assign(_filename);
-			m_DailyPrintHdr = true;
-			break;
-		}
-	default:
-		{
-			/* do nothing... */
-			break;
-		}
-	}
+	_MapChange(mapName);
 }
 
 void Logger::CloseLogger()
 {
 	_CloseFile();
+}
+
+void Logger::_CloseFile()
+{
+	_CloseNormal();
+	_CloseError();
+	_CloseFatal();
 }
 
 void Logger::LogToOpenFile(FILE *fp, const char *msg, ...)
@@ -259,11 +147,6 @@ void Logger::LogToFileOnly(FILE *fp, const char *msg, ...)
 
 void Logger::LogToOpenFileEx(FILE *fp, const char *msg, va_list ap)
 {
-	if (!m_Active)
-	{
-		return;
-	}
-
 	static ConVar *sv_logecho = bridge->FindConVar("sv_logecho");
 
 	char buffer[3072];
@@ -282,15 +165,12 @@ void Logger::LogToOpenFileEx(FILE *fp, const char *msg, va_list ap)
 		ke::SafeSprintf(conBuffer, sizeof(conBuffer), "L %s: %s\n", date, buffer);
 		bridge->ConPrint(conBuffer);
 	}
+
+	fflush(fp);
 }
 
 void Logger::LogToFileOnlyEx(FILE *fp, const char *msg, va_list ap)
 {
-	if (!m_Active)
-	{
-		return;
-	}
-
 	char buffer[3072];
 	ke::SafeVsprintf(buffer, sizeof(buffer), msg, ap);
 
@@ -298,8 +178,8 @@ void Logger::LogToFileOnlyEx(FILE *fp, const char *msg, va_list ap)
 	time_t t = g_pSM->GetAdjustedTime();
 	tm *curtime = localtime(&t);
 	strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
-
 	fprintf(fp, "L %s: %s\n", date, buffer);
+
 	fflush(fp);
 }
 
@@ -324,63 +204,14 @@ void Logger::LogMessageEx(const char *vafmt, va_list ap)
 		return;
 	}
 
-	if (m_DelayedStart)
+	FILE *pFile = _OpenNormal();
+	if (!pFile)
 	{
-		m_DelayedStart = false;
-		_NewMapFile();
+		return;
 	}
 
-	time_t t = g_pSM->GetAdjustedTime();
-	tm *curtime = localtime(&t);
-
-	FILE *fp = NULL;
-	if (m_Mode == LoggingMode_PerMap)
-	{
-		fp = fopen(m_NrmFileName.c_str(), "a+");
-		if (!fp)
-		{
-			_NewMapFile();
-			fp = fopen(m_NrmFileName.c_str(), "a+");
-			if (!fp)
-			{
-				goto print_error;
-			}
-		}
-	} else {
-		if (m_NrmCurDay != curtime->tm_mday)
-		{
-			char _filename[256];
-			g_pSM->BuildPath(Path_SM, _filename, sizeof(_filename), "logs/L%04d%02d%02d.log", curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday);
-			m_NrmFileName.assign(_filename);
-			m_NrmCurDay = curtime->tm_mday;
-			m_DailyPrintHdr = true;
-		}
-		fp = fopen(m_NrmFileName.c_str(), "a+");
-	}
-
-	if (fp)
-	{
-		if (m_DailyPrintHdr)
-		{
-			char date[32];
-			m_DailyPrintHdr = false;
-			strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
-			fprintf(fp, "L %s: SourceMod log file session started (file \"L%04d%02d%02d.log\") (Version \"%s\")\n", date, curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday, SOURCEMOD_VERSION);
-	 	}
-		LogToOpenFileEx(fp, vafmt, ap);
-		fclose(fp);
-	} else {
-		goto print_error;
-	}
-
-	return;
-print_error:
-	char error[255];
-	libsys->GetPlatformError(error, sizeof(error));
-	LogFatal("[SM] Unexpected fatal logging error (file \"%s\")", m_NrmFileName.c_str());
-	LogFatal("[SM] Platform returned error: \"%s\"", error);
-	LogFatal("[SM] Logging has been disabled.");
-	m_Active = false;
+	LogToOpenFileEx(pFile, vafmt, ap);
+	fclose(pFile);
 }
 
 void Logger::LogError(const char *vafmt, ...)
@@ -398,72 +229,20 @@ void Logger::LogErrorEx(const char *vafmt, va_list ap)
 		return;
 	}
 
-	time_t t = g_pSM->GetAdjustedTime();
-	tm *curtime = localtime(&t);
-
-	if (curtime->tm_mday != m_ErrCurDay)
+	FILE *pFile = _OpenError();
+	if (!pFile)
 	{
-		char _filename[256];
-		g_pSM->BuildPath(Path_SM, _filename, sizeof(_filename), "logs/errors_%04d%02d%02d.log", curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday);
-		m_ErrFileName.assign(_filename);
-		m_ErrCurDay = curtime->tm_mday;
-		m_ErrMapStart = false;
-	}
-
-	FILE *fp = fopen(m_ErrFileName.c_str(), "a+");
-	if (fp)
-	{
-		if (!m_ErrMapStart)
-		{
-			char date[32];
-			strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
-			fprintf(fp, "L %s: SourceMod error session started\n", date);
-			fprintf(fp, "L %s: Info (map \"%s\") (file \"errors_%04d%02d%02d.log\")\n", date, m_CurMapName.c_str(), curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday);
-			m_ErrMapStart = true;
-		}
-		LogToOpenFileEx(fp, vafmt, ap);
-		fclose(fp);
-	}
-	else
-	{
-		char error[255];
-		libsys->GetPlatformError(error, sizeof(error));
-		LogFatal("[SM] Unexpected fatal logging error (file \"%s\")", m_NrmFileName.c_str());
-		LogFatal("[SM] Platform returned error: \"%s\"", error);
-		LogFatal("[SM] Logging has been disabled.");
-		m_Active = false;
 		return;
 	}
+
+	LogToOpenFileEx(pFile, vafmt, ap);
+	fclose(pFile);
 }
 
-void Logger::MapChange(const char *mapname)
+void Logger::_MapChange(const char *mapname)
 {
-	m_CurMapName.assign(mapname);
-
-	switch (m_Mode)
-	{
-	case LoggingMode_Daily:
-		{
-			LogMessage("-------- Mapchange to %s --------", mapname);
-			break;
-		}
-	case LoggingMode_PerMap:
-		{
-			_NewMapFile();
-			break;
-		}
-	default:
-		{
-			/* Do nothing... */
-			break;
-		}
-	}
-
-	if (m_ErrMapStart)
-	{
-		LogError("Error log file session closed.");
-	}
-	m_ErrMapStart = false;
+	m_CurrentMapName = mapname;
+	_UpdateFiles(true);
 }
 
 void Logger::_PrintToGameLog(const char *fmt, va_list ap)
@@ -478,30 +257,6 @@ void Logger::_PrintToGameLog(const char *fmt, va_list ap)
 	msg[len] = '\0';
 
 	bridge->LogToGame(msg);
-}
-
-const char *Logger::GetLogFileName(LogType type) const
-{
-	switch (type)
-	{
-	case LogType_Normal:
-		{
-			return m_NrmFileName.c_str();
-		}
-	case LogType_Error:
-		{
-			return m_ErrFileName.c_str();
-		}
-	default:
-		{
-			return "";
-		}
-	}
-}
-
-LoggingMode Logger::GetLoggingMode() const
-{
-	return m_Mode;
 }
 
 void Logger::EnableLogging()
@@ -539,16 +294,161 @@ void Logger::LogFatalEx(const char *msg, va_list ap)
 	 * It's already implemented twice which is bad.
 	 */
 
-	char path[PLATFORM_MAX_PATH];
-
-	g_pSM->BuildPath(Path_Game, path, sizeof(path), "sourcemod_fatal.log");
-
-	FILE *fp = fopen(path, "at");
-	if (fp)
+	FILE *pFile = _OpenFatal();
+	if (!pFile)
 	{
-		m_Active = true;
-		LogToOpenFileEx(fp, msg, ap);
-		m_Active = false;
-		fclose(fp);
+		return;
 	}
+
+	LogToOpenFileEx(pFile, msg, ap);
+	fclose(pFile);
+}
+
+void Logger::_UpdateFiles(bool bLevelChange)
+{
+	time_t t = g_pSM->GetAdjustedTime();
+	tm *curtime = localtime(&t);
+
+	if (!bLevelChange && curtime->tm_mday == m_Day)
+	{
+		return;
+	}
+
+	m_Day = curtime->tm_mday;
+
+	char buff[PLATFORM_MAX_PATH];
+	ke::SafeSprintf(buff, sizeof(buff), "%04d%02d%02d", curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday);
+
+	std::string currentDate(buff);
+
+	if (m_Mode == LoggingMode_PerMap)
+	{
+		if (bLevelChange)
+		{
+			for (size_t iter = 0; iter < static_cast<size_t>(-1); ++iter)
+			{
+				g_pSM->BuildPath(Path_SM, buff, sizeof(buff), "logs/L%s%u.log", currentDate.c_str(), iter);
+				if (!libsys->IsPathFile(buff))
+				{
+					break;
+				}
+			}
+		}
+		else
+		{
+			ke::SafeStrcpy(buff, sizeof(buff), m_NormalFileName.c_str());
+		}
+	}
+	else
+	{
+		g_pSM->BuildPath(Path_SM, buff, sizeof(buff), "logs/L%s.log", currentDate.c_str());
+	}
+
+	if (m_NormalFileName.compare(buff))
+	{
+		_CloseNormal();
+		m_NormalFileName = buff;
+	}
+	else
+	{
+		if (bLevelChange)
+		{
+			LogMessage("-------- Mapchange to %s --------", m_CurrentMapName.c_str());
+		}
+	}
+
+	g_pSM->BuildPath(Path_SM, buff, sizeof(buff), "logs/errors_%s.log", currentDate.c_str());
+	if (bLevelChange || m_ErrorFileName.compare(buff))
+	{
+		_CloseError();
+		m_ErrorFileName = buff;
+	}
+}
+
+FILE *Logger::_OpenNormal()
+{
+	_UpdateFiles();
+
+	FILE *pFile = fopen(m_NormalFileName.c_str(), "a+");
+	if (pFile == NULL)
+	{
+		_LogFatalOpen(m_NormalFileName);
+		return pFile;
+	}
+
+	if (!m_DamagedNormalFile)
+	{
+		time_t t = g_pSM->GetAdjustedTime();
+		tm *curtime = localtime(&t);
+		char date[32];
+
+		strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
+		fprintf(pFile, "L %s: SourceMod log file session started (file \"%s\") (Version \"%s\")\n", date, m_NormalFileName.c_str(), SOURCEMOD_VERSION);
+		m_DamagedNormalFile = true;
+	}
+
+	return pFile;
+}
+
+FILE *Logger::_OpenError()
+{
+	_UpdateFiles();
+
+	FILE *pFile = fopen(m_ErrorFileName.c_str(), "a+");
+	if (pFile == NULL)
+	{
+		_LogFatalOpen(m_ErrorFileName);
+		return pFile;
+	}
+
+	if (!m_DamagedErrorFile)
+	{
+		time_t t = g_pSM->GetAdjustedTime();
+		tm *curtime = localtime(&t);
+
+		char date[32];
+		strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
+		fprintf(pFile, "L %s: SourceMod error session started\n", date);
+		fprintf(pFile, "L %s: Info (map \"%s\") (file \"%s\")\n", date, m_CurrentMapName.c_str(), m_ErrorFileName.c_str());
+		m_DamagedErrorFile = true;
+	}
+
+	return pFile;
+}
+
+FILE *Logger::_OpenFatal()
+{
+	char path[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, path, sizeof(path), "sourcemod_fatal.log");
+	return fopen(path, "at");
+}
+
+void Logger::_LogFatalOpen(std::string &str)
+{
+	char error[255];
+	libsys->GetPlatformError(error, sizeof(error));
+	LogFatal("[SM] Unexpected fatal logging error (file \"%s\")", str.c_str());
+	LogFatal("[SM] Platform returned error: \"%s\"", error);
+}
+
+void Logger::_CloseNormal()
+{
+	if (m_DamagedNormalFile)
+	{
+		LogMessage("Log file closed.");
+		m_DamagedNormalFile = false;
+	}
+}
+
+void Logger::_CloseError()
+{
+	if (m_DamagedErrorFile)
+	{
+		LogError("Error log file session closed.");
+		m_DamagedErrorFile = false;
+	}
+}
+
+void Logger::_CloseFatal()
+{
 }

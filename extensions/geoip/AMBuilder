@@ -1,19 +1,20 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-binary = SM.ExtLibrary(builder, 'geoip.ext')
-if binary.compiler.vendor == 'gcc' or binary.compiler.vendor == 'clang':
-  binary.compiler.cxxflags += ['-fno-rtti']
-elif binary.compiler.vendor == 'msvc':
-  binary.compiler.cxxflags += ['/GR-']
-if builder.target_platform == 'windows':
-  binary.compiler.postlink += ['wsock32.lib']
+for cxx in builder.targets:
+  binary = SM.ExtLibrary(builder, cxx, 'geoip.ext')
+  if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
+    binary.compiler.cxxflags += ['-fno-rtti']
+  elif binary.compiler.family == 'msvc':
+    binary.compiler.cxxflags += ['/GR-']
+  if binary.compiler.target.platform == 'windows':
+    binary.compiler.postlink += ['wsock32.lib']
 
-binary.sources += [
-  'extension.cpp',
-  'GeoIP.c',
-  '../../public/smsdk_ext.cpp'
-]
+  binary.sources += [
+    'extension.cpp',
+    'GeoIP.c',
+    '../../public/smsdk_ext.cpp'
+  ]
 
-SM.extensions += [builder.Add(binary)]
+  SM.extensions += [builder.Add(binary)]
 

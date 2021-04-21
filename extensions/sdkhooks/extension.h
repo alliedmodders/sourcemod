@@ -18,16 +18,10 @@
 
 #include "takedamageinfohack.h"
 
-#ifndef METAMOD_PLAPI_VERSION
-#define GetCGlobals pGlobals
-#define GetEngineFactory engineFactory
-#define GetServerFactory serverFactory
-#endif
-
 #if SOURCE_ENGINE >= SE_CSS && SOURCE_ENGINE != SE_LEFT4DEAD
 #define GETMAXHEALTH_IS_VIRTUAL
 #endif
-#if SOURCE_ENGINE != SE_HL2DM && SOURCE_ENGINE != SE_DODS && SOURCE_ENGINE != SE_CSS && SOURCE_ENGINE != SE_TF2 && SOURCE_ENGINE != SE_LEFT4DEAD2 && SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_NUCLEARDAWN
+#if SOURCE_ENGINE != SE_HL2DM && SOURCE_ENGINE != SE_DODS && SOURCE_ENGINE != SE_CSS && SOURCE_ENGINE != SE_TF2 && SOURCE_ENGINE != SE_LEFT4DEAD2 && SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_NUCLEARDAWN && SOURCE_ENGINE != SE_BLADE
 #define GAMEDESC_CAN_CHANGE
 #endif
 
@@ -133,7 +127,7 @@ public:
 	};
 public:
 	CVTableHook *vtablehook;
-	ke::Vector<HookList> hooks;
+	std::vector<HookList> hooks;
 };
 
 class IEntityListener
@@ -244,6 +238,7 @@ public:  // IFeatureProvider
 
 public:  // IEntityListener
 	virtual void OnEntityCreated(CBaseEntity *pEntity);
+	virtual void OnEntitySpawned(CBaseEntity *pEntity);
 	virtual void OnEntityDeleted(CBaseEntity *pEntity);
 
 public:  // IClientListener
@@ -317,7 +312,6 @@ public:
 	void Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr);
 	void Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr);
 #endif
-	void Hook_UpdateOnRemove();
 	void Hook_Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
 	void Hook_UsePost(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
 	void Hook_VPhysicsUpdate(IPhysicsObject *pPhysics);
@@ -336,18 +330,23 @@ public:
 	bool Hook_WeaponSwitchPost(CBaseCombatWeapon *pWeapon, int viewmodelindex);
 	
 private:
-	void HandleEntityCreated(CBaseEntity *pEntity, int ref);
-	void HandleEntityDeleted(CBaseEntity *pEntity, int ref);
+	void HandleEntityCreated(CBaseEntity *pEntity, int index, cell_t ref);
+	void HandleEntitySpawned(CBaseEntity *pEntity, int index, cell_t ref);
+	void HandleEntityDeleted(CBaseEntity *pEntity);
 	void Unhook(CBaseEntity *pEntity);
 	void Unhook(IPluginContext *pContext);
 
 private:
 	int HandleOnTakeDamageHook(CTakeDamageInfoHack &info, SDKHookType hookType);
 	int HandleOnTakeDamageHookPost(CTakeDamageInfoHack &info, SDKHookType hookType);
+
+private:
+	inline bool IsEntityIndexInRange(int i) { return i >= 0 && i < NUM_ENT_ENTRIES; }
+	cell_t m_EntityCache[NUM_ENT_ENTRIES];
 };
 
 extern CGlobalVars *gpGlobals;
-extern ke::Vector<CVTableList *> g_HookList[SDKHook_MAXHOOKS];
+extern std::vector<CVTableList *> g_HookList[SDKHook_MAXHOOKS];
 
 extern ICvar *icvar;
 

@@ -46,6 +46,6 @@ struct KeyValueStack
 	bool m_bDeleteOnDestroy = true;
 };
 
-extern HandleType_t g_KeyValueType;;
+extern HandleType_t g_KeyValueType;
 
 #endif // _INCLUDE_SOURCEMOD_KVWRAPPER_H_

@@ -189,7 +189,7 @@ static cell_t smn_KvSetUInt64(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToStringNULL(params[2], &key);
 	pCtx->LocalToPhysAddr(params[3], &addr);
 
-	value = static_cast<uint64>(*addr);
+	value = *reinterpret_cast<uint64 *>(addr);
 	pStk->pCurRoot.front()->SetUint64(key, value);
 
 	return 1;
@@ -1104,13 +1104,68 @@ static cell_t smn_KvGetSectionSymbol(IPluginContext *pCtx, const cell_t *params)
 static cell_t KeyValues_Import(IPluginContext *pContext, const cell_t *params)
 {
 	// This version takes (dest, src). The original is (src, dest).
-	cell_t new_params[3] = {
+	const cell_t new_params[3] = {
 		2,
 		params[2],
 		params[1],
 	};
 
 	return smn_CopySubkeys(pContext, new_params);
+}
+
+static cell_t smn_KeyValuesToString(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	KeyValueStack *pStk;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
+	}
+	KeyValues *kv;
+	CUtlBuffer buffer;
+	
+	kv = pStk->pCurRoot.front();
+
+	kv->RecursiveSaveToFile(buffer, 0);
+	
+	char* outStr;
+	pContext->LocalToString(params[2], &outStr);
+	size_t maxlen = static_cast<size_t>(params[3]);
+	
+	buffer.GetString(outStr, maxlen);
+	return buffer.TellPut();
+}
+
+static cell_t smn_KeyValuesExportLength(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	KeyValueStack *pStk;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
+	}
+	KeyValues *kv;
+	CUtlBuffer buffer;
+	
+	kv = pStk->pCurRoot.front();
+
+	kv->RecursiveSaveToFile(buffer, 0);
+	
+	return (cell_t)buffer.TellPut();
 }
 
 static KeyValueNatives s_KeyValueNatives;
@@ -1187,6 +1242,8 @@ REGISTER_NATIVES(keyvaluenatives)
 	{"KeyValues.ImportFromFile",		smn_FileToKeyValues},
 	{"KeyValues.ImportFromString",		smn_StringToKeyValues},
 	{"KeyValues.ExportToFile",			smn_KeyValuesToFile},
+	{"KeyValues.ExportToString",		smn_KeyValuesToString},
+	{"KeyValues.ExportLength.get",		smn_KeyValuesExportLength},
 
 	{NULL,						NULL}
 };

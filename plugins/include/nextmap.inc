@@ -9,7 +9,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -31,52 +31,52 @@
  */
 
 #if defined _nextmap_included_
-  #endinput
+ #endinput
 #endif
 #define _nextmap_included_
 
 /**
- * Sets SourceMod's internal nextmap. 
+ * Sets SourceMod's internal nextmap.
  * Equivalent to changing sm_nextmap but with an added validity check.
  *
- * @param map		Next map to set.
- * @return			True if the nextmap was set, false if map was invalid.
+ * @param map           Next map to set.
+ * @return              True if the nextmap was set, false if map was invalid.
  */
 native bool SetNextMap(const char[] map);
 
 /**
  * Returns SourceMod's internal nextmap.
  *
- * @param map		Buffer to store the nextmap name.
- * @param maxlen	Maximum length of the map buffer.
- * @return			True if a Map was found and copied, false if no nextmap is set (map will be unchanged).
+ * @param map           Buffer to store the nextmap name.
+ * @param maxlen        Maximum length of the map buffer.
+ * @return              True if a Map was found and copied, false if no nextmap is set (map will be unchanged).
  */
 native bool GetNextMap(char[] map, int maxlen);
 
 /**
  * Changes the current map and records the reason for the change with maphistory
  *
- * @param map		Map to change to.
- * @param reason	Reason for change.
+ * @param map           Map to change to.
+ * @param reason        Reason for change.
  */
 native void ForceChangeLevel(const char[] map, const char[] reason);
 
 /**
  * Gets the current number of maps in the map history
  *
- * @return			Number of maps.
+ * @return              Number of maps.
  */
 native int GetMapHistorySize();
 
 /**
  * Retrieves a map from the map history list.
- * 
- * @param item			Item number. Must be 0 or greater and less than GetMapHistorySize().
- * @param map			Buffer to store the map name.
- * @param mapLen		Length of map buffer.
- * @param reason		Buffer to store the change reason.
- * @param reasonLen		Length of the reason buffer.
- * @param startTime		Time the map started.
- * @error				Invalid item number.	
+ *
+ * @param item          Item number. Must be 0 or greater and less than GetMapHistorySize().
+ * @param map           Buffer to store the map name.
+ * @param mapLen        Length of map buffer.
+ * @param reason        Buffer to store the change reason.
+ * @param reasonLen     Length of the reason buffer.
+ * @param startTime     Time the map started.
+ * @error               Invalid item number.
  */
 native void GetMapHistory(int item, char[] map, int mapLen, char[] reason, int reasonLen, int &startTime);

@@ -63,14 +63,7 @@ int vsp_version = 0;
 
 PLUGIN_EXPOSE(SourceMod, g_SourceMod_Core);
 
-#if !defined(METAMOD_PLAPI_VERSION) && PLAPI_VERSION < 11
-# error "SourceMod requires Metamod:Source 1.8 or higher."
-#endif
-#if SH_IMPL_VERSION < 4
-# error "SourceMod requires a newer version of SourceHook."
-#endif
-
-ConVar sourcemod_version("sourcemod_version", SOURCEMOD_VERSION, FCVAR_SPONLY|FCVAR_REPLICATED|FCVAR_NOTIFY, "SourceMod Version");
+ConVar sourcemod_version("sourcemod_version", SOURCEMOD_VERSION, FCVAR_SPONLY|FCVAR_NOTIFY, "SourceMod Version");
 
 bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late)
 {
@@ -117,7 +110,7 @@ bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen
 	{
 		if (error)
 		{
-			snprintf(error, maxlen, "Unable to find interface %s", MMIFACE_PLMANAGER);
+			ke::SafeSprintf(error, maxlen, "Unable to find interface %s", MMIFACE_PLMANAGER);
 		}
 		return false;
 	}

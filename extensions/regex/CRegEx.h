@@ -28,9 +28,19 @@
  *
  * Version: $Id$
  */
+#include <am-string.h>
 
 #ifndef _INCLUDE_CREGEX_H
 #define _INCLUDE_CREGEX_H
+
+#define MAX_MATCHES 20
+#define MAX_CAPTURES MAX_MATCHES*3
+
+struct RegexMatch
+{
+	int mSubStringCount;
+	int mVector[MAX_CAPTURES];
+};
 
 class RegEx
 {
@@ -41,17 +51,19 @@ public:
 	void Clear();
 
 	int Compile(const char *pattern, int iFlags);
-	int Match(const char *str);
+	int Match(const char *const str, const size_t offset);
+	int MatchAll(const char *str);
 	void ClearMatch();
-	const char *GetSubstring(int s, char buffer[], int max);
+	bool GetSubstring(int s, char buffer[], int max, int match);
 public:
 	int mErrorOffset;
+	int mErrorCode;
 	const char *mError;
-	int mSubStrings;
+	int mMatchCount;
+	RegexMatch mMatches[MAX_MATCHES];
 private:
 	pcre *re;
 	bool mFree;
-	int ovector[30];
 	char *subject;
 };
 

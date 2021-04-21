@@ -33,8 +33,7 @@
 
 void DisplayVoteKickMenu(int client, int target)
 {
-	g_voteClient[VOTE_CLIENTID] = target;
-	g_voteClient[VOTE_USERID] = GetClientUserId(target);
+	g_voteTarget = GetClientUserId(target);
 
 	GetClientName(target, g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
 

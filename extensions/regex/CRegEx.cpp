@@ -33,31 +33,32 @@
 
 #include "pcre.h"
 #include "CRegEx.h"
-#include <sh_string.h>
 #include "extension.h"
 
 RegEx::RegEx()
 {
 	mErrorOffset = 0;
-	mError = NULL;
-	re = NULL;
+	mErrorCode = 0;
+	mError = nullptr;
+	re = nullptr;
 	mFree = true;
-	subject = NULL;
-	mSubStrings = 0;
+	subject = nullptr;
+	mMatchCount = 0;
 }
 
 void RegEx::Clear ()
 {
 	mErrorOffset = 0;
-	mError = NULL;
+	mErrorCode = 0;
+	mError = nullptr;
 	if (re)
 		pcre_free(re);
-	re = NULL;
+	re = nullptr;
 	mFree = true;
 	if (subject)
 		delete [] subject;
-	subject = NULL;
-	mSubStrings = 0;
+	subject = nullptr;
+	mMatchCount = 0;
 }
 
 RegEx::~RegEx()
@@ -81,9 +82,9 @@ int RegEx::Compile(const char *pattern, int iFlags)
 	if (!mFree)
 		Clear();
 		
-	re = pcre_compile(pattern, iFlags, &mError, &mErrorOffset, NULL);
+	re = pcre_compile2(pattern, iFlags, &mErrorCode, &mError, &mErrorOffset, nullptr);
 
-	if (re == NULL)
+	if (re == nullptr)
 	{
 		return 0;
 	}
@@ -93,20 +94,19 @@ int RegEx::Compile(const char *pattern, int iFlags)
 	return 1;
 }
 
-int RegEx::Match(const char *str)
+int RegEx::Match(const char *const str, const size_t offset)
 {
 	int rc = 0;
 
-	if (mFree || re == NULL)
+	if (mFree || re == nullptr)
 		return -1;
 		
 	this->ClearMatch();
 
 	//save str
-	subject = new char[strlen(str)+1];
-	strcpy(subject, str);
+	subject = strdup(str);
 
-	rc = pcre_exec(re, NULL, subject, (int)strlen(subject), 0, 0, ovector, 30);
+	rc = pcre_exec(re, nullptr, subject, strlen(subject), offset, 0, mMatches[0].mVector, MAX_CAPTURES);
 
 	if (rc < 0)
 	{
@@ -114,34 +114,79 @@ int RegEx::Match(const char *str)
 		{
 			return 0;
 		} else {
-			mErrorOffset = rc;
+			mErrorCode = rc;
 			return -1;
 		}
 	}
 
-	mSubStrings = rc;
+	mMatches[0].mSubStringCount = rc;
+	mMatchCount = 1;
 
 	return 1;
 }
+
+int RegEx::MatchAll(const char *str)
+{
+	int rc = 0;
+
+	if (mFree || re == nullptr)
+		return -1;
+
+	this->ClearMatch();
+
+	//save str
+	subject = strdup(str);
+	size_t len = strlen(subject);
+
+	size_t offset = 0;
+	unsigned int matches = 0;
+
+	while (matches < MAX_MATCHES && offset < len && (rc = pcre_exec(re, 0, subject, len, offset, 0, mMatches[matches].mVector, MAX_CAPTURES)) >= 0)
+	{
+		offset = mMatches[matches].mVector[1];
+		mMatches[matches].mSubStringCount = rc;
+
+		matches++;
+	}
+
+	if (rc < PCRE_ERROR_NOMATCH || (rc == PCRE_ERROR_NOMATCH && matches == 0))
+	{
+		if (rc == PCRE_ERROR_NOMATCH)
+		{
+			return 0;
+		}
+		else {
+			mErrorCode = rc;
+			return -1;
+		}
+	}
+
+	mMatchCount = matches;
+
+	return 1;
+}
+
 void RegEx::ClearMatch()
 {
 	// Clears match results
 	mErrorOffset = 0;
-	mError = NULL;
+	mErrorCode = 0;
+	mError = nullptr;
 	if (subject)
 		delete [] subject;
-	subject = NULL;
-	mSubStrings = 0;
+	subject = nullptr;
+	mMatchCount = 0;
 }
 
-const char *RegEx::GetSubstring(int s, char buffer[], int max)
+bool RegEx::GetSubstring(int s, char buffer[], int max, int match)
 {
 	int i = 0;
-	if (s >= mSubStrings || s < 0)
-		return NULL;
 
-	char *substr_a = subject + ovector[2*s];
-	int substr_l = ovector[2*s+1] - ovector[2*s];
+	if (s >= mMatches[match].mSubStringCount || s < 0)
+		return false;
+
+	char *substr_a = subject + mMatches[match].mVector[2 * s];
+	int substr_l = mMatches[match].mVector[2 * s + 1] - mMatches[match].mVector[2 * s];
 
 	for (i = 0; i<substr_l; i++)
 	{
@@ -152,6 +197,6 @@ const char *RegEx::GetSubstring(int s, char buffer[], int max)
 
 	buffer[i] = '\0';
 
-	return buffer;
+	return true;
 }
 

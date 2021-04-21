@@ -33,7 +33,7 @@
 #define _INCLUDE_SQLITE_SOURCEMOD_DATABASE_H_
 
 #include <am-refcounting-threadsafe.h>
-#include <am-thread-utils.h>
+#include <mutex>
 #include "SqDriver.h"
 
 class SqDatabase
@@ -64,9 +64,13 @@ public:
 	bool SetCharacterSet(const char *characterset);
 public:
 	sqlite3 *GetDb();
+	void PrepareForForcedShutdown()
+	{
+		m_Persistent = false;
+	}
 private:
 	sqlite3 *m_sq3;
-	ke::AutoPtr<ke::Mutex> m_FullLock;
+	std::mutex m_FullLock;
 	bool m_Persistent;
 	String m_LastError;
 	int m_LastErrorCode;

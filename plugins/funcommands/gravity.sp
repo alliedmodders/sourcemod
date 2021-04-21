@@ -36,7 +36,7 @@ int g_GravityTarget[MAXPLAYERS+1];
 void PerformGravity(int client, int target, float amount)
 {
 	SetEntityGravity(target, amount);
-	LogAction(client, target, "\"%L\" set gravity on \"%L\" to %f.", client, target, amount);
+	LogAction(client, target, "\"%L\" set gravity on \"%L\" (amount \"%f\")", client, target, amount);
 }
 
 public void AdminMenu_Gravity(TopMenu topmenu, 

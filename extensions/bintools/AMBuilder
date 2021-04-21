@@ -1,27 +1,30 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-binary = SM.ExtLibrary(builder, 'bintools.ext')
-binary.compiler.defines += ['HOOKING_ENABLED']
-binary.compiler.cxxincludes += [
-  os.path.join(SM.mms_root, 'core', 'sourcehook'),
-  os.path.join(builder.sourcePath, 'public', 'jit'),
-  os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
-]
-if binary.compiler.vendor == 'gcc' or binary.compiler.vendor == 'clang':
-  binary.compiler.cxxflags += ['-fno-rtti']
-elif binary.compiler.vendor == 'msvc':
-  binary.compiler.cxxflags += ['/GR-']
+for cxx in builder.targets:
+  binary = SM.ExtLibrary(builder, cxx, 'bintools.ext')
+  binary.compiler.defines += ['HOOKING_ENABLED']
+  binary.compiler.cxxincludes += [
+    os.path.join(SM.mms_root, 'core', 'sourcehook'),
+    os.path.join(builder.sourcePath, 'public', 'jit'),
+    os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
+  ]
+  if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
+    binary.compiler.cxxflags += ['-fno-rtti']
+  elif binary.compiler.family == 'msvc':
+    binary.compiler.cxxflags += ['/GR-']
 
-binary.sources += [
-  'extension.cpp',
-  'CallMaker.cpp',
-  'CallWrapper.cpp',
-  'HookWrapper.cpp',
-  'jit_call.cpp',
-  'jit_hook.cpp',
-  '../../public/smsdk_ext.cpp'
-]
+  binary.sources += [
+    'extension.cpp',
+    'CallMaker.cpp',
+    'CallWrapper.cpp',
+    '../../public/smsdk_ext.cpp'
+  ]
+  
+  if binary.compiler.target.arch == 'x86_64':
+    binary.sources += ['jit_call_x64.cpp']
+  else:
+    binary.sources += ['jit_call.cpp']
 
-SM.extensions += [builder.Add(binary)]
+  SM.extensions += [builder.Add(binary)]
 

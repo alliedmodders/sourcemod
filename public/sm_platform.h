@@ -41,6 +41,17 @@
 #ifndef PLATFORM_WINDOWS
 #define PLATFORM_WINDOWS		1
 #endif
+
+#if defined WIN64 || defined _WIN64
+#ifndef PLATFORM_X64
+# define PLATFORM_X64           1
+#endif
+#else
+#ifndef PLATFORM_X86
+# define PLATFORM_X86           1
+#endif
+#endif // defined WIN64 || defined _WIN64
+
 #if !defined WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -58,10 +69,8 @@
 #define PLATFORM_MAX_PATH		MAX_PATH
 #define PLATFORM_SEP_CHAR		'\\'
 #define PLATFORM_SEP_ALTCHAR	'/'
+#define PLATFORM_SEP			"\\"
 #define PLATFORM_EXTERN_C		extern "C" __declspec(dllexport)
-#if defined _MSC_VER && _MSC_VER >= 1400
-#define SUBPLATFORM_SECURECRT
-#endif
 #elif defined __linux__ || defined __APPLE__
 #if defined __linux__
 # define PLATFORM_LINUX			1
@@ -73,6 +82,17 @@
 #ifndef PLATFORM_POSIX
 # define PLATFORM_POSIX			1
 #endif
+
+#if defined __x86_64__
+#ifndef PLATFORM_X64
+# define PLATFORM_X64           1
+#endif
+#else
+#ifndef PLATFORM_X86
+# define PLATFORM_X86           1
+#endif
+#endif // defined __x86_64__
+
 #include <errno.h>
 #include <unistd.h>
 #include <dirent.h>
@@ -84,6 +104,7 @@
 #define PLATFORM_MAX_PATH		PATH_MAX
 #define PLATFORM_SEP_CHAR		'/'
 #define PLATFORM_SEP_ALTCHAR	'\\'
+#define PLATFORM_SEP			"/"
 #define PLATFORM_EXTERN_C		extern "C" __attribute__((visibility("default")))
 #endif
 
@@ -94,6 +115,26 @@
 #if !defined SM_ARRAYSIZE
 #define SM_ARRAYSIZE(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
 #endif
+
+#if defined PLATFORM_X64
+#define PLATFORM_ARCH_FOLDER	"x64" PLATFORM_SEP
+#ifdef PLATFORM_WINDOWS
+#define PLATFORM_FOLDER 		"win64" PLATFORM_SEP
+#elif defined PLATFORM_LINUX
+#define PLATFORM_FOLDER 		"linux64" PLATFORM_SEP
+#elif defined PLATFORM_APPLE
+#define PLATFORM_FOLDER 		"osx64" PLATFORM_SEP
+#endif
+#else
+#define PLATFORM_ARCH_FOLDER	 ""
+#ifdef PLATFORM_WINDOWS
+#define PLATFORM_FOLDER 		"win32" PLATFORM_SEP
+#elif defined PLATFORM_LINUX
+#define PLATFORM_FOLDER 		"linux32" PLATFORM_SEP
+#elif defined PLATFORM_APPLE
+#define PLATFORM_FOLDER 		"osx32"	PLATFORM_SEP
+#endif
+#endif // defined PLATFORM_X64
 
 #endif //_INCLUDE_SOURCEMOD_PLATFORM_H_
 

@@ -55,7 +55,7 @@
 #include "sprintf.h"
 #include "LibrarySys.h"
 #include "RootConsoleMenu.h"
-#include "CDataPack.h"
+#include "CellArray.h"
 #include <bridge/include/BridgeAPI.h>
 #include <bridge/include/IProviderCallbacks.h>
 
@@ -85,6 +85,9 @@ IScriptManager *scripts = &g_PluginSys;
 IExtensionSys *extsys = &g_Extensions;
 ILogger *logger = &g_Logger;
 CNativeOwner g_CoreNatives;
+#ifdef PLATFORM_X64
+PseudoAddressManager pseudoAddr;
+#endif
 
 static void AddCorePhraseFile(const char *filename)
 {
@@ -112,6 +115,24 @@ static void AddNatives(sp_nativeinfo_t *natives)
 static void RegisterProfiler(IProfilingTool *tool)
 {
 	g_ProfileToolManager.RegisterTool(tool);
+}
+
+static void *FromPseudoAddress(uint32_t paddr)
+{
+#ifdef PLATFORM_X64
+	return pseudoAddr.FromPseudoAddress(paddr);
+#else
+	return nullptr;
+#endif
+}
+
+static uint32_t ToPseudoAddress(void *addr)
+{
+#ifdef PLATFORM_X64
+	return pseudoAddr.ToPseudoAddress(addr);
+#else
+	return 0;
+#endif
 }
 
 // Defined in smn_filesystem.cpp.
@@ -145,8 +166,10 @@ static sm_logic_t logic =
 	GenerateError,
 	AddNatives,
 	RegisterProfiler,
-	CDataPack::New,
-	CDataPack::Free,
+	CellArray::New,
+	CellArray::Free,
+	FromPseudoAddress,
+	ToPseudoAddress,
 	&g_PluginSys,
 	&g_ShareSys,
 	&g_Extensions,

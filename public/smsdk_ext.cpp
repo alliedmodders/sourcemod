@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "smsdk_ext.h"
+#include "am-string.h"
 
 /**
  * @file smsdk_ext.cpp
@@ -128,7 +129,7 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 	{
 		if (error)
 		{
-			snprintf(error, maxlength, "Metamod attach failed");
+			ke::SafeStrcpy(error, maxlength, "Metamod attach failed");
 		}
 		return false;
 	}
@@ -376,7 +377,7 @@ bool SDKExtension::Unload(char *error, size_t maxlen)
 	{
 		if (error)
 		{
-			snprintf(error, maxlen, "This extension must be unloaded by SourceMod.");
+			ke::SafeStrcpy(error, maxlen, "This extension must be unloaded by SourceMod.");
 		}
 		return false;
 	}
@@ -390,7 +391,7 @@ bool SDKExtension::Pause(char *error, size_t maxlen)
 	{
 		if (error)
 		{
-			snprintf(error, maxlen, "This extension must be paused by SourceMod.");
+			ke::SafeStrcpy(error, maxlen, "This extension must be paused by SourceMod.");
 		}
 		return false;
 	}
@@ -406,7 +407,7 @@ bool SDKExtension::Unpause(char *error, size_t maxlen)
 	{
 		if (error)
 		{
-			snprintf(error, maxlen, "This extension must be unpaused by SourceMod.");
+			ke::SafeStrcpy(error, maxlen, "This extension must be unpaused by SourceMod.");
 		}
 		return false;
 	}

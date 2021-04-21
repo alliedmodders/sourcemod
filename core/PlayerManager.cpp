@@ -30,6 +30,7 @@
  */
 
 #include "PlayerManager.h"
+#include "sourcemod.h"
 #include "IAdminSystem.h"
 #include "ConCmdManager.h"
 #include "MenuStyle_Valve.h"
@@ -49,7 +50,6 @@
 #include <sourcemod_version.h>
 #include "smn_keyvalues.h"
 #include "command_args.h"
-#include <ITranslator.h>
 #include <bridge/include/IExtensionBridge.h>
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/ILogger.h>
@@ -64,7 +64,7 @@ const unsigned int *g_NumPlayersToAuth = NULL;
 int lifestate_offset = -1;
 List<ICommandTargetProcessor *> target_processors;
 
-ConVar sm_debug_connect("sm_debug_connect", "0", 0, "Log Debug information about potential connection issues.");
+ConVar sm_debug_connect("sm_debug_connect", "1", 0, "Log Debug information about potential connection issues.");
 
 SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, edict_t *, const char *, const char *, char *, int);
 SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, edict_t *, const char *);
@@ -90,12 +90,15 @@ SH_DECL_HOOK1_void(IServerGameDLL, SetServerHibernation, SH_NOATTRIB, 0, bool);
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
-#elif SOURCE_ENGINE == SE_DARKMESSIAH
-SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
 #else
-extern int __SourceHook_FHAddConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
-extern bool __SourceHook_FHRemoveConCommandDispatch(void *,bool,class fastdelegate::FastDelegate0<void>);
+SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
 #endif
+SH_DECL_HOOK2_void(IVEngineServer, ClientPrintf, SH_NOATTRIB, 0, edict_t *, const char *);
+
+static void PrintfBuffer_FrameAction(void *data)
+{
+	g_Players.OnPrintfFrameAction(static_cast<unsigned int>(reinterpret_cast<uintptr_t>(data)));
+}
 
 ConCommand *maxplayersCmd = NULL;
 
@@ -106,7 +109,7 @@ class KickPlayerTimer : public ITimedEvent
 public:
 	ResultType OnTimer(ITimer *pTimer, void *pData)
 	{
-		int userid = (int)pData;
+		int userid = (int)(intptr_t)pData;
 		int client = g_Players.GetClientOfUserId(userid);
 		if (client)
 		{
@@ -176,6 +179,7 @@ void PlayerManager::OnSourceModAllInitialized()
 #elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox.
 	SH_ADD_HOOK(IServerGameDLL, SetServerHibernation, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
 #endif
+	SH_ADD_HOOK(IVEngineServer, ClientPrintf, engine, SH_MEMBER(this, &PlayerManager::OnClientPrintf), false);
 
 	sharesys->AddInterface(NULL, this);
 
@@ -229,6 +233,7 @@ void PlayerManager::OnSourceModShutdown()
 #elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox.
 	SH_REMOVE_HOOK(IServerGameDLL, SetServerHibernation, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
 #endif
+	SH_REMOVE_HOOK(IVEngineServer, ClientPrintf, engine, SH_MEMBER(this, &PlayerManager::OnClientPrintf), false);
 
 	/* Release forwards */
 	forwardsys->ReleaseForward(m_clconnect);
@@ -276,7 +281,7 @@ ConfigResult PlayerManager::OnSourceModConfigChanged(const char *key,
 		} else if (strcasecmp(value, "off") == 0) {
 			m_QueryLang = false;
 		} else {
-			ke::SafeSprintf(error, maxlength, "Invalid value: must be \"on\" or \"off\"");
+			ke::SafeStrcpy(error, maxlength, "Invalid value: must be \"on\" or \"off\"");
 			return ConfigResult_Reject;
 		}
 		return ConfigResult_Accept;
@@ -287,7 +292,7 @@ ConfigResult PlayerManager::OnSourceModConfigChanged(const char *key,
 		} else if ( strcasecmp(value, "no") == 0) {
 			m_bAuthstringValidation = false;
 		} else {
-			ke::SafeSprintf(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
+			ke::SafeStrcpy(error, maxlength, "Invalid value: must be \"yes\" or \"no\"");
 			return ConfigResult_Reject;
 		}
 		return ConfigResult_Accept;
@@ -400,7 +405,7 @@ void PlayerManager::RunAuthChecks()
 		pPlayer = &m_Players[m_AuthQueue[i]];
 		pPlayer->UpdateAuthIds();
 		
-		authstr = pPlayer->m_AuthID.chars();
+		authstr = pPlayer->m_AuthID.c_str();
 
 		if (!pPlayer->IsAuthStringValidated())
 		{
@@ -704,20 +709,20 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 		{
 			pListener = (*iter);
-			pListener->OnClientAuthorized(client, steamId ? steamId : pPlayer->m_AuthID.chars());
+			pListener->OnClientAuthorized(client, steamId ? steamId : pPlayer->m_AuthID.c_str());
 		}
 		/* Finally, tell plugins */
 		if (m_clauth->GetFunctionCount())
 		{
 			m_clauth->PushCell(client);
 			/* For legacy reasons, people are expecting the Steam2 id here if using Steam auth */
-			m_clauth->PushString(steamId ? steamId : pPlayer->m_AuthID.chars());
+			m_clauth->PushString(steamId ? steamId : pPlayer->m_AuthID.c_str());
 			m_clauth->Execute(NULL);
 		}
 		pPlayer->Authorize_Post();
 	}
 #if SOURCE_ENGINE == SE_CSGO
-	else
+	else if(m_QueryLang)
 	{
 		// Not a bot
 		pPlayer->m_LanguageCookie = g_ConVarManager.QueryClientConVar(pEntity, "cl_language", NULL, 0);
@@ -847,6 +852,88 @@ void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
 	{
 		pListener = (*iter);
 		pListener->OnClientDisconnected(client);
+	}
+}
+
+void PlayerManager::OnClientPrintf(edict_t *pEdict, const char *szMsg)
+{
+	int client = IndexOfEdict(pEdict);
+
+	CPlayer &player = m_Players[client];
+	if (!player.IsConnected())
+		RETURN_META(MRES_IGNORED);
+
+	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(client));
+	if (pNetChan == NULL)
+		RETURN_META(MRES_IGNORED);
+
+	size_t nMsgLen = strlen(szMsg);
+#if SOURCE_ENGINE == SE_EPISODEONE || SOURCE_ENGINE == SE_DARKMESSIAH
+	static const int nNumBitsWritten = 0;
+#else
+	int nNumBitsWritten = pNetChan->GetNumBitsWritten(false); // SVC_Print uses unreliable netchan
+#endif
+
+	// if the msg is bigger than allowed then just let it fail
+	if (nMsgLen + 1 >= SVC_Print_BufferSize) // +1 for NETMSG_TYPE_BITS
+		RETURN_META(MRES_IGNORED);
+
+	// enqueue msgs if we'd overflow the SVC_Print buffer (+7 as ceil)
+	if (!player.m_PrintfBuffer.empty() || (nNumBitsWritten + NETMSG_TYPE_BITS + 7) / 8 + nMsgLen >= SVC_Print_BufferSize)
+	{
+		// Don't send any more messages for this player until the buffer is empty.
+		// Queue up a gameframe hook to empty the buffer (if we haven't already)
+		if (player.m_PrintfBuffer.empty())
+			g_SourceMod.AddFrameAction(PrintfBuffer_FrameAction, (void *)(uintptr_t)player.GetSerial());
+
+		player.m_PrintfBuffer.push_back(szMsg);
+
+		RETURN_META(MRES_SUPERCEDE);
+	}
+
+	RETURN_META(MRES_IGNORED);
+}
+
+void PlayerManager::OnPrintfFrameAction(unsigned int serial)
+{
+	int client = GetClientFromSerial(serial);
+	CPlayer &player = m_Players[client];
+	if (!player.IsConnected())
+	{
+		player.ClearNetchannelQueue();
+		return;
+	}
+
+	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(client));
+	if (pNetChan == NULL)
+	{
+		player.ClearNetchannelQueue();
+		return;
+	}
+
+	while (!player.m_PrintfBuffer.empty())
+	{
+#if SOURCE_ENGINE == SE_EPISODEONE || SOURCE_ENGINE == SE_DARKMESSIAH
+		static const int nNumBitsWritten = 0;
+#else
+		int nNumBitsWritten = pNetChan->GetNumBitsWritten(false); // SVC_Print uses unreliable netchan
+#endif
+
+		std::string &string = player.m_PrintfBuffer.front();
+
+		// stop if we'd overflow the SVC_Print buffer  (+7 as ceil)
+		if ((nNumBitsWritten + NETMSG_TYPE_BITS + 7) / 8 + string.length() >= SVC_Print_BufferSize)
+			break;
+
+		SH_CALL(engine, &IVEngineServer::ClientPrintf)(player.m_pEdict, string.c_str());
+
+		player.m_PrintfBuffer.pop_front();
+	}
+
+	if (!player.m_PrintfBuffer.empty())
+	{
+		// continue processing it on the next gameframe as buffer is not empty
+		g_SourceMod.AddFrameAction(PrintfBuffer_FrameAction, (void *)(uintptr_t)player.GetSerial());
 	}
 }
 
@@ -1069,14 +1156,18 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 		}
 		else if (args.ArgC() > 1 && strcmp(args.Arg(1), "credits") == 0)
 		{
- 			ClientConsolePrint(pEntity,
- 				"SourceMod would not be possible without:");
- 			ClientConsolePrint(pEntity,
+			ClientConsolePrint(pEntity,
+				"SourceMod would not be possible without:");
+			ClientConsolePrint(pEntity,
 				" David \"BAILOPAN\" Anderson, Matt \"pRED\" Woodrow");
- 			ClientConsolePrint(pEntity,
+			ClientConsolePrint(pEntity,
 				" Scott \"DS\" Ehlert, Fyren");
- 			ClientConsolePrint(pEntity,
+			ClientConsolePrint(pEntity,
 				" Nicholas \"psychonic\" Hastings, Asher \"asherkin\" Baker");
+			ClientConsolePrint(pEntity,
+				" Ruben \"Dr!fter\" Gonzalez, Josh \"KyleS\" Allard");
+			ClientConsolePrint(pEntity,
+				" Michael \"Headline\" Flaherty, Jannik \"Peace-Maker\" Hartung");
 			ClientConsolePrint(pEntity,
 				" Borja \"faluco\" Ferrer, Pavol \"PM OnoTo\" Marko");
 			ClientConsolePrint(pEntity,
@@ -1091,7 +1182,7 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 		ClientConsolePrint(pEntity,
 			"To see credits, type \"sm credits\"");
 		ClientConsolePrint(pEntity,
-			"Visit http://www.sourcemod.net/");
+			"Visit https://www.sourcemod.net/");
 		RETURN_META(MRES_SUPERCEDE);
 	}
 
@@ -1478,7 +1569,10 @@ void PlayerManager::InvalidatePlayer(CPlayer *pPlayer)
 		}
 	}
 	
-	m_UserIdLookUp[engine->GetPlayerUserId(pPlayer->m_pEdict)] = 0;
+	auto userid = engine->GetPlayerUserId(pPlayer->m_pEdict);
+	if (userid != -1)
+		m_UserIdLookUp[userid] = 0;
+
 	pPlayer->Disconnect();
 }
 
@@ -1939,31 +2033,13 @@ bool PlayerManager::HandleConVarQuery(QueryCvarCookie_t cookie, int client, EQue
 
 CPlayer::CPlayer()
 {
-	m_IsConnected = false;
-	m_IsInGame = false;
-	m_IsAuthorized = false;
-	m_pEdict = NULL;
-	m_Admin = INVALID_ADMIN_ID;
-	m_TempAdmin = false;
-	m_Info = NULL;
-	m_bAdminCheckSignalled = false;
-	m_UserId = -1;
-	m_bIsInKickQueue = false;
 	m_LastPassword.clear();
-	m_LangId = SOURCEMOD_LANGUAGE_ENGLISH;
-	m_bFakeClient = false;
-	m_bIsSourceTV = false;
-	m_bIsReplay = false;
 	m_Serial.value = -1;
-#if SOURCE_ENGINE == SE_CSGO
-	m_LanguageCookie = InvalidQueryCvarCookie;
-#endif
 }
 
 void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 {
 	m_IsConnected = true;
-	m_Name.assign(name);
 	m_Ip.assign(ip);
 	m_pEdict = pEntity;
 	m_iIndex = IndexOfEdict(pEntity);
@@ -1972,6 +2048,8 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	m_Serial.bits.index = m_iIndex;
 	m_Serial.bits.serial = g_PlayerSerialCount++;
 
+	SetName(name);
+
 	char ip2[24], *ptr;
 	ke::SafeStrcpy(ip2, sizeof(ip2), ip);
 	if ((ptr = strchr(ip2, ':')) != NULL)
@@ -1979,6 +2057,33 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 		*ptr = '\0';
 	}
 	m_IpNoPort.assign(ip2);
+
+#if SOURCE_ENGINE == SE_TF2      \
+	|| SOURCE_ENGINE == SE_CSS   \
+	|| SOURCE_ENGINE == SE_DODS  \
+	|| SOURCE_ENGINE == SE_HL2DM \
+	|| SOURCE_ENGINE == SE_BMS   \
+	|| SOURCE_ENGINE == SE_INSURGENCY \
+	|| SOURCE_ENGINE == SE_DOI
+	m_pIClient = engine->GetIServer()->GetClient(m_iIndex - 1);
+#else
+  #if SOURCE_ENGINE == SE_SDK2013
+	// Source SDK 2013 mods that ship on Steam can be using older engine binaries
+	static IVEngineServer *engine22 = (IVEngineServer *)(g_SMAPI->GetEngineFactory()("VEngineServer022", nullptr));
+	if (engine22)
+	{
+		m_pIClient = engine22->GetIServer()->GetClient(m_iIndex - 1);
+	}
+	else
+  #endif
+	{
+		INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex));
+		if (pNetChan)
+		{
+			m_pIClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
+		}
+	}
+#endif
 
 	UpdateAuthIds();
 }
@@ -2007,49 +2112,8 @@ void CPlayer::Connect()
 
 void CPlayer::UpdateAuthIds()
 {
-	if (m_IsAuthorized)
-	{
+	if (m_IsAuthorized || (!SetEngineString() && !SetCSteamID()))
 		return;
-	}
-	
-	// First cache engine networkid
-	const char *authstr = engine->GetPlayerNetworkIDString(m_pEdict);
-	if (!authstr)
-	{
-		// engine doesn't have the client's auth string just yet, we can't do anything
-		return;
-	}
-
-	if (m_AuthID.compare(authstr) == 0)
-	{
-		return;
-	}
-
-	m_AuthID = authstr;
-	
-	// Then, cache SteamId
-	if (IsFakeClient())
-	{
-		m_SteamId = k_steamIDNil;
-	}
-	else
-	{
-#if SOURCE_ENGINE < SE_ORANGEBOX
-		const char * pAuth = GetAuthString();
-		/* STEAM_0:1:123123 | STEAM_ID_LAN | STEAM_ID_PENDING */
-		if (pAuth && (strlen(pAuth) > 10) && pAuth[8] != '_')
-		{
-			m_SteamId = CSteamID(atoi(&pAuth[8]) | (atoi(&pAuth[10]) << 1),
-				k_unSteamUserDesktopInstance, k_EUniversePublic, k_EAccountTypeIndividual);
-		}
-#else
-		const CSteamID *steamId = engine->GetClientSteamID(m_pEdict);
-		if (steamId)
-		{
-			m_SteamId = (*steamId);
-		}
-#endif
-	}
 	
 	// Now cache Steam2/3 rendered ids
 	if (IsFakeClient())
@@ -2084,21 +2148,68 @@ void CPlayer::UpdateAuthIds()
 	}
 	
 	char szAuthBuffer[64];
-	snprintf(szAuthBuffer, sizeof(szAuthBuffer), "STEAM_%u:%u:%u", steam2universe, m_SteamId.GetAccountID() & 1, m_SteamId.GetAccountID() >> 1);
+	ke::SafeSprintf(szAuthBuffer, sizeof(szAuthBuffer), "STEAM_%u:%u:%u", steam2universe, m_SteamId.GetAccountID() & 1, m_SteamId.GetAccountID() >> 1);
 	
 	m_Steam2Id = szAuthBuffer;
 	
 	// TODO: make sure all hl2sdks' steamclientpublic.h have k_unSteamUserDesktopInstance.
 	if (m_SteamId.GetUnAccountInstance() == 1 /* k_unSteamUserDesktopInstance */)
 	{
-		snprintf(szAuthBuffer, sizeof(szAuthBuffer), "[U:%u:%u]", m_SteamId.GetEUniverse(), m_SteamId.GetAccountID());
+		ke::SafeSprintf(szAuthBuffer, sizeof(szAuthBuffer), "[U:%u:%u]", m_SteamId.GetEUniverse(), m_SteamId.GetAccountID());
 	}
 	else
 	{
-		snprintf(szAuthBuffer, sizeof(szAuthBuffer), "[U:%u:%u:%u]", m_SteamId.GetEUniverse(), m_SteamId.GetAccountID(), m_SteamId.GetUnAccountInstance());
+		ke::SafeSprintf(szAuthBuffer, sizeof(szAuthBuffer), "[U:%u:%u:%u]", m_SteamId.GetEUniverse(), m_SteamId.GetAccountID(), m_SteamId.GetUnAccountInstance());
 	}
 	
 	m_Steam3Id = szAuthBuffer;
+}
+
+bool CPlayer::SetEngineString()
+{
+	const char *authstr = engine->GetPlayerNetworkIDString(m_pEdict);
+	if (!authstr || m_AuthID.compare(authstr) == 0)
+		return false;
+
+	m_AuthID = authstr;
+	SetCSteamID();
+	return true;
+}
+
+bool CPlayer::SetCSteamID()
+{
+	if (IsFakeClient())
+	{
+		m_SteamId = k_steamIDNil;
+		return true; /* This is the default value. There's a bug-out branch in the caller function. */
+	}
+
+#if SOURCE_ENGINE < SE_ORANGEBOX
+	const char *pAuth = GetAuthString();
+	/* STEAM_0:1:123123 | STEAM_ID_LAN | STEAM_ID_PENDING */
+	if (pAuth && (strlen(pAuth) > 10) && pAuth[8] != '_')
+	{
+		CSteamID sid = CSteamID(atoi(&pAuth[8]) | (atoi(&pAuth[10]) << 1),
+			k_unSteamUserDesktopInstance, k_EUniversePublic, k_EAccountTypeIndividual);
+
+		if (m_SteamId != sid)
+		{
+			m_SteamId = sid;
+			return true;
+		}
+	}
+#else
+	const CSteamID *steamId = engine->GetClientSteamID(m_pEdict);
+	if (steamId)
+	{
+		if (m_SteamId != (*steamId))
+		{
+			m_SteamId = (*steamId);
+			return true;
+		}
+	}
+#endif
+	return false;
 }
 
 // Ensure a valid AuthString is set before calling.
@@ -2121,6 +2232,7 @@ void CPlayer::Disconnect()
 	m_Steam3Id = "";
 	m_pEdict = NULL;
 	m_Info = NULL;
+	m_pIClient = NULL;
 	m_bAdminCheckSignalled = false;
 	m_UserId = -1;
 	m_bIsInKickQueue = false;
@@ -2131,11 +2243,41 @@ void CPlayer::Disconnect()
 #if SOURCE_ENGINE == SE_CSGO
 	m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
+	ClearNetchannelQueue();
+}
+
+void CPlayer::ClearNetchannelQueue(void)
+{
+	while (!m_PrintfBuffer.empty())
+		m_PrintfBuffer.pop_front();
 }
 
 void CPlayer::SetName(const char *name)
 {
-	m_Name.assign(name);
+	// Player names from Steam can get truncated in the engine, leaving
+	// a partial, invalid UTF-8 char at the end. Strip it off.
+
+	char szNewName[MAX_PLAYER_NAME_LENGTH];
+	ke::SafeStrcpy(szNewName, sizeof(szNewName), name);
+
+	size_t i = 0;
+	while (i < sizeof(szNewName))
+	{
+		if (szNewName[i] == 0)
+			break;
+
+		unsigned int cCharBytes = _GetUTF8CharBytes(&szNewName[i]);
+		size_t newPos = i + cCharBytes;
+		if (newPos > (sizeof(szNewName) - 1))
+		{
+			szNewName[i] = 0;
+			break;
+		}
+
+		i = newPos;
+	}
+
+	m_Name.assign(szNewName);
 }
 
 const char *CPlayer::GetName()
@@ -2160,7 +2302,7 @@ const char *CPlayer::GetAuthString(bool validated)
 		return NULL;
 	}
 
-	return m_AuthID.chars();
+	return m_AuthID.c_str();
 }
 
 const CSteamID &CPlayer::GetSteamId(bool validated)
@@ -2181,7 +2323,7 @@ const char *CPlayer::GetSteam2Id(bool validated)
 		return NULL;
 	}
 
-	return m_Steam2Id.chars();
+	return m_Steam2Id.c_str();
 }
 
 const char *CPlayer::GetSteam3Id(bool validated)
@@ -2191,14 +2333,14 @@ const char *CPlayer::GetSteam3Id(bool validated)
 		return NULL;
 	}
 
-	return m_Steam3Id.chars();
+	return m_Steam3Id.c_str();
 }
 
 unsigned int CPlayer::GetSteamAccountID(bool validated)
 {
 	if (!IsFakeClient() && (!validated || IsAuthStringValidated()))
 	{
-		const CSteamID &id = GetSteamId();
+		const CSteamID &id = GetSteamId(validated);
 		if (id.IsValid())
 			return id.GetAccountID();
 	}
@@ -2325,7 +2467,7 @@ void CPlayer::Kick(const char *str)
 	}
 	else
 	{
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 		pClient->Disconnect(str);
 #else
 		pClient->Disconnect("%s", str);
@@ -2443,7 +2585,7 @@ void CPlayer::DoBasicAdminChecks()
 		if (!g_Players.CheckSetAdminName(client, this, id))
 		{
 			int userid = engine->GetPlayerUserId(m_pEdict);
-			g_Timers.CreateTimer(&s_KickPlayerTimer, 0.1f, (void *)userid, 0);
+			g_Timers.CreateTimer(&s_KickPlayerTimer, 0.1f, (void *)(intptr_t)userid, 0);
 		}
 		return;
 	}
@@ -2458,7 +2600,7 @@ void CPlayer::DoBasicAdminChecks()
 	}
 
 	/* Check steam id */
-	if ((id = adminsys->FindAdminByIdentity("steam", m_AuthID.chars())) != INVALID_ADMIN_ID)
+	if ((id = adminsys->FindAdminByIdentity("steam", m_AuthID.c_str())) != INVALID_ADMIN_ID)
 	{
 		if (g_Players.CheckSetAdmin(client, this, id))
 		{
@@ -2541,22 +2683,7 @@ int CPlayer::GetLifeState()
 
 IClient *CPlayer::GetIClient() const
 {
-#if SOURCE_ENGINE == SE_TF2      \
-	|| SOURCE_ENGINE == SE_CSS   \
-	|| SOURCE_ENGINE == SE_DODS  \
-	|| SOURCE_ENGINE == SE_HL2DM \
-	|| SOURCE_ENGINE == SE_BMS   \
-	|| SOURCE_ENGINE == SE_INSURGENCY
-	return engine->GetIServer()->GetClient(m_iIndex - 1);
-#else
-	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex));
-	if (pNetChan)
-	{
-		return static_cast<IClient *>(pNetChan->GetMsgHandler());
-	}
-
-	return nullptr;
-#endif
+	return m_pIClient;
 }
 
 unsigned int CPlayer::GetSerial()

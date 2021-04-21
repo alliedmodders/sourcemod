@@ -1,6 +1,6 @@
 "Games"
 {
-	/* GoldenEye: Source 4.2.4 */
+	/* GoldenEye: Source 5.0.1 */
 	"gesource"
 	{
 		"Offsets"
@@ -90,7 +90,7 @@
 			"CBaseTempEntity"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\x2A\x2A\x89\x41\x04\xC7\x2A\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x89\x41\x2A\x89"
+				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x89\x41\x04\xC7\x01\x2A\x2A\x2A\x2A\xA1"
 			}
 			"FindEntityByClassname"
 			{
@@ -101,7 +101,7 @@
 			"FireOutput"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x81\x2A\x2A\x2A\x2A\x2A\x53\x8B\xC1\x56\x57\x8B"
+				"windows"	"\x55\x8B\xEC\x81\xEC\x20\x01\x00\x00\x53\x8B\xC1"
 				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}

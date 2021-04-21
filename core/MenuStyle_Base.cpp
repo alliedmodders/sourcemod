@@ -628,49 +628,49 @@ Handle_t CBaseMenu::GetHandle()
 bool CBaseMenu::AppendItem(const char *info, const ItemDrawInfo &draw)
 {
 	if (m_Pagination == (unsigned)MENU_NO_PAGINATION
-		&& m_items.length() >= m_pStyle->GetMaxPageItems())
+		&& m_items.size() >= m_pStyle->GetMaxPageItems())
 	{
 		return false;
 	}
 
-	CItem item;
+	CItem item(m_items.size());
 
 	item.info = info;
 	if (draw.display)
-		item.display = new ke::AString(draw.display);
+		item.display = std::make_unique<std::string>(draw.display);
 	item.style = draw.style;
 
-	m_items.append(ke::Move(item));
+	m_items.push_back(std::move(item));
 	return true;
 }
 
 bool CBaseMenu::InsertItem(unsigned int position, const char *info, const ItemDrawInfo &draw)
 {
 	if (m_Pagination == (unsigned)MENU_NO_PAGINATION &&
-	    m_items.length() >= m_pStyle->GetMaxPageItems())
+	    m_items.size() >= m_pStyle->GetMaxPageItems())
 	{
 		return false;
 	}
 
-	if (position >= m_items.length())
+	if (position >= m_items.size())
 		return false;
 
-	CItem item;
+	CItem item(position);
 	item.info = info;
 	if (draw.display)
-		item.display = new ke::AString(draw.display);
+		item.display = std::make_unique<std::string>(draw.display);
 	item.style = draw.style;
 
-	m_items.insert(position, ke::Move(item));
+	m_items.emplace(m_items.begin() + position, std::move(item));
 	return true;
 }
 
 bool CBaseMenu::RemoveItem(unsigned int position)
 {
-	if (position >= m_items.length())
+	if (position >= m_items.size())
 		return false;
 
-	m_items.remove(position);
+	m_items.erase(m_items.begin() + position);
 	return true;
 }
 
@@ -679,23 +679,84 @@ void CBaseMenu::RemoveAllItems()
 	m_items.clear();
 }
 
-const char *CBaseMenu::GetItemInfo(unsigned int position, ItemDrawInfo *draw/* =NULL */)
+const char *CBaseMenu::GetItemInfo(unsigned int position, ItemDrawInfo *draw/* =NULL */, int client/* =0 */)
 {
-	if (position >= m_items.length())
+	if (position >= m_items.size())
 		return NULL;
+
+	if (client > 0 && position < m_RandomMaps[client].size())
+	{
+		position = m_RandomMaps[client][position];
+	}
 
 	if (draw)
 	{
-		draw->display = m_items[position].display->chars();
+		draw->display = m_items[position].display->c_str();
 		draw->style = m_items[position].style;
 	}
 
-	return m_items[position].info.chars();
+	return m_items[position].info.c_str();
+}
+
+void CBaseMenu::ShufflePerClient(int start, int stop)
+{
+	// limit map len to 255 items since it's using uint8
+	int length = MIN(GetItemCount(), 255);
+	if (stop >= 0)
+		length = MIN(length, stop);
+
+	for (int i = 1; i <= SM_MAXPLAYERS; i++)
+	{
+		// populate per-client map ...
+		m_RandomMaps[i].resize(length);
+		for (int j = 0; j < length; j++)
+			m_RandomMaps[i][j] = j;
+
+		// ... and random shuffle it
+		for (int j = length - 1; j > start; j--)
+		{
+			int x = rand() % (j - start + 1) + start;
+			uint8_t tmp = m_RandomMaps[i][x];
+			m_RandomMaps[i][x] = m_RandomMaps[i][j];
+			m_RandomMaps[i][j] = tmp;
+		}
+	}
+}
+
+void CBaseMenu::SetClientMapping(int client, int *array, int length)
+{
+	length = MIN(length, 255);
+	m_RandomMaps[client].resize(length);
+	for (int i = 0; i < length; i++)
+	{
+		m_RandomMaps[client][i] = array[i];
+	}
+}
+
+bool CBaseMenu::IsPerClientShuffled()
+{
+	for (int i = 1; i <= SM_MAXPLAYERS; i++)
+	{
+		if(m_RandomMaps[i].size() > 0)
+			return true;
+	}
+	return false;
+}
+
+unsigned int CBaseMenu::GetRealItemIndex(int client, unsigned int position)
+{
+	if (client > 0 && position < m_RandomMaps[client].size())
+	{
+		position = m_RandomMaps[client][position];
+		return m_items[position].index;
+	}
+
+	return position;
 }
 
 unsigned int CBaseMenu::GetItemCount()
 {
-	return m_items.length();
+	return m_items.size();
 }
 
 bool CBaseMenu::SetPagination(unsigned int itemsPerPage)
@@ -733,7 +794,7 @@ void CBaseMenu::SetDefaultTitle(const char *message)
 
 const char *CBaseMenu::GetDefaultTitle()
 {
-	return m_Title.chars();
+	return m_Title.c_str();
 }
 
 void CBaseMenu::Cancel()
@@ -825,5 +886,5 @@ IMenuHandler *CBaseMenu::GetHandler()
 
 unsigned int CBaseMenu::GetBaseMemUsage()
 {
-	return m_Title.length() + (m_items.length() * sizeof(CItem));
+	return m_Title.size() + (m_items.size() * sizeof(CItem));
 }

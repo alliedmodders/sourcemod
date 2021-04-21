@@ -2,6 +2,6 @@
 {
 	"Slot reserved"
 	{
-		"en"			"Dropped to due to slot reservation"
+		"en"			"Dropped due to slot reservation"
 	}
 }

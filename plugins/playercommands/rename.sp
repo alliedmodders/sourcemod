@@ -35,7 +35,7 @@ char g_NewName[MAXPLAYERS+1][MAX_NAME_LENGTH];
 
 void PerformRename(int client, int target)
 {
-	LogAction(client, target, "\"%L\" renamed \"%L\" to \"%s\")", client, target, g_NewName[target]);
+	LogAction(client, target, "\"%L\" renamed \"%L\" (to \"%s\")", client, target, g_NewName[target]);
 
 	SetClientName(target, g_NewName[target]);
 

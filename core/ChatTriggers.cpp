@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -29,6 +29,8 @@
  * Version: $Id$
  */
 
+#include <memory>
+
 #include <ITextParsers.h>
 #include "ChatTriggers.h"
 #include "sm_stringutil.h"
@@ -38,12 +40,13 @@
 #include "logic_bridge.h"
 #include "sourcemod.h"
 #include "provider.h"
+#include <bridge/include/ILogger.h>
 #include <amtl/am-string.h>
 
 ChatTriggers g_ChatTriggers;
 bool g_bSupressSilentFails = false;
 
-ChatTriggers::ChatTriggers() : m_bWillProcessInPost(false), 
+ChatTriggers::ChatTriggers() : m_bWillProcessInPost(false),
 	m_ReplyTo(SM_REPLY_CONSOLE), m_ArgSBackup(NULL)
 {
 	m_PubTrigger = "!";
@@ -61,20 +64,43 @@ ChatTriggers::~ChatTriggers()
 	m_ArgSBackup = NULL;
 }
 
-ConfigResult ChatTriggers::OnSourceModConfigChanged(const char *key, 
-													const char *value, 
+void ChatTriggers::SetChatTrigger(ChatTriggerType type, const char *value)
+{
+	std::unique_ptr<char[]> filtered(new char[strlen(value) + 1]);
+
+	const char *src = value;
+	char *dest = filtered.get();
+	char c;
+	while ((c = *src++) != '\0') {
+		if (c <= ' ' || c == '"' || c == '\'' || (c >= '0' && c <= '9') || c == ';' || (c >= 'A' && c <= 'Z') || c == '\\' || (c >= 'a' && c <= 'z') || c >= 0x7F) {
+			logger->LogError("Ignoring %s chat trigger character '%c', not in valid set: %s", (type == ChatTrigger_Private ? "silent" : "public"), c, "!#$%&()*+,-./:<=>?@[]^_`{|}~");
+			continue;
+		}
+		*dest++ = c;
+	}
+	*dest = '\0';
+
+	if (type == ChatTrigger_Private) {
+		m_PrivTrigger = filtered.get();
+	} else {
+		m_PubTrigger = filtered.get();
+	}
+}
+
+ConfigResult ChatTriggers::OnSourceModConfigChanged(const char *key,
+													const char *value,
 													ConfigSource source,
-													char *error, 
+													char *error,
 													size_t maxlength)
 {
 	if (strcmp(key, "PublicChatTrigger") == 0)
 	{
-		m_PubTrigger = value;
+		SetChatTrigger(ChatTrigger_Public, value);
 		return ConfigResult_Accept;
 	}
 	else if (strcmp(key, "SilentChatTrigger") == 0)
 	{
-		m_PrivTrigger = value;
+		SetChatTrigger(ChatTrigger_Private, value);
 		return ConfigResult_Accept;
 	}
 	else if (strcmp(key, "SilentFailSuppress") == 0)
@@ -111,26 +137,26 @@ void ChatTriggers::OnSourceModGameInitialized()
 	};
 
 	if (ConCommand *say = FindCommand("say")) {
-		hooks_.append(sCoreProviderImpl.AddCommandHook(say, pre_hook));
-		hooks_.append(sCoreProviderImpl.AddPostCommandHook(say, post_hook));
+		hooks_.push_back(sCoreProviderImpl.AddCommandHook(say, pre_hook));
+		hooks_.push_back(sCoreProviderImpl.AddPostCommandHook(say, post_hook));
 	}
 	if (ConCommand *say_team = FindCommand("say_team")) {
-		hooks_.append(sCoreProviderImpl.AddCommandHook(say_team, pre_hook));
-		hooks_.append(sCoreProviderImpl.AddPostCommandHook(say_team, post_hook));
+		hooks_.push_back(sCoreProviderImpl.AddCommandHook(say_team, pre_hook));
+		hooks_.push_back(sCoreProviderImpl.AddPostCommandHook(say_team, post_hook));
 	}
 
 #if SOURCE_ENGINE == SE_EPISODEONE
 	m_bIsINS = (strcmp(g_SourceMod.GetGameFolderName(), "insurgency") == 0);
 	if (m_bIsINS) {
 		if (ConCommand *say2 = FindCommand("say2")) {
-			hooks_.append(sCoreProviderImpl.AddCommandHook(say2, pre_hook));
-			hooks_.append(sCoreProviderImpl.AddPostCommandHook(say2, post_hook));
+			hooks_.push_back(sCoreProviderImpl.AddCommandHook(say2, pre_hook));
+			hooks_.push_back(sCoreProviderImpl.AddPostCommandHook(say2, post_hook));
 		}
 	}
 #elif SOURCE_ENGINE == SE_NUCLEARDAWN
 	if (ConCommand *say_squad = FindCommand("say_squad")) {
-		hooks_.append(sCoreProviderImpl.AddCommandHook(say_squad, pre_hook));
-		hooks_.append(sCoreProviderImpl.AddPostCommandHook(say_squad, post_hook));
+		hooks_.push_back(sCoreProviderImpl.AddCommandHook(say_squad, pre_hook));
+		hooks_.push_back(sCoreProviderImpl.AddPostCommandHook(say_squad, post_hook));
 	}
 #endif
 }
@@ -156,7 +182,7 @@ bool ChatTriggers::OnSayCommand_Pre(int client, const ICommandArgs *command)
 	if (!args)
 		return false;
 
-	/* Save these off for post hook as the command data returned from the engine in older engine versions 
+	/* Save these off for post hook as the command data returned from the engine in older engine versions
 	 * can be NULL, despite the data still being there and valid. */
 	m_Arg0Backup = command->Arg(0);
 	size_t len = strlen(args);
@@ -182,7 +208,7 @@ bool ChatTriggers::OnSayCommand_Pre(int client, const ICommandArgs *command)
 
 	if (
 #if SOURCE_ENGINE == SE_EPISODEONE
-		!m_bIsINS && 
+		!m_bIsINS &&
 #endif
 		client != 0 && args[0] == '"' && args[len-1] == '"')
 	{
@@ -250,17 +276,17 @@ bool ChatTriggers::OnSayCommand_Pre(int client, const ICommandArgs *command)
 	bool is_trigger = false;
 	bool is_silent = false;
 
-	/* Check for either trigger */
-	if (m_PubTrigger.length() && strncmp(m_ArgSBackup, m_PubTrigger.chars(), m_PubTrigger.length()) == 0)
-	{
-		is_trigger = true;
-		args = &m_ArgSBackup[m_PubTrigger.length()];
-	} 
-	else if (m_PrivTrigger.length() && strncmp(m_ArgSBackup, m_PrivTrigger.chars(), m_PrivTrigger.length()) == 0) 
-	{
+	// Prefer the silent trigger in case of clashes.
+	if (strchr(m_PrivTrigger.c_str(), m_ArgSBackup[0])) {
 		is_trigger = true;
 		is_silent = true;
-		args = &m_ArgSBackup[m_PrivTrigger.length()];
+	} else if (strchr(m_PubTrigger.c_str(), m_ArgSBackup[0])) {
+		is_trigger = true;
+	}
+
+	if (is_trigger) {
+		// Bump the args past the chat trigger - we only support single-character triggers now.
+		args = &m_ArgSBackup[1];
 	}
 
 	/**
@@ -318,8 +344,8 @@ bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args)
 	char cmd_buf[64];
 	size_t cmd_len = 0;
 	const char *inptr = args;
-	while (*inptr != '\0' 
-			&& !textparsers->IsWhitespace(inptr) 
+	while (*inptr != '\0'
+			&& !textparsers->IsWhitespace(inptr)
 			&& *inptr != '"'
 			&& cmd_len < sizeof(cmd_buf) - 1)
 	{
@@ -342,7 +368,7 @@ bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args)
 			return false;
 		}
 
-		/* Now, prepend.  Don't worry about the buffers.  This will 
+		/* Now, prepend.  Don't worry about the buffers.  This will
 		 * work because the sizes are limited from earlier.
 		 */
 		char new_buf[80];

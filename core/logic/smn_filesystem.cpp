@@ -321,7 +321,7 @@ static cell_t sm_OpenDirectory(IPluginContext *pContext, const cell_t *params)
 	{
 		size_t len = strlen(path);
 		char wildcardedPath[PLATFORM_MAX_PATH];
-		snprintf(wildcardedPath, sizeof(wildcardedPath), "%s%s*", path, (path[len-1] != '/' && path[len-1] != '\\') ? "/" : "");
+		ke::SafeSprintf(wildcardedPath, sizeof(wildcardedPath), "%s%s*", path, (path[len-1] != '/' && path[len-1] != '\\') ? "/" : "");
 		
 		char *pathID;
 		if ((err=pContext->LocalToStringNULL(params[3], &pathID)) != SP_ERROR_NONE)
@@ -1195,6 +1195,7 @@ REGISTER_NATIVES(filesystem)
 	{"File.WriteLine",			sm_WriteFileLine},
 	{"File.EndOfFile",			sm_IsEndOfFile},
 	{"File.Seek",				sm_FileSeek},
+	{"File.Flush",				sm_FlushFile},
 	{"File.Position.get",		sm_FilePosition},
 	{"File.ReadInt8",			File_ReadTyped<int8_t>},
 	{"File.ReadUint8",			File_ReadTyped<uint8_t>},

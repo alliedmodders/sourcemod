@@ -11,170 +11,170 @@
 
 "Games"
 {
-	"csgo"
+	"#default"
 	{
 		"Keys"
 		{
-			"GetWeaponPriceByteCheck"	"E9"
+			"PriceKey"		"in game price"
 		}
 		"Offsets"
 		{
-			//Offset of szClassName in CCSWeaponInfo 
+			// Offset of szClassName in CCSWeaponData, szDefaultName is @ 140 which returns the default weapon class for the loadoutslot ignoring the users inventory.
 			"WeaponName"
 			{
-				"windows"		"6"
-				"linux"			"6"
-				"mac"			"6"
+				"windows"		"4"
+				"linux"			"4"
+				"linux64"		"8"
+				"mac64"			"8"
 			}
-			//Econ update doesnt check this now but for what we use it hopefully its fine.
+			// In HandleCommand_Buy_Internal
+			// -*(_DWORD *)(v34 + 8) in ida 7 -v34[52]
 			"WeaponPrice"
 			{
-				"windows"		"2528"
-				"linux"			"2528"
-				"mac"			"2528"
+				"windows"		"208"
+				"linux"			"208"
+				"linux64"		"328"
+				"mac64"			"328"
 			}
 			//Offset into CheckRestartRound
 			"CTTeamScoreOffset"
 			{
 				"windows"	"98"
-				"linux"		"109"
-				"mac"		"150"
+				"linux"		"115"
+				"linux64"	"143"
+				"mac64"		"148"
 			}
 			//Offset into CheckRestartRound
 			"TTeamScoreOffset"
 			{
-				"windows"	"122"
-				"linux"		"142"
-				"mac"		"185"
-			}
-			"ClanTagOffset"
-			{
-				"windows"	"12"
-				"linux"		"29"
-				"mac"		"22"
+				"windows"	"125"
+				"linux"		"148"
+				"linux64"	"174"
+				"mac64"		"177"
 			}
 			//Offset into HandleCommand_Buy_Internal
 			"CCSPlayerInventoryOffset"
 			{
-				"windows"	"55"
-				"linux"		"70"
-				"mac"		"109"
+				"windows"	"60"
+				"linux"		"97"
+				"linux64"	"107"
+				"mac64"		"73"
 			}
 			"GetItemInLoadout"
 			{
 				"windows"	"8"
 				"linux"		"9"
-				"mac"		"9"
+				"linux64"	"9"
+				"mac64"		"9"
 			}
-			"GetWeaponPriceFunc"
+			"GetItemDefintionByName" //_ZN15CEconItemSchema23GetItemDefinitionByNameEPKc
 			{
-				"windows"	"98"
+				"windows"		"42"
+				"linux"			"41"
+				"linux64"		"41"
+				"mac64"			"41"
 			}
-			//This is GetWeaponPriceFunc offset -1 (only used by GDC)
-			"GetWeaponPriceFuncGDC"
+			// Search for "%s (ID %llu) at backpack slot %d" (CCSPlayerInventory::DumpInventoryToConsole(bool))
+			// Jump to the vtable 2 functions above calls CCStrike15ItemDefinition::GetLoadoutSlot(CCStrike15ItemDefinition *this, int)
+			// This is an offset into CCStrike15ItemDefinition that contains the loadoutslot IGNORING the team param (the second param in the function)
+			"LoadoutSlotOffset"
 			{
-				"windows"	"97"
+				"windows"	"588"
+				"linux"		"588"
+				"linux64"	"908"
+				"mac64"		"908"
+			}
+			// Offset into CEconItemSchema * to a hashmap of all itemdefs
+			// Offset can be found in... GetItemDefinitionMutable (easy to get offset on windows should be the same)
+			"ItemDefHashOffset"
+			{
+				"windows"	"172"
+				"linux"		"172"
+				"linux64"	"232"
+				"mac64"		"232"
 			}
 		}
 		"Signatures"
 		{
+			"GetItemSchema"
+			{
+				"library"	"server"
+				"windows"	"\xA1\x2A\x2A\x2A\x2A\x85\xC0\x75\x2A\xA1\x2A\x2A\x2A\x2A\x56\x68\x2A\x2A\x00\x00\x8B"
+				"linux"		"\x55\x89\xE5\x83\xEC\x08\xE8\x2A\x2A\x2A\x2A\xC9\x83\xC0\x04\xC3"
+				"linux64"	"\x55\x48\x89\xE5\xE8\x2A\x2A\x2A\x2A\x5D\x48\x83\xC0\x08\xC3"
+				"mac64"		"\x55\x48\x89\xE5\x41\x56\x53\x48\x8B\x1D\x2A\x2A\x2A\x2A\x48\x85\xDB\x75"
+			}
 			"RoundRespawn"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x56\x8B\xF1\x8B\x0D\x2A\x2A\x2A\x2A\x57\x8B\x01\xFF\x50\x2A\x83"
-				"linux"		"@_ZN9CCSPlayer12RoundRespawnEv"
-				"mac"		"@_ZN9CCSPlayer12RoundRespawnEv"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x0C\x53\x56\x57\x8B\xF9\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01"
+				"linux"		"\x55\x89\xE5\x57\x56\x53\x83\xEC\x4C\xA1\x2A\x2A\x2A\x2A\x8B\x5D\x08\x89\x04\x24"
+				"linux64"	"\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x55\x41\x54\x53\x48\x89\xFB\x48\x83\xEC\x18\x4C\x8B\x25\x85\x17\xB4\x00"
+				"mac64"		"\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x54\x53\x48\x83\xEC\x10\x49\x89\xFC\x4C\x8D\x3D\xD7\xB9\x90\x00"
 			}
 			"SwitchTeam"
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\xEC\x10\x53\x56\x8B\x75\x08\x57\x8B\xF9\x85\xF6\x0F\x88\x2A\x2A\x2A\x2A\x3B\x35"
-				"linux"		"@_ZN9CCSPlayer10SwitchTeamEi"
-				"mac"		"@_ZN9CCSPlayer10SwitchTeamEi"
+				"linux"		"\x55\x89\xE5\x83\xEC\x68\x89\x75\xF8\x8B\x75\x0C\x89\x5D\xF4\x8B\x5D\x08\x89\x7D\xFC\x89\x34\x24\xE8\x2A\x2A\x2A\x2A\x85\xC0"
+				"linux64"	"\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x55\x41\x54\x49\x89\xFC\x89\xF7\x53\x89\xF3"
+				"mac64"		"\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x55\x41\x54\x53\x48\x83\xEC\x18\x89\xF3\x49\x89\xFC"
 			}
 			"HandleCommand_Buy_Internal"//Wildcard first 6 bytes for getting address for weapon price.
 			{
 				"library"		"server"
-				"windows"		"\x2A\x2A\x2A\x2A\x2A\xF8\x81\xEC\x7C\x01\x00\x00\x53\x56\x57"
-				"linux"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKcib"
-				"mac"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKcib"
+				"windows"		"\x2A\x2A\x2A\x2A\x2A\x2A\x83\xEC\x2C\x53\x56\x57\x6A\x01"
+				"linux"			"\x2A\x2A\x2A\x2A\x2A\x2A\x0F\xB6\x55\x14\x89\x75\xF8\x8B\x75\x08"
+				"linux64"		"\x2A\x2A\x2A\x2A\x2A\x2A\x41\x56\x41\x89\xCE\x41\x55\x49\x89\xD5\x41\x54\x41\x89\xF4"
+				"mac64"			"\x2A\x2A\x2A\x2A\x2A\x2A\x41\x56\x41\x55\x41\x54\x53\x48\x83\xEC\x58\x41\x89\xCF\x49\x89\xD4"
 			}
-			"CSWeaponDrop"//Wildcard first 6 bytes for CS:S DM
+			"CSWeaponDropBB" //Revert back to using CSWeaponDrop(weapon, bool, bool)
 			{
 				"library"		"server"
-				"windows"		"\x2A\x2A\x2A\x2A\x2A\x2A\x81\xEC\x2A\x2A\x2A\x2A\x53\x8B\x5D\x08\x56\x57\x6A\x00\x68"
-				"linux"			"@_ZN9CCSPlayer12CSWeaponDropEP17CBaseCombatWeapon6Vectorb"
-				"mac"			"@_ZN9CCSPlayer12CSWeaponDropEP17CBaseCombatWeapon6Vectorb"
+				"windows"		"\x2A\x2A\x2A\x2A\x2A\x2A\x83\xE4\xF8\x83\xC4\x04\x55\x8B\x6B\x04\x89\x6C\x24\x04\x8B\xEC\x83\xEC\x34\x56"
+				"linux"			"\x2A\x2A\x2A\x2A\x2A\x2A\xEC\x70\x8B\x5D\x08\x0F\xB6\x75\x10"
+				"linux64"		"\x2A\x2A\x2A\x2A\x2A\x2A\x41\x89\xCE\x41\x55\x41\x89\xD5\x41\x54\x49\x89\xF4"
+				"mac64"			"\x2A\x2A\x2A\x2A\x2A\x2A\x41\x56\x41\x54\x53\x48\x83\xEC\x30\x41\x89\xCC\x41\x89\xD7"
 			}
 			"TerminateRound"
 			{
-				"library"		"server"	
-				"windows"		"\x55\x8B\xEC\x83\xE4\xF8\x83\xEC\x64\x53\x8B\xD9\xF3\x0F\x2A\x2A\x2A\x2A\x56\x57\x89\x2A\x2A\x2A\x83\xBB\x2A\x2A\x2A\x2A\x00"
-				"linux"			"@_ZN12CCSGameRules14TerminateRoundEfi"
-				"mac"			"@_ZN12CCSGameRules14TerminateRoundEfi"
-			}
-			"GetTranslatedWeaponAlias"
-			{
 				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x83\xEC\x08\x53\x33\xC0\x89\x4D\xF8\x56\x57\x89\x45\xFC\x33\xDB\x8B\xB3\x2A\x2A\x2A\x2A\x3B\xF1\x74\x2A\x8B\xF9\x90\x0F\xB6\x06\x0F\xB6\x17\x3B\xC2\x75\x2A\x85\xC0\x75\x2A\x8B\x45\xFC\x5F\x5E\x5B\x8B\x04\xC5\x2A\x2A\x2A\x2A\x8B\xE5\x5D\xC3\x85\xD2\x74\x2A\x8D\x48\xBF\x83\xF9\x19\x77\x2A\x83\xC0\x20\x8D\x4A\xBF\x83\xF9\x19\x77\x2A\x83\xC2\x20\x3B\xC2\x75\x2A\x0F\xB6\x46\x01\x83\xC6\x02\x0F\xB6\x57\x01\x83\xC7\x02\x3B\xC2\x75\x2A\x85\xC0\x75\x2A\x8B\x45\xFC\x5F\x5E\x5B\x8B\x04\xC5\x2A\x2A\x2A\x2A\x8B\xE5\x5D\xC3\x85\xD2\x74\x2A\x8D\x48\xBF\x83\xF9\x19\x77\x2A\x83\xC0\x20\x8D\x4A\xBF\x83\xF9\x19\x77\x2A\x83\xC2\x20\x3B\xC2\x0F\x84\x2A\x2A\x2A\x2A\x2B\xC2\x85\xC0\x74\x2A\xFF\x45\xFC\x83\xC3\x08\x8B\x4D\xF8\x81\xFB\xC0\x00\x00\x00\x0F\x82\x2A\x2A\x2A\x2A\x5F\x5E\x8B\xC1\x5B\x8B\xE5\x5D\xC3"
-				"linux"			"@_Z24GetTranslatedWeaponAliasPKc"
-				"mac"			"@_Z24GetTranslatedWeaponAliasPKc"
-			}
-			"GetWeaponInfo"
-			{
-				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x83\xEC\x08\x33\xC0\xEB\x2A\x8D\x9B\x00\x00\x00\x00\x39\x0C\xC5\x2A\x2A\x2A\x2A\x74\x2A\x40\x83\xF8\x2A\x72\x2A\x33\xC0"
-				"linux"			"@_Z13GetWeaponInfo10CSWeaponID"
-				"mac"			"@_Z13GetWeaponInfo10CSWeaponID"
+				"windows"		"\x55\x8B\xEC\x83\xE4\xF8\x83\xEC\x2A\x53\x8B\xD9\xF3\x0F\x2A\x2A\x2A\x2A\x56\x57\x89\x2A\x2A\x2A\x83\xBB"
+				"linux"			"\x55\x89\xE5\x57\x56\x53\x81\xEC\xBC\x00\x00\x00\x8B\x7D\x08\x8B\x87\xBC\x0B\x00\x00"
+				//"linux64"		"\x55\x48\x89\xE5\x41\x57\x41\x56\x49\x89\xFE\x41\x55\x41\x54\x53\x48\x81\xEC\x98\x00\x00\x00\x89\xB5\x68\xFF\xFF\xFF"
+				"mac64"			"\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x55\x41\x54\x53\x48\x81\xEC\x08\x01\x00\x00\x41\x89\xF6"
 			}
 			//In CS:GO this is actually CCSGameRules::CheckRestartRound(void) but to keep same gamedata as cs:s.
 			"CheckWinLimit"
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\xE4\xF8\x83\xEC\x2A\x53\x56\x57\x8B\xF9\x8B\x0D\x2A\x2A\x2A\x2A\x81\xF9"
-				"linux"		"@_ZN12CCSGameRules17CheckRestartRoundEv"
-				"mac"		"@_ZN12CCSGameRules17CheckRestartRoundEv"
-			}
-			"AliasToWeaponID"
-			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x57\x8B\xF9\x33\xC0"
-				"linux"		"@_Z15AliasToWeaponIDPKc"
-				"mac"		"@_Z15AliasToWeaponIDPKc"
-			}
-			"WeaponIDToAlias"
-			{
-				"library"	"server"
-				"windows"	"\x33\xC0\x39\x0C\xC5\x2A\x2A\x2A\x2A\x74\x2A\x40\x83\xF8\x3E\x72\x2A\x33\xC0\xC3\x6A\x5F"
-				"linux"		"@_Z15WeaponIDToAliasi"
-				"mac"		"@_Z15WeaponIDToAliasi"
-			}
-			"SetClanTag"
-			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\x55\x08\x85\xD2\x74\x28\x8D\x81\x2A\x2A\x2A\x2A\x56\x8D\x70\x0F\x3B\xC6\x73\x16\x2B\xD0\x8D"
-				"linux"		"@_ZN9CCSPlayer10SetClanTagEPKc"
-				"mac"		"@_ZN9CCSPlayer10SetClanTagEPKc"
-			}
-			//In windows this is CCSPlayer::GetWeaponPrice NOT CCSWeaponInfo::GetWeaponPrice
-			"GetWeaponPrice"
-			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\xD1\x8B\x4D\x08\x83\xF9\x2A\x75\x2A\x83\xBA\x2A\x2A\x2A\x2A\x64\xB8\xE8\x2A\x2A\x2A\x7C"
-				"linux"		"@_ZNK13CCSWeaponInfo14GetWeaponPriceEPK13CEconItemViewif"
-				"mac"		"@_ZNK13CCSWeaponInfo14GetWeaponPriceEPK13CEconItemViewif"
+				"linux"		"\x55\x89\xE5\x56\x53\x83\xEC\x70\xA1\x2A\x2A\x2A\x2A\x8B\x35\x2A\x2A\x2A\x2A\x8B"
+				"linux64"	"\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x55\x41\x54\x53\x48\x89\xFB\x48\x83\xEC\x58\x64\x48\x8B\x04\x25\x28\x00\x00\x00\x48\x89\x45\xC8\x31\xC0\x4C\x8B\x2D\x46\xD3\xBB\x00"
+				"mac64"		"\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x55\x41\x54\x53\x48\x83\xEC\x58\x49\x89\xFD\x48\x8B\x1D\x85\x76\x60\x00"
 			}
 			"SetModelFromClass"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x56\x57\x8B\xF9\xC7\x45\xFC\x2A\x2A\x2A\x2A\x8B\x87"
-				"linux"		"@_ZN9CCSPlayer17SetModelFromClassEv"
-				"mac"		"@_ZN9CCSPlayer17SetModelFromClassEv"
+				"windows"	"\x53\x56\x57\x8B\xF9\x8B\x87\x14\x03\x00\x00"
+				"linux"		"\x55\x89\xE5\x83\xEC\x28\x89\x5D\xF4\x8B\x5D\x08\x89\x75\xF8\x89\x7D\xFC\x89\x1C\x24\xE8\x2A\x2A\x2A\x2A\x83\xF8\x02"
+				"linux64"	"\x55\x48\x89\xE5\x41\x55\x41\x54\x53\x48\x89\xFB\x48\x83\xEC\x18\xE8\x2A\x2A\x2A\x2A\x83\xF8\x02"
+				"mac64"		"\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x54\x53\x49\x89\xFC\xE8\x2A\x2A\x2A\x2A\x83\xF8\x02"
+			}
+			//GetCCSWeaponData Found in HandleCommand_Buy_Internal
+			//Uses an econitemview
+			"GetCCSWeaponData"
+			{
+				"library"	"server"
+				"windows"	"\x85\xC9\x75\x2A\x33\xC0\xC3\xE8\x2A\x2A\x2A\x2A\x8B"
+				"linux"		"\x55\x89\xE5\x83\xEC\x18\x8B\x45\x08\x85\xC0\x74\x2A\x89\x04\x24"
+				"linux64"	"\x48\x85\xFF\x74\x2A\x55\x48\x89\xE5\xE8\x2A\x2A\x2A\x2A\x5D\x48\x89\xC7"
+				"mac64"		"\x55\x48\x89\xE5\x41\x56\x53\x31\xC0\x48\x85\xFF\x74\x2A\xE8\x2A\x2A\x2A\x2A\x48"
 			}
 		}
 	}
 	
-	"csgo"
+	"#default"
 	{
 		"Keys"
 		{
@@ -187,12 +187,13 @@
 			{
 				"windows"	"4"
 				"linux"		"4"
-				"mac"		"4"
+				"linux64"	"4"
+				"mac64"		"4"
 			}
 		}
 	}
 	
-	"csgo"
+	"#default"
 	{
 		"Keys"
 		{
@@ -203,14 +204,15 @@
 		{
 			"CScore"
 			{
-				"windows"	"75"
-				"linux"		"75"
-				"mac"		"75"
+				"windows"	"51"
+				"linux"		"51"
+				"linux64"	"51"
+				"mac64"		"51"
 			}
 		}
 	}
 	
-	"csgo"
+	"#default"
 	{
 		"Keys"
 		{
@@ -221,9 +223,83 @@
 		{
 			"MVPs"
 			{
-				"windows"	"15"
-				"linux"		"15"
-				"mac"		"15"
+				"windows"	"11"
+				"linux"		"11"
+				"linux64"	"11"
+				"mac64"		"11"
+			}
+		}
+	}
+	
+	// Used for SetClanTag and GetClanTag
+	// to find the ClanTag offset start with the string "ClanTagChanged". Inside the function there is 2 KeyValues::GetString, one for "tag", and one for "name"
+	// The respective function underneath each are SetClanTag and SetClanName.
+	// To get the offset of the base (m_flGroundAccelLinearFracLastTime) unqiue string is "------- accelspeed = %f, flGoalSpeed = %f, flStoredAccel = %f\n"
+	// Inside that function right above the debug message is an if with a call to CBaseEntity::NetworkStateChanged and a member set with the same offset.
+	// Do math. 
+	// Note: Second offset can be skipped by simply dumping the netprops instead on each os although the distance will probably be the same on all.
+	
+	"#default"
+	{
+		"Keys"
+		{
+			"ClanTagBase"		"m_flGroundAccelLinearFracLastTime"
+		}
+		
+		"Offsets"
+		{
+			"ClanTagSize"
+			{
+				"windows"	"16"
+				"linux"		"16"
+				"linux64"	"16"
+				"mac64"		"16"
+			}
+			"ClanTag"
+			{
+				"windows"	"140"
+				"linux"		"140"
+				"linux64"	"140"
+				"mac64"		"140"
+			}
+		}
+	}
+	
+	"#default"
+	{
+		"Addresses"
+		{
+			// Offset from NET_SendPacket sig to MTU
+			"MaxMTU"
+			{
+				"windows"
+				{
+					"signature"	"NET_SendPacket"
+					"offset"	"6"
+				}
+				"linux"
+				{
+					"signature"	"NET_SendPacket"
+					"offset"	"5"
+				}
+				"linux64"
+				{
+					"signature"	"NET_SendPacket"
+					"offset"	"4"
+				}
+			}
+		}
+		"Signatures"
+		{
+			// This isn't the start of the function, but closer to where we want to patch, including the exact bytes we will replace
+			"NET_SendPacket"
+			{
+				"library"	"engine"
+				// "[NET] Cannot send %d-byte packet to %s.  MTU is %u.  %02x %02x %02x %02x %02x\n"
+				"windows"	"\x89\x4C\x24\x14\x81\xFF\xB0\x04\x00\x00\x7E"
+				// _Z14NET_SendPacketP11INetChanneliRK10ns_addressPKhiP8bf_writebj
+				"linux"		"\x8B\x7D\x10\x81\xFE\xB0\x04\x00\x00\x0F"
+				"linux64"	"\x31\xC0\x81\xF9\xB0\x04\x00\x00\x0F"
 			}
 		}
 	}

@@ -502,7 +502,11 @@ static cell_t CloneArray(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
 	}
 
-	CellArray *array = oldArray->clone();
+	ICellArray *array = oldArray->clone();
+	if (!array)
+	{
+		return pContext->ThrowNativeError("Failed to clone array. Out of memory.");
+	}
 
 	Handle_t hndl = handlesys->CreateHandle(htCellArray, array, pContext->GetIdentity(), g_pCoreIdent, NULL);
 	if (!hndl)
@@ -576,6 +580,21 @@ static cell_t FindValueInArray(IPluginContext *pContext, const cell_t *params)
 	return -1;
 }
 
+static cell_t GetArrayBlockSize(IPluginContext *pContext, const cell_t *params)
+{
+	CellArray *array;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = handlesys->ReadHandle(params[1], htCellArray, &sec, (void **)&array))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
+	}
+
+	return array->blocksize();
+}
+
 REGISTER_NATIVES(cellArrayNatives)
 {
 	{"ClearArray",					ClearArray},
@@ -597,6 +616,7 @@ REGISTER_NATIVES(cellArrayNatives)
 	{"CloneArray",					CloneArray},
 	{"FindStringInArray",			FindStringInArray},
 	{"FindValueInArray",			FindValueInArray},
+	{"GetArrayBlockSize",			GetArrayBlockSize},
 
 	// Transitional syntax support.
 	{"ArrayList.ArrayList",			CreateArray},
@@ -618,6 +638,7 @@ REGISTER_NATIVES(cellArrayNatives)
 	{"ArrayList.Clone",				CloneArray},
 	{"ArrayList.FindString",		FindStringInArray},
 	{"ArrayList.FindValue",			FindValueInArray},
+	{"ArrayList.BlockSize.get",		GetArrayBlockSize},
 
 	{NULL,							NULL},
 };

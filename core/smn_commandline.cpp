@@ -64,7 +64,7 @@ static cell_t sm_GetCommandLineParam(IPluginContext *pCtx, const cell_t *params)
 	char *param = NULL;
 	char *defValue = NULL;
 	pCtx->LocalToString(params[1], &param);
-	pCtx->LocalToString(params[4], &param);
+	pCtx->LocalToString(params[4], &defValue);
 
 	const char *value = pCmdLine->ParmValue(param, defValue);
 

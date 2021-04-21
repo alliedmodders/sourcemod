@@ -77,6 +77,10 @@ struct topmenu_object_t
 	{
 		return strcmp(name, topmenu->name) == 0;
 	}
+	static inline uint32_t hash(const detail::CharsAndLength &key)
+	{
+		return key.hash();
+	}
 };
 
 struct topmenu_category_t

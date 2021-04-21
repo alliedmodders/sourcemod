@@ -13,7 +13,7 @@
 {
 	"game.csgo.txt"
 	{
-		"game"		"csgo"
+		"engine"	"csgo"
 	}
 
 	"game.css.txt"

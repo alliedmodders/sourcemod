@@ -34,7 +34,11 @@
 #include "forwards.h"
 #include "util_cstrike.h"
 #include <server_class.h>
-#include <iplayerinfo.h>
+#include <sm_argbuffer.h>
+
+#if SOURCE_ENGINE == SE_CSGO
+#include "itemdef-hash.h"
+#endif
 
 int g_iPriceOffset = -1;
 
@@ -42,7 +46,7 @@ int g_iPriceOffset = -1;
 	void *addr; \
 	if (!g_pGameConf->GetMemSig(name, &addr) || !addr) \
 	{ \
-		return pContext->ThrowNativeError("Failed to locate function"); \
+		return pContext->ThrowNativeError("Failed to lookup %s signature.", name); \
 	} \
 	code; \
 	g_RegNatives.Register(pWrapper);
@@ -50,7 +54,7 @@ int g_iPriceOffset = -1;
 #define GET_MEMSIG(name) \
 	if (!g_pGameConf->GetMemSig(name, &addr) || !addr) \
 	{ \
-		return pContext->ThrowNativeError("Failed to locate function"); \
+		return pContext->ThrowNativeError("Failed to lookup %s signature.", name); \
 	}
 
 inline CBaseEntity *GetCBaseEntity(int num, bool isplayer)
@@ -175,12 +179,8 @@ static cell_t CS_SwitchTeam(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
 	}
 
-	unsigned char vstk[sizeof(CBaseEntity *) + sizeof(int)];
-	unsigned char *vptr = vstk;
+	ArgBuffer<CBaseEntity*, int> vstk(pEntity, params[2]);
 
-	*(CBaseEntity **)vptr = pEntity;
-	vptr += sizeof(CBaseEntity *);
-	*(int *)vptr = params[2];
 	pWrapper->Execute(vstk, NULL);
 #else
 	if (g_pSDKTools == NULL)
@@ -226,33 +226,15 @@ static cell_t CS_DropWeapon(IPluginContext *pContext, const cell_t *params)
 	static ICallWrapper *pWrapper = NULL;
 	if (!pWrapper)
 	{
-#if SOURCE_ENGINE == SE_CSGO
-		REGISTER_NATIVE_ADDR("CSWeaponDrop",
-			PassInfo pass[3]; \
-			pass[0].flags = PASSFLAG_BYVAL; \
-			pass[0].type = PassType_Basic; \
-			pass[0].size = sizeof(CBaseEntity *); \
-			pass[1].flags = PASSFLAG_BYVAL; \
-			pass[1].type = PassType_Basic; \
-			pass[1].size = sizeof(Vector); \
-			pass[2].flags = PASSFLAG_BYVAL; \
-			pass[2].type = PassType_Basic; \
-			pass[2].size = sizeof(bool); \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 3))
-#else
-		REGISTER_NATIVE_ADDR("CSWeaponDrop",
-			PassInfo pass[3]; \
+		REGISTER_NATIVE_ADDR(WEAPONDROP_GAMEDATA_NAME,
+			PassInfo pass[2]; \
 			pass[0].flags = PASSFLAG_BYVAL; \
 			pass[0].type  = PassType_Basic; \
 			pass[0].size  = sizeof(CBaseEntity *); \
 			pass[1].flags = PASSFLAG_BYVAL; \
 			pass[1].type  = PassType_Basic; \
 			pass[1].size  = sizeof(bool); \
-			pass[2].flags = PASSFLAG_BYVAL; \
-			pass[2].type  = PassType_Basic; \
-			pass[2].size  = sizeof(bool); \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 3))
-#endif
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 2))
 	}
 
 	CBaseEntity *pEntity;
@@ -285,30 +267,9 @@ static cell_t CS_DropWeapon(IPluginContext *pContext, const cell_t *params)
 	if (params[4] == 1 && g_pCSWeaponDropDetoured)
 		g_pIgnoreCSWeaponDropDetour = true;
 
-#if SOURCE_ENGINE == SE_CSGO
-	unsigned char vstk[sizeof(CBaseEntity *) * 2 + sizeof(bool) + sizeof(Vector)];
-#else
-	unsigned char vstk[sizeof(CBaseEntity *) * 2 + sizeof(bool) * 2];
-#endif
-	unsigned char *vptr = vstk;
+	ArgBuffer<CBaseEntity*, CBaseEntity*, bool> vstk(pEntity, pWeapon, (params[3]) ? true : false);
 
-	// <psychonic> first one is always false. second is true to toss, false to just drop
-	*(CBaseEntity **)vptr = pEntity;
-	vptr += sizeof(CBaseEntity *);
-	*(CBaseEntity **)vptr = pWeapon;
-	vptr += sizeof(CBaseEntity *);
-#if SOURCE_ENGINE == SE_CSGO
-	*(Vector *)vptr = vec3_origin;
-	vptr += sizeof(Vector);
-	*(bool *)vptr = false;
-#else
-	*(bool *)vptr = false;
-	vptr += sizeof(bool);
-	*(bool *)vptr = (params[3]) ? true : false;
-#endif
-
- 	pWrapper->Execute(vstk, NULL);
-
+	pWrapper->Execute(vstk, NULL);
 	return 1;
 }
 
@@ -336,7 +297,7 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 	reason++;
 #endif
 	
-#if SOURCE_ENGINE != SE_CSGO || !defined(WIN32)
+#if SOURCE_ENGINE == SE_CSS
 	static ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
@@ -344,7 +305,7 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 		REGISTER_NATIVE_ADDR("TerminateRound",
 			PassInfo pass[2]; \
 			pass[0].flags = PASSFLAG_BYVAL; \
-			pass[0].type = PassType_Basic; \
+			pass[0].type = PassType_Float; \
 			pass[0].size = sizeof(float); \
 			pass[1].flags = PASSFLAG_BYVAL; \
 			pass[1].type = PassType_Basic; \
@@ -355,17 +316,38 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 	if (params[3] == 1 && g_pTerminateRoundDetoured)
 		g_pIgnoreTerminateDetour = true;
 
-	unsigned char vstk[sizeof(void *) + sizeof(float)+ sizeof(int)];
-	unsigned char *vptr = vstk;
-
-	*(void **)vptr = gamerules;
-	vptr += sizeof(void *);
-	*(float *)vptr = sp_ctof(params[1]);
-	vptr += sizeof(float);
-	*(int*)vptr = reason;
+	ArgBuffer<void*, float, int> vstk(gamerules, sp_ctof(params[1]), reason);
 
 	pWrapper->Execute(vstk, NULL);
-#else
+#elif SOURCE_ENGINE == SE_CSGO && !defined(WIN32)
+	static ICallWrapper *pWrapper = NULL;
+
+	if (!pWrapper)
+	{
+		REGISTER_NATIVE_ADDR("TerminateRound",
+			PassInfo pass[4]; \
+			pass[0].flags = PASSFLAG_BYVAL; \
+			pass[0].type = PassType_Float; \
+			pass[0].size = sizeof(float); \
+			pass[1].flags = PASSFLAG_BYVAL; \
+			pass[1].type = PassType_Basic; \
+			pass[1].size = sizeof(int); \
+			pass[2].flags = PASSFLAG_BYVAL; \
+			pass[2].type = PassType_Basic; \
+			pass[2].size = sizeof(int); \
+			pass[3].flags = PASSFLAG_BYVAL; \
+			pass[3].type = PassType_Basic; \
+			pass[3].size = sizeof(int); \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 4))
+	}
+
+	if (params[3] == 1 && g_pTerminateRoundDetoured)
+		g_pIgnoreTerminateDetour = true;
+
+	ArgBuffer<void*, float, int, int, int> vstk(gamerules, sp_ctof(params[1]), reason, 0, 0);
+
+	pWrapper->Execute(vstk, NULL);
+#else // CSGO Win32
 	static void *addr = NULL;
 
 	if(!addr)
@@ -380,6 +362,8 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 	
 	__asm
 	{
+		push 0
+		push 0
 		push reason
 		movss xmm1, delay
 		mov ecx, gamerules
@@ -392,6 +376,10 @@ static cell_t CS_TerminateRound(IPluginContext *pContext, const cell_t *params)
 
 static cell_t CS_WeaponIDToAlias(IPluginContext *pContext, const cell_t *params)
 {
+#if SOURCE_ENGINE == SE_CSGO
+	if(g_mapClassToDefIdx.elements() == 0)
+		return pContext->ThrowNativeError("Failed to create weapon hashmap");
+#endif
 	if (!IsValidWeaponID(params[1]))
 		return pContext->ThrowNativeError("Invalid WeaponID passed for this game");
 
@@ -423,33 +411,29 @@ static cell_t CS_GetTranslatedWeaponAlias(IPluginContext *pContext, const cell_t
 	return 1;
 }
 
+#if SOURCE_ENGINE != SE_CSGO
 static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 {
+	CBaseEntity *pEntity;
+	if (!(pEntity = GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
 
 	if (!IsValidWeaponID(params[2]))
 		return pContext->ThrowNativeError("Invalid WeaponID passed for this game");
 
-	int id = GetRealWeaponID(params[2]);
+	int id = params[2];
 
 	//Hard code return values for weapons that dont call GetWeaponPrice and always use default value.
-#if SOURCE_ENGINE == SE_CSGO
-
-	if (id == WEAPON_C4 || id == WEAPON_KNIFE || id == WEAPON_KNIFE_GG)
-		return 0;
-#else
  	if (id == WEAPON_C4 || id == WEAPON_KNIFE || id == WEAPON_SHIELD)
 		return 0;
 	else if (id == WEAPON_KEVLAR)
 		return 650;
 	else if (id == WEAPON_ASSAULTSUIT)
 		return 1000;
-#endif
 	else if (id == WEAPON_NIGHTVISION)
 		return 1250;
-#if SOURCE_ENGINE == SE_CSGO
-	else if (id == WEAPON_DEFUSER)
-		return 400;
-#endif
 
 	void *info = GetWeaponInfo(id);
 		
@@ -458,154 +442,6 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Failed to get weaponinfo");
 	}
 
-	CBaseEntity *pEntity;
-	if (!(pEntity = GetCBaseEntity(params[1], true)))
-	{
-		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
-	}
-#if SOURCE_ENGINE == SE_CSGO
-	static ICallWrapper *pWrapper = NULL;
-
-#if defined(WIN32)
-	if(!pWrapper)
-	{
-		void *pGetWeaponPrice = GetWeaponPriceFunction();
-		if(!pGetWeaponPrice)
-		{
-			return pContext->ThrowNativeError("Failed to locate function");
-		}
-
-		PassInfo pass[2];
-		PassInfo ret;
-		pass[0].flags = PASSFLAG_BYVAL;
-		pass[0].type = PassType_Basic;
-		pass[0].size = sizeof(CEconItemView *);
-		pass[1].flags = PASSFLAG_BYVAL;
-		pass[1].type = PassType_Basic;
-		pass[1].size = sizeof(int);
-		ret.flags = PASSFLAG_BYVAL;
-		ret.type = PassType_Basic;
-		ret.size = sizeof(int);
-		pWrapper = g_pBinTools->CreateCall(pGetWeaponPrice, CallConv_ThisCall, &ret, pass, 2);
-	}
-#else
-	if (!pWrapper)
-	{
-		REGISTER_NATIVE_ADDR("GetWeaponPrice",
-		PassInfo pass[3]; \
-		PassInfo ret; \
-		pass[0].flags = PASSFLAG_BYVAL; \
-		pass[0].type = PassType_Basic; \
-		pass[0].size = sizeof(CEconItemView *); \
-		pass[1].flags = PASSFLAG_BYVAL; \
-		pass[1].type = PassType_Basic; \
-		pass[1].size = sizeof(int); \
-		pass[2].flags = PASSFLAG_BYVAL; \
-		pass[2].type = PassType_Float; \
-		pass[2].size = sizeof(float); \
-		ret.flags = PASSFLAG_BYVAL; \
-		ret.type = PassType_Basic; \
-		ret.size = sizeof(int); \
-		pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, &ret, pass, 3))
-	}
-#endif
-	// Get a CEconItemView for the m4
-	// Found in CCSPlayer::HandleCommand_Buy_Internal
-	// Linux a1 - CCSPlayer *pEntity, v5 - Player Team, a3 - ItemLoadoutSlot -1 use default loadoutslot:
-	// v4 = *(int (__cdecl **)(_DWORD, _DWORD, _DWORD))(*(_DWORD *)(a1 + 9492) + 36); // offset 9
-	// v6 = v4(a1 + 9492, v5, a3);
-	// Windows v5 - CCSPlayer *pEntity a4 -  ItemLoadoutSlot -1 use default loadoutslot:
-	// v8 = (*(int (__stdcall **)(_DWORD, int))(*(_DWORD *)(v5 + 9472) + 32))(*(_DWORD *)(v5 + 760), a4); // offset 8
-	// The function is CCSPlayerInventory::GetItemInLoadout(int, int)
-	// We can pass NULL view to the GetAttribute to use default loadoutslot.
-	// We only really care about m4a1/m4a4 as price differs between them
-	// thisPtrOffset = 9472/9492
-
-	static ICallWrapper *pGetView = NULL;
-	static int thisPtrOffset = -1;
-	CEconItemView *view = NULL;
-
-	if(!pGetView)
-	{
-		int offset = -1;
-		int byteOffset = -1;
-		void *pHandleCommandBuy = NULL;
-		if (!g_pGameConf->GetOffset("GetItemInLoadout", &offset) || offset == -1)
-		{
-			smutils->LogError(myself, "Failed to get GetItemInLoadout offset. Reverting to NULL ItemView");
-		}
-		else if (!g_pGameConf->GetOffset("CCSPlayerInventoryOffset", &byteOffset) || byteOffset == -1)
-		{
-			smutils->LogError(myself, "Failed to get CCSPlayerInventoryOffset offset. Reverting to NULL ItemView");
-		}
-		else if (!g_pGameConf->GetMemSig("HandleCommand_Buy_Internal", &pHandleCommandBuy) || !pHandleCommandBuy)
-		{
-			smutils->LogError(myself, "Failed to get HandleCommand_Buy_Internal function. Reverting to NULL ItemView");
-		}
-		else
-		{
-			thisPtrOffset = *(int *)((intptr_t)pHandleCommandBuy + byteOffset);
-
-			PassInfo pass[2];
-			PassInfo ret;
-			pass[0].flags = PASSFLAG_BYVAL;
-			pass[0].type  = PassType_Basic;
-			pass[0].size  = sizeof(int);
-			pass[1].flags = PASSFLAG_BYVAL;
-			pass[1].type  = PassType_Basic;
-			pass[1].size  = sizeof(int);
-
-			ret.flags = PASSFLAG_BYVAL;
-			ret.type = PassType_Basic;
-			ret.size = sizeof(void *);
-
-			pGetView = g_pBinTools->CreateVCall(offset, 0, 0, &ret, pass, 2);
-			g_RegNatives.Register(pGetView);
-		}
-	}
-
-	IPlayerInfo *playerinfo = playerhelpers->GetGamePlayer(params[1])->GetPlayerInfo();
-	if(pGetView && thisPtrOffset != -1 && playerinfo)
-	{
-		//If the gun isnt an M4 we ignore this as M4 is the only one that differs in price based on Loadout item.
-		int iLoadoutSlot = -1;
-		if(id == WEAPON_M4)
-		{
-			iLoadoutSlot = 15;
-		}
-
-		unsigned char vstk_view[sizeof(void *) + sizeof(int) * 2];
-		unsigned char *vptr_view = vstk_view;
-
-		*(void **)vptr_view = (void *)((intptr_t)pEntity + thisPtrOffset);
-		vptr_view += sizeof(void *);
-		*(int *)vptr_view = playerinfo->GetTeamIndex();
-		vptr_view += sizeof(int);
-		*(int *)vptr_view = iLoadoutSlot;
-
-		pGetView->Execute(vstk_view, &view);
-	}
-
-#if defined(WIN32)
-	unsigned char vstk[sizeof(void *) * 2 + sizeof(int)];
-#else
-	unsigned char vstk[sizeof(void *) * 2 + sizeof(int) + sizeof(float)];
-#endif
-	unsigned char *vptr = vstk;
-
-	*(void **)vptr = info;
-	vptr += sizeof(void *);
-	*(CEconItemView **)vptr = view;
-	vptr += sizeof(CEconItemView *);
-	*(int *)vptr = 0;
-#if !defined(WIN32)
-	vptr += sizeof(int);
-	*(float *)vptr = 1.0;
-#endif
-
-	int price = 0;
- 	pWrapper->Execute(vstk, &price);
-#else
 	if (g_iPriceOffset == -1)
 	{
 		if (!g_pGameConf->GetOffset("WeaponPrice", &g_iPriceOffset))
@@ -616,7 +452,6 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 	}
 
 	int price = *(int *)((intptr_t)info + g_iPriceOffset);
-#endif
 
 	if (params[3] || weaponNameOffset == -1)
 		return price;
@@ -625,17 +460,11 @@ static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 
 	return CallPriceForward(params[1], weapon_name, price);
 }
-
-static cell_t CS_GetClientClanTag(IPluginContext *pContext, const cell_t *params)
+#else
+static cell_t CS_GetWeaponPrice(IPluginContext *pContext, const cell_t *params)
 {
-	static void *addr;
-	if (!addr)
-	{
-		if (!g_pGameConf->GetMemSig("SetClanTag", &addr) || !addr)
-		{
-			return pContext->ThrowNativeError("Failed to locate function");
-		}
-	}
+	if (g_mapClassToDefIdx.elements() == 0)
+		return pContext->ThrowNativeError("Failed to create weapon hashmap");
 
 	CBaseEntity *pEntity;
 	if (!(pEntity = GetCBaseEntity(params[1], true)))
@@ -643,84 +472,31 @@ static cell_t CS_GetClientClanTag(IPluginContext *pContext, const cell_t *params
 		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
 	}
 
-	static int tagOffsetOffset = -1;
-	static int tagOffset;
+	if (!IsValidWeaponID(params[2]))
+		return pContext->ThrowNativeError("Invalid WeaponID passed for this game");
 
-	if (tagOffsetOffset == -1)
-	{
-		if (!g_pGameConf->GetOffset("ClanTagOffset", &tagOffsetOffset))
-		{
-			tagOffsetOffset = -1;
-			return pContext->ThrowNativeError("Unable to find ClanTagOffset gamedata");
-		}
+	WeaponIDMap::Result res = g_mapWeaponIDToDefIdx.find((SMCSWeapon)params[2]);
 
-		tagOffset = *(int *)((intptr_t)addr + tagOffsetOffset);
-	}
+	int price = res->value.m_iPrice;
 
-	size_t len;
+	if (params[3] || weaponNameOffset == -1)
+		return price;
 
-	const char *src = (char *)((intptr_t)pEntity + tagOffset);
-	pContext->StringToLocalUTF8(params[2], params[3], src, &len);
-
-	return len;
+	return CallPriceForward(params[1], res->value.m_szClassname, price);
 }
-
-static cell_t CS_SetClientClanTag(IPluginContext *pContext, const cell_t *params)
-{
-	static ICallWrapper *pWrapper = NULL;
-
-	if (!pWrapper)
-	{
-		REGISTER_NATIVE_ADDR("SetClanTag",
-			PassInfo pass[2]; \
-			pass[0].flags = PASSFLAG_BYVAL; \
-			pass[0].type  = PassType_Basic; \
-			pass[0].size  = sizeof(CBaseEntity *); \
-			pass[1].flags = PASSFLAG_BYVAL; \
-			pass[1].type  = PassType_Basic; \
-			pass[1].size  = sizeof(char *); \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 2))
-	}
-
-	CBaseEntity *pEntity;
-	if (!(pEntity = GetCBaseEntity(params[1], true)))
-	{
-		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
-	}
-
-	char *szNewTag;
-	pContext->LocalToString(params[2], &szNewTag);
-
-	unsigned char vstk[sizeof(CBaseEntity *) + sizeof(char *)];
-	unsigned char *vptr = vstk;
-
-	*(CBaseEntity **)vptr = pEntity;
-	vptr += sizeof(CBaseEntity *);
-	*(char **)vptr = szNewTag;
-
-	pWrapper->Execute(vstk, NULL);
-
-	return 1;
-}
+#endif
 
 static cell_t CS_AliasToWeaponID(IPluginContext *pContext, const cell_t *params)
 {
+#if SOURCE_ENGINE == SE_CSGO
+	if (g_mapClassToDefIdx.elements() == 0)
+		return pContext->ThrowNativeError("Failed to create weapon hashmap");
+#endif
 	char *weapon;
 
 	pContext->LocalToString(params[1], &weapon);
 
-#if SOURCE_ENGINE == SE_CSGO
-	if (strstr(weapon, "usp_silencer") != NULL)
-	{
-		return SMCSWeapon_HKP2000;
-	}
-	else if(strstr(weapon, "cz75a") != NULL)
-	{
-		return SMCSWeapon_P250;
-	}
-#endif
-
-	int id = GetFakeWeaponID(AliasToWeaponID(weapon));
+	int id = AliasToWeaponID(weapon);
 
 	if (!IsValidWeaponID(id))
 		return SMCSWeapon_NONE;
@@ -953,6 +729,130 @@ static inline cell_t SetPlayerVar(IPluginContext *pContext, const cell_t *params
 	return 0;
 }
 
+static inline cell_t GetPlayerStringVar(IPluginContext *pContext, const cell_t *params, const char *varName)
+{
+	CBaseEntity *pPlayer = GetCBaseEntity(params[1], true);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	char *pVar = GetPlayerVarAddressOrError<char>(varName, pContext, pPlayer);
+	if (pVar)
+	{
+		size_t len;
+		pContext->StringToLocalUTF8(params[2], params[3], pVar, &len);
+		return len;
+	}
+
+	return 0;
+}
+
+static inline cell_t SetPlayerStringVar(IPluginContext *pContext, const cell_t *params, const char *varName)
+{
+	CBaseEntity *pPlayer = GetCBaseEntity(params[1], true);
+	if (!pPlayer)
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	char szSizeName[128];
+	g_pSM->Format(szSizeName, sizeof(szSizeName), "%sSize", varName);
+
+	int maxlen = 0;
+	if(!g_pGameConf->GetOffset(szSizeName, &maxlen))
+	{
+		return pContext->ThrowNativeError("Failed to locate %s offset in gamedata", szSizeName);
+	}
+
+	char *pVar = GetPlayerVarAddressOrError<char>(varName, pContext, pPlayer);
+
+	if (pVar)
+	{
+		char *newValue;
+		pContext->LocalToString(params[2], &newValue);
+		Q_strncpy(pVar, newValue, maxlen);
+	}
+
+	return 1;
+}
+
+static cell_t CS_GetClientClanTag(IPluginContext *pContext, const cell_t *params)
+{
+#if SOURCE_ENGINE == SE_CSGO
+	return GetPlayerStringVar(pContext, params, "ClanTag");
+#else
+	static void *addr;
+	if (!addr)
+	{
+		if (!g_pGameConf->GetMemSig("SetClanTag", &addr) || !addr)
+		{
+			return pContext->ThrowNativeError("Failed to locate function");
+		}
+	}
+
+	CBaseEntity *pEntity;
+	if (!(pEntity = GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	static int tagOffsetOffset = -1;
+	static int tagOffset;
+
+	if (tagOffsetOffset == -1)
+	{
+		if (!g_pGameConf->GetOffset("ClanTagOffset", &tagOffsetOffset))
+		{
+			tagOffsetOffset = -1;
+			return pContext->ThrowNativeError("Unable to find ClanTagOffset gamedata");
+		}
+
+		tagOffset = *(int *)((intptr_t)addr + tagOffsetOffset);
+	}
+
+	size_t len;
+
+	const char *src = (char *)((intptr_t)pEntity + tagOffset);
+	pContext->StringToLocalUTF8(params[2], params[3], src, &len);
+
+	return len;
+#endif
+}
+
+static cell_t CS_SetClientClanTag(IPluginContext *pContext, const cell_t *params)
+{
+#if SOURCE_ENGINE == SE_CSGO
+	return SetPlayerStringVar(pContext, params, "ClanTag");
+#else
+	static ICallWrapper *pWrapper = NULL;
+
+	if (!pWrapper)
+	{
+		REGISTER_NATIVE_ADDR("SetClanTag",
+			PassInfo pass[1]; \
+			pass[0].flags = PASSFLAG_BYVAL; \
+			pass[0].type = PassType_Basic; \
+			pass[0].size = sizeof(char *); \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 1))
+	}
+
+	CBaseEntity *pEntity;
+	if (!(pEntity = GetCBaseEntity(params[1], true)))
+	{
+		return pContext->ThrowNativeError("Client index %d is not valid", params[1]);
+	}
+
+	char *szNewTag;
+	pContext->LocalToString(params[2], &szNewTag);
+
+	ArgBuffer<CBaseEntity*, char*> vstk(pEntity, szNewTag);
+
+	pWrapper->Execute(vstk, NULL);
+	return 1;
+#endif
+}
+
 static cell_t CS_SetMVPCount(IPluginContext *pContext, const cell_t *params)
 {
 	return SetPlayerVar<int>(pContext, params, "MVPs");
@@ -1018,6 +918,35 @@ static cell_t CS_UpdateClientModel(IPluginContext *pContext, const cell_t *param
 
 	return 1;
 }
+
+static cell_t CS_ItemDefIndexToID(IPluginContext *pContext, const cell_t *params)
+{
+#if SOURCE_ENGINE == SE_CSGO
+	ItemIndexMap::Result res = g_mapDefIdxToClass.find((uint16_t)params[1]);
+
+	if (!res.found())
+		return  pContext->ThrowNativeError("Invalid item definition passed.");
+
+	return res->value.m_iWeaponID;
+#else
+	return pContext->ThrowNativeError("CS_ItemDefIndexToID is not supported on this game");
+#endif
+}
+
+static cell_t CS_WeaponIDToItemDefIndex(IPluginContext *pContext, const cell_t *params)
+{
+#if SOURCE_ENGINE == SE_CSGO
+	WeaponIDMap::Result res = g_mapWeaponIDToDefIdx.find((SMCSWeapon)params[1]);
+
+	if (!res.found())
+		return  pContext->ThrowNativeError("Invalid weapon id passed.");
+
+	return res->value.m_iDefIdx;
+#else
+	return pContext->ThrowNativeError("CS_WeaponIDToItemDefIndex is not supported on this game");
+#endif
+}
+
 sp_nativeinfo_t g_CSNatives[] = 
 {
 	{"CS_RespawnPlayer",			CS_RespawnPlayer}, 
@@ -1040,6 +969,8 @@ sp_nativeinfo_t g_CSNatives[] =
 	{"CS_SetClientAssists",			CS_SetClientAssists},
 	{"CS_UpdateClientModel",		CS_UpdateClientModel},
 	{"CS_IsValidWeaponID",			CS_IsValidWeaponID},
+	{"CS_ItemDefIndexToID",			CS_ItemDefIndexToID},
+	{"CS_WeaponIDToItemDefIndex",	CS_WeaponIDToItemDefIndex},
 	{NULL,							NULL}
 };
 

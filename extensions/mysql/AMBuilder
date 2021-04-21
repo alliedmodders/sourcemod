@@ -2,43 +2,48 @@
 import os
 
 if SM.mysql_root:
-  binary = SM.ExtLibrary(builder, 'dbi.mysql.ext')
-  binary.compiler.cxxincludes += [
-    os.path.join(SM.mysql_root, 'include'),
-    os.path.join(SM.mms_root, 'core', 'sourcehook')
-  ]
-  if binary.compiler.vendor == 'gcc' or binary.compiler.vendor == 'clang':
-    binary.compiler.cxxflags += ['-fno-rtti']
-  elif binary.compiler.vendor == 'msvc':
-    binary.compiler.cxxflags += ['/GR-']
-
-  if builder.target_platform == 'linux' or builder.target_platform == 'mac':
-    binary.compiler.postlink += [
-      os.path.join(SM.mysql_root, 'lib', 'libmysqlclient_r.a'),
-      '-lz',
-      '-lpthread',
-      '-lm',
+  for cxx in builder.targets:
+    arch = cxx.target.arch
+    binary = SM.ExtLibrary(builder, cxx, 'dbi.mysql.ext')
+    binary.compiler.cxxincludes += [
+      os.path.join(SM.mysql_root[arch], 'include'),
+      os.path.join(SM.mms_root, 'core', 'sourcehook')
     ]
-  if builder.target_platform == 'linux':
-    binary.compiler.postlink += ['-lrt']
-  elif builder.target_platform == 'windows':
-    binary.compiler.postlink += [
-      os.path.join(SM.mysql_root, 'lib', 'opt', 'mysqlclient.lib'),
-      os.path.join(SM.mysql_root, 'lib', 'opt', 'zlib.lib'),
-      'wsock32.lib'
+    if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
+      binary.compiler.cxxflags += ['-fno-rtti']
+    elif binary.compiler.family == 'msvc':
+      binary.compiler.cxxflags += ['/GR-']
+
+    if binary.compiler.target.platform == 'linux' or binary.compiler.target.platform == 'mac':
+      binary.compiler.postlink += [
+        os.path.join(SM.mysql_root[arch], 'lib', 'libmysqlclient_r.a'),
+        '-lz',
+        '-lpthread',
+        '-lm',
+      ]
+    if binary.compiler.target.platform == 'linux':
+      binary.compiler.postlink += ['-lrt']
+    elif binary.compiler.target.platform == 'windows':
+      binary.compiler.defines += ['WIN32_LEAN_AND_MEAN']
+      binary.compiler.postlink += [
+        os.path.join(SM.mysql_root[arch], 'lib', 'mysqlclient.lib'),
+        'wsock32.lib'
+      ]
+
+    binary.sources += [
+      '../../public/smsdk_ext.cpp',
+      'mysql/MyBasicResults.cpp',
+      'mysql/MyBoundResults.cpp',
+      'mysql/MyDatabase.cpp',
+      'mysql/MyDriver.cpp',
+      'mysql/MyStatement.cpp',
+      'extension.cpp'
     ]
+  
+    if binary.compiler.family == 'msvc' and binary.compiler.version >= 1900:
+      binary.sources += [ 'msvc15hack.c' ]
+      binary.compiler.linkflags += ['legacy_stdio_definitions.lib', 'legacy_stdio_wide_specifiers.lib']
+      binary.compiler.defines += ['HAVE_STRUCT_TIMESPEC']
 
-  if binary.compiler.vendor == 'msvc' and binary.compiler.version >= 1900:
-    binary.compiler.linkflags += ['legacy_stdio_definitions.lib', 'legacy_stdio_wide_specifiers.lib']
-
-  binary.sources += [
-    '../../public/smsdk_ext.cpp',
-    'mysql/MyBasicResults.cpp',
-    'mysql/MyBoundResults.cpp',
-    'mysql/MyDatabase.cpp',
-    'mysql/MyDriver.cpp',
-    'mysql/MyStatement.cpp',
-    'extension.cpp'
-  ]
-  SM.extensions += [builder.Add(binary)]
+    SM.extensions += [builder.Add(binary)]
 

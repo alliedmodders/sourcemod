@@ -8,7 +8,7 @@
 * This program is free software; you can redistribute it and/or modify it under
 * the terms of the GNU General Public License, version 3.0, as published by the
 * Free Software Foundation.
-* 
+*
 * This program is distributed in the hope that it will be useful, but WITHOUT
 * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
 * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -34,6 +34,58 @@
 
 ISourcePawnEngine *CDetourManager::spengine = NULL;
 IGameConfig *CDetourManager::gameconf = NULL;
+
+// Push 64-bit value onto the stack using two instructions.
+//
+// Pushing 0xF00DF00DF00DF00D:
+// push 0xF00DF00D
+// mov [rsp+4], 0xF00DF00D
+static inline void X64_Push_Imm64(JitWriter *jit, jit_int64_t val)
+{
+	jit->write_ubyte(IA32_PUSH_IMM32);
+	jit->write_int32(jit_int32_t(val));
+	if ((val >> 32) != 0)
+		IA32_Mov_ESP_Disp8_Imm32(jit, 4, (val >> 32));
+}
+
+// Jump to absolute 64-bit address using multiple instructions.
+//
+// Jumping to address 0xF00DF00DF00DF00D:
+// push 0xF00DF00D
+// mov [rsp+4], 0xF00DF00D
+// ret
+static inline void X64_Jump_Abs(JitWriter *jit, void *dest)
+{
+	X64_Push_Imm64(jit, jit_int64_t(dest));
+	IA32_Return(jit);
+}
+
+static inline void RelativeJump32(JitWriter *jit, void *target)
+{
+	jitoffs_t call = IA32_Jump_Imm32(jit, 0);
+	IA32_Write_Jump32_Abs(jit, call, target);
+}
+
+#if defined(_WIN64) || defined(__x86_64__)
+static inline bool IsShortJump(JitWriter *jit, void *target)
+{
+	int64_t diff = int64_t(target) - (int64_t(jit->outbase) + jit->get_outputpos() + OP_JMP_SIZE);
+	int32_t upperBits = (diff >> 32);
+	return upperBits == 0 || upperBits == -1;
+}
+#endif
+
+static inline void AbsJump(JitWriter *jit, void *target)
+{
+#if defined(_WIN64) || defined(__x86_64__)
+	if (IsShortJump(jit, target))
+		RelativeJump32(jit, target);
+	else
+		X64_Jump_Abs(jit, target);
+#else
+	RelativeJump32(jit, target);
+#endif
+}
 
 void CDetourManager::Init(ISourcePawnEngine *spengine, IGameConfig *gameconf)
 {
@@ -130,35 +182,37 @@ bool CDetour::IsEnabled()
 
 bool CDetour::CreateDetour()
 {
-	if (signame && !gameconf->GetMemSig(signame, &detour_address))
+	if (signame)
 	{
-		g_pSM->LogError(myself, "Could not locate %s - Disabling detour", signame);
-		return false;
+		if (!gameconf->GetMemSig(signame, &detour_address))
+		{
+			g_pSM->LogError(myself, "Signature for %s not found in gamedata", signame);
+			return false;
+		}
+
+		if (!detour_address)
+		{
+			g_pSM->LogError(myself, "Sigscan for %s failed", signame);
+			return false;
+		}
 	}
-	else if(!detour_address)
+	else if (!detour_address)
 	{
-		g_pSM->LogError(myself, "Invalid detour address passed - Disabling detour to prevent crashes");
+		g_pSM->LogError(myself, "Invalid function address passed for detour");
 		return false;
 	}
 
-	if (!detour_address)
-	{
-		g_pSM->LogError(myself, "Sigscan for %s failed - Disabling detour to prevent crashes", signame);
-		return false;
-	}
-
-	detour_restore.bytes = copy_bytes((unsigned char *)detour_address, NULL, OP_JMP_SIZE+1);
-
-	/* First, save restore bits */
-	for (size_t i=0; i<detour_restore.bytes; i++)
-	{
-		detour_restore.patch[i] = ((unsigned char *)detour_address)[i];
-	}
+#if defined(_WIN64) || defined(__x86_64__)
+	int shortBytes = copy_bytes((unsigned char *)detour_address, NULL, OP_JMP_SIZE);
+	detour_restore.bytes = copy_bytes((unsigned char *)detour_address, NULL, X64_ABS_SIZE);
+#else
+	detour_restore.bytes = copy_bytes((unsigned char *)detour_address, NULL, OP_JMP_SIZE);
+#endif
 
 	JitWriter wr;
 	JitWriter *jit = &wr;
 	jit_uint32_t CodeSize = 0;
-	
+
 	wr.outbase = NULL;
 	wr.outptr = NULL;
 
@@ -167,13 +221,22 @@ jit_rewind:
 	/* Patch old bytes in */
 	if (wr.outbase != NULL)
 	{
+#if defined(_WIN64) || defined(__x86_64__)
+		wr.outptr += shortBytes;
+		bool isShort = IsShortJump(jit, detour_address);
+		wr.outptr -= shortBytes;
+		if (isShort)
+			detour_restore.bytes = shortBytes;
+#endif
+		/* Save restore bits */
+		memcpy(detour_restore.patch, detour_address, detour_restore.bytes);
+
 		copy_bytes((unsigned char *)detour_address, (unsigned char*)wr.outptr, detour_restore.bytes);
 	}
 	wr.outptr += detour_restore.bytes;
 
 	/* Return to the original function */
-	jitoffs_t call = IA32_Jump_Imm32(jit, 0);
-	IA32_Write_Jump32_Abs(jit, call, (unsigned char *)detour_address + detour_restore.bytes);
+	AbsJump(jit, (unsigned char *)detour_address + detour_restore.bytes);
 
 	if (wr.outbase == NULL)
 	{
@@ -211,7 +274,7 @@ void CDetour::EnableDetour()
 {
 	if (!detoured)
 	{
-		DoGatePatch((unsigned char *)detour_address, &detour_callback);
+		DoGatePatch((unsigned char *)detour_address, detour_callback);
 		detoured = true;
 	}
 }

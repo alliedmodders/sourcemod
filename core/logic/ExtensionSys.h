@@ -80,6 +80,7 @@ public:
 	void AddPlugin(CPlugin *pPlugin);
 	void MarkAllLoaded();
 	void AddLibrary(const char *library);
+	bool IsRequired();
 public:
 	virtual bool Load(char *error, size_t maxlength);
 	virtual bool IsLoaded() =0;
@@ -87,7 +88,7 @@ public:
 	virtual bool Reload(char *error, size_t maxlength) =0;
 	virtual bool IsSameFile(const char* file) =0;
 protected:
-	void Initialize(const char *filename, const char *path);
+	void Initialize(const char *filename, const char *path, bool bRequired = true);
 	bool PerformAPICheck(char *error, size_t maxlength);
 	void CreateIdentity();
 	void DestroyIdentity();
@@ -104,12 +105,13 @@ protected:
 	List<String> m_Libraries;
 	unsigned int unload_code;
 	bool m_bFullyLoaded;
+	bool m_bRequired;
 };
 
 class CLocalExtension : public CExtension
 {
 public:
-	CLocalExtension(const char *filename);
+	CLocalExtension(const char *filename, bool bRequired = true);
 public:
 	bool Load(char *error, size_t maxlength);
 	bool IsLoaded();

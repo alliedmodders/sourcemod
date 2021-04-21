@@ -6,19 +6,19 @@
 		{
 			"EndTouch"
 			{
-				"windows"	"102"
+				"windows"	"104"
 			}
 			"FireBullets"
 			{
-				"windows"	"115"
+				"windows"	"117"
 			}
 			"GetMaxHealth"
 			{
-				"windows"	"119"
+				"windows"	"121"
 			}
 			"OnTakeDamage"
 			{
-				"windows"	"66"
+				"windows"	"67"
 			}
 			"PreThink"
 			{
@@ -42,27 +42,27 @@
 			}
 			"StartTouch"
 			{
-				"windows"	"100"
+				"windows"	"102"
 			}
 			"Think"
 			{
-				"windows"	"50"
+				"windows"	"51"
 			}
 			"Touch"
 			{
-				"windows"	"101"
+				"windows"	"103"
 			}
 			"TraceAttack"
 			{
-				"windows"	"64"
+				"windows"	"65"
 			}
 			"Use"
 			{
-				"windows"	"99"
+				"windows"	"101"
 			}
 			"VPhysicsUpdate"
 			{
-				"windows"	"160"
+				"windows"	"154"
 			}
 			"Weapon_CanSwitchTo"
 			{

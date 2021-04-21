@@ -73,8 +73,13 @@ Database hDatabase = null;						/** Database connection */
 int g_sequence = 0;								/** Global unique sequence number */
 int ConnectLock = 0;							/** Connect sequence number */
 int RebuildCachePart[3] = {0};					/** Cache part sequence numbers */
-int PlayerSeq[MAXPLAYERS+1];					/** Player-specific sequence numbers */
-bool PlayerAuth[MAXPLAYERS+1];				/** Whether a player has been "pre-authed" */
+
+enum struct PlayerInfo {
+	int sequencenum; /** Player-specific sequence numbers */
+	bool authed; /** Whether a player has been "pre-authed" */
+}
+
+PlayerInfo playerinfo[MAXPLAYERS+1];
 
 //#define _DEBUG
 
@@ -88,15 +93,15 @@ public void OnMapEnd()
 
 public bool OnClientConnect(int client, char[] rejectmsg, int maxlen)
 {
-	PlayerSeq[client] = 0;
-	PlayerAuth[client] = false;
+	playerinfo[client].sequencenum = 0;
+	playerinfo[client].authed = false;
 	return true;
 }
 
 public void OnClientDisconnect(int client)
 {
-	PlayerSeq[client] = 0;
-	PlayerAuth[client] = false;
+	playerinfo[client].sequencenum = 0;
+	playerinfo[client].authed = false;
 }
 
 public void OnDatabaseConnect(Database db, const char[] error, any data)
@@ -193,7 +198,7 @@ public void OnRebuildAdminCache(AdminCachePart part)
 
 public Action OnClientPreAdminCheck(int client)
 {
-	PlayerAuth[client] = true;
+	playerinfo[client].authed = true;
 	
 	/**
 	 * Play nice with other plugins.  If there's no database, don't delay the 
@@ -241,7 +246,7 @@ public void OnReceiveUserGroups(Database db, DBResultSet rs, const char[] error,
 	/**
 	 * Make sure it's the same client.
 	 */
-	if (PlayerSeq[client] != sequence)
+	if (playerinfo[client].sequencenum != sequence)
 	{
 		delete pk;
 		return;
@@ -310,7 +315,7 @@ public void OnReceiveUser(Database db, DBResultSet rs, const char[] error, any d
 	 * Check if this is the latest result request.
 	 */
 	int sequence = pk.ReadCell();
-	if (PlayerSeq[client] != sequence)
+	if (playerinfo[client].sequencenum != sequence)
 	{
 		/* Discard everything, since we're out of sequence. */
 		delete pk;
@@ -504,11 +509,11 @@ void FetchUser(Database db, int client)
 	/**
 	 * Send the actual query.
 	 */	
-	PlayerSeq[client] = ++g_sequence;
+	playerinfo[client].sequencenum = ++g_sequence;
 	
 	DataPack pk = new DataPack();
 	pk.WriteCell(client);
-	pk.WriteCell(PlayerSeq[client]);
+	pk.WriteCell(playerinfo[client].sequencenum);
 	pk.WriteString(query);
 	
 #if defined _DEBUG
@@ -522,7 +527,7 @@ void FetchUsersWeCan(Database db)
 {
 	for (int i=1; i<=MaxClients; i++)
 	{
-		if (PlayerAuth[i] && GetUserAdmin(i) == INVALID_ADMIN_ID)
+		if (playerinfo[i].authed && GetUserAdmin(i) == INVALID_ADMIN_ID)
 		{
 			FetchUser(db, i);
 		}

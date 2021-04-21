@@ -55,7 +55,7 @@ class MyBoundResults :
 {
 	friend class MyStatement;
 public:
-	MyBoundResults(MYSQL_STMT *stmt, MYSQL_RES *res);
+	MyBoundResults(MYSQL_STMT *stmt, MYSQL_RES *res, unsigned int num_fields);
 	~MyBoundResults();
 public: //IResultSet
 	unsigned int GetRowCount();

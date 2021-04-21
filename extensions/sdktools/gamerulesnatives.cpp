@@ -53,6 +53,10 @@ static CBaseEntity *FindEntityByNetClass(int start, const char *classname)
 		if (network == NULL)
 			continue;
 
+		IHandleEntity *pHandleEnt = network->GetEntityHandle();
+		if (pHandleEnt == NULL)
+			continue;
+
 		ServerClass *sClass = network->GetServerClass();
 		const char *name = sClass->GetName();
 
@@ -70,7 +74,8 @@ static CBaseEntity* GetGameRulesProxyEnt()
 	if (proxyEntRef == -1 || (pProxy = gamehelpers->ReferenceToEntity(proxyEntRef)) == NULL)
 	{
 		pProxy = FindEntityByNetClass(playerhelpers->GetMaxClients(), g_szGameRulesProxy);
-		proxyEntRef = gamehelpers->EntityToReference(pProxy);
+		if (pProxy)
+			proxyEntRef = gamehelpers->EntityToReference(pProxy);
 	}
 	
 	return pProxy;
@@ -177,13 +182,14 @@ static cell_t GameRules_GetProp(IPluginContext *pContext, const cell_t *params)
 
 	// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_CSGO
+	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	if (pProp->GetFlags() & SPROP_VARINT)
 	{
 		bit_count = sizeof(int) * 8;
 	}
 #endif
-	if (bit_count < 1)
+
+	if (bit_count < 1)
 	{
 		bit_count = params[2] * 8;
 	}
@@ -240,10 +246,17 @@ static cell_t GameRules_SetProp(IPluginContext *pContext, const cell_t *params)
 
 	pContext->LocalToString(params[1], &prop);
 
+#if SOURCE_ENGINE == SE_CSGO
+	if (!g_SdkTools.CanSetCSGOEntProp(prop))
+	{
+		return pContext->ThrowNativeError("Cannot set ent prop %s with core.cfg option \"FollowCSGOServerGuidelines\" enabled.", prop);
+	}
+#endif
+
 	FIND_PROP_SEND(DPT_Int, "integer");
 
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_CSGO
+	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	if (pProp->GetFlags() & SPROP_VARINT)
 	{
 		bit_count = sizeof(int) * 8;
@@ -318,6 +331,13 @@ static cell_t GameRules_SetPropFloat(IPluginContext *pContext, const cell_t *par
 
 	pContext->LocalToString(params[1], &prop);
 
+#if SOURCE_ENGINE == SE_CSGO
+	if (!g_SdkTools.CanSetCSGOEntProp(prop))
+	{
+		return pContext->ThrowNativeError("Cannot set ent prop %s with core.cfg option \"FollowCSGOServerGuidelines\" enabled.", prop);
+	}
+#endif
+
 	FIND_PROP_SEND(DPT_Float, "float");
 
 	float newVal = sp_ctof(params[2]);
@@ -375,6 +395,13 @@ static cell_t GameRules_SetPropEnt(IPluginContext *pContext, const cell_t *param
 		return pContext->ThrowNativeError("Gamerules lookup failed.");
 
 	pContext->LocalToString(params[1], &prop);
+
+#if SOURCE_ENGINE == SE_CSGO
+	if (!g_SdkTools.CanSetCSGOEntProp(prop))
+	{
+		return pContext->ThrowNativeError("Cannot set ent prop %s with core.cfg option \"FollowCSGOServerGuidelines\" enabled.", prop);
+	}
+#endif
 
 	FIND_PROP_SEND(DPT_Int, "integer");
 
@@ -450,6 +477,13 @@ static cell_t GameRules_SetPropVector(IPluginContext *pContext, const cell_t *pa
 		return pContext->ThrowNativeError("Gamerules lookup failed.");
 
 	pContext->LocalToString(params[1], &prop);
+
+#if SOURCE_ENGINE == SE_CSGO
+	if (!g_SdkTools.CanSetCSGOEntProp(prop))
+	{
+		return pContext->ThrowNativeError("Cannot set ent prop %s with core.cfg option \"FollowCSGOServerGuidelines\" enabled.", prop);
+	}
+#endif
 
 	FIND_PROP_SEND(DPT_Vector, "vector");
 

@@ -47,8 +47,12 @@ public:
 	void Initialize();
 	void Shutdown();
 	void OnClientConnect(int client);
+#if !defined CLIENTVOICE_HOOK_SUPPORT
+	void OnClientConnected(int client);
+#endif
 	void OnClientPutInServer(int client);
 	void PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper);
+	void PlayerRunCmdPost(CUserCmd *ucmd, IMoveHelper *moveHelper);
 	void OnMapStart();
 public: /* NetChannel/Related Hooks */
 	bool FileExists(const char *filename, const char *pathID);
@@ -56,6 +60,9 @@ public: /* NetChannel/Related Hooks */
 	bool SendFile(const char *filename, unsigned int transferID, bool isReplayDemo);
 #else
 	bool SendFile(const char *filename, unsigned int transferID);
+#endif
+#if !defined CLIENTVOICE_HOOK_SUPPORT
+	bool ProcessVoiceData(CLC_VoiceData *msg);
 #endif
 	void ProcessPacket(struct netpacket_s *packet, bool bHasHeader);
 	void ProcessPacket_Post(struct netpacket_s *packet, bool bHasHeader);
@@ -66,15 +73,20 @@ public: //IFeatureProvider
 	virtual FeatureStatus GetFeatureStatus(FeatureType type, const char *name);
 
 private:
-	void PlayerRunCmdHook(int client);
+	void PlayerRunCmdHook(int client, bool post);
 	void NetChannelHook(int client);
 
 private:
 	IForward *m_usercmdsFwd;
+	IForward *m_usercmdsPostFwd;
 	IForward *m_netFileSendFwd;
 	IForward *m_netFileReceiveFwd;
-	ke::Vector<CVTableHook *> m_runUserCmdHooks;
-	ke::Vector<CVTableHook *> m_netChannelHooks;
+	std::vector<CVTableHook *> m_runUserCmdHooks;
+	std::vector<CVTableHook *> m_runUserCmdPostHooks;
+	std::vector<CVTableHook *> m_netChannelHooks;
+#if !defined CLIENTVOICE_HOOK_SUPPORT
+	std::vector<CVTableHook *> m_netProcessVoiceData;
+#endif
 	INetChannel *m_pActiveNetChannel;
 	bool m_bFSTranHookWarned = false;
 	bool m_bReplayEnabled = false;

@@ -37,8 +37,8 @@
 #include "smsdk_ext.h"
 #include "am-vector.h"
 
-#include <am-thread-utils.h>
 #include <am-refcounting.h>
+#include <mutex>
 
 char * UTIL_strncpy(char * destination, const char * source, size_t num);
 
@@ -49,7 +49,8 @@ char * UTIL_strncpy(char * destination, const char * source, size_t num);
 enum DbDriver
 {
 	Driver_MySQL,
-	Driver_SQLite
+	Driver_SQLite,
+	Driver_PgSQL
 };
 
 #define MAX_TRANSLATE_PARAMS		32
@@ -158,8 +159,8 @@ public:
 	bool databaseLoading;
 
 private:
-	ke::Vector<TQueryOp *> cachedQueries;
-	ke::Mutex queryLock;
+	std::vector<TQueryOp *> cachedQueries;
+	std::mutex queryLock;
 	IdentityToken_t *identity;
 };
 

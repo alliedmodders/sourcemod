@@ -277,18 +277,17 @@ public Action Command_SmPsay(int client, int args)
 		return Plugin_Handled;	
 	}	
 	
-	char text[192], arg[64], message[192];
+	char text[192], arg[64];
 	GetCmdArgString(text, sizeof(text));
 
 	int len = BreakString(text, arg, sizeof(arg));
-	BreakString(text[len], message, sizeof(message));
 	
 	int target = FindTarget(client, arg, true, false);
 		
 	if (target == -1)
 		return Plugin_Handled;	
 	
-	SendPrivateChat(client, target, message);
+	SendPrivateChat(client, target, text[len]);
 	
 	return Plugin_Handled;	
 }
@@ -334,7 +333,10 @@ void SendChatToAll(int client, const char[] message)
 		}
 		FormatActivitySource(client, i, nameBuf, sizeof(nameBuf));
 		
-		PrintToChat(i, "\x04(ALL) %s: \x01%s", nameBuf, message);
+		if (g_GameEngine == Engine_CSGO)
+			PrintToChat(i, " \x01\x0B\x04%t: \x01%s", "Say all", nameBuf, message);
+		else
+			PrintToChat(i, "\x04%t: \x01%s", "Say all", nameBuf, message);
 	}
 }
 
@@ -360,7 +362,10 @@ void SendChatToAdmins(int from, const char[] message)
 	{
 		if (IsClientInGame(i) && (from == i || CheckCommandAccess(i, "sm_chat", ADMFLAG_CHAT)))
 		{
-			PrintToChat(i, "\x04(%sADMINS) %N: \x01%s", fromAdmin ? "" : "TO ", from, message);
+			if (g_GameEngine == Engine_CSGO)
+				PrintToChat(i, " \x01\x0B\x04%t: \x01%s", fromAdmin ? "Chat admins" : "Chat to admins", from, message);
+			else
+				PrintToChat(i, "\x04%t: \x01%s", fromAdmin ? "Chat admins" : "Chat to admins", from, message);
 		}	
 	}
 }
@@ -388,11 +393,17 @@ void SendPrivateChat(int client, int target, const char[] message)
 	}
 	else if (target != client)
 	{
-		PrintToChat(client, "\x04(Private to %N) %N: \x01%s", target, client, message);
+		if (g_GameEngine == Engine_CSGO)
+			PrintToChat(client, " \x01\x0B\x04%t: \x01%s", "Private say to", target, client, message);
+		else
+			PrintToChat(client, "\x04%t: \x01%s", "Private say to", target, client, message);
 	}
-
-	PrintToChat(target, "\x04(Private to %N) %N: \x01%s", target, client, message);
-	LogAction(client, -1, "\"%L\" triggered sm_psay to \"%L\" (text %s)", client, target, message);
+  
+	if (g_GameEngine == Engine_CSGO)
+		PrintToChat(target, " \x01\x0B\x04%t: \x01%s", "Private say to", target, client, message);
+	else
+		PrintToChat(target, "\x04%t: \x01%s", "Private say to", target, client, message);
+	LogAction(client, target, "\"%L\" triggered sm_psay to \"%L\" (text %s)", client, target, message);
 }
 
 void SendPanelToAll(int from, char[] message)
@@ -407,8 +418,7 @@ void SendPanelToAll(int from, char[] message)
 	mSayPanel.DrawItem("", ITEMDRAW_SPACER);
 	mSayPanel.DrawText(message);
 	mSayPanel.DrawItem("", ITEMDRAW_SPACER);
-
-	mSayPanel.CurrentKey = 10;
+	mSayPanel.CurrentKey = GetMaxPageItems(mSayPanel.Style);
 	mSayPanel.DrawItem("Exit", ITEMDRAW_CONTROL);
 
 	for(int i = 1; i <= MaxClients; i++)

@@ -30,8 +30,10 @@
  */
 
 #include <stdlib.h>
+
+#include <memory>
+
 #include "common_logic.h"
-#include <am-moveable.h>
 #include <am-refcounting.h>
 #include <sm_stringhashmap.h>
 #include "sm_memtable.h"
@@ -102,7 +104,7 @@ public:
 		assert(isArray());
 		return reinterpret_cast<cell_t *>(raw()->base());
 	}
-	char *chars() const {
+	char *c_str() const {
 		assert(isString());
 		return reinterpret_cast<char *>(raw()->base());
 	}
@@ -181,7 +183,7 @@ struct TrieSnapshot
 	}
 
 	size_t length;
-	ke::AutoArray<int> keys;
+	std::unique_ptr<int[]> keys;
 	BaseStringTable strings;
 };
 
@@ -346,6 +348,27 @@ static cell_t SetTrieString(IPluginContext *pContext, const cell_t *params)
 
 	i->value.setString(val);
 	return 1;
+}
+
+static cell_t ContainsKeyInTrie(IPluginContext *pContext, const cell_t *params)
+{
+	CellTrie *pTrie;
+	HandleError err;
+	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
+
+	Handle_t hndl = params[1];
+
+	if ((err = handlesys->ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
+	}
+
+	char *key;
+	pContext->LocalToString(params[2], &key);
+
+	StringHashMap<Entry>::Result r = pTrie->map.find(key);
+
+	return r.found() ? 1 : 0;
 }
 
 static cell_t RemoveFromTrie(IPluginContext *pContext, const cell_t *params)
@@ -516,7 +539,7 @@ static cell_t GetTrieString(IPluginContext *pContext, const cell_t *params)
 		return 0;
 
 	size_t written;
-	pContext->StringToLocalUTF8(params[3], params[4], r->value.chars(), &written);
+	pContext->StringToLocalUTF8(params[3], params[4], r->value.c_str(), &written);
 
 	*pSize = (cell_t)written;
 	return 1;
@@ -556,10 +579,10 @@ static cell_t CreateTrieSnapshot(IPluginContext *pContext, const cell_t *params)
 
 	TrieSnapshot *snapshot = new TrieSnapshot;
 	snapshot->length = pTrie->map.elements();
-	snapshot->keys = new int[snapshot->length];
+	snapshot->keys = std::make_unique<int[]>(snapshot->length);
 	size_t i = 0;
 	for (StringHashMap<Entry>::iterator iter = pTrie->map.iter(); !iter.empty(); iter.next(), i++)
-		snapshot->keys[i] = snapshot->strings.AddString(iter->key.chars(), iter->key.length());
+		 snapshot->keys[i] = snapshot->strings.AddString(iter->key.c_str(), iter->key.length());
 	assert(i == snapshot->length);
 
 	if ((hndl = handlesys->CreateHandle(htSnapshot, snapshot, pContext->GetIdentity(), g_pCoreIdent, NULL))
@@ -634,6 +657,56 @@ static cell_t GetTrieSnapshotKey(IPluginContext *pContext, const cell_t *params)
 	return written;
 }
 
+static cell_t CloneTrie(IPluginContext *pContext, const cell_t *params)
+{
+	HandleError err;
+	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
+
+	CellTrie *pOldTrie;
+	if ((err = handlesys->ReadHandle(params[1], htCellTrie, &sec, (void **)&pOldTrie))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", params[1], err);
+	}
+
+	CellTrie *pNewTrie = new CellTrie;
+	Handle_t hndl = handlesys->CreateHandle(htCellTrie, pNewTrie, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	if (!hndl)
+	{
+		delete pNewTrie;
+		return hndl;
+	}
+
+	for (StringHashMap<Entry>::iterator it = pOldTrie->map.iter(); !it.empty(); it.next())
+	{
+		const char *key = it->key.c_str();
+		StringHashMap<Entry>::Insert insert = pNewTrie->map.findForAdd(key);
+		if (pNewTrie->map.add(insert, key))
+		{
+			StringHashMap<Entry>::Result result = pOldTrie->map.find(key);
+			if (result->value.isCell())
+			{
+				insert->value.setCell(result->value.cell());
+			}
+			else if (result->value.isString())
+			{
+				insert->value.setString(result->value.c_str());
+			}
+			else if (result->value.isArray())
+			{
+				insert->value.setArray(result->value.array(), result->value.arrayLength());
+			}
+			else
+			{
+				handlesys->FreeHandle(hndl, NULL);
+				return pContext->ThrowNativeError("Unhandled data type encountered, file a bug and reference pr #852");
+			}
+		}
+	}
+
+	return hndl;
+}
+
 REGISTER_NATIVES(trieNatives)
 {
 	{"ClearTrie",				ClearTrie},
@@ -658,12 +731,14 @@ REGISTER_NATIVES(trieNatives)
 	{"StringMap.GetArray",		GetTrieArray},
 	{"StringMap.GetString",		GetTrieString},
 	{"StringMap.GetValue",		GetTrieValue},
+	{"StringMap.ContainsKey",	ContainsKeyInTrie},
 	{"StringMap.Remove",		RemoveFromTrie},
 	{"StringMap.SetArray",		SetTrieArray},
 	{"StringMap.SetString",		SetTrieString},
 	{"StringMap.SetValue",		SetTrieValue},
 	{"StringMap.Size.get",		GetTrieSize},
 	{"StringMap.Snapshot",		CreateTrieSnapshot},
+	{"StringMap.Clone",			CloneTrie},
 
 	{"StringMapSnapshot.Length.get",	TrieSnapshotLength},
 	{"StringMapSnapshot.KeyBufferSize", TrieSnapshotKeyBufferSize},

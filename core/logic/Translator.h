@@ -71,6 +71,7 @@ public:
 	void ReparseFile();
 	const char *GetFilename();
 	TransError GetTranslation(const char *szPhrase, unsigned int lang_id, Translation *pTrans);
+	bool TranslationPhraseExists(const char *phrase);
 public: //ITextListener_SMC
 	void ReadSMC_ParseStart();
 	SMCResult ReadSMC_NewSection(const SMCStates *states, const char *name);

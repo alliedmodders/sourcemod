@@ -36,6 +36,7 @@
 #include <am-string.h>
 #include <am-utility.h>
 #include <am-refcounting.h>
+#include <sm_stringhashmap.h>
 #include "common_logic.h"
 
 class CNativeOwner;
@@ -45,16 +46,14 @@ struct FakeNative
 	FakeNative(const char *name, IPluginFunction *fun)
 		: name(name),
 		  ctx(fun->GetParentContext()),
-		  call(fun),
-		  gate(NULL)
+		  call(fun)
 	{
 	}
-	~FakeNative();
 
-	ke::AString name;
+	std::string name;
 	IPluginContext *ctx;
 	IPluginFunction *call;
-	SPVM_NATIVE_FUNC gate;
+	ke::RefPtr<INativeCallback> wrapper;
 };
 
 struct Native : public ke::Refcounted<Native>
@@ -62,36 +61,34 @@ struct Native : public ke::Refcounted<Native>
 	Native(CNativeOwner *owner, const sp_nativeinfo_t *native)
 		: owner(owner),
 		  native(native),
-		  fake(NULL)
+		  fake(nullptr)
 	{
 	}
-	Native(CNativeOwner *owner, FakeNative *fake)
+	Native(CNativeOwner *owner, std::unique_ptr<FakeNative>&& fake)
 		: owner(owner),
-		  native(NULL),
-		  fake(fake)
+		  native(nullptr),
+		  fake(std::move(fake))
 	{
 	}
 
 	CNativeOwner *owner;
 	const sp_nativeinfo_t *native;
-	ke::AutoPtr<FakeNative> fake;
+	std::unique_ptr<FakeNative> fake;
 
-	SPVM_NATIVE_FUNC func() const
-	{
-		if (native)
-			return native->func;
-		return fake->gate;
-	}
 	const char *name() const
 	{
 		if (native)
 			return native->name;
-		return fake->name.chars();
+		return fake->name.c_str();
 	}
 
 	static inline bool matches(const char *name, const ke::RefPtr<Native> &entry)
 	{
 		return strcmp(name, entry->name()) == 0;
+	}
+	static inline uint32_t hash(const detail::CharsAndLength &key)
+	{
+		return key.hash();
 	}
 };
 

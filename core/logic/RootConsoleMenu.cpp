@@ -166,7 +166,7 @@ void RootConsoleMenu::DrawGenericOption(const char *cmd, const char *text)
 		{
 			buffer[len++] = ' ';
 		}
-		len += snprintf(&buffer[len], sizeof(buffer) - len, " - %s", text);
+		len += ke::SafeSprintf(&buffer[len], sizeof(buffer) - len, " - %s", text);
 		ConsolePrint("%s", buffer);
 	}
 }
@@ -221,11 +221,15 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmdname, const ICommandAr
 		ConsolePrint("  Fyren");
 		ConsolePrint("  Nicholas \"psychonic\" Hastings");
 		ConsolePrint("  Asher \"asherkin\" Baker");
+		ConsolePrint("  Ruben \"Dr!fter\" Gonzalez");
+		ConsolePrint("  Josh \"KyleS\" Allard");
+		ConsolePrint("  Michael \"Headline\" Flaherty");
+		ConsolePrint("  Jannik \"Peace-Maker\" Hartung");
 		ConsolePrint("  Borja \"faluco\" Ferrer");
 		ConsolePrint("  Pavol \"PM OnoTo\" Marko");
 		ConsolePrint(" Special thanks to Liam, ferret, and Mani");
 		ConsolePrint(" Special thanks to Viper and SteamFriends");
-		ConsolePrint(" http://www.sourcemod.net/");
+		ConsolePrint(" https://www.sourcemod.net/");
 	}
 	else if (strcmp(cmdname, "version") == 0)
 	{
@@ -256,7 +260,7 @@ static bool sm_dump_handles(int client, const ICommandArgs *args)
 		auto write_handles_to_game = [] (const char *str) -> void
 		{
 			char buffer[1024];
-			size_t len = ke::SafeSprintf(buffer, sizeof(buffer)-2, "%s", str);
+			size_t len = ke::SafeStrcpy(buffer, sizeof(buffer)-2, str);
 
 			buffer[len] = '\n';
 			buffer[len+1] = '\0';

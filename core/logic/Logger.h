@@ -34,10 +34,8 @@
 
 #include "common_logic.h"
 #include <stdio.h>
-#include <sh_string.h>
+#include <amtl/am-string.h>
 #include <bridge/include/ILogger.h>
-
-using namespace SourceHook;
 
 enum LogType
 {
@@ -55,9 +53,7 @@ enum LoggingMode
 class Logger : public SMGlobalClass, public ILogger
 {
 public:
-	Logger() : m_Mode(LoggingMode_Daily), m_ErrMapStart(false), 
-		m_Active(false), m_DelayedStart(false), m_DailyPrintHdr(false), 
-		m_InitialState(true)
+	Logger() : m_Day(-1), m_Mode(LoggingMode_Daily), m_Active(true), m_DamagedNormalFile(false), m_DamagedErrorFile(false)
 	{
 	}
 public: //SMGlobalClass
@@ -70,7 +66,6 @@ public: //SMGlobalClass
 	void OnSourceModAllShutdown();
 	void OnSourceModLevelChange(const char *mapName);
 public:
-	void InitLogger(LoggingMode mode);
 	void CloseLogger();
 	void EnableLogging();
 	void DisableLogging();
@@ -85,25 +80,32 @@ public:
 	/* This version does not print to console, and is thus thread-safe */
 	void LogToFileOnly(FILE *fp, const char *msg, ...);
 	void LogToFileOnlyEx(FILE *fp, const char *msg, va_list ap);
-	void MapChange(const char *mapname);
-	const char *GetLogFileName(LogType type) const;
-	LoggingMode GetLoggingMode() const;
 private:
+	void _MapChange(const char *mapname);
+
 	void _CloseFile();
-	void _NewMapFile();
+	void _CloseNormal();
+	void _CloseError();
+	void _CloseFatal();
+
+	FILE *_OpenNormal();
+	FILE *_OpenError();
+	FILE *_OpenFatal();
+
+	void _LogFatalOpen(std::string &str);
 	void _PrintToGameLog(const char *fmt, va_list ap);
+	void _UpdateFiles(bool bLevelChange = false);
 private:
-	String m_NrmFileName;
-	String m_ErrFileName;
-	String m_CurMapName;
+	std::string m_NormalFileName;
+	std::string m_ErrorFileName;
+	std::string m_CurrentMapName;
+
+	int m_Day;
+
 	LoggingMode m_Mode;
-	int m_NrmCurDay;
-	int m_ErrCurDay;
-	bool m_ErrMapStart;
 	bool m_Active;
-	bool m_DelayedStart;
-	bool m_DailyPrintHdr;
-	bool m_InitialState;
+	bool m_DamagedNormalFile;
+	bool m_DamagedErrorFile;
 };
 
 extern Logger g_Logger;

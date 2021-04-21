@@ -48,8 +48,8 @@ public Plugin myinfo =
 };
 
 /* Forwards */
-Handle hOnAdminMenuReady = null;
-Handle hOnAdminMenuCreated = null;
+GlobalForward hOnAdminMenuReady;
+GlobalForward hOnAdminMenuCreated;
 
 /* Menus */
 TopMenu hAdminMenu;
@@ -75,8 +75,8 @@ public void OnPluginStart()
 	LoadTranslations("common.phrases");
 	LoadTranslations("adminmenu.phrases");
 	
-	hOnAdminMenuCreated = CreateGlobalForward("OnAdminMenuCreated", ET_Ignore, Param_Cell);
-	hOnAdminMenuReady = CreateGlobalForward("OnAdminMenuReady", ET_Ignore, Param_Cell);
+	hOnAdminMenuCreated = new GlobalForward("OnAdminMenuCreated", ET_Ignore, Param_Cell);
+	hOnAdminMenuReady = new GlobalForward("OnAdminMenuReady", ET_Ignore, Param_Cell);
 
 	RegAdminCmd("sm_admin", Command_DisplayMenu, ADMFLAG_GENERIC, "Displays the admin menu");
 }
@@ -162,9 +162,9 @@ public void DefaultCategoryHandler(TopMenu topmenu,
 	}
 }
 
-public int __GetAdminTopMenu(Handle plugin, int numParams)
+public any __GetAdminTopMenu(Handle plugin, int numParams)
 {
-	return view_as<int>(hAdminMenu);
+	return hAdminMenu;
 }
 
 public int __AddTargetsToMenu(Handle plugin, int numParams)

@@ -29,7 +29,7 @@
  * Version: $Id$
  */
 
-#include <math.h>
+#include <cmath>
 #include <string.h>
 #include <stdlib.h>
 #include "common_logic.h"
@@ -287,44 +287,6 @@ static cell_t sm_ArcTangent2(IPluginContext *pCtx, const cell_t *params)
 
 	return sp_ftoc(val1);
 }
-
-#if 0
-static cell_t sm_FloatRound(IPluginContext *pCtx, const cell_t *params)
-{
-	float val = sp_ctof(params[1]);
-
-	switch (params[2])
-	{
-	case 1:
-		{
-			val = floor(val);
-			break;
-		}
-	case 2:
-		{
-			val = ceil(val);
-			break;
-		}
-	case 3:
-		{
-			if (val >= 0.0f)
-			{
-				val = floor(val);
-			} else {
-				val = ceil(val);
-			}
-			break;
-		}
-	default:
-		{
-			val = (float)floor(val + 0.5f);
-			break;
-		}
-	}
-
-	return static_cast<int>(val);
-}
-#endif
 
 class RandomHelpers :
 	public SMGlobalClass,

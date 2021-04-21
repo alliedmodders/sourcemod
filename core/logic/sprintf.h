@@ -30,6 +30,7 @@
 #include <sp_vm_api.h>
 
 namespace SourceMod {
+class IDatabase;
 class IPhraseCollection;
 }
 
@@ -56,5 +57,7 @@ bool gnprintf(char *buffer,
               unsigned int &curparam,
               size_t *pOutLength,
               const char **pFailPhrase);
+
+extern SourceMod::IDatabase *g_FormatEscapeDatabase;
 
 #endif // _include_sourcemod_core_logic_sprintf_h_

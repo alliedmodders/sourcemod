@@ -43,5 +43,9 @@ size_t UTIL_DecodeHexString(unsigned char *buffer, size_t maxlength, const char 
 void UTIL_StripExtension(const char *in, char *out, int outSize);
 char *UTIL_TrimWhitespace(char *str, size_t &len);
 
+// Internal copying Format helper, expects (char[] buffer, int maxlength, const char[] format, any ...) starting at |start|
+// i.e. you can stuff your own params before |buffer|.
+cell_t InternalFormat(IPluginContext *pCtx, const cell_t *params, int start);
+
 #endif /* _INCLUDE_SOURCEMOD_COMMON_STRINGUTIL_H_ */
 
