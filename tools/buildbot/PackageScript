@@ -332,6 +332,7 @@ CopyFiles('plugins', 'addons/sourcemod/scripting',
     'rockthevote.sp',
     'sounds.sp',
     'sql-admin-manager.sp',
+    'DynamicTargeting.sp',
   ]
 )
 CopyFiles('plugins/include', 'addons/sourcemod/scripting/include',
@@ -402,6 +403,7 @@ CopyFiles('plugins/include', 'addons/sourcemod/scripting/include',
     'usermessages.inc',
     'vector.inc',
     'version.inc',
+    'DynamicTargeting.inc',
   ]
 )
 CopyFiles('translations', 'addons/sourcemod/translations',

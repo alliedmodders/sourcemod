@@ -47,6 +47,91 @@ struct Plugin
    public const char[] url;         /**< Plugin URL */
 };
 
+/**
+ * Returns whether a library exists.  This function should be considered
+ * expensive; it should only be called on plugin to determine availability
+ * of resources.  Use OnLibraryAdded()/OnLibraryRemoved() to detect changes
+ * in libraries.
+ *
+ * @param name          Library name of a plugin or extension.
+ * @return              True if exists, false otherwise.
+ */
+native bool LibraryExists(const char[] name);
+
+/**
+ * Feature types.
+ */
+enum FeatureType
+{
+	/**
+	 * A native function call.
+	 */
+	FeatureType_Native,
+
+	/**
+	 * A named capability. This is distinctly different from checking for a
+	 * native, because the underlying functionality could be enabled on-demand
+	 * to improve loading time. Thus a native may appear to exist, but it might
+	 * be part of a set of features that are not compatible with the current game
+	 * or version of SourceMod.
+	 */
+	FeatureType_Capability
+};
+
+/**
+ * Feature statuses.
+ */
+enum FeatureStatus
+{
+	/**
+	 * Feature is available for use.
+	 */
+	FeatureStatus_Available,
+
+	/**
+	 * Feature is not available.
+	 */
+	FeatureStatus_Unavailable,
+
+	/**
+	 * Feature is not known at all.
+	 */
+	FeatureStatus_Unknown
+};
+
+/**
+ * Returns whether "GetFeatureStatus" will work. Using this native
+ * or this function will not cause SourceMod to fail loading on older versions,
+ * however, GetFeatureStatus will only work if this function returns true.
+ *
+ * @return              True if GetFeatureStatus will work, false otherwise.
+ */
+stock bool CanTestFeatures()
+{
+	return LibraryExists("__CanTestFeatures__");
+}
+
+/**
+ * Returns whether a feature exists, and if so, whether it is usable.
+ *
+ * @param type          Feature type.
+ * @param name          Feature name.
+ * @return              Feature status.
+ */
+native FeatureStatus GetFeatureStatus(FeatureType type, const char[] name);
+
+/**
+ * Requires that a given feature is available. If it is not, SetFailState()
+ * is called with the given message.
+ *
+ * @param type          Feature type.
+ * @param name          Feature name.
+ * @param fmt           Message format string, or empty to use default.
+ * @param ...           Message format parameters, if any.
+ */
+native void RequireFeature(FeatureType type, const char[] name,
+                           const char[] fmt="", any ...);
+
 #include <core>
 #include <float>
 #include <vector>
@@ -455,17 +540,6 @@ native void AutoExecConfig(bool autoCreate=true, const char[] name="", const cha
 native void RegPluginLibrary(const char[] name);
 
 /**
- * Returns whether a library exists.  This function should be considered
- * expensive; it should only be called on plugin to determine availability
- * of resources.  Use OnLibraryAdded()/OnLibraryRemoved() to detect changes
- * in libraries.
- *
- * @param name          Library name of a plugin or extension.
- * @return              True if exists, false otherwise.
- */
-native bool LibraryExists(const char[] name);
-
-/**
  * Returns the status of an extension, by filename.
  *
  * @param name          Extension name (like "sdktools.ext").
@@ -587,80 +661,6 @@ forward bool OnClientFloodCheck(int client);
  * @param blocked       True if client flooded last "say", false otherwise.
  */
 forward void OnClientFloodResult(int client, bool blocked);
-
-/**
- * Feature types.
- */
-enum FeatureType
-{
-	/**
-	 * A native function call.
-	 */
-	FeatureType_Native,
-
-	/**
-	 * A named capability. This is distinctly different from checking for a
-	 * native, because the underlying functionality could be enabled on-demand
-	 * to improve loading time. Thus a native may appear to exist, but it might
-	 * be part of a set of features that are not compatible with the current game
-	 * or version of SourceMod.
-	 */
-	FeatureType_Capability
-};
-
-/**
- * Feature statuses.
- */
-enum FeatureStatus
-{
-	/**
-	 * Feature is available for use.
-	 */
-	FeatureStatus_Available,
-
-	/**
-	 * Feature is not available.
-	 */
-	FeatureStatus_Unavailable,
-
-	/**
-	 * Feature is not known at all.
-	 */
-	FeatureStatus_Unknown
-};
-
-/**
- * Returns whether "GetFeatureStatus" will work. Using this native
- * or this function will not cause SourceMod to fail loading on older versions,
- * however, GetFeatureStatus will only work if this function returns true.
- *
- * @return              True if GetFeatureStatus will work, false otherwise.
- */
-stock bool CanTestFeatures()
-{
-	return LibraryExists("__CanTestFeatures__");
-}
-
-/**
- * Returns whether a feature exists, and if so, whether it is usable.
- *
- * @param type          Feature type.
- * @param name          Feature name.
- * @return              Feature status.
- */
-native FeatureStatus GetFeatureStatus(FeatureType type, const char[] name);
-
-/**
- * Requires that a given feature is available. If it is not, SetFailState()
- * is called with the given message.
- *
- * @param type          Feature type.
- * @param name          Feature name.
- * @param fmt           Message format string, or empty to use default.
- * @param ...           Message format parameters, if any.
- */
-native void RequireFeature(FeatureType type, const char[] name,
-                           const char[] fmt="", any ...);
 
 /**
  * Represents how many bytes we can read from an address with one load

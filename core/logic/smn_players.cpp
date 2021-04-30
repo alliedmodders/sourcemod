@@ -1471,24 +1471,23 @@ static cell_t IsClientInKickQueue(IPluginContext *pContext, const cell_t *params
 	return pPlayer->IsInKickQueue() ? 1 : 0;
 }
 
+cmd_target_info_t g_ProcessTargetString_info;
 static cell_t ProcessTargetString(IPluginContext *pContext, const cell_t *params)
 {
-	cmd_target_info_t info;
-
-	pContext->LocalToString(params[1], (char **) &info.pattern);
-	info.admin = params[2];
-	pContext->LocalToPhysAddr(params[3], &info.targets);
-	info.max_targets = params[4];
-	info.flags = params[5];
-	pContext->LocalToString(params[6], &info.target_name);
-	info.target_name_maxlength = params[7];
+	pContext->LocalToString(params[1], (char **) &g_ProcessTargetString_info.pattern);
+	g_ProcessTargetString_info.admin = params[2];
+	pContext->LocalToPhysAddr(params[3], &g_ProcessTargetString_info.targets);
+	g_ProcessTargetString_info.max_targets = params[4];
+	g_ProcessTargetString_info.flags = params[5];
+	pContext->LocalToString(params[6], &g_ProcessTargetString_info.target_name);
+	g_ProcessTargetString_info.target_name_maxlength = params[7];
 
 	cell_t *tn_is_ml;
 	pContext->LocalToPhysAddr(params[8], &tn_is_ml);
 
-	playerhelpers->ProcessCommandTarget(&info);
+	playerhelpers->ProcessCommandTarget(&g_ProcessTargetString_info);
 
-	if (info.target_name_style == COMMAND_TARGETNAME_ML)
+	if (g_ProcessTargetString_info.target_name_style == COMMAND_TARGETNAME_ML)
 	{
 		*tn_is_ml = 1;
 	}
@@ -1497,14 +1496,28 @@ static cell_t ProcessTargetString(IPluginContext *pContext, const cell_t *params
 		*tn_is_ml = 0;
 	}
 
-	if (info.num_targets == 0)
+	if (g_ProcessTargetString_info.num_targets == 0)
 	{
-		return info.reason;
+		return g_ProcessTargetString_info.reason;
 	}
 	else
 	{
-		return info.num_targets;
+		return g_ProcessTargetString_info.num_targets;
 	}
+}
+
+static cell_t GetLastProcessTargetString(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t *admin, *flags;
+
+	pContext->StringToLocalUTF8(params[1], params[2], g_ProcessTargetString_info.pattern, NULL);
+	pContext->LocalToPhysAddr(params[3], &admin);
+	pContext->LocalToPhysAddr(params[4], &flags);
+
+	*admin = g_ProcessTargetString_info.admin;
+	*flags = g_ProcessTargetString_info.flags;
+
+	return 0;
 }
 
 static cell_t FormatActivitySource(IPluginContext *pContext, const cell_t *params)
@@ -1658,6 +1671,7 @@ REGISTER_NATIVES(playernatives)
 	{ "NotifyPostAdminCheck", NotifyPostAdminCheck },
 	{ "IsClientInKickQueue", IsClientInKickQueue },
 	{ "ProcessTargetString", ProcessTargetString },
+	{ "GetLastProcessTargetString", GetLastProcessTargetString },
 	{ "FormatActivitySource", FormatActivitySource },
 	{ "GetClientSerial", sm_GetClientSerial },
 	{ "GetClientFromSerial", sm_GetClientFromSerial },

@@ -812,6 +812,16 @@ static cell_t sm_RegAdminCmd(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t sm_IsCommandCallback(IPluginContext *pContext, const cell_t *params)
+{
+	const ICommandArgs *pCmd = g_HL2.PeekCommandStack();
+
+	if (!pCmd)
+		return 0;
+
+	return 1;
+}
+
 static cell_t sm_GetCmdArgs(IPluginContext *pContext, const cell_t *params)
 {
 	const ICommandArgs *pCmd = g_HL2.PeekCommandStack();
@@ -1490,6 +1500,7 @@ REGISTER_NATIVES(consoleNatives)
 	{"GetConVarDefault",	GetConVarDefault},
 	{"RegServerCmd",		sm_RegServerCmd},
 	{"RegConsoleCmd",		sm_RegConsoleCmd},
+	{"IsCommandCallback",	sm_IsCommandCallback},
 	{"GetCmdArgString",		sm_GetCmdArgString},
 	{"GetCmdArgs",			sm_GetCmdArgs},
 	{"GetCmdArg",			sm_GetCmdArg},

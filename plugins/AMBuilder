@@ -24,7 +24,8 @@ files = [
   'basecommands.sp',
   'mapchooser.sp',
   'randomcycle.sp',
-  'sql-admin-manager.sp'
+  'sql-admin-manager.sp',
+  'DynamicTargeting.sp'
 ]
 
 spcomp_argv = [
