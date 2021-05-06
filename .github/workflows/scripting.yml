@@ -1,11 +1,11 @@
 name: SourcePawn scripting
 on: 
   push:
-    # branches:
-    #   - master
-    # paths:
-    #   - 'plugins/include/*'
-    #   - 'sourcepawn/**'
+    branches:
+      - master
+    paths:
+      - 'plugins/include/*'
+      - 'sourcepawn/**'
   workflow_dispatch:
   schedule:
     - cron: '53 05 01 */3 *' # Artifacts expire every 3 months
