@@ -667,7 +667,8 @@ if getattr(builder, 'target', None) is not None:
 
 SM = SMConfig()
 SM.detectProductVersion()
-SM.detectSDKs()
+if not builder.options.scripting_only:
+  SM.detectSDKs()
 SM.configure()
 SM.add_libamtl()
 
@@ -703,47 +704,58 @@ class SPRoot(object):
   def libamtl(self):
     return SM.libamtl
 
+SP_build_parts = ['core']
+if builder.options.scripting_only:
+  SP_build_parts = ['spcomp']
+
 # Build SourcePawn externally.
 SP = builder.Build('sourcepawn/AMBuildScript', {
   'external_root': SPRoot(),
   'external_amtl': os.path.join(builder.sourcePath, 'public', 'amtl'),
-  'external_build': ['core'],
+  'external_build': SP_build_parts,
 })
 if len(SP.spcomp) > 1:
   SM.spcomp = SP.spcomp['x86']
 else:
   SM.spcomp = SP.spcomp[list(SP.spcomp.keys())[0]]
 SM.spcomp_bins = list(SP.spcomp.values())
-for cxx in SM.all_targets:
-  SM.spvm += [
-     SP.libsourcepawn[cxx.target.arch]
+
+if not builder.options.scripting_only:
+  for cxx in SM.all_targets:
+    SM.spvm += [
+      SP.libsourcepawn[cxx.target.arch]
+    ]
+
+if builder.options.scripting_only:
+  BuildScripts = [
+    'tools/buildbot/PackageScript_scripting',
+  ]
+else:
+  BuildScripts = [
+    'loader/AMBuilder',
+    'core/AMBuilder',
+    'core/logic/AMBuilder',
+    'extensions/bintools/AMBuilder',
+    'extensions/clientprefs/AMBuilder',
+    'extensions/curl/AMBuilder',
+    'extensions/cstrike/AMBuilder',
+    'extensions/geoip/AMBuilder',
+    'extensions/mysql/AMBuilder',
+    'extensions/pgsql/AMBuilder',
+    'extensions/regex/AMBuilder',
+    'extensions/sdkhooks/AMBuilder',
+    'extensions/sdktools/AMBuilder',
+    'extensions/sqlite/AMBuilder',
+    'extensions/tf2/AMBuilder',
+    'extensions/topmenus/AMBuilder',
+    'extensions/updater/AMBuilder',
   ]
 
-BuildScripts = [
-  'loader/AMBuilder',
-  'core/AMBuilder',
-  'core/logic/AMBuilder',
-  'extensions/bintools/AMBuilder',
-  'extensions/clientprefs/AMBuilder',
-  'extensions/curl/AMBuilder',
-  'extensions/cstrike/AMBuilder',
-  'extensions/geoip/AMBuilder',
-  'extensions/mysql/AMBuilder',
-  'extensions/pgsql/AMBuilder',
-  'extensions/regex/AMBuilder',
-  'extensions/sdkhooks/AMBuilder',
-  'extensions/sdktools/AMBuilder',
-  'extensions/sqlite/AMBuilder',
-  'extensions/tf2/AMBuilder',
-  'extensions/topmenus/AMBuilder',
-  'extensions/updater/AMBuilder',
-]
-
-if builder.backend == 'amb2':
-  BuildScripts += [
-    'plugins/AMBuilder',
-    'tools/buildbot/PackageScript',
-  ]
+  if builder.backend == 'amb2':
+    BuildScripts += [
+      'plugins/AMBuilder',
+      'tools/buildbot/PackageScript',
+    ]
 
 builder.Build(BuildScripts, { 'SM': SM })
 

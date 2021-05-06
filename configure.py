@@ -42,4 +42,6 @@ parser.options.add_argument('--disable-auto-versioning', action='store_true', de
                        default=False, help='Disable the auto versioning script')
 parser.options.add_argument('--targets', type=str, dest='targets', default=None,
 		                      help="Override the target architecture (use commas to separate multiple targets).")
+parser.options.add_argument('--scripting-only', action='store_true', dest='scripting_only', default=False,
+		                      help="Only build and package the files required for scripting in SourcePawn.")
 parser.Configure()
