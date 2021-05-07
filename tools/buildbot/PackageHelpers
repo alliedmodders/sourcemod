@@ -51,15 +51,15 @@ class PackageHelpers:
       dest = src
     dest_entry = self.folder_map[dest]
     source_path = os.path.join(self.builder.sourcePath, src)
-    with os.scandir(source_path) as it:
-      for entry in it:
-        if not entry.is_file():
+    for entry in os.listdir(source_path):
+      entry_path = os.path.join(source_path, entry)
+      if not os.path.isfile(entry_path):
+        continue
+      if filter_ext:
+        _, ext = os.path.splitext(entry)
+        if filter_ext != ext:
           continue
-        if filter_ext:
-          _, ext = os.path.splitext(entry.name)
-          if filter_ext != ext:
-            continue
-        self.builder.AddCopy(entry.path, dest_entry)
+      self.builder.AddCopy(entry_path, dest_entry)
 
   def CopyIncludes(self, target_folder):
     if SM.use_auto_versioning():
