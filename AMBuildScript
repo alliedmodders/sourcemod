@@ -667,7 +667,7 @@ if getattr(builder, 'target', None) is not None:
 
 SM = SMConfig()
 SM.detectProductVersion()
-if not builder.options.scripting_only:
+if not getattr(builder.options, 'scripting_only', False):
   SM.detectSDKs()
 SM.configure()
 SM.add_libamtl()
@@ -705,7 +705,7 @@ class SPRoot(object):
     return SM.libamtl
 
 SP_build_parts = ['core']
-if builder.options.scripting_only:
+if getattr(builder.options, 'scripting_only', False):
   SP_build_parts = ['spcomp']
 
 # Build SourcePawn externally.
@@ -720,15 +720,16 @@ else:
   SM.spcomp = SP.spcomp[list(SP.spcomp.keys())[0]]
 SM.spcomp_bins = list(SP.spcomp.values())
 
-if not builder.options.scripting_only:
+if not getattr(builder.options, 'scripting_only', False):
   for cxx in SM.all_targets:
     SM.spvm += [
       SP.libsourcepawn[cxx.target.arch]
     ]
 
-if builder.options.scripting_only:
+if getattr(builder.options, 'scripting_only', False):
   BuildScripts = [
-    'tools/buildbot/PackageScript_scripting',
+    'tools/buildbot/PackageHelpers',
+    'tools/buildbot/ToolsPackageScript',
   ]
 else:
   BuildScripts = [
@@ -754,6 +755,7 @@ else:
   if builder.backend == 'amb2':
     BuildScripts += [
       'plugins/AMBuilder',
+      'tools/buildbot/PackageHelpers',
       'tools/buildbot/PackageScript',
     ]
 
