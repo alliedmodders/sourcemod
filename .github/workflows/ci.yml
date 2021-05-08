@@ -1,0 +1,96 @@
+name: Continuous Integration
+on: 
+  push:
+    branches:
+     - master
+  pull_request:
+    branches:
+     - master
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-latest, windows-latest]
+        include:
+          - os: windows-latest
+            os_short: win
+            compiler_cc: msvc
+          - os: ubuntu-latest
+            os_short: linux
+            compiler_cc: clang
+            compiler_cxx: clang++
+          - os: ubuntu-18.04
+            os_short: linux
+            compiler_cc: clang-3.9
+            compiler_cxx: clang++-3.9
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    name: ${{ matrix.os_short }}-${{ matrix.compiler_cc }}
+    env:
+      SDKS: '["episode1","css","tf2","l4d2","csgo"]'
+      ARCH: x86,x86_64
+      DEPENDENCIES_FOLDER: dependencies
+      DEPENDENCIES_ROOT: ${{ github.workspace }}/dependencies
+      MYSQL_VERSION: '5.5'
+      MMSOURCE_VERSION: '1.10'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+          path: sourcemod
+
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        env:
+          cache-name: hl2sdk-mysql-mmsource
+        with:
+          path: ${{ env.DEPENDENCIES_ROOT }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-mysql${{ env.MYSQL_VERSION }}-mmsource${{ env.MMSOURCE_VERSION }}-${{ join(fromJSON(env.SDKS), '') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-mysql${{ env.MYSQL_VERSION }}-mmsource${{ env.MMSOURCE_VERSION }}-
+            ${{ runner.os }}-build-${{ env.cache-name }}-mysql${{ env.MYSQL_VERSION }}-
+
+      # Setup Python for AMBuild
+      - uses: actions/setup-python@v2
+        name: Setup Python 3.8
+        with:
+          python-version: 3.8
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          mkdir -p ${{ env.DEPENDENCIES_FOLDER }}
+          cd ${{ env.DEPENDENCIES_FOLDER }}
+
+          # Satisfy checkout-deps requirement for a "sourcemod" folder.
+          mkdir -p sourcemod
+          ../sourcemod/tools/checkout-deps.sh -s ${{ join(fromJSON(env.SDKS)) }}
+
+      - name: Install Linux dependencies
+        if: startsWith(runner.os, 'Linux')
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            gcc-multilib g++-multilib libstdc++6 lib32stdc++6 \
+            libc6-dev libc6-dev-i386 linux-libc-dev \
+            linux-libc-dev:i386 lib32z1-dev ${{ matrix.compiler_cc }}
+
+      - name: Select clang compiler
+        if: startsWith(runner.os, 'Linux')
+        run: |
+          echo "CC=${{ matrix.compiler_cc }}" >> $GITHUB_ENV
+          echo "CXX=${{ matrix.compiler_cxx }}" >> $GITHUB_ENV
+          ${{ matrix.compiler_cc }} --version
+          ${{ matrix.compiler_cxx }} --version
+
+      - name: Build
+        working-directory: sourcemod
+        run: |
+          mkdir build
+          cd build
+          python ../configure.py --enable-optimize --sdks=${{ join(fromJSON(env.SDKS)) }} --targets=${{ env.ARCH }} --mms-path=${{ env.DEPENDENCIES_ROOT }}/mmsource-${{ env.MMSOURCE_VERSION }} --hl2sdk-root=${{ env.DEPENDENCIES_ROOT }} --mysql-path=${{ env.DEPENDENCIES_ROOT }}/mysql-${{ env.MYSQL_VERSION }} --mysql64-path=${{ env.DEPENDENCIES_ROOT }}/mysql-${{ env.MYSQL_VERSION }}-x86_64
+          ambuild
