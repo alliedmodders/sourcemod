@@ -649,7 +649,8 @@ stock void DisplayAskConnectBox(int client, float time, const char[] ip, const c
  * Converts an entity index into a serial encoded entity reference.
  *
  * @param entity        Entity index.
- * @return              Entity reference.
+ * @return              Entity reference or -1 on invalid entity.
+ * @error               Entity index >= GetMaxEntities() or < 0
  */
 native int EntIndexToEntRef(int entity);
 
@@ -657,7 +658,7 @@ native int EntIndexToEntRef(int entity);
  * Retrieves the entity index from a reference.
  *
  * @param ref           Entity reference.
- * @return              Entity index.
+ * @return              Entity index or -1 on invalid reference.
  */
 native int EntRefToEntIndex(int ref);
 
