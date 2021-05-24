@@ -425,12 +425,6 @@ public:
 
 	bool LibraryExists(const char *lib);
 
-	bool HookPluginUnload(IPlugin *pPluginToHook, IPluginFunction *pHookFunction);
-
-	bool UnhookPluginUnload(IPlugin *pPluginToUnhook, IPluginFunction *pHookFunction);
-
-	void CallUnloadHooks(IPlugin *pTarget);
-
 	bool ReloadPlugin(CPlugin *pl, bool print=false);
 
 	void UnloadAll();
@@ -529,12 +523,6 @@ private:
 	// Forwards
 	IForward *m_pOnLibraryAdded;
 	IForward *m_pOnLibraryRemoved;
-	struct PluginUnloadHookInfo
-	{
-		IPlugin *pPluginTarget;
-		IChangeableForward *pForward;
-	};
-	std::list<PluginUnloadHookInfo> m_PluginUnloadHooks;
 };
 
 extern CPluginManager g_PluginSys;

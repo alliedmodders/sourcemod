@@ -75,8 +75,6 @@ public:
 	virtual IPluginIterator *GetPluginIterator() = 0;
 	virtual void OnLibraryAction(const char *name, LibraryAction action) = 0;
 	virtual bool LibraryExists(const char *name) = 0;
-	virtual bool HookPluginUnload(IPlugin *pl, IPluginFunction *fwd) = 0;
-	virtual bool UnhookPluginUnload(IPlugin *pl, IPluginFunction *fwd) = 0;
 	virtual SMPlugin *FindPluginByOrder(unsigned num) = 0;
 	virtual SMPlugin *FindPluginByIdentity(IdentityToken_t *ident) = 0;
 	virtual SMPlugin *FindPluginByContext(IPluginContext *ctx) = 0;

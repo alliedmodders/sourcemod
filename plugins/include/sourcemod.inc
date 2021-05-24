@@ -84,13 +84,6 @@ enum APLRes
 	APLRes_SilentFailure    /**< Plugin shouldn't load but do so silently */
 };
 
-/**
- * Called when a plugin unloaded.
- * 
- * @param plugin        Plugin Handle who unloaded.
- */
-typedef PluginUnloaded = function void (Handle plugin);
-
 methodmap GameData < Handle
 {
 	// Loads a game config file.
@@ -325,26 +318,6 @@ native bool GetPluginInfo(Handle plugin, PluginInfo info, char[] buffer, int max
  *                      matches the given number.
  */
 native Handle FindPluginByNumber(int order_num);
-
-/**
- * Creates a hook for when a plugin unloaded.
- * 
- * @param plugin        Plugin Handle to hook.
- * @param callback      An PluginUnloaded function pointer.
- * 
- * @return              True on success, false otherwise.
- */
-native bool HookPluginUnload(Handle plugin, PluginUnloaded callback);
-
-/**
- * Removes a hook for when a plugin unloaded.
- * 
- * @param plugin        Plugin Handle to hook.
- * @param callback      An PluginUnloaded function pointer.
- * 
- * @return              True on success, false otherwise.
- */
-native bool UnhookPluginUnload(Handle plugin, PluginUnloaded callback);
 
 /**
  * Causes the plugin to enter a failed state.  An error will be thrown and
