@@ -339,7 +339,7 @@ native bool HookPluginUnload(Handle plugin, PluginUnloaded callback);
 /**
  * Removes a hook for when a plugin unloaded.
  * 
- * @param plugin        Plugin Handle to unhook.
+ * @param plugin        Plugin Handle to hook.
  * @param callback      An PluginUnloaded function pointer.
  * 
  * @return              True on success, false otherwise.
