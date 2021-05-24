@@ -1499,14 +1499,14 @@ void CPluginManager::Purge(CPlugin *plugin)
 	if (plugin->GetStatus() == Plugin_Running)
 		plugin->Call_OnPluginEnd();
 
+	m_pOnNotifyPluginUnloaded->PushCell(plugin->GetMyHandle());
+	m_pOnNotifyPluginUnloaded->Execute(NULL);
+
 	// Notify listeners of unloading.
 	if (plugin->EnteredSecondPass()) {
 		for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
 			(*iter)->OnPluginUnloaded(plugin);
 	}
-
-	m_pOnNotifyPluginUnloaded->PushCell(plugin->GetMyHandle());
-	m_pOnNotifyPluginUnloaded->Execute(NULL);
 
 	plugin->DropEverything();
 
