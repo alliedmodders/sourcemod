@@ -496,6 +496,13 @@ forward void OnLibraryAdded(const char[] name);
  */
 forward void OnLibraryRemoved(const char[] name);
 
+/**
+ * Called when a plugin unloaded.
+ *
+ * @param plugin        Plugin Handle who unloaded.
+ */
+forward void OnNotifyPluginUnloaded(Handle plugin);
+
 #define MAPLIST_FLAG_MAPSFOLDER    (1<<0)    /**< On failure, use all maps in the maps folder. */
 #define MAPLIST_FLAG_CLEARARRAY    (1<<1)    /**< If an input array is specified, clear it before adding. */
 #define MAPLIST_FLAG_NO_DEFAULT    (1<<2)    /**< Do not read "default" or "mapcyclefile" on failure. */
