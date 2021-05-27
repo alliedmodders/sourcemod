@@ -388,6 +388,17 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 			}
 		case Pl_Changed:
 			{
+				if (size < 0 || size > SM_ARRAYSIZE(players))
+				{
+					pFunc->GetParentContext()->BlamePluginError(pFunc, "Callback-provided size %d is invalid", size);
+
+#if SOURCE_ENGINE >= SE_PORTAL2
+					RETURN_META_VALUE(MRES_IGNORED, -1);
+#else
+					return;
+#endif
+				}
+
 				/* Client validation */
 				for (int i = 0; i < size; i++)
 				{
@@ -397,17 +408,18 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 					if (!pPlayer)
 					{
 						pFunc->GetParentContext()->BlamePluginError(pFunc, "Callback-provided client index %d is invalid", client);
-					} else if (!pPlayer->IsInGame()) {
-						pFunc->GetParentContext()->BlamePluginError(pFunc, "Client %d is not in game", client);
-					} else {
-						continue;
-					}
 
 #if SOURCE_ENGINE >= SE_PORTAL2
-					RETURN_META_VALUE(MRES_IGNORED, -1 );
+						RETURN_META_VALUE(MRES_IGNORED, -1);
 #else
-					return;
+						return;
 #endif
+					} else if (!pPlayer->IsInGame()) {
+						// Shift array down to remove non-ingame client
+						memmove(&players[i], &players[i+1], (size-i-1) * sizeof(int));
+						--i;
+						--size;
+					}
 				}
 
 #if SOURCE_ENGINE >= SE_PORTAL2
@@ -540,6 +552,17 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 			}
 		case Pl_Changed:
 			{
+				if (size < 0 || size > SM_ARRAYSIZE(players))
+				{
+					pFunc->GetParentContext()->BlamePluginError(pFunc, "Callback-provided size %d is invalid", size);
+
+#if SOURCE_ENGINE >= SE_PORTAL2
+					RETURN_META_VALUE(MRES_IGNORED, -1);
+#else
+					return;
+#endif
+				}
+
 				/* Client validation */
 				for (int i = 0; i < size; i++)
 				{
@@ -549,17 +572,18 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 					if (!pPlayer)
 					{
 						pFunc->GetParentContext()->BlamePluginError(pFunc, "Client index %d is invalid", client);
-					} else if (!pPlayer->IsInGame()) {
-						pFunc->GetParentContext()->BlamePluginError(pFunc, "Client %d is not in game", client);
-					} else {
-						continue;
-					}
 
 #if SOURCE_ENGINE >= SE_PORTAL2
-					RETURN_META_VALUE(MRES_IGNORED, -1 );
+						RETURN_META_VALUE(MRES_IGNORED, -1);
 #else
-					return;
+						return;
 #endif
+					} else if (!pPlayer->IsInGame()) {
+						// Shift array down to remove non-ingame client
+						memmove(&players[i], &players[i+1], (size-i-1) * sizeof(int));
+						--i;
+						--size;
+					}
 				}
 
 #if SOURCE_ENGINE >= SE_PORTAL2
