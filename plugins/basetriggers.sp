@@ -525,7 +525,7 @@ void ShowFriendlyFire(int client, int who)
 
 		if (client == 0)
 		{
-			PrintToServer("[SM] %t", phrase);
+			PrintToServer("[SM] %T", phrase, client);
 		}
 	}
 }
