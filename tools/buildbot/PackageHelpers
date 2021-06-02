@@ -1,0 +1,73 @@
+# vim: set ts=8 sts=2 sw=2 tw=99 et ft=python:
+import os
+
+class PackageHelpers:
+  def __init__(self, builder):
+    self.folder_map = {}
+    self.builder = builder
+
+  def CreateFolders(self, folder_list):
+    # Create the distribution folder hierarchy.
+    self.folder_map = {}
+    for folder in folder_list:
+      norm_folder = os.path.normpath(folder)
+      self.folder_map[folder] = self.builder.AddFolder(norm_folder)
+    return self.folder_map
+
+  def lipo(self, binaries, outFolder):
+    bins = []
+    binPaths = []
+    for b in binaries:
+      bins.append(b.binary)
+      binPaths.append(os.path.join(self.builder.buildPath, b.binary.path))
+    argv = ['lipo', '-create']
+    binary = os.path.basename(binPaths[0])
+    outputPath = os.path.join(self.builder.buildPath, self.builder.buildFolder, outFolder, binary)
+    self.builder.AddCommand(
+      argv = argv + binPaths + ['-output', outputPath],
+      inputs = bins,
+      outputs = [os.path.join(outFolder, binary)],
+    )
+  
+  def CopySpcomp(self, target_folder):
+    if self.builder.host.platform == 'mac' and len(SM.target_archs) > 1:
+      self.lipo(SM.spcomp_bins, target_folder)
+    else:
+      for bin_task in SM.spcomp_bins:
+        if bin_task.target.arch == 'x86_64':
+          root, ext = os.path.splitext(os.path.basename(bin_task.binary.path))
+          file = root + '64' + ext
+          self.builder.AddCopy(bin_task.binary, os.path.join(target_folder, file))
+        else:
+          self.builder.AddCopy(bin_task.binary, self.folder_map[target_folder])
+    
+    if self.builder.host.platform == 'windows':
+      self.CopyFiles('tools/batchtool', target_folder, '.exe')
+    else:
+      self.CopyFiles('plugins', target_folder, '.sh')
+  
+  def CopyFiles(self, src, dest, filter_ext=None):
+    if not dest:
+      dest = src
+    dest_entry = self.folder_map[dest]
+    source_path = os.path.join(self.builder.sourcePath, src)
+    for entry in os.listdir(source_path):
+      entry_path = os.path.join(source_path, entry)
+      if not os.path.isfile(entry_path):
+        continue
+      if filter_ext:
+        _, ext = os.path.splitext(entry)
+        if filter_ext != ext:
+          continue
+      self.builder.AddCopy(entry_path, dest_entry)
+
+  def CopyIncludes(self, target_folder):
+    if SM.use_auto_versioning():
+      # Copy version_auto.inc.
+      for header in SM.generated_headers:
+        if 'version_auto.inc' in header.path:
+          self.builder.AddCopy(header, self.folder_map[target_folder])
+    
+    self.CopyFiles('plugins/include', target_folder, '.inc')
+
+SM.package_helpers = PackageHelpers(builder)

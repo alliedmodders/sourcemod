@@ -1499,6 +1499,9 @@ void CPluginManager::Purge(CPlugin *plugin)
 	if (plugin->GetStatus() == Plugin_Running)
 		plugin->Call_OnPluginEnd();
 
+	m_pOnNotifyPluginUnloaded->PushCell(plugin->GetMyHandle());
+	m_pOnNotifyPluginUnloaded->Execute(NULL);
+
 	// Notify listeners of unloading.
 	if (plugin->EnteredSecondPass()) {
 		for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
@@ -1587,6 +1590,7 @@ void CPluginManager::OnSourceModAllInitialized()
 
 	m_pOnLibraryAdded = forwardsys->CreateForward("OnLibraryAdded", ET_Ignore, 1, NULL, Param_String);
 	m_pOnLibraryRemoved = forwardsys->CreateForward("OnLibraryRemoved", ET_Ignore, 1, NULL, Param_String);
+	m_pOnNotifyPluginUnloaded = forwardsys->CreateForward("OnNotifyPluginUnloaded", ET_Ignore, 1, NULL, Param_Cell);
 }
 
 void CPluginManager::OnSourceModShutdown()
@@ -1601,6 +1605,7 @@ void CPluginManager::OnSourceModShutdown()
 
 	forwardsys->ReleaseForward(m_pOnLibraryAdded);
 	forwardsys->ReleaseForward(m_pOnLibraryRemoved);
+	forwardsys->ReleaseForward(m_pOnNotifyPluginUnloaded);
 }
 
 ConfigResult CPluginManager::OnSourceModConfigChanged(const char *key,

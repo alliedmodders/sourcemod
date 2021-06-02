@@ -119,11 +119,11 @@ native void SlapPlayer(int client, int health=5, bool sound=true);
 /**
  * Searches for an entity by classname.
  *
- * @param startEnt      The entity index after which to begin searching from.
+ * @param startEnt      A valid entity's index after which to begin searching from.
  *                      Use -1 to start from the first entity.
  * @param classname     Classname of the entity to find.
  * @return              Entity index >= 0 if found, -1 otherwise.
- * @error               Lack of mod support.
+ * @error               Lack of mod support or invalid start entity.
  */
 native int FindEntityByClassname(int startEnt, const char[] classname);
 
