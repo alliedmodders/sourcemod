@@ -233,15 +233,15 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 		}
 	case PSTATE_GAMEDEFS:
 		{
-			if (name == "Offsets")
+			if (strcmp(name, "Offsets") == 0)
 			{
 				m_ParseState = PSTATE_GAMEDEFS_OFFSETS;
 			}
-			else if (name == "Keys")
+			else if (strcmp(name, "Keys") == 0)
 			{
 				m_ParseState = PSTATE_GAMEDEFS_KEYS;
 			}
-			else if (name == "#supported" && m_Game != "#default")
+			else if ((strcmp(name, "#supported") == 0) && (strcmp(m_Game.c_str(), "#default") == 0))
 			{
 				m_ParseState = PSTATE_GAMEDEFS_SUPPORTED;
 				/* Ignore this section unless we get a game. */
@@ -251,16 +251,16 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 				had_engine = false;
 				matched_engine = false;
 			}
-			else if (name == "Signatures")
+			else if (strcmp(name, "Signatures") == 0)
 			{
 				m_ParseState = PSTATE_GAMEDEFS_SIGNATURES;
 			}
-			else if (name == "CRC")
+			else if (strcmp(name, "CRC") == 0)
 			{
 				m_ParseState = PSTATE_GAMEDEFS_CRC;
 				bShouldBeReadingDefault = false;
 			}
-			else if (name == "Addresses")
+			else if (strcmp(name, "Addresses") == 0)
 			{
 				m_ParseState = PSTATE_GAMEDEFS_ADDRESSES;
 			}
@@ -409,10 +409,10 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 
 	if (m_ParseState == PSTATE_GAMEDEFS_OFFSETS_OFFSET)
 	{
-		if (key == "class")
+		if (strcmp(key, "class") == 0)
 		{
 			m_Class = value;
-		} else if (key == "prop") {
+		} else if (strcmp(key, "prop") == 0) {
 			m_Prop = value;
 		} else if (IsPlatformCompatible(key, &matched_platform)) {
 			m_Offsets.replace(m_offset.c_str(), static_cast<int>(strtol(value, NULL, 0)));
@@ -428,7 +428,7 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 			m_Keys.replace(m_Key.c_str(), std::move(vstr));
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_SUPPORTED) {
-		if (key == "game")
+		if (strcmp(key, "game") == 0)
 		{
 			had_game = true;
 			if (DoesGameMatch(value))
@@ -440,7 +440,7 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 				bShouldBeReadingDefault = true;
 			}
 		}
-		else if (key == "engine")
+		else if (strcmp(key, "engine") == 0)
 		{
 			had_engine = true;
 			if (DoesEngineMatch(value))
@@ -480,7 +480,7 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 			}
 			else if (m_AddressReadCount < limit)
 			{
-				if (key == "offset")
+				if (strcmp(key, "offset") == 0)
 				{
 					m_AddressLastIsOffset = true;
 				}
@@ -491,7 +491,7 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 			{
 				logger->LogError("[SM] Error parsing Address \"%s\", does not support more than %d read offsets (gameconf \"%s\")", m_Address, limit, m_CurFile);
 			}
-		} else if (key == "signature") {
+		} else if (strcmp(key, "signature") == 0) {
 			strncopy(m_AddressSignature, value, sizeof(m_AddressSignature));
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_CUSTOM) {
@@ -560,7 +560,7 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 				} else {
 					/* Check if it's a non-default game and no offsets exist */
 					const char* offset;
-					if (m_Game == "*" && m_Game != "#default"
+					if (((strcmp(m_Game.c_str(), "*") != 0) && strcmp(m_Game.c_str(), "#default") != 0)
 						&& (!m_Offsets.retrieve(offset)))
 					{
 						logger->LogError("[SM] Unable to find property %s.%s (file \"%s\") (mod \"%s\")", 
@@ -568,8 +568,9 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 							m_Prop,
 							m_CurFile,
 							m_Game);
+					} else {
+						m_offset = offset;
 					}
-					m_offset = offset;
 				}
 			}
 			m_ParseState = PSTATE_GAMEDEFS_OFFSETS;
