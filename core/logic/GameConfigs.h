@@ -110,7 +110,7 @@ private:
 		int read[8];
 		bool lastIsOffset;
 
-		AddressConf(std::string sigName, unsigned readCount, int *read, bool lastIsOffset);
+		AddressConf(std::string&& sigName, unsigned readCount, int *read, bool lastIsOffset);
 
 		AddressConf() {}
 	};
