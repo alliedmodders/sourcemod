@@ -548,8 +548,7 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 	case PSTATE_GAMEDEFS_OFFSETS_OFFSET:
 		{
 			/* Parse the offset... */
-			if (m_Class[0] != '\0'
-				&& m_Prop[0] != '\0')
+			if (!m_Class.empty() && !m_Prop.empty())
 			{
 				SendProp *pProp = gamehelpers->FindInSendTable(m_Class.c_str(), m_Prop.c_str());
 				if (pProp)
@@ -690,7 +689,7 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 		{
 			m_ParseState = PSTATE_GAMEDEFS_ADDRESSES;
 
-			if (m_Address[0] != '\0' && m_AddressSignature[0] != '\0')
+			if (!m_Address.empty() && !m_AddressSignature.empty())
 			{
 				AddressConf addrConf(std::move(m_AddressSignature), m_AddressReadCount, m_AddressRead, m_AddressLastIsOffset);
 				m_Addresses.replace(m_Address.c_str(), addrConf);
