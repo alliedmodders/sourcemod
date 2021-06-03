@@ -559,17 +559,14 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 					m_Props.replace(m_offset.c_str(), pProp);
 				} else {
 					/* Check if it's a non-default game and no offsets exist */
-					const char* offset;
 					if (((strcmp(m_Game.c_str(), "*") != 0) && strcmp(m_Game.c_str(), "#default") != 0)
-						&& (!m_Offsets.retrieve(offset)))
+						&& (!m_Offsets.retrieve(m_offset.c_str())))
 					{
 						logger->LogError("[SM] Unable to find property %s.%s (file \"%s\") (mod \"%s\")", 
 							m_Class.c_str(),
 							m_Prop.c_str(),
 							m_CurFile,
 							m_Game.c_str());
-					} else {
-						m_offset = offset;
 					}
 				}
 			}
