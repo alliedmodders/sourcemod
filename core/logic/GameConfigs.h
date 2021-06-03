@@ -105,18 +105,18 @@ private:
 	/* Support for reading Addresses */
 	struct AddressConf
 	{
-		char signatureName[64];
+		std::string signatureName;
 		int readCount;
 		int read[8];
 		bool lastIsOffset;
 
-		AddressConf(char *sigName, unsigned sigLength, unsigned readCount, int *read, bool lastIsOffset);
+		AddressConf(std::string sigName, unsigned sigLength, unsigned readCount, int *read, bool lastIsOffset);
 
 		AddressConf() {}
 	};
 
-	char m_Address[64];
-	char m_AddressSignature[64];
+	std::string m_Address;
+	std::string m_AddressSignature;
 	int m_AddressReadCount;
 	int m_AddressRead[8];
 	bool m_AddressLastIsOffset;

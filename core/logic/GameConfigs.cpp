@@ -353,12 +353,12 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 		}
 	case PSTATE_GAMEDEFS_ADDRESSES:
 		{
-			m_Address[0] = '\0';
+			m_Address.clear();
 			m_AddressSignature[0] = '\0';
 			m_AddressReadCount = 0;
 			m_AddressLastIsOffset = false;
 
-			strncopy(m_Address, name, sizeof(m_Address));
+			m_Address = name;
 			m_ParseState = PSTATE_GAMEDEFS_ADDRESSES_ADDRESS;
 
 			break;
@@ -492,7 +492,7 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 				logger->LogError("[SM] Error parsing Address \"%s\", does not support more than %d read offsets (gameconf \"%s\")", m_Address, limit, m_CurFile);
 			}
 		} else if (strcmp(key, "signature") == 0) {
-			strncopy(m_AddressSignature, value, sizeof(m_AddressSignature));
+			m_AddressSignature = value;
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_CUSTOM) {
 		return m_CustomHandler->ReadSMC_KeyValue(states, key, value);
@@ -692,8 +692,8 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 
 			if (m_Address[0] != '\0' && m_AddressSignature[0] != '\0')
 			{
-				AddressConf addrConf(m_AddressSignature, sizeof(m_AddressSignature), m_AddressReadCount, m_AddressRead, m_AddressLastIsOffset);
-				m_Addresses.replace(m_Address, addrConf);
+				AddressConf addrConf(m_AddressSignature, m_AddressSignature.length(), m_AddressReadCount, m_AddressRead, m_AddressLastIsOffset);
+				m_Addresses.replace(m_Address.c_str(), addrConf);
 			}
 
 			break;
@@ -1041,7 +1041,7 @@ bool CGameConfig::GetAddress(const char *key, void **retaddr)
 	AddressConf &addrConf = r->value;
 
 	void *addr;
-	if (!GetMemSig(addrConf.signatureName, &addr))
+	if (!GetMemSig(addrConf.signatureName.c_str(), &addr))
 	{
 		*retaddr = NULL;
 		return false;
@@ -1074,11 +1074,11 @@ static inline unsigned minOf(unsigned a, unsigned b)
 	return a <= b ? a : b;
 }
 
-CGameConfig::AddressConf::AddressConf(char *sigName, unsigned sigLength, unsigned readCount, int *read, bool lastIsOffset)
+CGameConfig::AddressConf::AddressConf(std::string sigName, unsigned sigLength, unsigned readCount, int *read, bool lastIsOffset)
 {
 	unsigned readLimit = minOf(readCount, sizeof(this->read) / sizeof(this->read[0]));
 
-	strncopy(signatureName, sigName, sizeof(signatureName) / sizeof(signatureName[0]));
+	this->signatureName = sigName;
 	this->readCount = readLimit;
 	memcpy(&this->read[0], read, sizeof(this->read[0])*readLimit);
 
