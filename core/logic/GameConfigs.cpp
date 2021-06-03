@@ -1078,7 +1078,7 @@ CGameConfig::AddressConf::AddressConf(std::string&& sigName, unsigned readCount,
 {
 	unsigned readLimit = minOf(readCount, sizeof(this->read) / sizeof(this->read[0]));
 
-	this->signatureName = std::move(sigName);
+	this->signatureName = sigName;
 	this->readCount = readLimit;
 	memcpy(&this->read[0], read, sizeof(this->read[0])*readLimit);
 
