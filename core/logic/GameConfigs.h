@@ -86,11 +86,11 @@ private:
 	/* Parse states */
 	int m_ParseState;
 	unsigned int m_IgnoreLevel;
-	char m_Class[64];
-	char m_Prop[64];
-	char m_offset[64];
-	char m_Game[256];
-	char m_Key[64];
+	std::string m_Class;
+	std::string m_Prop;
+	std::string m_offset;
+	std::string m_Game;
+	std::string m_Key;
 	bool bShouldBeReadingDefault;
 	bool had_game;
 	bool matched_game;
