@@ -86,11 +86,11 @@ private:
 	/* Parse states */
 	int m_ParseState;
 	unsigned int m_IgnoreLevel;
-	char m_Class[64];
-	char m_Prop[64];
-	char m_offset[64];
-	char m_Game[256];
-	char m_Key[64];
+	std::string m_Class;
+	std::string m_Prop;
+	std::string m_offset;
+	std::string m_Game;
+	std::string m_Key;
 	bool bShouldBeReadingDefault;
 	bool had_game;
 	bool matched_game;
@@ -105,18 +105,18 @@ private:
 	/* Support for reading Addresses */
 	struct AddressConf
 	{
-		char signatureName[64];
+		std::string signatureName;
 		int readCount;
 		int read[8];
 		bool lastIsOffset;
 
-		AddressConf(char *sigName, unsigned sigLength, unsigned readCount, int *read, bool lastIsOffset);
+		AddressConf(std::string&& sigName, unsigned readCount, int *read, bool lastIsOffset);
 
 		AddressConf() {}
 	};
 
-	char m_Address[64];
-	char m_AddressSignature[64];
+	std::string m_Address;
+	std::string m_AddressSignature;
 	int m_AddressReadCount;
 	int m_AddressRead[8];
 	bool m_AddressLastIsOffset;
