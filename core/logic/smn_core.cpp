@@ -747,7 +747,7 @@ static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 
 	NumberType size = static_cast<NumberType>(params[3]);
 
-	// new parameter added after SM 1.10
+	// new parameter added after SM 1.10; defaults to true for backwards compatibility
 	bool updateMemAccess = true;
 	if (params[0] >= 4)
 	{
