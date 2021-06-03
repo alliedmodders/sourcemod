@@ -241,7 +241,7 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			{
 				m_ParseState = PSTATE_GAMEDEFS_KEYS;
 			}
-			else if ((strcmp(name, "#supported") == 0) && (strcmp(m_Game.c_str(), "#default") == 0))
+			else if ((strcmp(name, "#supported") == 0) && (m_Game == "#default"))
 			{
 				m_ParseState = PSTATE_GAMEDEFS_SUPPORTED;
 				/* Ignore this section unless we get a game. */
@@ -559,7 +559,7 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 					m_Props.replace(m_offset.c_str(), pProp);
 				} else {
 					/* Check if it's a non-default game and no offsets exist */
-					if (((strcmp(m_Game.c_str(), "*") != 0) && strcmp(m_Game.c_str(), "#default") != 0)
+					if ((m_Game != "*" && m_Game != "#default")
 						&& (!m_Offsets.retrieve(m_offset.c_str())))
 					{
 						logger->LogError("[SM] Unable to find property %s.%s (file \"%s\") (mod \"%s\")", 
