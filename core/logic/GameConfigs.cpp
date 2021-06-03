@@ -692,7 +692,7 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 
 			if (m_Address[0] != '\0' && m_AddressSignature[0] != '\0')
 			{
-				AddressConf addrConf(m_AddressSignature, m_AddressSignature.length(), m_AddressReadCount, m_AddressRead, m_AddressLastIsOffset);
+				AddressConf addrConf(m_AddressSignature, m_AddressReadCount, m_AddressRead, m_AddressLastIsOffset);
 				m_Addresses.replace(m_Address.c_str(), addrConf);
 			}
 
@@ -1074,7 +1074,7 @@ static inline unsigned minOf(unsigned a, unsigned b)
 	return a <= b ? a : b;
 }
 
-CGameConfig::AddressConf::AddressConf(std::string sigName, unsigned sigLength, unsigned readCount, int *read, bool lastIsOffset)
+CGameConfig::AddressConf::AddressConf(std::string sigName, unsigned readCount, int *read, bool lastIsOffset)
 {
 	unsigned readLimit = minOf(readCount, sizeof(this->read) / sizeof(this->read[0]));
 
