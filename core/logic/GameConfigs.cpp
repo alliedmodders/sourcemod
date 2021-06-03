@@ -374,7 +374,7 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 				if (strcmp(name, "linux") != 0 && strcmp(name, "windows") != 0 && strcmp(name, "mac") != 0 &&
 					strcmp(name, "linux64") != 0 && strcmp(name, "windows64") != 0 && strcmp(name, "mac64") != 0)
 				{
-					logger->LogError("[SM] Error while parsing Address section for \"%s\" (%s):", m_Address, m_CurFile);
+					logger->LogError("[SM] Error while parsing Address section for \"%s\" (%s):", m_Address.c_str(), m_CurFile);
 					logger->LogError("[SM] Unrecognized platform \"%s\"", name);
 				}
 				m_IgnoreLevel = 1;
@@ -476,7 +476,7 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 			int limit = sizeof(m_AddressRead)/sizeof(m_AddressRead[0]);
 			if (m_AddressLastIsOffset)
 			{
-				logger->LogError("[SM] Error parsing Address \"%s\", 'offset' entry must be the last entry (gameconf \"%s\")", m_Address, m_CurFile);
+				logger->LogError("[SM] Error parsing Address \"%s\", 'offset' entry must be the last entry (gameconf \"%s\")", m_Address.c_str(), m_CurFile);
 			}
 			else if (m_AddressReadCount < limit)
 			{
@@ -489,7 +489,7 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 			}
 			else
 			{
-				logger->LogError("[SM] Error parsing Address \"%s\", does not support more than %d read offsets (gameconf \"%s\")", m_Address, limit, m_CurFile);
+				logger->LogError("[SM] Error parsing Address \"%s\", does not support more than %d read offsets (gameconf \"%s\")", m_Address.c_str(), limit, m_CurFile);
 			}
 		} else if (strcmp(key, "signature") == 0) {
 			m_AddressSignature = value;
