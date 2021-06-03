@@ -338,7 +338,7 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			if (error[0] != '\0')
 			{
 				m_IgnoreLevel = 1;
-				logger->LogError("[SM] Error while parsing CRC section for \"%s\" (%s):", m_Game, m_CurFile);
+				logger->LogError("[SM] Error while parsing CRC section for \"%s\" (%s):", m_Game.c_str(), m_CurFile);
 				logger->LogError("[SM] %s", error);
 			} else {
 				m_ParseState = PSTATE_GAMEDEFS_CRC_BINARY;
@@ -564,10 +564,10 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 						&& (!m_Offsets.retrieve(offset)))
 					{
 						logger->LogError("[SM] Unable to find property %s.%s (file \"%s\") (mod \"%s\")", 
-							m_Class,
-							m_Prop,
+							m_Class.c_str(),
+							m_Prop.c_str(),
 							m_CurFile,
-							m_Game);
+							m_Game.c_str());
 					} else {
 						m_offset = offset;
 					}
