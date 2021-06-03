@@ -354,7 +354,7 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 	case PSTATE_GAMEDEFS_ADDRESSES:
 		{
 			m_Address.clear();
-			m_AddressSignature[0] = '\0';
+			m_AddressSignature.clear();
 			m_AddressReadCount = 0;
 			m_AddressLastIsOffset = false;
 
