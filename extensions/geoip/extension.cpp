@@ -200,27 +200,28 @@ static cell_t sm_Geoip_RegionCode(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToString(params[1], &ip);
 	StripPort(ip);
 
+	size_t length = 0;
 	char ccode[12];
 
 	const char *pathCountry[] = {"country", "iso_code", NULL};
-	std::string strCountry = lookupString(ip, pathCountry);
+	std::string countryCode = lookupString(ip, pathCountry);
 
-	if (strCountry.length() != 0)
+	if (countryCode.length() != 0)
 	{
 		const char *pathRegion[] = {"subdivisions", "0", "iso_code", NULL};
-		std::string strRegion = lookupString(ip, pathRegion);
+		std::string regionCode = lookupString(ip, pathRegion);
 
-		if (strRegion.length() != 0)
+		length = regionCode.length();
+
+		if (length != 0)
 		{
-			const char *countryCode = strCountry.c_str();
-			const char *regionCode = strRegion.c_str();
-			ke::SafeSprintf(ccode, sizeof(ccode), "%s-%s", countryCode, regionCode);
+			ke::SafeSprintf(ccode, sizeof(ccode), "%s-%s", countryCode.c_str(), regionCode.c_str());
 		}
 	}
 
 	pCtx->StringToLocalUTF8(params[2], sizeof(ccode), ccode, NULL);
 
-	return (strlen(ccode) != 0) ? 1 : 0;
+	return (length != 0) ? 1 : 0;
 }
 
 static cell_t sm_Geoip_ContinentCode(IPluginContext *pCtx, const cell_t *params)
