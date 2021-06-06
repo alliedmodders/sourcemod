@@ -37,14 +37,14 @@
 
 enum Continent
 {
-    CONTINENT_UNKNOWN = 0,
-    CONTINENT_AFRICA,
-    CONTINENT_ANTARCTICA,
-    CONTINENT_ASIA,
-    CONTINENT_EUROPE,
-    CONTINENT_NORTH_AMERICA,
-    CONTINENT_OCEANIA,
-    CONTINENT_SOUTH_AMERICA,
+	CONTINENT_UNKNOWN = 0,
+	CONTINENT_AFRICA,
+	CONTINENT_ANTARCTICA,
+	CONTINENT_ASIA,
+	CONTINENT_EUROPE,
+	CONTINENT_NORTH_AMERICA,
+	CONTINENT_OCEANIA,
+	CONTINENT_SOUTH_AMERICA,
 };
 
 // The system of measurement for calculate the distance between geographical coordinates
@@ -207,35 +207,35 @@ native float GeoipDistance(float lat1, float lon1, float lat2, float lon2, int s
  */
 public Extension __ext_geoip = 
 {
-    name = "GeoIP",
-    file = "geoip.ext",
+	name = "GeoIP",
+	file = "geoip.ext",
 #if defined AUTOLOAD_EXTENSIONS
-    autoload = 1,
+	autoload = 1,
 #else
-    autoload = 0,
+	autoload = 0,
 #endif
 #if defined REQUIRE_EXTENSIONS
-    required = 1,
+	required = 1,
 #else
-    required = 0,
+	required = 0,
 #endif
 };
 
 #if !defined REQUIRE_EXTENSIONS
 public void __ext_geoip_SetNTVOptional()
 {
-    MarkNativeAsOptional("GeoipCode2");
-    MarkNativeAsOptional("GeoipCode3");
-    MarkNativeAsOptional("GeoipRegionCode");
-    MarkNativeAsOptional("GeoipContinentCode");
-    MarkNativeAsOptional("GeoipCountry");
-    MarkNativeAsOptional("GeoipCountryEx");
-    MarkNativeAsOptional("GeoipContinent");
-    MarkNativeAsOptional("GeoipRegion");
-    MarkNativeAsOptional("GeoipCity");
-    MarkNativeAsOptional("GeoipTimezone");
-    MarkNativeAsOptional("GeoipLatitude");
-    MarkNativeAsOptional("GeoipLongitude");
-    MarkNativeAsOptional("GeoipDistance");
+	MarkNativeAsOptional("GeoipCode2");
+	MarkNativeAsOptional("GeoipCode3");
+	MarkNativeAsOptional("GeoipRegionCode");
+	MarkNativeAsOptional("GeoipContinentCode");
+	MarkNativeAsOptional("GeoipCountry");
+	MarkNativeAsOptional("GeoipCountryEx");
+	MarkNativeAsOptional("GeoipContinent");
+	MarkNativeAsOptional("GeoipRegion");
+	MarkNativeAsOptional("GeoipCity");
+	MarkNativeAsOptional("GeoipTimezone");
+	MarkNativeAsOptional("GeoipLatitude");
+	MarkNativeAsOptional("GeoipLongitude");
+	MarkNativeAsOptional("GeoipDistance");
 }
 #endif
