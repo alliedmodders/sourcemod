@@ -555,7 +555,7 @@ native void NotifyPostAdminCheck(int client);
  *
  * @param name          Name to use.
  * @return              Client index on success, 0 otherwise.
- * @error		No map is active.
+ * @error               No map is active.
  */
 native int CreateFakeClient(const char[] name);
 
