@@ -798,9 +798,7 @@ stock int FlagBitsToString(const int bits, char[] flags, const int maxSize)
 			flags[numId++] = c;
 		}
 	}
-	for (i = numId; i < maxSize; ++i)
-	{
-		flags[i] = '\0';
-	}
+	flags[numId] = '\0';
+
 	return numId;
 }
