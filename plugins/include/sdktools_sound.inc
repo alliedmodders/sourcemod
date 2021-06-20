@@ -238,7 +238,7 @@ native void EmitSound(const int[] clients,
  * @param updatePos     Unknown (updates positions?)
  * @param soundtime     Alternate time to play sound for.
  * @param ...           Optional list of Float[3] arrays to specify additional origins.
- * @error               Invalid client index or client not in game.
+ * @error               Invalid client index, client not in game or lack of mod support.
  */
 native void EmitSoundEntry(const int[] clients,
 				 int numClients,

@@ -95,7 +95,7 @@ native Handle CreateTimer(float interval, Timer func, any data=INVALID_HANDLE, i
  * @param timer         Timer Handle to kill.
  * @param autoClose     If autoClose is true, the data that was passed to CreateTimer() will
  *                      be closed as a handle if TIMER_DATA_HNDL_CLOSE was not specified.
- * @error               Invalid handles will cause a run time error.
+ * @error               Invalid timer handle.
  */
 native void KillTimer(Handle timer, bool autoClose=false);
 
@@ -105,6 +105,7 @@ native void KillTimer(Handle timer, bool autoClose=false);
  * @param timer         Timer Handle to trigger.
  * @param reset         If reset is true, the elapsed time counter is reset
  *                      so the full interval must pass again.
+ * @error               Invalid timer handle.
  */
 native void TriggerTimer(Handle timer, bool reset=false);
 

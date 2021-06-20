@@ -172,6 +172,7 @@ native int FormatEx(char[] buffer, int maxlength, const char[] format, any ...);
  * @param varpos        Argument number which contains the '...' symbol.
  *                      Note: Arguments start at 1.
  * @return              Number of bytes written.
+ * @error               Invalid argument index.
  */
 native int VFormat(char[] buffer, int maxlength, const char[] format, int varpos);
 
@@ -286,6 +287,7 @@ native int SplitString(const char[] source, const char[] split, char[] part, int
  * @param replace       String to replace the search string with.
  * @param caseSensitive If true (default), search is case sensitive.
  * @return              Number of replacements that were performed.
+ * @error               'search' parameter is empty.
  */
 native int ReplaceString(char[] text, int maxlength, const char[] search, const char[] replace, bool caseSensitive=true);
 
@@ -305,6 +307,7 @@ native int ReplaceString(char[] text, int maxlength, const char[] search, const 
  * @return              Index into the buffer (relative to the start) from where
  *                      the last replacement ended, or -1 if no replacements were
  *                      made.
+ * @error               'search' parameter is empty.
  */
 native int ReplaceStringEx(char[] text, int maxlength, const char[] search, const char[] replace, int searchLen=-1, int replaceLen=-1, bool caseSensitive=true);
 
