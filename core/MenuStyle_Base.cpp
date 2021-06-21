@@ -36,7 +36,7 @@
 #include "MenuManager.h"
 #include "CellRecipientFilter.h"
 #if defined MENU_DEBUG
-#include "Logger.h"
+#include "logic/Logger.h"
 #endif
 #include "logic_bridge.h"
 #include "AutoHandleRooter.h"
