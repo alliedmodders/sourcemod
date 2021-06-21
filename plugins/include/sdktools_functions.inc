@@ -349,3 +349,12 @@ native void SetClientName(int client, const char[] name);
  * @return              Amount of ammo actually given.
  */
 native int GivePlayerAmmo(int client, int amount, int ammotype, bool suppressSound=false);
+
+/**
+ * Changes a client's collision group
+ * 
+ * @param client            The client index
+ * @param collisionGroup    Collision group to use
+ * @error                   Invalid client index, or client not connected.
+ */
+native void SetCollisionGroup(int client, int collisionGroup);
