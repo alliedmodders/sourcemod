@@ -122,14 +122,12 @@ bool EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 	OutputNameStruct *pOutputName = NULL;
 
 	const char *classname = gamehelpers->GetEntityClassname(pCaller);
-
 	if (!classname)
 	{
 		return true;
 	}
 
-	const char *outputname = FindOutputName(pOutput, pActivator, pCaller);
-
+	const char *outputname = FindOutputName(pOutput, pCaller);		
 	if (!outputname)
 	{
 		return true;
@@ -348,7 +346,7 @@ OutputNameStruct *EntityOutputManager::FindOutputPointer(const char *classname, 
 }
 
 // Iterate the datamap of pCaller and look for output pointers with the same address as pOutput
-const char *EntityOutputManager::FindOutputName(void *pOutput, CBaseEntity *pActivator, CBaseEntity *pCaller)
+const char *EntityOutputManager::FindOutputName(void *pOutput, CBaseEntity *pCaller)
 {
 	datamap_t *pMap = gamehelpers->GetDataMap(pCaller);
 
@@ -365,26 +363,6 @@ const char *EntityOutputManager::FindOutputName(void *pOutput, CBaseEntity *pAct
 			}
 		}
 		pMap = pMap->baseMap;
-	}
-
-	if (pActivator)
-	{
-		pMap = gamehelpers->GetDataMap(pActivator);
-
-		while (pMap)
-		{
-			for (int i=0; i<pMap->dataNumFields; i++)
-			{
-				if (pMap->dataDesc[i].flags & FTYPEDESC_OUTPUT)
-				{
-					if ((char *)pActivator + GetTypeDescOffs(&pMap->dataDesc[i]) == pOutput)
-					{
-						return pMap->dataDesc[i].externalName;
-					}
-				}
-			}
-			pMap = pMap->baseMap;
-		}
 	}
 
 	return NULL;

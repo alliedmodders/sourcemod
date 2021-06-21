@@ -119,7 +119,7 @@ private:
 	bool CreateFireEventDetour();
 	void DeleteFireEventDetour();
 
-	const char *FindOutputName(void *pOutput, CBaseEntity *pActivator, CBaseEntity *pCaller);
+	const char *FindOutputName(void *pOutput, CBaseEntity *pCaller);
 
 	// Maps classname to a ClassNameStruct
 	IBasicTrie *ClassNames;

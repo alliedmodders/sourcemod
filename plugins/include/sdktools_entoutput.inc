@@ -58,10 +58,9 @@ typeset EntityOutput
  * @param classname     The classname to hook.
  * @param output        The output name to hook.
  * @param callback      An EntityOutput function pointer.
- * @return              True on success, false if was found same hook.
  * @error               Entity Outputs disabled.
  */
-native bool HookEntityOutput(const char[] classname, const char[] output, EntityOutput callback);
+native void HookEntityOutput(const char[] classname, const char[] output, EntityOutput callback);
 
 /**
  * Remove an entity output hook.
@@ -80,10 +79,9 @@ native bool UnhookEntityOutput(const char[] classname, const char[] output, Enti
  * @param output        The output name to hook.
  * @param callback      An EntityOutput function pointer.
  * @param once          Only fire this hook once and then remove itself.
- * @return              True on success, false if was found same hook.
  * @error               Entity Outputs disabled or Invalid Entity index.
  */
-native bool HookSingleEntityOutput(int entity, const char[] output, EntityOutput callback, bool once=false);
+native void HookSingleEntityOutput(int entity, const char[] output, EntityOutput callback, bool once=false);
 
 /**
  * Remove a single entity output hook.
