@@ -86,6 +86,12 @@
 				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
+			"SetCollisionGroup"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8b\xec\x53\x8b\x5d\x08\x56\x57\x8b\xf9\x39\x9f\xe0\x01\x00\x00\x74\x4f\x8b"
+				"linux"		"@_ZN11CBaseEntity17SetCollisionGroupEi"
+			}
 		}
 	}
 	
