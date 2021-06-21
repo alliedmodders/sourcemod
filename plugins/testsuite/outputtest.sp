@@ -1,7 +1,7 @@
 #include <sourcemod>
 #include <sdktools>
 
-public Plugin:myinfo = 
+public Plugin myinfo = 
 {
 	name = "Entity Output Hook Testing",
 	author = "AlliedModders LLC",
@@ -10,7 +10,7 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-public OnPluginStart()
+public void OnPluginStart()
 {
 	HookEntityOutput("point_spotlight", "OnLightOn", OutputHook);
 	
@@ -18,16 +18,24 @@ public OnPluginStart()
 	HookEntityOutput("func_door_rotating", "OnOpen", OutputHook);
 	HookEntityOutput("func_door", "OnClose", OutputHook);
 	HookEntityOutput("func_door_rotating", "OnClose", OutputHook);
+
+	if(GetEngineVersion() == Engine_CSGO)
+	{
+		// The server library calls with output names from Activator (from "plated_c4" activator entity in current example).
+		HookEntityOutput("planted_c4", "OnBombBeginDefuse", OutputHook);
+		HookEntityOutput("planted_c4", "OnBombDefused", OutputHook);
+		HookEntityOutput("planted_c4", "OnBombDefuseAborted", OutputHook);
+	}
 }
 
-public OutputHook(const String:name[], caller, activator, Float:delay)
+public void OutputHook(const char[] name, int caller, int activator, float delay)
 {
 	LogMessage("[ENTOUTPUT] %s", name);
 }
 
-public OnMapStart()
+public void OnMapStart()
 {
-	new ent = FindEntityByClassname(-1, "point_spotlight");
+	int ent = FindEntityByClassname(-1, "point_spotlight");
 	
 	if (ent == -1)
 	{

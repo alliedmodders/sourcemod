@@ -121,13 +121,9 @@ bool EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 	// attempt to directly lookup a hook using the pOutput pointer
 	OutputNameStruct *pOutputName = NULL;
 
-	const char *classname = gamehelpers->GetEntityClassname(pCaller);
-	if (!classname)
-	{
-		return true;
-	}
+	const char *classname;
+	const char *outputname = FindOutputName(pOutput, pActivator, pCaller, &classname);
 
-	const char *outputname = FindOutputName(pOutput, pCaller);		
 	if (!outputname)
 	{
 		return true;
@@ -346,7 +342,7 @@ OutputNameStruct *EntityOutputManager::FindOutputPointer(const char *classname, 
 }
 
 // Iterate the datamap of pCaller and look for output pointers with the same address as pOutput
-const char *EntityOutputManager::FindOutputName(void *pOutput, CBaseEntity *pCaller)
+const char *EntityOutputManager::FindOutputName(void *pOutput, CBaseEntity *pActivator, CBaseEntity *pCaller, const char **entity_classname)
 {
 	datamap_t *pMap = gamehelpers->GetDataMap(pCaller);
 
@@ -358,11 +354,46 @@ const char *EntityOutputManager::FindOutputName(void *pOutput, CBaseEntity *pCal
 			{
 				if ((char *)pCaller + GetTypeDescOffs(&pMap->dataDesc[i]) == pOutput)
 				{
+					if(entity_classname)
+					{
+						*entity_classname = gamehelpers->GetEntityClassname(pCaller);
+					}
+
 					return pMap->dataDesc[i].externalName;
 				}
 			}
 		}
 		pMap = pMap->baseMap;
+	}
+
+	if (pActivator)
+	{
+		pMap = gamehelpers->GetDataMap(pActivator);
+
+		while (pMap)
+		{
+			for (int i=0; i<pMap->dataNumFields; i++)
+			{
+				if (pMap->dataDesc[i].flags & FTYPEDESC_OUTPUT)
+				{
+					if ((char *)pActivator + GetTypeDescOffs(&pMap->dataDesc[i]) == pOutput)
+					{
+						if(entity_classname)
+						{
+							*entity_classname = gamehelpers->GetEntityClassname(pActivator);
+						}
+
+						return pMap->dataDesc[i].externalName;
+					}
+				}
+			}
+			pMap = pMap->baseMap;
+		}
+	}
+
+	if(entity_classname)
+	{
+		*entity_classname = nullptr;
 	}
 
 	return NULL;
