@@ -773,3 +773,32 @@ stock bool BitToFlag(int bit, AdminFlag &flag)
 
 	return false;
 }
+
+/**
+ * Converts a bit string to a string of flag characters.
+ *
+ * @param bits			Bit string containing the flags.
+ * @param flags			Output array to write a string of flag characters.
+ * @param maxSize		Maximum size of the string array.
+ * @return				Number of flag characters written.
+ */
+stock int FlagBitsToString(const int bits, char[] flags, const int maxSize)
+{
+	AdminFlag array[AdminFlags_TOTAL];
+	int numFlags = FlagBitsToArray(bits, array, AdminFlags_TOTAL);
+	if (numFlags > maxSize)
+	{
+		numFlags = maxSize;
+	}
+	int i, c, numId = 0;
+	for (i = 0; i < numFlags; ++i)
+	{
+		if(FindFlagChar(array[i], c))
+		{
+			flags[numId++] = c;
+		}
+	}
+	flags[numId] = '\0';
+
+	return numId;
+}
