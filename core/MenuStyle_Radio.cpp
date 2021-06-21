@@ -35,7 +35,7 @@
 #include <IGameConfigs.h>
 #include "PlayerManager.h"
 #if defined MENU_DEBUG
-#include "logic/Logger.h"
+#include "Logger.h"
 #endif
 #include "logic_bridge.h"
 
