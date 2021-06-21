@@ -691,7 +691,7 @@ enum Address
  * @param size          How many bytes should be read.
  *                      If loading a floating-point value, use NumberType_Int32.
  * @return              The value that is stored at that address.
- * @error               Address is null or it's pointing to a reserved memory, invalid NumberType.
+ * @error               Address is null or pointing to reserved memory.
  */
 native any LoadFromAddress(Address addr, NumberType size);
 
@@ -702,7 +702,7 @@ native any LoadFromAddress(Address addr, NumberType size);
  * @param data          Value to store at the address.
  * @param size          How many bytes should be written.
  *                      If storing a floating-point value, use NumberType_Int32.
- * @error               Address is null or it's pointing to a reserved memory or invalid NumberType.
+ * @error               Address is null or pointing to reserved memory.
  */
 native void StoreToAddress(Address addr, any data, NumberType size);
 
