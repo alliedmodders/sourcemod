@@ -35,7 +35,7 @@
 #include <IGameConfigs.h>
 #include "PlayerManager.h"
 #if defined MENU_DEBUG
-#include "Logger.h"
+#include <bridge/include/ILogger.h>
 #endif
 #include "logic_bridge.h"
 
@@ -199,7 +199,7 @@ void CRadioStyle::OnUserMessageSent(int msg_id)
 	{
 		int client = g_last_clients[i];
 #if defined MENU_DEBUG
-		g_Logger.LogMessage("[SM_MENU] CRadioStyle got ShowMenu (client %d) (bInMenu %d)",
+		logger->LogMessage("[SM_MENU] CRadioStyle got ShowMenu (client %d) (bInMenu %d)",
 			client,
 			m_players[client].bInExternMenu);
 #endif
@@ -578,7 +578,7 @@ bool CRadioMenu::DisplayAtItem(int client,
 							   IMenuHandler *alt_handler)
 {
 #if defined MENU_DEBUG
-	g_Logger.LogMessage("[SM_MENU] CRadioMenu::Display(%p) (client %d) (time %d)",
+	logger->LogMessage("[SM_MENU] CRadioMenu::Display(%p) (client %d) (time %d)",
 		this,
 		client,
 		time);
