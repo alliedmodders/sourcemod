@@ -146,9 +146,9 @@ native bool PrepSDKCall_SetAddress(Address addr);
  * @param source        Whether to look in Offsets or Signatures.
  * @param name          Name of the property to find.
  * @return              True on success, false if nothing was found.
- * @error               Invalid GameData config.
+ * @error               Invalid game config Handle.
  */
-native bool PrepSDKCall_SetFromConf(GameData gameconf, SDKFuncConfSource source, const char[] name);
+native bool PrepSDKCall_SetFromConf(Handle gameconf, SDKFuncConfSource source, const char[] name);
 
 /**
  * Sets the return information of an SDK call.  Do not call this if there is no return data.
