@@ -1569,7 +1569,7 @@ sp_nativeinfo_t g_Natives[] =
 	{"SetClientInfo",			SetClientInfo},
 	{"SetClientName",           SetClientName},
 	{"GetPlayerResourceEntity", GetPlayerResourceEntity},
-	{"GivePlayerAmmo",			GivePlayerAmmo},
+	{"GivePlayerAmmo",		GivePlayerAmmo},
 	{"SetCollisionGroup",		SetCollisionGroup},
 	{NULL,						NULL},
 };
