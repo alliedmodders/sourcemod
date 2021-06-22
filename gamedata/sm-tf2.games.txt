@@ -81,7 +81,7 @@
 			"MakeBleed"
 			{
 				"library" 	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x30\x53\x8B\xD9\x89\x5D\xEC"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x2C\x57\x8B\xF9\x89\x7D\xF0"
 				"linux"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefibi"
 				"mac"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefibi"
 			}
@@ -113,21 +113,21 @@
 		{
 			"ForceRespawn"
 			{
-				"windows"	"329"
-				"linux"		"330"
-				"mac"		"330"
+				"windows"	"330"
+				"linux"		"331"
+				"mac"		"331"
 			}
 			"CalcIsAttackCriticalHelper"
-			{
-				"windows"	"390"
-				"linux"		"397"
-				"mac"		"397"
-			}
-			"CalcIsAttackCriticalHelperNoCrits"
 			{
 				"windows"	"391"
 				"linux"		"398"
 				"mac"		"398"
+			}
+			"CalcIsAttackCriticalHelperNoCrits"
+			{
+				"windows"	"392"
+				"linux"		"399"
+				"mac"		"399"
 			}
 			
 			// CTFGameRules::IsHolidayActive
@@ -140,9 +140,9 @@
 
 			"RemoveWearable"
 			{
-				"windows"	"431"
-				"linux"		"432"
-				"mac"		"432"
+				"windows"	"432"
+				"linux"		"433"
+				"mac"		"433"
 			}
 		}
 	}
