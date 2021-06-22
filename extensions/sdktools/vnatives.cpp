@@ -1501,7 +1501,7 @@ static cell_t GivePlayerAmmo(IPluginContext *pContext, const cell_t *params)
 	return ammoGiven;
 }
 
-// SetCollisionGroup(int client, int collisionGroup)
+// SetCollisionGroup(int entity, int collisionGroup)
 static cell_t SetCollisionGroup(IPluginContext *pContext, const cell_t *params)
 {
 	if (!g_pSetCollisionGroup)
@@ -1512,7 +1512,7 @@ static cell_t SetCollisionGroup(IPluginContext *pContext, const cell_t *params)
 			return pContext->ThrowNativeError("\"SetCollisionGroup\" not supported by this mod");
 		}
 		PassInfo pass[2];
-		// Player
+		// Entity
 		pass[0].type = PassType_Basic;
 		pass[0].flags = PASSFLAG_BYVAL;
 		pass[0].size = sizeof(CBaseEntity *);
@@ -1528,10 +1528,10 @@ static cell_t SetCollisionGroup(IPluginContext *pContext, const cell_t *params)
 		}
 	}
 
-	CBaseEntity *pPlayer;
-	ENTINDEX_TO_CBASEENTITY(params[1], pPlayer);
+	CBaseEntity *pEntity;
+	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
 
-	ArgBuffer<CBaseEntity *, int> vstk(pPlayer, params[2]);
+	ArgBuffer<CBaseEntity *, int> vstk(pEntity, params[2]);
 
 	g_pSetCollisionGroup->Execute(vstk, nullptr);
 

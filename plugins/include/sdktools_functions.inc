@@ -351,10 +351,10 @@ native void SetClientName(int client, const char[] name);
 native int GivePlayerAmmo(int client, int amount, int ammotype, bool suppressSound=false);
 
 /**
- * Changes a client's collision group
+ * Changes an entity's collision group (CBaseEntity::SetCollisionGroup).
  * 
- * @param client            The client index.
+ * @param client            The entity index.
  * @param collisionGroup    Collision group to use.
- * @error                   Invalid client index, or client not in game.
+ * @error                   Invalid entity or lack of mod support.
  */
-native void SetCollisionGroup(int client, int collisionGroup);
+native void SetCollisionGroup(int entity, int collisionGroup);
