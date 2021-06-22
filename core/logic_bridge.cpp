@@ -630,19 +630,26 @@ void CoreProviderImpl::InitializeBridge()
 	this->serverFactory = (void *)g_SMAPI->GetServerFactory(false);
 	this->listeners = SMGlobalClass::head;
 
-	char path[PLATFORM_MAX_PATH];
-
-	ke::path::Format(path, sizeof(path),
-	                 "%s/bin/matchmaking_ds%s%s",
-                     g_SMAPI->GetBaseDir(),
-                     SOURCE_BIN_SUFFIX,
-                     SOURCE_BIN_EXT);
-
-	if (ke::RefPtr<ke::SharedLib> mmlib = ke::SharedLib::Open(path, NULL, 0)) {
+	if (ke::RefPtr<ke::SharedLib> mmlib = ke::SharedLib::Open(FORMAT_SOURCE_BIN_NAME("matchmaking_ds"), NULL, 0)) {
 		this->matchmakingDSFactory =
 		  mmlib->get<decltype(sCoreProviderImpl.matchmakingDSFactory)>("CreateInterface");
 	}
-	
+	else
+	{
+		char path[PLATFORM_MAX_PATH];
+
+		ke::path::Format(path, sizeof(path),
+				 "%s/bin/matchmaking_ds%s%s",
+			     g_SMAPI->GetBaseDir(),
+			     SOURCE_BIN_SUFFIX,
+			     SOURCE_BIN_EXT);
+
+		if (ke::RefPtr<ke::SharedLib> mmlib = ke::SharedLib::Open(path, NULL, 0)) {
+			this->matchmakingDSFactory =
+			  mmlib->get<decltype(sCoreProviderImpl.matchmakingDSFactory)>("CreateInterface");
+		}
+	}
+
 	logic_init_(this, &logicore);
 
 	// Join logic's SMGlobalClass instances.
