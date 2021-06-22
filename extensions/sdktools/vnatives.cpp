@@ -46,8 +46,6 @@
 SourceHook::List<ValveCall *> g_RegCalls;
 SourceHook::List<ICallWrapper *> g_CallWraps;
 
-ICallWrapper *g_pSetCollisionGroup = NULL;
-
 #define ENTINDEX_TO_CBASEENTITY(ref, buffer) \
 	buffer = gamehelpers->ReferenceToEntity(ref); \
 	if (!buffer) \
@@ -1504,7 +1502,8 @@ static cell_t GivePlayerAmmo(IPluginContext *pContext, const cell_t *params)
 // SetCollisionGroup(int entity, int collisionGroup)
 static cell_t SetCollisionGroup(IPluginContext *pContext, const cell_t *params)
 {
-	if (!g_pSetCollisionGroup)
+	static ICallWrapper *pSetCollisionGroup = NULL;
+	if (!pSetCollisionGroup)
 	{
 		void *addr;
 		if (!g_pGameConf->GetMemSig("SetCollisionGroup", &addr) || !addr)
@@ -1522,7 +1521,7 @@ static cell_t SetCollisionGroup(IPluginContext *pContext, const cell_t *params)
 		pass[1].flags = PASSFLAG_BYVAL;
 		pass[1].size = sizeof(int);
 
-		if (!(g_pSetCollisionGroup = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 2)))
+		if (!(pSetCollisionGroup = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 2)))
 		{
 			return pContext->ThrowNativeError("\"SetCollisionGroup\" wrapper failed to initialize");
 		}
@@ -1533,7 +1532,7 @@ static cell_t SetCollisionGroup(IPluginContext *pContext, const cell_t *params)
 
 	ArgBuffer<CBaseEntity *, int> vstk(pEntity, params[2]);
 
-	g_pSetCollisionGroup->Execute(vstk, nullptr);
+	pSetCollisionGroup->Execute(vstk, nullptr);
 
 	return 1;
 
