@@ -353,8 +353,8 @@ native int GivePlayerAmmo(int client, int amount, int ammotype, bool suppressSou
 /**
  * Changes a client's collision group
  * 
- * @param client            The client index
- * @param collisionGroup    Collision group to use
- * @error                   Invalid client index, or client not connected.
+ * @param client            The client index.
+ * @param collisionGroup    Collision group to use.
+ * @error                   Invalid client index, or client not in game.
  */
 native void SetCollisionGroup(int client, int collisionGroup);
