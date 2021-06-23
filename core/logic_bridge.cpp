@@ -55,6 +55,9 @@
 # include "pb_handle.h"
 #endif
 
+#define MATCHMAKINGDS_LIBRARY \
+	("matchmaking_ds" SOURCE_BIN_SUFFIX SOURCE_BIN_EXT)
+
 sm_logic_t logicore;
 
 IThreader *g_pThreader = nullptr;
@@ -638,11 +641,17 @@ void CoreProviderImpl::InitializeBridge()
 	{
 		char path[PLATFORM_MAX_PATH];
 
-		ke::path::Format(path, sizeof(path),
-				 "%s/bin/matchmaking_ds%s%s",
-			     g_SMAPI->GetBaseDir(),
-			     SOURCE_BIN_SUFFIX,
-			     SOURCE_BIN_EXT);
+#if defined PLATFORM_X64
+#ifdef PLATFORM_WINDOWS
+		ke::path::Format(path, sizeof(path), "%s/bin/" PLATFORM_ARCH_FOLDER MATCHMAKINGDS_LIBRARY, g_SMAPI->GetBaseDir());
+#elif defined PLATFORM_LINUX && (SOURCE_ENGINE == SE_INSURGENCY || SOURCE_ENGINE == SE_DOI)
+		ke::path::Format(path, sizeof(path), "%s/bin/" MATCHMAKINGDS_LIBRARY, g_SMAPI->GetBaseDir());
+#else
+		ke::path::Format(path, sizeof(path), "%s/bin/" PLATFORM_FOLDER MATCHMAKINGDS_LIBRARY, g_SMAPI->GetBaseDir());
+#endif
+#else
+		ke::path::Format(path, sizeof(path), "%s/bin/" MATCHMAKINGDS_LIBRARY, g_SMAPI->GetBaseDir());
+#endif
 
 		if (ke::RefPtr<ke::SharedLib> mmlib = ke::SharedLib::Open(path, NULL, 0)) {
 			this->matchmakingDSFactory =
