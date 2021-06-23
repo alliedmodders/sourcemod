@@ -56,7 +56,7 @@
 #endif
 
 #define MATCHMAKINGDS_LIBRARY \
-	("matchmaking_ds" SOURCE_BIN_SUFFIX SOURCE_BIN_EXT)
+	"matchmaking_ds" SOURCE_BIN_SUFFIX SOURCE_BIN_EXT
 
 sm_logic_t logicore;
 
