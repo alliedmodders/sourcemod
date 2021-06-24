@@ -333,7 +333,7 @@ native bool IsSoundPrecached(const char[] sound);
  * @param client        Index of the client.
  * @param kv            KeyValues handle to set the menu keys and options. (Check iserverplugin.h for more information).
  * @param type          Message type to display ingame.
- * @error               Invalid client index, or client not connected.
+ * @error               Invalid client index, or client not in game.
  */
 native void CreateDialog(int client, Handle kv, DialogType type);
 
@@ -366,7 +366,7 @@ native EngineVersion GetEngineVersion();
  * @param client        Client index.
  * @param format        Formatting rules.
  * @param ...           Variable number of format parameters.
- * @error               If the client is not connected an error will be thrown.
+ * @error               Invalid client index, or client not in game.
  */
 native void PrintToChat(int client, const char[] format, any ...);
 
@@ -397,7 +397,7 @@ stock void PrintToChatAll(const char[] format, any ...)
  * @param client        Client index.
  * @param format        Formatting rules.
  * @param ...           Variable number of format parameters.
- * @error               If the client is not connected an error will be thrown.
+ * @error               Invalid client index, or client not in game.
  */
 native void PrintCenterText(int client, const char[] format, any ...);
 
@@ -428,7 +428,7 @@ stock void PrintCenterTextAll(const char[] format, any ...)
  * @param client        Client index.
  * @param format        Formatting rules.
  * @param ...           Variable number of format parameters.
- * @error               If the client is not connected an error will be thrown.
+ * @error               Invalid client index, or client not in game.
  */
 native void PrintHintText(int client, const char[] format, any ...);
 
@@ -462,7 +462,7 @@ stock void PrintHintTextToAll(const char[] format, any ...)
  * @param Kv            KeyValues handle with all the data for the panel setup (Depends
  *                      on the panel type and may be unused).
  * @param show          True to show the panel, or false to remove it from the client screen.
- * @error               If the client is not connected an error will be thrown.
+ * @error               Invalid client index, or client not in game.
  */
 native void ShowVGUIPanel(int client, const char[] name, Handle Kv=INVALID_HANDLE, bool show=true);
 
@@ -561,7 +561,7 @@ native void SetHudTextParamsEx(float x, float y, float holdTime, int color1[4],
  * @param ...           Message formatting parameters.
  * @return              -1 on failure, anything else on success.
  *                      This function fails if the mod does not support it.
- * @error               Client not in-game, or sync object not valid.
+ * @error               Invalid client index, client not in game, or sync object not valid.
  */
 native int ShowSyncHudText(int client, Handle sync, const char[] message, any ...);
 
@@ -579,7 +579,7 @@ native int ShowSyncHudText(int client, Handle sync, const char[] message, any ..
  *
  * @param client        Client index to send the message to.
  * @param sync          Synchronization object.
- * @error               Client not in-game, or sync object not valid.
+ * @error               Invalid client index, client not in game, or sync object not valid.
  */
 native void ClearSyncHud(int client, Handle sync);
 
@@ -599,6 +599,7 @@ native void ClearSyncHud(int client, Handle sync);
  * @return              -1 on failure (lack of mod support).
  *                      Any other return value is the channel number that was
  *                      used to render the text.
+ * @error               Invalid client index, or client not in game.
  */
 native int ShowHudText(int client, int channel, const char[] message, any ...);
 
@@ -610,7 +611,7 @@ native int ShowHudText(int client, int channel, const char[] message, any ...);
  * @param msg           Contents of the panel, it can be treated as an url, filename or plain text
  *                      depending on the type parameter (WARNING: msg has to be 192 bytes maximum!)
  * @param type          Determines the way to treat the message body of the panel.
- * @error               If the client is not connected an error will be thrown.
+ * @error               Invalid client index, or client not in game.
  */
 stock void ShowMOTDPanel(int client, const char[] title, const char[] msg, int type=MOTDPANEL_TYPE_INDEX)
 {
@@ -632,6 +633,7 @@ stock void ShowMOTDPanel(int client, const char[] title, const char[] msg, int t
  * @param time          Duration to hold the panel on the client's screen.
  * @param ip            Destination IP.
  * @param password      Password to connect to the destination IP. The client will be able to see this.
+ * @error               Invalid client index, or client not in game.
  */
 stock void DisplayAskConnectBox(int client, float time, const char[] ip, const char[] password = "")
 {

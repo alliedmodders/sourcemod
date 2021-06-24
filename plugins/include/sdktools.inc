@@ -146,6 +146,7 @@ native bool PrepSDKCall_SetAddress(Address addr);
  * @param source        Whether to look in Offsets or Signatures.
  * @param name          Name of the property to find.
  * @return              True on success, false if nothing was found.
+ * @error               Invalid game config Handle.
  */
 native bool PrepSDKCall_SetFromConf(Handle gameconf, SDKFuncConfSource source, const char[] name);
 
@@ -168,6 +169,7 @@ native void PrepSDKCall_SetReturnInfo(SDKType type, SDKPassMethod pass, int decf
  * @param pass          How the data is passed in C++.
  * @param decflags      Flags on decoding from the plugin to C++.
  * @param encflags      Flags on encoding from C++ to the plugin.
+ * @error               Parameter limit for SDK calls reached.
  */
 native void PrepSDKCall_AddParameter(SDKType type, SDKPassMethod pass, int decflags=0, int encflags=0);
 

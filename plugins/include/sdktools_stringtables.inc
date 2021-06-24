@@ -146,6 +146,7 @@ native void SetStringTableData(int tableidx, int stringidx, const char[] userdat
  * @param length        Length of user data string. This should include the null terminator.
  *                      If set to -1, then user data will be not be altered if the specified string
  *                      already exists in the string table.
+ * @error               Invalid string table index.
  */
 native void AddToStringTable(int tableidx, const char[] str, const char[] userdata="", int length=-1);
 

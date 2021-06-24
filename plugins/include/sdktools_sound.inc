@@ -199,7 +199,7 @@ native void StopSound(int entity, int channel, const char[] name);
  * @param updatePos     Unknown (updates positions?)
  * @param soundtime     Alternate time to play sound for.
  * @param ...           Optional list of Float[3] arrays to specify additional origins.
- * @error               Invalid client index.
+ * @error               Invalid client index or client not in game.
  */
 native void EmitSound(const int[] clients,
 				 int numClients,
@@ -238,7 +238,7 @@ native void EmitSound(const int[] clients,
  * @param updatePos     Unknown (updates positions?)
  * @param soundtime     Alternate time to play sound for.
  * @param ...           Optional list of Float[3] arrays to specify additional origins.
- * @error               Invalid client index.
+ * @error               Invalid client index, client not in game, or lack of mod support.
  */
 native void EmitSoundEntry(const int[] clients,
 				 int numClients,
@@ -276,7 +276,7 @@ native void EmitSoundEntry(const int[] clients,
  * @param updatePos     Unknown (updates positions?)
  * @param soundtime     Alternate time to play sound for.
  * @param ...           Optional list of Float[3] arrays to specify additional origins.
- * @error               Invalid client index.
+ * @error               Invalid client index or client not in game.
  */
 native void EmitSentence(const int[] clients,
 				 int numClients,
@@ -410,7 +410,7 @@ native void RemoveNormalSoundHook(NormalSHook hook);
  * @param dir           Sound direction.
  * @param updatePos     Unknown (updates positions?)
  * @param soundtime     Alternate time to play sound for.
- * @error               Invalid client index.
+ * @error               Invalid client index or client not in game.
  */
 stock void EmitSoundToClient(int client,
 				 const char[] sample,
@@ -549,7 +549,7 @@ native bool GetGameSoundParams(const char[] gameSound,
  * @param updatePos     Unknown (updates positions?)
  * @param soundtime     Alternate time to play sound for.
  * @return              True if the sound was played successfully, false if it failed
- * @error               Invalid client index.
+ * @error               Invalid client index or client not in game.
  */
 stock bool EmitGameSound(const int[] clients,
 				int numClients,
@@ -631,7 +631,7 @@ stock bool EmitAmbientGameSound(const char[] gameSound,
  * @param dir           Sound direction.
  * @param updatePos     Unknown (updates positions?)
  * @param soundtime     Alternate time to play sound for.
- * @error               Invalid client index.
+ * @error               Invalid client index or client not in game.
  */
 stock bool EmitGameSoundToClient(int client,
 				const char[] gameSound,

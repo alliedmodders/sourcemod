@@ -75,6 +75,7 @@ forward void OnClientSpeakingEnd(int client);
  *
  * @param client        The client index
  * @param flags         The voice flags
+ * @error               Invalid client index or client not connected.
  */
 native void SetClientListeningFlags(int client, int flags);
 
@@ -83,6 +84,7 @@ native void SetClientListeningFlags(int client, int flags);
  *
  * @param client        The client index
  * @return              The current voice flags
+ * @error               Invalid client index or client not connected.
  */
 native int GetClientListeningFlags(int client);
 
@@ -116,6 +118,7 @@ native bool GetClientListening(int iReceiver, int iSender);
  * @param iSender       The sender index.
  * @param override      The override of the receiver's ability to listen to the sender.
  * @return              True if successful otherwise false.
+ * @error               Listener or sender client index is invalid or not connected.
  */
 native bool SetListenOverride(int iReceiver, int iSender, ListenOverride override);
 
@@ -125,6 +128,7 @@ native bool SetListenOverride(int iReceiver, int iSender, ListenOverride overrid
  * @param iReceiver     The listener index.
  * @param iSender       The sender index.
  * @return              The override value.
+ * @error               Listener or sender client index is invalid or not connected.
  */
 native ListenOverride GetListenOverride(int iReceiver, int iSender);
 
@@ -134,5 +138,6 @@ native ListenOverride GetListenOverride(int iReceiver, int iSender);
  * @param iMuter        The muter index.
  * @param iMutee        The mutee index.
  * @return              True if muter has muted mutee, false otherwise.
+ * @error               Muter or mutee client index is invalid or not connected.
  */
 native bool IsClientMuted(int iMuter, int iMutee);

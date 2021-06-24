@@ -424,6 +424,7 @@ native void SDKUnhook(int entity, SDKHookType type, SDKHookCB callback);
  * @param weapon         Weapon index (orangebox and later) or -1 for unspecified
  * @param damageForce    Velocity of damage force
  * @param damagePosition Origin of damage
+ * @error                Invalid entity, attacker, inflictor, or weapon entity.
  */
 native void SDKHooks_TakeDamage(int entity, int inflictor, int attacker,
 		float damage, int damageType=DMG_GENERIC, int weapon=-1,

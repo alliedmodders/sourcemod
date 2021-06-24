@@ -220,6 +220,7 @@ native int TR_GetPointContents(const float pos[3], int &entindex=-1);
  * @param entindex      Entity index to test.
  * @param pos           World position.
  * @return              Contents mask.
+ * @error               Invalid entity.
  */
 native int TR_GetPointContentsEnt(int entindex, const float pos[3]);
 
@@ -397,6 +398,7 @@ native void TR_TraceHullFilter(const float pos[3],
  * @param flags         Trace flags.
  * @param rtype         Method to calculate the ray direction.
  * @param entity        Entity to clip to.
+ * @error               Invalid entity.
  */
 native void TR_ClipRayToEntity(const float pos[3],
                                const float vec[3],
@@ -413,6 +415,7 @@ native void TR_ClipRayToEntity(const float pos[3],
  * @param maxs          Hull maximum size.
  * @param flags         Trace flags.
  * @param entity        Entity to clip to.
+ * @error               Invalid entity.
  */
 native void TR_ClipRayHullToEntity(const float pos[3],
                                    const float vec[3],
@@ -426,6 +429,7 @@ native void TR_ClipRayHullToEntity(const float pos[3],
  *
  * @param flags         Trace flags.
  * @param entity        Entity to clip to.
+ * @error               Invalid entity.
  */
 native void TR_ClipCurrentRayToEntity(int flags, int entity);
 
@@ -517,6 +521,7 @@ native Handle TR_TraceHullFilterEx(const float pos[3],
  * @param rtype         Method to calculate the ray direction.
  * @param entity        Entity to clip to.
  * @return              Ray trace handle, which must be closed via CloseHandle().
+ * @error               Invalid entity.
  */
 native Handle TR_ClipRayToEntityEx(const float pos[3],
                                    const float vec[3],
@@ -534,6 +539,7 @@ native Handle TR_ClipRayToEntityEx(const float pos[3],
  * @param flags         Trace flags.
  * @param entity        Entity to clip to.
  * @return              Ray trace handle, which must be closed via CloseHandle().
+ * @error               Invalid entity.
  */
 native Handle TR_ClipRayHullToEntityEx(const float pos[3],
                                        const float vec[3],
@@ -548,6 +554,7 @@ native Handle TR_ClipRayHullToEntityEx(const float pos[3],
  * @param flags         Trace flags.
  * @param entity        Entity to clip to.
  * @return              Ray trace handle, which must be closed via CloseHandle().
+ * @error               Invalid entity.
  */
 native Handle TR_ClipCurrentRayToEntityEx(int flags, int entity);
 
