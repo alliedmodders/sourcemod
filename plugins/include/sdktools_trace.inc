@@ -398,7 +398,7 @@ native void TR_TraceHullFilter(const float pos[3],
  * @param flags         Trace flags.
  * @param rtype         Method to calculate the ray direction.
  * @param entity        Entity to clip to.
- * @error               Invalid entity
+ * @error               Invalid entity.
  */
 native void TR_ClipRayToEntity(const float pos[3],
                                const float vec[3],

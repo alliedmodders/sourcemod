@@ -133,7 +133,7 @@ native int FindEntityByClassname(int startEnt, const char[] classname);
  * @param client        Player's index.
  * @param ang           Destination vector to store the client's eye angles.
  * @return              True on success, false on failure.
- * @error               Invalid client index, client not in game or lack of mod support.
+ * @error               Invalid client index, client not in game, or lack of mod support.
  */
 native bool GetClientEyeAngles(int client, float ang[3]);
 
@@ -145,7 +145,7 @@ native bool GetClientEyeAngles(int client, float ang[3]);
  * @param classname         Entity classname.
  * @param ForceEdictIndex   Edict index used by the created entity (ignored on Orangebox and above).
  * @return                  Entity index on success, or -1 on failure.
- * @error                   Invalid edict index, no map is running or lack of mod support.
+ * @error                   Invalid edict index, no map is running, or lack of mod support.
  */
 native int CreateEntityByName(const char[] classname, int ForceEdictIndex=-1);
 
@@ -154,7 +154,7 @@ native int CreateEntityByName(const char[] classname, int ForceEdictIndex=-1);
  *
  * @param entity        Entity index of the created entity.
  * @return              True on success, false otherwise.
- * @error               Invalid entity index, or lack of mod support.
+ * @error               Invalid entity index or lack of mod support.
  */
 native bool DispatchSpawn(int entity);
 
@@ -165,7 +165,7 @@ native bool DispatchSpawn(int entity);
  * @param keyName       Name of the key.
  * @param value         String value.
  * @return              True on success, false otherwise.
- * @error               Invalid entity index, or lack of mod support.
+ * @error               Invalid entity index or lack of mod support.
  */
 native bool DispatchKeyValue(int entity, const char[] keyName, const char[] value);
 
@@ -176,7 +176,7 @@ native bool DispatchKeyValue(int entity, const char[] keyName, const char[] valu
  * @param keyName       Name of the key.
  * @param value         Floating point value.
  * @return              True on success, false otherwise.
- * @error               Invalid entity index, or lack of mod support.
+ * @error               Invalid entity index or lack of mod support.
  */
 native bool DispatchKeyValueFloat(int entity, const char[] keyName, float value);
 
@@ -187,7 +187,7 @@ native bool DispatchKeyValueFloat(int entity, const char[] keyName, float value)
  * @param keyName       Name of the key.
  * @param vec           Vector value.
  * @return              True on success, false otherwise.
- * @error               Invalid entity index, or lack of mod support.
+ * @error               Invalid entity index or lack of mod support.
  */
 native bool DispatchKeyValueVector(int entity, const char[] keyName, const float vec[3]);
 
@@ -326,7 +326,7 @@ native void ActivateEntity(int entity);
  * @param client        Player's index.
  * @param key           Key string.
  * @param value         Value string.
- * @error               Invalid client index, client not connected or lack of mod support.
+ * @error               Invalid client index, client not connected, or lack of mod support.
  */
 native void SetClientInfo(int client, const char[] key, const char[] value);
 
@@ -335,7 +335,7 @@ native void SetClientInfo(int client, const char[] key, const char[] value);
  *
  * @param client        Player's index.
  * @param name          New name.
- * @error               Invalid client index, client not connected or lack of mod support.
+ * @error               Invalid client index, client not connected, or lack of mod support.
  */
 native void SetClientName(int client, const char[] name);
 
