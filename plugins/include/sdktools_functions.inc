@@ -353,7 +353,7 @@ native int GivePlayerAmmo(int client, int amount, int ammotype, bool suppressSou
 /**
  * Changes an entity's collision group (CBaseEntity::SetCollisionGroup).
  * 
- * @param client            The entity index.
+ * @param entity            The entity index.
  * @param collisionGroup    Collision group to use.
  * @error                   Invalid entity or lack of mod support.
  */
