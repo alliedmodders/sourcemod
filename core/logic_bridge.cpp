@@ -630,11 +630,10 @@ void CoreProviderImpl::InitializeBridge()
 	this->serverFactory = (void *)g_SMAPI->GetServerFactory(false);
 	this->listeners = SMGlobalClass::head;
 
-	if (ke::RefPtr<ke::SharedLib> mmlib = ke::SharedLib::Open(FORMAT_SOURCE_BIN_NAME("matchmaking_ds"), NULL, 0)) {
-		this->matchmakingDSFactory =
-		  mmlib->get<decltype(sCoreProviderImpl.matchmakingDSFactory)>("CreateInterface");
+	if (auto mmlib = ::filesystem->LoadModule("matchmaking_ds" SOURCE_BIN_SUFFIX, "GAMEBIN")) {
+		this->matchmakingDSFactory = (void*)Sys_GetFactory(mmlib);
 	}
-	
+
 	logic_init_(this, &logicore);
 
 	// Join logic's SMGlobalClass instances.
