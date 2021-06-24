@@ -351,3 +351,12 @@ native void SetClientName(int client, const char[] name);
  * @error               Lack of mod support.
  */
 native int GivePlayerAmmo(int client, int amount, int ammotype, bool suppressSound=false);
+
+/**
+ * Changes an entity's collision group (CBaseEntity::SetCollisionGroup).
+ * 
+ * @param entity            The entity index.
+ * @param collisionGroup    Collision group to use.
+ * @error                   Invalid entity or lack of mod support.
+ */
+native void SetCollisionGroup(int entity, int collisionGroup);

@@ -41,9 +41,17 @@
 #include <iclient.h>
 #include "iserver.h"
 #include "am-string.h"
+#include <sm_argbuffer.h>
 
 SourceHook::List<ValveCall *> g_RegCalls;
 SourceHook::List<ICallWrapper *> g_CallWraps;
+
+#define ENTINDEX_TO_CBASEENTITY(ref, buffer) \
+	buffer = gamehelpers->ReferenceToEntity(ref); \
+	if (!buffer) \
+	{ \
+		return pContext->ThrowNativeError("Entity %d (%d) is not a CBaseEntity", gamehelpers->ReferenceToIndex(ref), ref); \
+	}
 
 inline void InitPass(ValvePassInfo &info, ValveType vtype, PassType type, unsigned int flags, unsigned int decflags=0)
 {
@@ -1491,6 +1499,45 @@ static cell_t GivePlayerAmmo(IPluginContext *pContext, const cell_t *params)
 	return ammoGiven;
 }
 
+// SetCollisionGroup(int entity, int collisionGroup)
+static cell_t SetCollisionGroup(IPluginContext *pContext, const cell_t *params)
+{
+	static ICallWrapper *pSetCollisionGroup = NULL;
+	if (!pSetCollisionGroup)
+	{
+		void *addr;
+		if (!g_pGameConf->GetMemSig("SetCollisionGroup", &addr) || !addr)
+		{
+			return pContext->ThrowNativeError("\"SetCollisionGroup\" not supported by this mod");
+		}
+		PassInfo pass[2];
+		// Entity
+		pass[0].type = PassType_Basic;
+		pass[0].flags = PASSFLAG_BYVAL;
+		pass[0].size = sizeof(CBaseEntity *);
+
+		// Collision Group
+		pass[1].type = PassType_Basic;
+		pass[1].flags = PASSFLAG_BYVAL;
+		pass[1].size = sizeof(int);
+
+		if (!(pSetCollisionGroup = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 2)))
+		{
+			return pContext->ThrowNativeError("\"SetCollisionGroup\" wrapper failed to initialize");
+		}
+	}
+
+	CBaseEntity *pEntity;
+	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
+
+	ArgBuffer<CBaseEntity *, int> vstk(pEntity, params[2]);
+
+	pSetCollisionGroup->Execute(vstk, nullptr);
+
+	return 1;
+
+}
+
 sp_nativeinfo_t g_Natives[] = 
 {
 	{"ExtinguishEntity",		ExtinguishEntity},
@@ -1522,5 +1569,6 @@ sp_nativeinfo_t g_Natives[] =
 	{"SetClientName",           SetClientName},
 	{"GetPlayerResourceEntity", GetPlayerResourceEntity},
 	{"GivePlayerAmmo",		GivePlayerAmmo},
+	{"SetCollisionGroup",		SetCollisionGroup},
 	{NULL,						NULL},
 };
