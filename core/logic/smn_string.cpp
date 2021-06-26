@@ -139,7 +139,7 @@ static cell_t StringToIntEx(IPluginContext *pCtx, const cell_t *params)
 	return dummy - str;
 }
 
-static cell_t StringToBigInt(IPluginContext *pCtx, const cell_t *params)
+static cell_t StringToInt64(IPluginContext *pCtx, const cell_t *params)
 {
 	char *str, *dummy = NULL;
 	cell_t *addr;
@@ -147,10 +147,10 @@ static cell_t StringToBigInt(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToPhysAddr(params[2], &addr);
 
 	// uint64_t for correct signed right shift.
-	uint64_t big_number = (uint64_t)strtoll(str, &dummy, params[3]);
+	uint64_t number = (uint64_t)strtoll(str, &dummy, params[3]);
 
-	addr[0] = (cell_t)(big_number & 0xFFFFFFFFull);
-	addr[1] = (cell_t)(big_number >> 32ull);
+	addr[0] = (cell_t)(number & 0xFFFFFFFFull);
+	addr[1] = (cell_t)(number >> 32ull);
 
 	return dummy - str;
 }
@@ -164,7 +164,7 @@ static cell_t sm_numtostr(IPluginContext *pCtx, const cell_t *params)
 	return static_cast<cell_t>(res);
 }
 
-static cell_t BigIntToString(IPluginContext *pCtx, const cell_t *params)
+static cell_t Int64ToString(IPluginContext *pCtx, const cell_t *params)
 {
 	cell_t *num;
 	char *str;
@@ -618,7 +618,7 @@ REGISTER_NATIVES(basicStrings)
 	{"FormatEx",			sm_formatex},
 	{"GetCharBytes",		GetCharBytes},
 	{"IntToString",			sm_numtostr},
-	{"BigIntToString",		BigIntToString},
+	{"Int64ToString",		Int64ToString},
 	{"IsCharAlpha",			IsCharAlpha},
 	{"IsCharLower",			IsCharLower},
 	{"IsCharMB",			IsCharMB},
@@ -635,7 +635,7 @@ REGISTER_NATIVES(basicStrings)
 	{"strcopy",				sm_strcopy},
 	{"StringToInt",			sm_strconvint},
 	{"StringToIntEx",		StringToIntEx},
-	{"StringToBigInt",		StringToBigInt},
+	{"StringToInt64",		StringToInt64},
 	{"StringToFloat",		sm_strtofloat},
 	{"StringToFloatEx",		StringToFloatEx},
 	{"StripQuotes",			StripQuotes},

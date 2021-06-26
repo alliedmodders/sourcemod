@@ -195,14 +195,14 @@ native int StringToInt(const char[] str, int nBase=10);
 native int StringToIntEx(const char[] str, int &result, int nBase=10);
 
 /**
- * Converts a string to a big integer.
+ * Converts a string to a 64-bit integer.
  *
  * @param str           String to convert.
  * @param result        Variable to store the result in.
  * @param nBase         Numerical base to use.  10 is default.
  * @return              Number of characters consumed.
  */
-native int StringToBigInt(const char[] str, int result[2], int nBase=10);
+native int StringToInt64(const char[] str, int result[2], int nBase=10);
 
 /**
  * Converts an integer to a string.
@@ -215,14 +215,14 @@ native int StringToBigInt(const char[] str, int result[2], int nBase=10);
 native int IntToString(int num, char[] str, int maxlength);
 
 /**
- * Converts a big integer to a string.
+ * Converts a 64-bit integer to a string.
  *
- * @param num           Big integer to convert.
+ * @param num           64-bit integer to convert.
  * @param str           Buffer to store string in.
  * @param maxlength     Maximum length of string buffer.
  * @return              Number of cells written to buffer.
  */
-native int BigIntToString(const int num[2], char[] str, int maxlength);
+native int Int64ToString(const int num[2], char[] str, int maxlength);
 
 /** 
  * Converts a string to a floating point number.
