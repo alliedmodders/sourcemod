@@ -272,9 +272,9 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 	}
 	else if (strcmp(sArgs, "currentmap", false) == 0)
 	{
-		char map[64];
+		char map[PLATFORM_MAX_PATH];
 		GetCurrentMap(map, sizeof(map));
-		
+		GetMapDisplayName(map, map, sizeof(map));
 		if (g_Cvar_TriggerShow.IntValue)
 		{
 			PrintToChatAll("[SM] %t", "Current Map", map);
