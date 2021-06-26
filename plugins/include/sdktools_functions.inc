@@ -359,4 +359,4 @@ native int GivePlayerAmmo(int client, int amount, int ammotype, bool suppressSou
  * @param collisionGroup    Collision group to use.
  * @error                   Invalid entity or lack of mod support.
  */
-native void SetCollisionGroup(int entity, int collisionGroup);
+native void SetEntityCollisionGroup(int entity, int collisionGroup);
