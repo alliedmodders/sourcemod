@@ -196,6 +196,17 @@ native int StringToInt(const char[] str, int nBase=10);
 native int StringToIntEx(const char[] str, int &result, int nBase=10);
 
 /**
+ * Converts a string to a 64-bit integer.
+ *
+ * @param str           String to convert.
+ * @param result        Array to store the upper and lower
+ *                      32-bits of the 64-bit integer.
+ * @param nBase         Numerical base to use.  10 is default.
+ * @return              Number of characters consumed.
+ */
+native int StringToInt64(const char[] str, int result[2], int nBase=10);
+
+/**
  * Converts an integer to a string.
  *
  * @param num           Integer to convert.
@@ -204,6 +215,18 @@ native int StringToIntEx(const char[] str, int &result, int nBase=10);
  * @return              Number of cells written to buffer.
  */
 native int IntToString(int num, char[] str, int maxlength);
+
+/**
+ * Converts a 64-bit integer to a string.
+ *
+ * @param num           Array containing the upper and lower
+ *                      32-bits of a 64-bit integer.
+ * @param str           Buffer to store string in.
+ * @param maxlength     Maximum length of string buffer.
+ * @return              Number of characters written to the buffer,
+ *                      not including the null terminator.
+ */
+native int Int64ToString(const int num[2], char[] str, int maxlength);
 
 /** 
  * Converts a string to a floating point number.

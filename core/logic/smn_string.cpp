@@ -139,11 +139,38 @@ static cell_t StringToIntEx(IPluginContext *pCtx, const cell_t *params)
 	return dummy - str;
 }
 
+static cell_t StringToInt64(IPluginContext *pCtx, const cell_t *params)
+{
+	char *str, *dummy = NULL;
+	cell_t *addr;
+	pCtx->LocalToString(params[1], &str);
+	pCtx->LocalToPhysAddr(params[2], &addr);
+
+	// uint64_t for correct signed right shift.
+	uint64_t number = (uint64_t)strtoll(str, &dummy, params[3]);
+
+	addr[0] = (cell_t)(number & 0xFFFFFFFFull);
+	addr[1] = (cell_t)(number >> 32ull);
+
+	return dummy - str;
+}
+
 static cell_t sm_numtostr(IPluginContext *pCtx, const cell_t *params)
 {
 	char *str;
 	pCtx->LocalToString(params[2], &str);
 	size_t res = ke::SafeSprintf(str, params[3], "%d", params[1]);
+
+	return static_cast<cell_t>(res);
+}
+
+static cell_t Int64ToString(IPluginContext *pCtx, const cell_t *params)
+{
+	cell_t *num;
+	char *str;
+	pCtx->LocalToPhysAddr(params[1], &num);
+	pCtx->LocalToString(params[2], &str);
+	size_t res = ke::SafeSprintf(str, params[3], "%" KE_FMT_I64, (int64_t)num[1] << 32ll | (int64_t)num[0]);
 
 	return static_cast<cell_t>(res);
 }
@@ -591,6 +618,7 @@ REGISTER_NATIVES(basicStrings)
 	{"FormatEx",			sm_formatex},
 	{"GetCharBytes",		GetCharBytes},
 	{"IntToString",			sm_numtostr},
+	{"Int64ToString",		Int64ToString},
 	{"IsCharAlpha",			IsCharAlpha},
 	{"IsCharLower",			IsCharLower},
 	{"IsCharMB",			IsCharMB},
@@ -607,6 +635,7 @@ REGISTER_NATIVES(basicStrings)
 	{"strcopy",				sm_strcopy},
 	{"StringToInt",			sm_strconvint},
 	{"StringToIntEx",		StringToIntEx},
+	{"StringToInt64",		StringToInt64},
 	{"StringToFloat",		sm_strtofloat},
 	{"StringToFloatEx",		StringToFloatEx},
 	{"StripQuotes",			StripQuotes},
