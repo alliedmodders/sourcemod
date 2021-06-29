@@ -168,6 +168,21 @@
 		}
 	}
 	
+	/* CBaseEntity::SetCollisionGroup */
+	"#default"
+	{
+		"Signatures"
+		{
+			"SetCollisionGroup"
+			{
+				"library" 	"server"
+				"windows"	"\x53\x56\x8B\xD9\x57\x8B\x2A\x2A\x2A\x39\xBB\x2A\x2A\x00\x00\x8D\xB3\x2A\x2A\x00\x00\x74\x2A\x80\xBE\x80\x2A\x2A\x2A\x00"
+				"linux" 	"@_ZN11CBaseEntity17SetCollisionGroupEi"
+				/* Windows found by string "Warning, funcladder with blocked bottom point" in CFuncLadder::Spawn, this function has XRef to */
+			}
+		}
+	}
+	
 	/* SetUserInfo data */
 	"#default"
 	{
