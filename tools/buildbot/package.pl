@@ -54,12 +54,13 @@ while (my $ln = <$fh>) {
 }
 close($fh);
 
-unless (-e '../GeoLite2-City_20191217.tar.gz')
+unless (-e '../GeoLite2-City_20191217.tar')
 {
     print "Downloading GeoLite2-City.mmdb...\n";
     # Don't check certificate. It will fail on the slaves and we're resolving to internal addressing anyway
     system('wget --no-check-certificate -q -O ../GeoLite2-City_20191217.tar.gz https://sm.alliedmods.net/GeoLite2-City_20191217.tar.gz');
-    system('tar -C ../ -xzf GeoLite2-City_20191217.tar.gz');
+    system('gunzip ../GeoLite2-City_20191217.tar.gz');
+    system('tar -C ../ -xf ../GeoLite2-City_20191217.tar');
     copy('../GeoLite2-City_20191217/GeoLite2-City.mmdb', 'addons/sourcemod/configs/geoip/GeoLite2-City.mmdb');
 }
 else
