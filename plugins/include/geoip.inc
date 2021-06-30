@@ -35,6 +35,22 @@
 #endif
 #define _geoip_included
 
+enum Continent
+{
+	CONTINENT_UNKNOWN = 0,
+	CONTINENT_AFRICA,
+	CONTINENT_ANTARCTICA,
+	CONTINENT_ASIA,
+	CONTINENT_EUROPE,
+	CONTINENT_NORTH_AMERICA,
+	CONTINENT_OCEANIA,
+	CONTINENT_SOUTH_AMERICA,
+};
+
+// The system of measurement for calculate the distance between geographical coordinates
+#define SYSTEM_METRIC   0 // kilometers
+#define SYSTEM_IMPERIAL 1 // statute miles
+
 #include <core>
 
 /**
@@ -46,7 +62,7 @@
  *
  * @param ip            Ip to determine the country code.
  * @param ccode         Destination string buffer to store the code.
- * @return              True on success, false if no country found.
+ * @return              True on success, false otherwise.
  */
 native bool GeoipCode2(const char[] ip, char ccode[3]);
 
@@ -55,19 +71,132 @@ native bool GeoipCode2(const char[] ip, char ccode[3]);
  *
  * @param ip            Ip to determine the country code.
  * @param ccode         Destination string buffer to store the code.
- * @return              True on success, false if no country found.
+ * @return              True on success, false otherwise.
  */
 native bool GeoipCode3(const char[] ip, char ccode[4]);
 
 /**
- * Gets the full country name. (max length of output string is 45)
+ * Gets the region code with country code from an IP address. (US-IL, CH-CHE, etc)
+ *
+ * @param ip            Ip to determine the region code.
+ * @param ccode         Destination string buffer to store the code.
+ * @return              True on success, false otherwise.
+ */
+native bool GeoipRegionCode(const char[] ip, char ccode[12]);
+
+/**
+ * Gets the two character continent code from an IP address. (EU, AS, etc)
+ *
+ * @param ip            Ip to determine the continent code.
+ * @param ccode         Destination string buffer to store the code.
+ * @return              The continent id on success, 0 otherwise.
+ */
+native Continent GeoipContinentCode(const char[] ip, char ccode[3]);
+
+/**
+ * Gets the full country name.
  *
  * @param ip            Ip to determine the country code.
  * @param name          Destination string buffer to store the country name.
  * @param maxlength     Maximum length of output string buffer.
- * @return              True on success, false if no country found.
+ * @return              True on success, false otherwise.
  */
 native bool GeoipCountry(const char[] ip, char[] name, int maxlength);
+
+/**
+ * Gets the full country name.
+ *
+ * @param ip            Ip to determine the country code.
+ * @param name          Destination string buffer to store the country name.
+ * @param maxlength     Maximum length of output string buffer.
+ * @param client        Client index in order to return the result in the player's language
+ *                      -1: the default language, which is english.
+ *                      0: the server language. You can use LANG_SERVER define.
+ *                      >=1: the player's language.
+ * @return              True on success, false otherwise.
+ */
+native bool GeoipCountryEx(const char[] ip, char[] name, int maxlength, int client = -1);
+
+/**
+ * Gets the full continent name.
+ *
+ * @param ip            Ip to determine the continent code.
+ * @param name          Destination string buffer to store the continent name.
+ * @param maxlength     Maximum length of output string buffer.
+ * @param client        Client index in order to return the result in the player's language
+ *                      -1: the default language, which is english.
+ *                      0: the server language. You can use LANG_SERVER define.
+ *                      >=1: the player's language.
+ * @return              True on success, false otherwise.
+ */
+native bool GeoipContinent(const char[] ip, char[] name, int maxlength, int client = -1);
+
+/**
+ * Gets the full region name.
+ *
+ * @param ip            Ip to determine the region code.
+ * @param name          Destination string buffer to store the region name.
+ * @param maxlength     Maximum length of output string buffer.
+ * @param client        Client index in order to return the result in the player's language
+ *                      -1: the default language, which is english.
+ *                      0: the server language. You can use LANG_SERVER define.
+ *                      >=1: the player's language.
+ * @return              True on success, false otherwise.
+ */
+native bool GeoipRegion(const char[] ip, char[] name, int maxlength, int client = -1);
+
+/**
+ * Gets the city name.
+ *
+ * @param ip            Ip to determine the city code.
+ * @param name          Destination string buffer to store the city name.
+ * @param maxlength     Maximum length of output string buffer.
+ * @param client        Client index in order to return the result in the player's language
+ *                      -1: the default language, which is english.
+ *                      0: the server language. You can use LANG_SERVER define.
+ *                      >=1: the player's language.
+ * @return              True on success, false otherwise.
+ */
+native bool GeoipCity(const char[] ip, char[] name, int maxlength, int client = -1);
+
+/**
+ * Gets the timezone.
+ *
+ * @param ip            Ip to determine the timezone.
+ * @param name          Destination string buffer to store the timezone.
+ * @param maxlength     Maximum length of output string buffer.
+ * @return              True on success, false otherwise.
+ */
+native bool GeoipTimezone(const char[] ip, char[] name, int maxlength);
+
+/**
+ * Gets the city's latitude
+ *
+ * @param ip            Ip to determine the city latitude.
+ * @return              The result of the latitude, 0 if latitude is not found
+ */
+native float GeoipLatitude(const char[] ip);
+
+/**
+ * Gets the city's longitude
+ *
+ * @param ip            Ip to determine the city longitude.
+ * @return              The result of the longitude, 0 if longitude is not found
+ */
+native float GeoipLongitude(const char[] ip);
+
+/*
+ * Calculate the distance between geographical coordinates, latitude and longitude.
+ *
+ * @param lat1          The first IP latitude.
+ * @param lon1          The first IP longitude.
+ * @param lat2          The second IP latitude.
+ * @param lon2          The second IP longitude.
+ * @param system        The system of measurement, 0 = Metric(kilometers) or 1 = English(miles).
+ *
+ * @return              The distance as result in specified system of measurement.
+ */
+native float GeoipDistance(float lat1, float lon1, float lat2, float lon2, int system = SYSTEM_METRIC);
 
 /**
  * @endsection
@@ -97,6 +226,16 @@ public void __ext_geoip_SetNTVOptional()
 {
 	MarkNativeAsOptional("GeoipCode2");
 	MarkNativeAsOptional("GeoipCode3");
+	MarkNativeAsOptional("GeoipRegionCode");
+	MarkNativeAsOptional("GeoipContinentCode");
 	MarkNativeAsOptional("GeoipCountry");
+	MarkNativeAsOptional("GeoipCountryEx");
+	MarkNativeAsOptional("GeoipContinent");
+	MarkNativeAsOptional("GeoipRegion");
+	MarkNativeAsOptional("GeoipCity");
+	MarkNativeAsOptional("GeoipTimezone");
+	MarkNativeAsOptional("GeoipLatitude");
+	MarkNativeAsOptional("GeoipLongitude");
+	MarkNativeAsOptional("GeoipDistance");
 }
 #endif

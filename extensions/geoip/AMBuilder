@@ -8,13 +8,14 @@ for cxx in builder.targets:
   elif binary.compiler.family == 'msvc':
     binary.compiler.cxxflags += ['/GR-']
   if binary.compiler.target.platform == 'windows':
-    binary.compiler.postlink += ['wsock32.lib']
+    binary.compiler.postlink += ['wsock32.lib', 'ws2_32.lib']
 
   binary.sources += [
     'extension.cpp',
-    'GeoIP.c',
-    '../../public/smsdk_ext.cpp'
+    'geoip_util.cpp',
+    '../../public/smsdk_ext.cpp',
+    'data-pool.c',
+    'maxminddb.c',
   ]
 
   SM.extensions += [builder.Add(binary)]
-

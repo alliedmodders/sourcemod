@@ -3,11 +3,10 @@
 use strict;
 use Cwd;
 use File::Basename;
+use File::Copy;
 use File::stat;
 use File::Temp qw/ tempfile :seekable/;
 use Net::FTP;
-use IO::Uncompress::Gunzip qw(gunzip $GunzipError) ;
-use Time::localtime;
 
 my ($ftp_file, $ftp_host, $ftp_user, $ftp_pass, $ftp_path, $tag);
 
@@ -55,47 +54,18 @@ while (my $ln = <$fh>) {
 }
 close($fh);
 
-my $needNewGeoIP = 1;
-if (-e '../GeoIP.dat.gz')
+unless (-e '../GeoLite2-City_20191217.tar.gz')
 {
-	my $stats = stat('../GeoIP.dat.gz');
-	if ($stats->size != 0)
-	{
-		my $fileModifiedTime = $stats->mtime;
-		my $fileModifiedMonth = localtime($fileModifiedTime)->mon;
-		my $currentMonth = localtime->mon;
-		my $thirtyOneDays = 60 * 60 * 24 * 31;
-
-		# GeoIP file only updates once per month
-		if ($currentMonth == $fileModifiedMonth || (time() - $fileModifiedTime) < $thirtyOneDays)
-		{
-			$needNewGeoIP = 0;
-		}
-	}
-}
-
-if ($needNewGeoIP)
-{
-    print "Downloading GeoIP.dat...\n";
+    print "Downloading GeoLite2-City.mmdb...\n";
     # Don't check certificate. It will fail on the slaves and we're resolving to internal addressing anyway
-    system('wget --no-check-certificate -q -O ../GeoIP.dat.gz https://sm.alliedmods.net/GeoIP.dat.gz');
+    system('wget --no-check-certificate -q -O ../GeoLite2-City_20191217.tar.gz https://sm.alliedmods.net/GeoLite2-City_20191217.tar.gz');
+    system('tar -C ../ -xzf GeoLite2-City_20191217.tar.gz');
+    copy('../GeoLite2-City_20191217/GeoLite2-City.mmdb', 'addons/sourcemod/configs/geoip/GeoLite2-City.mmdb');
 }
 else
 {
-    print "Reusing existing GeoIP.dat\n";
+    print "Reusing existing GeoLite2-City.mmdb\n";
 }
-
-my $geoIPfile = 'addons/sourcemod/configs/geoip/GeoIP.dat';
-if (-e $geoIPfile) {
-	unlink($geoIPfile);
-}
-
-open(my $fh, ">", $geoIPfile) 
-    	or die "cannot open $geoIPfile for writing: $!";
-binmode($fh);
-gunzip '../GeoIP.dat.gz' => $fh
-        or die "gunzip failed: $GunzipError\n";
-close($fh);
 
 my ($version);
 
