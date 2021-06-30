@@ -201,7 +201,7 @@ static cell_t sm_Geoip_RegionCode(IPluginContext *pCtx, const cell_t *params)
 	StripPort(ip);
 
 	size_t length = 0;
-	char ccode[12];
+	char ccode[12] = { 0 };
 
 	const char *pathCountry[] = {"country", "iso_code", NULL};
 	std::string countryCode = lookupString(ip, pathCountry);
