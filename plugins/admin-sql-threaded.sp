@@ -468,6 +468,7 @@ void FetchUser(Database db, int client)
 	char safe_name[(MAX_NAME_LENGTH * 2) - 1];
 	char steamid[32];
 	char steamidalt[32];
+	char steamidstd[32];
 	char ipaddr[24];
 	
 	/**
@@ -499,10 +500,12 @@ void FetchUser(Database db, int client)
 	len += Format(query[len], sizeof(query)-len, " OR (a.authtype = 'name' AND a.identity = '%s')", safe_name);
 	if (steamid[0] != '\0')
 	{
+		// For support obsolete data, keep this.
 		strcopy(steamidalt, sizeof(steamidalt), steamid);
 		steamidalt[6] = (steamid[6] == '0') ? '1' : '0';
+		GetUnifiedAuthId(steamid, steamidstd, sizeof(steamidstd));
 
-		len += Format(query[len], sizeof(query)-len, " OR (a.authtype = 'steam' AND (a.identity = '%s' OR a.identity = '%s'))", steamid, steamidalt);
+		len += Format(query[len], sizeof(query)-len, " OR (a.authtype = 'steam' AND (a.identity = '%s' OR a.identity = '%s' OR a.identity = '%s'))", steamid, steamidalt, steamidstd);
 	}
 	len += Format(query[len], sizeof(query)-len, " GROUP BY a.id");
 	

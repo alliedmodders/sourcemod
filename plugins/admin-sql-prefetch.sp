@@ -117,7 +117,12 @@ void FetchUsers(Database db)
 		rs.FetchString(4, flags, sizeof(flags));
 		rs.FetchString(5, name, sizeof(name));
 		immunity = rs.FetchInt(6);
-		
+
+		if (StrEqual(authtype, "steam") && identity[0] == 'S')
+		{
+			Format(identity, sizeof(identity), "STEAM_0:%s", identity);
+		}
+
 		/* Use a pre-existing admin if we can */
 		if ((adm = FindAdminByIdentity(authtype, identity)) == INVALID_ADMIN_ID)
 		{
