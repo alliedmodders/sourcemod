@@ -202,7 +202,6 @@ private:
 	bool GetMethodIndex(const char *name, unsigned int *_index);
 	const char *GetMethodName(unsigned int index);
 	void NameFlag(const char *str, AdminFlag flag);
-	bool GetUnifiedSteamIdentity(const char *ident, char *out, size_t maxlen);
 public:
 	typedef StringHashMap<FlagBits> FlagMap;
 

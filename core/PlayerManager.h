@@ -212,6 +212,7 @@ public: //IPlayerManager
 	int GetClientFromSerial(unsigned int serial);
 	void ClearAdminId(AdminId id);
 	void RecheckAnyAdmins();
+    bool GetUnifiedAuthId(const char *ident, char *out, size_t maxlen);
 public:
 	inline int MaxClients()
 	{

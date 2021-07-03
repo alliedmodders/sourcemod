@@ -1609,6 +1609,19 @@ static cell_t sm_GetClientFromSerial(IPluginContext *pContext, const cell_t *par
 	return playerhelpers->GetClientFromSerial(params[1]);
 }
 
+static cell_t sm_GetUnifiedAuthId(IPluginContext *pContext, const cell_t *params)
+{
+	char *ident;
+	pContext->LocalToString(params[1], &ident);
+
+	char buf[64];
+	strcpy(buf, "0:0");
+	cell_t reply = playerhelpers->GetUnifiedAuthId(ident, buf, sizeof(buf));
+
+	pContext->StringToLocal(params[2], static_cast<size_t>(params[3]), buf);
+	return reply;
+}
+
 
 REGISTER_NATIVES(playernatives)
 {
@@ -1661,6 +1674,7 @@ REGISTER_NATIVES(playernatives)
 	{ "FormatActivitySource", FormatActivitySource },
 	{ "GetClientSerial", sm_GetClientSerial },
 	{ "GetClientFromSerial", sm_GetClientFromSerial },
+	{ "GetUnifiedAuthId", sm_GetUnifiedAuthId },
 	{NULL,						NULL}
 };
 

@@ -820,3 +820,13 @@ native int GetClientSerial(int client);
  * @return              Client index, or 0 for invalid serial.
  */
 native int GetClientFromSerial(int serial);
+
+/**
+ * Returns the unified SteamID identity format based
+ * on passed (account id part of Steam2 identity).
+ *
+ * @param ident         SteamID identity (64, 2, 3).
+ * @param buffer        Buffer to store the converted Auth ID.
+ * @param maxlen        Maximum number of characters for converted buffer.
+ */
+native bool GetUnifiedAuthId(const char[] ident, char[] buffer, int maxlen);
