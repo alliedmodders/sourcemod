@@ -237,11 +237,12 @@ typeset SDKHookCB
 	function void (int client);
 
 	// Spawn
+	// Think
 	function Action (int entity);
 
 	// GroundEntChanged
 	// SpawnPost
-	// Think/Post
+	// ThinkPost
 	// VPhysicsUpdate/Post
 	function void (int entity);
 
