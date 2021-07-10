@@ -1458,7 +1458,11 @@ void SDKHooks::Hook_StartTouchPost(CBaseEntity *pOther)
 
 void SDKHooks::Hook_Think()
 {
-	Call(META_IFACEPTR(CBaseEntity), SDKHook_Think);
+	cell_t result = Call(META_IFACEPTR(CBaseEntity), SDKHook_Think);
+
+	if(result >= Pl_Handled)
+		RETURN_META(MRES_SUPERCEDE);
+
 	RETURN_META(MRES_IGNORED);
 }
 
