@@ -1499,8 +1499,8 @@ static cell_t GivePlayerAmmo(IPluginContext *pContext, const cell_t *params)
 	return ammoGiven;
 }
 
-// SetCollisionGroup(int entity, int collisionGroup)
-static cell_t SetCollisionGroup(IPluginContext *pContext, const cell_t *params)
+// SetEntityCollisionGroup(int entity, int collisionGroup)
+static cell_t SetEntityCollisionGroup(IPluginContext *pContext, const cell_t *params)
 {
 	static ICallWrapper *pSetCollisionGroup = NULL;
 	if (!pSetCollisionGroup)
@@ -1508,7 +1508,7 @@ static cell_t SetCollisionGroup(IPluginContext *pContext, const cell_t *params)
 		void *addr;
 		if (!g_pGameConf->GetMemSig("SetCollisionGroup", &addr) || !addr)
 		{
-			return pContext->ThrowNativeError("\"SetCollisionGroup\" not supported by this mod");
+			return pContext->ThrowNativeError("\"SetEntityCollisionGroup\" not supported by this mod");
 		}
 		PassInfo pass[2];
 		// Entity
@@ -1523,7 +1523,7 @@ static cell_t SetCollisionGroup(IPluginContext *pContext, const cell_t *params)
 
 		if (!(pSetCollisionGroup = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 2)))
 		{
-			return pContext->ThrowNativeError("\"SetCollisionGroup\" wrapper failed to initialize");
+			return pContext->ThrowNativeError("\"SetEntityCollisionGroup\" wrapper failed to initialize");
 		}
 	}
 
@@ -1569,6 +1569,6 @@ sp_nativeinfo_t g_Natives[] =
 	{"SetClientName",           SetClientName},
 	{"GetPlayerResourceEntity", GetPlayerResourceEntity},
 	{"GivePlayerAmmo",		GivePlayerAmmo},
-	{"SetCollisionGroup",		SetCollisionGroup},
+	{"SetEntityCollisionGroup",	SetEntityCollisionGroup},
 	{NULL,						NULL},
 };
