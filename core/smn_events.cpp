@@ -35,6 +35,10 @@
 #include "PlayerManager.h"
 #include "logic_bridge.h"
 
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+#include "smn_keyvalues.h"
+#endif
+
 static cell_t sm_HookEvent(IPluginContext *pContext, const cell_t *params)
 {
 	char *name;
@@ -334,6 +338,41 @@ static cell_t sm_GetEventString(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t sm_GetEventDataTypes(IPluginContext *pContext, const cell_t *params)
+{
+#if SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_CSGO		// Where IGameEventManager2::GetEventDataTypes
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError err;
+	EventInfo *pInfo;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err=handlesys->ReadHandle(hndl, g_EventManager.GetHandleType(), &sec, (void **)&pInfo))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid game event handle %x (error %d)", hndl, err);
+	}
+
+	if(!gameevents)
+	{
+		return pContext->ThrowNativeError("Event manager lookup failed.");
+	}
+
+	KeyValues *pEvDataTypes = gameevents->GetEventDataTypes(pInfo->pEvent);
+
+	if(!pEvDataTypes)
+	{
+		return BAD_HANDLE;
+	}
+
+	KeyValueStack *pStk = new KeyValueStack;
+	pStk->pBase = new KeyValues(pEvDataTypes->GetName());
+	*(pStk->pBase) = *pEvDataTypes;
+	return handlesys->CreateHandle(g_KeyValueType, pStk, pContext->GetIdentity(), g_pCoreIdent, NULL);
+#else
+	return pContext->ThrowNativeError("Event.GetDataTypes is not supported on this game.");
+#endif
+}
+
 static cell_t sm_SetEventBool(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
@@ -482,6 +521,7 @@ REGISTER_NATIVES(gameEventNatives)
 	{"Event.GetInt",		sm_GetEventInt},
 	{"Event.GetFloat",		sm_GetEventFloat},
 	{"Event.GetString",		sm_GetEventString},
+	{"Event.GetDataTypes",	sm_GetEventDataTypes},
 	{"Event.SetBool",		sm_SetEventBool},
 	{"Event.SetInt",		sm_SetEventInt},
 	{"Event.SetFloat",		sm_SetEventFloat},

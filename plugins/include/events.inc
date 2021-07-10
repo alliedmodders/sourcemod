@@ -35,6 +35,16 @@
 #endif
 #define _events_included
 
+#define EVENT_DATA_TYPE_LOCAL 0
+#define EVENT_DATA_TYPE_STRING 1
+#define EVENT_DATA_TYPE_FLOAT 2
+#define EVENT_DATA_TYPE_LONG 3
+#define EVENT_DATA_TYPE_SHORT 4
+#define EVENT_DATA_TYPE_BYTE 5
+#define EVENT_DATA_TYPE_BOOL 6
+#define EVENT_DATA_TYPE_UINT64 7
+#define EVENT_DATA_TYPE_WSTRING 8
+
 /**
  * Event hook modes determining how hooking should be handled
  */
@@ -155,6 +165,15 @@ methodmap Event < Handle
 	// @param name         Buffer to store the name of the event.
 	// @param maxlength    Maximum length of string buffer.
 	public native void GetName(char[] name, int maxlength);
+
+	// Returns KeyValues with the event parameter types 
+	// with EVENT_DATA_* values.
+	// It should closed when no longer needed.
+	// 
+	// @return             Copy KeyValues, or INVALID_HANDLE if failure. 
+	// @error              Event manager lookup failed, 
+	//                     or unsupported on current game.
+	public native KeyValues GetDataTypes();
 
 	// Sets whether an event's broadcasting will be disabled or not.
 	//
