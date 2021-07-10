@@ -35,7 +35,7 @@
 #include "PlayerManager.h"
 #include "logic_bridge.h"
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_CSGO
 #include "smn_keyvalues.h"
 #endif
 
