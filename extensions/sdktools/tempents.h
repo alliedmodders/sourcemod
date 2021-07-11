@@ -37,8 +37,9 @@
 #include <sh_list.h>
 #include <sh_string.h>
 #include <stdio.h>
+#include <ISDKTools.h>
 
-class TempEntityInfo
+class TempEntityInfo : public ISDKTempEntityManager::ISDKTempEntityInfo
 {
 public:
 	TempEntityInfo(const char *name, void *me);
@@ -46,14 +47,14 @@ public:
 	const char *GetName();
 	ServerClass *GetServerClass();
 	bool IsValidProp(const char *name);
-	bool TE_SetEntData(const char *name, int value);
-	bool TE_SetEntDataFloat(const char *name, float value);
-	bool TE_SetEntDataVector(const char *name, float vector[3]);
-	bool TE_SetEntDataFloatArray(const char *name, cell_t *array, int size);
+	bool TE_SetEntData(const char *name, const int value);
+	bool TE_SetEntDataFloat(const char *name, const float value);
+	bool TE_SetEntDataVector(const char *name, const float vector[3]);
+	bool TE_SetEntDataFloatArray(const char *name, const float *array, const int size);
 	bool TE_GetEntData(const char *name, int *value);
 	bool TE_GetEntDataFloat(const char *name, float *value);
 	bool TE_GetEntDataVector(const char *name, float vector[3]);
-	void Send(IRecipientFilter &filter, float delay);
+	void TE_Send(IRecipientFilter &filter, const float delay);
 private:
 	int _FindOffset(const char *name, int *size=NULL);
 private:
@@ -62,7 +63,7 @@ private:
 	SourceHook::String m_Name;
 };
 
-class TempEntityManager
+class TempEntityManager : public ISDKTempEntityManager
 {
 public:
 	TempEntityManager() : m_NameOffs(0), m_NextOffs(0), m_GetClassNameOffs(0), m_Loaded(false) {}

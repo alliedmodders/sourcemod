@@ -35,7 +35,7 @@
 #include <IShareSys.h>
 
 #define SMINTERFACE_SDKTOOLS_NAME		"ISDKTools"
-#define SMINTERFACE_SDKTOOLS_VERSION	2
+#define SMINTERFACE_SDKTOOLS_VERSION	3
 
 class IServer;
 
@@ -46,6 +46,87 @@ class IServer;
 
 namespace SourceMod
 {
+	/**
+	 * @brief Manager for temporary entities.
+	 */
+	class ISDKTempEntityManager
+	{
+	public:
+		/**
+		 * @brief Wraps information about a temp entity.
+		 */
+		class ISDKTempEntityInfo
+		{
+		public:
+			/**
+			 * @brief Gets the type of the described TE.
+			 *
+			 * @return			Name of the TE's type.
+			 */
+			virtual const char* GetName() = 0;
+
+			/**
+			 * @brief Sets an integer value in the given temp entity.
+			 *
+			 * @param name		Name of the property to set.
+			 * @param value		Property value.
+			 * @return			True, if the property exists.
+			 */
+			virtual bool TE_SetEntData(const char* name, const int value) = 0;
+
+			/**
+			 * @brief Sets a float value in the given temp entity.
+			 *
+			 * @param name		Name of the property to set.
+			 * @param value		Property value.
+			 * @return			True, if the property exists.
+			 */
+			virtual bool TE_SetEntDataFloat(const char* name, const float value) = 0;
+
+			/**
+			 * @brief Sets a vector value in the given temp entity.
+			 *
+			 * @param name		Name of the property to set.
+			 * @param value		Property value.
+			 * @return			True, if the property exists.
+			 */
+			virtual bool TE_SetEntDataVector(const char* name, const float vector[3]) = 0;
+
+			/**
+			 * @brief Sets a float array value in the given temp entity.
+			 *
+			 * @param name		Name of the property to set.
+			 * @param array		Property value array.
+			 * @param size		Number of elements in array.
+			 * @return			True, if the property exists.
+			 */
+			virtual bool TE_SetEntDataFloatArray(const char* name, const float* array, const int size) = 0;
+
+			/**
+			 * @brief Send the temp entity.
+			 *
+			 * @param filter	Filter object for clients.
+			 * @param delay		Delay in seconds to send the TE.
+			 */
+			virtual void TE_Send(IRecipientFilter& filter, const float delay) = 0;
+		};
+
+		/**
+		 * @brief Checks if the temp entity system is available.
+		 *
+		 * @return			True if the temp entity system is available.
+		 */
+		virtual bool IsAvailable() = 0;
+
+		/**
+		 * @brief Creates a new ISDKTempEntityInfo pointer based on the temp entities name.
+		 *
+		 * @param name		Name of the TE type.
+		 * @return			ISDKTempEntityInfo pointer.
+		 */
+		virtual ISDKTempEntityInfo* GetTempEntityInfo(const char* name) = 0;
+	};
+	
 	/**
 	 * @brief SDKTools API.
 	 */
@@ -68,6 +149,13 @@ namespace SourceMod
 		 * @return			CGameRules pointer or NULL if not found.
 		 */
 		virtual void* GetGameRules() = 0;
+
+		/**
+		 * @brief Returns a pointer to SDKTools' ISDKTempEntityManager.
+		 *
+		 * @return			ISDKTempEntityManager pointer.
+		 */
+		virtual ISDKTempEntityManager* GetTempEntityManager() = 0;
 	};
 }
 
