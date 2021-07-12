@@ -67,12 +67,12 @@ push(@conf_argv, '--sdks=all');
 my $conf_args = join(' ', @conf_argv);
 
 if ($argn > 0 && $^O !~ /MSWin/) {
-	$result = `CC=$ARGV[0] CXX=$ARGV[1] python ../build/configure.py $conf_args`;
+	$result = `CC=$ARGV[0] CXX=$ARGV[1] python3 ../build/configure.py $conf_args`;
 } else {
 	if ($^O =~ /MSWin/) {
 		$result = `C:\\Python38\\Python.exe ..\\build\\configure.py $conf_args`;
 	} else {
-		$result = `CC=clang CXX=clang python ../build/configure.py $conf_args`;
+		$result = `CC=clang CXX=clang python3 ../build/configure.py $conf_args`;
 	}
 }
 print "$result\n";
