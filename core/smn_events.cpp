@@ -367,6 +367,8 @@ static cell_t sm_GetEventDataTypes(IPluginContext *pContext, const cell_t *param
 	KeyValueStack *pStk = new KeyValueStack;
 	pStk->pBase = new KeyValues(pEvDataTypes->GetName());
 	*(pStk->pBase) = *pEvDataTypes;
+	pStk->pCurRoot.push(pStk->pBase);
+
 	return handlesys->CreateHandle(g_KeyValueType, pStk, pContext->GetIdentity(), g_pCoreIdent, NULL);
 #else
 	return pContext->ThrowNativeError("Event.GetDataTypes is not supported on this game.");
