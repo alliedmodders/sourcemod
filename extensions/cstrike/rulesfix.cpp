@@ -39,6 +39,9 @@ bool bPatched = false;
 
 RulesFix rulesfix;
 
+ISteamGameServer *(*SteamAPI_SteamGameServer)();
+void (*SteamAPI_ISteamGameServer_SetKeyValue)(ISteamGameServer *self, const char *pKey, const char *pValue);
+
 SH_DECL_HOOK1_void(IServerGameDLL, GameServerSteamAPIActivated, SH_NOATTRIB, 0, bool);
 
 RulesFix::RulesFix() :
@@ -77,6 +80,39 @@ bool SetMTUMax(int iValue)
 
 void RulesFix::OnLoad()
 {
+	ILibrary *pLibrary = libsys->OpenLibrary(
+#if defined ( PLATFORM_WINDOWS )
+	"steam_api.dll"
+#elif defined( PLATFORM_LINUX )
+	"libsteam_api.so"
+#elif defined( PLATFORM_APPLE )
+	"libsteam_api.dylib"
+#else
+#error Unsupported platform
+#endif
+	, nullptr, 0);
+	if (pLibrary != nullptr)
+	{
+		const char *pSteamGameServerFuncName = "SteamAPI_SteamGameServer_v013";
+		const char *pSetKeyValueFuncName = "SteamAPI_ISteamGameServer_SetKeyValue";
+
+		// When will hl2sdk-csgo be updated the SteamWorks SDK, change this to export.
+		SteamAPI_SteamGameServer = reinterpret_cast<ISteamGameServer *(*)()>(pLibrary->GetSymbolAddress(pSteamGameServerFuncName));
+		SteamAPI_ISteamGameServer_SetKeyValue = reinterpret_cast<void (*)(ISteamGameServer *self, const char *pKey, const char *pValue)>(pLibrary->GetSymbolAddress(pSetKeyValueFuncName));
+
+		if(SteamAPI_SteamGameServer == nullptr)
+		{
+			g_pSM->LogError(myself, "[CStrike] Failed to get \"%s\" function", pSteamGameServerFuncName);
+		}
+
+		if(SteamAPI_ISteamGameServer_SetKeyValue == nullptr)
+		{
+			g_pSM->LogError(myself, "[CStrike] Failed to get \"%s\" function", pSetKeyValueFuncName);
+		}
+
+		pLibrary->CloseLibrary();
+	}
+	
 	host_rules_show = g_pCVar->FindVar("host_rules_show");
 	if (host_rules_show)
 	{
@@ -149,10 +185,10 @@ static void OnConVarChanged(IConVar *var, const char *pOldValue, float flOldValu
 
 void RulesFix::OnNotifyConVarChanged(ConVar *pVar)
 {
-	if (!bPatched)
+	if (!bPatched || !SteamAPI_SteamGameServer || !SteamAPI_ISteamGameServer_SetKeyValue)
 		return;
 
-	ISteamGameServer *pSteamClientGameServer = SteamAPI_SteamGameServer_v013();
+	ISteamGameServer *pSteamClientGameServer = SteamAPI_SteamGameServer();
 
 	if (pSteamClientGameServer)
 	{

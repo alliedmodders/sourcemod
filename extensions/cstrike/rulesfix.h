@@ -32,8 +32,6 @@
 #pragma once
 
 #include <steam_gameserver.h>
-S_API ISteamGameServer *SteamAPI_SteamGameServer_v013();
-S_API void SteamAPI_ISteamGameServer_SetKeyValue( ISteamGameServer* self, const char * pKey, const char * pValue );
 
 class ConVar;
 
