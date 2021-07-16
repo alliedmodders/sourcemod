@@ -152,22 +152,17 @@ void RulesFix::OnNotifyConVarChanged(ConVar *pVar)
 	if (!bPatched)
 		return;
 
-	if (m_Steam.SteamMasterServerUpdater())
+	ISteamGameServer *pSteamClientGameServer = SteamAPI_SteamGameServer_v013();
+
+	if (pSteamClientGameServer)
 	{
 		if (pVar->IsFlagSet(FCVAR_PROTECTED))
 		{
-			if (!pVar->GetString()[0])
-			{
-				m_Steam.SteamMasterServerUpdater()->SetKeyValue(pVar->GetName(), "0");
-			}
-			else
-			{
-				m_Steam.SteamMasterServerUpdater()->SetKeyValue(pVar->GetName(), "1");
-			}
+			SteamAPI_ISteamGameServer_SetKeyValue(pSteamClientGameServer, pVar->GetName(), !pVar->GetString()[0] ? "0" : "1");
 		}
 		else
 		{
-			m_Steam.SteamMasterServerUpdater()->SetKeyValue(pVar->GetName(), pVar->GetString());
+			SteamAPI_ISteamGameServer_SetKeyValue(pSteamClientGameServer, pVar->GetName(), pVar->GetString());
 		}
 	}
 }
@@ -176,61 +171,11 @@ void RulesFix::Hook_GameServerSteamAPIActivated(bool bActivated)
 {
 	if (bActivated)
 	{
-		FixSteam();
-		m_Steam.Init();
-
 		g_pCVar->InstallGlobalChangeCallback(OnConVarChanged);
 		OnSteamServersConnected(nullptr);
 	}
 	else
 	{
 		g_pCVar->RemoveGlobalChangeCallback(OnConVarChanged);
-		m_Steam.Clear();
-	}
-}
-
-void RulesFix::FixSteam()
-{
-	if (!g_pSteamClientGameServer)
-	{
-		void *(*pGSInternalCreateAddress)(const char *) = nullptr;
-		void *(*pInternalCreateAddress)(const char *) = nullptr;
-
-		// CS:GO currently uses the old name, but will use the new name when they update to a 
-		// newer Steamworks SDK. Stay compatible.
-		const char *pGSInternalFuncName = "SteamGameServerInternal_CreateInterface";
-		const char *pInternalFuncName = "SteamInternal_CreateInterface";
-
-		ILibrary *pLibrary = libsys->OpenLibrary(
-#if defined ( PLATFORM_WINDOWS )
-			"steam_api.dll"
-#elif defined( PLATFORM_LINUX )
-			"libsteam_api.so"
-#elif defined( PLATFORM_APPLE )
-			"libsteam_api.dylib"
-#else
-#error Unsupported platform
-#endif
-			, nullptr, 0);
-		if (pLibrary != nullptr)
-		{
-			if (pGSInternalCreateAddress == nullptr)
-			{
-				pGSInternalCreateAddress = reinterpret_cast<void *(*)(const char *)>(pLibrary->GetSymbolAddress(pGSInternalFuncName));
-			}
-
-			if (pInternalCreateAddress == nullptr)
-			{
-				pInternalCreateAddress = reinterpret_cast<void *(*)(const char *)>(pLibrary->GetSymbolAddress(pInternalFuncName));
-			}
-
-			pLibrary->CloseLibrary();
-		}
-
-		if (pGSInternalCreateAddress != nullptr)
-			g_pSteamClientGameServer = reinterpret_cast<ISteamClient *>((*pGSInternalCreateAddress)(STEAMCLIENT_INTERFACE_VERSION));
-
-		if (g_pSteamClientGameServer == nullptr && pInternalCreateAddress != nullptr)
-			g_pSteamClientGameServer = reinterpret_cast<ISteamClient *>((*pInternalCreateAddress)(STEAMCLIENT_INTERFACE_VERSION));
 	}
 }
