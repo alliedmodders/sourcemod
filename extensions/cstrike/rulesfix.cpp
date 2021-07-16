@@ -62,7 +62,7 @@ bool SetMTUMax(int iValue)
 	{
 		if (!g_pGameConf->GetAddress("MaxMTU", (void **)&m_pMaxMTU))
 		{
-			g_pSM->LogMessage(myself, "[CStrike] Failed to locate NET_SendPacket signature.");
+			g_pSM->LogError(myself, "[CStrike] Failed to locate NET_SendPacket signature.");
 			return false;
 		}
 
