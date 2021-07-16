@@ -102,12 +102,12 @@ void RulesFix::OnLoad()
 
 		if(SteamAPI_SteamGameServer == nullptr)
 		{
-			g_pSM->LogError(myself, "[CStrike] Failed to get \"%s\" function", pSteamGameServerFuncName);
+			g_pSM->LogError(myself, "[CStrike] Failed to get %s function", pSteamGameServerFuncName);
 		}
 
 		if(SteamAPI_ISteamGameServer_SetKeyValue == nullptr)
 		{
-			g_pSM->LogError(myself, "[CStrike] Failed to get \"%s\" function", pSetKeyValueFuncName);
+			g_pSM->LogError(myself, "[CStrike] Failed to get %s function", pSetKeyValueFuncName);
 		}
 
 		pLibrary->CloseLibrary();
