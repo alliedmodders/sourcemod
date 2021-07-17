@@ -56,8 +56,10 @@ public:
 		{		
 			LineNumber = it->LineNumber();
 			
-			FunctionName = it->FunctionName();
-			FilePath = it->FilePath();
+			if (it->FunctionName())
+				FunctionName = it->FunctionName();
+			if (it->FilePath())
+				FilePath = it->FilePath();
 		}
 	};
 
