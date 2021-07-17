@@ -182,10 +182,14 @@ forward void OnPluginPauseChange(bool pause);
 forward void OnGameFrame();
 
 /**
- * Called when the map is loaded.
+ * Called when the map starts loading.
  *
- * @note This used to be OnServerLoad(), which is now deprecated.
- *       Plugins still using the old forward will work.
+ * @param mapName Name of the map
+ */
+forward void OnMapInit(const char[] mapName);
+
+/**
+ * Called when the map is loaded.
  */
 forward void OnMapStart();
 

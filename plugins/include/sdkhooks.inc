@@ -382,6 +382,7 @@ forward Action OnGetGameDescription(char gameDesc[64]);
  * @param mapEntities   Unused, always empty
  * @return              Unused, return value is ignored
  */
+#pragma deprecated Use OnMapInit() instead
 forward Action OnLevelInit(const char[] mapName, char mapEntities[2097152]);
 
 /**

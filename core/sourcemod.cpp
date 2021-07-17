@@ -63,7 +63,8 @@ ISourcePawnEngine *g_pSourcePawn = NULL;
 ISourcePawnEngine2 *g_pSourcePawn2 = NULL;
 ISourcePawnEnvironment *g_pPawnEnv = NULL;
 IdentityToken_t *g_pCoreIdent = NULL;
-IForward *g_pOnMapEnd = NULL;
+IForward *g_pOnMapInit = nullptr;
+IForward *g_pOnMapEnd = nullptr;
 IGameConfig *g_pGameConf = NULL;
 bool g_Loaded = false;
 bool sm_show_debug_spew = false;
@@ -403,12 +404,20 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 		pBase = pBase->m_pGlobalClassNext;
 	}
 
+	if (!g_pOnMapInit)
+	{
+		g_pOnMapInit = forwardsys->CreateForward("OnMapInit", ET_Ignore, 1, NULL, Param_String);
+	}
+
 	if (!g_pOnMapEnd)
 	{
 		g_pOnMapEnd = forwardsys->CreateForward("OnMapEnd", ET_Ignore, 0, NULL);
 	}
 
 	g_LevelEndBarrier = true;
+
+	g_pOnMapInit->PushString(pMapName);
+	g_pOnMapInit->Execute();
 
 	RETURN_META_VALUE(MRES_IGNORED, true);
 }
@@ -424,10 +433,8 @@ void SourceModBase::LevelShutdown()
 			next = next->m_pGlobalClassNext;
 		}
 		
-		if (g_pOnMapEnd != NULL)
-		{
-			g_pOnMapEnd->Execute(NULL);
-		}
+		g_pOnMapEnd->Execute();
+
 		extsys->CallOnCoreMapEnd();
 
 		g_Timers.RemoveMapChangeTimers();
@@ -548,8 +555,17 @@ void SourceModBase::ShutdownServices()
 	/* Unload extensions */
 	extsys->Shutdown();
 
+	if (g_pOnMapInit)
+	{
+		forwardsys->ReleaseForward(g_pOnMapInit);
+		g_pOnMapInit = nullptr;
+	}
+
 	if (g_pOnMapEnd)
+	{
 		forwardsys->ReleaseForward(g_pOnMapEnd);
+		g_pOnMapEnd = nullptr;
+	}
 
 	/* Notify! */
 	SMGlobalClass *pBase = SMGlobalClass::head;
