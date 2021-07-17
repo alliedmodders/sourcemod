@@ -270,7 +270,6 @@ public:
 #ifdef GAMEDESC_CAN_CHANGE
 	const char *Hook_GetGameDescription();
 #endif
-	const char *Hook_GetMapEntitiesString();
 	bool Hook_LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
 
 	/**
