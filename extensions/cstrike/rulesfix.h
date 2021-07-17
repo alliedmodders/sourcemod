@@ -32,6 +32,7 @@
 #pragma once
 
 #include <steam_gameserver.h>
+
 class ConVar;
 
 class RulesFix
@@ -43,9 +44,6 @@ public:
 	void OnNotifyConVarChanged(ConVar *pVar);
 	void Hook_GameServerSteamAPIActivated(bool bActivated);
 private:
-	void FixSteam();
-private:
-	CSteamGameServerAPIContext m_Steam;
 	STEAM_GAMESERVER_CALLBACK(RulesFix, OnSteamServersConnected, SteamServersConnected_t, m_OnSteamServersConnected);
 };
 

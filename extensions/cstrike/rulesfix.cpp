@@ -39,6 +39,9 @@ bool bPatched = false;
 
 RulesFix rulesfix;
 
+ISteamGameServer *(*SteamAPI_SteamGameServer)();
+void (*SteamAPI_ISteamGameServer_SetKeyValue)(ISteamGameServer *self, const char *pKey, const char *pValue);
+
 SH_DECL_HOOK1_void(IServerGameDLL, GameServerSteamAPIActivated, SH_NOATTRIB, 0, bool);
 
 RulesFix::RulesFix() :
@@ -59,7 +62,7 @@ bool SetMTUMax(int iValue)
 	{
 		if (!g_pGameConf->GetAddress("MaxMTU", (void **)&m_pMaxMTU))
 		{
-			g_pSM->LogMessage(myself, "[CStrike] Failed to locate NET_SendPacket signature.");
+			g_pSM->LogError(myself, "[CStrike] Failed to locate NET_SendPacket signature.");
 			return false;
 		}
 
@@ -77,6 +80,39 @@ bool SetMTUMax(int iValue)
 
 void RulesFix::OnLoad()
 {
+	ILibrary *pLibrary = libsys->OpenLibrary(
+#if defined ( PLATFORM_WINDOWS )
+	"steam_api.dll"
+#elif defined( PLATFORM_LINUX )
+	"libsteam_api.so"
+#elif defined( PLATFORM_APPLE )
+	"libsteam_api.dylib"
+#else
+#error Unsupported platform
+#endif
+	, nullptr, 0);
+	if (pLibrary != nullptr)
+	{
+		const char *pSteamGameServerFuncName = "SteamAPI_SteamGameServer_v013";
+		const char *pSetKeyValueFuncName = "SteamAPI_ISteamGameServer_SetKeyValue";
+
+		// When will hl2sdk-csgo be updated the SteamWorks SDK, change this to export.
+		SteamAPI_SteamGameServer = reinterpret_cast<ISteamGameServer *(*)()>(pLibrary->GetSymbolAddress(pSteamGameServerFuncName));
+		SteamAPI_ISteamGameServer_SetKeyValue = reinterpret_cast<void (*)(ISteamGameServer *self, const char *pKey, const char *pValue)>(pLibrary->GetSymbolAddress(pSetKeyValueFuncName));
+
+		if(SteamAPI_SteamGameServer == nullptr)
+		{
+			g_pSM->LogError(myself, "[CStrike] Failed to get %s function", pSteamGameServerFuncName);
+		}
+
+		if(SteamAPI_ISteamGameServer_SetKeyValue == nullptr)
+		{
+			g_pSM->LogError(myself, "[CStrike] Failed to get %s function", pSetKeyValueFuncName);
+		}
+
+		pLibrary->CloseLibrary();
+	}
+	
 	host_rules_show = g_pCVar->FindVar("host_rules_show");
 	if (host_rules_show)
 	{
@@ -149,25 +185,20 @@ static void OnConVarChanged(IConVar *var, const char *pOldValue, float flOldValu
 
 void RulesFix::OnNotifyConVarChanged(ConVar *pVar)
 {
-	if (!bPatched)
+	if (!bPatched || !SteamAPI_SteamGameServer || !SteamAPI_ISteamGameServer_SetKeyValue)
 		return;
 
-	if (m_Steam.SteamMasterServerUpdater())
+	ISteamGameServer *pSteamClientGameServer = SteamAPI_SteamGameServer();
+
+	if (pSteamClientGameServer)
 	{
 		if (pVar->IsFlagSet(FCVAR_PROTECTED))
 		{
-			if (!pVar->GetString()[0])
-			{
-				m_Steam.SteamMasterServerUpdater()->SetKeyValue(pVar->GetName(), "0");
-			}
-			else
-			{
-				m_Steam.SteamMasterServerUpdater()->SetKeyValue(pVar->GetName(), "1");
-			}
+			SteamAPI_ISteamGameServer_SetKeyValue(pSteamClientGameServer, pVar->GetName(), !pVar->GetString()[0] ? "0" : "1");
 		}
 		else
 		{
-			m_Steam.SteamMasterServerUpdater()->SetKeyValue(pVar->GetName(), pVar->GetString());
+			SteamAPI_ISteamGameServer_SetKeyValue(pSteamClientGameServer, pVar->GetName(), pVar->GetString());
 		}
 	}
 }
@@ -176,61 +207,11 @@ void RulesFix::Hook_GameServerSteamAPIActivated(bool bActivated)
 {
 	if (bActivated)
 	{
-		FixSteam();
-		m_Steam.Init();
-
 		g_pCVar->InstallGlobalChangeCallback(OnConVarChanged);
 		OnSteamServersConnected(nullptr);
 	}
 	else
 	{
 		g_pCVar->RemoveGlobalChangeCallback(OnConVarChanged);
-		m_Steam.Clear();
-	}
-}
-
-void RulesFix::FixSteam()
-{
-	if (!g_pSteamClientGameServer)
-	{
-		void *(*pGSInternalCreateAddress)(const char *) = nullptr;
-		void *(*pInternalCreateAddress)(const char *) = nullptr;
-
-		// CS:GO currently uses the old name, but will use the new name when they update to a 
-		// newer Steamworks SDK. Stay compatible.
-		const char *pGSInternalFuncName = "SteamGameServerInternal_CreateInterface";
-		const char *pInternalFuncName = "SteamInternal_CreateInterface";
-
-		ILibrary *pLibrary = libsys->OpenLibrary(
-#if defined ( PLATFORM_WINDOWS )
-			"steam_api.dll"
-#elif defined( PLATFORM_LINUX )
-			"libsteam_api.so"
-#elif defined( PLATFORM_APPLE )
-			"libsteam_api.dylib"
-#else
-#error Unsupported platform
-#endif
-			, nullptr, 0);
-		if (pLibrary != nullptr)
-		{
-			if (pGSInternalCreateAddress == nullptr)
-			{
-				pGSInternalCreateAddress = reinterpret_cast<void *(*)(const char *)>(pLibrary->GetSymbolAddress(pGSInternalFuncName));
-			}
-
-			if (pInternalCreateAddress == nullptr)
-			{
-				pInternalCreateAddress = reinterpret_cast<void *(*)(const char *)>(pLibrary->GetSymbolAddress(pInternalFuncName));
-			}
-
-			pLibrary->CloseLibrary();
-		}
-
-		if (pGSInternalCreateAddress != nullptr)
-			g_pSteamClientGameServer = reinterpret_cast<ISteamClient *>((*pGSInternalCreateAddress)(STEAMCLIENT_INTERFACE_VERSION));
-
-		if (g_pSteamClientGameServer == nullptr && pInternalCreateAddress != nullptr)
-			g_pSteamClientGameServer = reinterpret_cast<ISteamClient *>((*pInternalCreateAddress)(STEAMCLIENT_INTERFACE_VERSION));
 	}
 }
