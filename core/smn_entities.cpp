@@ -1132,7 +1132,7 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 		auto *pVariant = (variant_t *)((intptr_t)pEntity + offset); \
 		if (pVariant->fieldType != type) \
 		{ \
-			return pContext->ThrowNativeError("Variant value for %s is not %s (%d)", \
+			return pContext->ThrowNativeError("Variant value for %s is not a %s (%d)", \
 				prop, \
 				typeName, \
 				pVariant->fieldType); \
@@ -1572,13 +1572,15 @@ static cell_t GetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 			FIND_PROP_DATA(td);
 
 			if (td->fieldType != FIELD_FLOAT
-				&& td->fieldType != FIELD_TIME)
+				&& td->fieldType != FIELD_TIME
+				&& (td->fieldType != FIELD_CUSTOM || (td->flags & FTYPEDESC_OUTPUT) != FTYPEDESC_OUTPUT))
 			{
-				return pContext->ThrowNativeError("Data field %s is not a float (%d != [%d,%d])", 
+				return pContext->ThrowNativeError("Data field %s is not a float (%d != [%d,%d,%d])", 
 					prop,
 					td->fieldType,
 					FIELD_FLOAT,
-					FIELD_TIME);
+					FIELD_TIME,
+					FIELD_CUSTOM);
 			}
 
 			CHECK_SET_PROP_DATA_OFFSET();
@@ -1633,13 +1635,15 @@ static cell_t SetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 			FIND_PROP_DATA(td);
 
 			if (td->fieldType != FIELD_FLOAT
-				&& td->fieldType != FIELD_TIME)
+				&& td->fieldType != FIELD_TIME
+				&& (td->fieldType != FIELD_CUSTOM || (td->flags & FTYPEDESC_OUTPUT) != FTYPEDESC_OUTPUT))
 			{
-				return pContext->ThrowNativeError("Data field %s is not a float (%d != [%d,%d])", 
+				return pContext->ThrowNativeError("Data field %s is not a float (%d != [%d,%d,%d])", 
 					prop,
 					td->fieldType,
 					FIELD_FLOAT,
-					FIELD_TIME);
+					FIELD_TIME,
+					FIELD_CUSTOM);
 			}
 
 			CHECK_SET_PROP_DATA_OFFSET();
