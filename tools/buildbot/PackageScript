@@ -101,7 +101,6 @@ for smx_file in SM.smx_files:
 helpers.CopyIncludes('addons/sourcemod/scripting/include')
 
 helpers.CopyFiles('configs', 'addons/sourcemod/configs')
-helpers.CopyFiles('configs/geoip', 'addons/sourcemod/configs/geoip')
 helpers.CopyFiles('configs/cfg', 'cfg/sourcemod')
 helpers.CopyFiles('configs/metamod', 'addons/metamod')
 helpers.CopyFiles('configs/sql-init-scripts/mysql', 'addons/sourcemod/configs/sql-init-scripts/mysql')
