@@ -124,7 +124,7 @@ bool EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 	const char *classname;
 	const char *outputname = FindOutputName(pOutput, pActivator, pCaller, &classname);
 
-	if (!outputname)
+	if (!outputname || !classname)
 	{
 		return true;
 	}
@@ -341,7 +341,14 @@ OutputNameStruct *EntityOutputManager::FindOutputPointer(const char *classname, 
 	return pOutputName;
 }
 
-// Iterate the datamap of pCaller and look for output pointers with the same address as pOutput
+// Iterate the datamap of pCaller/pActivator and look for output pointers with the same address as pOutput.
+// Store the classname of the entity we found the output on in |entity_classname| if provided.
+//
+// TODO: It turns out this logic isn't very sane, and it relies heavily on convention how most entities call
+//       FireOutput rather than explicitly conforming to the design of the engine's output system. We need a
+//       big refactor here to lookup the underlying per-entity CBaseEntityOutput instances and introduce an
+//       explicit concept of the entity owning the output being triggered, rather than assuming it is also at
+//       least one of the caller or activator entity.
 const char *EntityOutputManager::FindOutputName(void *pOutput, CBaseEntity *pActivator, CBaseEntity *pCaller, const char **entity_classname)
 {
 	datamap_t *pMap = gamehelpers->GetDataMap(pCaller);
@@ -354,7 +361,7 @@ const char *EntityOutputManager::FindOutputName(void *pOutput, CBaseEntity *pAct
 			{
 				if ((char *)pCaller + GetTypeDescOffs(&pMap->dataDesc[i]) == pOutput)
 				{
-					if(entity_classname)
+					if (entity_classname)
 					{
 						*entity_classname = gamehelpers->GetEntityClassname(pCaller);
 					}
@@ -366,6 +373,9 @@ const char *EntityOutputManager::FindOutputName(void *pOutput, CBaseEntity *pAct
 		pMap = pMap->baseMap;
 	}
 
+	// HACK: Generally, the game passes the entity that triggered the output as pCaller, but occasionally (because the
+	//       param order is confusing), the entity gets passed in as pActivator instead. We do a 2nd pass over
+	//       pActivator looking for the output if we couldn't find it on pCaller.
 	if (pActivator)
 	{
 		pMap = gamehelpers->GetDataMap(pActivator);
@@ -378,7 +388,7 @@ const char *EntityOutputManager::FindOutputName(void *pOutput, CBaseEntity *pAct
 				{
 					if ((char *)pActivator + GetTypeDescOffs(&pMap->dataDesc[i]) == pOutput)
 					{
-						if(entity_classname)
+						if (entity_classname)
 						{
 							*entity_classname = gamehelpers->GetEntityClassname(pActivator);
 						}
