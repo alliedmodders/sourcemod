@@ -56,7 +56,7 @@ inline void ProtectMemory(void *addr, int length, int prot)
 #if defined PLATFORM_POSIX
 	long pageSize = sysconf(_SC_PAGESIZE);
 	void *startPage = ke::AlignedBase(addr, pageSize);
-	void *endPage = ke::AlignedBase((intptr_t)addr + length, pageSize);
+	void *endPage = ke::AlignedBase((void *)((intptr_t)addr + length), pageSize);
 	mprotect(startPage, ((intptr_t)endPage - (intptr_t)startPage) + pageSize, prot);
 #elif defined PLATFORM_WINDOWS
 	DWORD old_prot;
