@@ -122,6 +122,11 @@ methodmap ConVar < Handle
 		public native set(int flags);
 	}
 
+	// Retrieves the plugin handle of the convar's creator
+	property Handle Plugin {
+		public native get();
+	}
+
 	// Sets the boolean value of a console variable.
 	//
 	// Note: The replicate and notify params are only relevant for the
