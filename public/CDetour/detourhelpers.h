@@ -34,13 +34,10 @@
 
 #if defined PLATFORM_POSIX
 #include <sys/mman.h>
-#ifndef PAGE_SIZE
-#define	PAGE_SIZE	4096
-#endif
-#define ALIGN(ar) ((long)ar & ~(PAGE_SIZE-1))
 #define	PAGE_EXECUTE_READWRITE	PROT_READ|PROT_WRITE|PROT_EXEC
 #endif
 
+#include <amtl/am-bits.h>
 #include <jit/x86/x86_macros.h>
 
 struct patch_t
@@ -57,8 +54,10 @@ struct patch_t
 inline void ProtectMemory(void *addr, int length, int prot)
 {
 #if defined PLATFORM_POSIX
-	void *addr2 = (void *)ALIGN(addr);
-	mprotect(addr2, sysconf(_SC_PAGESIZE), prot);
+	long pageSize = sysconf(_SC_PAGESIZE);
+	void *startPage = ke::AlignedBase(addr, pageSize);
+	void *endPage = ke::AlignedBase(addr + length, pageSize);
+	mprotect(startPage, ((intptr_t)endPage - (intptr_t)startPage) + pageSize, prot);
 #elif defined PLATFORM_WINDOWS
 	DWORD old_prot;
 	VirtualProtect(addr, length, prot, &old_prot);
@@ -118,9 +117,9 @@ inline void DoGatePatch(unsigned char *target, void *callback)
 
 inline void ApplyPatch(void *address, int offset, const patch_t *patch, patch_t *restore)
 {
-	ProtectMemory(address, 20, PAGE_EXECUTE_READWRITE);
-
 	unsigned char *addr = (unsigned char *)address + offset;
+	SetMemPatchable(addr, patch->bytes);
+
 	if (restore)
 	{
 		for (size_t i=0; i<patch->bytes; i++)
