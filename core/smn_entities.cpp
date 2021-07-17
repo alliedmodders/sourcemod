@@ -2186,10 +2186,10 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 		{
 			FIND_PROP_SEND(DPT_String, "string");
 
-			if (info.prop->GetProxyFn())
+			if (pProp->GetProxyFn())
 			{
 				DVariant var;
-				info.prop->GetProxyFn()(info.prop, pEntity, (const void *) ((intptr_t) pEntity + offset), &var, element, params[1]);
+				pProp->GetProxyFn()(pProp, pEntity, (const void *) ((intptr_t) pEntity + offset), &var, element, params[1]);
 				src = var.m_pString;
 			}
 			else
@@ -2315,10 +2315,10 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 			}
 
 			bIsStringIndex = false;
-			if (info.prop->GetProxyFn())
+			if (pProp->GetProxyFn())
 			{
 				DVariant var;
-				info.prop->GetProxyFn()(info.prop, pEntity, (const void *) ((intptr_t) pEntity + offset), &var, element, params[1]);
+				pProp->GetProxyFn()(pProp, pEntity, (const void *) ((intptr_t) pEntity + offset), &var, element, params[1]);
 				if (var.m_pString == ((string_t *) ((intptr_t) pEntity + offset))->ToCStr())
 				{
 					bIsStringIndex = true;
