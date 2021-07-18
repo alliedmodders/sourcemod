@@ -583,3 +583,86 @@ stock int ImplodeStrings(const char[][] strings, int numStrings, const char[] jo
 	}
 	return total;
 }
+
+/**
+ * Checks if the given string is an integer (Supports negative values)
+ *
+ * @param szString     Input string
+ * @return             Boolean
+ */
+stock bool IsStringNumber(const char[] str, int nBase=10)
+{
+	int result;
+	return StringToIntEx(str, result, nBase) == strlen(str);
+}
+
+/**
+ * Checks if the given string is a float (Supports negative values)
+ *
+ * @param szString     Input string
+ * @return             Boolean
+ */
+stock bool IsStringFloat(const char[] str)
+{
+	float result;
+	return StringToFloatEx(str, result) == strlen(str);
+}
+
+/**
+ * Converts the given string to lower case
+ *
+ * @param szString     Input string for conversion and also the output
+ * @return             void
+ */
+stock void StringToLowerCase(char[] szInput) 
+{
+	int iIterator = 0;
+
+	while (szInput[iIterator] != EOS)
+	{
+		szInput[iIterator] = CharToLower(szInput[iIterator]);
+		++iIterator;
+	}
+}
+
+/**
+ * Converts the given string to upper case
+ *
+ * @param szString     Input string for conversion and also the output
+ * @return             void
+ */
+stock void StringToUpperCase(char[] szInput) 
+{
+	int iIterator = 0;
+
+	while (szInput[iIterator] != EOS)
+	{
+		szInput[iIterator] = CharToUpper(szInput[iIterator]);
+		++iIterator;
+	}
+}
+
+/**
+ * Finds the position (index) of character in the given string (A wrapper around FindCharInString)
+ *
+ * @param szString     Input string
+ * @param szString     Input character
+ * @param szString     Do we need the last index (Optional, default: false)
+ * @return             Integer, index of the found character (returns -1 if the character was not found)
+ */
+stock int IndexOfChar(const char[] szText, const char cCharacter, bool bLast = false) 
+{
+	return FindCharInString(szText, cCharacter, bLast);
+}
+
+/**
+ * Finds the last position (index) of character in the given string (A wrapper around IndexOfChar)
+ *
+ * @param szString     Input string
+ * @param szString     Input character
+ * @return             Integer, index of the found character. (returns -1 if the character was not found)
+ */
+stock int LastIndexOfChar(const char[] szText, const char cCharacter) 
+{
+	return IndexOfChar(szText, cCharacter, true);
+} 
