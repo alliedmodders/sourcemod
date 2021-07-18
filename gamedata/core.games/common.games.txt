@@ -197,7 +197,7 @@
 		}
 	}
 	
-		"#default"
+	"#default"
 	{
 		"#supported"
 		{
@@ -364,6 +364,21 @@
 		"Keys"
 		{
 			"RadioMenuMaxPageItems"	"6"
+		}
+	}
+
+	"#default"
+	{
+		"#supported"
+		{
+			"engine"	"left4dead"
+			"engine"	"left4dead2"
+			"engine"	"nucleardawn"
+		}
+
+		"Keys"
+		{
+			"RadioMenuClosesOnInvalidSlot"	"yes"
 		}
 	}
 }
