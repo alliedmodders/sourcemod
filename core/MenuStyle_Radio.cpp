@@ -61,7 +61,7 @@ unsigned int g_RadioMenuTimeout = 0;
 #define MAX_MENUSLOT_KEYS 10
 
 static unsigned int s_RadioMaxPageItems = MAX_MENUSLOT_KEYS;
-
+static bool s_RadioClosesOnInvalidSlot = false;
 
 CRadioStyle::CRadioStyle()
 {
@@ -122,6 +122,12 @@ void CRadioStyle::OnSourceModLevelChange(const char *mapName)
 		{
 			s_RadioMaxPageItems = value;
 		}
+	}
+
+	const char *closes = g_pGameConf->GetKeyValue("RadioMenuClosesOnInvalidSlot");
+	if (closes != nullptr && strcmp(closes, "yes") == 0)
+	{
+		s_RadioClosesOnInvalidSlot = true;
 	}
 
 	g_Menus.SetDefaultStyle(this);
@@ -464,7 +470,16 @@ void CRadioMenuPlayer::Radio_Init(int keys, const char *title, const char *text)
 			sizeof(display_pkt), 
 			text);
 	}
-	display_keys = keys;
+
+	// Some games have implemented CHudMenu::SelectMenuItem to close the menu
+	// even if an invalid slot has been selected, which causes us a problem as
+	// we'll never get any notification from the client and we'll keep the menu
+	// alive on our end indefinitely. For these games, pretend that every slot
+	// is valid for selection so we're guaranteed to get a menuselect command.
+	// We don't want to do this for every game as the common SelectMenuItem
+	// implementation ignores invalid selections and keeps the menu open, which
+	// is a much nicer user experience.
+	display_keys = s_RadioClosesOnInvalidSlot ? 0x7ff : keys;
 }
 
 void CRadioMenuPlayer::Radio_Refresh()
