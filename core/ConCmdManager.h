@@ -49,6 +49,7 @@
 #include <IAdminSystem.h>
 #include "concmd_cleaner.h"
 #include "GameHooks.h"
+#include <sm_namehashset.h>
 
 using namespace SourceHook;
 
@@ -108,12 +109,32 @@ struct ConCmdInfo
 		pCmd = nullptr;
 		eflags = 0;
 	}
+
 	bool sourceMod;					/**< Determines whether or not concmd was created by a SourceMod plugin */
 	ConCommand *pCmd;				/**< Pointer to the command itself */
 	CmdHookList hooks;				/**< Hook list */
 	FlagBits eflags;				/**< Effective admin flags */
 	ke::RefPtr<CommandHook> sh_hook;   /**< SourceHook hook, if any. */
 	IPlugin *pPlugin; 				/**< Owning plugin handle. */
+
+	struct ConCmdPolicy
+	{
+		static inline bool matches(const char *name, ConCmdInfo *info)
+		{
+			const char *conCmdChars = info->pCmd->GetName();
+
+			std::string concmdName = ke::Lowercase(conCmdChars);
+			std::string input = ke::Lowercase(name);
+
+			return concmdName == input;
+		}
+
+		static inline uint32_t hash(const detail::CharsAndLength &key)
+		{
+			std::string lower = ke::Lowercase(key.c_str());
+			return detail::CharsAndLength(lower.c_str()).hash();
+		}
+	};
 };
 
 typedef List<ConCmdInfo *> ConCmdList;
@@ -157,11 +178,6 @@ private:
 	void AddToCmdList(ConCmdInfo *info);
 	void RemoveConCmd(ConCmdInfo *info, const char *cmd, bool untrack);
 	bool CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin);
-
-	// Case insensitive
-	ConCmdList::iterator FindInList(const char *name);
-
-	// Case sensitive
 	ConCmdInfo *FindInTrie(const char *name);
 public:
 	inline const List<ConCmdInfo *> & GetCommandList()
@@ -171,7 +187,7 @@ public:
 private:
 	typedef StringHashMap<ke::RefPtr<CommandGroup> > GroupMap;
 
-	StringHashMap<ConCmdInfo *> m_Cmds; /* command lookup */
+	NameHashSet<ConCmdInfo *, ConCmdInfo::ConCmdPolicy> m_Cmds; /* command lookup */
 	GroupMap m_CmdGrps;				/* command group map */
 	ConCmdList m_CmdList;			/* command list */
 };
