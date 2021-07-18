@@ -101,13 +101,14 @@ bool CritManager::TryEnable()
 void CritManager::Disable()
 {
 	int i = m_entsHooked.FindNextSetBit(playerhelpers->GetMaxClients() + 1);
-	for (i; i != -1; i = m_entsHooked.FindNextSetBit(i))
+	while (i != -1)
 	{
 		CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(i);
 		SH_REMOVE_MANUALHOOK(CalcIsAttackCriticalHelper, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelper), false);
 		SH_REMOVE_MANUALHOOK(CalcIsAttackCriticalHelperNoCrits, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelperNoCrits), false);
 
 		m_entsHooked.Set(i, false);
+		i = m_entsHooked.FindNextSetBit(i);
 	}
 
 	m_enabled = false;

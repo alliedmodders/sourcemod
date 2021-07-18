@@ -530,12 +530,11 @@ CON_COMMAND(sm_dump_netprops_xml, "Dumps the networkable property table as an XM
 	buffer[0] = 0;
 
 	time_t t = g_pSM->GetAdjustedTime();
-	size_t written = 0;
 	{
 #ifdef PLATFORM_WINDOWS
 		InvalidParameterHandler p;
 #endif
-		written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
+		strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
 	}
 
 	fprintf(fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n");
@@ -586,12 +585,11 @@ CON_COMMAND(sm_dump_netprops, "Dumps the networkable property table as a text fi
 	buffer[0] = 0;
 
 	time_t t = g_pSM->GetAdjustedTime();
-	size_t written = 0;
 	{
 #ifdef PLATFORM_WINDOWS
 		InvalidParameterHandler p;
 #endif
-		written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
+		strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
 	}
 
 	fprintf(fp, "// Dump of all network properties for \"%s\" as at %s\n//\n\n", g_pSM->GetGameFolderName(), buffer);
@@ -725,12 +723,11 @@ CON_COMMAND(sm_dump_classes, "Dumps the class list as a text file")
 	buffer[0] = 0;
 
 	time_t t = g_pSM->GetAdjustedTime();
-	size_t written = 0;
 	{
 #ifdef PLATFORM_WINDOWS
 		InvalidParameterHandler p;
 #endif
-		written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
+		strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
 	}
 
 	fprintf(fp, "// Dump of all classes for \"%s\" as at %s\n//\n\n", g_pSM->GetGameFolderName(), buffer);
@@ -887,12 +884,11 @@ CON_COMMAND(sm_dump_datamaps, "Dumps the data map list as a text file")
 	buffer[0] = 0;
 
 	time_t t = g_pSM->GetAdjustedTime();
-	size_t written = 0;
 	{
 #ifdef PLATFORM_WINDOWS
 		InvalidParameterHandler p;
 #endif
-		written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
+		strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
 	}
 
 	fprintf(fp, "// Dump of all datamaps for \"%s\" as at %s\n//\n//\n", g_pSM->GetGameFolderName(), buffer);

@@ -323,16 +323,19 @@ bool UserMessages::EndMessage()
 
 		switch (m_FakeMetaRes)
 		{
-		case MRES_IGNORED:
-		case MRES_HANDLED:
-		case MRES_OVERRIDE:
-		{
-			PbHandle priv = localBuffer.ToPrivate(m_CurId);
-			engine->SendUserMessage(static_cast<IRecipientFilter &>(m_CellRecFilter), m_CurId,
-			                        *priv.GetPrivateMessage());
-			break;
-		}
-		//case MRES_SUPERCEDE:
+			case MRES_IGNORED:
+			case MRES_HANDLED:
+			case MRES_OVERRIDE:
+			{
+				PbHandle priv = localBuffer.ToPrivate(m_CurId);
+				engine->SendUserMessage(static_cast<IRecipientFilter &>(m_CellRecFilter), m_CurId,
+										*priv.GetPrivateMessage());
+				break;
+			}
+			default:
+			{
+				break;
+			}
 		}
 
 		OnMessageEnd_Post();

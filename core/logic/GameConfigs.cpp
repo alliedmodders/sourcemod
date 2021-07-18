@@ -328,11 +328,20 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 					fseek(fp, 0, SEEK_SET);
 
 					buffer = malloc(size);
-					fread(buffer, size, 1, fp);
-					s_ServerBinCRC = UTIL_CRC32(buffer, size);
-					free(buffer);
-					s_ServerBinCRC_Ok = true;
-					fclose(fp);
+					size_t res = fread(buffer, size, 1, fp);
+					if (res != 1)
+					{
+						ke::SafeSprintf(error, sizeof(error), "Could not open binary: %s", path);
+						free(buffer);
+						fclose(fp);
+					}
+					else
+					{
+						s_ServerBinCRC = UTIL_CRC32(buffer, size);
+						free(buffer);
+						s_ServerBinCRC_Ok = true;
+						fclose(fp);
+					}
 				}
 			}
 			if (error[0] != '\0')
@@ -660,11 +669,6 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 					/* First, preprocess the signature */
 					unsigned char real_sig[511];
 					size_t real_bytes;
-					size_t length;
-
-					real_bytes = 0;
-					length = strlen(s_TempSig.sig);
-
 					real_bytes = UTIL_DecodeHexString(real_sig, sizeof(real_sig), s_TempSig.sig);
 
 					if (real_bytes >= 1)

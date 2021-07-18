@@ -951,6 +951,10 @@ static void GuessDataPropTypes(typedescription_t *td, cell_t * pSize, cell_t * p
 				return;
 			}
 		}
+	default:
+		{
+			break;
+		}
 	}
 			
 	*pType = PropField_Unsupported;
@@ -1222,7 +1226,8 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 			pProp->GetType(), \
 			pProp->m_nBits, \
 			type); \
-	}
+	} \
+	(void)bit_count; \
 
 
 inline int MatchTypeDescAsInteger(_fieldtypes type, int flags)
@@ -1733,6 +1738,8 @@ static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 					type = PropEnt_Variant;
 				}
 				break;
+			default:
+				break;
 			}
 
 			if (type == PropEnt_Unknown)
@@ -1796,6 +1803,10 @@ static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 
 			return IndexOfEdict(pEdict);
 		}
+	default:
+		{
+			break;
+		}
 	}
 	
 	return -1;
@@ -1850,6 +1861,8 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 					type = PropEnt_Variant;
 				}
 				break;				
+			default:
+				break;
 			}
 
 			if (type == PropEnt_Unknown)
@@ -1934,6 +1947,10 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 			}
 
 			*(edict_t **) ((uint8_t *) pEntity + offset) = pOtherEdict;
+			break;
+		}
+	default:
+		{
 			break;
 		}
 	}

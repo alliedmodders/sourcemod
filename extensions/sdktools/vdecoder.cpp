@@ -277,9 +277,9 @@ DataStatus EncodeValveParam(IPluginContext *pContext,
 
 			return Data_Okay;
 		}
+	default:
+		return Data_Fail;
 	}
-
-	return Data_Fail;
 }
 
 DataStatus DecodeValveParam(IPluginContext *pContext,
@@ -324,7 +324,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			 * This has no destructor so we don't need to do 
 			 * DestroyValveParam() or something :]
 			 */
-			Vector *v = new (mem) Vector(
+			new (mem) Vector(
 				sp_ctof(addr[0]),
 				sp_ctof(addr[1]),
 				sp_ctof(addr[2]));
@@ -371,7 +371,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			 * This has no destructor so we don't need to do 
 			 * DestroyValveParam() or something :]
 			 */
-			QAngle *v = new (mem) QAngle(
+			new (mem) QAngle(
 				sp_ctof(addr[0]),
 				sp_ctof(addr[1]),
 				sp_ctof(addr[2]));

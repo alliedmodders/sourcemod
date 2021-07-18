@@ -35,6 +35,7 @@
 ISourcePawnEngine *CDetourManager::spengine = NULL;
 IGameConfig *CDetourManager::gameconf = NULL;
 
+#if defined(_WIN64) || defined(__x86_64__)
 // Push 64-bit value onto the stack using two instructions.
 //
 // Pushing 0xF00DF00DF00DF00D:
@@ -59,6 +60,7 @@ static inline void X64_Jump_Abs(JitWriter *jit, void *dest)
 	X64_Push_Imm64(jit, jit_int64_t(dest));
 	IA32_Return(jit);
 }
+#endif
 
 static inline void RelativeJump32(JitWriter *jit, void *target)
 {

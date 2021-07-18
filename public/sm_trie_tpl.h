@@ -163,7 +163,6 @@ public:
 		unsigned int curidx;			/* current node index */
 		const char *keyptr = key;		/* input stream at current token */
 		KTrieNode *node = NULL;			/* current node being processed */
-		KTrieNode *basenode = NULL;		/* current base node being processed */
 		unsigned int q;					/* temporary var for x_check results */
 		unsigned int curoffs;			/* current offset */
 
@@ -196,7 +195,6 @@ public:
 		{
 			/* Find where the next character is, then advance */
 			curidx = m_base[lastidx].idx;
-			basenode = &m_base[curidx];
 			curoffs = charval(*keyptr);
 			curidx += curoffs;
 			node = &m_base[curidx];

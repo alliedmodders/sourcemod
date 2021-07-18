@@ -1063,7 +1063,6 @@ void CPluginManager::LoadAll_SecondPass()
 	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 		CPlugin *pPlugin = (*iter);
 		if (pPlugin->GetStatus() == Plugin_Loaded) {
-			char error[256] = {0};
 			if (!RunSecondPass(pPlugin)) {
 				g_Logger.LogError("[SM] Unable to load plugin \"%s\": %s", pPlugin->GetFilename(), pPlugin->GetErrorMsg());
 				Purge(pPlugin);
@@ -1210,7 +1209,7 @@ void CPlugin::SetWaitingToUnload(bool andReload)
 
 void CPluginManager::LoadExtensions(CPlugin *pPlugin)
 {
-	auto callback = [pPlugin] (const sp_pubvar_t *pubvar, const CPlugin::ExtVar& ext) -> bool
+	auto callback = [] (const sp_pubvar_t *pubvar, const CPlugin::ExtVar& ext) -> bool
 	{
 		char path[PLATFORM_MAX_PATH];
 		/* Attempt to auto-load if necessary */

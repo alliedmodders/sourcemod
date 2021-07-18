@@ -1450,6 +1450,8 @@ string_t CHalfLife2::AllocPooledString(const char *pszValue)
 		sm_datatable_info_t info;
 		bool found = FindDataMapInfo(pDataMap, "m_iName", &info);
 		assert(found);
+		(void)(found); // silence -Wunused-variable for release builds
+
 		iNameOffset = info.actual_offset;
 	}
 

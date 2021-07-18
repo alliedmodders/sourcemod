@@ -729,6 +729,9 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 			case SDKHook_CanBeAutobalanced:
 				hookid = SH_ADD_MANUALVPHOOK(CanBeAutobalanced, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_CanBeAutobalanced), false);
 				break;
+			case SDKHook_MAXHOOKS:
+				//this is checked up above
+				break;
 		}
 
 		vhook.SetHookID(hookid);
@@ -1779,7 +1782,7 @@ bool SDKHooks::Hook_WeaponSwitch(CBaseCombatWeapon *pWeapon, int viewmodelindex)
 
 bool SDKHooks::Hook_WeaponSwitchPost(CBaseCombatWeapon *pWeapon, int viewmodelindex)
 {
-	cell_t result = Call(META_IFACEPTR(CBaseEntity), SDKHook_WeaponSwitchPost, pWeapon);
+	Call(META_IFACEPTR(CBaseEntity), SDKHook_WeaponSwitchPost, pWeapon);
 	RETURN_META_VALUE(MRES_IGNORED, true);
 }
 

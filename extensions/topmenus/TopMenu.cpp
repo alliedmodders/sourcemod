@@ -463,8 +463,6 @@ bool TopMenu::DisplayMenuAtCategory(int client, unsigned int object_id)
 		return false;
 	}
 
-	topmenu_category_t *category = m_Categories[category_id];
-
 	UpdateClientRoot(client, pPlayer);
 
 	topmenu_player_t *pClient = &m_clients[client];

@@ -47,6 +47,8 @@ cell_t Native_Hook(IPluginContext *pContext, const cell_t *params)
 	HookReturn ret = g_Interface.Hook(entity, type, callback);
 	switch (ret)
 	{
+		case HookRet_Successful:
+			break;
 		case HookRet_InvalidEntity:
 			pContext->ThrowNativeError("Entity %d is invalid", entity);
 			break;

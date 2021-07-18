@@ -284,17 +284,19 @@ bool CDataPack::RemoveItem(size_t pos)
 			delete [] elements[pos].pData.vval;
 			break;
 		}
-
 		case CDataPackType::String:
 		{
 			delete elements[pos].pData.sval;
 			break;
 		}
-
 		case CDataPackType::CellArray:
 		case CDataPackType::FloatArray:
 		{
 			delete elements[pos].pData.aval;
+			break;
+		}
+		default:
+		{
 			break;
 		}
 	}

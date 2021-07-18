@@ -19,6 +19,7 @@ for cxx in builder.targets:
   ]
   if binary.compiler.target.platform == 'linux':
     binary.compiler.postlink += ['-ldl', '-lpthread']
+    binary.compiler.cflags += ['-Wno-error=unused-const-variable']
 
   binary.sources += [
     '../../public/smsdk_ext.cpp',

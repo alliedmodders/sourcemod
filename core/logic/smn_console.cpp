@@ -218,7 +218,6 @@ static cell_t sm_ClientCommand(IPluginContext *pContext, const cell_t *params)
 	g_pSM->SetGlobalTarget(params[1]);
 
 	char buffer[256];
-	size_t len;
 	{
 		DetectExceptions eh(pContext);
 		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);

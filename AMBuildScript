@@ -285,9 +285,8 @@ class SMConfig(object):
       '-fno-strict-aliasing',
       '-Wall',
       '-Werror',
-      '-Wno-unused',
-      '-Wno-switch',
-      '-Wno-array-bounds',
+      '-Wno-error=switch',
+      '-Wno-error=unused-function',
       '-msse',
       '-fvisibility=hidden',
     ]
@@ -318,17 +317,18 @@ class SMConfig(object):
       cxx.cflags += ['-Wno-narrowing']
     if have_clang or (cxx.version >= 'gcc-4.7'):
       cxx.cxxflags += ['-Wno-delete-non-virtual-dtor']
-    if cxx.version >= 'gcc-4.8':
-      cxx.cflags += ['-Wno-unused-result']
     if cxx.version >= 'gcc-9.0':
       cxx.cxxflags += ['-Wno-class-memaccess', '-Wno-packed-not-aligned']
+
     if have_clang:
-      cxx.cxxflags += ['-Wno-implicit-exception-spec-mismatch']
+      cxx.cxxflags += [
+        '-Wno-implicit-exception-spec-mismatch',
+        '-Wno-error=unused-private-field',
+      ]
       if cxx.version >= 'apple-clang-5.1' or cxx.version >= 'clang-3.4':
-        cxx.cxxflags += ['-Wno-deprecated-register']
+        cxx.cxxflags += ['-Wno-error=deprecated-register']
       else:
-        cxx.cxxflags += ['-Wno-deprecated']
-      cxx.cflags += ['-Wno-sometimes-uninitialized']
+        cxx.cxxflags += ['-Wno-error=deprecated']
 
     # Work around SDK warnings.
     if cxx.version >= 'clang-10.0' or cxx.version >= 'apple-clang-12.0':
