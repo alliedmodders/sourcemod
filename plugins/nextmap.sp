@@ -88,7 +88,9 @@ public void OnPluginStart()
 	RegAdminCmd("sm_maphistory", Command_MapHistory, ADMFLAG_CHANGEMAP, "Shows the most recent maps played");
 	RegConsoleCmd("listmaps", Command_List);
 
-	// Set to the current map so OnMapStart() will know what to do
+	HookEventEx("server_changelevel_failed", OnChangelevelFailed, EventHookMode_Pre);
+
+	// Set to the current map so OnConfigsExecuted() will know what to do
 	char currentMap[PLATFORM_MAX_PATH];
 	GetCurrentMap(currentMap, sizeof(currentMap));
 	SetNextMap(currentMap);
@@ -110,8 +112,16 @@ public void OnConfigsExecuted()
 	// not in mapcyclefile. So we keep it set to the last expected nextmap. - ferret
 	if (strcmp(lastMap, currentMap) == 0)
 	{
-		FindAndSetNextMap();
+		FindAndSetNextMap(currentMap);
 	}
+}
+
+public void OnChangelevelFailed(Event event, const char[] name, bool dontBroadcast)
+{
+	char failedMap[PLATFORM_MAX_PATH];
+	event.GetString("levelname", failedMap, sizeof(failedMap));
+
+	FindAndSetNextMap(failedMap);
 }
 
 public Action Command_List(int client, int args) 
@@ -129,7 +139,7 @@ public Action Command_List(int client, int args)
 	return Plugin_Handled;
 }
   
-void FindAndSetNextMap()
+void FindAndSetNextMap(char[] currentMap)
 {
 	if (ReadMapList(g_MapList, 
 			g_MapListSerial, 
@@ -149,14 +159,11 @@ void FindAndSetNextMap()
 	
 	if (g_MapPos == -1)
 	{
-		char current[PLATFORM_MAX_PATH];
-		GetCurrentMap(current, sizeof(current));
-
 		for (int i = 0; i < mapCount; i++)
 		{
 			g_MapList.GetString(i, mapName, sizeof(mapName));
 			if (FindMap(mapName, mapName, sizeof(mapName)) != FindMap_NotFound && 
-				strcmp(current, mapName, false) == 0)
+				strcmp(currentMap, mapName, false) == 0)
 			{
 				g_MapPos = i;
 				break;
