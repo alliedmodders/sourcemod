@@ -82,6 +82,7 @@ public: //ITimerSystem
 public:
 	void RunFrame();
 	void RemoveMapChangeTimers();
+	void Think(bool unused);
 	void GameFrame(bool simulating);
 private:
 	List<ITimer *> m_SingleTimers;
@@ -92,6 +93,8 @@ private:
 	/* This is stuff for our manual ticking escapades. */
 	bool m_bHasMapTickedYet;	/** Has the map ticked yet? */
 	bool m_bHasMapSimulatedYet;	/** Has the map simulated yet? */
+	bool m_bWasSimulating;	/** Was the last GameFrame simulating */
+	unsigned m_uFramesAhead; /** Number of frames Think is ahead of GameFrame */
 	float m_fLastTickedTime;	/** Last time that the game currently gave 
 									us while ticking.
 									*/
