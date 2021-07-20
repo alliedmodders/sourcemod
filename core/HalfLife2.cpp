@@ -320,15 +320,20 @@ bool UTIL_FindInSendTable(SendTable *pTable,
 						  sm_sendprop_info_t *info,
 						  unsigned int offset)
 {
-	const char *pname;
 	int props = pTable->GetNumProps();
-	SendProp *prop;
-
-	for (int i=0; i<props; i++)
+	for (int i = 0; i < props; i++)
 	{
-		prop = pTable->GetProp(i);
-		pname = prop->GetName();
+		SendProp *prop = pTable->GetProp(i);
+
+		// Skip InsideArray props (SendPropArray / SendPropArray2),
+		// we'll find them later by their containing array.
+		if (prop->IsInsideArray()) {
+			continue;
+		}
+
+		const char *pname = prop->GetName();
 		SendTable *pInnerTable = prop->GetDataTable();
+
 		if (pname && strcmp(name, pname) == 0)
 		{
 			// get true offset of CUtlVector
