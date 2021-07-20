@@ -1,4 +1,5 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
+import collections
 import os, sys
 import traceback
 
@@ -36,7 +37,7 @@ CSGO = {
   'mac': ['x86_64']
 }
 
-PossibleSDKs = {
+SDKMap = {
   'episode1':  SDK('HL2SDK', '2.ep1', '1', 'EPISODEONE', WinLinux, 'episode1'),
   'ep2':  SDK('HL2SDKOB', '2.ep2', '3', 'ORANGEBOX', WinLinux, 'orangebox'),
   'css':  SDK('HL2SDKCSS', '2.css', '6', 'CSS', WinLinuxMac, 'css'),
@@ -59,6 +60,11 @@ PossibleSDKs = {
   'bms':  SDK('HL2SDKBMS', '2.bms', '10', 'BMS', WinLinux, 'bms'),
   'doi':  SDK('HL2SDKDOI', '2.doi', '20', 'DOI', WinLinuxMac, 'doi'),
 }
+
+# Stable sorting for command equivalence in AMBuild.
+PossibleSDKs = collections.OrderedDict()
+for key in sorted(SDKMap.keys()):
+    PossibleSDKs[key] = SDKMap[key]
 
 def ResolveEnvPath(env, folder):
   if env in os.environ:
