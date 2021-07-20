@@ -1217,6 +1217,37 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 			} \
 			break; \
 		} \
+	case DPT_Array: \
+		{ \
+			int elementCount = pProp->GetNumElements(); \
+			int elementStride = pProp->GetElementStride(); \
+			if (element < 0 || element >= elementCount) \
+			{ \
+				return pContext->ThrowNativeError("Element %d is out of bounds (Prop %s has %d elements).", \
+					element, \
+					prop, \
+					elementCount); \
+			} \
+			\
+			pProp = pProp->GetArrayProp(); \
+			if (!pProp) { \
+				return pContext->ThrowNativeError("Error looking up ArrayProp for prop %s", \
+					prop); \
+			} \
+			\
+			if (pProp->GetType() != type) \
+			{ \
+				return pContext->ThrowNativeError("SendProp %s type is not " type_name " ([%d,%d] != %d)", \
+					prop, \
+					pProp->GetType(), \
+					pProp->m_nBits, \
+					type); \
+			} \
+			\
+			offset += pProp->GetOffset() + (elementStride * element); \
+			bit_count = pProp->m_nBits; \
+			break; \
+		} \
 	case DPT_DataTable: \
 		{ \
 			FIND_PROP_SEND_IN_SENDTABLE(info, pProp, element, type, type_name); \
