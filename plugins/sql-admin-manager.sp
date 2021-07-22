@@ -765,6 +765,13 @@ public Action Command_DelAdmin(int client, int args)
 	char identity[65];
 	char safe_identity[140];
 	GetCmdArg(2, identity, sizeof(identity));
+
+	if (StrEqual(authtype, "steam"))
+	{
+		strcopy(safe_identity, sizeof(safe_identity), identity);
+		GetUnifiedAuthId(safe_identity, identity, sizeof(identity));
+	}
+
 	db.Escape(identity, safe_identity, sizeof(safe_identity));
 	
 	char query[255];
@@ -844,6 +851,12 @@ public Action Command_AddAdmin(int client, int args)
 	char safe_identity[140];
 	GetCmdArg(3, identity, sizeof(identity));
 	
+	if (StrEqual(authtype, "steam"))
+	{
+		strcopy(safe_identity, sizeof(safe_identity), identity);
+		GetUnifiedAuthId(safe_identity, identity, sizeof(identity));
+	}
+
 	char query[256];
 	Database db = Connect();
 	if (db == null)

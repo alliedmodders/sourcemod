@@ -1074,65 +1074,6 @@ bool AdminCache::GetMethodIndex(const char *name, unsigned int *_index)
 	return false;
 }
 
-/*
- * Converts Steam2 id, Steam3 id, or SteamId64 to unified, legacy
- * admin identity format. (account id part of Steam2 format)
- */
-bool AdminCache::GetUnifiedSteamIdentity(const char *ident, char *out, size_t maxlen)
-{
-	int len = strlen(ident);
-	if (!strcmp(ident, "BOT"))
-	{
-		// Bots
-		strncopy(out, ident, maxlen);
-		return true;
-	}
-	else if (len >= 11 && !strncmp(ident, "STEAM_", 6) && ident[8] != '_')
-	{
-		// non-bot/lan Steam2 Id, strip off the STEAM_* part
-		ke::SafeStrcpy(out, maxlen, &ident[8]);
-		return true;
-	}
-	else if (len >= 7 && !strncmp(ident, "[U:", 3) && ident[len-1] == ']')
-	{
-		// Steam3 Id, replicate the Steam2 Post-"STEAM_" part
-		uint32_t accountId = strtoul(&ident[5], nullptr, 10);
-		ke::SafeSprintf(out, maxlen, "%u:%u", accountId & 1, accountId >> 1);
-		return true;
-	}
-	else
-	{
-		// 64-bit CSteamID, replicate the Steam2 Post-"STEAM_" part
-
-		// some constants from steamclientpublic.h
-		static const uint32_t k_EAccountTypeIndividual = 1;
-		static const int k_EUniverseInvalid = 0;
-		static const int k_EUniverseMax = 5;
-		static const unsigned int k_unSteamUserWebInstance	= 4;
-		
-		uint64_t steamId = strtoull(ident, nullptr, 10);
-		if (steamId > 0)
-		{
-			// Make some attempt at being sure it's a valid id rather than other number,
-			// even though we're only going to use the lower 32 bits.
-			uint32_t accountId = steamId & 0xFFFFFFFF;
-			uint32_t accountType = (steamId >> 52) & 0xF;
-			int universe = steamId >> 56;
-			uint32_t accountInstance = (steamId >> 32) & 0xFFFFF;
-			if (accountId > 0
-				&& universe > k_EUniverseInvalid && universe < k_EUniverseMax
-				&& accountType == k_EAccountTypeIndividual && accountInstance <= k_unSteamUserWebInstance
-				)
-			{
-				ke::SafeSprintf(out, maxlen, "%u:%u", accountId & 1, accountId >> 1);
-				return true;
-			}
-		}
-	}
-	
-	return false;
-}
-
 bool AdminCache::BindAdminIdentity(AdminId id, const char *auth, const char *ident)
 {
 	if (ident[0] == '\0')
@@ -1154,7 +1095,7 @@ bool AdminCache::BindAdminIdentity(AdminId id, const char *auth, const char *ide
 	char steamIdent[16];
 	if (strcmp(auth, "steam") == 0)
 	{
-		if (!GetUnifiedSteamIdentity(ident, steamIdent, sizeof(steamIdent)))
+		if (!playerhelpers->GetUnifiedAuthId(ident, steamIdent, sizeof(steamIdent)))
 			return false;
 		
 		ident = steamIdent;
@@ -1182,7 +1123,7 @@ AdminId AdminCache::FindAdminByIdentity(const char *auth, const char *identity)
 	char steamIdent[16];
 	if (strcmp(auth, "steam") == 0)
 	{
-		if (!GetUnifiedSteamIdentity(identity, steamIdent, sizeof(steamIdent)))
+		if (!playerhelpers->GetUnifiedAuthId(identity, steamIdent, sizeof(steamIdent)))
 			return INVALID_ADMIN_ID;
 		
 		identity = steamIdent;

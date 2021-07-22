@@ -41,7 +41,7 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	21
+#define SMINTERFACE_PLAYERMANAGER_VERSION	22
 
 struct edict_t;
 class IPlayerInfo;
@@ -628,6 +628,16 @@ namespace SourceMod
 		 * @brief Reruns admin checks on all players.
 		 */
 		virtual void RecheckAnyAdmins() =0;
+
+		/**
+		 * @brief Returns the unified SteamID identity format based
+		 * on passed (account id part of Steam2 identity).
+		 *
+		 * @param ident		SteamID identity (64, 2, 3)
+		 * @param out		Buffer where unified SteamID should be written.
+		 * @param maxlen	Buffer length
+		 */
+		virtual bool GetUnifiedAuthId(const char *ident, char *out, size_t maxlen) =0;
 	};
 }
 
