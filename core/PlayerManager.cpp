@@ -2282,11 +2282,6 @@ void CPlayer::SetName(const char *name)
 
 const char *CPlayer::GetName()
 {
-	if (m_Info && m_pEdict->GetUnknown())
-	{
-		return m_Info->GetName();
-	}
-	
 	return m_Name.c_str();
 }
 
