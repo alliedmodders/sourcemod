@@ -133,7 +133,7 @@ int TempEntityInfo::_FindOffset(const char *name, int *size)
 	return offset;
 }
 
-bool TempEntityInfo::TE_SetEntData(const char *name, int value)
+bool TempEntityInfo::TE_SetEntData(const char *name, const int value)
 {
 	/* Search for our offset */
 	int size;
@@ -183,7 +183,7 @@ bool TempEntityInfo::TE_GetEntData(const char *name, int *value)
 	return true;
 }
 
-bool TempEntityInfo::TE_SetEntDataFloat(const char *name, float value)
+bool TempEntityInfo::TE_SetEntDataFloat(const char *name, const float value)
 {
 	/* Search for our offset */
 	int offset = _FindOffset(name);
@@ -213,7 +213,7 @@ bool TempEntityInfo::TE_GetEntDataFloat(const char *name, float *value)
 	return true;
 }
 
-bool TempEntityInfo::TE_SetEntDataVector(const char *name, float vector[3])
+bool TempEntityInfo::TE_SetEntDataVector(const char *name, const float vector[3])
 {
 	/* Search for our offset */
 	int offset = _FindOffset(name);
@@ -249,7 +249,7 @@ bool TempEntityInfo::TE_GetEntDataVector(const char *name, float vector[3])
 	return true;
 }
 
-bool TempEntityInfo::TE_SetEntDataFloatArray(const char *name, cell_t *array, int size)
+bool TempEntityInfo::TE_SetEntDataFloatArray(const char *name, const float *array, const int size)
 {
 	/* Search for our offset */
 	int offset = _FindOffset(name);
@@ -262,13 +262,13 @@ bool TempEntityInfo::TE_SetEntDataFloatArray(const char *name, cell_t *array, in
 	float *base = (float *)((uint8_t *)m_Me + offset);
 	for (int i=0; i<size; i++)
 	{
-		base[i] = sp_ctof(array[i]);
+		base[i] = array[i];
 	}
 
 	return true;
 }
 
-void TempEntityInfo::Send(IRecipientFilter &filter, float delay)
+void TempEntityInfo::TE_Send(IRecipientFilter &filter, float delay)
 {
 	engine->PlaybackTempEntity(filter, delay, m_Me, m_Sc->m_pTable, m_Sc->m_ClassID);
 }

@@ -425,7 +425,13 @@ static cell_t smn_TEWriteFloatArray(IPluginContext *pContext, const cell_t *para
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[2], &addr);
 
-	if (!g_CurrentTE->TE_SetEntDataFloatArray(prop, addr, params[3]))
+	std::vector<float> value(static_cast<size_t>(params[3]));
+	for (int i = 0; i < params[3]; i++)
+	{
+		value[i] = sp_ctof(addr[i]);
+	}
+	
+	if (!g_CurrentTE->TE_SetEntDataFloatArray(prop, value.data(), params[3]))
 	{
 		return pContext->ThrowNativeError("Temp entity property \"%s\" not found", prop);
 	}
@@ -469,7 +475,7 @@ static cell_t smn_TESend(IPluginContext *pContext, const cell_t *params)
 	g_TERecFilter.Reset();
 	g_TERecFilter.Initialize(cl_array, numClients);
 
-	g_CurrentTE->Send(g_TERecFilter, sp_ctof(params[3]));
+	g_CurrentTE->TE_Send(g_TERecFilter, sp_ctof(params[3]));
 	g_CurrentTE = NULL;
 
 	return 1;

@@ -621,6 +621,11 @@ public:
 	{
 		return GameRules();
 	}
+
+	virtual ISDKTempEntityManager* GetTempEntityManager()
+	{
+		return &g_TEManager;
+	}
 } g_SDKTools_API;
 
 static void InitSDKToolsAPI()
