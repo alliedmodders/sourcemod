@@ -1219,7 +1219,17 @@ static cell_t GetClientMenu(IPluginContext *pContext, const cell_t *params)
 		style = menus->GetDefaultStyle();
 	}
 
-	return style->GetClientMenu(params[1], NULL);
+	IBaseMenu *menu = NULL;
+	MenuSource source = style->GetClientMenu(params[1], (void **)&menu);
+
+	if (params[0] >= 3)
+	{
+		cell_t *addr;
+		pContext->LocalToPhysAddr(params[3], &addr);
+		*(Handle_t *)addr = menu ? menu->GetHandle() : BAD_HANDLE;
+	}
+
+	return source;
 }
 
 static cell_t CancelClientMenu(IPluginContext *pContext, const cell_t *params)

@@ -947,10 +947,11 @@ native Menu CreateMenuEx(Handle hStyle=INVALID_HANDLE, MenuHandler handler, Menu
  *
  * @param client        Client index.
  * @param hStyle        MenuStyle Handle, or INVALID_HANDLE to use the default style.
+ * @param hMenu         Optional menu Handle reference, only filled if return is MenuSource_Normal.
  * @return              A MenuSource value.
  * @error               Invalid Handle other than null.
  */
-native MenuSource GetClientMenu(int client, Handle hStyle=null);
+native MenuSource GetClientMenu(int client, Handle hStyle=null, Handle &hMenu=null);
 
 /**
  * Cancels a menu on a client.  This will only affect non-external menus.
