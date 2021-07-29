@@ -40,6 +40,11 @@ void ClientMenuHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int i
 
 	const char *info = menu->GetItemInfo(item, &draw);
 
+	if (!info)
+	{
+		return;
+	}
+	
 	AutoMenuData *data = (AutoMenuData *)strtoul(info, NULL, 16);
 
 	if (data->handler->forward != NULL)
