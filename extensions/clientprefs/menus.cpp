@@ -40,7 +40,7 @@ void ClientMenuHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int i
 
 	const char *info = menu->GetItemInfo(item, &draw);
 
-	if (!info)
+	if (info == NULL)
 	{
 		return;
 	}
