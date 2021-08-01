@@ -428,6 +428,7 @@ native int FindSendPropOffs(const char[] cls, const char[] prop);
  *                      for strings.
  * @param local_offset  Optional parameter to store the local offset, as
  *                      FindSendPropOffs() would return.
+ * @param array_size    Optional parameter to store array size, 0 if not an array.
  * @return              On success, returns an absolutely computed offset.
  *                      If no offset is available, 0 is returned.
  *                      If the property is not found, -1 is returned.
@@ -436,7 +437,8 @@ native int FindSendPropInfo(const char[] cls,
 						const char[] prop,
 						PropFieldType &type=view_as<PropFieldType>(0),
 						int &num_bits=0,
-						int &local_offset=0);
+						int &local_offset=0,
+						int &array_size=0);
 
 /**
  * Given an entity, finds a datamap property offset.
@@ -700,7 +702,7 @@ native int SetEntPropString(int entity, PropType type, const char[] prop, const 
  * @param entity        Entity/edict index.
  * @param type          Property type.
  * @param prop          Property name.
- * @return              Size of array (in elements) or 1 if property is not an array.
+ * @return              Size of array (in elements) or 0 if property is not an array.
  * @error               Invalid entity or property not found.
  */
 native int GetEntPropArraySize(int entity, PropType type, const char[] prop);
