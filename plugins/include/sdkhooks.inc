@@ -379,9 +379,10 @@ forward Action OnGetGameDescription(char gameDesc[64]);
  * When the level is initialized
  *
  * @param mapName       Name of the map
- * @param mapEntities   Entities of the map
- * @return              Plugin_Changed if mapEntities has been edited, else no change.
+ * @param mapEntities   Unused, always empty
+ * @return              Unused, return value is ignored
  */
+#pragma deprecated Use OnMapInit() instead
 forward Action OnLevelInit(const char[] mapName, char mapEntities[2097152]);
 
 /**

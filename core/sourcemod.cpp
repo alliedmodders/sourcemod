@@ -46,7 +46,6 @@
 #include <amtl/os/am-path.h>
 #include <bridge/include/IExtensionBridge.h>
 #include <bridge/include/IScriptManager.h>
-#include <bridge/include/IProviderCallbacks.h>
 #include <bridge/include/ILogger.h>
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
@@ -63,7 +62,8 @@ ISourcePawnEngine *g_pSourcePawn = NULL;
 ISourcePawnEngine2 *g_pSourcePawn2 = NULL;
 ISourcePawnEnvironment *g_pPawnEnv = NULL;
 IdentityToken_t *g_pCoreIdent = NULL;
-IForward *g_pOnMapEnd = NULL;
+IForward *g_pOnMapInit = nullptr;
+IForward *g_pOnMapEnd = nullptr;
 IGameConfig *g_pGameConf = NULL;
 bool g_Loaded = false;
 bool sm_show_debug_spew = false;
@@ -290,6 +290,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 void SourceModBase::StartSourceMod(bool late)
 {
 	SH_ADD_HOOK(IServerGameDLL, LevelShutdown, gamedll, SH_MEMBER(this, &SourceModBase::LevelShutdown), false);
+	SH_ADD_HOOK(IServerGameDLL, Think, gamedll, SH_MEMBER(&g_Timers, &TimerSystem::Think), false);
 	SH_ADD_HOOK(IServerGameDLL, GameFrame, gamedll, SH_MEMBER(&g_Timers, &TimerSystem::GameFrame), false);
 
 	enginePatch = SH_GET_CALLCLASS(engine);
@@ -361,8 +362,6 @@ void SourceModBase::StartSourceMod(bool late)
 	{
 		g_pSourcePawn2->InstallWatchdogTimer(atoi(timeout) * 1000);
 	}
-
-	SH_ADD_HOOK(IServerGameDLL, Think, gamedll, SH_MEMBER(logicore.callbacks, &IProviderCallbacks::OnThink), false);
 }
 
 static bool g_LevelEndBarrier = false;
@@ -403,12 +402,20 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 		pBase = pBase->m_pGlobalClassNext;
 	}
 
+	if (!g_pOnMapInit)
+	{
+		g_pOnMapInit = forwardsys->CreateForward("OnMapInit", ET_Ignore, 1, NULL, Param_String);
+	}
+
 	if (!g_pOnMapEnd)
 	{
 		g_pOnMapEnd = forwardsys->CreateForward("OnMapEnd", ET_Ignore, 0, NULL);
 	}
 
 	g_LevelEndBarrier = true;
+
+	g_pOnMapInit->PushString(pMapName);
+	g_pOnMapInit->Execute();
 
 	RETURN_META_VALUE(MRES_IGNORED, true);
 }
@@ -424,10 +431,8 @@ void SourceModBase::LevelShutdown()
 			next = next->m_pGlobalClassNext;
 		}
 		
-		if (g_pOnMapEnd != NULL)
-		{
-			g_pOnMapEnd->Execute(NULL);
-		}
+		g_pOnMapEnd->Execute();
+
 		extsys->CallOnCoreMapEnd();
 
 		g_Timers.RemoveMapChangeTimers();
@@ -548,8 +553,17 @@ void SourceModBase::ShutdownServices()
 	/* Unload extensions */
 	extsys->Shutdown();
 
+	if (g_pOnMapInit)
+	{
+		forwardsys->ReleaseForward(g_pOnMapInit);
+		g_pOnMapInit = nullptr;
+	}
+
 	if (g_pOnMapEnd)
+	{
 		forwardsys->ReleaseForward(g_pOnMapEnd);
+		g_pOnMapEnd = nullptr;
+	}
 
 	/* Notify! */
 	SMGlobalClass *pBase = SMGlobalClass::head;
@@ -582,8 +596,8 @@ void SourceModBase::ShutdownServices()
 	}
 
 	SH_REMOVE_HOOK(IServerGameDLL, LevelShutdown, gamedll, SH_MEMBER(this, &SourceModBase::LevelShutdown), false);
+	SH_REMOVE_HOOK(IServerGameDLL, Think, gamedll, SH_MEMBER(&g_Timers, &TimerSystem::Think), false);
 	SH_REMOVE_HOOK(IServerGameDLL, GameFrame, gamedll, SH_MEMBER(&g_Timers, &TimerSystem::GameFrame), false);
-	SH_REMOVE_HOOK(IServerGameDLL, Think, gamedll, SH_MEMBER(logicore.callbacks, &IProviderCallbacks::OnThink), false);
 }
 
 void SourceModBase::LogMessage(IExtension *pExt, const char *format, ...)

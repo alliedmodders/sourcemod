@@ -825,7 +825,7 @@ static cell_t FindSendPropInfo(IPluginContext *pContext, const cell_t *params)
 {
 	char *cls, *prop;
 	sm_sendprop_info_t info;
-	cell_t *pType, *pBits, *pLocal;
+	cell_t *pType, *pBits, *pLocal, *pArraySize;
 
 	pContext->LocalToString(params[1], &cls);
 	pContext->LocalToString(params[2], &prop);
@@ -839,7 +839,45 @@ static cell_t FindSendPropInfo(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToPhysAddr(params[4], &pBits);
 	pContext->LocalToPhysAddr(params[5], &pLocal);
 
-	switch (info.prop->GetType())
+	if (params[0] >= 6) {
+		pContext->LocalToPhysAddr(params[6], &pArraySize);
+		*pArraySize = 0;
+	}
+
+	SendProp *pProp = info.prop;
+	unsigned int actual_offset = info.actual_offset;
+
+	// SendPropArray / SendPropArray2
+	if (pProp->GetType() == DPT_Array && pProp->GetArrayProp())
+	{
+		if (pArraySize) {
+			// This'll only work for SendPropArray
+			*pArraySize = pProp->GetNumElements();
+		}
+
+		// Use the type / bits / local offset of the real data prop
+		pProp = pProp->GetArrayProp();
+
+		// This is sane as the DPT_Array prop's local offset is always 0
+		actual_offset += pProp->GetOffset();
+	}
+
+	// Get the local offset now before we might dive into another table
+	*pLocal = pProp->GetOffset();
+
+	// SendPropArray3
+	SendTable *pTable = pProp->GetDataTable();
+	if (pProp->GetType() == DPT_DataTable && pTable && pTable->GetNumProps() > 0)
+	{
+		if (pArraySize) {
+			*pArraySize = pTable->GetNumProps();
+		}
+
+		// Use the type / bits of the first data prop
+		pProp = pTable->GetProp(0);
+	}
+
+	switch (pProp->GetType())
 	{
 	case DPT_Int:
 		{
@@ -868,10 +906,9 @@ static cell_t FindSendPropInfo(IPluginContext *pContext, const cell_t *params)
 		}
 	}
 
-	*pBits = info.prop->m_nBits;
-	*pLocal = info.prop->GetOffset();
+	*pBits = pProp->m_nBits;
 
-	return info.actual_offset;
+	return actual_offset;
 }
 
 static void GuessDataPropTypes(typedescription_t *td, cell_t * pSize, cell_t * pType)
@@ -1132,7 +1169,7 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 		auto *pVariant = (variant_t *)((intptr_t)pEntity + offset); \
 		if (pVariant->fieldType != type) \
 		{ \
-			return pContext->ThrowNativeError("Variant value for %s is not %s (%d)", \
+			return pContext->ThrowNativeError("Variant value for %s is not a %s (%d)", \
 				prop, \
 				typeName, \
 				pVariant->fieldType); \
@@ -1295,6 +1332,11 @@ static cell_t GetEntPropArraySize(IPluginContext *pContext, const cell_t *params
 					prop,
 					params[1],
 					((class_name) ? class_name : ""));
+			}
+
+			if (info.prop->GetType() == DPT_Array)
+			{
+				return info.prop->GetNumElements();
 			}
 
 			if (info.prop->GetType() != DPT_DataTable)
@@ -1572,13 +1614,15 @@ static cell_t GetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 			FIND_PROP_DATA(td);
 
 			if (td->fieldType != FIELD_FLOAT
-				&& td->fieldType != FIELD_TIME)
+				&& td->fieldType != FIELD_TIME
+				&& (td->fieldType != FIELD_CUSTOM || (td->flags & FTYPEDESC_OUTPUT) != FTYPEDESC_OUTPUT))
 			{
-				return pContext->ThrowNativeError("Data field %s is not a float (%d != [%d,%d])", 
+				return pContext->ThrowNativeError("Data field %s is not a float (%d != [%d,%d,%d])", 
 					prop,
 					td->fieldType,
 					FIELD_FLOAT,
-					FIELD_TIME);
+					FIELD_TIME,
+					FIELD_CUSTOM);
 			}
 
 			CHECK_SET_PROP_DATA_OFFSET();
@@ -1633,13 +1677,15 @@ static cell_t SetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 			FIND_PROP_DATA(td);
 
 			if (td->fieldType != FIELD_FLOAT
-				&& td->fieldType != FIELD_TIME)
+				&& td->fieldType != FIELD_TIME
+				&& (td->fieldType != FIELD_CUSTOM || (td->flags & FTYPEDESC_OUTPUT) != FTYPEDESC_OUTPUT))
 			{
-				return pContext->ThrowNativeError("Data field %s is not a float (%d != [%d,%d])", 
+				return pContext->ThrowNativeError("Data field %s is not a float (%d != [%d,%d,%d])", 
 					prop,
 					td->fieldType,
 					FIELD_FLOAT,
-					FIELD_TIME);
+					FIELD_TIME,
+					FIELD_CUSTOM);
 			}
 
 			CHECK_SET_PROP_DATA_OFFSET();
@@ -2182,10 +2228,10 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 		{
 			FIND_PROP_SEND(DPT_String, "string");
 
-			if (info.prop->GetProxyFn())
+			if (pProp->GetProxyFn())
 			{
 				DVariant var;
-				info.prop->GetProxyFn()(info.prop, pEntity, (const void *) ((intptr_t) pEntity + offset), &var, element, params[1]);
+				pProp->GetProxyFn()(pProp, pEntity, (const void *) ((intptr_t) pEntity + offset), &var, element, params[1]);
 				src = var.m_pString;
 			}
 			else
@@ -2311,10 +2357,10 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 			}
 
 			bIsStringIndex = false;
-			if (info.prop->GetProxyFn())
+			if (pProp->GetProxyFn())
 			{
 				DVariant var;
-				info.prop->GetProxyFn()(info.prop, pEntity, (const void *) ((intptr_t) pEntity + offset), &var, element, params[1]);
+				pProp->GetProxyFn()(pProp, pEntity, (const void *) ((intptr_t) pEntity + offset), &var, element, params[1]);
 				if (var.m_pString == ((string_t *) ((intptr_t) pEntity + offset))->ToCStr())
 				{
 					bIsStringIndex = true;

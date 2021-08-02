@@ -116,7 +116,7 @@ void CDataPack::PackCellArray(cell_t const *vals, cell_t count)
 	val.type = CDataPackType::CellArray;
 
 	val.pData.aval = new cell_t [count + 1];
-	memcpy(&val.pData.aval[1], vals, sizeof(cell_t) * (count + 1));
+	memcpy(&val.pData.aval[1], vals, sizeof(cell_t) * count);
 	val.pData.aval[0] = count;
 	elements.emplace(elements.begin() + position, val);
 	position++;
@@ -128,7 +128,7 @@ void CDataPack::PackFloatArray(cell_t const *vals, cell_t count)
 	val.type = CDataPackType::FloatArray;
 
 	val.pData.aval = new cell_t [count + 1];
-	memcpy(&val.pData.aval[1], vals, sizeof(cell_t) * (count + 1));
+	memcpy(&val.pData.aval[1], vals, sizeof(cell_t) * count);
 	val.pData.aval[0] = count;
 	elements.emplace(elements.begin() + position, val);
 	position++;
@@ -294,7 +294,7 @@ bool CDataPack::RemoveItem(size_t pos)
 		case CDataPackType::CellArray:
 		case CDataPackType::FloatArray:
 		{
-			delete elements[pos].pData.aval;
+			delete [] elements[pos].pData.aval;
 			break;
 		}
 	}

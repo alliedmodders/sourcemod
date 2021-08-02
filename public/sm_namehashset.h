@@ -111,12 +111,14 @@ public:
 
 	Result find(const char *aKey)
 	{
-		return table_.find(aKey);
+		CharsAndLength key(aKey);
+		return table_.find(key);
 	}
 
 	Insert findForAdd(const char *aKey)
 	{
-		return table_.findForAdd(aKey);
+		CharsAndLength key(aKey);
+		return table_.findForAdd(key);
 	}
 
 	template <typename U>
@@ -128,7 +130,7 @@ public:
 	bool retrieve(const char *aKey, T *value)
 	{
 		CharsAndLength key(aKey);
-		Result r = table_.find(aKey);
+		Result r = table_.find(key);
 		if (!r.found())
 			return false;
 		*value = *r;
@@ -148,7 +150,7 @@ public:
 	bool contains(const char *aKey)
 	{
 		CharsAndLength key(aKey);
-		Result r = table_.find(aKey);
+		Result r = table_.find(key);
 		return r.found();
 	}
 

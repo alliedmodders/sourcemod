@@ -56,20 +56,26 @@ class CSMTraceFilter : public CTraceFilter
 public:
 	bool ShouldHitEntity(IHandleEntity *pEntity, int contentsMask)
 	{
+		if (m_pEh->HasException()) {
+			return true;
+		}
+
 		cell_t res = 1;
 		m_pFunc->PushCell(gamehelpers->EntityToBCompatRef(reinterpret_cast<CBaseEntity *>(pEntity)));
 		m_pFunc->PushCell(contentsMask);
 		m_pFunc->PushCell(m_Data);
-		m_pFunc->Execute(&res);
+		m_pFunc->Invoke(&res);
 
 		return (res) ? true : false;
 	}
-	void SetFunctionPtr(IPluginFunction *pFunc, cell_t data)
+	void SetFunctionPtr(ExceptionHandler *pEh, IPluginFunction *pFunc, cell_t data)
 	{
+		m_pEh = pEh;
 		m_pFunc = pFunc;
 		m_Data = data;
 	}
 private:
+	ExceptionHandler *m_pEh;
 	IPluginFunction *m_pFunc;
 	cell_t m_Data;
 };
@@ -79,19 +85,25 @@ class CSMTraceEnumerator : public IPartitionEnumerator
 public:
 	IterationRetval_t EnumElement(IHandleEntity *pEntity) override
 	{
+		if (m_pEh->HasException()) {
+			return ITERATION_STOP;
+		}
+
 		cell_t res = 1;
 		m_pFunc->PushCell(gamehelpers->EntityToBCompatRef(reinterpret_cast<CBaseEntity*>(pEntity)));
 		m_pFunc->PushCell(m_Data);
-		m_pFunc->Execute(&res);
+		m_pFunc->Invoke(&res);
 
 		return (res) ? ITERATION_CONTINUE : ITERATION_STOP;
 	}
-	void SetFunctionPtr(IPluginFunction *pFunc, cell_t data)
+	void SetFunctionPtr(ExceptionHandler *pEh, IPluginFunction *pFunc, cell_t data)
 	{
+		m_pEh = pEh;
 		m_pFunc = pFunc;
 		m_Data = data;
 	}
 private:
+	ExceptionHandler *m_pEh;
 	IPluginFunction *m_pFunc;
 	cell_t m_Data;
 };
@@ -196,7 +208,8 @@ static cell_t smn_TREnumerateEntities(IPluginContext *pContext, const cell_t *pa
 		data = params[6];
 	}
 
-	g_SMTraceEnumerator.SetFunctionPtr(pFunc, data);
+	DetectExceptions eh(pContext);
+	g_SMTraceEnumerator.SetFunctionPtr(&eh, pFunc, data);
 
 	cell_t *startaddr, *endaddr;
 	pContext->LocalToPhysAddr(params[1], &startaddr);
@@ -245,7 +258,8 @@ static cell_t smn_TREnumerateEntitiesHull(IPluginContext *pContext, const cell_t
 		data = params[7];
 	}
 
-	g_SMTraceEnumerator.SetFunctionPtr(pFunc, data);
+	DetectExceptions eh(pContext);
+	g_SMTraceEnumerator.SetFunctionPtr(&eh, pFunc, data);
 
 	cell_t *startaddr, *endaddr, *mins, *maxs;
 	pContext->LocalToPhysAddr(params[1], &startaddr);
@@ -280,7 +294,8 @@ static cell_t smn_TREnumerateEntitiesSphere(IPluginContext *pContext, const cell
 		data = params[5];
 	}
 
-	g_SMTraceEnumerator.SetFunctionPtr(pFunc, data);
+	DetectExceptions eh(pContext);
+	g_SMTraceEnumerator.SetFunctionPtr(&eh, pFunc, data);
 
 	cell_t *startaddr;
 	pContext->LocalToPhysAddr(params[1], &startaddr);
@@ -309,7 +324,8 @@ static cell_t smn_TREnumerateEntitiesBox(IPluginContext *pContext, const cell_t 
 		data = params[5];
 	}
 
-	g_SMTraceEnumerator.SetFunctionPtr(pFunc, data);
+	DetectExceptions eh(pContext);
+	g_SMTraceEnumerator.SetFunctionPtr(&eh, pFunc, data);
 
 	cell_t *minsaddr, *maxsaddr;
 	pContext->LocalToPhysAddr(params[1], &minsaddr);
@@ -338,7 +354,8 @@ static cell_t smn_TREnumerateEntitiesPoint(IPluginContext *pContext, const cell_
 		data = params[4];
 	}
 
-	g_SMTraceEnumerator.SetFunctionPtr(pFunc, data);
+	DetectExceptions eh(pContext);
+	g_SMTraceEnumerator.SetFunctionPtr(&eh, pFunc, data);
 
 	cell_t *startaddr;
 	pContext->LocalToPhysAddr(params[1], &startaddr);
@@ -457,7 +474,9 @@ static cell_t smn_TRTraceRayFilter(IPluginContext *pContext, const cell_t *param
 		data = 0;
 	}
 
-	g_SMTraceFilter.SetFunctionPtr(pFunc, data);
+	DetectExceptions eh(pContext);
+	g_SMTraceFilter.SetFunctionPtr(&eh, pFunc, data);
+
 	pContext->LocalToPhysAddr(params[1], &startaddr);
 	pContext->LocalToPhysAddr(params[2], &endaddr);
 
@@ -503,7 +522,9 @@ static cell_t smn_TRTraceHullFilter(IPluginContext *pContext, const cell_t *para
 
 	data = params[7];
 
-	g_SMTraceFilter.SetFunctionPtr(pFunc, data);
+	DetectExceptions eh(pContext);
+	g_SMTraceFilter.SetFunctionPtr(&eh, pFunc, data);
+
 	pContext->LocalToPhysAddr(params[1], &startaddr);
 	pContext->LocalToPhysAddr(params[2], &endaddr);
 	pContext->LocalToPhysAddr(params[3], &mins);
@@ -751,7 +772,9 @@ static cell_t smn_TRTraceRayFilterEx(IPluginContext *pContext, const cell_t *par
 		data = 0;
 	}
 
-	smfilter.SetFunctionPtr(pFunc, data);
+	DetectExceptions eh(pContext);
+	smfilter.SetFunctionPtr(&eh, pFunc, data);
+
 	StartVec.Init(sp_ctof(startaddr[0]), sp_ctof(startaddr[1]), sp_ctof(startaddr[2]));
 
 	switch (params[4])
@@ -812,7 +835,9 @@ static cell_t smn_TRTraceHullFilterEx(IPluginContext *pContext, const cell_t *pa
 
 	data = params[7];
 
-	smfilter.SetFunctionPtr(pFunc, data);
+	DetectExceptions eh(pContext);
+	smfilter.SetFunctionPtr(&eh, pFunc, data);
+
 	StartVec.Init(sp_ctof(startaddr[0]), sp_ctof(startaddr[1]), sp_ctof(startaddr[2]));
 	vmins.Init(sp_ctof(mins[0]), sp_ctof(mins[1]), sp_ctof(mins[2]));
 	vmaxs.Init(sp_ctof(maxs[0]), sp_ctof(maxs[1]), sp_ctof(maxs[2]));

@@ -153,30 +153,13 @@ ConCmdInfo *ConCmdManager::FindInTrie(const char *name)
 	return pInfo;
 }
 
-ConCmdList::iterator ConCmdManager::FindInList(const char *cmd)
-{
-	List<ConCmdInfo *>::iterator iter = m_CmdList.begin();
-
-	while (iter != m_CmdList.end())
-	{
-		if (strcasecmp((*iter)->pCmd->GetName(), cmd) == 0)
-			break;
-		iter++;
-	}
-
-	return iter;
-}
-
 ResultType ConCmdManager::DispatchClientCommand(int client, const char *cmd, int args, ResultType type)
 {
-	ConCmdInfo *pInfo;
+	ConCmdInfo *pInfo = FindInTrie(cmd);
 
-	if ((pInfo = FindInTrie(cmd)) == NULL)
+	if (pInfo == NULL)
 	{
-		ConCmdList::iterator item = FindInList(cmd);
-		if (item == m_CmdList.end())
-			return type;
-		pInfo = *item;
+		return type;
 	}
 
 	cell_t result = type;
@@ -231,17 +214,7 @@ bool ConCmdManager::InternalDispatch(int client, const ICommandArgs *args)
 	ConCmdInfo *pInfo = FindInTrie(cmd);
 	if (pInfo == NULL)
 	{
-        /* Unfortunately, we now have to do a slow lookup because Valve made client commands 
-         * case-insensitive.  We can't even use our sortedness.
-         */
-        if (client == 0 && !engine->IsDedicatedServer())
-            return false;
-
-		ConCmdList::iterator item = FindInList(cmd);
-		if (item == m_CmdList.end())
-			return false;
-
-		pInfo = *item;
+		return false;
 	}
 
 	/* This is a hack to prevent say triggers from firing on messages that were 
@@ -568,10 +541,6 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 	ConCmdInfo *pInfo;
 	if (!m_Cmds.retrieve(name, &pInfo))
 	{
-		ConCmdList::iterator item = FindInList(name);
-		if (item != m_CmdList.end())
-			return *item;
-
 		pInfo = new ConCmdInfo();
 		/* Find the commandopan */
 		ConCommand *pCmd = FindCommand(name);

@@ -553,6 +553,21 @@ static cell_t sm_GetConVarFlags(IPluginContext *pContext, const cell_t *params)
 	return pConVar->m_nFlags;
 }
 
+static cell_t sm_GetConVarPlugin(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError err;
+	IPlugin *pPlugin;
+
+	if ((err=g_ConVarManager.ReadConVarHandle(hndl, nullptr, &pPlugin))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
+	}
+
+	return pPlugin ? pPlugin->GetMyHandle() : BAD_HANDLE;
+}
+
 static cell_t sm_SetConVarFlags(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
@@ -1517,6 +1532,7 @@ REGISTER_NATIVES(consoleNatives)
 	{"ConVar.IntValue.set",		sm_SetConVarNum},
 	{"ConVar.Flags.get",		sm_GetConVarFlags},
 	{"ConVar.Flags.set",		sm_SetConVarFlags},
+	{"ConVar.Plugin.get",		sm_GetConVarPlugin},
 	{"ConVar.SetBool",			sm_SetConVarNum},
 	{"ConVar.SetInt",			sm_SetConVarNum},
 	{"ConVar.SetFloat",			sm_SetConVarFloat},

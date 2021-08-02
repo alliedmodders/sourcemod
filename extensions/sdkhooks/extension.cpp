@@ -120,13 +120,10 @@ int g_hookOnGetGameDescription = 0;
 IForward *g_pOnGetGameNameDescription = NULL;
 #endif
 
-int g_hookOnGetMapEntitiesString = 0;
 int g_hookOnLevelInit = 0;
 IForward *g_pOnLevelInit = NULL;
 
 IGameConfig *g_pGameConf = NULL;
-
-char g_szMapEntities[2097152];
 
 CUtlVector<IEntityListener *> *EntListeners()
 {
@@ -159,8 +156,6 @@ SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, 0, bool, const char *, con
 #ifdef GAMEDESC_CAN_CHANGE
 SH_DECL_HOOK0(IServerGameDLL, GetGameDescription, SH_NOATTRIB, 0, const char *);
 #endif
-SH_DECL_HOOK0(IVEngineServer, GetMapEntitiesString, SH_NOATTRIB, 0, const char *);
-
 
 /**
  * CBaseEntity Hooks
@@ -259,7 +254,7 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 #ifdef GAMEDESC_CAN_CHANGE
 	g_pOnGetGameNameDescription = forwards->CreateForward("OnGetGameDescription", ET_Hook, 2, NULL, Param_String);
 #endif
-	g_pOnLevelInit = forwards->CreateForward("OnLevelInit", ET_Hook, 2, NULL, Param_String, Param_String);
+	g_pOnLevelInit = forwards->CreateForward("OnLevelInit", ET_Ignore, 2, NULL, Param_String, Param_String);
 
 	SetupHooks();
 
@@ -297,8 +292,6 @@ inline void HookLevelInit()
 {
 	assert(g_hookOnLevelInit == 0);
 	g_hookOnLevelInit = SH_ADD_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(&g_Interface, &SDKHooks::Hook_LevelInit), false);
-	assert(g_hookOnGetMapEntitiesString == 0);
-	g_hookOnGetMapEntitiesString = SH_ADD_HOOK(IVEngineServer, GetMapEntitiesString, engine, SH_MEMBER(&g_Interface, &SDKHooks::Hook_GetMapEntitiesString), false);
 }
 
 #ifdef GAMEDESC_CAN_CHANGE
@@ -340,7 +333,6 @@ void SDKHooks::SDK_OnUnload()
 	Unhook(reinterpret_cast<SourcePawn::IPluginContext *>(NULL));
 
 	KILL_HOOK_IF_ACTIVE(g_hookOnLevelInit);
-	KILL_HOOK_IF_ACTIVE(g_hookOnGetMapEntitiesString);
 
 #ifdef GAMEDESC_CAN_CHANGE
 	KILL_HOOK_IF_ACTIVE(g_hookOnGetGameDescription);
@@ -411,7 +403,6 @@ void SDKHooks::OnPluginUnloaded(IPlugin *plugin)
 	if (g_pOnLevelInit->GetFunctionCount() == 0)
 	{
 		KILL_HOOK_IF_ACTIVE(g_hookOnLevelInit);
-		KILL_HOOK_IF_ACTIVE(g_hookOnGetMapEntitiesString);
 	}
 
 #ifdef GAMEDESC_CAN_CHANGE
@@ -932,26 +923,12 @@ const char *SDKHooks::Hook_GetGameDescription()
 }
 #endif
 
-const char *SDKHooks::Hook_GetMapEntitiesString()
-{
-	if(g_szMapEntities[0])
-		RETURN_META_VALUE(MRES_SUPERCEDE, g_szMapEntities);
-
-	RETURN_META_VALUE(MRES_IGNORED, NULL);
-}
-
 bool SDKHooks::Hook_LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
 {
-	strcpy(g_szMapEntities, pMapEntities);
-	cell_t result = Pl_Continue;
-
 	// Call OnLevelInit forward
 	g_pOnLevelInit->PushString(pMapName);
-	g_pOnLevelInit->PushStringEx(g_szMapEntities, sizeof(g_szMapEntities), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
-	g_pOnLevelInit->Execute(&result);
-
-	if(result == Pl_Changed)
-		RETURN_META_VALUE_NEWPARAMS(MRES_HANDLED, true, &IServerGameDLL::LevelInit, (pMapName, g_szMapEntities, pOldLevel, pLandmarkName, loadGame, background));
+	g_pOnLevelInit->PushString("");
+	g_pOnLevelInit->Execute();
 
 	RETURN_META_VALUE(MRES_IGNORED, true);
 }
