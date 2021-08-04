@@ -121,7 +121,7 @@ public int MenuHandler_Gravity(Menu menu, MenuAction action, int param1, int par
 		{
 			g_GravityTarget[param1] = userid;
 			DisplayGravityAmountMenu(param1);
-			return;	// Return, because we went to a new menu and don't want the re-draw to occur.
+			return 0;	// Return, because we went to a new menu and don't want the re-draw to occur.
 		}
 		
 		/* Re-draw the menu if they're still valid */
@@ -130,8 +130,8 @@ public int MenuHandler_Gravity(Menu menu, MenuAction action, int param1, int par
 			DisplayGravityMenu(param1);
 		}
 	}
-	
-	return;
+
+	return 0;
 }
 
 public int MenuHandler_GravityAmount(Menu menu, MenuAction action, int param1, int param2)
@@ -179,6 +179,8 @@ public int MenuHandler_GravityAmount(Menu menu, MenuAction action, int param1, i
 			DisplayGravityMenu(param1);
 		}
 	}
+
+	return 0;
 }
 
 public Action Command_Gravity(int client, int args)

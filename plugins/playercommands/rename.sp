@@ -113,6 +113,8 @@ public int MenuHandler_Rename(Menu menu, MenuAction action, int param1, int para
 		}		
 		DisplayRenameTargetMenu(param1);
 	}
+
+	return 0;
 }
 
 void RandomizeName(int client)

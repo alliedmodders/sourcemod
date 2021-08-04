@@ -172,6 +172,8 @@ public int MenuHandler_GagPlayer(Menu menu, MenuAction action, int param1, int p
 			DisplayGagTypesMenu(param1);
 		}
 	}
+
+	return 0;
 }
 
 public int MenuHandler_GagTypes(Menu menu, MenuAction action, int param1, int param2)
@@ -246,6 +248,8 @@ public int MenuHandler_GagTypes(Menu menu, MenuAction action, int param1, int pa
 			}
 		}
 	}
+
+	return 0;
 }
 
 void PerformMute(int client, int target, bool silent=false)

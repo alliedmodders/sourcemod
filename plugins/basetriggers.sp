@@ -189,6 +189,8 @@ public void ConVarChange_TimeleftInterval(ConVar convar, const char[] oldValue, 
 public Action Timer_DisplayTimeleft(Handle timer)
 {
 	ShowTimeLeft(0, PRINT_TO_ALL_ALWAYS);	
+
+	return Plugin_Continue;
 }
 
 public Action Command_Timeleft(int client, int args)

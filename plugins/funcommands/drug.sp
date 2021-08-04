@@ -278,6 +278,8 @@ public int MenuHandler_Drug(Menu menu, MenuAction action, int param1, int param2
 			DisplayDrugMenu(param1);
 		}
 	}
+
+	return 0;
 }
 
 public Action Command_Drug(int client, int args)

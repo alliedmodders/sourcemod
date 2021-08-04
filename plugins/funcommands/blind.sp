@@ -164,7 +164,7 @@ public int MenuHandler_Blind(Menu menu, MenuAction action, int param1, int param
 		{
 			g_BlindTarget[param1] = userid;
 			DisplayAmountMenu(param1);
-			return;	// Return, because we went to a new menu and don't want the re-draw to occur.
+			return 0;	// Return, because we went to a new menu and don't want the re-draw to occur.
 		}
 		
 		/* Re-draw the menu if they're still valid */
@@ -174,7 +174,7 @@ public int MenuHandler_Blind(Menu menu, MenuAction action, int param1, int param
 		}
 	}
 	
-	return;
+	return 0;
 }
 
 public int MenuHandler_Amount(Menu menu, MenuAction action, int param1, int param2)
@@ -221,6 +221,8 @@ public int MenuHandler_Amount(Menu menu, MenuAction action, int param1, int para
 			DisplayBlindMenu(param1);
 		}
 	}
+
+	return 0;
 }
 
 public Action Command_Blind(int client, int args)

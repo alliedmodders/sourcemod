@@ -130,6 +130,8 @@ public int MenuHandler_Burn(Menu menu, MenuAction action, int param1, int param2
 			DisplayVoteBurnMenu(param1, target, name);
 		}
 	}
+
+	return 0;
 }
 
 public Action Command_VoteBurn(int client, int args)

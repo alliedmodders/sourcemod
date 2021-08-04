@@ -316,6 +316,8 @@ public int MenuHandler_Burn(Menu menu, MenuAction action, int param1, int param2
 			DisplayBurnMenu(param1);
 		}
 	}
+
+	return 0;
 }
 
 public int MenuHandler_FireBomb(Menu menu, MenuAction action, int param1, int param2)
@@ -362,6 +364,8 @@ public int MenuHandler_FireBomb(Menu menu, MenuAction action, int param1, int pa
 			DisplayFireBombMenu(param1);
 		}
 	}
+
+	return 0;
 }
 
 public Action Command_Burn(int client, int args)

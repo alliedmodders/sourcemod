@@ -132,6 +132,8 @@ public int MenuHandler_Confirm(Menu menu, MenuAction action, int param1, int par
 		
 		ResetMenu();
 	}
+
+	return 0;
 }
 
 public int MenuHandler_Map(Menu menu, MenuAction action, int param1, int param2)

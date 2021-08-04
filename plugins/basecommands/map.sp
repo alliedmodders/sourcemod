@@ -62,6 +62,8 @@ public int MenuHandler_ChangeMap(Menu menu, MenuAction action, int param1, int p
 		Panel panel = view_as<Panel>(param2);
 		panel.SetTitle(title);
 	}
+
+	return 0;
 }
 
 public void AdminMenu_Map(TopMenu topmenu, 

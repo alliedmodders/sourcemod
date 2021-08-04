@@ -119,6 +119,8 @@ public int MenuHandler_Kick(Menu menu, MenuAction action, int param1, int param2
 			DisplayKickMenu(param1);
 		}
 	}
+
+	return 0;
 }
 
 public Action Command_Kick(int client, int args)
