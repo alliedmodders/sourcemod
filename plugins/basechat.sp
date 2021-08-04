@@ -435,4 +435,5 @@ void SendPanelToAll(int from, char[] message)
 public int Handler_DoNothing(Menu menu, MenuAction action, int param1, int param2)
 {
 	/* Do nothing */
+	return 0;
 }

@@ -161,7 +161,10 @@ public int MenuHandler_Who(Menu menu, MenuAction action, int param1, int param2)
 		}
 		*/
 	}
+
+	return 0;
 }
+
 public Action Command_Who(int client, int args)
 {
 	bool is_admin = false;
