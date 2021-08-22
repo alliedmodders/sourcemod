@@ -374,8 +374,8 @@ methodmap Database < Handle
 	// the database's character set.
 	//
 	// NOTE: SourceMod only guarantees properly escaped strings when the query
-	// encloses the string in ''. While drivers tend to allow " instead, the string
-	// may be not be escaped (for example, on SQLite)!
+	// encloses the string in ''. While drivers tend to allow "" instead,
+	// the string may be not be escaped (for example, on SQLite)!
 	//
 	// @param string        String to quote.
 	// @param buffer        Buffer to store quoted string in.
