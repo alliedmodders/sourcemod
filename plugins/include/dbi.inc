@@ -635,8 +635,8 @@ native bool SQL_GetError(Handle hndl, char[] error, int maxlength);
  * the database's character set.
  *
  * NOTE: SourceMod only guarantees properly escaped strings when the query
- * encloses the string in ''. While drivers tend to allow " instead, the string
- * may be not be escaped (for example, on SQLite)!
+ * encloses the string in ''. While drivers tend to allow "" instead,
+ * the string may be not be escaped (for example, on SQLite)!
  *
  * @param database      A database Handle.
  * @param string        String to quote.
