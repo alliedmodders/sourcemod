@@ -169,10 +169,11 @@ native void GameRules_SetPropVector(const char[] prop, const float vec[3], int e
  * @param prop          Property to use.
  * @param buffer        Destination string buffer.
  * @param maxlen        Maximum length of output string buffer.
+ * @param element       Element # (starting from 0) if property is an array.
  * @return              Number of non-null bytes written.
  * @error               Prop type is not a string, or lack of mod support.
  */
-native int GameRules_GetPropString(const char[] prop, char[] buffer, int maxlen);
+native int GameRules_GetPropString(const char[] prop, char[] buffer, int maxlen, int element=0);
 
 /**
  * Sets a gamerules property as a string.
@@ -180,10 +181,11 @@ native int GameRules_GetPropString(const char[] prop, char[] buffer, int maxlen)
  * @param prop          Property to use.
  * @param buffer        String to set.
  * @param changeState   This parameter is ignored.
+ * @param element       Element # (starting from 0) if property is an array.
  * @return              Number of non-null bytes written.
  * @error               Prop type is not a string, or lack of mod support.
  */
-native int GameRules_SetPropString(const char[] prop, const char[] buffer, bool changeState=false);
+native int GameRules_SetPropString(const char[] prop, const char[] buffer, bool changeState=false, int element=0);
 
 /**
  * Gets the current round state.
