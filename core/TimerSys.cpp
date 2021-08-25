@@ -35,7 +35,6 @@
 #include "frame_hooks.h"
 #include "ConVarManager.h"
 #include "logic_bridge.h"
-#include <bridge/include/IProviderCallbacks.h>
 
 #define TIMER_MIN_ACCURACY		0.1
 
@@ -171,8 +170,9 @@ void ITimer::Initialize(ITimedEvent *pCallbacks, float fInterval, float fToExec,
 TimerSystem::TimerSystem()
 {
 	m_pMapTimer = NULL;
+	m_bHasMapTickedYet = false;
+	m_bHasMapSimulatedYet = false;
 	m_fLastTickedTime = 0.0f;
-	OnSourceModLevelEnd();
 }
 
 TimerSystem::~TimerSystem()
@@ -213,28 +213,29 @@ void TimerSystem::OnSourceModLevelEnd()
 {
 	m_bHasMapTickedYet = false;
 	m_bHasMapSimulatedYet = false;
-	m_bWasSimulating = false;
-	m_uFramesAhead = 0;
 }
 
-/* Think is called before gpGlobals is updated every frame, even if the server is hibernating */
-void TimerSystem::Think(bool unused)
+void TimerSystem::GameFrame(bool simulating)
 {
-	m_uFramesAhead++;
-	bool simulating = m_bWasSimulating && m_uFramesAhead == 1;
-
-	if (m_bHasMapTickedYet) {
-		g_fUniversalTime += gpGlobals->realtime - m_fLastTickedTime;
-	} else {
+	if (simulating && m_bHasMapTickedYet)
+	{
+		g_fUniversalTime += gpGlobals->curtime - m_fLastTickedTime;
+		if (!m_bHasMapSimulatedYet)
+		{
+			m_bHasMapSimulatedYet = true;
+			MapTimeLeftChanged();
+		}
+	}
+	else 
+	{
 		g_fUniversalTime += gpGlobals->interval_per_tick;
 	}
 
-	m_fLastTickedTime = gpGlobals->realtime;
+	m_fLastTickedTime = gpGlobals->curtime;
 	m_bHasMapTickedYet = true;
 
-	logicore.callbacks->OnThink(simulating);
-
-	if (g_fUniversalTime >= g_fTimerThink) {
+	if (g_fUniversalTime >= g_fTimerThink)
+	{
 		RunFrame();
 
 		g_fTimerThink = CalcNextThink(g_fTimerThink, TIMER_MIN_ACCURACY);
@@ -242,19 +243,9 @@ void TimerSystem::Think(bool unused)
 
 	RunFrameHooks(simulating);
 
-	m_pOnGameFrame->Execute();
-}
-
-/* GameFrame is called after gpGlobals is updated, and may not be called when the server is hibernating */
-void TimerSystem::GameFrame(bool simulating)
-{
-	m_bWasSimulating = simulating;
-	m_uFramesAhead = 0;
-
-	if (simulating && !m_bHasMapSimulatedYet)
+	if (m_pOnGameFrame->GetFunctionCount())
 	{
-		m_bHasMapSimulatedYet = true;
-		MapTimeLeftChanged();
+		m_pOnGameFrame->Execute(NULL);
 	}
 }
 
