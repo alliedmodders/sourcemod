@@ -205,6 +205,7 @@ bool CritManager::Hook_CalcIsAttackCriticalHelpers(bool noCrits)
 	g_critForward->PushString(gamehelpers->GetEntityClassname(pWeapon)); //Weapon classname
 	g_critForward->PushCellByRef(&returnValue); //return value
 
+	int origReturnValue = returnValue;
 	cell_t result = 0;
 
 	g_critForward->Execute(&result);
@@ -214,5 +215,5 @@ bool CritManager::Hook_CalcIsAttackCriticalHelpers(bool noCrits)
 		RETURN_META_VALUE(MRES_SUPERCEDE, returnValue);
 	}
 	
-	RETURN_META_VALUE(MRES_IGNORED, false);
+	RETURN_META_VALUE(MRES_SUPERCEDE, origReturnValue);
 }
