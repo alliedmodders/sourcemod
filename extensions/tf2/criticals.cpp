@@ -191,6 +191,7 @@ bool CritManager::Hook_CalcIsAttackCriticalHelpers(bool noCrits)
 		returnValue = SH_MCALL(pWeapon, CalcIsAttackCriticalHelper)() ? 1 : 0;
 	}
 
+	int origReturnValue = returnValue;
 	int ownerIndex = -1;
 	CBaseHandle &hndl = *(CBaseHandle *) ((intptr_t)pWeapon + info.actual_offset);
 	CBaseEntity *pHandleEntity = gamehelpers->ReferenceToEntity(hndl.GetEntryIndex());
@@ -205,7 +206,6 @@ bool CritManager::Hook_CalcIsAttackCriticalHelpers(bool noCrits)
 	g_critForward->PushString(gamehelpers->GetEntityClassname(pWeapon)); //Weapon classname
 	g_critForward->PushCellByRef(&returnValue); //return value
 
-	int origReturnValue = returnValue;
 	cell_t result = 0;
 
 	g_critForward->Execute(&result);
