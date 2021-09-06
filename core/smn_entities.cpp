@@ -825,7 +825,7 @@ static cell_t FindSendPropInfo(IPluginContext *pContext, const cell_t *params)
 {
 	char *cls, *prop;
 	sm_sendprop_info_t info;
-	cell_t *pType, *pBits, *pLocal, *pArraySize;
+	cell_t *pType, *pBits, *pLocal, *pArraySize = nullptr;
 
 	pContext->LocalToString(params[1], &cls);
 	pContext->LocalToString(params[2], &prop);
