@@ -36,6 +36,11 @@ CSGO = {
   'linux': ['x86', 'x86_64'],
   'mac': ['x86_64']
 }
+Mock = {
+  'windows': ['x86', 'x86_64'],
+  'linux': ['x86', 'x86_64'],
+  'mac': ['x86_64']
+}
 
 SDKMap = {
   'episode1':  SDK('HL2SDK', '2.ep1', '1', 'EPISODEONE', WinLinux, 'episode1'),
@@ -59,6 +64,7 @@ SDKMap = {
   'contagion':  SDK('HL2SDKCONTAGION', '2.contagion', '14', 'CONTAGION', WinOnly, 'contagion'),
   'bms':  SDK('HL2SDKBMS', '2.bms', '10', 'BMS', WinLinux, 'bms'),
   'doi':  SDK('HL2SDKDOI', '2.doi', '20', 'DOI', WinLinuxMac, 'doi'),
+  'mock': SDK('HL2SDK-MOCK', '2.mock', '999', 'MOCK', Mock, 'mock'),
 }
 
 # Stable sorting for command equivalence in AMBuild.
@@ -613,7 +619,7 @@ class SMConfig(object):
     if compiler.target.platform == 'linux':
       if sdk.name in ['css', 'hl2dm', 'dods', 'tf2', 'sdk2013', 'bms', 'nucleardawn', 'l4d2', 'insurgency', 'doi']:
         dynamic_libs = ['libtier0_srv.so', 'libvstdlib_srv.so']
-      elif compiler.target.arch == 'x86_64' and sdk.name in ['csgo', 'blade']:
+      elif compiler.target.arch == 'x86_64' and sdk.name in ['csgo', 'blade', 'mock']:
         dynamic_libs = ['libtier0_client.so', 'libvstdlib_client.so']
       elif sdk.name in ['l4d', 'blade', 'insurgency', 'doi', 'csgo']:
         dynamic_libs = ['libtier0.so', 'libvstdlib.so']
