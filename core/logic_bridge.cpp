@@ -496,6 +496,8 @@ const char *CoreProviderImpl::GetSourceEngineName()
 	return "doi";
 #elif SOURCE_ENGINE == SE_CSGO
 	return "csgo";
+#elif SOURCE_ENGINE == SE_MOCK
+	return "mock";
 #endif
 }
 
