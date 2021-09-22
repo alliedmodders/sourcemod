@@ -292,7 +292,7 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"507"
+				"windows"	"508"
 				"linux"		"508"
 				"linux64"	"508"
 				"mac64"		"508"
