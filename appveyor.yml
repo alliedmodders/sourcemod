@@ -3,6 +3,7 @@ image: Visual Studio 2015
 clone_folder: c:/projects/sourcemod
 clone_depth: 1
 install:
+- cmd: set PATH=C:\Python38;C:\Python38\Scripts;%PATH%
 - cmd: git submodule update --init --recursive
 - cmd: git pull --recurse-submodules
 - cmd: cd ..
@@ -12,5 +13,5 @@ build_script:
 - cmd: call "%VS140COMNTOOLS%/vsvars32.bat"
 - cmd: mkdir build
 - cmd: cd build
-- cmd: c:\python27\python.exe ../configure.py --enable-optimize --no-mysql --sdks=episode1,css,tf2,l4d2,csgo
+- cmd: python.exe ../configure.py --enable-optimize --no-mysql --sdks=episode1,css,tf2,l4d2,csgo
 - cmd: ambuild
