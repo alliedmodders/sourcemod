@@ -6,147 +6,171 @@
 		{
 			"Blocked"
 			{
-				"windows"	"106"
-				"linux"		"107"
-				"mac"		"107"
-			}
-			"EndTouch"
-			{
 				"windows"	"104"
+				"windows64"	"104"
 				"linux"		"105"
 				"mac"		"105"
 			}
+			"EndTouch"
+			{
+				"windows"	"102"
+				"windows64"	"102"
+				"linux64"	"103"
+				"mac64"		"103"
+			}
 			"FireBullets"
 			{
-				"windows"	"117"
-				"linux"		"118"
-				"mac"		"118"
+				"windows"	"116"
+				"windows64"	"116"
+				"linux64"	"117"
+				"mac64"		"117"
 			}
 			"GetMaxHealth"
 			{
-				"windows"	"121"
-				"linux"		"122"
-				"mac"		"122"				
+				"windows"	"120"
+				"windows64"	"120"
+				"linux64"	"121"
+				"mac64"		"121"				
 			}
 			"GroundEntChanged"
 			{
 				"windows"	"174"
-				"linux"		"176"
-				"mac"		"176"
+				"windows64"	"174"
+				"linux64"	"176"
+				"mac64"		"176"
 			}
 			"OnTakeDamage"
 			{
-				"windows"	"68"
-				"linux"		"69"
-				"mac"		"69"
+				"windows"	"66"
+				"windows64"	"66"
+				"linux64"	"67"
+				"mac64"		"67"
 			}
 			"OnTakeDamage_Alive"
 			{
-				"windows"	"291"
-				"linux"		"292"
-				"mac"		"292"
+				"windows"	"293"
+				"windows64"	"293"
+				"linux64"	"294"
+				"mac64"		"294"
 			}
 			"PreThink"
 			{
-				"windows"	"351"
-				"linux"		"352"
-				"mac"		"352"
+				"windows"	"362"
+				"windows64"	"362"
+				"linux64"	"363"
+				"mac64"		"363"
 			}
 			"PostThink"
 			{
-				"windows"	"352"
-				"linux"		"353"
-				"mac"		"353"
+				"windows"	"363"
+				"windows64"	"363"
+				"linux64"	"364"
+				"mac64"		"364"
 			}
 			"Reload"
 			{
-				"windows"	"280"
-				"linux"		"281"
-				"mac"		"281"
+				"windows"	"285"
+				"windows64"	"285"
+				"linux64"	"286"
+				"mac64"		"286"
 			}
 			"SetTransmit"
 			{
-				"windows"	"22"
-				"linux"		"23"
-				"mac"		"23"
+				"windows"	"20"
+				"windows64"	"20"
+				"linux64"	"21"
+				"mac64"		"21"
 			}
 			"ShouldCollide"
 			{
-				"windows"	"17"
-				"linux"		"18"
-				"mac"		"18"
+				"windows"	"16"
+				"windows64"	"16"
+				"linux64"	"17"
+				"mac64"		"17"
 			}
 			"Spawn"
 			{
-				"windows"	"24"
-				"linux"		"25"
-				"mac"		"25"
+				"windows"	"22"
+				"windows64"	"22"
+				"linux64"	"23"
+				"mac64"		"23"
 			}
 			"StartTouch"
 			{
-				"windows"	"102"
-				"linux"		"103"
-				"mac"		"103"
+				"windows"	"100"
+				"windows64"	"100"
+				"linux64"	"101"
+				"mac64"		"101"
 			}
 			"Think"
 			{
-				"windows"	"52"
-				"linux"		"53"
-				"mac"		"53"
+				"windows"	"50"
+				"windows64"	"50"
+				"linux64"	"51"
+				"mac64"		"51"
 			}
 			"Touch"
 			{
-				"windows"	"103"
-				"linux"		"104"
-				"mac"		"104"
+				"windows"	"101"
+				"windows64"	"101"
+				"linux64"	"102"
+				"mac64"		"102"
 			}
 			"TraceAttack"
 			{
-				"windows"	"66"
-				"linux"		"67"
-				"mac"		"67"
+				"windows"	"64"
+				"windows64"	"64"
+				"linux64"	"65"
+				"mac64"		"65"
 			}
 			"Use"
 			{
-				"windows"	"101"
-				"linux"		"102"
-				"mac"		"102"
+				"windows"	"99"
+				"windows64"	"99"
+				"linux64"	"100"
+				"mac64"		"102"
 			}
 			"VPhysicsUpdate"
 			{
-				"windows"	"154"
-				"linux"		"155"
-				"mac"		"155"
+				"windows"	"153"
+				"windows64"	"153"
+				"linux64"	"154"
+				"mac64"		"154"
 			}
 			"Weapon_CanSwitchTo"
 			{
 				"windows"	"285"
-				"linux"		"286"
-				"mac"		"286"
+				"windows64"	"285"
+				"linux64"	"286"
+				"mac64"		"286"
 			}
 			"Weapon_CanUse"
 			{
 				"windows"	"279"
-				"linux"		"280"
-				"mac"		"280"
+				"windows64"	"279"
+				"linux64"	"280"
+				"mac64"		"280"
 			}
 			"Weapon_Drop"
 			{
 				"windows"	"282"
-				"linux"		"283"
-				"mac"		"283"
+				"windows64"	"282"
+				"linux64"	"283"
+				"mac64"		"283"
 			}
 			"Weapon_Equip"
 			{
 				"windows"	"280"
-				"linux"		"281"
-				"mac"		"281"
+				"windows64"	"280"
+				"linux64"	"281"
+				"mac64"		"281"
 			}
 			"Weapon_Switch"
 			{
 				"windows"	"283"
-				"linux"		"284"
-				"mac"		"284"
+				"windows64"	"283"
+				"linux64"	"284"
+				"mac64"		"284"
 			}
 		}
 	}
@@ -158,8 +182,9 @@
 			"EntityListeners"
 			{
 				"windows"	"196644"
-				"linux"		"196644"
-				"mac"		"196644"
+				"windows64"	"393272"
+				"linux64"	"393272"
+				"mac64"		"393272"
 			}
 		}
 	}
