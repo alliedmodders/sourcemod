@@ -33,11 +33,6 @@
 	{
 		"Offsets"
 		{
-			/* Offset into CBaseTempEntity constructor */
-			"s_pTempEntities"
-			{
-				"windows"	"19"
-			}
 			"GetTEName"
 			{
 				"windows"	"4"
@@ -58,125 +53,6 @@
 				"windows64"	"0"
 				"linux64"	"0"
 				"mac64"		"0"
-			}
-		}
-
-		"Signatures"
-		{
-			"CBaseTempEntity"
-			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\xC1\x8B\x4D\x08\xC7\x00\x2A\x2A\x2A\x2A\x89\x48\x2A\x8B"
-			}
-			"s_pTempEntities"
-			{
-				"library"	"server"
-				"linux"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
-				"mac"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
-			}
-		}
-	}
-	
-	/* CGlobalEntityList */
-	"#default"
-	{
-		"Signatures"
-		{
-			/* Functions in CGlobalEntityList */
-			"FindEntityByClassname"
-			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x53\x56\x8B\xF1\x8B\x4D\x08\x57\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x08\xFF\xD2\x8B\x00\x83\xF8\xFF\x75\x2A\xB8\xFF\x1F\x00\x00\x8D\x04\x40\x8B\x74\xC6\x2A\xEB"
-				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
-				"mac"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
-			}
-		}
-	}
-
-	/* General GameRules */
-	"#default"
-	{
-		"Offsets"
-		{
-			/* Offset into CreateGameRulesObject */
-			"g_pGameRules"
-			{
-				"windows"	"2"
-			}
-		}
-		
-		"Signatures"
-		{
-			/* This signature sometimes has multiple matches, but this
-			 * does not matter as g_pGameRules is involved in all of them.
-			 * The same g_pGameRules offset applies to each match.
-			 *
-			 * Sometimes this block of bytes is at the beginning of the static
-			 * CreateGameRulesObject function and sometimes it is in the middle
-			 * of an entirely different function. This depends on the game.
-			 */
-			"CreateGameRulesObject"
-			{
-				"library"	"server"
-				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x2A\x6A\x01\xFF\xD2"
-			}
-			"g_pGameRules"
-			{
-				"library"	"server"
-				"linux"		"@g_pGameRules"
-				"mac"		"@g_pGameRules"
-			}
-		}
-	}
-	
-	/* IServer interface pointer */
-	"#default"
-	{
-		"Keys"
-		{
-			/* Signature for the beginning of IVEngineServer::CreateFakeClient.
-			 *
-			 * The engine binary is not actually scanned in order to look for
-			 * this. SourceHook is used to used to determine the address of the
-			 * function and this signature is used to verify that it contains
-			 * the expected code. A pointer to sv (IServer interface) is used
-			 * here.
-			 */
-			"CreateFakeClient_Windows"	"\x55\x8B\xEC\x8B\x2A\x2A\x50\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x75"
-		}
-		
-		"Offsets"
-		{
-			/* Offset into IVEngineServer::CreateFakeClient */
-			"sv"
-			{
-				"windows"	"8"
-			}
-		}
-		
-		"Signatures"
-		{
-			/* CBaseServer object for IServer interface */
-			"sv"
-			{
-				"library"	"engine"
-				"linux"		"@sv"
-				"mac"		"@sv"
-			}
-		}
-	}
-	
-	/* EntityFactoryDictionary function */
-	"#default"
-	{
-		"Signatures"
-		{
-			"EntityFactory"
-			{
-				"library"	"server"
-				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
-				"linux"		"@_Z23EntityFactoryDictionaryv"
-				"mac"		"@_Z23EntityFactoryDictionaryv"
 			}
 		}
 	}
