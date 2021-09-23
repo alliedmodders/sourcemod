@@ -35,6 +35,8 @@
 
 #if SOURCE_ENGINE == SE_CSGO
 # include <cstrike15_usermessage_helpers.h>
+#elif SOURCE_ENGINE == SE_BLADE
+# include <berimbau_usermessages.pb.h>
 #else
 # error "No source engine compatibility"
 #endif
@@ -88,6 +90,8 @@ ProtobufProxy::NewPrototype(int msg_type)
 {
 #if SOURCE_ENGINE == SE_CSGO
 	return g_Cstrike15UsermessageHelpers.GetPrototype(msg_type)->New();
+#else SOURCE_ENGINE == SE_BLADE
+	return g_BerimbauUsermessageHelpers.GetPrototype(msg_type)->New();
 #else
 # error "No source engine compatibility."
 #endif
