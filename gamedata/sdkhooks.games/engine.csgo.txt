@@ -69,10 +69,10 @@
 			}
 			"Reload"
 			{
-				"windows"	"311"
-				"linux"		"317"
-				"linux64"	"317"
-				"mac64"		"317"
+				"windows"	"312"
+				"linux"		"318"
+				"linux64"	"318"
+				"mac64"		"318"
 			}
 			"SetTransmit"
 			{
