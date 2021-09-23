@@ -2066,7 +2066,8 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	|| SOURCE_ENGINE == SE_HL2DM \
 	|| SOURCE_ENGINE == SE_BMS   \
 	|| SOURCE_ENGINE == SE_INSURGENCY \
-	|| SOURCE_ENGINE == SE_DOI
+	|| SOURCE_ENGINE == SE_DOI   \
+	|| SOURCE_ENGINE == SE_BLADE
 	m_pIClient = engine->GetIServer()->GetClient(m_iIndex - 1);
 #else
   #if SOURCE_ENGINE == SE_SDK2013

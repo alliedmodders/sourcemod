@@ -617,6 +617,7 @@ CEntityFactoryDictionary *GetEntityFactoryDictionary()
 	|| SOURCE_ENGINE == SE_HL2DM   \
 	|| SOURCE_ENGINE == SE_SDK2013 \
 	|| SOURCE_ENGINE == SE_BMS     \
+	|| SOURCE_ENGINE == SE_BLADE   \
 	|| SOURCE_ENGINE == SE_NUCLEARDAWN
 	dict = (CEntityFactoryDictionary *) servertools->GetEntityFactoryDictionary();
 #else
