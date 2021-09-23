@@ -107,7 +107,7 @@ extern sp_nativeinfo_t g_ClientNatives[];
 
 static void InitSDKToolsAPI();
 
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 CDetour *g_WriteBaselinesDetour = NULL;
 
 DETOUR_DECL_MEMBER3(CNetworkStringTableContainer__WriteBaselines, void, char const *, mapName, void *, buffer, int, currentTick)
@@ -205,7 +205,9 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	m_CSGOBadList.init();
 	m_CSGOBadList.add("m_bIsValveDS");
 	m_CSGOBadList.add("m_bIsQuestEligible");
+#endif
 
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	g_WriteBaselinesDetour = DETOUR_CREATE_MEMBER(CNetworkStringTableContainer__WriteBaselines, "WriteBaselines");
 	if (g_WriteBaselinesDetour) {
 		g_WriteBaselinesDetour->EnableDetour();
@@ -243,7 +245,7 @@ void SDKTools::SDK_OnUnload()
 	g_RegCalls.clear();
 	ShutdownHelpers();
 
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	if (g_WriteBaselinesDetour) {
 		g_WriteBaselinesDetour->DisableDetour();
 		g_WriteBaselinesDetour = NULL;

@@ -151,7 +151,7 @@ private:
 	bool m_bIsReplay = false;
 	serial_t m_Serial;
 	CSteamID m_SteamId;
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	QueryCvarCookie_t m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
 	std::deque<std::string> m_PrintfBuffer;
@@ -235,7 +235,7 @@ public:
 	{
 		return m_bInCCKVHook;
 	}
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	bool HandleConVarQuery(QueryCvarCookie_t cookie, int client, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue);
 #endif
 private:

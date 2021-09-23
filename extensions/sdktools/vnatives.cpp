@@ -197,6 +197,38 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 
 	return gamehelpers->EntityToBCompatRef(pEntity);
 }
+#elif SOURCE_ENGINE == SE_BLADE
+class CEconItemView;
+static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		ValvePassInfo pass[5];
+		InitPass(pass[0], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[1], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[2], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[3], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[4], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
+		if (!CreateBaseCall("GiveNamedItem", ValveCall_Player, &pass[4], pass, 4, &pCall))
+		{
+			return pContext->ThrowNativeError("\"GiveNamedItem\" not supported by this mod");
+		} else if (!pCall) {
+			return pContext->ThrowNativeError("\"GiveNamedItem\" wrapper failed to initialize");
+		}
+	}
+
+	CBaseEntity *pEntity = NULL;
+	START_CALL();
+	DECODE_VALVE_PARAM(1, thisinfo, 0);
+	DECODE_VALVE_PARAM(2, vparams, 0);
+	DECODE_VALVE_PARAM(3, vparams, 1);
+	*(CEconItemView **)(vptr + 12) = NULL;
+	*(bool *)(vptr + 16) = false;
+	FINISH_CALL_SIMPLE(&pEntity);
+
+	return gamehelpers->EntityToBCompatRef(pEntity);
+}
 #elif SOURCE_ENGINE == SE_BMS
 // CBaseEntity	*GiveNamedItem( const char *szName, int iSubType = 0, int iPrimaryAmmo = -1, int iSecondaryAmmo = -1 )
 static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
@@ -972,7 +1004,7 @@ static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 
 	char *classname;
 	pContext->LocalToString(params[1], &classname);
-#if SOURCE_ENGINE != SE_CSGO
+#if SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_BLADE
 	CBaseEntity *pEntity = (CBaseEntity *)servertools->CreateEntityByName(classname);
 #else
 	CBaseEntity *pEntity = (CBaseEntity *)servertools->CreateItemEntityByName(classname);
