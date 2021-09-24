@@ -190,9 +190,9 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 	DECODE_VALVE_PARAM(1, thisinfo, 0);
 	DECODE_VALVE_PARAM(2, vparams, 0);
 	DECODE_VALVE_PARAM(3, vparams, 1);
-	*(CEconItemView **)(vptr + 12) = NULL;
-	*(bool *)(vptr + 16) = false;
-	*(void **)(vptr + 17) = NULL;
+	*(CEconItemView **)(vptr + sizeof(void *) + sizeof(void *) + sizeof(int)) = NULL;
+	*(bool *)(vptr + sizeof(void *) + sizeof(void *) + sizeof(int) + sizeof(void *)) = false;
+	*(void **)(vptr + sizeof(void *) + sizeof(void *) + sizeof(int) + sizeof(void *) + sizeof(bool)) = NULL;
 	FINISH_CALL_SIMPLE(&pEntity);
 
 	return gamehelpers->EntityToBCompatRef(pEntity);
@@ -223,8 +223,8 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 	DECODE_VALVE_PARAM(1, thisinfo, 0);
 	DECODE_VALVE_PARAM(2, vparams, 0);
 	DECODE_VALVE_PARAM(3, vparams, 1);
-	*(CEconItemView **)(vptr + 12) = NULL;
-	*(bool *)(vptr + 16) = false;
+	*(CEconItemView **)(vptr + sizeof(void *) + sizeof(void *) + sizeof(int)) = NULL;
+	*(bool *)(vptr + sizeof(void *) + sizeof(void *) + sizeof(int) + sizeof(void *)) = false;
 	FINISH_CALL_SIMPLE(&pEntity);
 
 	return gamehelpers->EntityToBCompatRef(pEntity);
@@ -400,8 +400,8 @@ static cell_t IgniteEntity(IPluginContext *pContext, const cell_t *params)
 #if SOURCE_ENGINE == SE_SDK2013
 	if (!strcmp(g_pSM->GetGameFolderName(), "nmrih"))
 	{
-		*(int *) (vptr + 14) = 0;
-		*(int *) (vptr + 18) = 0;
+		*(int *) (vptr + sizeof(void *) + sizeof(float) + sizeof(bool) + sizeof(float) + sizeof(bool)) = 0;
+		*(int *) (vptr + sizeof(void *) + sizeof(float) + sizeof(bool) + sizeof(float) + sizeof(bool) + sizeof(int)) = 0;
 	}
 #endif // SDK2013
 
@@ -515,8 +515,8 @@ static cell_t ForcePlayerSuicide(IPluginContext *pContext, const cell_t *params)
 
 	START_CALL();
 	DECODE_VALVE_PARAM(1, thisinfo, 0);
-	*(bool *)(vptr + 4) = false;
-	*(bool *)(vptr + 5) = false;
+	*(bool *)(vptr + sizeof(void *)) = false;
+	*(bool *)(vptr + sizeof(void *) + sizeof(bool)) = false;
 	FINISH_CALL_SIMPLE(NULL);
 
 	return 1;
