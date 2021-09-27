@@ -179,7 +179,7 @@ class SMConfig(object):
         else:
           sdk_path = ResolveEnvPath(sdk.envvar, sdk.folder)
         if sdk_path is None or not os.path.isdir(sdk_path):
-          if use_all or sdk_name in sdk_list:
+          if (use_all and sdk_name != 'mock') or sdk_name in sdk_list:
             raise Exception('Could not find a valid path for {0}'.format(sdk.envvar))
           continue
         if use_all or use_present or sdk_name in sdk_list:
