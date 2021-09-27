@@ -52,7 +52,7 @@ PossibleSDKs = {
   'eye':  SDK('HL2SDK-EYE', '2.eye', '5', 'EYE', WinOnly, 'eye'),
   'csgo': SDK('HL2SDKCSGO', '2.csgo', '21', 'CSGO', CSGO, 'csgo'),
   'portal2':  SDK('HL2SDKPORTAL2', '2.portal2', '17', 'PORTAL2', [], 'portal2'),
-  'blade':  SDK('HL2SDKBLADE', '2.blade', '18', 'BLADE', WinOnly, 'blade'),
+  'blade':  SDK('HL2SDKBLADE', '2.blade', '18', 'BLADE', [], 'blade'),
   'insurgency':  SDK('HL2SDKINSURGENCY', '2.insurgency', '19', 'INSURGENCY', WinLinuxMac, 'insurgency'),
   'contagion':  SDK('HL2SDKCONTAGION', '2.contagion', '14', 'CONTAGION', WinOnly, 'contagion'),
   'bms':  SDK('HL2SDKBMS', '2.bms', '10', 'BMS', WinLinux, 'bms'),
