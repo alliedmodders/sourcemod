@@ -53,10 +53,10 @@ my @conf_argv = (
 
 if ($^O =~ /darwin/) {
 	push(@conf_argv, '--hl2sdk-root=/Volumes/hgshare');
-	push(@conf_argv, '--mms-path=/Users/builds/slaves/common/mmsource-1.10');
+	push(@conf_argv, '--mms-path=/Users/builds/slaves/common/mmsource-central');
 } elsif ($^O =~ /linux/) {
 	push(@conf_argv, '--hl2sdk-root=/hgshare');
-	push(@conf_argv, '--mms-path=/home/builds/common/mmsource-1.10');
+	push(@conf_argv, '--mms-path=/home/builds/common/mmsource-central');
 } elsif ($^O =~ /MSWin/) {
 	push(@conf_argv, '--hl2sdk-root=H:\\');
 }
