@@ -256,7 +256,7 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 	DECODE_VALVE_PARAM(2, vparams, 0);
 	DECODE_VALVE_PARAM(3, vparams, 1);
 	*(bool *)(vptr + sizeof(void *) + sizeof(void *) + sizeof(int)) = false;
-	*(void **)(vptr + sizeof(void *) + sizeof(void *) + sizeof(int) + sizeof(int)) = NULL;
+	*(void **)(vptr + sizeof(void *) + sizeof(void *) + sizeof(int) + sizeof(bool)) = NULL;
 	FINISH_CALL_SIMPLE(&pEntity);
 	
 	return gamehelpers->EntityToBCompatRef(pEntity);
