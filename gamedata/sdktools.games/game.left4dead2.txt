@@ -117,14 +117,15 @@
 	}
 	
 	"left4dead2"
-	{		
+	{
 		"Offsets"
 		{
+			/* CTerrorPlayer::GiveNamedItem(char const*, int, bool, CBaseEntity*) */
 			"GiveNamedItem"
 			{
-				"windows"	"508"
-				"linux"		"509"
-				"mac"		"509"
+				"windows"	"431"
+				"linux"		"432"
+				"mac"		"432"
 			}
 			"RemovePlayerItem"
 			{
