@@ -190,9 +190,9 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 	DECODE_VALVE_PARAM(1, thisinfo, 0);
 	DECODE_VALVE_PARAM(2, vparams, 0);
 	DECODE_VALVE_PARAM(3, vparams, 1);
-	*(CEconItemView **)(vptr + sizeof(void *) + sizeof(void *) + sizeof(int)) = NULL;
-	*(bool *)(vptr + sizeof(void *) + sizeof(void *) + sizeof(int) + sizeof(void *)) = false;
-	*(void **)(vptr + sizeof(void *) + sizeof(void *) + sizeof(int) + sizeof(void *) + sizeof(bool)) = NULL;
+	*(CEconItemView **)(vptr + pCall->vparams[2].offset) = NULL;
+	*(bool *)(vptr + pCall->vparams[3].offset) = false;
+	*(void **)(vptr + pCall->vparams[4].offset) = NULL;
 	FINISH_CALL_SIMPLE(&pEntity);
 
 	return gamehelpers->EntityToBCompatRef(pEntity);
@@ -255,8 +255,8 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 	DECODE_VALVE_PARAM(1, thisinfo, 0);
 	DECODE_VALVE_PARAM(2, vparams, 0);
 	DECODE_VALVE_PARAM(3, vparams, 1);
-	*(int *)(vptr + 12) = -1;
-	*(int *)(vptr + 16) = -1;
+	*(int *)(vptr + pCall->vparams[2].offset) = -1;
+	*(int *)(vptr + pCall->vparams[3].offset) = -1;
 	FINISH_CALL_SIMPLE(&pEntity);
 
 	return gamehelpers->EntityToBCompatRef(pEntity);
@@ -287,8 +287,8 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 	DECODE_VALVE_PARAM(1, thisinfo, 0);
 	DECODE_VALVE_PARAM(2, vparams, 0);
 	DECODE_VALVE_PARAM(3, vparams, 1);
-	*(bool *)(vptr + sizeof(void *) + sizeof(void *) + sizeof(int)) = false;
-	*(void **)(vptr + sizeof(void *) + sizeof(void *) + sizeof(int) + sizeof(bool)) = NULL;
+	*(bool *)(vptr + pCall->vparams[2].offset) = false;
+	*(void **)(vptr + pCall->vparams[3].offset) = NULL;
 	FINISH_CALL_SIMPLE(&pEntity);
 	
 	return gamehelpers->EntityToBCompatRef(pEntity);
@@ -400,8 +400,8 @@ static cell_t IgniteEntity(IPluginContext *pContext, const cell_t *params)
 #if SOURCE_ENGINE == SE_SDK2013
 	if (!strcmp(g_pSM->GetGameFolderName(), "nmrih"))
 	{
-		*(int *) (vptr + sizeof(void *) + sizeof(float) + sizeof(bool) + sizeof(float) + sizeof(bool)) = 0;
-		*(int *) (vptr + sizeof(void *) + sizeof(float) + sizeof(bool) + sizeof(float) + sizeof(bool) + sizeof(int)) = 0;
+		*(int *) (vptr + pCall->vparams[4].offset) = 0;
+		*(int *) (vptr + pCall->vparams[5].offset) = 0;
 	}
 #endif // SDK2013
 
@@ -438,8 +438,8 @@ static cell_t IgniteEntity(IPluginContext *pContext, const cell_t *params)
 	DECODE_VALVE_PARAM(4, vparams, 2);
 	DECODE_VALVE_PARAM(5, vparams, 3);
 	/* Not sure what these params do, but they appear to be the default values */
-	*(int *)(vptr + 14) = 3;
-	*(int *)(vptr + 18) = 0;
+	*(int *)(vptr + pCall->vparams[4].offset) = 3;
+	*(int *)(vptr + pCall->vparams[5].offset) = 0;
 	FINISH_CALL_SIMPLE(NULL);
 
 	return 1;
@@ -494,7 +494,6 @@ static cell_t TeleportEntity(IPluginContext *pContext, const cell_t *params)
 }
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-/* :TODO: This is Team Fortress 2 specific */
 static cell_t ForcePlayerSuicide(IPluginContext *pContext, const cell_t *params)
 {
 	static ValveCall *pCall = NULL;
@@ -515,8 +514,8 @@ static cell_t ForcePlayerSuicide(IPluginContext *pContext, const cell_t *params)
 
 	START_CALL();
 	DECODE_VALVE_PARAM(1, thisinfo, 0);
-	*(bool *)(vptr + sizeof(void *)) = false;
-	*(bool *)(vptr + sizeof(void *) + sizeof(bool)) = false;
+	*(bool *)(vptr + pCall->vparams[0].offset) = false;
+	*(bool *)(vptr + pCall->vparams[1].offset) = false;
 	FINISH_CALL_SIMPLE(NULL);
 
 	return 1;
