@@ -207,7 +207,7 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 		ValvePassInfo pass[5];
 		InitPass(pass[0], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
 		InitPass(pass[1], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
-		InitPass(pass[2], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[2], Valve_Object, PassType_Basic, PASSFLAG_BYVAL);
 		InitPass(pass[3], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
 		InitPass(pass[4], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
 		if (!CreateBaseCall("GiveNamedItem", ValveCall_Player, &pass[4], pass, 4, &pCall))
@@ -223,8 +223,8 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 	DECODE_VALVE_PARAM(1, thisinfo, 0);
 	DECODE_VALVE_PARAM(2, vparams, 0);
 	DECODE_VALVE_PARAM(3, vparams, 1);
-	*(CEconItemView **)(vptr + sizeof(void *) + sizeof(void *) + sizeof(int)) = NULL;
-	*(bool *)(vptr + sizeof(void *) + sizeof(void *) + sizeof(int) + sizeof(void *)) = false;
+	*(CEconItemView **)(vptr + pCall->vparams[2].offset) = NULL;
+	*(bool *)(vptr + pCall->vparams[3].offset) = false;
 	FINISH_CALL_SIMPLE(&pEntity);
 
 	return gamehelpers->EntityToBCompatRef(pEntity);
