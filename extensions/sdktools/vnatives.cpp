@@ -173,9 +173,9 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 		ValvePassInfo pass[6];
 		InitPass(pass[0], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
 		InitPass(pass[1], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
-		InitPass(pass[2], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[2], Valve_Object, PassType_Basic, PASSFLAG_BYVAL);
 		InitPass(pass[3], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
-		InitPass(pass[4], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[4], Valve_Vector, PassType_Basic, PASSFLAG_BYVAL);
 		InitPass(pass[5], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
 		if (!CreateBaseCall("GiveNamedItem", ValveCall_Player, &pass[5], pass, 5, &pCall))
 		{
