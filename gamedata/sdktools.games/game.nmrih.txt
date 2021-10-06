@@ -153,7 +153,7 @@
 			}
 			"GiveAmmo"
 			{
-				"windows"	"254"
+				"windows"	"255"
 				"linux"		"255"
 				"mac"		"255"
 			}
