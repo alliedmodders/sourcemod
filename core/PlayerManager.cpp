@@ -524,6 +524,10 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 		} else {
 			pPlayer->m_LangId = translator->GetServerLanguage();
 		}
+
+		m_cllang->PushCell(client);
+		m_cllang->PushCell(pPlayer->m_LangId);
+		m_cllang->Execute(NULL);
 #endif
 	}
 	
