@@ -523,9 +523,7 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 			unsigned int langid;
 			pPlayer->m_LangId = (translator->GetLanguageByName(name, &langid)) ? langid : translator->GetServerLanguage();
 
-			m_cllang->PushCell(client);
-			m_cllang->PushCell(pPlayer->m_LangId);
-			m_cllang->Execute(NULL);
+			OnClientLanguageChanged(client, pPlayer->m_LangId);
 		} else {
 			pPlayer->m_LangId = translator->GetServerLanguage();
 		}
@@ -1415,6 +1413,13 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 	}
 }
 
+void PlayerManager::OnClientLanguageChanged(int client, unsigned int language)
+{
+	m_cllang->PushCell(client);
+	m_cllang->PushCell(language);
+	m_cllang->Execute(NULL);
+}
+
 int PlayerManager::GetMaxClients()
 {
 	return m_maxClients;
@@ -2024,10 +2029,7 @@ bool PlayerManager::HandleConVarQuery(QueryCvarCookie_t cookie, int client, EQue
 			unsigned int langid;
 			unsigned int new_langid = (translator->GetLanguageByName(cvarValue, &langid)) ? langid : translator->GetServerLanguage();
 			m_Players[i].m_LangId = new_langid;
-
-			m_cllang->PushCell(client);
-			m_cllang->PushCell(new_langid);
-			m_cllang->Execute(NULL);
+			OnClientLanguageChanged(i, new_langid);
 
 			return true;
 		}
@@ -2622,7 +2624,11 @@ unsigned int CPlayer::GetLanguageId()
 
 void CPlayer::SetLanguageId(unsigned int id)
 {
-	m_LangId = id;
+	if(m_LangId != id)
+	{
+		m_LangId = id;
+		g_Players.OnClientLanguageChanged(m_iIndex, id);
+	}
 }
 
 int CPlayer::GetUserId()

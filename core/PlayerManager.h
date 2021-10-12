@@ -192,6 +192,7 @@ public:
 #endif
 	void OnClientSettingsChanged(edict_t *pEntity);
 	//void OnClientSettingsChanged_Pre(edict_t *pEntity);
+	void OnClientLanguageChanged(int client, unsigned int language);
 	void OnServerHibernationUpdate(bool bHibernating);
 	void OnClientPrintf(edict_t *pEdict, const char *szMsg);
 	void OnPrintfFrameAction(unsigned int serial);
