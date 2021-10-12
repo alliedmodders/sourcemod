@@ -247,6 +247,7 @@ void PlayerManager::OnSourceModShutdown()
 	forwardsys->ReleaseForward(m_clcommandkv_post);
 	forwardsys->ReleaseForward(m_clinfochanged);
 	forwardsys->ReleaseForward(m_clauth);
+	forwardsys->ReleaseForward(m_cllang);
 	forwardsys->ReleaseForward(m_onActivate);
 	forwardsys->ReleaseForward(m_onActivate2);
 
