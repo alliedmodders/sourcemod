@@ -231,7 +231,7 @@ forward void OnClientPostAdminCheck(int client);
  * @param client        Client index.
  * @param language      Language number.
  */
-forward void OnClientLanguageLoaded(int client, int language);
+forward void OnClientLanguageChanged(int client, int language);
 
 /**
  * This function is deprecated. Use the MaxClients variable instead.

@@ -196,7 +196,7 @@ void PlayerManager::OnSourceModAllInitialized()
 	m_clcommandkv_post = forwardsys->CreateForward("OnClientCommandKeyValues_Post", ET_Ignore, 2, NULL, Param_Cell, Param_Cell);
 	m_clinfochanged = forwardsys->CreateForward("OnClientSettingsChanged", ET_Ignore, 1, p2);
 	m_clauth = forwardsys->CreateForward("OnClientAuthorized", ET_Ignore, 2, NULL, Param_Cell, Param_String);
-	m_cllang = forwardsys->CreateForward("OnClientLanguageLoaded", ET_Ignore, 2, NULL, Param_Cell, Param_Cell);
+	m_cllang = forwardsys->CreateForward("OnClientLanguageChanged", ET_Ignore, 2, NULL, Param_Cell, Param_Cell);
 	m_onActivate = forwardsys->CreateForward("OnServerLoad", ET_Ignore, 0, NULL);
 	m_onActivate2 = forwardsys->CreateForward("OnMapStart", ET_Ignore, 0, NULL);
 
