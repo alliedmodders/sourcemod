@@ -253,7 +253,7 @@ private:
 	IForward *m_clcommandkv_post;
 	IForward *m_clinfochanged;
 	IForward *m_clauth;
-	IForward *m_pllang;
+	IForward *m_cllang;
 	IForward *m_onActivate;
 	IForward *m_onActivate2;
 	CPlayer *m_Players;
