@@ -196,6 +196,7 @@ void PlayerManager::OnSourceModAllInitialized()
 	m_clcommandkv_post = forwardsys->CreateForward("OnClientCommandKeyValues_Post", ET_Ignore, 2, NULL, Param_Cell, Param_Cell);
 	m_clinfochanged = forwardsys->CreateForward("OnClientSettingsChanged", ET_Ignore, 1, p2);
 	m_clauth = forwardsys->CreateForward("OnClientAuthorized", ET_Ignore, 2, NULL, Param_Cell, Param_String);
+	m_pllang = forwardsys->CreateForward("OnClientLanguageLoaded", ET_Ignore, 2, NULL, Param_Cell, Param_Cell);
 	m_onActivate = forwardsys->CreateForward("OnServerLoad", ET_Ignore, 0, NULL);
 	m_onActivate2 = forwardsys->CreateForward("OnMapStart", ET_Ignore, 0, NULL);
 
@@ -2016,7 +2017,12 @@ bool PlayerManager::HandleConVarQuery(QueryCvarCookie_t cookie, int client, EQue
 		if (m_Players[i].m_LanguageCookie == cookie)
 		{
 			unsigned int langid;
-			m_Players[i].m_LangId = (translator->GetLanguageByName(cvarValue, &langid)) ? langid : translator->GetServerLanguage();
+			unsigned int new_langid = (translator->GetLanguageByName(cvarValue, &langid)) ? langid : translator->GetServerLanguage();
+			m_Players[i].m_LangId = new_langid;
+
+			m_pllang->PushCell(client);
+			m_pllang->PushCell(new_langid);
+			m_pllang->Execute(NULL);
 
 			return true;
 		}
