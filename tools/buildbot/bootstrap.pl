@@ -59,6 +59,7 @@ if ($^O =~ /darwin/) {
 	push(@conf_argv, '--mms-path=/home/builds/common/mmsource-master');
 } elsif ($^O =~ /MSWin/) {
 	push(@conf_argv, '--hl2sdk-root=H:\\');
+	push(@conf_argv, '--mms-path=D:\\Scripts\\common\\mmsource-master');
 }
 
 push(@conf_argv, '--targets=x86,x86_64');
