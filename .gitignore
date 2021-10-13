@@ -37,3 +37,6 @@ obj-*/
 *.swp
 *.gdb_history
 objdir
+
+.vs/*
+.vscode/*
