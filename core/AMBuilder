@@ -94,15 +94,21 @@ for sdk_name in SM.sdks:
       elif compiler.target.platform == 'windows':
         msvc_ver = compiler.version
         vs_year = ''
+        platform = ''
+        if compiler.target.arch == 'x86':
+          platform = 'win32'
+        elif compiler.target.arch == 'x86_64':
+          platform = 'win64'
+        
         if 1900 <= msvc_ver < 2000:
           vs_year = '2015'
         else:
           raise Exception('Cannot find libprotobuf for MSVC version "' + str(compiler.version) + '"')
 
         if 'DEBUG' in compiler.defines:
-          lib_path = os.path.join(sdk.path, 'lib', 'win32', 'debug', 'vs' + vs_year, 'libprotobuf.lib')
+          lib_path = os.path.join(sdk.path, 'lib', platform, 'debug', 'vs' + vs_year, 'libprotobuf.lib')
         else:
-          lib_path = os.path.join(sdk.path, 'lib', 'win32', 'release', 'vs' + vs_year, 'libprotobuf.lib')
+          lib_path = os.path.join(sdk.path, 'lib', platform, 'release', 'vs' + vs_year, 'libprotobuf.lib')
       compiler.linkflags.insert(0, lib_path)
   
     if sdk.name in ['csgo', 'blade']:
