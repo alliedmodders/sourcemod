@@ -34,10 +34,8 @@
 #include "natives.h"
 #include <compat_wrappers.h>
 
-#if defined SH_DECL_MANUALEXTERN1
 SH_DECL_MANUALEXTERN1(OnTakeDamage, int, CTakeDamageInfoHack &);
 SH_DECL_MANUALEXTERN3_void(Weapon_Drop, CBaseCombatWeapon *, const Vector *, const Vector *);
-#endif
 
 cell_t Native_Hook(IPluginContext *pContext, const cell_t *params)
 {
@@ -100,10 +98,6 @@ cell_t Native_Unhook(IPluginContext *pContext, const cell_t *params)
 
 cell_t Native_TakeDamage(IPluginContext *pContext, const cell_t *params)
 {
-// todo: fix code to not require this >.<
-#if !defined SH_DECL_MANUALEXTERN1
-	pContext->ThrowNativeError("SDKHooks_TakeDamage is not supported on this engine.");
-#else
 	CBaseEntity *pVictim = gamehelpers->ReferenceToEntity(params[1]);
 	if (!pVictim)
 		return pContext->ThrowNativeError("Invalid entity index %d for victim", params[1]);
@@ -177,17 +171,12 @@ cell_t Native_TakeDamage(IPluginContext *pContext, const cell_t *params)
 
 	CTakeDamageInfoHack info(pInflictor, pAttacker, flDamage, iDamageType, pWeapon, vecDamageForce, vecDamagePosition);
 	SH_MCALL(pVictim, OnTakeDamage)((CTakeDamageInfoHack &)info);
-#endif
 
 	return 0;
 }
 
 cell_t Native_DropWeapon(IPluginContext *pContext, const cell_t *params)
 {
-// todo: fix code to not require this >.<
-#if !defined SH_DECL_MANUALEXTERN1
-	pContext->ThrowNativeError("SDKHooks_DropWeapon is not supported on this engine.");
-#else
 	CBaseEntity *pPlayer = gamehelpers->ReferenceToEntity(params[1]);
 	if (!pPlayer)
 		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
@@ -255,7 +244,6 @@ cell_t Native_DropWeapon(IPluginContext *pContext, const cell_t *params)
 	}
 
 	SH_MCALL(pPlayer, Weapon_Drop)((CBaseCombatWeapon *)pWeapon, &vecTarget, &vecVelocity);
-#endif
 
 	return 0;
 }
