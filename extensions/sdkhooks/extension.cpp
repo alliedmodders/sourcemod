@@ -37,7 +37,7 @@
 #include "natives.h"
 #include <sm_platform.h>
 #include <const.h>
-
+#include <IBinTools.h>
 
 //#define SDKHOOKSDEBUG
 
@@ -315,6 +315,23 @@ void SDKHooks::SDK_OnAllLoaded()
 	if (g_pOnGetGameNameDescription->GetFunctionCount() > 0)
 		HookGetGameDescription();
 #endif
+}
+
+bool SDKHooks::QueryRunning(char* error, size_t maxlength)
+{
+	SM_CHECK_IFACE(BINTOOLS, g_pBinTools);
+
+	return true;
+}
+
+bool SDKHooks::QueryInterfaceDrop(SMInterface* pInterface)
+{
+	if (pInterface == g_pBinTools)
+	{
+		return false;
+	}
+
+	return IExtensionInterface::QueryInterfaceDrop(pInterface);
 }
 
 #define KILL_HOOK_IF_ACTIVE(hook) \
