@@ -3,7 +3,6 @@
 
 #include "smsdk_ext.h"
 #include <ISDKHooks.h>
-#include <IBinTools.h>
 #include <convar.h>
 #include <sh_list.h>
 #include <am-vector.h>
@@ -107,6 +106,10 @@ class IPhysicsObject;
 class CDmgAccumulator;
 typedef CBaseEntity CBaseCombatWeapon;
 
+namespace SourceMod {
+	class IBinTools;
+}
+
 struct HookList
 {
 public:
@@ -184,7 +187,9 @@ public:
 	 * @param maxlength	Size of error message buffer.
 	 * @return			True if working, false otherwise.
 	 */
-	//virtual bool QueryRunning(char *error, size_t maxlength);
+	virtual bool QueryRunning(char *error, size_t maxlength);
+
+	virtual bool QueryInterfaceDrop(SMInterface* pInterface);
 
 	/** Returns version string */
 	virtual const char *GetExtensionVerString();
@@ -350,5 +355,7 @@ extern ICvar *icvar;
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 extern IServerTools *servertools;
 #endif
+extern SourceMod::IBinTools *g_pBinTools;
+extern IGameConfig *g_pGameConf;
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_
