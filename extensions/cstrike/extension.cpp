@@ -100,7 +100,11 @@ bool CStrike::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	g_pHandleBuyForward = forwards->CreateForward("CS_OnBuyCommand", ET_Event, 2, NULL, Param_Cell, Param_String);
 	g_pPriceForward = forwards->CreateForward("CS_OnGetWeaponPrice", ET_Event, 3, NULL, Param_Cell, Param_String, Param_CellByRef);
 	g_pTerminateRoundForward = forwards->CreateForward("CS_OnTerminateRound", ET_Event, 2, NULL, Param_FloatByRef, Param_CellByRef);
+#if SOURCE_ENGINE == SE_CSGO
+	g_pCSWeaponDropForward = forwards->CreateForward("CS_OnCSWeaponDrop", ET_Event, 3, NULL, Param_Cell, Param_Cell, Param_Cell);
+#else
 	g_pCSWeaponDropForward = forwards->CreateForward("CS_OnCSWeaponDrop", ET_Event, 2, NULL, Param_Cell, Param_Cell);
+#endif
 
 
 	m_TerminateRoundDetourEnabled = false;
