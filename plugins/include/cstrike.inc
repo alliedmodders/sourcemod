@@ -196,8 +196,10 @@ forward Action CS_OnBuyCommand(int client, const char[] weapon);
  *
  * @param client        Client index
  * @param weaponIndex   Weapon index
+ * @param donated       Was weapon donated (Bought from a buy menu while ctrl was pressed)
+ *                      (Note: This param is for CS:GO only, will be false on other games)
  */
-forward Action CS_OnCSWeaponDrop(int client, int weaponIndex);
+forward Action CS_OnCSWeaponDrop(int client, int weaponIndex, bool donated);
 
 /**
  * Called when game retrieves a weapon's price for a player.
