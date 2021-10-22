@@ -31,7 +31,7 @@
 			// -*(_DWORD *)(v34 + 8) in ida 7 -v34[52]
 			"WeaponPrice"
 			{
-				"windows"		"208"
+				"windows"		"200"
 				"linux"			"208"
 				"linux64"		"328"
 				"mac64"			"328"
@@ -55,7 +55,7 @@
 			//Offset into HandleCommand_Buy_Internal
 			"CCSPlayerInventoryOffset"
 			{
-				"windows"	"60"
+				"windows"	"57"
 				"linux"		"97"
 				"linux64"	"107"
 				"mac64"		"73"
@@ -123,7 +123,7 @@
 			"HandleCommand_Buy_Internal"//Wildcard first 6 bytes for getting address for weapon price.
 			{
 				"library"		"server"
-				"windows"		"\x2A\x2A\x2A\x2A\x2A\x2A\x83\xEC\x2C\x53\x56\x57\x6A\x01"
+				"windows"		"\x2A\x2A\x2A\x2A\x2A\x2A\x53\x56\x57\x6A\x01\x8B\xF9"
 				"linux"			"\x2A\x2A\x2A\x2A\x2A\x2A\x0F\xB6\x55\x14\x89\x75\xF8\x8B\x75\x08"
 				"linux64"		"\x2A\x2A\x2A\x2A\x2A\x2A\x41\x56\x41\x89\xCE\x41\x55\x49\x89\xD5\x41\x54\x41\x89\xF4"
 				"mac64"			"\x2A\x2A\x2A\x2A\x2A\x2A\x41\x56\x41\x55\x41\x54\x53\x48\x83\xEC\x58\x41\x89\xCF\x49\x89\xD4"
