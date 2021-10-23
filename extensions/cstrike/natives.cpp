@@ -227,14 +227,17 @@ static cell_t CS_DropWeapon(IPluginContext *pContext, const cell_t *params)
 	if (!pWrapper)
 	{
 		REGISTER_NATIVE_ADDR(WEAPONDROP_GAMEDATA_NAME,
-			PassInfo pass[2]; \
+			PassInfo pass[3]; \
 			pass[0].flags = PASSFLAG_BYVAL; \
 			pass[0].type  = PassType_Basic; \
 			pass[0].size  = sizeof(CBaseEntity *); \
 			pass[1].flags = PASSFLAG_BYVAL; \
 			pass[1].type  = PassType_Basic; \
 			pass[1].size  = sizeof(bool); \
-			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 2))
+			pass[2].flags = PASSFLAG_BYVAL; \
+			pass[2].type  = PassType_Basic; \
+			pass[2].size  = sizeof(bool); \
+			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 3))
 	}
 
 	CBaseEntity *pEntity;
@@ -267,7 +270,11 @@ static cell_t CS_DropWeapon(IPluginContext *pContext, const cell_t *params)
 	if (params[4] == 1 && g_pCSWeaponDropDetoured)
 		g_pIgnoreCSWeaponDropDetour = true;
 
-	ArgBuffer<CBaseEntity*, CBaseEntity*, bool> vstk(pEntity, pWeapon, (params[3]) ? true : false);
+#if SOURCE_ENGINE == SE_CSGO
+	ArgBuffer<CBaseEntity*, CBaseEntity*, bool, bool> vstk(pEntity, pWeapon, !!params[3], false);
+#else
+	ArgBuffer<CBaseEntity*, CBaseEntity*, bool, bool> vstk(pEntity, pWeapon, false, !!params[3]);
+#endif
 
 	pWrapper->Execute(vstk, NULL);
 	return 1;
