@@ -65,6 +65,9 @@ SH_DECL_HOOK2_void(INetChannel, ProcessPacket, SH_NOATTRIB, 0, struct netpacket_
 SourceHook::CallClass<IBaseFileSystem> *basefilesystemPatch = NULL; 
 
 CHookManager::CHookManager()
+#if SOURCE_ENGINE == SE_TF2
+	: replay_enabled("replay_enabled", false)
+#endif
 {
 	m_usercmdsFwd = NULL;
 	m_usercmdsPostFwd = NULL;
@@ -188,10 +191,6 @@ void CHookManager::Shutdown()
 void CHookManager::OnMapStart()
 {
 	m_bFSTranHookWarned = false;
-#if SOURCE_ENGINE == SE_TF2
-	static ConVarRef replay_enable("replay_enable");
-	m_bReplayEnabled = replay_enable.GetBool();
-#endif
 }
 
 void CHookManager::OnClientConnect(int client)
@@ -410,7 +409,7 @@ void CHookManager::NetChannelHook(int client)
 
 		/* Initial Hook */
 #if SOURCE_ENGINE == SE_TF2
-		if (m_bReplayEnabled)
+		if (replay_enabled.GetBool())
 		{
 			if (!m_bFSTranHookWarned)
 			{
