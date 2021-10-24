@@ -240,6 +240,8 @@ void CLocalExtension::Unload()
 		m_pLib->CloseLibrary();
 		m_pLib = NULL;
 	}
+
+	m_bFullyLoaded = false;
 }
 
 bool CRemoteExtension::Reload(char *error, size_t maxlength)
