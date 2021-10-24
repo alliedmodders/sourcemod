@@ -1339,65 +1339,69 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 	m_clinfochanged->PushCell(client);
 	m_clinfochanged->Execute(&res, NULL);
 
-	if (pPlayer->IsFakeClient())
-	{
-		return;
-	}
-
 	IPlayerInfo *info = pPlayer->GetPlayerInfo();
 	const char *new_name = info ? info->GetName() : engine->GetClientConVarValue(client, "name");
 	const char *old_name = pPlayer->m_Name.c_str();
 
-#if SOURCE_ENGINE >= SE_LEFT4DEAD
-	const char *networkid_force;
-	if ((networkid_force = engine->GetClientConVarValue(client, "networkid_force")) && networkid_force[0] != '\0')
-	{
-		unsigned int accountId = pPlayer->GetSteamAccountID();
-		logger->LogMessage("\"%s<%d><STEAM_1:%d:%d><>\" has bad networkid (id \"%s\") (ip \"%s\")",
-			new_name, pPlayer->GetUserId(), accountId & 1, accountId >> 1, networkid_force, pPlayer->GetIPAddress());
-
-		pPlayer->Kick("NetworkID spoofing detected.");
-		RETURN_META(MRES_IGNORED);
-	}
-#endif
-
 	if (strcmp(old_name, new_name) != 0)
 	{
-		AdminId id = adminsys->FindAdminByIdentity("name", new_name);
-		if (id != INVALID_ADMIN_ID && pPlayer->GetAdminId() != id)
+		if (!pPlayer->IsFakeClient())
 		{
-			if (!CheckSetAdminName(client, pPlayer, id))
+			AdminId id = adminsys->FindAdminByIdentity("name", new_name);
+			if (id != INVALID_ADMIN_ID && pPlayer->GetAdminId() != id)
 			{
-				char kickMsg[128];
-				logicore.CoreTranslate(kickMsg, sizeof(kickMsg), "%T", 2, NULL, "Name Reserved", &client);
-				pPlayer->Kick(kickMsg);
-				RETURN_META(MRES_IGNORED);
+				if (!CheckSetAdminName(client, pPlayer, id))
+				{
+					char kickMsg[128];
+					logicore.CoreTranslate(kickMsg, sizeof(kickMsg), "%T", 2, NULL, "Name Reserved", &client);
+					pPlayer->Kick(kickMsg);
+					RETURN_META(MRES_IGNORED);
+				}
 			}
-		} else if ((id = adminsys->FindAdminByIdentity("name", old_name)) != INVALID_ADMIN_ID) {
-			if (id == pPlayer->GetAdminId())
-			{
-				/* This player is changing their name; force them to drop admin privileges! */
-				pPlayer->SetAdminId(INVALID_ADMIN_ID, false);
+			else if ((id = adminsys->FindAdminByIdentity("name", old_name)) != INVALID_ADMIN_ID) {
+				if (id == pPlayer->GetAdminId())
+				{
+					/* This player is changing their name; force them to drop admin privileges! */
+					pPlayer->SetAdminId(INVALID_ADMIN_ID, false);
+				}
 			}
 		}
+
 		pPlayer->SetName(new_name);
 	}
 	
-	if (m_PassInfoVar.size() > 0)
+	if (!pPlayer->IsFakeClient())
 	{
-		/* Try for a password change */
-		const char *old_pass = pPlayer->m_LastPassword.c_str();
-		const char *new_pass = engine->GetClientConVarValue(client, m_PassInfoVar.c_str());
-		if (strcmp(old_pass, new_pass) != 0)
+		if (m_PassInfoVar.size() > 0)
 		{
-			pPlayer->m_LastPassword.assign(new_pass);
-			if (pPlayer->IsInGame() && pPlayer->IsAuthorized())
+			/* Try for a password change */
+			const char* old_pass = pPlayer->m_LastPassword.c_str();
+			const char* new_pass = engine->GetClientConVarValue(client, m_PassInfoVar.c_str());
+			if (strcmp(old_pass, new_pass) != 0)
 			{
-				/* If there is already an admin id assigned, this will just bail out. */
-				pPlayer->DoBasicAdminChecks();
+				pPlayer->m_LastPassword.assign(new_pass);
+				if (pPlayer->IsInGame() && pPlayer->IsAuthorized())
+				{
+					/* If there is already an admin id assigned, this will just bail out. */
+					pPlayer->DoBasicAdminChecks();
+				}
 			}
 		}
+
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
+		const char* networkid_force;
+		if ((networkid_force = engine->GetClientConVarValue(client, "networkid_force")) && networkid_force[0] != '\0')
+		{
+			unsigned int accountId = pPlayer->GetSteamAccountID();
+			logger->LogMessage("\"%s<%d><STEAM_1:%d:%d><>\" has bad networkid (id \"%s\") (ip \"%s\")",
+				new_name, pPlayer->GetUserId(), accountId & 1, accountId >> 1, networkid_force, pPlayer->GetIPAddress());
+
+			pPlayer->Kick("NetworkID spoofing detected.");
+			RETURN_META(MRES_IGNORED);
+		}
+#endif
 	}
+
 	/* Notify Extensions */
 	List<IClientListener *>::iterator iter;
 	IClientListener *pListener = NULL;
