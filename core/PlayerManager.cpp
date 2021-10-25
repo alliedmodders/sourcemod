@@ -196,6 +196,7 @@ void PlayerManager::OnSourceModAllInitialized()
 	m_clcommandkv_post = forwardsys->CreateForward("OnClientCommandKeyValues_Post", ET_Ignore, 2, NULL, Param_Cell, Param_Cell);
 	m_clinfochanged = forwardsys->CreateForward("OnClientSettingsChanged", ET_Ignore, 1, p2);
 	m_clauth = forwardsys->CreateForward("OnClientAuthorized", ET_Ignore, 2, NULL, Param_Cell, Param_String);
+	m_cllang = forwardsys->CreateForward("OnClientLanguageChanged", ET_Ignore, 2, NULL, Param_Cell, Param_Cell);
 	m_onActivate = forwardsys->CreateForward("OnServerLoad", ET_Ignore, 0, NULL);
 	m_onActivate2 = forwardsys->CreateForward("OnMapStart", ET_Ignore, 0, NULL);
 
@@ -246,6 +247,7 @@ void PlayerManager::OnSourceModShutdown()
 	forwardsys->ReleaseForward(m_clcommandkv_post);
 	forwardsys->ReleaseForward(m_clinfochanged);
 	forwardsys->ReleaseForward(m_clauth);
+	forwardsys->ReleaseForward(m_cllang);
 	forwardsys->ReleaseForward(m_onActivate);
 	forwardsys->ReleaseForward(m_onActivate2);
 
@@ -520,6 +522,8 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 		{
 			unsigned int langid;
 			pPlayer->m_LangId = (translator->GetLanguageByName(name, &langid)) ? langid : translator->GetServerLanguage();
+
+			OnClientLanguageChanged(client, pPlayer->m_LangId);
 		} else {
 			pPlayer->m_LangId = translator->GetServerLanguage();
 		}
@@ -1415,6 +1419,13 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 	}
 }
 
+void PlayerManager::OnClientLanguageChanged(int client, unsigned int language)
+{
+	m_cllang->PushCell(client);
+	m_cllang->PushCell(language);
+	m_cllang->Execute(NULL);
+}
+
 int PlayerManager::GetMaxClients()
 {
 	return m_maxClients;
@@ -2022,7 +2033,9 @@ bool PlayerManager::HandleConVarQuery(QueryCvarCookie_t cookie, int client, EQue
 		if (m_Players[i].m_LanguageCookie == cookie)
 		{
 			unsigned int langid;
-			m_Players[i].m_LangId = (translator->GetLanguageByName(cvarValue, &langid)) ? langid : translator->GetServerLanguage();
+			unsigned int new_langid = (translator->GetLanguageByName(cvarValue, &langid)) ? langid : translator->GetServerLanguage();
+			m_Players[i].m_LangId = new_langid;
+			OnClientLanguageChanged(i, new_langid);
 
 			return true;
 		}
@@ -2618,7 +2631,11 @@ unsigned int CPlayer::GetLanguageId()
 
 void CPlayer::SetLanguageId(unsigned int id)
 {
-	m_LangId = id;
+	if(m_LangId != id)
+	{
+		m_LangId = id;
+		g_Players.OnClientLanguageChanged(m_iIndex, id);
+	}
 }
 
 int CPlayer::GetUserId()

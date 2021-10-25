@@ -226,6 +226,14 @@ forward void OnClientPostAdminFilter(int client);
 forward void OnClientPostAdminCheck(int client);
 
 /**
+ * Called when the language was received from the player.
+ *
+ * @param client        Client index.
+ * @param language      Language number.
+ */
+forward void OnClientLanguageChanged(int client, int language);
+
+/**
  * This function is deprecated. Use the MaxClients variable instead.
  *
  * Returns the maximum number of clients allowed on the server.  This may 

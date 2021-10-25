@@ -192,6 +192,7 @@ public:
 #endif
 	void OnClientSettingsChanged(edict_t *pEntity);
 	//void OnClientSettingsChanged_Pre(edict_t *pEntity);
+	void OnClientLanguageChanged(int client, unsigned int language);
 	void OnServerHibernationUpdate(bool bHibernating);
 	void OnClientPrintf(edict_t *pEdict, const char *szMsg);
 	void OnPrintfFrameAction(unsigned int serial);
@@ -253,6 +254,7 @@ private:
 	IForward *m_clcommandkv_post;
 	IForward *m_clinfochanged;
 	IForward *m_clauth;
+	IForward *m_cllang;
 	IForward *m_onActivate;
 	IForward *m_onActivate2;
 	CPlayer *m_Players;
