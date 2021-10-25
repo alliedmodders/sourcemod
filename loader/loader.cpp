@@ -334,11 +334,13 @@ DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, co
 			filename = FILENAME_1_6_DOI;
 			break;
 		}
+#ifdef SOURCE_ENGINE_MOCK
 	case SOURCE_ENGINE_MOCK:
 		{
 			filename = FILENAME_1_6_MOCK;
 			break;
 		}
+#endif
 	default:
 		{
 			return NULL;
