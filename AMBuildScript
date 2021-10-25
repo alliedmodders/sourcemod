@@ -197,7 +197,9 @@ class SMConfig(object):
     if builder.options.mms_path:
       self.mms_root = builder.options.mms_path
     else:
-      self.mms_root = ResolveEnvPath('MMSOURCE110', 'mmsource-1.10')
+      self.mms_root = ResolveEnvPath('MMSOURCE111', 'mmsource-1.11')
+      if not self.mms_root:
+        self.mms_root = ResolveEnvPath('MMSOURCE110', 'mmsource-1.10')
       if not self.mms_root:
         self.mms_root = ResolveEnvPath('MMSOURCE_DEV', 'metamod-source')
       if not self.mms_root:
