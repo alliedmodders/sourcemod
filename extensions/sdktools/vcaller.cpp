@@ -401,6 +401,11 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 				startparam++;
 			}
 			break;
+		default:
+			{
+				vc->stk_put(ptr);
+				return pContext->ThrowNativeError("Unrecognized SDK Call type (%d)", vc->type);
+			}
 		}
 	}
 
