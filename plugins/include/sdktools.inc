@@ -58,6 +58,7 @@ enum SDKCallType
 	SDKCall_Static,         /**< Static call */
 	SDKCall_Entity,         /**< CBaseEntity call */
 	SDKCall_Player,         /**< CBasePlayer call */
+	SDKCall_Server,         /**< CBaseServer call */
 	SDKCall_GameRules,      /**< CGameRules call */
 	SDKCall_EntityList,     /**< CGlobalEntityList call */
 	SDKCall_Raw             /**< |this| pointer with an arbitrary address */
