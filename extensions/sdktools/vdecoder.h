@@ -79,6 +79,7 @@ enum ValveCallType
 	ValveCall_Static,		/**< Static call */
 	ValveCall_Entity,		/**< Thiscall (CBaseEntity implicit first parameter) */
 	ValveCall_Player,		/**< Thiscall (CBasePlayer implicit first parameter) */
+	ValveCall_Server,       /**< Thiscall (CBaseServer implicit first parameter) */
 	ValveCall_GameRules,	/**< Thiscall (CGameRules implicit first paramater) */
 	ValveCall_EntityList,	/**< Thiscall (CGlobalEntityList implicit first paramater) */
 	ValveCall_Raw, 		/**< Thiscall (address explicit first parameter) */

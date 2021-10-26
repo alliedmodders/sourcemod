@@ -335,6 +335,16 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 				startparam++;
 			}
 			break;
+		case ValveCall_Server:
+            {
+                if (iserver == NULL)
+                {
+                    vc->stk_put(ptr);
+                    return pContext->ThrowNativeError("Server unsupported or not available; file a bug report");
+                }
+                *(void **)ptr = iserver;
+            }
+            break;
 		case ValveCall_GameRules:
 			{
 				void *pGameRules = GameRules();
