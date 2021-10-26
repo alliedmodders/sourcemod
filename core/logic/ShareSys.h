@@ -49,9 +49,11 @@ namespace SourceMod
 {
 	struct IdentityToken_t
 	{
-		Handle_t ident;
-		void *ptr;
-		IdentityType_t type;
+		Handle_t ident = 0;
+		void *ptr = nullptr;
+		IdentityType_t type = 0;
+		size_t num_handles = 0;
+		bool warned_handle_usage = false;
 	};
 };
 

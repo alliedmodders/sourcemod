@@ -47,6 +47,8 @@
 #include "sm_invalidparamhandler.h"
 #endif
 
+using namespace std::string_literals;
+
 HandleSystem g_HandleSys;
 
 QHandle *ignore_handle;
@@ -299,6 +301,28 @@ HandleError HandleSystem::MakePrimHandle(HandleType_t type,
 		}
 	}
 
+	if (owner)
+	{
+		owner->num_handles++;
+		if (!owner->warned_handle_usage && owner->num_handles >= HANDLESYS_WARN_USAGE)
+		{
+			owner->warned_handle_usage = true;
+
+			std::string path = "<unknown>";
+			if (auto plugin = scripts->FindPluginByIdentity(owner))
+			{
+				path = "plugin "s + plugin->GetFilename();
+			}
+			else if (auto ext = g_Extensions.GetExtensionFromIdent(owner))
+			{
+				path = "extension "s + ext->GetFilename();
+			}
+
+			logger->LogError("[SM] Warning: %s is using more than %d handles!",
+				path.c_str(), HANDLESYS_WARN_USAGE);
+		}
+	}
+
 	QHandle *pHandle = &m_Handles[handle];
 	
 	assert(pHandle->set == false);
@@ -320,7 +344,7 @@ HandleError HandleSystem::MakePrimHandle(HandleType_t type,
 
 	/* Create the hash value */
 	Handle_t hash = pHandle->serial;
-	hash <<= 16;
+	hash <<= HANDLESYS_HANDLE_BITS;
 	hash |= handle;
 
 	/* Add a reference count to the type */
@@ -484,7 +508,7 @@ HandleError HandleSystem::GetHandle(Handle_t handle,
 									unsigned int *in_index,
 									bool ignoreFree)
 {
-	unsigned int serial = (handle >> 16);
+	unsigned int serial = (handle >> HANDLESYS_HANDLE_BITS);
 	unsigned int index = (handle & HANDLESYS_HANDLE_MASK);
 
 	if (index == 0 || index > m_HandleTail || index > HANDLESYS_MAX_HANDLES)
@@ -640,7 +664,7 @@ Handle_t HandleSystem::FastCloneHandle(Handle_t hndl)
 void HandleSystem::GetHandleUnchecked(Handle_t hndl, QHandle *& pHandle, unsigned int &index)
 {
 #ifndef NDEBUG
-	unsigned int serial = (hndl >> 16);
+	unsigned int serial = (hndl >> HANDLESYS_HANDLE_BITS);
 #endif
 	index = (hndl & HANDLESYS_HANDLE_MASK);
 
@@ -663,6 +687,9 @@ HandleError HandleSystem::FreeHandle(QHandle *pHandle, unsigned int index)
 	}
 
 	QHandleType *pType = &m_Types[pHandle->type];
+
+	if (pHandle->owner && pHandle->owner->num_handles > 0)
+		pHandle->owner->num_handles--;
 
 	if (pHandle->clone)
 	{
@@ -1138,12 +1165,12 @@ void HandleSystem::Dump(const HandleReporter &fn)
 			continue;
 		}
 		/* Get the index */
-		unsigned int index = (m_Handles[i].serial << 16) | i;
+		unsigned int index = (m_Handles[i].serial << HANDLESYS_HANDLE_BITS) | i;
 		/* Determine the owner */
 		const char *owner = "UNKNOWN";
 		if (m_Handles[i].owner)
 		{
-			IdentityToken_t *pOwner = m_Handles[i].owner;
+			IdentityToken_t	*pOwner = m_Handles[i].owner;
 			if (pOwner == g_pCoreIdent)
 			{
 				owner = "CORE";
