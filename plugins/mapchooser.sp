@@ -1286,7 +1286,7 @@ void WritePreviousMapsToText()
  	file.Close();
 }
 
-char GetTextFilePath()
+char[] GetTextFilePath()
 {
 	static char path[PLATFORM_MAX_PATH];
 	if (path[0] == '\0')

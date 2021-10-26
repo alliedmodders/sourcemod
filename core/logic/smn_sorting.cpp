@@ -35,6 +35,7 @@
 #include "common_logic.h"
 #include "CellArray.h"
 #include <IHandleSys.h>
+#include <amtl/am-raii.h>
 
 /***********************************
  *   About the double array hack   *
@@ -95,7 +96,7 @@ void sort_random(cell_t *array, cell_t size)
 	{
         int n = rand() % (i + 1);
 
-		if (array[i] != array[n]) 
+		if (array[i] != array[n])
 		{
 			array[i] ^= array[n];
 			array[n] ^= array[i];
@@ -125,7 +126,7 @@ static cell_t sm_SortIntegers(IPluginContext *pContext, const cell_t *params)
 	if (type == Sort_Ascending)
 	{
 		qsort(array, array_size, sizeof(cell_t), sort_ints_asc);
-	} 
+	}
 	else if (type == Sort_Descending)
 	{
 		qsort(array, array_size, sizeof(cell_t), sort_ints_desc);
@@ -195,7 +196,7 @@ static cell_t sm_SortFloats(IPluginContext *pContext, const cell_t *params)
 static cell_t *g_CurStringArray = NULL;
 static cell_t *g_CurRebaseMap = NULL;
 
-int sort_strings_asc(const void *blk1, const void *blk2)
+int sort_strings_asc_legacy(const void *blk1, const void *blk2)
 {
 	cell_t reloc1 = *(cell_t *)blk1;
 	cell_t reloc2 = *(cell_t *)blk2;
@@ -206,7 +207,7 @@ int sort_strings_asc(const void *blk1, const void *blk2)
 	return strcmp(str1, str2);
 }
 
-int sort_strings_desc(const void *blk1, const void *blk2)
+int sort_strings_desc_legacy(const void *blk1, const void *blk2)
 {
 	cell_t reloc1 = *(cell_t *)blk1;
 	cell_t reloc2 = *(cell_t *)blk2;
@@ -217,7 +218,7 @@ int sort_strings_desc(const void *blk1, const void *blk2)
 	return strcmp(str2, str1);
 }
 
-static cell_t sm_SortStrings(IPluginContext *pContext, const cell_t *params)
+static cell_t sm_SortStrings_Legacy(IPluginContext *pContext, const cell_t *params)
 {
 	cell_t *array;
 	cell_t array_size = params[2];
@@ -245,11 +246,11 @@ static cell_t sm_SortStrings(IPluginContext *pContext, const cell_t *params)
 
 	if (type == Sort_Ascending)
 	{
-		qsort(array, array_size, sizeof(cell_t), sort_strings_asc);
-	} 
+		qsort(array, array_size, sizeof(cell_t), sort_strings_asc_legacy);
+	}
 	else if (type == Sort_Descending)
 	{
-		qsort(array, array_size, sizeof(cell_t), sort_strings_desc);
+		qsort(array, array_size, sizeof(cell_t), sort_strings_desc_legacy);
 	}
 	else
 	{
@@ -272,6 +273,69 @@ static cell_t sm_SortStrings(IPluginContext *pContext, const cell_t *params)
 	g_CurStringArray = NULL;
 	g_CurRebaseMap = NULL;
 
+	return 1;
+}
+
+static IPluginContext* sSortContext = nullptr;
+
+int sort_strings_asc(const void *blk1, const void *blk2)
+{
+	cell_t str_addr1 = *(cell_t *)blk1;
+	cell_t str_addr2 = *(cell_t *)blk2;
+
+	char *str1;
+	char *str2;
+	if (sSortContext->LocalToString(str_addr1, &str1) != SP_ERROR_NONE ||
+		sSortContext->LocalToString(str_addr2, &str2) != SP_ERROR_NONE)
+	{
+		return 0;
+	}
+
+	return strcmp(str1, str2);
+}
+
+int sort_strings_desc(const void *blk1, const void *blk2)
+{
+	cell_t str_addr1 = *(cell_t *)blk1;
+	cell_t str_addr2 = *(cell_t *)blk2;
+
+	char *str1;
+	char *str2;
+	if (sSortContext->LocalToString(str_addr1, &str1) != SP_ERROR_NONE ||
+		sSortContext->LocalToString(str_addr2, &str2) != SP_ERROR_NONE)
+	{
+		return 0;
+	}
+
+	return strcmp(str2, str1);
+}
+
+static cell_t sm_SortStrings(IPluginContext *pContext, const cell_t *params)
+{
+	auto rt = pContext->GetRuntime();
+	if (!rt->UsesDirectArrays())
+		return sm_SortStrings_Legacy(pContext, params);
+
+	cell_t *array;
+	cell_t array_size = params[2];
+	cell_t type = params[3];
+
+	pContext->LocalToPhysAddr(params[1], &array);
+
+	ke::SaveAndSet<IPluginContext*> set_context(&sSortContext, pContext);
+
+	if (type == Sort_Ascending)
+	{
+		qsort(array, array_size, sizeof(cell_t), sort_strings_asc);
+	}
+	else if (type == Sort_Descending)
+	{
+		qsort(array, array_size, sizeof(cell_t), sort_strings_desc);
+	}
+	else
+	{
+		sort_random(array, array_size);
+	}
 	return 1;
 }
 
@@ -335,7 +399,7 @@ static cell_t sm_SortCustom1D(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
-int sort2d_amx_custom(const void *elem1, const void *elem2)
+static int sort2d_amx_custom_legacy(const void *elem1, const void *elem2)
 {
 	if (g_SortInfo.eh->HasException())
 		return 0;
@@ -361,7 +425,7 @@ int sort2d_amx_custom(const void *elem1, const void *elem2)
 	return result;
 }
 
-static cell_t sm_SortCustom2D(IPluginContext *pContext, const cell_t *params)
+static cell_t sm_SortCustom2D_Legacy(IPluginContext *pContext, const cell_t *params)
 {
 	cell_t *array;
 	cell_t array_size = params[2];
@@ -401,7 +465,7 @@ static cell_t sm_SortCustom2D(IPluginContext *pContext, const cell_t *params)
 		array[i] = i;
 	}
 
-	qsort(array, array_size, sizeof(cell_t), sort2d_amx_custom);
+	qsort(array, array_size, sizeof(cell_t), sort2d_amx_custom_legacy);
 
 	/** Fixup process! */
 	for (int i=0; i<array_size; i++)
@@ -416,6 +480,55 @@ static cell_t sm_SortCustom2D(IPluginContext *pContext, const cell_t *params)
 
 	g_SortInfo = oldinfo;
 	
+	return 1;
+}
+
+static int sort2d_amx_custom(const void *elem1, const void *elem2)
+{
+	if (g_SortInfo.eh->HasException())
+		return 0;
+
+	cell_t iv1 = *(cell_t *)elem1;
+	cell_t iv2 = *(cell_t *)elem2;
+
+	cell_t result = 0;
+	g_SortInfo.pFunc->PushCell(iv1);
+	g_SortInfo.pFunc->PushCell(iv2);
+	g_SortInfo.pFunc->PushCell(g_SortInfo.array_addr);
+	g_SortInfo.pFunc->PushCell(g_SortInfo.hndl);
+	g_SortInfo.pFunc->Invoke(&result);
+
+	return result;
+}
+
+static cell_t sm_SortCustom2D(IPluginContext *pContext, const cell_t *params)
+{
+	auto rt = pContext->GetRuntime();
+	if (!rt->UsesDirectArrays())
+		return sm_SortCustom2D_Legacy(pContext, params);
+
+	cell_t *array;
+	cell_t array_size = params[2];
+	IPluginFunction *pFunction;
+
+	pContext->LocalToPhysAddr(params[1], &array);
+
+	if ((pFunction=pContext->GetFunctionById(params[3])) == NULL)
+	{
+		return pContext->ThrowNativeError("Function %x is not a valid function", params[3]);
+	}
+
+	sort_info oldinfo = g_SortInfo;
+
+	DetectExceptions eh(pContext);
+	g_SortInfo.pFunc = pFunction;
+	g_SortInfo.hndl = params[4];
+	g_SortInfo.array_addr = params[1];
+	g_SortInfo.eh = &eh;
+	
+	qsort(array, array_size, sizeof(cell_t), sort2d_amx_custom);
+
+	g_SortInfo = oldinfo;
 	return 1;
 }
 
@@ -454,7 +567,7 @@ static cell_t sm_SortADTArray(IPluginContext *pContext, const cell_t *params)
 	HandleError err;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
-	if ((err = handlesys->ReadHandle(params[1], htCellArray, &sec, (void **)&cArray)) 
+	if ((err = handlesys->ReadHandle(params[1], htCellArray, &sec, (void **)&cArray))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
@@ -491,7 +604,7 @@ static cell_t sm_SortADTArray(IPluginContext *pContext, const cell_t *params)
 		{
 			qsort(array, arraysize, blocksize * sizeof(cell_t), sort_floats_asc);
 		}
-		else 
+		else
 		{
 			qsort(array, arraysize, blocksize * sizeof(cell_t), sort_floats_desc);
 		}
@@ -502,7 +615,7 @@ static cell_t sm_SortADTArray(IPluginContext *pContext, const cell_t *params)
 		{
 			qsort(array, arraysize, blocksize * sizeof(cell_t), sort_adtarray_strings_asc);
 		}
-		else 
+		else
 		{
 			qsort(array, arraysize, blocksize * sizeof(cell_t), sort_adtarray_strings_desc);
 		}
@@ -545,7 +658,7 @@ static cell_t sm_SortADTArrayCustom(IPluginContext *pContext, const cell_t *para
 	HandleError err;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
-	if ((err = handlesys->ReadHandle(params[1], htCellArray, &sec, (void **)&cArray)) 
+	if ((err = handlesys->ReadHandle(params[1], htCellArray, &sec, (void **)&cArray))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
