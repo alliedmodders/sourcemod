@@ -21,8 +21,8 @@ jobs:
             compiler_cxx: clang++
           - os: ubuntu-18.04
             os_short: linux
-            compiler_cc: clang-3.9
-            compiler_cxx: clang++-3.9
+            compiler_cc: clang-8
+            compiler_cxx: clang++-8
       fail-fast: false
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.os_short }}-${{ matrix.compiler_cc }}
