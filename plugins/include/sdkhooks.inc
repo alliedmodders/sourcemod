@@ -237,11 +237,12 @@ typeset SDKHookCB
 	function void (int client);
 
 	// Spawn
+	// Think
 	function Action (int entity);
 
 	// GroundEntChanged
 	// SpawnPost
-	// Think/Post
+	// ThinkPost
 	// VPhysicsUpdate/Post
 	function void (int entity);
 
@@ -278,12 +279,20 @@ typeset SDKHookCB
 
 	// OnTakeDamage
 	// OnTakeDamageAlive
-	// Note: The weapon parameter is not used by all games and damage sources.
-	// Note: Force application is dependent on game and damage type(s)
 	// SDKHooks 1.0+
 	function Action (int victim, int &attacker, int &inflictor, float &damage, int &damagetype);
+
+	// OnTakeDamage
+	// OnTakeDamageAlive
+	// Note: The weapon parameter is not used by all games and damage sources.
+	// Note: Force application is dependent on game and damage type(s)
 	// SDKHooks 2.0+
 	function Action (int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon, float damageForce[3], float damagePosition[3]);
+
+	// OnTakeDamage
+	// OnTakeDamageAlive
+	// Note: The weapon parameter is not used by all games and damage sources.
+	// Note: Force application is dependent on game and damage type(s)
 	// SDKHooks 2.1+  (can check for support at runtime using GetFeatureStatus on SDKHook_DmgCustomInOTD capability.
 	// DON'T attempt to access 'damagecustom' var if feature status != available
 	function Action (int victim, int &attacker, int &inflictor, float &damage, int &damagetype, int &weapon,
@@ -292,7 +301,13 @@ typeset SDKHookCB
 	// OnTakeDamagePost
 	// OnTakeDamageAlivePost
 	function void (int victim, int attacker, int inflictor, float damage, int damagetype);
+
+	// OnTakeDamagePost
+	// OnTakeDamageAlivePost
 	function void (int victim, int attacker, int inflictor, float damage, int damagetype, int weapon, const float damageForce[3], const float damagePosition[3]);
+
+	// OnTakeDamagePost
+	// OnTakeDamageAlivePost
 	function void (int victim, int attacker, int inflictor, float damage, int damagetype, int weapon,
 		const float damageForce[3], const float damagePosition[3], int damagecustom);
 
@@ -336,7 +351,7 @@ forward void OnEntityCreated(int entity, const char[] classname);
 /**
  * When an entity is destroyed
  *
- * @param entity        Entity index
+ * @param entity        Entity index or edict reference.
  */
 forward void OnEntityDestroyed(int entity);
 
@@ -354,9 +369,10 @@ forward Action OnGetGameDescription(char gameDesc[64]);
  * When the level is initialized
  *
  * @param mapName       Name of the map
- * @param mapEntities   Entities of the map
- * @return              Plugin_Changed if mapEntities has been edited, else no change.
+ * @param mapEntities   Unused, always empty
+ * @return              Unused, return value is ignored
  */
+#pragma deprecated Use OnMapInit() instead
 forward Action OnLevelInit(const char[] mapName, char mapEntities[2097152]);
 
 /**
@@ -400,10 +416,13 @@ native void SDKUnhook(int entity, SDKHookType type, SDKHookCB callback);
  * @param weapon         Weapon index (orangebox and later) or -1 for unspecified
  * @param damageForce    Velocity of damage force
  * @param damagePosition Origin of damage
+ * @param bypassHooks    If true, bypass SDK hooks on OnTakeDamage
+ * @error                Invalid entity, attacker, inflictor, or weapon entity.
  */
 native void SDKHooks_TakeDamage(int entity, int inflictor, int attacker,
 		float damage, int damageType=DMG_GENERIC, int weapon=-1,
-		const float damageForce[3]=NULL_VECTOR, const float damagePosition[3]=NULL_VECTOR);
+		const float damageForce[3]=NULL_VECTOR, const float damagePosition[3]=NULL_VECTOR,
+		bool bypassHooks = true);
 
 /**
  * Forces a client to drop the specified weapon
@@ -412,10 +431,11 @@ native void SDKHooks_TakeDamage(int entity, int inflictor, int attacker,
  * @param weapon        Weapon entity index.
  * @param vecTarget     Location to toss weapon to, or NULL_VECTOR for default.
  * @param vecVelocity   Velocity at which to toss weapon, or NULL_VECTOR for default.
+ * @param bypassHooks   If true, bypass SDK hooks on Weapon Drop
  * @error               Invalid client or weapon entity, weapon not owned by client.
  */
 native void SDKHooks_DropWeapon(int client, int weapon, const float vecTarget[3]=NULL_VECTOR,
-		const float vecVelocity[3]=NULL_VECTOR);
+		const float vecVelocity[3]=NULL_VECTOR, bool bypassHooks = true);
 
 /**
  * Do not edit below this line!

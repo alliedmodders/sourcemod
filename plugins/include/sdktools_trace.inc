@@ -220,6 +220,7 @@ native int TR_GetPointContents(const float pos[3], int &entindex=-1);
  * @param entindex      Entity index to test.
  * @param pos           World position.
  * @return              Contents mask.
+ * @error               Invalid entity.
  */
 native int TR_GetPointContentsEnt(int entindex, const float pos[3]);
 
@@ -296,6 +297,52 @@ native void TR_EnumerateEntitiesHull(const float pos[3],
                                     any data=0);
 
 /**
+ * Enumerates over entities in a sphere.
+ *
+ * @param pos           Starting position of the ray.
+ * @param radius        Radius of the ray.
+ * @param mask          Mask to use for the trace. See PARTITION_* flags.
+ * @param enumerator    Function to use as enumerator. For each entity found
+ *                      along the ray, this function is called.
+ * @param data          Arbitrary data value to pass through to the enumerator.
+ */
+native void TR_EnumerateEntitiesSphere(const float pos[3],
+                                    float radius,
+                                    int mask,
+                                    TraceEntityEnumerator enumerator,
+                                    any data=0);
+                                    
+/**
+ * Enumerates over entities in a box.
+ *
+ * @param mins          Box minimum size.
+ * @param maxs          Box maximum size.
+ * @param mask          Mask to use for the trace. See PARTITION_* flags.
+ * @param enumerator    Function to use as enumerator. For each entity found
+ *                      along the box, this function is called.
+ * @param data          Arbitrary data value to pass through to the enumerator.
+ */
+native void TR_EnumerateEntitiesBox(const float mins[3],
+                                    const float maxs[3],
+                                    int mask,
+                                    TraceEntityEnumerator enumerator,
+                                    any data=0);
+        
+/**
+ * Enumerates over entities at point.
+ *
+ * @param pos           Position of the point.
+ * @param mask          Mask to use for the trace. See PARTITION_* flags.
+ * @param enumerator    Function to use as enumerator. For each entity found
+ *                      along the point, this function is called.
+ * @param data          Arbitrary data value to pass through to the enumerator.
+ */
+native void TR_EnumerateEntitiesPoint(const float pos[3],
+                                    int mask,
+                                    TraceEntityEnumerator enumerator,
+                                    any data=0);
+        
+/**
  * Starts up a new trace ray using a global trace result and a customized
  * trace ray filter.
  *
@@ -351,6 +398,7 @@ native void TR_TraceHullFilter(const float pos[3],
  * @param flags         Trace flags.
  * @param rtype         Method to calculate the ray direction.
  * @param entity        Entity to clip to.
+ * @error               Invalid entity.
  */
 native void TR_ClipRayToEntity(const float pos[3],
                                const float vec[3],
@@ -367,6 +415,7 @@ native void TR_ClipRayToEntity(const float pos[3],
  * @param maxs          Hull maximum size.
  * @param flags         Trace flags.
  * @param entity        Entity to clip to.
+ * @error               Invalid entity.
  */
 native void TR_ClipRayHullToEntity(const float pos[3],
                                    const float vec[3],
@@ -380,6 +429,7 @@ native void TR_ClipRayHullToEntity(const float pos[3],
  *
  * @param flags         Trace flags.
  * @param entity        Entity to clip to.
+ * @error               Invalid entity.
  */
 native void TR_ClipCurrentRayToEntity(int flags, int entity);
 
@@ -471,6 +521,7 @@ native Handle TR_TraceHullFilterEx(const float pos[3],
  * @param rtype         Method to calculate the ray direction.
  * @param entity        Entity to clip to.
  * @return              Ray trace handle, which must be closed via CloseHandle().
+ * @error               Invalid entity.
  */
 native Handle TR_ClipRayToEntityEx(const float pos[3],
                                    const float vec[3],
@@ -488,6 +539,7 @@ native Handle TR_ClipRayToEntityEx(const float pos[3],
  * @param flags         Trace flags.
  * @param entity        Entity to clip to.
  * @return              Ray trace handle, which must be closed via CloseHandle().
+ * @error               Invalid entity.
  */
 native Handle TR_ClipRayHullToEntityEx(const float pos[3],
                                        const float vec[3],
@@ -502,6 +554,7 @@ native Handle TR_ClipRayHullToEntityEx(const float pos[3],
  * @param flags         Trace flags.
  * @param entity        Entity to clip to.
  * @return              Ray trace handle, which must be closed via CloseHandle().
+ * @error               Invalid entity.
  */
 native Handle TR_ClipCurrentRayToEntityEx(int flags, int entity);
 

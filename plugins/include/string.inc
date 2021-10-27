@@ -172,6 +172,7 @@ native int FormatEx(char[] buffer, int maxlength, const char[] format, any ...);
  * @param varpos        Argument number which contains the '...' symbol.
  *                      Note: Arguments start at 1.
  * @return              Number of bytes written.
+ * @error               Invalid argument index.
  */
 native int VFormat(char[] buffer, int maxlength, const char[] format, int varpos);
 
@@ -195,6 +196,17 @@ native int StringToInt(const char[] str, int nBase=10);
 native int StringToIntEx(const char[] str, int &result, int nBase=10);
 
 /**
+ * Converts a string to a 64-bit integer.
+ *
+ * @param str           String to convert.
+ * @param result        Array to store the upper and lower
+ *                      32-bits of the 64-bit integer.
+ * @param nBase         Numerical base to use.  10 is default.
+ * @return              Number of characters consumed.
+ */
+native int StringToInt64(const char[] str, int result[2], int nBase=10);
+
+/**
  * Converts an integer to a string.
  *
  * @param num           Integer to convert.
@@ -203,6 +215,18 @@ native int StringToIntEx(const char[] str, int &result, int nBase=10);
  * @return              Number of cells written to buffer.
  */
 native int IntToString(int num, char[] str, int maxlength);
+
+/**
+ * Converts a 64-bit integer to a string.
+ *
+ * @param num           Array containing the upper and lower
+ *                      32-bits of a 64-bit integer.
+ * @param str           Buffer to store string in.
+ * @param maxlength     Maximum length of string buffer.
+ * @return              Number of characters written to the buffer,
+ *                      not including the null terminator.
+ */
+native int Int64ToString(const int num[2], char[] str, int maxlength);
 
 /** 
  * Converts a string to a floating point number.
@@ -286,6 +310,7 @@ native int SplitString(const char[] source, const char[] split, char[] part, int
  * @param replace       String to replace the search string with.
  * @param caseSensitive If true (default), search is case sensitive.
  * @return              Number of replacements that were performed.
+ * @error               'search' parameter is empty.
  */
 native int ReplaceString(char[] text, int maxlength, const char[] search, const char[] replace, bool caseSensitive=true);
 
@@ -305,6 +330,7 @@ native int ReplaceString(char[] text, int maxlength, const char[] search, const 
  * @return              Index into the buffer (relative to the start) from where
  *                      the last replacement ended, or -1 if no replacements were
  *                      made.
+ * @error               'search' parameter is empty.
  */
 native int ReplaceStringEx(char[] text, int maxlength, const char[] search, const char[] replace, int searchLen=-1, int replaceLen=-1, bool caseSensitive=true);
 

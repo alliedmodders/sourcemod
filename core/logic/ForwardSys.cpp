@@ -61,7 +61,7 @@ IForward *CForwardManager::CreateForward(const char *name, ExecType et, unsigned
 	{
 		scripts->AddFunctionsToForward(name, fwd);
 
-		m_managed.append(fwd);
+		m_managed.push_back(fwd);
 	}
 
 	return fwd;
@@ -78,7 +78,7 @@ IChangeableForward *CForwardManager::CreateForwardEx(const char *name, ExecType 
 
 	if (fwd)
 	{
-		m_unmanaged.append(fwd);
+		m_unmanaged.push_back(fwd);
 	}
 
 	return fwd;
@@ -751,9 +751,9 @@ bool CForward::AddFunction(IPluginFunction *func)
 		return false;
 
 	if (func->IsRunnable())
-		m_functions.append(func);
+		m_functions.push_back(func);
 	else
-		m_paused.append(func);
+		m_paused.push_back(func);
 
 	return true;
 }
@@ -780,7 +780,7 @@ const char *CForward::GetForwardName()
 
 unsigned int CForward::GetFunctionCount()
 {
-	return m_functions.length();
+	return m_functions.size();
 }
 
 ExecType CForward::GetExecType()

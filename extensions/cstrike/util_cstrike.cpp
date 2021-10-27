@@ -291,7 +291,7 @@ void CreateHashMaps()
 				int iLoadoutslot = node.pDef->GetDefaultLoadoutSlot();
 
 				ClassnameMap::Insert i = g_mapClassToDefIdx.findForAdd(classname);
-				g_mapClassToDefIdx.add(i, ke::AString(classname), ItemDefHashValue(iLoadoutslot, price, iWeaponID, iItemDefIdx, classname));
+				g_mapClassToDefIdx.add(i, std::string(classname), ItemDefHashValue(iLoadoutslot, price, iWeaponID, iItemDefIdx, classname));
 
 				ItemIndexMap::Insert x = g_mapDefIdxToClass.findForAdd(iItemDefIdx);
 				g_mapDefIdxToClass.add(x, iItemDefIdx, ItemDefHashValue(iLoadoutslot, price, iWeaponID, iItemDefIdx, classname));

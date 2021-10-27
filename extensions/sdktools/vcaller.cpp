@@ -45,6 +45,9 @@ enum SDKPassMethod
 	SDKPass_ByRef,			/**< Pass an object by reference */
 };
 
+//memory addresses below 0x10000 are automatically considered invalid for dereferencing
+#define VALID_MINIMUM_MEMORY_ADDRESS 0x10000
+
 int s_vtbl_index = -1;
 void *s_call_addr = NULL;
 ValveCallType s_vcalltype = ValveCall_Static;
@@ -116,9 +119,15 @@ static cell_t PrepSDKCall_SetSignature(IPluginContext *pContext, const cell_t *p
 	char *sig;
 	pContext->LocalToString(params[2], &sig);
 
-#if defined PLATFORM_POSIX
 	if (sig[0] == '@')
 	{
+#if defined PLATFORM_WINDOWS
+		MEMORY_BASIC_INFORMATION mem;
+		if (VirtualQuery(addrInBase, &mem, sizeof(mem)))
+		{
+			s_call_addr = memutils->ResolveSymbol(mem.AllocationBase, &sig[1]);
+		}
+#elif defined PLATFORM_POSIX
 		Dl_info info;
 		if (dladdr(addrInBase, &info) == 0)
 		{
@@ -129,6 +138,7 @@ static cell_t PrepSDKCall_SetSignature(IPluginContext *pContext, const cell_t *p
 		{
 			return 0;
 		}
+
 #if SOURCE_ENGINE == SE_CSS            \
 	|| SOURCE_ENGINE == SE_HL2DM       \
 	|| SOURCE_ENGINE == SE_DODS        \
@@ -145,12 +155,13 @@ static cell_t PrepSDKCall_SetSignature(IPluginContext *pContext, const cell_t *p
 		s_call_addr = memutils->ResolveSymbol(handle, &sig[1]);
 #else
 		s_call_addr = dlsym(handle, &sig[1]);
-#endif
+#endif /* SOURCE_ENGINE */
+
 		dlclose(handle);
+#endif
 
 		return (s_call_addr != NULL) ? 1 : 0;
 	}
-#endif
 
 	s_call_addr = memutils->FindPattern(addrInBase, sig, params[3]);
 
@@ -324,6 +335,16 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 				startparam++;
 			}
 			break;
+		case ValveCall_Server:
+            {
+                if (iserver == NULL)
+                {
+                    vc->stk_put(ptr);
+                    return pContext->ThrowNativeError("Server unsupported or not available; file a bug report");
+                }
+                *(void **)ptr = iserver;
+            }
+            break;
 		case ValveCall_GameRules:
 			{
 				void *pGameRules = GameRules();
@@ -365,10 +386,26 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 				pContext->LocalToPhysAddr(params[startparam], &cell);
 				void *thisptr = reinterpret_cast<void*>(*cell);
 
+				if (thisptr == nullptr)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("ThisPtr address cannot be null");
+				}
+				else if (reinterpret_cast<uintptr_t>(thisptr) < VALID_MINIMUM_MEMORY_ADDRESS)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("Invalid ThisPtr address 0x%x is pointing to reserved memory.", thisptr);
+				}
+
 				*(void **)ptr = thisptr;
 				startparam++;
 			}
 			break;
+		default:
+			{
+				vc->stk_put(ptr);
+				return pContext->ThrowNativeError("Unrecognized SDK Call type (%d)", vc->type);
+			}
 		}
 	}
 

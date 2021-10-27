@@ -153,12 +153,31 @@ static inline bool IsPlatformCompatible(const char *platform, bool *hadPrimaryMa
 	return false;
 }
 
+static inline time_t GetFileModTime(const char *path)
+{
+	char filepath[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_SM, filepath, sizeof(filepath), "gamedata/%s.txt", path);
+#ifdef PLATFORM_WINDOWS
+	struct _stat64 s;
+	if (_stat64(filepath, &s) != 0)
+#elif defined PLATFORM_POSIX
+	struct stat s;
+	if (stat(filepath, &s) != 0)
+#endif
+	{
+		return 0;
+	}
+	return s.st_mtime;
+}
+
 CGameConfig::CGameConfig(const char *file, const char *engine)
 {
 	strncopy(m_File, file, sizeof(m_File));
 
 	m_CustomLevel = 0;
 	m_CustomHandler = NULL;
+
+	m_ModTime = GetFileModTime(file);
 
 	if (!engine)
 		m_pEngine = bridge->GetSourceEngineName();
@@ -206,7 +225,7 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			{
 				bShouldBeReadingDefault = true;
 				m_ParseState = PSTATE_GAMEDEFS;
-				strncopy(m_Game, name, sizeof(m_Game));
+				m_Game = name;
 			} else {
 				m_IgnoreLevel++;
 			}
@@ -222,7 +241,7 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			{
 				m_ParseState = PSTATE_GAMEDEFS_KEYS;
 			}
-			else if ((strcmp(name, "#supported") == 0) && (strcmp(m_Game, "#default") == 0))
+			else if ((strcmp(name, "#supported") == 0) && (m_Game == "#default"))
 			{
 				m_ParseState = PSTATE_GAMEDEFS_SUPPORTED;
 				/* Ignore this section unless we get a game. */
@@ -261,23 +280,23 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 		}
 	case PSTATE_GAMEDEFS_KEYS:
 		{
-			strncopy(m_Key, name, sizeof(m_Key));
+			m_Key = name;
 			m_ParseState = PSTATE_GAMEDEFS_KEYS_PLATFORM;
 			matched_platform = false;
 			break;
 		}
 	case PSTATE_GAMEDEFS_OFFSETS:
 		{
-			m_Prop[0] = '\0';
-			m_Class[0] = '\0';
-			strncopy(m_offset, name, sizeof(m_offset));
+			m_Prop.clear();
+			m_Class.clear();
+			m_offset = name;
 			m_ParseState = PSTATE_GAMEDEFS_OFFSETS_OFFSET;
 			matched_platform = false;
 			break;
 		}
 	case PSTATE_GAMEDEFS_SIGNATURES:
 		{
-			strncopy(m_offset, name, sizeof(m_offset));
+			m_offset = name;
 			s_TempSig.Reset();
 			m_ParseState = PSTATE_GAMEDEFS_SIGNATURES_SIG;
 			matched_platform = false;
@@ -319,7 +338,7 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			if (error[0] != '\0')
 			{
 				m_IgnoreLevel = 1;
-				logger->LogError("[SM] Error while parsing CRC section for \"%s\" (%s):", m_Game, m_CurFile);
+				logger->LogError("[SM] Error while parsing CRC section for \"%s\" (%s):", m_Game.c_str(), m_CurFile);
 				logger->LogError("[SM] %s", error);
 			} else {
 				m_ParseState = PSTATE_GAMEDEFS_CRC_BINARY;
@@ -334,12 +353,12 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 		}
 	case PSTATE_GAMEDEFS_ADDRESSES:
 		{
-			m_Address[0] = '\0';
-			m_AddressSignature[0] = '\0';
+			m_Address.clear();
+			m_AddressSignature.clear();
 			m_AddressReadCount = 0;
 			m_AddressLastIsOffset = false;
 
-			strncopy(m_Address, name, sizeof(m_Address));
+			m_Address = name;
 			m_ParseState = PSTATE_GAMEDEFS_ADDRESSES_ADDRESS;
 
 			break;
@@ -355,7 +374,7 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 				if (strcmp(name, "linux") != 0 && strcmp(name, "windows") != 0 && strcmp(name, "mac") != 0 &&
 					strcmp(name, "linux64") != 0 && strcmp(name, "windows64") != 0 && strcmp(name, "mac64") != 0)
 				{
-					logger->LogError("[SM] Error while parsing Address section for \"%s\" (%s):", m_Address, m_CurFile);
+					logger->LogError("[SM] Error while parsing Address section for \"%s\" (%s):", m_Address.c_str(), m_CurFile);
 					logger->LogError("[SM] Unrecognized platform \"%s\"", name);
 				}
 				m_IgnoreLevel = 1;
@@ -392,21 +411,21 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 	{
 		if (strcmp(key, "class") == 0)
 		{
-			strncopy(m_Class, value, sizeof(m_Class));
+			m_Class = value;
 		} else if (strcmp(key, "prop") == 0) {
-			strncopy(m_Prop, value, sizeof(m_Prop));
+			m_Prop = value;
 		} else if (IsPlatformCompatible(key, &matched_platform)) {
-			m_Offsets.replace(m_offset, atoi(value));
+			m_Offsets.replace(m_offset.c_str(), static_cast<int>(strtol(value, NULL, 0)));
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_KEYS) {
-		ke::AString vstr(value);
-		m_Keys.replace(key, ke::Move(vstr));
+		std::string vstr(value);
+		m_Keys.replace(key, std::move(vstr));
 	}
 	else if (m_ParseState == PSTATE_GAMEDEFS_KEYS_PLATFORM) {
 		if (IsPlatformCompatible(key, &matched_platform))
 		{
-			ke::AString vstr(value);
-			m_Keys.replace(m_Key, ke::Move(vstr));
+			std::string vstr(value);
+			m_Keys.replace(m_Key.c_str(), std::move(vstr));
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_SUPPORTED) {
 		if (strcmp(key, "game") == 0)
@@ -457,7 +476,7 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 			int limit = sizeof(m_AddressRead)/sizeof(m_AddressRead[0]);
 			if (m_AddressLastIsOffset)
 			{
-				logger->LogError("[SM] Error parsing Address \"%s\", 'offset' entry must be the last entry (gameconf \"%s\")", m_Address, m_CurFile);
+				logger->LogError("[SM] Error parsing Address \"%s\", 'offset' entry must be the last entry (gameconf \"%s\")", m_Address.c_str(), m_CurFile);
 			}
 			else if (m_AddressReadCount < limit)
 			{
@@ -465,15 +484,15 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 				{
 					m_AddressLastIsOffset = true;
 				}
-				m_AddressRead[m_AddressReadCount] = atoi(value);
+				m_AddressRead[m_AddressReadCount] = static_cast<int>(strtol(value, NULL, 0));
 				m_AddressReadCount++;
 			}
 			else
 			{
-				logger->LogError("[SM] Error parsing Address \"%s\", does not support more than %d read offsets (gameconf \"%s\")", m_Address, limit, m_CurFile);
+				logger->LogError("[SM] Error parsing Address \"%s\", does not support more than %d read offsets (gameconf \"%s\")", m_Address.c_str(), limit, m_CurFile);
 			}
 		} else if (strcmp(key, "signature") == 0) {
-			strncopy(m_AddressSignature, value, sizeof(m_AddressSignature));
+			m_AddressSignature = value;
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_CUSTOM) {
 		return m_CustomHandler->ReadSMC_KeyValue(states, key, value);
@@ -529,25 +548,24 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 	case PSTATE_GAMEDEFS_OFFSETS_OFFSET:
 		{
 			/* Parse the offset... */
-			if (m_Class[0] != '\0'
-				&& m_Prop[0] != '\0')
+			if (!m_Class.empty() && !m_Prop.empty())
 			{
-				SendProp *pProp = gamehelpers->FindInSendTable(m_Class, m_Prop);
+				SendProp *pProp = gamehelpers->FindInSendTable(m_Class.c_str(), m_Prop.c_str());
 				if (pProp)
 				{
 					int val = gamehelpers->GetSendPropOffset(pProp);
-					m_Offsets.replace(m_offset, val);
-					m_Props.replace(m_offset, pProp);
+					m_Offsets.replace(m_offset.c_str(), val);
+					m_Props.replace(m_offset.c_str(), pProp);
 				} else {
 					/* Check if it's a non-default game and no offsets exist */
-					if (((strcmp(m_Game, "*") != 0) && strcmp(m_Game, "#default") != 0)
-						&& (!m_Offsets.retrieve(m_offset)))
+					if ((m_Game != "*" && m_Game != "#default")
+						&& (!m_Offsets.retrieve(m_offset.c_str())))
 					{
 						logger->LogError("[SM] Unable to find property %s.%s (file \"%s\") (mod \"%s\")", 
-							m_Class,
-							m_Prop,
+							m_Class.c_str(),
+							m_Prop.c_str(),
 							m_CurFile,
-							m_Game);
+							m_Game.c_str());
 					}
 				}
 			}
@@ -655,7 +673,7 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 					}
 				}
 
-				m_Sigs.replace(m_offset, final_addr);
+				m_Sigs.replace(m_offset.c_str(), final_addr);
 			}
 
 			m_ParseState = PSTATE_GAMEDEFS_SIGNATURES;
@@ -671,10 +689,10 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 		{
 			m_ParseState = PSTATE_GAMEDEFS_ADDRESSES;
 
-			if (m_Address[0] != '\0' && m_AddressSignature[0] != '\0')
+			if (!m_Address.empty() && !m_AddressSignature.empty())
 			{
-				AddressConf addrConf(m_AddressSignature, sizeof(m_AddressSignature), m_AddressReadCount, m_AddressRead, m_AddressLastIsOffset);
-				m_Addresses.replace(m_Address, addrConf);
+				AddressConf addrConf(std::move(m_AddressSignature), m_AddressReadCount, m_AddressRead, m_AddressLastIsOffset);
+				m_Addresses.replace(m_Address.c_str(), addrConf);
 			}
 
 			break;
@@ -1001,10 +1019,10 @@ bool CGameConfig::GetOffset(const char *key, int *value)
 
 const char *CGameConfig::GetKeyValue(const char *key)
 {
-	StringHashMap<ke::AString>::Result r = m_Keys.find(key);
+	StringHashMap<std::string>::Result r = m_Keys.find(key);
 	if (!r.found())
 		return NULL;
-	return r->value.chars();
+	return r->value.c_str();
 }
 
 //memory addresses below 0x10000 are automatically considered invalid for dereferencing
@@ -1022,7 +1040,7 @@ bool CGameConfig::GetAddress(const char *key, void **retaddr)
 	AddressConf &addrConf = r->value;
 
 	void *addr;
-	if (!GetMemSig(addrConf.signatureName, &addr))
+	if (!GetMemSig(addrConf.signatureName.c_str(), &addr))
 	{
 		*retaddr = NULL;
 		return false;
@@ -1055,11 +1073,11 @@ static inline unsigned minOf(unsigned a, unsigned b)
 	return a <= b ? a : b;
 }
 
-CGameConfig::AddressConf::AddressConf(char *sigName, unsigned sigLength, unsigned readCount, int *read, bool lastIsOffset)
+CGameConfig::AddressConf::AddressConf(std::string&& sigName, unsigned readCount, int *read, bool lastIsOffset)
 {
 	unsigned readLimit = minOf(readCount, sizeof(this->read) / sizeof(this->read[0]));
 
-	strncopy(signatureName, sigName, sizeof(signatureName) / sizeof(signatureName[0]));
+	this->signatureName = std::move(sigName);
 	this->readCount = readLimit;
 	memcpy(&this->read[0], read, sizeof(this->read[0])*readLimit);
 
@@ -1132,9 +1150,17 @@ bool GameConfigManager::LoadGameConfigFile(const char *file, IGameConfig **_pCon
 
 	if (m_Lookup.retrieve(file, &pConfig))
 	{
+		bool ret = true;
+		time_t modtime = GetFileModTime(file);
+		if (pConfig->m_ModTime != modtime)
+		{
+			pConfig->m_ModTime = modtime;
+			ret = pConfig->Reparse(error, maxlength);
+		}
+
 		pConfig->AddRef();
 		*_pConfig = pConfig;
-		return true;
+		return ret;
 	}
 
 	pConfig = new CGameConfig(file);

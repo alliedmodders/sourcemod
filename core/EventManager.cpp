@@ -484,7 +484,7 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 				pForward->PushCell(BAD_HANDLE);
 			}
 
-			pForward->PushString(pHook->name.chars());
+			pForward->PushString(pHook->name.c_str());
 			pForward->PushCell(bDontBroadcast);
 			pForward->Execute(NULL);
 
@@ -505,7 +505,7 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 		{
 			assert(pHook->pPostHook == NULL);
 			assert(pHook->pPreHook == NULL);
-			m_EventHooks.remove(pHook->name.chars());
+			m_EventHooks.remove(pHook->name.c_str());
 			delete pHook;
 		}
 	}

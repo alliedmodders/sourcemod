@@ -127,6 +127,8 @@ static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
 		}
 	}
 
+	g_pSM->SetGlobalTarget(index);
+
 	char buffer[1024];
 	char *fmt;
 	int arg = 3;

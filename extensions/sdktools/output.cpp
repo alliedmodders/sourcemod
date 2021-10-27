@@ -52,7 +52,6 @@ void EntityOutputManager::Shutdown()
 		return;
 	}
 
-	EntityOutputs->Destroy();
 	ClassNames->Destroy();
 	fireOutputDetour->Destroy();
 }
@@ -66,7 +65,6 @@ void EntityOutputManager::Init()
 		return;
 	}
 
-	EntityOutputs = adtfactory->CreateBasicTrie();
 	ClassNames = adtfactory->CreateBasicTrie();
 }
 
@@ -120,45 +118,26 @@ bool EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 		return true;
 	}
 
-	char sOutput[20];
-	ke::SafeSprintf(sOutput, sizeof(sOutput), "%p", pOutput);
-
 	// attempt to directly lookup a hook using the pOutput pointer
 	OutputNameStruct *pOutputName = NULL;
 
-	bool fastLookup = false;
-	
-	// Fast lookup failed - check the slow way for hooks that haven't fired yet
-	if ((fastLookup = EntityOutputs->Retrieve(sOutput, (void **)&pOutputName)) == false)
+	const char *classname;
+	const char *outputname = FindOutputName(pOutput, pActivator, pCaller, &classname);
+
+	if (!outputname || !classname)
 	{
-		const char *classname = gamehelpers->GetEntityClassname(pCaller);
-		if (!classname)
-		{
-			return true;
-		}
+		return true;
+	}
 
-		const char *outputname = FindOutputName(pOutput, pCaller);		
-		if (!outputname)
-		{
-			return true;
-		}
+	pOutputName = FindOutputPointer(classname, outputname, false);
 
-		pOutputName = FindOutputPointer(classname, outputname, false);
-
-		if (!pOutputName)
-		{
-			return true;
-		}
+	if (!pOutputName)
+	{
+		return true;
 	}
 
 	if (!pOutputName->hooks.empty())
 	{
-		if (!fastLookup)
-		{
-			// hook exists on this classname and output - map it into our quick find trie
-			EntityOutputs->Insert(sOutput, pOutputName);
-		}
-
 		SourceHook::List<omg_hooks *>::iterator _iter;
 
 		omg_hooks *hook;
@@ -362,8 +341,15 @@ OutputNameStruct *EntityOutputManager::FindOutputPointer(const char *classname, 
 	return pOutputName;
 }
 
-// Iterate the datamap of pCaller and look for output pointers with the same address as pOutput
-const char *EntityOutputManager::FindOutputName(void *pOutput, CBaseEntity *pCaller)
+// Iterate the datamap of pCaller/pActivator and look for output pointers with the same address as pOutput.
+// Store the classname of the entity we found the output on in |entity_classname| if provided.
+//
+// TODO: It turns out this logic isn't very sane, and it relies heavily on convention how most entities call
+//       FireOutput rather than explicitly conforming to the design of the engine's output system. We need a
+//       big refactor here to lookup the underlying per-entity CBaseEntityOutput instances and introduce an
+//       explicit concept of the entity owning the output being triggered, rather than assuming it is also at
+//       least one of the caller or activator entity.
+const char *EntityOutputManager::FindOutputName(void *pOutput, CBaseEntity *pActivator, CBaseEntity *pCaller, const char **entity_classname)
 {
 	datamap_t *pMap = gamehelpers->GetDataMap(pCaller);
 
@@ -375,11 +361,49 @@ const char *EntityOutputManager::FindOutputName(void *pOutput, CBaseEntity *pCal
 			{
 				if ((char *)pCaller + GetTypeDescOffs(&pMap->dataDesc[i]) == pOutput)
 				{
+					if (entity_classname)
+					{
+						*entity_classname = gamehelpers->GetEntityClassname(pCaller);
+					}
+
 					return pMap->dataDesc[i].externalName;
 				}
 			}
 		}
 		pMap = pMap->baseMap;
+	}
+
+	// HACK: Generally, the game passes the entity that triggered the output as pCaller, but occasionally (because the
+	//       param order is confusing), the entity gets passed in as pActivator instead. We do a 2nd pass over
+	//       pActivator looking for the output if we couldn't find it on pCaller.
+	if (pActivator)
+	{
+		pMap = gamehelpers->GetDataMap(pActivator);
+
+		while (pMap)
+		{
+			for (int i=0; i<pMap->dataNumFields; i++)
+			{
+				if (pMap->dataDesc[i].flags & FTYPEDESC_OUTPUT)
+				{
+					if ((char *)pActivator + GetTypeDescOffs(&pMap->dataDesc[i]) == pOutput)
+					{
+						if (entity_classname)
+						{
+							*entity_classname = gamehelpers->GetEntityClassname(pActivator);
+						}
+
+						return pMap->dataDesc[i].externalName;
+					}
+				}
+			}
+			pMap = pMap->baseMap;
+		}
+	}
+
+	if(entity_classname)
+	{
+		*entity_classname = nullptr;
 	}
 
 	return NULL;

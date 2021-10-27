@@ -74,6 +74,9 @@ enum CookieMenuAction
 	CookieMenuAction_SelectOption = 1
 };
 
+#define COOKIE_MAX_NAME_LENGTH 30 		/**< Maximum Cookie name length. */
+#define COOKIE_MAX_DESCRIPTION_LENGTH 255 	/**< Maximum Cookie description length. */
+
 /**
  * Cookie Menu Callback prototype
  *
@@ -119,7 +122,8 @@ methodmap Cookie < Handle {
 	// no longer needed.
 	//
 	// @param name          Name of cookie to find.
-	// @return              A handle to the cookie if it is found. INVALID_HANDLE otherwise.
+	// @return              A handle to the cookie if it is found, null otherwise.
+
 	public static native Cookie Find(const char[] name);
 
 	// Set the value of a Client preference cookie.
@@ -183,7 +187,7 @@ methodmap Cookie < Handle {
  *                      exists, a handle to it will still be returned.
  * @error               Cookie name is blank.
  */
-native Handle RegClientCookie(const char[] name, const char[] description, CookieAccess access);
+native Cookie RegClientCookie(const char[] name, const char[] description, CookieAccess access);
 
 /**
  * Searches for a Client preference cookie.
@@ -192,9 +196,10 @@ native Handle RegClientCookie(const char[] name, const char[] description, Cooki
  * no longer needed.
  *
  * @param name          Name of cookie to find.
- * @return              A handle to the cookie if it is found. INVALID_HANDLE otherwise.
+ * @return              A handle to the cookie if it is found, null otherwise.
+
  */
-native Handle FindClientCookie(const char[] name);
+native Cookie FindClientCookie(const char[] name);
 
 /**
  * Set the value of a Client preference cookie.

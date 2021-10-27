@@ -44,7 +44,7 @@
 using namespace SourceHook;
 using namespace SourceMod;
 
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 #define USE_PROTOBUF_USERMESSAGES
 #endif
 
@@ -52,6 +52,7 @@ using namespace SourceMod;
 #include <google/protobuf/message.h>
 #include <google/protobuf/descriptor.h>
 #include <netmessages.pb.h>
+#include "pb_handle.h"
 
 using namespace google;
 #else
@@ -102,14 +103,14 @@ public: //IUserMessages
 		bool intercept=false);
 	UserMessageType GetUserMessageType() const;
 public:
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	void OnSendUserMessage_Pre(IRecipientFilter &filter, int msg_type, const protobuf::Message &msg);
 	void OnSendUserMessage_Post(IRecipientFilter &filter, int msg_type, const protobuf::Message &msg);
 #endif
 
-#if SOURCE_ENGINE == SE_CSGO
-	protobuf::Message *OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name);
-	protobuf::Message *OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name);
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+	PbHandle OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name);
+	void* OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name);
 #elif SOURCE_ENGINE >= SE_LEFT4DEAD
 	bf_write *OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name);
 	bf_write *OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name);
@@ -121,7 +122,6 @@ public:
 	void OnMessageEnd_Post();
 private:
 #ifdef USE_PROTOBUF_USERMESSAGES
-	const protobuf::Message *GetMessagePrototype(int msg_type);
 	bool InternalHook(int msg_id, IProtobufUserMessageListener *pListener, bool intercept, bool isNew);
 	bool InternalUnhook(int msg_id, IProtobufUserMessageListener *pListener, bool intercept, bool isNew);
 #else
@@ -141,11 +141,11 @@ private:
 	bf_read m_ReadBuffer;
 #else
 	// The engine used to provide this. Now we track it.
-	protobuf::Message *m_OrigBuffer;
-	protobuf::Message *m_FakeEngineBuffer;
+	PbHandle m_OrigBuffer;
+	PbHandle m_FakeEngineBuffer;
 	META_RES m_FakeMetaRes;
 
-	protobuf::Message *m_InterceptBuffer;
+	PbHandle m_InterceptBuffer;
 #endif
 	size_t m_HookCount;
 	bool m_InHook;

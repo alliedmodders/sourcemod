@@ -41,9 +41,17 @@
 #include <iclient.h>
 #include "iserver.h"
 #include "am-string.h"
+#include <sm_argbuffer.h>
 
 SourceHook::List<ValveCall *> g_RegCalls;
 SourceHook::List<ICallWrapper *> g_CallWraps;
+
+#define ENTINDEX_TO_CBASEENTITY(ref, buffer) \
+	buffer = gamehelpers->ReferenceToEntity(ref); \
+	if (!buffer) \
+	{ \
+		return pContext->ThrowNativeError("Entity %d (%d) is not a CBaseEntity", gamehelpers->ReferenceToIndex(ref), ref); \
+	}
 
 inline void InitPass(ValvePassInfo &info, ValveType vtype, PassType type, unsigned int flags, unsigned int decflags=0)
 {
@@ -165,10 +173,10 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 		ValvePassInfo pass[6];
 		InitPass(pass[0], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
 		InitPass(pass[1], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
-		InitPass(pass[2], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[2], Valve_Object, PassType_Basic, PASSFLAG_BYVAL);
 		InitPass(pass[3], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
-		InitPass(pass[4], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
-		InitPass(pass[5], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[4], Valve_Vector, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[5], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
 		if (!CreateBaseCall("GiveNamedItem", ValveCall_Player, &pass[5], pass, 5, &pCall))
 		{
 			return pContext->ThrowNativeError("\"GiveNamedItem\" not supported by this mod");
@@ -182,9 +190,41 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 	DECODE_VALVE_PARAM(1, thisinfo, 0);
 	DECODE_VALVE_PARAM(2, vparams, 0);
 	DECODE_VALVE_PARAM(3, vparams, 1);
-	*(CEconItemView **)(vptr + 12) = NULL;
-	*(bool *)(vptr + 16) = false;
-	*(void **)(vptr + 17) = NULL;
+	*(CEconItemView **)(vptr + pCall->vparams[2].offset) = NULL;
+	*(bool *)(vptr + pCall->vparams[3].offset) = false;
+	*(void **)(vptr + pCall->vparams[4].offset) = NULL;
+	FINISH_CALL_SIMPLE(&pEntity);
+
+	return gamehelpers->EntityToBCompatRef(pEntity);
+}
+#elif SOURCE_ENGINE == SE_BLADE
+class CEconItemView;
+static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		ValvePassInfo pass[5];
+		InitPass(pass[0], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[1], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[2], Valve_Object, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[3], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[4], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
+		if (!CreateBaseCall("GiveNamedItem", ValveCall_Player, &pass[4], pass, 4, &pCall))
+		{
+			return pContext->ThrowNativeError("\"GiveNamedItem\" not supported by this mod");
+		} else if (!pCall) {
+			return pContext->ThrowNativeError("\"GiveNamedItem\" wrapper failed to initialize");
+		}
+	}
+
+	CBaseEntity *pEntity = NULL;
+	START_CALL();
+	DECODE_VALVE_PARAM(1, thisinfo, 0);
+	DECODE_VALVE_PARAM(2, vparams, 0);
+	DECODE_VALVE_PARAM(3, vparams, 1);
+	*(CEconItemView **)(vptr + pCall->vparams[2].offset) = NULL;
+	*(bool *)(vptr + pCall->vparams[3].offset) = false;
 	FINISH_CALL_SIMPLE(&pEntity);
 
 	return gamehelpers->EntityToBCompatRef(pEntity);
@@ -215,10 +255,42 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 	DECODE_VALVE_PARAM(1, thisinfo, 0);
 	DECODE_VALVE_PARAM(2, vparams, 0);
 	DECODE_VALVE_PARAM(3, vparams, 1);
-	*(int *)(vptr + 12) = -1;
-	*(int *)(vptr + 16) = -1;
+	*(int *)(vptr + pCall->vparams[2].offset) = -1;
+	*(int *)(vptr + pCall->vparams[3].offset) = -1;
 	FINISH_CALL_SIMPLE(&pEntity);
 
+	return gamehelpers->EntityToBCompatRef(pEntity);
+}
+#elif SOURCE_ENGINE == SE_LEFT4DEAD2
+// CBaseEntity *CTerrorPlayer::GiveNamedItem( const char *pchName, int iSubType, bool bForce, CBaseEntity *pUnk)
+static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
+{
+	static ValveCall *pCall = NULL;
+	if (!pCall)
+	{
+		ValvePassInfo pass[5];
+		InitPass(pass[0], Valve_String, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[1], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[2], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[3], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
+		InitPass(pass[4], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
+		
+		if (!CreateBaseCall("GiveNamedItem", ValveCall_Player, &pass[4], pass, 4, &pCall)) {
+			return pContext->ThrowNativeError("\"GiveNamedItem\" not supported by this mod");
+		} else if (!pCall) {
+			return pContext->ThrowNativeError("\"GiveNamedItem\" wrapper failed to initialize");
+		}
+	}
+
+	CBaseEntity *pEntity = NULL;
+	START_CALL();
+	DECODE_VALVE_PARAM(1, thisinfo, 0);
+	DECODE_VALVE_PARAM(2, vparams, 0);
+	DECODE_VALVE_PARAM(3, vparams, 1);
+	*(bool *)(vptr + pCall->vparams[2].offset) = false;
+	*(void **)(vptr + pCall->vparams[3].offset) = NULL;
+	FINISH_CALL_SIMPLE(&pEntity);
+	
 	return gamehelpers->EntityToBCompatRef(pEntity);
 }
 #else
@@ -328,8 +400,8 @@ static cell_t IgniteEntity(IPluginContext *pContext, const cell_t *params)
 #if SOURCE_ENGINE == SE_SDK2013
 	if (!strcmp(g_pSM->GetGameFolderName(), "nmrih"))
 	{
-		*(int *) (vptr + 14) = 0;
-		*(int *) (vptr + 18) = 0;
+		*(int *) (vptr + pCall->vparams[4].offset) = 0;
+		*(int *) (vptr + pCall->vparams[5].offset) = 0;
 	}
 #endif // SDK2013
 
@@ -366,8 +438,8 @@ static cell_t IgniteEntity(IPluginContext *pContext, const cell_t *params)
 	DECODE_VALVE_PARAM(4, vparams, 2);
 	DECODE_VALVE_PARAM(5, vparams, 3);
 	/* Not sure what these params do, but they appear to be the default values */
-	*(int *)(vptr + 14) = 3;
-	*(int *)(vptr + 18) = 0;
+	*(int *)(vptr + pCall->vparams[4].offset) = 3;
+	*(int *)(vptr + pCall->vparams[5].offset) = 0;
 	FINISH_CALL_SIMPLE(NULL);
 
 	return 1;
@@ -422,7 +494,6 @@ static cell_t TeleportEntity(IPluginContext *pContext, const cell_t *params)
 }
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-/* :TODO: This is Team Fortress 2 specific */
 static cell_t ForcePlayerSuicide(IPluginContext *pContext, const cell_t *params)
 {
 	static ValveCall *pCall = NULL;
@@ -443,8 +514,8 @@ static cell_t ForcePlayerSuicide(IPluginContext *pContext, const cell_t *params)
 
 	START_CALL();
 	DECODE_VALVE_PARAM(1, thisinfo, 0);
-	*(bool *)(vptr + 4) = false;
-	*(bool *)(vptr + 5) = false;
+	*(bool *)(vptr + pCall->vparams[0].offset) = false;
+	*(bool *)(vptr + pCall->vparams[1].offset) = false;
 	FINISH_CALL_SIMPLE(NULL);
 
 	return 1;
@@ -838,6 +909,7 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 	|| SOURCE_ENGINE == SE_CSS     \
 	|| SOURCE_ENGINE == SE_BMS     \
 	|| SOURCE_ENGINE == SE_SDK2013 \
+	|| SOURCE_ENGINE == SE_BLADE   \
 	|| SOURCE_ENGINE == SE_NUCLEARDAWN
 
 	static bool bHasServerTools3 = !!g_SMAPI->GetServerFactory(false)("VSERVERTOOLS003", nullptr);
@@ -932,7 +1004,7 @@ static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 
 	char *classname;
 	pContext->LocalToString(params[1], &classname);
-#if SOURCE_ENGINE != SE_CSGO
+#if SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_BLADE
 	CBaseEntity *pEntity = (CBaseEntity *)servertools->CreateEntityByName(classname);
 #else
 	CBaseEntity *pEntity = (CBaseEntity *)servertools->CreateItemEntityByName(classname);
@@ -1491,6 +1563,45 @@ static cell_t GivePlayerAmmo(IPluginContext *pContext, const cell_t *params)
 	return ammoGiven;
 }
 
+// SetEntityCollisionGroup(int entity, int collisionGroup)
+static cell_t SetEntityCollisionGroup(IPluginContext *pContext, const cell_t *params)
+{
+	static ICallWrapper *pSetCollisionGroup = NULL;
+	if (!pSetCollisionGroup)
+	{
+		void *addr;
+		if (!g_pGameConf->GetMemSig("SetCollisionGroup", &addr) || !addr)
+		{
+			return pContext->ThrowNativeError("\"SetEntityCollisionGroup\" not supported by this mod");
+		}
+		PassInfo pass[2];
+		// Entity
+		pass[0].type = PassType_Basic;
+		pass[0].flags = PASSFLAG_BYVAL;
+		pass[0].size = sizeof(CBaseEntity *);
+
+		// Collision Group
+		pass[1].type = PassType_Basic;
+		pass[1].flags = PASSFLAG_BYVAL;
+		pass[1].size = sizeof(int);
+
+		if (!(pSetCollisionGroup = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 2)))
+		{
+			return pContext->ThrowNativeError("\"SetEntityCollisionGroup\" wrapper failed to initialize");
+		}
+	}
+
+	CBaseEntity *pEntity;
+	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
+
+	ArgBuffer<CBaseEntity *, int> vstk(pEntity, params[2]);
+
+	pSetCollisionGroup->Execute(vstk, nullptr);
+
+	return 1;
+
+}
+
 sp_nativeinfo_t g_Natives[] = 
 {
 	{"ExtinguishEntity",		ExtinguishEntity},
@@ -1522,5 +1633,6 @@ sp_nativeinfo_t g_Natives[] =
 	{"SetClientName",           SetClientName},
 	{"GetPlayerResourceEntity", GetPlayerResourceEntity},
 	{"GivePlayerAmmo",		GivePlayerAmmo},
+	{"SetEntityCollisionGroup",	SetEntityCollisionGroup},
 	{NULL,						NULL},
 };

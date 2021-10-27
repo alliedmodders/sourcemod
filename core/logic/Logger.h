@@ -92,13 +92,13 @@ private:
 	FILE *_OpenError();
 	FILE *_OpenFatal();
 
-	void _LogFatalOpen(ke::AString &str);
+	void _LogFatalOpen(std::string &str);
 	void _PrintToGameLog(const char *fmt, va_list ap);
 	void _UpdateFiles(bool bLevelChange = false);
 private:
-	ke::AString m_NormalFileName;
-	ke::AString m_ErrorFileName;
-	ke::AString m_CurrentMapName;
+	std::string m_NormalFileName;
+	std::string m_ErrorFileName;
+	std::string m_CurrentMapName;
 
 	int m_Day;
 

@@ -30,6 +30,7 @@
  */
 
 #include "PlayerManager.h"
+#include "sourcemod.h"
 #include "IAdminSystem.h"
 #include "ConCmdManager.h"
 #include "MenuStyle_Valve.h"
@@ -92,6 +93,12 @@ SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &)
 #else
 SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
 #endif
+SH_DECL_HOOK2_void(IVEngineServer, ClientPrintf, SH_NOATTRIB, 0, edict_t *, const char *);
+
+static void PrintfBuffer_FrameAction(void *data)
+{
+	g_Players.OnPrintfFrameAction(static_cast<unsigned int>(reinterpret_cast<uintptr_t>(data)));
+}
 
 ConCommand *maxplayersCmd = NULL;
 
@@ -172,6 +179,7 @@ void PlayerManager::OnSourceModAllInitialized()
 #elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox.
 	SH_ADD_HOOK(IServerGameDLL, SetServerHibernation, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
 #endif
+	SH_ADD_HOOK(IVEngineServer, ClientPrintf, engine, SH_MEMBER(this, &PlayerManager::OnClientPrintf), false);
 
 	sharesys->AddInterface(NULL, this);
 
@@ -188,6 +196,7 @@ void PlayerManager::OnSourceModAllInitialized()
 	m_clcommandkv_post = forwardsys->CreateForward("OnClientCommandKeyValues_Post", ET_Ignore, 2, NULL, Param_Cell, Param_Cell);
 	m_clinfochanged = forwardsys->CreateForward("OnClientSettingsChanged", ET_Ignore, 1, p2);
 	m_clauth = forwardsys->CreateForward("OnClientAuthorized", ET_Ignore, 2, NULL, Param_Cell, Param_String);
+	m_cllang = forwardsys->CreateForward("OnClientLanguageChanged", ET_Ignore, 2, NULL, Param_Cell, Param_Cell);
 	m_onActivate = forwardsys->CreateForward("OnServerLoad", ET_Ignore, 0, NULL);
 	m_onActivate2 = forwardsys->CreateForward("OnMapStart", ET_Ignore, 0, NULL);
 
@@ -225,6 +234,7 @@ void PlayerManager::OnSourceModShutdown()
 #elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox.
 	SH_REMOVE_HOOK(IServerGameDLL, SetServerHibernation, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
 #endif
+	SH_REMOVE_HOOK(IVEngineServer, ClientPrintf, engine, SH_MEMBER(this, &PlayerManager::OnClientPrintf), false);
 
 	/* Release forwards */
 	forwardsys->ReleaseForward(m_clconnect);
@@ -237,6 +247,7 @@ void PlayerManager::OnSourceModShutdown()
 	forwardsys->ReleaseForward(m_clcommandkv_post);
 	forwardsys->ReleaseForward(m_clinfochanged);
 	forwardsys->ReleaseForward(m_clauth);
+	forwardsys->ReleaseForward(m_cllang);
 	forwardsys->ReleaseForward(m_onActivate);
 	forwardsys->ReleaseForward(m_onActivate2);
 
@@ -396,7 +407,7 @@ void PlayerManager::RunAuthChecks()
 		pPlayer = &m_Players[m_AuthQueue[i]];
 		pPlayer->UpdateAuthIds();
 		
-		authstr = pPlayer->m_AuthID.chars();
+		authstr = pPlayer->m_AuthID.c_str();
 
 		if (!pPlayer->IsAuthStringValidated())
 		{
@@ -503,7 +514,7 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 	/* Get the client's language */
 	if (m_QueryLang)
 	{
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 		pPlayer->m_LangId = translator->GetServerLanguage();
 #else
 		const char *name;
@@ -511,6 +522,8 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 		{
 			unsigned int langid;
 			pPlayer->m_LangId = (translator->GetLanguageByName(name, &langid)) ? langid : translator->GetServerLanguage();
+
+			OnClientLanguageChanged(client, pPlayer->m_LangId);
 		} else {
 			pPlayer->m_LangId = translator->GetServerLanguage();
 		}
@@ -657,6 +670,8 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 			&& (m_SourceTVUserId == userId
 #if SOURCE_ENGINE == SE_CSGO
 				|| strcmp(playername, "GOTV") == 0
+#elif SOURCE_ENGINE == SE_BLADE
+				|| strcmp(playername, "BBTV") == 0
 #elif (SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_SDK2013 \
 	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_NUCLEARDAWN  || SOURCE_ENGINE == SE_LEFT4DEAD2)
 				|| (tv_name && strcmp(playername, tv_name->GetString()) == 0) || (tv_name && tv_name->GetString()[0] == 0 && strcmp(playername, "unnamed") == 0)
@@ -700,19 +715,19 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 		{
 			pListener = (*iter);
-			pListener->OnClientAuthorized(client, steamId ? steamId : pPlayer->m_AuthID.chars());
+			pListener->OnClientAuthorized(client, steamId ? steamId : pPlayer->m_AuthID.c_str());
 		}
 		/* Finally, tell plugins */
 		if (m_clauth->GetFunctionCount())
 		{
 			m_clauth->PushCell(client);
 			/* For legacy reasons, people are expecting the Steam2 id here if using Steam auth */
-			m_clauth->PushString(steamId ? steamId : pPlayer->m_AuthID.chars());
+			m_clauth->PushString(steamId ? steamId : pPlayer->m_AuthID.c_str());
 			m_clauth->Execute(NULL);
 		}
 		pPlayer->Authorize_Post();
 	}
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	else if(m_QueryLang)
 	{
 		// Not a bot
@@ -772,7 +787,7 @@ void PlayerManager::OnServerHibernationUpdate(bool bHibernating)
 			CPlayer *pPlayer = &m_Players[i];
 			if (pPlayer->IsConnected() && pPlayer->IsFakeClient())
 			{
-#if SOURCE_ENGINE < SE_LEFT4DEAD || SOURCE_ENGINE >= SE_CSGO || SOURCE_ENGINE == SE_NUCLEARDAWN
+#if SOURCE_ENGINE < SE_LEFT4DEAD || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_NUCLEARDAWN
 				// These games have the bug fixed where hltv/replay was getting kicked on hibernation
 				if (pPlayer->IsSourceTV() || pPlayer->IsReplay())
 					continue;
@@ -843,6 +858,88 @@ void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
 	{
 		pListener = (*iter);
 		pListener->OnClientDisconnected(client);
+	}
+}
+
+void PlayerManager::OnClientPrintf(edict_t *pEdict, const char *szMsg)
+{
+	int client = IndexOfEdict(pEdict);
+
+	CPlayer &player = m_Players[client];
+	if (!player.IsConnected())
+		RETURN_META(MRES_IGNORED);
+
+	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(client));
+	if (pNetChan == NULL)
+		RETURN_META(MRES_IGNORED);
+
+	size_t nMsgLen = strlen(szMsg);
+#if SOURCE_ENGINE == SE_EPISODEONE || SOURCE_ENGINE == SE_DARKMESSIAH
+	static const int nNumBitsWritten = 0;
+#else
+	int nNumBitsWritten = pNetChan->GetNumBitsWritten(false); // SVC_Print uses unreliable netchan
+#endif
+
+	// if the msg is bigger than allowed then just let it fail
+	if (nMsgLen + 1 >= SVC_Print_BufferSize) // +1 for NETMSG_TYPE_BITS
+		RETURN_META(MRES_IGNORED);
+
+	// enqueue msgs if we'd overflow the SVC_Print buffer (+7 as ceil)
+	if (!player.m_PrintfBuffer.empty() || (nNumBitsWritten + NETMSG_TYPE_BITS + 7) / 8 + nMsgLen >= SVC_Print_BufferSize)
+	{
+		// Don't send any more messages for this player until the buffer is empty.
+		// Queue up a gameframe hook to empty the buffer (if we haven't already)
+		if (player.m_PrintfBuffer.empty())
+			g_SourceMod.AddFrameAction(PrintfBuffer_FrameAction, (void *)(uintptr_t)player.GetSerial());
+
+		player.m_PrintfBuffer.push_back(szMsg);
+
+		RETURN_META(MRES_SUPERCEDE);
+	}
+
+	RETURN_META(MRES_IGNORED);
+}
+
+void PlayerManager::OnPrintfFrameAction(unsigned int serial)
+{
+	int client = GetClientFromSerial(serial);
+	CPlayer &player = m_Players[client];
+	if (!player.IsConnected())
+	{
+		player.ClearNetchannelQueue();
+		return;
+	}
+
+	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(client));
+	if (pNetChan == NULL)
+	{
+		player.ClearNetchannelQueue();
+		return;
+	}
+
+	while (!player.m_PrintfBuffer.empty())
+	{
+#if SOURCE_ENGINE == SE_EPISODEONE || SOURCE_ENGINE == SE_DARKMESSIAH
+		static const int nNumBitsWritten = 0;
+#else
+		int nNumBitsWritten = pNetChan->GetNumBitsWritten(false); // SVC_Print uses unreliable netchan
+#endif
+
+		std::string &string = player.m_PrintfBuffer.front();
+
+		// stop if we'd overflow the SVC_Print buffer  (+7 as ceil)
+		if ((nNumBitsWritten + NETMSG_TYPE_BITS + 7) / 8 + string.length() >= SVC_Print_BufferSize)
+			break;
+
+		SH_CALL(engine, &IVEngineServer::ClientPrintf)(player.m_pEdict, string.c_str());
+
+		player.m_PrintfBuffer.pop_front();
+	}
+
+	if (!player.m_PrintfBuffer.empty())
+	{
+		// continue processing it on the next gameframe as buffer is not empty
+		g_SourceMod.AddFrameAction(PrintfBuffer_FrameAction, (void *)(uintptr_t)player.GetSerial());
 	}
 }
 
@@ -1065,14 +1162,18 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 		}
 		else if (args.ArgC() > 1 && strcmp(args.Arg(1), "credits") == 0)
 		{
- 			ClientConsolePrint(pEntity,
- 				"SourceMod would not be possible without:");
- 			ClientConsolePrint(pEntity,
+			ClientConsolePrint(pEntity,
+				"SourceMod would not be possible without:");
+			ClientConsolePrint(pEntity,
 				" David \"BAILOPAN\" Anderson, Matt \"pRED\" Woodrow");
- 			ClientConsolePrint(pEntity,
+			ClientConsolePrint(pEntity,
 				" Scott \"DS\" Ehlert, Fyren");
- 			ClientConsolePrint(pEntity,
+			ClientConsolePrint(pEntity,
 				" Nicholas \"psychonic\" Hastings, Asher \"asherkin\" Baker");
+			ClientConsolePrint(pEntity,
+				" Ruben \"Dr!fter\" Gonzalez, Josh \"KyleS\" Allard");
+			ClientConsolePrint(pEntity,
+				" Michael \"Headline\" Flaherty, Jannik \"Peace-Maker\" Hartung");
 			ClientConsolePrint(pEntity,
 				" Borja \"faluco\" Ferrer, Pavol \"PM OnoTo\" Marko");
 			ClientConsolePrint(pEntity,
@@ -1087,7 +1188,7 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 		ClientConsolePrint(pEntity,
 			"To see credits, type \"sm credits\"");
 		ClientConsolePrint(pEntity,
-			"Visit http://www.sourcemod.net/");
+			"Visit https://www.sourcemod.net/");
 		RETURN_META(MRES_SUPERCEDE);
 	}
 
@@ -1242,65 +1343,69 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 	m_clinfochanged->PushCell(client);
 	m_clinfochanged->Execute(&res, NULL);
 
-	if (pPlayer->IsFakeClient())
-	{
-		return;
-	}
-
 	IPlayerInfo *info = pPlayer->GetPlayerInfo();
 	const char *new_name = info ? info->GetName() : engine->GetClientConVarValue(client, "name");
 	const char *old_name = pPlayer->m_Name.c_str();
 
-#if SOURCE_ENGINE >= SE_LEFT4DEAD
-	const char *networkid_force;
-	if ((networkid_force = engine->GetClientConVarValue(client, "networkid_force")) && networkid_force[0] != '\0')
-	{
-		unsigned int accountId = pPlayer->GetSteamAccountID();
-		logger->LogMessage("\"%s<%d><STEAM_1:%d:%d><>\" has bad networkid (id \"%s\") (ip \"%s\")",
-			new_name, pPlayer->GetUserId(), accountId & 1, accountId >> 1, networkid_force, pPlayer->GetIPAddress());
-
-		pPlayer->Kick("NetworkID spoofing detected.");
-		RETURN_META(MRES_IGNORED);
-	}
-#endif
-
 	if (strcmp(old_name, new_name) != 0)
 	{
-		AdminId id = adminsys->FindAdminByIdentity("name", new_name);
-		if (id != INVALID_ADMIN_ID && pPlayer->GetAdminId() != id)
+		if (!pPlayer->IsFakeClient())
 		{
-			if (!CheckSetAdminName(client, pPlayer, id))
+			AdminId id = adminsys->FindAdminByIdentity("name", new_name);
+			if (id != INVALID_ADMIN_ID && pPlayer->GetAdminId() != id)
 			{
-				char kickMsg[128];
-				logicore.CoreTranslate(kickMsg, sizeof(kickMsg), "%T", 2, NULL, "Name Reserved", &client);
-				pPlayer->Kick(kickMsg);
-				RETURN_META(MRES_IGNORED);
+				if (!CheckSetAdminName(client, pPlayer, id))
+				{
+					char kickMsg[128];
+					logicore.CoreTranslate(kickMsg, sizeof(kickMsg), "%T", 2, NULL, "Name Reserved", &client);
+					pPlayer->Kick(kickMsg);
+					RETURN_META(MRES_IGNORED);
+				}
 			}
-		} else if ((id = adminsys->FindAdminByIdentity("name", old_name)) != INVALID_ADMIN_ID) {
-			if (id == pPlayer->GetAdminId())
-			{
-				/* This player is changing their name; force them to drop admin privileges! */
-				pPlayer->SetAdminId(INVALID_ADMIN_ID, false);
+			else if ((id = adminsys->FindAdminByIdentity("name", old_name)) != INVALID_ADMIN_ID) {
+				if (id == pPlayer->GetAdminId())
+				{
+					/* This player is changing their name; force them to drop admin privileges! */
+					pPlayer->SetAdminId(INVALID_ADMIN_ID, false);
+				}
 			}
 		}
+
 		pPlayer->SetName(new_name);
 	}
 	
-	if (m_PassInfoVar.size() > 0)
+	if (!pPlayer->IsFakeClient())
 	{
-		/* Try for a password change */
-		const char *old_pass = pPlayer->m_LastPassword.c_str();
-		const char *new_pass = engine->GetClientConVarValue(client, m_PassInfoVar.c_str());
-		if (strcmp(old_pass, new_pass) != 0)
+		if (m_PassInfoVar.size() > 0)
 		{
-			pPlayer->m_LastPassword.assign(new_pass);
-			if (pPlayer->IsInGame() && pPlayer->IsAuthorized())
+			/* Try for a password change */
+			const char* old_pass = pPlayer->m_LastPassword.c_str();
+			const char* new_pass = engine->GetClientConVarValue(client, m_PassInfoVar.c_str());
+			if (strcmp(old_pass, new_pass) != 0)
 			{
-				/* If there is already an admin id assigned, this will just bail out. */
-				pPlayer->DoBasicAdminChecks();
+				pPlayer->m_LastPassword.assign(new_pass);
+				if (pPlayer->IsInGame() && pPlayer->IsAuthorized())
+				{
+					/* If there is already an admin id assigned, this will just bail out. */
+					pPlayer->DoBasicAdminChecks();
+				}
 			}
 		}
+
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
+		const char* networkid_force;
+		if ((networkid_force = engine->GetClientConVarValue(client, "networkid_force")) && networkid_force[0] != '\0')
+		{
+			unsigned int accountId = pPlayer->GetSteamAccountID();
+			logger->LogMessage("\"%s<%d><STEAM_1:%d:%d><>\" has bad networkid (id \"%s\") (ip \"%s\")",
+				new_name, pPlayer->GetUserId(), accountId & 1, accountId >> 1, networkid_force, pPlayer->GetIPAddress());
+
+			pPlayer->Kick("NetworkID spoofing detected.");
+			RETURN_META(MRES_IGNORED);
+		}
+#endif
 	}
+
 	/* Notify Extensions */
 	List<IClientListener *>::iterator iter;
 	IClientListener *pListener = NULL;
@@ -1312,6 +1417,13 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 			pListener->OnClientSettingsChanged(client);
 		}
 	}
+}
+
+void PlayerManager::OnClientLanguageChanged(int client, unsigned int language)
+{
+	m_cllang->PushCell(client);
+	m_cllang->PushCell(language);
+	m_cllang->Execute(NULL);
 }
 
 int PlayerManager::GetMaxClients()
@@ -1913,7 +2025,7 @@ void CmdMaxplayersCallback()
 	g_Players.MaxPlayersChanged();
 }
 
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 bool PlayerManager::HandleConVarQuery(QueryCvarCookie_t cookie, int client, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue)
 {
 	for (int i = 1; i <= m_maxClients; i++)
@@ -1921,7 +2033,9 @@ bool PlayerManager::HandleConVarQuery(QueryCvarCookie_t cookie, int client, EQue
 		if (m_Players[i].m_LanguageCookie == cookie)
 		{
 			unsigned int langid;
-			m_Players[i].m_LangId = (translator->GetLanguageByName(cvarValue, &langid)) ? langid : translator->GetServerLanguage();
+			unsigned int new_langid = (translator->GetLanguageByName(cvarValue, &langid)) ? langid : translator->GetServerLanguage();
+			m_Players[i].m_LangId = new_langid;
+			OnClientLanguageChanged(i, new_langid);
 
 			return true;
 		}
@@ -1969,7 +2083,8 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	|| SOURCE_ENGINE == SE_HL2DM \
 	|| SOURCE_ENGINE == SE_BMS   \
 	|| SOURCE_ENGINE == SE_INSURGENCY \
-	|| SOURCE_ENGINE == SE_DOI
+	|| SOURCE_ENGINE == SE_DOI   \
+	|| SOURCE_ENGINE == SE_BLADE
 	m_pIClient = engine->GetIServer()->GetClient(m_iIndex - 1);
 #else
   #if SOURCE_ENGINE == SE_SDK2013
@@ -2145,9 +2260,16 @@ void CPlayer::Disconnect()
 	m_bIsSourceTV = false;
 	m_bIsReplay = false;
 	m_Serial.value = -1;
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
+	ClearNetchannelQueue();
+}
+
+void CPlayer::ClearNetchannelQueue(void)
+{
+	while (!m_PrintfBuffer.empty())
+		m_PrintfBuffer.pop_front();
 }
 
 void CPlayer::SetName(const char *name)
@@ -2180,11 +2302,6 @@ void CPlayer::SetName(const char *name)
 
 const char *CPlayer::GetName()
 {
-	if (m_Info && m_pEdict->GetUnknown())
-	{
-		return m_Info->GetName();
-	}
-	
 	return m_Name.c_str();
 }
 
@@ -2200,7 +2317,7 @@ const char *CPlayer::GetAuthString(bool validated)
 		return NULL;
 	}
 
-	return m_AuthID.chars();
+	return m_AuthID.c_str();
 }
 
 const CSteamID &CPlayer::GetSteamId(bool validated)
@@ -2221,7 +2338,7 @@ const char *CPlayer::GetSteam2Id(bool validated)
 		return NULL;
 	}
 
-	return m_Steam2Id.chars();
+	return m_Steam2Id.c_str();
 }
 
 const char *CPlayer::GetSteam3Id(bool validated)
@@ -2231,14 +2348,14 @@ const char *CPlayer::GetSteam3Id(bool validated)
 		return NULL;
 	}
 
-	return m_Steam3Id.chars();
+	return m_Steam3Id.c_str();
 }
 
 unsigned int CPlayer::GetSteamAccountID(bool validated)
 {
 	if (!IsFakeClient() && (!validated || IsAuthStringValidated()))
 	{
-		const CSteamID &id = GetSteamId();
+		const CSteamID &id = GetSteamId(validated);
 		if (id.IsValid())
 			return id.GetAccountID();
 	}
@@ -2365,7 +2482,7 @@ void CPlayer::Kick(const char *str)
 	}
 	else
 	{
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 		pClient->Disconnect(str);
 #else
 		pClient->Disconnect("%s", str);
@@ -2498,7 +2615,7 @@ void CPlayer::DoBasicAdminChecks()
 	}
 
 	/* Check steam id */
-	if ((id = adminsys->FindAdminByIdentity("steam", m_AuthID.chars())) != INVALID_ADMIN_ID)
+	if ((id = adminsys->FindAdminByIdentity("steam", m_AuthID.c_str())) != INVALID_ADMIN_ID)
 	{
 		if (g_Players.CheckSetAdmin(client, this, id))
 		{
@@ -2514,7 +2631,11 @@ unsigned int CPlayer::GetLanguageId()
 
 void CPlayer::SetLanguageId(unsigned int id)
 {
-	m_LangId = id;
+	if(m_LangId != id)
+	{
+		m_LangId = id;
+		g_Players.OnClientLanguageChanged(m_iIndex, id);
+	}
 }
 
 int CPlayer::GetUserId()

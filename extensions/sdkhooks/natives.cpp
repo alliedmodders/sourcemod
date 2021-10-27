@@ -33,11 +33,13 @@
 #include "extension.h"
 #include "natives.h"
 #include <compat_wrappers.h>
+#include <IBinTools.h>
+#include <sm_argbuffer.h>
 
-#if defined SH_DECL_MANUALEXTERN1
+using namespace SourceMod;
+
 SH_DECL_MANUALEXTERN1(OnTakeDamage, int, CTakeDamageInfoHack &);
 SH_DECL_MANUALEXTERN3_void(Weapon_Drop, CBaseCombatWeapon *, const Vector *, const Vector *);
-#endif
 
 cell_t Native_Hook(IPluginContext *pContext, const cell_t *params)
 {
@@ -100,10 +102,6 @@ cell_t Native_Unhook(IPluginContext *pContext, const cell_t *params)
 
 cell_t Native_TakeDamage(IPluginContext *pContext, const cell_t *params)
 {
-// todo: fix code to not require this >.<
-#if !defined SH_DECL_MANUALEXTERN1
-	pContext->ThrowNativeError("SDKHooks_TakeDamage is not supported on this engine.");
-#else
 	CBaseEntity *pVictim = gamehelpers->ReferenceToEntity(params[1]);
 	if (!pVictim)
 		return pContext->ThrowNativeError("Invalid entity index %d for victim", params[1]);
@@ -176,18 +174,50 @@ cell_t Native_TakeDamage(IPluginContext *pContext, const cell_t *params)
 	}
 
 	CTakeDamageInfoHack info(pInflictor, pAttacker, flDamage, iDamageType, pWeapon, vecDamageForce, vecDamagePosition);
-	SH_MCALL(pVictim, OnTakeDamage)((CTakeDamageInfoHack &)info);
-#endif
+
+	if (params[0] < 9 || params[9] != 0)
+	{
+		SH_MCALL(pVictim, OnTakeDamage)((CTakeDamageInfoHack&)info);
+	}
+	else
+	{
+		static ICallWrapper *pCall = nullptr;
+		if (!pCall)
+		{
+			int offset;
+			if (!g_pGameConf->GetOffset("OnTakeDamage", &offset))
+			{
+				return pContext->ThrowNativeError("Could not find OnTakeDamage offset");
+			}			
+
+			PassInfo pass[2];
+			pass[0].type = PassType_Object;
+			pass[0].size = sizeof(CTakeDamageInfoHack &);
+			pass[0].flags = PASSFLAG_BYREF | PASSFLAG_OCTOR;
+			pass[1].type = PassType_Basic;
+			pass[1].size = sizeof(int);
+			pass[1].flags = PASSFLAG_BYVAL;
+
+			pCall = g_pBinTools->CreateVCall(offset, 0, 0, &pass[1], &pass[0], 1);
+		}
+
+		// Can't ArgBuffer here until we upgrade our Clang version on the Linux builder
+		unsigned char vstk[sizeof(CBaseEntity *) + sizeof(CTakeDamageInfoHack &)];
+		unsigned char* vptr = vstk;
+
+		*(CBaseEntity **)vptr = pVictim;
+		vptr += sizeof(CBaseEntity *);
+		*(CTakeDamageInfoHack *&)vptr = info;
+
+		int ret;
+		pCall->Execute(vstk, &ret);
+	}
 
 	return 0;
 }
 
 cell_t Native_DropWeapon(IPluginContext *pContext, const cell_t *params)
 {
-// todo: fix code to not require this >.<
-#if !defined SH_DECL_MANUALEXTERN1
-	pContext->ThrowNativeError("SDKHooks_DropWeapon is not supported on this engine.");
-#else
 	CBaseEntity *pPlayer = gamehelpers->ReferenceToEntity(params[1]);
 	if (!pPlayer)
 		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
@@ -236,7 +266,8 @@ cell_t Native_DropWeapon(IPluginContext *pContext, const cell_t *params)
 	}
 
 	Vector vecVelocity;
-	if ((err = pContext->LocalToPhysAddr(params[8], &addr)) != SP_ERROR_NONE)
+	Vector *pVecVelocity = nullptr;
+	if ((err = pContext->LocalToPhysAddr(params[4], &addr)) != SP_ERROR_NONE)
 	{
 		return pContext->ThrowNativeError("Could not read vecVelocity vector");
 	}
@@ -247,15 +278,40 @@ cell_t Native_DropWeapon(IPluginContext *pContext, const cell_t *params)
 			sp_ctof(addr[0]),
 			sp_ctof(addr[1]),
 			sp_ctof(addr[2]));
+		pVecVelocity = &vecVelocity;
+	}
+
+	if (params[0] < 5 || params[5] != 0)
+	{
+		SH_MCALL(pPlayer, Weapon_Drop)((CBaseCombatWeapon*)pWeapon, &vecTarget, pVecVelocity);
 	}
 	else
 	{
-		SH_MCALL(pPlayer, Weapon_Drop)((CBaseCombatWeapon *)pWeapon, &vecTarget, NULL);
-		return 0;
-	}
+		static ICallWrapper* pCall = nullptr;
+		if (!pCall)
+		{
+			int offset;
+			if (!g_pGameConf->GetOffset("Weapon_Drop", &offset))
+			{
+				return pContext->ThrowNativeError("Could not find Weapon_Drop offset");
+			}
 
-	SH_MCALL(pPlayer, Weapon_Drop)((CBaseCombatWeapon *)pWeapon, &vecTarget, &vecVelocity);
-#endif
+			PassInfo pass[2];
+			pass[0].type = PassType_Basic;
+			pass[0].size = sizeof(CBaseEntity *);
+			pass[0].flags = PASSFLAG_BYVAL;
+			pass[1].type = PassType_Basic;
+			pass[1].size = sizeof(Vector *);
+			pass[1].flags = PASSFLAG_BYVAL;
+			pass[2].type = PassType_Basic;
+			pass[2].size = sizeof(Vector *);
+			pass[2].flags = PASSFLAG_BYVAL;
+
+			pCall = g_pBinTools->CreateVCall(offset, 0, 0, nullptr, pass, 3);
+		}
+
+		pCall->Execute(ArgBuffer<CBaseEntity *, CBaseEntity *, Vector *, Vector *>(pPlayer, pWeapon, &vecTarget, pVecVelocity), nullptr);
+	}
 
 	return 0;
 }

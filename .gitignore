@@ -36,3 +36,7 @@ obj-*/
 *.smx
 *.swp
 *.gdb_history
+objdir
+
+.vs/*
+.vscode/*

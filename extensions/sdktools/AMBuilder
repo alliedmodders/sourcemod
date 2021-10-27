@@ -1,7 +1,7 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-project = SM.HL2Project(builder, 'sdktools.ext')
+project = builder.LibraryProject('sdktools.ext')
 project.sources += [
   'extension.cpp',
   'variant-t.cpp',
@@ -34,21 +34,21 @@ project.sources += [
   '../../public/libudis86/syn.c',
   '../../public/libudis86/udis86.c',
 ]
-project.compiler.defines += ['HAVE_STRING_H'];
 
 for sdk_name in SM.sdks:
   sdk = SM.sdks[sdk_name]
 
-  for arch in SM.archs:
-    if not arch in sdk.platformSpec[builder.target.platform]:
+  for cxx in builder.targets:
+    if not cxx.target.arch in sdk.platformSpec[cxx.target.platform]:
       continue
 
-    binary = SM.HL2Config(project, 'sdktools.ext.' + sdk.ext, sdk, arch)
+    binary = SM.HL2ExtConfig(project, builder, cxx, 'sdktools.ext.' + sdk.ext, sdk)
     binary.compiler.cxxincludes += [
       os.path.join(sdk.path, 'game', 'shared'),
       os.path.join(builder.sourcePath, 'public', 'jit'),
       os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
     ]
+    binary.compiler.defines += ['HAVE_STRING_H'];
 
     if sdk.name != 'episode1':
       binary.compiler.defines += ['HOOKING_ENABLED']

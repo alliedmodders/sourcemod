@@ -1,8 +1,8 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-for arch in SM.archs:
-  binary = SM.ExtLibrary(builder, 'bintools.ext', arch)
+for cxx in builder.targets:
+  binary = SM.ExtLibrary(builder, cxx, 'bintools.ext')
   binary.compiler.defines += ['HOOKING_ENABLED']
   binary.compiler.cxxincludes += [
     os.path.join(SM.mms_root, 'core', 'sourcehook'),
@@ -21,7 +21,7 @@ for arch in SM.archs:
     '../../public/smsdk_ext.cpp'
   ]
   
-  if arch == 'x64':
+  if binary.compiler.target.arch == 'x86_64':
     binary.sources += ['jit_call_x64.cpp']
   else:
     binary.sources += ['jit_call.cpp']

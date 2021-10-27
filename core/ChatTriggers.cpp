@@ -29,6 +29,8 @@
  * Version: $Id$
  */
 
+#include <memory>
+
 #include <ITextParsers.h>
 #include "ChatTriggers.h"
 #include "sm_stringutil.h"
@@ -64,7 +66,7 @@ ChatTriggers::~ChatTriggers()
 
 void ChatTriggers::SetChatTrigger(ChatTriggerType type, const char *value)
 {
-	ke::AutoPtr<char[]> filtered(new char[strlen(value) + 1]);
+	std::unique_ptr<char[]> filtered(new char[strlen(value) + 1]);
 
 	const char *src = value;
 	char *dest = filtered.get();
@@ -135,26 +137,26 @@ void ChatTriggers::OnSourceModGameInitialized()
 	};
 
 	if (ConCommand *say = FindCommand("say")) {
-		hooks_.append(sCoreProviderImpl.AddCommandHook(say, pre_hook));
-		hooks_.append(sCoreProviderImpl.AddPostCommandHook(say, post_hook));
+		hooks_.push_back(sCoreProviderImpl.AddCommandHook(say, pre_hook));
+		hooks_.push_back(sCoreProviderImpl.AddPostCommandHook(say, post_hook));
 	}
 	if (ConCommand *say_team = FindCommand("say_team")) {
-		hooks_.append(sCoreProviderImpl.AddCommandHook(say_team, pre_hook));
-		hooks_.append(sCoreProviderImpl.AddPostCommandHook(say_team, post_hook));
+		hooks_.push_back(sCoreProviderImpl.AddCommandHook(say_team, pre_hook));
+		hooks_.push_back(sCoreProviderImpl.AddPostCommandHook(say_team, post_hook));
 	}
 
 #if SOURCE_ENGINE == SE_EPISODEONE
 	m_bIsINS = (strcmp(g_SourceMod.GetGameFolderName(), "insurgency") == 0);
 	if (m_bIsINS) {
 		if (ConCommand *say2 = FindCommand("say2")) {
-			hooks_.append(sCoreProviderImpl.AddCommandHook(say2, pre_hook));
-			hooks_.append(sCoreProviderImpl.AddPostCommandHook(say2, post_hook));
+			hooks_.push_back(sCoreProviderImpl.AddCommandHook(say2, pre_hook));
+			hooks_.push_back(sCoreProviderImpl.AddPostCommandHook(say2, post_hook));
 		}
 	}
 #elif SOURCE_ENGINE == SE_NUCLEARDAWN
 	if (ConCommand *say_squad = FindCommand("say_squad")) {
-		hooks_.append(sCoreProviderImpl.AddCommandHook(say_squad, pre_hook));
-		hooks_.append(sCoreProviderImpl.AddPostCommandHook(say_squad, post_hook));
+		hooks_.push_back(sCoreProviderImpl.AddCommandHook(say_squad, pre_hook));
+		hooks_.push_back(sCoreProviderImpl.AddPostCommandHook(say_squad, post_hook));
 	}
 #endif
 }
@@ -275,10 +277,10 @@ bool ChatTriggers::OnSayCommand_Pre(int client, const ICommandArgs *command)
 	bool is_silent = false;
 
 	// Prefer the silent trigger in case of clashes.
-	if (strchr(m_PrivTrigger.chars(), m_ArgSBackup[0])) {
+	if (strchr(m_PrivTrigger.c_str(), m_ArgSBackup[0])) {
 		is_trigger = true;
 		is_silent = true;
-	} else if (strchr(m_PubTrigger.chars(), m_ArgSBackup[0])) {
+	} else if (strchr(m_PubTrigger.c_str(), m_ArgSBackup[0])) {
 		is_trigger = true;
 	}
 
@@ -361,7 +363,7 @@ bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args)
 	if (!g_ConCmds.LookForSourceModCommand(cmd_buf))
 	{
 		/* Check if we had an "sm_" prefix */
-		if (strncmp(cmd_buf, "sm_", 3) == 0)
+		if (strncasecmp(cmd_buf, "sm_", 3) == 0)
 		{
 			return false;
 		}
@@ -385,15 +387,7 @@ bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args)
 	/* See if we need to do extra string manipulation */
 	if (prepended)
 	{
-		size_t len;
-
-		/* Check if we need to prepend sm_ */
-		if (prepended)
-		{
-			len = ke::SafeSprintf(m_ToExecute, sizeof(m_ToExecute), "sm_%s", args);
-		} else {
-			len = ke::SafeStrcpy(m_ToExecute, sizeof(m_ToExecute), args);
-		}
+		ke::SafeSprintf(m_ToExecute, sizeof(m_ToExecute), "sm_%s", args);
 	} else {
 		ke::SafeStrcpy(m_ToExecute, sizeof(m_ToExecute), args);
 	}

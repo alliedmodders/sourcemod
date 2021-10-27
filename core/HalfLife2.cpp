@@ -45,8 +45,9 @@
 
 #if SOURCE_ENGINE == SE_CSGO
 #include <cstrike15_usermessages.pb.h>
+#elif SOURCE_ENGINE == SE_BLADE
+#include <berimbau_usermessages.pb.h>
 #endif
-
 
 typedef ICommandLine *(*FakeGetCommandLine)();
 
@@ -59,6 +60,7 @@ ConVar *sv_lan = NULL;
 static void *g_EntList = NULL;
 static void **g_pEntInfoList = NULL;
 static int entInfoOffset = -1;
+static int utlVecOffsetOffset = -1;
 
 static CEntInfo *EntInfoArray()
 {
@@ -143,6 +145,7 @@ void CHalfLife2::OnSourceModAllInitialized_Post()
 	m_CSGOBadList.add("m_nActiveCoinRank");
 	m_CSGOBadList.add("m_nMusicID");
 #endif
+	g_pGameConf->GetOffset("CSendPropExtra_UtlVector::m_Offset", &utlVecOffsetOffset);
 }
 
 ConfigResult CHalfLife2::OnSourceModConfigChanged(const char *key, const char *value,
@@ -180,6 +183,7 @@ void CHalfLife2::InitLogicalEntData()
 	|| SOURCE_ENGINE == SE_CSS     \
 	|| SOURCE_ENGINE == SE_SDK2013 \
 	|| SOURCE_ENGINE == SE_BMS     \
+	|| SOURCE_ENGINE == SE_BLADE   \
 	|| SOURCE_ENGINE == SE_NUCLEARDAWN
 
 	if (g_SMAPI->GetServerFactory(false)("VSERVERTOOLS003", nullptr))
@@ -317,23 +321,41 @@ bool UTIL_FindInSendTable(SendTable *pTable,
 						  sm_sendprop_info_t *info,
 						  unsigned int offset)
 {
-	const char *pname;
 	int props = pTable->GetNumProps();
-	SendProp *prop;
-
-	for (int i=0; i<props; i++)
+	for (int i = 0; i < props; i++)
 	{
-		prop = pTable->GetProp(i);
-		pname = prop->GetName();
+		SendProp *prop = pTable->GetProp(i);
+
+		// Skip InsideArray props (SendPropArray / SendPropArray2),
+		// we'll find them later by their containing array.
+		if (prop->IsInsideArray()) {
+			continue;
+		}
+
+		const char *pname = prop->GetName();
+		SendTable *pInnerTable = prop->GetDataTable();
+
 		if (pname && strcmp(name, pname) == 0)
 		{
+			// get true offset of CUtlVector
+			if (utlVecOffsetOffset != -1 && prop->GetOffset() == 0 && pInnerTable && pInnerTable->GetNumProps())
+			{
+				SendProp *pLengthProxy = pInnerTable->GetProp(0);
+				const char *ipname = pLengthProxy->GetName();
+				if (ipname && strcmp(ipname, "lengthproxy") == 0 && pLengthProxy->GetExtraData())
+				{
+					info->prop = prop;
+					info->actual_offset = offset + *reinterpret_cast<size_t *>(reinterpret_cast<intptr_t>(pLengthProxy->GetExtraData()) + utlVecOffsetOffset);
+					return true;
+				}
+			}
 			info->prop = prop;
 			info->actual_offset = offset + info->prop->GetOffset();
 			return true;
 		}
-		if (prop->GetDataTable())
+		if (pInnerTable)
 		{
-			if (UTIL_FindInSendTable(prop->GetDataTable(), 
+			if (UTIL_FindInSendTable(pInnerTable, 
 				name,
 				info,
 				offset + prop->GetOffset())
@@ -516,7 +538,7 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 			char buffer[253];
 			ke::SafeSprintf(buffer, sizeof(buffer), "%s\1\n", msg);
 
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 			CCSUsrMsg_SayText *pMsg;
 			if ((pMsg = (CCSUsrMsg_SayText *)g_UserMsgs.StartProtobufMessage(m_SayTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
 			{
@@ -543,7 +565,7 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 		}
 	}
 
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	CCSUsrMsg_TextMsg *pMsg;
 	if ((pMsg = (CCSUsrMsg_TextMsg *)g_UserMsgs.StartProtobufMessage(m_MsgTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
 	{
@@ -580,7 +602,7 @@ bool CHalfLife2::HintTextMsg(int client, const char *msg)
 {
 	cell_t players[] = {client};
 
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	CCSUsrMsg_HintText *pMsg;
 	if ((pMsg = (CCSUsrMsg_HintText *)g_UserMsgs.StartProtobufMessage(m_HinTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
 	{
@@ -610,7 +632,7 @@ bool CHalfLife2::HintTextMsg(int client, const char *msg)
 
 bool CHalfLife2::HintTextMsg(cell_t *players, int count, const char *msg)
 {
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	CCSUsrMsg_HintText *pMsg;
 	if ((pMsg = (CCSUsrMsg_HintText *)g_UserMsgs.StartProtobufMessage(m_HinTextMsg, players, count, USERMSG_RELIABLE)) == NULL)
 	{
@@ -645,7 +667,7 @@ bool CHalfLife2::ShowVGUIMenu(int client, const char *name, KeyValues *data, boo
 	int count = 0;
 	cell_t players[] = {client};
 
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	CCSUsrMsg_VGUIMenu *pMsg;
 	if ((pMsg = (CCSUsrMsg_VGUIMenu *)g_UserMsgs.StartProtobufMessage(m_VGUIMenu, players, 1, USERMSG_RELIABLE)) == NULL)
 	{
@@ -670,7 +692,7 @@ bool CHalfLife2::ShowVGUIMenu(int client, const char *name, KeyValues *data, boo
 		SubKey = data->GetFirstSubKey();
 	}
 
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	pMsg->set_name(name);
 	pMsg->set_show(show);
 
@@ -1212,6 +1234,45 @@ bool IsWindowsReservedDeviceName(const char *pMapname)
 }
 #endif 
 
+#if SOURCE_ENGINE >= SE_LEFT4DEAD && defined PLATFORM_WINDOWS
+// This frees memory allocated by the game using the game's CRT on Windows,
+// avoiding a crash due to heap corruption (issue #910).
+template< class T, class I >
+class CUtlMemoryGlobalMalloc : public CUtlMemory< T, I >
+{
+	typedef CUtlMemory< T, I > BaseClass;
+
+public:
+	using BaseClass::BaseClass;
+
+	void Purge()
+	{
+		if (!IsExternallyAllocated())
+		{
+			if (m_pMemory)
+			{
+				UTLMEMORY_TRACK_FREE();
+				g_pMemAlloc->Free((void*)m_pMemory);
+				m_pMemory = 0;
+			}
+			m_nAllocationCount = 0;
+		}
+		BaseClass::Purge();
+	}
+};
+
+void CHalfLife2::FreeUtlVectorUtlString(CUtlVector<CUtlString, CUtlMemoryGlobalMalloc<CUtlString>> &vec)
+{
+	CUtlMemoryGlobalMalloc<unsigned char> *pMemory;
+	FOR_EACH_VEC(vec, i)
+	{
+		pMemory = (CUtlMemoryGlobalMalloc<unsigned char> *) &vec[i].m_Storage.m_Memory;
+		pMemory->Purge();
+		vec[i].m_Storage.SetLength(0);
+	}
+}
+#endif
+
 SMFindMapResult CHalfLife2::FindMap(const char *pMapName, char *pFoundMap, size_t nMapNameMax)
 {
 	/* We need to ensure user input does not contain reserved device names on windows */
@@ -1245,8 +1306,13 @@ SMFindMapResult CHalfLife2::FindMap(const char *pMapName, char *pFoundMap, size_
 
 	static size_t helperCmdLen = strlen(pHelperCmd->GetName());
 
+#ifdef PLATFORM_WINDOWS
+	CUtlVector<CUtlString, CUtlMemoryGlobalMalloc<CUtlString>> results;
+	pHelperCmd->AutoCompleteSuggest(pMapName, *(CUtlVector<CUtlString, CUtlMemory<CUtlString>>*)&results);
+#else
 	CUtlVector<CUtlString> results;
 	pHelperCmd->AutoCompleteSuggest(pMapName, results);
+#endif
 	if (results.Count() == 0)
 		return SMFindMapResult::NotFound;
 
@@ -1258,11 +1324,17 @@ SMFindMapResult CHalfLife2::FindMap(const char *pMapName, char *pFoundMap, size_
 	bool bExactMatch = Q_strcmp(pMapName, &results[0][helperCmdLen + 1]) == 0;
 	if (bExactMatch)
 	{
+#ifdef PLATFORM_WINDOWS
+		FreeUtlVectorUtlString(results);
+#endif
 		return SMFindMapResult::Found;
 	}
 	else
 	{
 		ke::SafeStrcpy(pFoundMap, nMapNameMax, &results[0][helperCmdLen + 1]);
+#ifdef PLATFORM_WINDOWS
+		FreeUtlVectorUtlString(results);
+#endif
 		return SMFindMapResult::FuzzyMatch;
 	}
 
@@ -1316,8 +1388,36 @@ bool CHalfLife2::IsMapValid(const char *map)
 	return FindMap(map) != SMFindMapResult::NotFound;
 }
 
-// TODO: Add ep1 support for this. (No IServerTools available there)
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+#if SOURCE_ENGINE < SE_ORANGEBOX
+class VKeyValuesSS_Helper {};
+static bool VKeyValuesSS(CBaseEntity* pThisPtr, const char *pszKey, const char *pszValue, int offset)
+{
+	void** this_ptr = *reinterpret_cast<void***>(&pThisPtr);
+	void** vtable = *reinterpret_cast<void***>(pThisPtr);
+	void* vfunc = vtable[offset];
+
+	union
+	{
+		bool (VKeyValuesSS_Helper::* mfpnew)(const char *, const char *);
+#ifndef PLATFORM_POSIX
+		void* addr;
+	} u;
+	u.addr = vfunc;
+#else
+		struct
+		{
+			void* addr;
+			intptr_t adjustor;
+		} s;
+} u;
+	u.s.addr = vfunc;
+	u.s.adjustor = 0;
+#endif
+
+	return (bool)(reinterpret_cast<VKeyValuesSS_Helper*>(this_ptr)->*u.mfpnew)(pszKey, pszValue);
+}
+#endif
+
 string_t CHalfLife2::AllocPooledString(const char *pszValue)
 {
 	// This is admittedly a giant hack, but it's a relatively safe method for
@@ -1327,28 +1427,58 @@ string_t CHalfLife2::AllocPooledString(const char *pszValue)
 	// current targetname string_t, set it to our string to insert via SetKeyValue,
 	// read back the new targetname value, restore the old value, and return the new one.
 
+#if SOURCE_ENGINE < SE_ORANGEBOX
+	CBaseEntity* pEntity = nullptr;
+	for (int i = 0; i < gpGlobals->maxEntities; ++i)
+	{
+		pEntity = ReferenceToEntity(i);
+		if (pEntity)
+		{
+			break;
+		}
+	}
+
+	if (!pEntity)
+	{
+		logger->LogError("Failed to locate a valid entity for AllocPooledString.");
+		return NULL_STRING;
+	}
+
+#else
 	CBaseEntity *pEntity = ((IServerUnknown *) servertools->FirstEntity())->GetBaseEntity();
+#endif
 	auto *pDataMap = GetDataMap(pEntity);
 	assert(pDataMap);
 
-	static int offset = -1;
-	if (offset == -1)
+	static int iNameOffset = -1;
+	if (iNameOffset == -1)
 	{
 		sm_datatable_info_t info;
 		bool found = FindDataMapInfo(pDataMap, "m_iName", &info);
 		assert(found);
-		offset = info.actual_offset;
+		iNameOffset = info.actual_offset;
 	}
 
-	string_t *pProp = (string_t *) ((intp) pEntity + offset);
+	string_t* pProp = (string_t*)((intp)pEntity + iNameOffset);
 	string_t backup = *pProp;
+
+#if SOURCE_ENGINE < SE_ORANGEBOX
+	static int iFuncOffset;
+	if (!g_pGameConf->GetOffset("DispatchKeyValue", &iFuncOffset) || !iFuncOffset)
+	{
+		logger->LogError("Failed to locate DispatchKeyValue in core gamedata. AllocPooledString unsupported.");
+		return NULL_STRING;
+	}
+	VKeyValuesSS(pEntity, "targetname", pszValue, iFuncOffset);
+#else	
 	servertools->SetKeyValue(pEntity, "targetname", pszValue);
+#endif
+
 	string_t newString = *pProp;
 	*pProp = backup;
 
 	return newString;
 }
-#endif
 
 bool CHalfLife2::GetServerSteam3Id(char *pszOut, size_t len) const
 {

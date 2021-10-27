@@ -36,7 +36,7 @@
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_HOOK1_void(ICvar, UnregisterConCommand, SH_NOATTRIB, 0, ConCommandBase *);
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 SH_DECL_HOOK2_void(ICvar, RegisterConCommand, SH_NOATTRIB, 0, ConCommandBase *, bool);
 #else
 SH_DECL_HOOK1_void(ICvar, RegisterConCommand, SH_NOATTRIB, 0, ConCommandBase *);
@@ -82,7 +82,7 @@ public:
 #endif
 	}
 
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	void LinkConCommandBase(ConCommandBase *pBase, bool unknown)
 #else
 	void LinkConCommandBase(ConCommandBase *pBase)
@@ -108,20 +108,20 @@ public:
 			listener = listener->next;
 		}
 
-        while (iter != tracked_bases.end())
-        {
-            if ((*iter)->pBase == pBase)
-            {
-                pInfo = (*iter);
-                iter = tracked_bases.erase(iter);
-                pInfo->cls->OnUnlinkConCommandBase(pBase, pBase->GetName());
-                delete pInfo;
-            }
-            else
-            {
-                iter++;
-            }
-        }
+		while (iter != tracked_bases.end())
+		{
+		    if ((*iter)->pBase == pBase)
+		    {
+			pInfo = (*iter);
+			iter = tracked_bases.erase(iter);
+			pInfo->cls->OnUnlinkConCommandBase(pBase, pBase->GetName());
+			delete pInfo;
+		    }
+		    else
+		    {
+			iter++;
+		    }
+		}
 	}
 
 	void AddTarget(ConCommandBase *pBase, IConCommandTracker *cls)

@@ -119,9 +119,9 @@ native int GetStringTableDataLength(int tableidx, int stringidx);
  *
  * @param tableidx      A string table index.
  * @param stringidx     A string index.
- * @param userdata      Buffer to store the user data. This will be set to "" if there is no user data.
+ * @param userdata      Buffer to store the user data. This will be set to "" if there is no user data
  * @param maxlength     Maximum length of string buffer.
- * @return              Number of bytes written to the buffer (UTF-8 safe).
+ * @return              Number of bytes written to the buffer (binary safe, includes the null terminator).
  * @error               Invalid string table index or string index.
  */
 native int GetStringTableData(int tableidx, int stringidx, char[] userdata, int maxlength);
@@ -133,10 +133,9 @@ native int GetStringTableData(int tableidx, int stringidx, char[] userdata, int 
  * @param stringidx     A string index.
  * @param userdata      User data string that will be set.
  * @param length        Length of user data string. This should include the null terminator.
- * @return              Number of bytes written to the buffer (UTF-8 safe).
  * @error               Invalid string table index or string index.
  */
-native int SetStringTableData(int tableidx, int stringidx, const char[] userdata, int length);
+native void SetStringTableData(int tableidx, int stringidx, const char[] userdata, int length);
 
 /**
  * Adds a string to a given string table.
@@ -147,6 +146,7 @@ native int SetStringTableData(int tableidx, int stringidx, const char[] userdata
  * @param length        Length of user data string. This should include the null terminator.
  *                      If set to -1, then user data will be not be altered if the specified string
  *                      already exists in the string table.
+ * @error               Invalid string table index.
  */
 native void AddToStringTable(int tableidx, const char[] str, const char[] userdata="", int length=-1);
 

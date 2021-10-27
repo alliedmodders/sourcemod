@@ -62,7 +62,7 @@ void CNativeOwner::AddNatives(const sp_nativeinfo_t *natives)
 	for (const sp_nativeinfo_t *native = natives; native->func && native->name; native++)
 		g_ShareSys.AddNativeToCache(this, native);
 
-	m_natives.append(natives);
+	m_natives.push_back(natives);
 }
 
 void CNativeOwner::UnbindWeakRef(const WeakNative &ref)
@@ -90,14 +90,14 @@ void CNativeOwner::DropEverything()
 	}
 
 	/* Strip all of our natives from the cache */
-	for (size_t i = 0; i < m_natives.length(); i++) {
+	for (size_t i = 0; i < m_natives.size(); i++) {
 		const sp_nativeinfo_t *natives = m_natives[i];
 		for (const sp_nativeinfo_t *native = natives; native->func && native->name; native++)
 			g_ShareSys.ClearNativeFromCache(this, native->name);
 	}
 	m_natives.clear();
 
-	for (size_t i = 0; i < m_fakes.length(); i++)
+	for (size_t i = 0; i < m_fakes.size(); i++)
 		g_ShareSys.ClearNativeFromCache(this, m_fakes[i]->name());
 	m_fakes.clear();
 }

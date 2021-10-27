@@ -52,7 +52,7 @@ ProfileToolManager::OnSourceModShutdown()
 IProfilingTool *
 ProfileToolManager::FindToolByName(const char *name)
 {
-	for (size_t i = 0; i < tools_.length(); i++) {
+	for (size_t i = 0; i < tools_.size(); i++) {
 		if (strcmp(tools_[i]->Name(), name) == 0)
 			return tools_[i];
 	}
@@ -97,7 +97,7 @@ ProfileToolManager::StartFromConsole(IProfilingTool *tool)
 void
 ProfileToolManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs *args)
 {
-	if (tools_.length() == 0) {
+	if (tools_.size() == 0) {
 		rootmenu->ConsolePrint("No profiling tools are enabled.");
 		return;
 	}
@@ -107,7 +107,7 @@ ProfileToolManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs
 
 		if (strcmp(cmdname, "list") == 0) {
 			rootmenu->ConsolePrint("Profiling tools:");
-			for (size_t i = 0; i < tools_.length(); i++) {
+			for (size_t i = 0; i < tools_.size(); i++) {
 				rootmenu->DrawGenericOption(tools_[i]->Name(), tools_[i]->Description());
 			}
 			return;
@@ -135,7 +135,7 @@ ProfileToolManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs
 			if (strcmp(cmdname, "start") == 0) {
 				if (!default_) {
 					default_ = FindToolByName("vprof");
-					if (!default_ && tools_.length() > 0)
+					if (!default_ && tools_.size() > 0)
 						default_ = tools_[0];
 					if (!default_) {
 						rootmenu->ConsolePrint("Could not find any profiler to use.");

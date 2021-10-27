@@ -33,147 +33,26 @@
 	{
 		"Offsets"
 		{
-			/* Offset into CBaseTempEntity constructor */
-			"s_pTempEntities"
-			{
-				"windows"	"19"
-			}
 			"GetTEName"
 			{
 				"windows"	"4"
-				"linux"		"4"
-				"mac"		"4"
+				"windows64"	"8"
+				"linux64"	"8"
+				"mac64"		"8"
 			}
 			"GetTENext"
 			{
 				"windows"	"8"
-				"linux"		"8"
-				"mac"		"8"
+				"windows64"	"16"
+				"linux64"	"16"
+				"mac64"		"16"
 			}
 			"TE_GetServerClass"
 			{
 				"windows"	"0"
-				"linux"		"0"
-				"mac"		"0"
-			}
-		}
-
-		"Signatures"
-		{
-			"CBaseTempEntity"
-			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\xC1\x8B\x4D\x08\xC7\x00\x2A\x2A\x2A\x2A\x89\x48\x2A\x8B"
-			}
-			"s_pTempEntities"
-			{
-				"library"	"server"
-				"linux"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
-				"mac"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
-			}
-		}
-	}
-	
-	/* CGlobalEntityList */
-	"#default"
-	{
-		"Signatures"
-		{
-			/* Functions in CGlobalEntityList */
-			"FindEntityByClassname"
-			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x53\x56\x8B\xF1\x8B\x4D\x08\x57\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x08\xFF\xD2\x8B\x00\x83\xF8\xFF\x75\x2A\xB8\xFF\x1F\x00\x00\x8D\x04\x40\x8B\x74\xC6\x2A\xEB"
-				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
-				"mac"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
-			}
-		}
-	}
-
-	/* General GameRules */
-	"#default"
-	{
-		"Offsets"
-		{
-			/* Offset into CreateGameRulesObject */
-			"g_pGameRules"
-			{
-				"windows"	"2"
-			}
-		}
-		
-		"Signatures"
-		{
-			/* This signature sometimes has multiple matches, but this
-			 * does not matter as g_pGameRules is involved in all of them.
-			 * The same g_pGameRules offset applies to each match.
-			 *
-			 * Sometimes this block of bytes is at the beginning of the static
-			 * CreateGameRulesObject function and sometimes it is in the middle
-			 * of an entirely different function. This depends on the game.
-			 */
-			"CreateGameRulesObject"
-			{
-				"library"	"server"
-				"windows"	"\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x8B\x50\x2A\x6A\x01\xFF\xD2"
-			}
-			"g_pGameRules"
-			{
-				"library"	"server"
-				"linux"		"@g_pGameRules"
-				"mac"		"@g_pGameRules"
-			}
-		}
-	}
-	
-	/* IServer interface pointer */
-	"#default"
-	{
-		"Keys"
-		{
-			/* Signature for the beginning of IVEngineServer::CreateFakeClient.
-			 *
-			 * The engine binary is not actually scanned in order to look for
-			 * this. SourceHook is used to used to determine the address of the
-			 * function and this signature is used to verify that it contains
-			 * the expected code. A pointer to sv (IServer interface) is used
-			 * here.
-			 */
-			"CreateFakeClient_Windows"	"\x55\x8B\xEC\x8B\x2A\x2A\x50\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x75"
-		}
-		
-		"Offsets"
-		{
-			/* Offset into IVEngineServer::CreateFakeClient */
-			"sv"
-			{
-				"windows"	"8"
-			}
-		}
-		
-		"Signatures"
-		{
-			/* CBaseServer object for IServer interface */
-			"sv"
-			{
-				"library"	"engine"
-				"linux"		"@sv"
-				"mac"		"@sv"
-			}
-		}
-	}
-	
-	/* EntityFactoryDictionary function */
-	"#default"
-	{
-		"Signatures"
-		{
-			"EntityFactory"
-			{
-				"library"	"server"
-				"windows"	"\xB8\x01\x00\x00\x00\x84\x2A\x2A\x2A\x2A\x2A\x75\x1D\x09\x2A\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8\x2A\x2A\x2A\x2A\xC3"
-				"linux"		"@_Z23EntityFactoryDictionaryv"
-				"mac"		"@_Z23EntityFactoryDictionaryv"
+				"windows64"	"0"
+				"linux64"	"0"
+				"mac64"		"0"
 			}
 		}
 	}
@@ -186,9 +65,10 @@
 			"FireOutput"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x81\x2A\x2A\x2A\x2A\x2A\x53\x56\x8B\x71\x2A\x57"
-				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
-				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+				"windows"	"\x55\x8B\xEC\x81\xEC\x44\x01\x00\x00\x8B\xC1"
+				"windows64"	"\x4C\x89\x4C\x24\x20\x4C\x89\x44\x24\x18\x48\x89\x54\x24\x10\x48\x89\x4C\x24\x08\x48\x81\xEC\x78\x04\x00\x00"
+				"linux64"	"\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x55\x41\x54\x53\x48\x81\xEC\x88\x01\x00\x00\xF3\x0F\x11\x85\x94\xFE\xFF\xFF"
+				"mac64"		"\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x55\x41\x54\x53\x48\x81\xEC\x78\x01\x00\x00\xF3\x0F\x11\x85\x9C\xFE\xFF\xFF"
 			}
 		}
 	}
@@ -206,9 +86,10 @@
 			 */
 			"SetUserCvar"
 			{
-				"windows"	"17"
-				"linux"		"64"
-				"mac"		"64"
+				"windows"	"33"
+				"windows64"	"33"
+				"linux64"	"70"
+				"mac64"		"70"
 			}
 			/**
 			 * CBaseClient::SetName(char  const*);
@@ -217,9 +98,10 @@
 			 */
 			"SetClientName"
 			{
-				"windows"	"16"
-				"linux"		"63"
-				"mac"		"63"
+				"windows"	"32"
+				"windows64"	"32"
+				"linux64"	"69"
+				"mac64"		"69"
 			}
 			/**
 			 * Offset into CBaseClient - Used by CBaseServer::UpdateUserSettings to determine when changes have been made.
@@ -231,9 +113,29 @@
 			 */
 			"InfoChanged"
 			{
-				"windows"	"168"
-				"linux"		"168"
-				"mac"		"168"
+				"windows"	"488"
+				"windows64"	"632"
+				"linux64"	"600"
+				"mac64"		"616"
+			}
+		}
+	}
+
+	"#default"
+	{
+		"Signatures"
+		{
+			/**
+			 *	CNetworkStringTableContainer::WriteBaselines
+			 *	"Index error writing string table baseline %s\n"
+			 */
+			"WriteBaselines"
+			{
+				"library"	"engine"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x54\x53\x56\x68\x04\x01\x00\x00"
+				"windows64"	"\x48\x8B\xC4\x57\x48\x81\xEC\xB0\x00\x00\x00\x48\x89\x58\x08"
+				"linux64"	"\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x55\x41\x54\x53\x48\x81\xEC\x88\x00\x00\x00\x89\x8D\x64\xFF\xFF\xFF"
+				"mac64" 	"\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x55\x41\x54\x53\x48\x81\xEC\x88\x00\x00\x00\x89\x4D\xC4"
 			}
 		}
 	}
@@ -244,87 +146,101 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"429"
-				"linux"		"430"
-				"mac"		"430"
+				"windows"	"444"
+				"windows64"	"444"
+				"linux64"	"445"
+				"mac64"		"445"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"289"
-				"linux"		"290"
-				"mac"		"290"
+				"windows"	"291"
+				"windows64"	"291"
+				"linux64"	"292"
+				"mac64"		"292"
 			}
 			"Weapon_GetSlot"
 			{
 				"windows"	"287"
-				"linux"		"288"
-				"mac"		"288"
+				"windows64"	"287"
+				"linux64"	"288"
+				"mac64"		"288"
 			}
 			"Ignite"
 			{
-				"windows"	"222"
-				"linux"		"223"
-				"mac"		"223"
+				"windows"	"223"
+				"windows64"	"223"
+				"linux64"	"224"
+				"mac64"		"224"
 			}
 			"Extinguish"
 			{
-				"windows"	"225"
-				"linux"		"226"
-				"mac"		"226"
+				"windows"	"226"
+				"windows64"	"226"
+				"linux64"	"227"
+				"mac64"		"227"
 			}
 			"Teleport"
 			{
-				"windows"	"113"
-				"linux"		"114"
-				"mac"		"114"
+				"windows"	"112"
+				"windows64"	"112"
+				"linux64"	"113"
+				"mac64"		"113"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"475"
-				"linux"		"475"
-				"mac"		"475"
+				"windows"	"497"
+				"windows64"	"497"
+				"linux64"	"497"
+				"mac64"		"497"
 			}
 			"GetVelocity"
 			{
-				"windows"	"138"
-				"linux"		"139"
-				"mac"		"139"
+				"windows"	"137"
+				"windows64"	"137"
+				"linux64"	"138"
+				"mac64"		"138"
 			}
 			"EyeAngles"
 			{
-				"windows"	"129"
-				"linux"		"130"
-				"mac"		"130"
+				"windows"	"128"
+				"windows64"	"128"
+				"linux64"	"129"
+				"mac64"		"129"
 			}
 			"AcceptInput"
 			{
-				"windows"	"41"
-				"linux"		"42"
-				"mac"		"42"
+				"windows"	"39"
+				"windows64"	"39"
+				"linux64"	"40"
+				"mac64"		"40"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"26"
-				"linux"		"27"
-				"mac"		"27"
+				"windows"	"24"
+				"windows64"	"24"
+				"linux64"	"25"
+				"mac64"		"25"
 			}
 			"WeaponEquip"
 			{
 				"windows"	"280"
-				"linux"		"281"
-				"mac"		"281"
+				"windows64"	"280"
+				"linux64"	"281"
+				"mac64"		"281"
 			}
 			"Activate"
 			{
-				"windows"	"37"
-				"linux"		"38"
-				"mac"		"38"
+				"windows"	"35"
+				"windows64"	"35"
+				"linux64"	"36"
+				"mac64"		"36"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"449"
-				"linux"		"450"
-				"mac"		"450"
+				"windows"	"464"
+				"windows64"	"464"
+				"linux64"	"465"
+				"mac64"		"465"
 			}
 		}
 	}

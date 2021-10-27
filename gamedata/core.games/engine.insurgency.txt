@@ -20,11 +20,13 @@
 			"gEntList"
 			{
 				"windows"	"11"
+				"windows64"	"13"
 			}
 
 			"EntInfo"
 			{
-				"windows"	"4"	
+				"windows"	"4"
+				"windows64"	"8"
 				"linux"		"4"
 				"mac"		"4"
 			}
@@ -36,6 +38,7 @@
 			{
 				"library"	"server"
 				"windows"	"\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8"
+				"windows64"	"\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x48\x8D\x0D\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8"
 			}
 			"gEntList"
 			{

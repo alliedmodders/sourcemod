@@ -91,7 +91,7 @@ void GameHooks::OnVSPReceived()
 
 void GameHooks::Shutdown()
 {
-	for (size_t i = 0; i < hooks_.length(); i++)
+	for (size_t i = 0; i < hooks_.size(); i++)
 		SH_REMOVE_HOOK_ID(hooks_[i]);
 	hooks_.clear();
 
@@ -115,7 +115,7 @@ void GameHooks::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *pPla
                                          const char *cvarName, const char *cvarValue){
 	int client = IndexOfEdict(pPlayer);
 
-# if SOURCE_ENGINE == SE_CSGO
+# if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	if (g_Players.HandleConVarQuery(cookie, client, result, cvarName, cvarValue))
 		return;
 # endif

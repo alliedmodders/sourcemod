@@ -52,6 +52,14 @@ methodmap StringMap < Handle
 	// The StringMap must be freed via delete or CloseHandle().
 	public native StringMap();
 
+	// Clones a string map, returning a new handle with the same size and data.
+	// This should NOT be confused with CloneHandle. This is a completely new
+	// handle with the same data but no relation to the original. It should be
+	// closed when no longer needed with delete or CloseHandle().
+	//
+	// @return              New handle to the cloned string map
+	public native StringMap Clone();
+
 	// Sets a value in a hash map, either inserting a new entry or replacing an old one.
 	//
 	// @param key        Key string.
@@ -87,7 +95,6 @@ methodmap StringMap < Handle
 
 	// Retrieves an array in a Map.
 	//
-	// @param map        Map Handle.
 	// @param key        Key string.
 	// @param array      Buffer to store array.
 	// @param max_size   Maximum size of array buffer.
@@ -105,6 +112,12 @@ methodmap StringMap < Handle
 	// @return           True on success.  False if the key is not set, or the key is set 
 	//                   as a value or array (not a string).
 	public native bool GetString(const char[] key, char[] value, int max_size, int &size=0);
+
+	// Checks whether a key is present in a Map.
+	//
+	// @param key        Key string.
+	// @return           True if the key has been found, else false.
+	public native bool ContainsKey(const char[] key);
 
 	// Removes a key entry from a Map.
 	//

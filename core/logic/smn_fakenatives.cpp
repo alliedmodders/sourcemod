@@ -414,7 +414,7 @@ static cell_t FormatNativeString(IPluginContext *pContext, const cell_t *params)
 		DetectExceptions eh(pContext);
 		written = atcprintf(output_buffer, maxlen, format_buffer, s_curcaller, s_curparams, &var_param);
 		if (eh.HasException())
-			return 0;
+			return pContext->GetLastNativeError();
 	}
 
 	cell_t *addr;

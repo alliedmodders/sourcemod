@@ -67,12 +67,17 @@ int g_GlowSprite        = -1;
 int g_ExplosionSprite   = -1;
 
 // Basic color arrays for temp entities
-int redColor[4]		= {255, 75, 75, 255};
 int orangeColor[4]	= {255, 128, 0, 255};
-int greenColor[4]	= {75, 255, 75, 255};
 int blueColor[4]	= {75, 75, 255, 255};
 int whiteColor[4]	= {255, 255, 255, 255};
 int greyColor[4]	= {128, 128, 128, 255};
+
+int g_ExternalBeaconColor[4];
+int g_Team1BeaconColor[4];
+int g_Team2BeaconColor[4];
+int g_Team3BeaconColor[4];
+int g_Team4BeaconColor[4];
+int g_TeamUnknownBeaconColor[4];
 
 // UserMessageId for Fade.
 UserMsg g_FadeUserMsgId;
@@ -239,6 +244,36 @@ public void OnMapStart()
 		g_HaloSprite = PrecacheModel(buffer);
 	}
 	
+	if (gameConfig.GetKeyValue("ExternalBeaconColor", buffer, sizeof(buffer)) && buffer[0])
+	{
+		g_ExternalBeaconColor = ParseColor(buffer);
+	}
+	
+	if (gameConfig.GetKeyValue("Team1BeaconColor", buffer, sizeof(buffer)) && buffer[0])
+	{
+		g_Team1BeaconColor = ParseColor(buffer);
+	}
+	
+	if (gameConfig.GetKeyValue("Team2BeaconColor", buffer, sizeof(buffer)) && buffer[0])
+	{
+		g_Team2BeaconColor = ParseColor(buffer);
+	}
+	
+	if (gameConfig.GetKeyValue("Team3BeaconColor", buffer, sizeof(buffer)) && buffer[0])
+	{
+		g_Team3BeaconColor = ParseColor(buffer);
+	}
+	
+	if (gameConfig.GetKeyValue("Team4BeaconColor", buffer, sizeof(buffer)) && buffer[0])
+	{
+		g_Team4BeaconColor = ParseColor(buffer);
+	}
+	
+	if (gameConfig.GetKeyValue("TeamUnknownBeaconColor", buffer, sizeof(buffer)) && buffer[0])
+	{
+		g_TeamUnknownBeaconColor = ParseColor(buffer);
+	}
+	
 	delete gameConfig;
 }
 
@@ -258,6 +293,8 @@ public Action Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 	KillAllFireBombs();
 	KillAllFreezes();
 	KillAllDrugs();
+
+	return Plugin_Continue;
 }
 
 public void OnAdminMenuReady(Handle aTopMenu)
@@ -296,4 +333,18 @@ void AddTranslatedMenuItem(Menu menu, const char[] opt, const char[] phrase, int
 	char buffer[128];
 	Format(buffer, sizeof(buffer), "%T", phrase, client);
 	menu.AddItem(opt, buffer);
+}
+
+int[] ParseColor(const char[] buffer)
+{
+	char sColor[16][4];
+	ExplodeString(buffer, ",", sColor, sizeof(sColor), sizeof(sColor[]));
+	
+	int iColor[4];
+	iColor[0] = StringToInt(sColor[0]);
+	iColor[1] = StringToInt(sColor[1]);
+	iColor[2] = StringToInt(sColor[2]);
+	iColor[3] = StringToInt(sColor[3]);
+
+	return iColor;
 }

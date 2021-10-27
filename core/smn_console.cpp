@@ -51,7 +51,7 @@
 #include <bridge/include/ILogger.h>
 #include <ITranslator.h>
 
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 #include <netmessages.pb.h>
 #endif
 
@@ -182,11 +182,17 @@ private:
 	{
 		static inline bool matches(const char *name, ConCommandBase *base)
 		{
-			return strcmp(name, base->GetName()) == 0;
+			const char *conCommandChars = base->GetName();
+			
+			std::string conCommandName = ke::Lowercase(conCommandChars);
+			std::string input = ke::Lowercase(name);
+			
+			return conCommandName == input;
 		}
 		static inline uint32_t hash(const detail::CharsAndLength &key)
 		{
-			return key.hash();
+			std::string lower = ke::Lowercase(key.c_str());
+			return detail::CharsAndLength(lower.c_str()).hash();
 		}
 	};
 	NameHashSet<ConCommandBase *, ConCommandPolicy> m_CmdFlags;
@@ -547,6 +553,21 @@ static cell_t sm_GetConVarFlags(IPluginContext *pContext, const cell_t *params)
 	return pConVar->m_nFlags;
 }
 
+static cell_t sm_GetConVarPlugin(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError err;
+	IPlugin *pPlugin;
+
+	if ((err=g_ConVarManager.ReadConVarHandle(hndl, nullptr, &pPlugin))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
+	}
+
+	return pPlugin ? pPlugin->GetMyHandle() : BAD_HANDLE;
+}
+
 static cell_t sm_SetConVarFlags(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
@@ -640,6 +661,23 @@ static cell_t sm_GetConVarName(IPluginContext *pContext, const cell_t *params)
 	}
 
 	pContext->StringToLocalUTF8(params[2], params[3], pConVar->GetName(), NULL);
+
+	return 1;
+}
+
+static cell_t sm_GetConVarDescription(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError err;
+	ConVar *pConVar;
+
+	if ((err=g_ConVarManager.ReadConVarHandle(hndl, &pConVar))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
+	}
+
+	pContext->StringToLocalUTF8(params[2], params[3], pConVar->GetHelpText(), NULL);
 
 	return 1;
 }
@@ -1171,7 +1209,7 @@ static cell_t SendConVarValue(IPluginContext *pContext, const cell_t *params)
 	char data[256];
 	bf_write buffer(data, sizeof(data));
 
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	CNETMsg_SetConVar msg;
 	CMsg_CVars_CVar *cvar = msg.mutable_convars()->add_cvars();
 
@@ -1494,6 +1532,7 @@ REGISTER_NATIVES(consoleNatives)
 	{"ConVar.IntValue.set",		sm_SetConVarNum},
 	{"ConVar.Flags.get",		sm_GetConVarFlags},
 	{"ConVar.Flags.set",		sm_SetConVarFlags},
+	{"ConVar.Plugin.get",		sm_GetConVarPlugin},
 	{"ConVar.SetBool",			sm_SetConVarNum},
 	{"ConVar.SetInt",			sm_SetConVarNum},
 	{"ConVar.SetFloat",			sm_SetConVarFloat},
@@ -1504,6 +1543,7 @@ REGISTER_NATIVES(consoleNatives)
 	{"ConVar.GetBounds",		sm_GetConVarBounds},
 	{"ConVar.SetBounds",		sm_SetConVarBounds},
 	{"ConVar.GetName",			sm_GetConVarName},
+	{"ConVar.GetDescription",	sm_GetConVarDescription},
 	{"ConVar.ReplicateToClient",	ConVar_ReplicateToClient},
 	{"ConVar.AddChangeHook",	sm_HookConVarChange},
 	{"ConVar.RemoveChangeHook",	sm_UnhookConVarChange},

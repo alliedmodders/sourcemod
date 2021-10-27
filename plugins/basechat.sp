@@ -277,18 +277,17 @@ public Action Command_SmPsay(int client, int args)
 		return Plugin_Handled;	
 	}	
 	
-	char text[192], arg[64], message[192];
+	char text[192], arg[64];
 	GetCmdArgString(text, sizeof(text));
 
 	int len = BreakString(text, arg, sizeof(arg));
-	BreakString(text[len], message, sizeof(message));
 	
 	int target = FindTarget(client, arg, true, false);
 		
 	if (target == -1)
 		return Plugin_Handled;	
 	
-	SendPrivateChat(client, target, message);
+	SendPrivateChat(client, target, text[len]);
 	
 	return Plugin_Handled;	
 }
@@ -436,4 +435,5 @@ void SendPanelToAll(int from, char[] message)
 public int Handler_DoNothing(Menu menu, MenuAction action, int param1, int param2)
 {
 	/* Do nothing */
+	return 0;
 }

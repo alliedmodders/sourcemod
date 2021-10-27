@@ -36,6 +36,7 @@ void DisplayVoteBanMenu(int client, int target)
 	g_voteTarget = GetClientUserId(target);
 
 	GetClientName(target, g_voteInfo[VOTE_NAME], sizeof(g_voteInfo[]));
+	GetClientAuthId(target, AuthId_Steam2, g_voteInfo[VOTE_AUTHID], sizeof(g_voteInfo[]));
 	GetClientIP(target, g_voteInfo[VOTE_IP], sizeof(g_voteInfo[]));
 
 	LogAction(client, target, "\"%L\" initiated a ban vote against \"%L\"", client, target);
@@ -122,6 +123,8 @@ public int MenuHandler_Ban(Menu menu, MenuAction action, int param1, int param2)
 			DisplayVoteBanMenu(param1, target);
 		}
 	}
+
+	return 0;
 }
 
 public Action Command_Voteban(int client, int args)

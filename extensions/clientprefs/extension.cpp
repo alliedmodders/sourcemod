@@ -287,6 +287,74 @@ void ClientPrefs::DatabaseConnect()
 			goto fatal_fail;
 		}
 	}
+	else if (strcmp(identifier, "pgsql") == 0)
+	{
+		g_DriverType = Driver_PgSQL;
+		// PostgreSQL supports 'IF NOT EXISTS' as of 9.1
+		if (!Database->DoSimpleQuery(
+				"CREATE TABLE IF NOT EXISTS sm_cookies \
+				( \
+					id serial, \
+					name varchar(30) NOT NULL UNIQUE, \
+					description varchar(255), \
+					access INTEGER, \
+					PRIMARY KEY (id) \
+				)"))
+		{
+			g_pSM->LogMessage(myself, "Failed to CreateTable sm_cookies: %s", Database->GetError());
+			goto fatal_fail;
+		}
+
+		if (!Database->DoSimpleQuery(
+				"CREATE TABLE IF NOT EXISTS sm_cookie_cache \
+				( \
+					player varchar(65) NOT NULL, \
+					cookie_id int NOT NULL, \
+					value varchar(100), \
+					timestamp int NOT NULL, \
+					PRIMARY KEY (player, cookie_id) \
+				)"))
+		{
+			g_pSM->LogMessage(myself, "Failed to CreateTable sm_cookie_cache: %s", Database->GetError());
+			goto fatal_fail;
+		}
+
+		if (!Database->DoSimpleQuery(
+				"CREATE TABLE IF NOT EXISTS sm_cookie_cache \
+				( \
+					player varchar(65) NOT NULL, \
+					cookie_id int NOT NULL, \
+					value varchar(100), \
+					timestamp int NOT NULL, \
+					PRIMARY KEY (player, cookie_id) \
+				)"))
+		{
+			g_pSM->LogMessage(myself, "Failed to CreateTable sm_cookie_cache: %s", Database->GetError());
+			goto fatal_fail;
+		}
+
+		if (!Database->DoSimpleQuery(
+				"CREATE OR REPLACE FUNCTION add_or_update_cookie(in_player VARCHAR(65), in_cookie INT, in_value VARCHAR(100), in_time INT) RETURNS VOID AS \
+					$$ \
+					BEGIN \
+					  LOOP \
+						UPDATE sm_cookie_cache SET value = in_value, timestamp = in_time WHERE player = in_player AND cookie_id = in_cookie; \
+						IF found THEN \
+						  RETURN; \
+						END IF; \
+						BEGIN \
+						  INSERT INTO sm_cookie_cache (player, cookie_id, value, timestamp) VALUES (in_player, in_cookie, in_value, in_time); \
+						  RETURN; \
+						EXCEPTION WHEN unique_violation THEN \
+						END; \
+					  END LOOP; \
+					END; \
+					$$ LANGUAGE plpgsql;"))
+		{
+			g_pSM->LogMessage(myself, "Failed to create function add_or_update_cookie: %s", Database->GetError());
+			goto fatal_fail;
+		}
+	}
 	else
 	{
 		g_pSM->LogError(myself, "Unsupported driver \"%s\"", identifier);
@@ -297,7 +365,7 @@ void ClientPrefs::DatabaseConnect()
 
 	// Need a new scope because of the goto above.
 	{
-		AutoLock lock(&queryLock);
+		std::lock_guard<std::mutex> lock(queryLock);
 		this->ProcessQueryCache();	
 	}
 	return;
@@ -310,10 +378,10 @@ fatal_fail:
 bool ClientPrefs::AddQueryToQueue(TQueryOp *query)
 {
 	{
-		AutoLock lock(&queryLock);
+		std::lock_guard<std::mutex> lock(queryLock);
 		if (!Database)
 		{
-			cachedQueries.append(query);
+			cachedQueries.push_back(query);
 			return false;
 		}
 		
@@ -328,12 +396,10 @@ bool ClientPrefs::AddQueryToQueue(TQueryOp *query)
 
 void ClientPrefs::ProcessQueryCache()
 {
-	queryLock.AssertCurrentThreadOwns();
-
 	if (!Database)
 		return;
 
-	for (size_t iter = 0; iter < cachedQueries.length(); ++iter)
+	for (size_t iter = 0; iter < cachedQueries.size(); ++iter)
 	{
 		TQueryOp *op = cachedQueries[iter];
 		op->SetDatabase(Database);
@@ -373,14 +439,16 @@ void ClientPrefs::CatchLateLoadClients()
 
 void ClientPrefs::ClearQueryCache(int serial)
 {
-	AutoLock lock(&queryLock);
-	for (size_t iter = 0; iter < cachedQueries.length(); ++iter)
+	std::lock_guard<std::mutex> lock(queryLock);
+
+	for (size_t iter = 0; iter < cachedQueries.size(); ++iter)
 	{
 		TQueryOp *op = cachedQueries[iter];
 		if (op && op->PullQueryType() == Query_SelectData && op->PullQuerySerial() == serial)
  		{
 			op->Destroy();
-			cachedQueries.remove(iter--);
+			cachedQueries.erase(cachedQueries.begin() + iter);
+			iter--;
 		}
  	}
 }

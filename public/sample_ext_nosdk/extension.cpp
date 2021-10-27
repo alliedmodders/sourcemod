@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod
+ * SourceMod Sample Extension
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
@@ -29,41 +29,13 @@
  * Version: $Id$
  */
 
-#ifndef _INCLUDE_SOURCEMOD_THREADWORKER_H
-#define _INCLUDE_SOURCEMOD_THREADWORKER_H
+#include "extension.h"
 
-#include "BaseWorker.h"
+/**
+ * @file extension.cpp
+ * @brief Implement extension code here.
+ */
 
-#define DEFAULT_THINK_TIME_MS	20
+Sample g_Sample;		/**< Global singleton for extension's main interface */
 
-class ThreadWorker : public BaseWorker, public IThread
-{
-public:
-	ThreadWorker(IThreadWorkerCallbacks *hooks);
-	ThreadWorker(IThreadWorkerCallbacks *hooks, IThreader *pThreader, unsigned int thinktime=DEFAULT_THINK_TIME_MS);
-	virtual ~ThreadWorker();
-public:	//IThread
-	virtual void OnTerminate(IThreadHandle *pHandle, bool cancel);
-	virtual void RunThread(IThreadHandle *pHandle);
-public:	//IWorker
-	//Controls the worker
-	virtual bool Pause();
-	virtual bool Unpause();
-	virtual bool Start();
-	virtual bool Stop(bool flush_cancel);
-	//returns status and number of threads in queue
-	virtual WorkerState GetStatus(unsigned int *numThreads);
-	//virtual void SetMaxThreadsPerFrame(unsigned int threads);
-	virtual void SetThinkTimePerFrame(unsigned int thinktime);
-public:	//BaseWorker
-	virtual void AddThreadToQueue(SWThreadHandle *pHandle);
-	virtual SWThreadHandle *PopThreadFromQueue();
-protected:
-	IThreader *m_Threader;
-	IThreadHandle *me;
-	unsigned int m_think_time;
-	bool m_FlushType;
-	ke::ConditionVariable monitor_;
-};
-
-#endif //_INCLUDE_SOURCEMOD_THREADWORKER_H
+SMEXT_LINK(&g_Sample);

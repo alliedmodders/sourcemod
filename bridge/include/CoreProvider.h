@@ -67,7 +67,7 @@ struct DatabaseInfo;
 class IPlayerInfoBridge;
 class ICommandArgs;
 
-typedef ke::Lambda<bool(int client, const ICommandArgs*)> CommandFunc;
+typedef ke::Function<bool(int client, const ICommandArgs*)> CommandFunc;
 
 class CoreProvider
 {

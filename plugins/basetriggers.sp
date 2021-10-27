@@ -60,9 +60,9 @@ ConVar g_Cvar_WinLimit;
 ConVar g_Cvar_FragLimit;
 ConVar g_Cvar_MaxRounds;
 
-#define TIMELEFT_ALL_ALWAYS		0		/* Print to all players */
-#define TIMELEFT_ALL_MAYBE		1		/* Print to all players if sm_trigger_show allows */
-#define TIMELEFT_ONE			2		/* Print to a single player */
+#define PRINT_TO_ALL_ALWAYS		0		/* Print to all players */
+#define PRINT_TO_ALL_MAYBE		1		/* Print to all players if sm_trigger_show allows */
+#define PRINT_TO_ONE			2		/* Print to a single player */
 
 bool mapchooser;
 
@@ -188,12 +188,14 @@ public void ConVarChange_TimeleftInterval(ConVar convar, const char[] oldValue, 
 
 public Action Timer_DisplayTimeleft(Handle timer)
 {
-	ShowTimeLeft(0, TIMELEFT_ALL_ALWAYS);	
+	ShowTimeLeft(0, PRINT_TO_ALL_ALWAYS);	
+
+	return Plugin_Continue;
 }
 
 public Action Command_Timeleft(int client, int args)
 {
-	ShowTimeLeft(client, TIMELEFT_ONE);
+	ShowTimeLeft(client, PRINT_TO_ONE);
 	
 	return Plugin_Handled;
 }
@@ -238,16 +240,7 @@ public Action Command_Motd(int client, int args)
 
 public Action Command_FriendlyFire(int client, int args)
 {
-	if (client == 0)
-	{
-		ReplyToCommand(client, "[SM] %t", "Command is in-game only");
-		return Plugin_Handled;
-	}
-
-	if (!IsClientInGame(client))
-		return Plugin_Handled;
-	
-	ShowFriendlyFire(client);
+	ShowFriendlyFire(client, PRINT_TO_ONE);
 
 	return Plugin_Handled;
 }
@@ -259,7 +252,7 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 	}
 	else if (strcmp(sArgs, "timeleft", false) == 0)
 	{
-		ShowTimeLeft(client, TIMELEFT_ALL_MAYBE);
+		ShowTimeLeft(client, PRINT_TO_ALL_MAYBE);
 	}
 	else if (strcmp(sArgs, "thetime", false) == 0)
 	{
@@ -277,13 +270,13 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 	}
 	else if (strcmp(sArgs, "ff", false) == 0)
 	{
-		ShowFriendlyFire(client);
+		ShowFriendlyFire(client, PRINT_TO_ALL_MAYBE);
 	}
 	else if (strcmp(sArgs, "currentmap", false) == 0)
 	{
-		char map[64];
+		char map[PLATFORM_MAX_PATH];
 		GetCurrentMap(map, sizeof(map));
-		
+		GetMapDisplayName(map, map, sizeof(map));
 		if (g_Cvar_TriggerShow.IntValue)
 		{
 			PrintToChatAll("[SM] %t", "Current Map", map);
@@ -336,8 +329,8 @@ void ShowTimeLeft(int client, int who)
 	
 	char finalOutput[1024];
 	
-	if (who == TIMELEFT_ALL_ALWAYS
-		|| (who == TIMELEFT_ALL_MAYBE && g_Cvar_TriggerShow.IntValue))
+	if (who == PRINT_TO_ALL_ALWAYS
+		|| (who == PRINT_TO_ALL_MAYBE && g_Cvar_TriggerShow.IntValue))
 	{
 		client = 0;	
 	}
@@ -491,8 +484,8 @@ void ShowTimeLeft(int client, int who)
 		FormatEx(finalOutput, sizeof(finalOutput), "%T", "NoTimelimit", client);
 	}
 
-	if (who == TIMELEFT_ALL_ALWAYS
-		|| (who == TIMELEFT_ALL_MAYBE && g_Cvar_TriggerShow.IntValue))
+	if (who == PRINT_TO_ALL_ALWAYS
+		|| (who == PRINT_TO_ALL_MAYBE && g_Cvar_TriggerShow.IntValue))
 	{
 		PrintToChatAll("[SM] %s", finalOutput);
 	}
@@ -507,7 +500,7 @@ void ShowTimeLeft(int client, int who)
 	}
 }
 
-void ShowFriendlyFire(int client)
+void ShowFriendlyFire(int client, int who)
 {
 	if (g_Cvar_FriendlyFire)
 	{
@@ -520,14 +513,21 @@ void ShowFriendlyFire(int client)
 		{
 			strcopy(phrase, sizeof(phrase), "Friendly Fire Off");
 		}
-	
-		if (g_Cvar_TriggerShow.IntValue)
+		
+		if (who == PRINT_TO_ALL_ALWAYS
+			|| (who == PRINT_TO_ALL_MAYBE && g_Cvar_TriggerShow.IntValue))
 		{
+			client = 0;
 			PrintToChatAll("[SM] %t", phrase);
 		}
-		else
+		else if (client != 0 && IsClientInGame(client))
 		{
-			PrintToChat(client,"[SM] %t", phrase);
+			PrintToChat(client, "[SM] %t", phrase);
+		}
+
+		if (client == 0)
+		{
+			PrintToServer("[SM] %T", phrase, client);
 		}
 	}
 }

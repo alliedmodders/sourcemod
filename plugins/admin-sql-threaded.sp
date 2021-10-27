@@ -466,8 +466,10 @@ void FetchUser(Database db, int client)
 {
 	char name[MAX_NAME_LENGTH];
 	char safe_name[(MAX_NAME_LENGTH * 2) - 1];
-	char steamid[32];
-	char steamidalt[32];
+	char steamid2[32];
+	char steamid2alt[32];
+	char steamid3[32];
+	char steamid64[32];
 	char ipaddr[24];
 	
 	/**
@@ -476,12 +478,30 @@ void FetchUser(Database db, int client)
 	GetClientName(client, name, sizeof(name));
 	GetClientIP(client, ipaddr, sizeof(ipaddr));
 	
-	steamid[0] = '\0';
-	if (GetClientAuthId(client, AuthId_Steam2, steamid, sizeof(steamid)))
+	steamid2[0] = '\0';
+	if (GetClientAuthId(client, AuthId_Steam2, steamid2, sizeof(steamid2)))
 	{
-		if (StrEqual(steamid, "STEAM_ID_LAN"))
+		if (StrEqual(steamid2, "STEAM_ID_LAN"))
 		{
-			steamid[0] = '\0';
+			steamid2[0] = '\0';
+		}
+	}
+
+	steamid3[0] = '\0';
+	if (GetClientAuthId(client, AuthId_Steam3, steamid3, sizeof(steamid3)))
+	{
+		if (StrEqual(steamid3, "STEAM_ID_LAN"))
+		{
+			steamid3[0] = '\0';
+		}
+	}
+
+	steamid64[0] = '\0';
+	if (GetClientAuthId(client, AuthId_SteamID64, steamid64, sizeof(steamid64)))
+	{
+		if (StrEqual(steamid64, "0"))
+		{
+			steamid64[0] = '\0';
 		}
 	}
 	
@@ -497,12 +517,14 @@ void FetchUser(Database db, int client)
 	len += Format(query[len], sizeof(query)-len, " FROM sm_admins a LEFT JOIN sm_admins_groups ag ON a.id = ag.admin_id WHERE ");
 	len += Format(query[len], sizeof(query)-len, " (a.authtype = 'ip' AND a.identity = '%s')", ipaddr);
 	len += Format(query[len], sizeof(query)-len, " OR (a.authtype = 'name' AND a.identity = '%s')", safe_name);
-	if (steamid[0] != '\0')
+	if (steamid2[0] != '\0' && steamid3[0] != '\0' && steamid64[0] != '\0')
 	{
-		strcopy(steamidalt, sizeof(steamidalt), steamid);
-		steamidalt[6] = (steamid[6] == '0') ? '1' : '0';
+		strcopy(steamid2alt, sizeof(steamid2alt), steamid2);
+		steamid2alt[6] = (steamid2[6] == '0') ? '1' : '0';
 
-		len += Format(query[len], sizeof(query)-len, " OR (a.authtype = 'steam' AND (a.identity = '%s' OR a.identity = '%s'))", steamid, steamidalt);
+		len += Format(query[len], sizeof(query)-len,
+			" OR (a.authtype = 'steam' AND (a.identity = '%s' OR a.identity = '%s' OR a.identity = '%s' OR a.identity = '%s'))",
+			steamid2, steamid2alt, steamid3, steamid64);
 	}
 	len += Format(query[len], sizeof(query)-len, " GROUP BY a.id");
 	

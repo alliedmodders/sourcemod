@@ -63,11 +63,7 @@ bool g_forcedChange = false;
 
 void NextMapManager::OnSourceModAllInitialized_Post()
 {
-#if SOURCE_ENGINE >= SE_ORANGEBOX
 	SH_ADD_HOOK(IVEngineServer, ChangeLevel, engine, SH_MEMBER(this, &NextMapManager::HookChangeLevel), false);
-#else
-	SH_ADD_HOOK(IVEngineServer, ChangeLevel, engine, SH_MEMBER(this, &NextMapManager::HookChangeLevel), false);
-#endif
 
 	ConCommand *pCmd = FindCommand("changelevel");
 	if (pCmd != NULL)
@@ -79,11 +75,7 @@ void NextMapManager::OnSourceModAllInitialized_Post()
 
 void NextMapManager::OnSourceModShutdown()
 {
-#if SOURCE_ENGINE >= SE_ORANGEBOX
 	SH_REMOVE_HOOK(IVEngineServer, ChangeLevel, engine, SH_MEMBER(this, &NextMapManager::HookChangeLevel), false);
-#else
-	SH_REMOVE_HOOK(IVEngineServer, ChangeLevel, engine, SH_MEMBER(this, &NextMapManager::HookChangeLevel), false);
-#endif
 
 	if (changeLevelCmd != NULL)
 	{

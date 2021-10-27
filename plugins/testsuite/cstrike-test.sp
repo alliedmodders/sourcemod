@@ -2,13 +2,6 @@
 #include <cstrike>
 #include <sdktools>
 
-stock GET_ARG_INT( arg, maxSize=64 )
-{
-	decl String:tempvar[maxSize];
-	GetCmdArg( arg, tempvar, maxSize );
-	return StringToInt( tempvar );
-}
-
 public OnPluginStart()
 {
 	RegConsoleCmd( "get_mvps",    get_mvps    );
@@ -32,7 +25,7 @@ public Action:get_mvps( client, argc )
 
 public Action:set_mvps( client, argc )
 {
-	new count = GET_ARG_INT( 1 );
+	new count = GetCmdArgInt( 1 );
 	
 	CS_SetMVPCount( client, count );
 	ReplyToCommand( client, "Set your MVP count to %d", count );
@@ -61,7 +54,7 @@ public Action:set_score( client, argc )
 		return Plugin_Handled;
 	}
 	
-	new count = GET_ARG_INT( 1 );
+	new count = GetCmdArgInt( 1 );
 	
 	CS_SetClientContributionScore( client, count );
 	ReplyToCommand( client, "Set your contribution score to %d", count );
@@ -90,7 +83,7 @@ public Action:set_assists( client, argc )
 		return Plugin_Handled;
 	}
 	
-	new count = GET_ARG_INT( 1 );
+	new count = GetCmdArgInt( 1 );
 	
 	CS_SetClientAssists( client, count );
 	ReplyToCommand( client, "Set your assist count to %d", count );
@@ -131,8 +124,8 @@ public Action:get_teamscore( client, argc )
 
 public Action:set_teamscore( client, argc )
 {
-	new team = GET_ARG_INT( 1 );
-	new score = GET_ARG_INT( 2 );
+	new team = GetCmdArgInt( 1 );
+	new score = GetCmdArgInt( 2 );
 
 	if ( team != CS_TEAM_T && team != CS_TEAM_CT )
 	{

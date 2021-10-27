@@ -206,7 +206,9 @@ enum TFCond
 	TFCond_BurningPyro, //124: Dragon's Fury afterburn on Pyros
 	TFCond_RocketPack, //125: Thermal Thruster launched effects, prevents reusing
 	TFCond_LostFooting, //126: Less ground friction
-	TFCond_AirCurrent //127: Reduced air control and friction
+	TFCond_AirCurrent, //127: Reduced air control and friction
+	TFCond_HalloweenHellHeal, // 128: Used when a player gets teleported to hell
+	TFCond_PowerupModeDominant // 129: Reduces effects of certain powerups
 };
 
 const float TFCondDuration_Infinite = -1.0;
@@ -227,6 +229,7 @@ public const TFHoliday TFHoliday_FullMoon;
 public const TFHoliday TFHoliday_HalloweenOrFullMoon;
 public const TFHoliday TFHoliday_HalloweenOrFullMoonOrValentines;
 public const TFHoliday TFHoliday_AprilFools;
+public const TFHoliday TFHoliday_Soldier;
 
 enum TFObjectType
 {

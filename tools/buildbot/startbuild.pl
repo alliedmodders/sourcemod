@@ -13,10 +13,14 @@ chdir('../../../OUTPUT');
 my $argn = $#ARGV + 1;
 if ($argn > 0) {
 	$ENV{CC} = $ARGV[0];
-	$ENV{CXX} = $ARGV[0];
+	$ENV{CXX} = $ARGV[1];
 }
 
-system("ambuild --no-color 2>&1");
+if ($^O !~ /MSWin/) {
+	system("ambuild --no-color 2>&1");
+} else {
+	system("C:\\Python38\\scripts\\ambuild --no-color 2>&1");
+}
 
 if ($? != 0)
 {

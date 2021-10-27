@@ -123,7 +123,7 @@ methodmap GlobalForward < Handle {
 	// @param type              Execution type to be used.
 	// @param ...               Variable number of parameter types (up to 32).
 	// @return                  Handle to new global forward.
-	// @error                   More than 32 paramater types passed.
+	// @error                   More than 32 parameter types passed.
 	public native GlobalForward(const char[] name, ExecType type, ParamType ...);
 
 	// Returns the number of functions in a global or private forward's call list.
@@ -142,7 +142,7 @@ methodmap PrivateForward < GlobalForward {
 	// @param type          Execution type to be used.
 	// @param ...           Variable number of parameter types (up to 32).
 	// @return              Handle to new private forward.
-	// @error               More than 32 paramater types passed.
+	// @error               More than 32 parameter types passed.
 	public native PrivateForward(ExecType type, ParamType ...);
 
 	// Adds a function to a private forward's call list.
@@ -202,7 +202,7 @@ native Function GetFunctionByName(Handle plugin, const char[] name);
  * @param type          Execution type to be used.
  * @param ...           Variable number of parameter types (up to 32).
  * @return              Handle to new global forward.
- * @error               More than 32 paramater types passed.
+ * @error               More than 32 parameter types passed.
  */
 native GlobalForward CreateGlobalForward(const char[] name, ExecType type, ParamType ...);
 
@@ -216,7 +216,7 @@ native GlobalForward CreateGlobalForward(const char[] name, ExecType type, Param
  * @param type          Execution type to be used.
  * @param ...           Variable number of parameter types (up to 32).
  * @return              Handle to new private forward.
- * @error               More than 32 paramater types passed.
+ * @error               More than 32 parameter types passed.
  */
 native PrivateForward CreateForward(ExecType type, ParamType ...);
 
@@ -353,7 +353,7 @@ native void Call_PushArray(const any[] value, int size);
  * @param value         Array to push.
  * @param size          Size of array.
  * @param cpflags       Whether or not changes should be copied back to the input array.
- *                      See SP_PARAM_* constants for details.
+ *                      See SM_PARAM_* constants for details.
  * @error               Called before a call has been started.
  */
 native void Call_PushArrayEx(any[] value, int size, int cpflags);

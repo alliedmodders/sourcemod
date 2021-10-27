@@ -44,11 +44,13 @@
  * NameHashSet instead.
  */
 
+#include <string.h>
+
+#include <utility>
+
 #include <am-allocator-policies.h>
 #include <am-hashmap.h>
 #include <am-string.h>
-#include <am-moveable.h>
-#include <string.h>
 
 namespace SourceMod
 {
@@ -73,7 +75,7 @@ namespace detail
 	  uint32_t hash() const {
 		  return hash_;
 	  }
-	  const char *chars() const {
+	  const char *c_str() const {
 		  return str_;
 	  }
 	  size_t length() const {
@@ -88,9 +90,9 @@ namespace detail
 
 	struct StringHashMapPolicy
 	{
-		static inline bool matches(const CharsAndLength &lookup, const ke::AString &key) {
+		static inline bool matches(const CharsAndLength &lookup, const std::string &key) {
 			return lookup.length() == key.length() &&
-				   memcmp(lookup.chars(), key.chars(), key.length()) == 0;
+				   memcmp(lookup.c_str(), key.c_str(), key.length()) == 0;
 		}
 		static inline uint32_t hash(const CharsAndLength &key) {
 			return key.hash();
@@ -102,7 +104,7 @@ template <typename T>
 class StringHashMap
 {
 	typedef detail::CharsAndLength CharsAndLength;
-	typedef ke::HashMap<ke::AString, T, detail::StringHashMapPolicy> Internal;
+	typedef ke::HashMap<std::string, T, detail::StringHashMapPolicy> Internal;
 
 public:
 	StringHashMap()
@@ -163,7 +165,7 @@ public:
 			if (!internal_.add(i, aKey))
 				return false;
 		}
-		i->value = ke::Forward<UV>(value);
+		i->value = std::forward<UV>(value);
 		return true;
 	}
 
@@ -174,7 +176,7 @@ public:
 		Insert i = internal_.findForAdd(key);
 		if (i.found())
 			return false;
-		if (!internal_.add(i, aKey, ke::Forward<UV>(value)))
+		if (!internal_.add(i, aKey, std::forward<UV>(value)))
 			return false;
 		memory_used_ += key.length() + 1;
 		return true;

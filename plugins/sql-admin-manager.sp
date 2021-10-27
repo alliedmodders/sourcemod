@@ -156,6 +156,46 @@ void CreateSQLite(int client, Database db)
 	ReplyToCommand(client, "[SM] Admin tables have been created.");
 }
 
+void CreatePgSQL(int client, Database db)
+{
+	char queries[7][] = 
+	{
+		"CREATE TABLE sm_admins (id serial, authtype varchar(6) NOT NULL, CHECK (authtype in ('steam', 'name', 'ip')), identity varchar(65) NOT NULL, password varchar(65), flags varchar(30) NOT NULL, name varchar(65) NOT NULL, immunity int NOT NULL, PRIMARY KEY (id))",
+		"CREATE TABLE sm_groups (id serial, flags varchar(30) NOT NULL, name varchar(120) NOT NULL, immunity_level int NOT NULL, PRIMARY KEY (id))",
+		"CREATE TABLE sm_group_immunity (group_id int NOT NULL, other_id int NOT NULL, FOREIGN KEY (group_id) REFERENCES sm_groups(id) ON DELETE CASCADE, FOREIGN KEY (other_id) REFERENCES sm_groups(id) ON DELETE CASCADE, PRIMARY KEY (group_id, other_id))",
+		"CREATE TABLE sm_group_overrides (group_id int NOT NULL, FOREIGN KEY (group_id) REFERENCES sm_groups(id) ON DELETE CASCADE, type varchar(10) NOT NULL, CHECK (type in ('command', 'group')), name varchar(32) NOT NULL, access varchar(5) NOT NULL, CHECK (access in ('allow', 'deny')), PRIMARY KEY (group_id, type, name))",
+		"CREATE TABLE sm_overrides (type varchar(10) NOT NULL, CHECK (type in ('command', 'group')), name varchar(32) NOT NULL, flags varchar(30) NOT NULL, PRIMARY KEY (type,name))",
+		"CREATE TABLE sm_admins_groups (admin_id int NOT NULL, group_id int NOT NULL, FOREIGN KEY (admin_id) REFERENCES sm_admins(id) ON DELETE CASCADE, FOREIGN KEY (group_id) REFERENCES sm_groups(id) ON DELETE CASCADE, inherit_order int NOT NULL, PRIMARY KEY (admin_id, group_id))",
+		"CREATE TABLE sm_config (cfg_key varchar(32) NOT NULL, cfg_value varchar(255) NOT NULL, PRIMARY KEY (cfg_key))"
+	};
+
+	for (int i = 0; i < 7; i++)
+	{
+		if (!DoQuery(client, db, queries[i]))
+		{
+			return;
+		}
+	}
+
+	char query[256];
+	Format(query, 
+		sizeof(query), 
+		"INSERT INTO sm_config (cfg_key, cfg_value) VALUES ('admin_version', '1.0.0.%d')",
+		CURRENT_SCHEMA_VERSION);
+
+	if (!SQL_FastQuery(db, query))
+	{
+		Format(query,
+			sizeof(query),
+			"UPDATE sm_config SET cfg_value = '1.0.0.%d' WHERE cfg_key = 'admin_version'",
+			CURRENT_SCHEMA_VERSION);
+		if (!DoQuery(client, db, query))
+			return;
+	}
+
+	ReplyToCommand(client, "[SM] Admin tables have been created.");
+}
+
 public Action Command_CreateTables(int args)
 {
 	int client = 0;
@@ -174,6 +214,8 @@ public Action Command_CreateTables(int args)
 		CreateMySQL(client, db);
 	} else if (strcmp(ident, "sqlite") == 0) {
 		CreateSQLite(client, db);
+	} else if (strcmp(ident, "pgsql") == 0) {
+		CreatePgSQL(client, db);
 	} else {
 		ReplyToCommand(client, "[SM] Unknown driver type '%s', cannot create tables.", ident);
 	}
@@ -361,6 +403,29 @@ void UpdateMySQL(int client, Database db)
 	ReplyToCommand(client, "[SM] Your tables are now up to date.");
 }
 
+void UpdatePgSQL(int client, Database db)
+{
+	// PostgreSQL support was added way after there was something to update the tables from.
+	// The correct schemas are created right away.
+	
+	int versions[4];
+
+	if (!GetUpdateVersion(client, db, versions)) // Partly just here to keep the compiler from complaining about unused parameters ;)
+	{
+		return;
+	}
+	
+	/* We only know about one upgrade path right now... 
+	 * 0 => 1
+	 */
+	if (versions[3] < SCHEMA_UPGRADE_1)
+	{
+		// Nope..
+	}
+	
+	ReplyToCommand(client, "[SM] Your tables are now up to date.");
+}
+
 public Action Command_UpdateTables(int args)
 {
 	int client = 0;
@@ -379,6 +444,8 @@ public Action Command_UpdateTables(int args)
 		UpdateMySQL(client, db);
 	} else if (strcmp(ident, "sqlite") == 0) {
 		UpdateSQLite(client, db);
+	} else if (strcmp(ident, "pgsql") == 0) {
+		UpdatePgSQL(client, db);
 	} else {
 		ReplyToCommand(client, "[SM] Unknown driver type, cannot upgrade.");
 	}
@@ -609,15 +676,10 @@ public Action Command_AddGroup(int client, int args)
 	}
 
 	int immunity;
-	if (args >= 3)
+	if (args >= 3 && !GetCmdArgIntEx(3, immunity))
 	{
-		char arg3[32];
-		GetCmdArg(3, arg3, sizeof(arg3));
-		if (!StringToIntEx(arg3, immunity))
-		{
-			ReplyToCommand(client, "[SM] %t", "Invalid immunity");
-			return Plugin_Handled;
-		}
+		ReplyToCommand(client, "[SM] %t", "Invalid immunity");
+		return Plugin_Handled;
 	}
 	
 	Database db = Connect();
@@ -772,15 +834,10 @@ public Action Command_AddAdmin(int client, int args)
 	}
 
 	int immunity;
-	if (args >= 5)
+	if (args >= 5 && !GetCmdArgIntEx(5, immunity))
 	{
-		char arg5[32];
-		GetCmdArg(5, arg5, sizeof(arg5));
-		if (!StringToIntEx(arg5, immunity))
-		{
-			ReplyToCommand(client, "[SM] %t", "Invalid immunity");
-			return Plugin_Handled;
-		}
+		ReplyToCommand(client, "[SM] %t", "Invalid immunity");
+		return Plugin_Handled;
 	}
 	
 	char identity[65];
@@ -799,12 +856,12 @@ public Action Command_AddAdmin(int client, int args)
 
 	DBResultSet rs;
 	
-	Format(query, sizeof(query), "SELECT id FROM sm_admins WHERE authtype = '%s' AND identity = '%s'", authtype, identity);
+	Format(query, sizeof(query), "SELECT id FROM sm_admins WHERE authtype = '%s' AND identity = '%s'", authtype, safe_identity);
 	if ((rs = SQL_Query(db, query)) == null)
 	{
 		return DoError(client, db, query, "Admin retrieval query failed");
 	}
-	
+
 	if (rs.RowCount > 0)
 	{
 		ReplyToCommand(client, "[SM] %t", "SQL Admin already exists");

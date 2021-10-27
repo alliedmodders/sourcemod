@@ -29,8 +29,6 @@
  * Version: $Id$
  */
 
-#include <am-moveable.h>
-
 #ifndef _include_sourcemod_namehashset_h_
 #define _include_sourcemod_namehashset_h_
 
@@ -76,7 +74,7 @@ class NameHashSet : public ke::SystemAllocatorPolicy
 
 		static bool matches(const CharsAndLength &key, const KeyType &value)
 		{
-			return KeyPolicyType::matches(key.chars(), value);
+			return KeyPolicyType::matches(key.c_str(), value);
 		}
 	};
 
@@ -94,7 +92,7 @@ class NameHashSet : public ke::SystemAllocatorPolicy
 
 		static bool matches(const CharsAndLength &key, const KeyType *value)
 		{
-			return KeyType::matches(key.chars(), value);
+			return KeyType::matches(key.c_str(), value);
 		}
 	};
 
@@ -113,24 +111,26 @@ public:
 
 	Result find(const char *aKey)
 	{
-		return table_.find(aKey);
+		CharsAndLength key(aKey);
+		return table_.find(key);
 	}
 
 	Insert findForAdd(const char *aKey)
 	{
-		return table_.findForAdd(aKey);
+		CharsAndLength key(aKey);
+		return table_.findForAdd(key);
 	}
 
 	template <typename U>
 	bool add(Insert &i, U &&value)
 	{
-		return table_.add(i, ke::Forward<U>(value));
+		return table_.add(i, std::forward<U>(value));
 	}
 
 	bool retrieve(const char *aKey, T *value)
 	{
 		CharsAndLength key(aKey);
-		Result r = table_.find(aKey);
+		Result r = table_.find(key);
 		if (!r.found())
 			return false;
 		*value = *r;
@@ -144,13 +144,13 @@ public:
 		Insert i = table_.findForAdd(key);
 		if (i.found())
 			return false;
-		return table_.add(i, ke::Forward<U>(value));
+		return table_.add(i, std::forward<U>(value));
 	}
 
 	bool contains(const char *aKey)
 	{
 		CharsAndLength key(aKey);
-		Result r = table_.find(aKey);
+		Result r = table_.find(key);
 		return r.found();
 	}
 

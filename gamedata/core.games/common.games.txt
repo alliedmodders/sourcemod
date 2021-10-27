@@ -20,6 +20,11 @@
 				"class"			"CBasePlayer"
 				"prop"			"m_lifeState"
 			}
+			"CSendPropExtra_UtlVector::m_Offset"
+			{
+				"windows"		"16"
+				"linux"			"16"
+			}
 		}
 	}
 	
@@ -96,6 +101,7 @@
 			"engine"			"alienswarm"
 			"engine"			"blade"
 			"engine"			"insurgency"
+			"engine"			"doi"
 			"engine"			"csgo"
 			"engine"			"sdk2013"
 			"engine"			"contagion"
@@ -106,6 +112,7 @@
 			"GetDataDescMap"
 			{
 				"windows"		"11"
+				"windows64"		"11"
 				"linux"			"12"
 				"linux64"		"12"
 				"mac"			"12"
@@ -125,9 +132,9 @@
 		{
 			"GetDataDescMap"
 			{
-				"windows"		"12"
-				"linux"			"13"
-				"mac"			"13"
+				"windows"		"13"
+				"linux"			"14"
+				"mac"			"14"
 			}
 		}
 	}
@@ -190,7 +197,7 @@
 		}
 	}
 	
-		"#default"
+	"#default"
 	{
 		"#supported"
 		{
@@ -291,6 +298,7 @@
 			"game"					"kz"
 			"game"					"csgo"
 			"game"					"reactivedrop"
+			"game"					"FortressForever"
 		}
 		
 		"Keys"
@@ -356,6 +364,21 @@
 		"Keys"
 		{
 			"RadioMenuMaxPageItems"	"6"
+		}
+	}
+
+	"#default"
+	{
+		"#supported"
+		{
+			"engine"	"left4dead"
+			"engine"	"left4dead2"
+			"engine"	"nucleardawn"
+		}
+
+		"Keys"
+		{
+			"RadioMenuClosesOnInvalidSlot"	"yes"
 		}
 	}
 }
