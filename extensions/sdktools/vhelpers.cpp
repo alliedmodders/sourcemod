@@ -333,9 +333,9 @@ bool CollisionRulesChanged(CBaseEntity *pEntity)
 
 #if SOURCE_ENGINE < SE_ORANGEBOX
 		CBaseEntity *pWorldEntity = nullptr;
-		for (int i = 0; i < gpGlobals->maxEntities && pEntity == nullptr; ++i)
+		for (int i = 0; i < gpGlobals->maxEntities && pWorldEntity == nullptr; ++i)
 		{
-			pEntity = gamehelpers->ReferenceToEntity(i);
+			pWorldEntity = gamehelpers->ReferenceToEntity(i);
 		}
 #else
 		CBaseEntity *pWorldEntity = ((IServerUnknown *)servertools->FirstEntity())->GetBaseEntity();
