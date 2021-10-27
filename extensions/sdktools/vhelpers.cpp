@@ -373,7 +373,7 @@ bool CollisionRulesChanged(CBaseEntity *pEntity)
 #ifndef PLATFORM_POSIX
 		void *addr;
 	} u;
-	u.addr = vfunc;
+	u.addr = func;
 #else
 		struct  
 		{
