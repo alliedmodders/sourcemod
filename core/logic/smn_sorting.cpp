@@ -495,7 +495,7 @@ static int sort2d_amx_custom(const void *elem1, const void *elem2)
 	g_SortInfo.pFunc->PushCell(iv1);
 	g_SortInfo.pFunc->PushCell(iv2);
 	g_SortInfo.pFunc->PushCell(g_SortInfo.array_addr);
-	g_SortInfo.pFunc->PushCell(g_SortInfo.hndl);
+	g_SortInfo.pFunc->PushCell(g_SortInfo.data);
 	g_SortInfo.pFunc->Invoke(&result);
 
 	return result;
@@ -522,7 +522,7 @@ static cell_t sm_SortCustom2D(IPluginContext *pContext, const cell_t *params)
 
 	DetectExceptions eh(pContext);
 	g_SortInfo.pFunc = pFunction;
-	g_SortInfo.hndl = params[4];
+	g_SortInfo.data = params[4];
 	g_SortInfo.array_addr = params[1];
 	g_SortInfo.eh = &eh;
 	
