@@ -772,6 +772,12 @@ CoreProviderImpl::DefineCommand(const char *name, const char *help, const Comman
 	commands_.push_back(impl);
 }
 
+void CoreProviderImpl::FormatSourceBinaryName(const char *basename, char *buffer, size_t maxlength)
+{
+	bool use_prefix = (!strcasecmp(basename, "tier0") || !strcasecmp(basename, "vstdlib"));
+	ke::SafeSprintf(buffer, maxlength, "%s%s%s%s", use_prefix ? SOURCE_BIN_PREFIX : "", basename, SOURCE_BIN_SUFFIX, SOURCE_BIN_EXT);
+}
+
 void CoreProviderImpl::InitializeHooks()
 {
 	hooks_.Start();
