@@ -89,6 +89,6 @@ unsigned int UTIL_CRC32(const void *pdata, size_t data_length)
 		crc = CRCTable[c] ^ (crc >> 8);
 	}
 
-	return crc;
+	return ~crc;
 }
 
