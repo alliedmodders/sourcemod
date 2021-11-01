@@ -39,6 +39,7 @@
 #include <IThreader.h>
 #include "sourcemod.h"
 
+#define VPROF_ENABLED
 #include <tier0/vprof.h>
 
 static IMutex *frame_mutex;

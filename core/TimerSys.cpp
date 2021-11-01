@@ -36,6 +36,7 @@
 #include "ConVarManager.h"
 #include "logic_bridge.h"
 
+#define VPROF_ENABLED
 #include <tier0/vprof.h>
 
 #define TIMER_MIN_ACCURACY		0.1

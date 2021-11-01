@@ -49,6 +49,7 @@
 #include <bridge/include/IProviderCallbacks.h>
 #include <bridge/include/ILogger.h>
 
+#define VPROF_ENABLED
 #include <tier0/vprof.h>
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
