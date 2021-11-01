@@ -745,10 +745,11 @@ void SourceModBase::RemoveGameFrameHook(GAME_FRAME_HOOK hook)
 
 void SourceModBase::ProcessGameFrameHooks(bool simulating)
 {
-	VPROF("SourceMod::SourceModBase::ProcessGameFrameHooks");
+	VPROF_ENTER_SCOPE("SourceMod::SourceModBase::ProcessGameFrameHooks");
 
 	if (m_frame_hooks.size() == 0)
 	{
+		VPROF_EXIT_SCOPE();
 		return;
 	}
 
@@ -756,6 +757,8 @@ void SourceModBase::ProcessGameFrameHooks(bool simulating)
 	{
 		m_frame_hooks[i](simulating);
 	}
+
+	VPROF_EXIT_SCOPE();
 }
 
 size_t SourceModBase::Format(char *buffer, size_t maxlength, const char *fmt, ...)

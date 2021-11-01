@@ -220,7 +220,7 @@ void TimerSystem::OnSourceModLevelEnd()
 
 void TimerSystem::GameFrame(bool simulating)
 {
-	VPROF("SourceMod::TimerSystem::GameFrame");
+	VPROF_ENTER_SCOPE("SourceMod::TimerSystem::GameFrame");
 
 	if (simulating && m_bHasMapTickedYet)
 	{
@@ -252,11 +252,13 @@ void TimerSystem::GameFrame(bool simulating)
 	{
 		m_pOnGameFrame->Execute(NULL);
 	}
+
+	VPROF_EXIT_SCOPE();
 }
 
 void TimerSystem::RunFrame()
 {
-	VPROF("SourceMod::TimerSystem::RunFrame");
+	VPROF_ENTER_SCOPE("SourceMod::TimerSystem::RunFrame");
 
 	ITimer *pTimer;
 	TimerIter iter;
@@ -299,6 +301,8 @@ void TimerSystem::RunFrame()
 		}
 		iter++;
 	}
+
+	VPROF_EXIT_SCOPE();
 }
 
 ITimer *TimerSystem::CreateTimer(ITimedEvent *pCallbacks, float fInterval, void *pData, int flags)

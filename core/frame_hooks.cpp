@@ -76,7 +76,7 @@ void AddFrameAction(const FrameAction & action)
 
 void RunFrameHooks(bool simulating)
 {
-	VPROF("SourceMod::RunFrameHooks");
+	VPROF_ENTER_SCOPE("SourceMod::RunFrameHooks");
 
 	/* It's okay if this check races. */
 	if (frame_queue->size())
@@ -124,4 +124,6 @@ void RunFrameHooks(bool simulating)
 		g_Players.RunAuthChecks();
 		g_LastAuthCheck = curtime;
 	}
+
+	VPROF_EXIT_SCOPE();
 }
