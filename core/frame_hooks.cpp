@@ -39,6 +39,8 @@
 #include <IThreader.h>
 #include "sourcemod.h"
 
+#include <tier0/vprof.h>
+
 static IMutex *frame_mutex;
 static Queue<FrameAction> *frame_queue;
 static Queue<FrameAction> *frame_actions;
@@ -73,6 +75,8 @@ void AddFrameAction(const FrameAction & action)
 
 void RunFrameHooks(bool simulating)
 {
+	VPROF("SourceMod::RunFrameHooks");
+
 	/* It's okay if this check races. */
 	if (frame_queue->size())
 	{

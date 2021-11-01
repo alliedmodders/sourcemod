@@ -36,6 +36,8 @@
 #include "ConVarManager.h"
 #include "logic_bridge.h"
 
+#include <tier0/vprof.h>
+
 #define TIMER_MIN_ACCURACY		0.1
 
 TimerSystem g_Timers;
@@ -217,6 +219,8 @@ void TimerSystem::OnSourceModLevelEnd()
 
 void TimerSystem::GameFrame(bool simulating)
 {
+	VPROF("SourceMod::TimerSystem::GameFrame");
+
 	if (simulating && m_bHasMapTickedYet)
 	{
 		g_fUniversalTime += gpGlobals->curtime - m_fLastTickedTime;
@@ -251,6 +255,8 @@ void TimerSystem::GameFrame(bool simulating)
 
 void TimerSystem::RunFrame()
 {
+	VPROF("SourceMod::TimerSystem::RunFrame");
+
 	ITimer *pTimer;
 	TimerIter iter;
 
