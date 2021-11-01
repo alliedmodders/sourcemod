@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Vote Nextmap"
+	{
+		"jp"		"次のマップを投票してください！"
+	}
+
+	"Nextmap Voting Started"
+	{
+		"jp"		"次のマップ投票をスタートしました。"
+	}
+
+	"Nextmap Voting Finished"
+	{
+		"jp"		"マップ投票が完了しました。次はマップは{1}です。({3}中{2}%%)"
+	}
+
+	"Current Map Extended"
+	{
+		"jp"		"現在のマップを延長します。({3}中{2}%%)"
+	}
+
+	"Extend Map"
+	{
+		"jp"		"現在のマップを延長"
+	}
+
+	"Dont Change"
+	{
+		"jp"		"変更しない"
+	}
+
+	"Current Map Stays"
+	{
+		"jp"		"現在のマップを延長します。({3}中{2}%%)"
+	}
+
+	"Changed Next Map"
+	{
+		"jp"		"次のマップを\"{1}\"に変更しました。"
+	}
+
+	"Starting Runoff"
+	{
+		"jp"		"どのマップも必要な{1}%%の得票数が獲得できませんでした。({3}中{2}%%、{4}中{5}%%) 決選投票を開始します。"
+	}
+
+}

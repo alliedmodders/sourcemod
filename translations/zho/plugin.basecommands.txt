@@ -1,0 +1,128 @@
+"Phrases"
+{
+	"Unable to find cvar"
+	{
+		"zho"		"無法找到 cvar: {1}"
+	}
+
+	"No access to cvar"
+	{
+		"zho"		"你無權操作該 cvar"
+	}
+
+	"Value of cvar"
+	{
+		"zho"		"cvar \"{1}\" 的值: \"{2}\" "
+	}
+
+	"Cvar changed"
+	{
+		"zho"		"cvar 己由 \"{1}\" 更改為 \"{2}\". "
+	}
+
+	"Config not found"
+	{
+		"zho"		"未找到設定文件 \"{1}\" "
+	}
+
+	"Executed config"
+	{
+		"zho"		"己執行設定文件 \"{1}\". "
+	}
+
+	"Permabanned player"
+	{
+		"zho"		"已永久封鎖玩家 \"{1}\" "
+	}
+
+	"Permabanned player reason"
+	{
+		"zho"		"已永久封鎖玩家 \"{1}\" (原因: {2})."
+	}
+
+	"Banned player"
+	{
+		"zho"		"封鎖玩家 \"{1}\" {2} 分鐘 "
+	}
+
+	"Banned player reason"
+	{
+		"zho"		"封鎖玩家 \"{1}\" {2} 分鐘 (原因: {3})."
+	}
+
+	"Removed bans matching"
+	{
+		"zho"		"移除了符合過濾條件: {1} 的封禁 "
+	}
+
+	"Ban added"
+	{
+		"zho"		"封鎖記錄已添加. "
+	}
+
+	"Admin cache refreshed"
+	{
+		"zho"		"管理員緩衝己刷新"
+	}
+
+	"Identify player"
+	{
+		"zho"		"玩家認證"
+	}
+
+	"Choose Map"
+	{
+		"zho"		"選擇地圖"
+	}
+
+	"Exec CFG"
+	{
+		"zho"		"執行 CFG"
+	}
+
+	"Admin logged in as"
+	{
+		"zho"		"\"{1}\" 以 \"{2}\" 身份登錄並具有權限: {3} "
+	}
+
+	"Admin logged in anon"
+	{
+		"zho"		"\"{1}\" 具備權限: {2}"
+	}
+
+	"Player is not an admin"
+	{
+		"zho"		"\"{1}\" 並非管理員."
+	}
+
+	"Player is an admin"
+	{
+		"zho"		"\"{1}\" 是管理員."
+	}
+
+	"Username"
+	{
+		"zho"		"用户名"
+	}
+
+	"Kicked target"
+	{
+		"zho"		"已踢出 {1}."
+	}
+
+	"Admin access"
+	{
+		"zho"		"管理員通道"
+	}
+
+	"Cvar is now protected"
+	{
+		"zho"		"cvar {1} 現已受保護."
+	}
+
+	"Kicked target reason"
+	{
+		"zho"		"已踢 {1} (理由: {2})"
+	}
+
+}

@@ -1,0 +1,128 @@
+"Phrases"
+{
+	"Unable to find cvar"
+	{
+		"chi"		"无法找到 cvar: {1}"
+	}
+
+	"No access to cvar"
+	{
+		"chi"		"你无权操作这个键值"
+	}
+
+	"Value of cvar"
+	{
+		"chi"		"cvar \"{1}\" 的值: \"{2}\""
+	}
+
+	"Cvar changed"
+	{
+		"chi"		"更改键值  \"{1}\" 为 \"{2}\". "
+	}
+
+	"Config not found"
+	{
+		"chi"		"配置文件 \"{1}\" 未找到."
+	}
+
+	"Executed config"
+	{
+		"chi"		"执行配置文件 \"{1}\"."
+	}
+
+	"Permabanned player"
+	{
+		"chi"		"已永久封禁玩家 \"{1}\"."
+	}
+
+	"Permabanned player reason"
+	{
+		"chi"		"已永久封禁玩家 \"{1}\" (原因: {2})."
+	}
+
+	"Banned player"
+	{
+		"chi"		"封禁玩家 \"{1}\" {2} 分钟."
+	}
+
+	"Banned player reason"
+	{
+		"chi"		"封禁玩家 \"{1}\" {2} 分钟 (原因: {3})."
+	}
+
+	"Removed bans matching"
+	{
+		"chi"		"移除了符合过滤条件: {1} 的封禁"
+	}
+
+	"Ban added"
+	{
+		"chi"		"封禁记录已添加."
+	}
+
+	"Admin cache refreshed"
+	{
+		"chi"		"管理员缓存已刷新."
+	}
+
+	"Identify player"
+	{
+		"chi"		"玩家认证"
+	}
+
+	"Choose Map"
+	{
+		"chi"		"选择地图"
+	}
+
+	"Exec CFG"
+	{
+		"chi"		"执行 CFG"
+	}
+
+	"Admin logged in as"
+	{
+		"chi"		"\"{1}\" 以 \"{2}\" 身份登录并带权限: {3}"
+	}
+
+	"Admin logged in anon"
+	{
+		"chi"		"\"{1}\" 具备权限: {2}"
+	}
+
+	"Player is not an admin"
+	{
+		"chi"		"\"{1}\" 非管理员."
+	}
+
+	"Player is an admin"
+	{
+		"chi"		"\"{1}\" 为管理员."
+	}
+
+	"Username"
+	{
+		"chi"		"用户名"
+	}
+
+	"Kicked target"
+	{
+		"chi"		"已踢出 {1}"
+	}
+
+	"Admin access"
+	{
+		"chi"		"管理员权限"
+	}
+
+	"Cvar is now protected"
+	{
+		"chi"		"键值{1}已经受保护"
+	}
+
+	"Kicked target reason"
+	{
+		"chi"		"踢出 {1} (理由: {2})"
+	}
+
+}

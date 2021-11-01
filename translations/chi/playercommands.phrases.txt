@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Slap player"
+	{
+		"chi"		"拍打玩家"
+	}
+
+	"Slap damage"
+	{
+		"chi"		"拍打伤害值"
+	}
+
+	"Slay player"
+	{
+		"chi"		"处死玩家"
+	}
+
+	"Slapped target"
+	{
+		"chi"		"拍打了 {1}."
+	}
+
+	"Slayed target"
+	{
+		"chi"		"处死了 {1}."
+	}
+
+	"Name changed"
+	{
+		"chi"		"某管理员更改了您的名称"
+	}
+
+	"Renamed target"
+	{
+		"chi"		"更改了 {1} 的名称."
+	}
+
+	"Rename player"
+	{
+		"chi"		"玩家更名"
+	}
+
+	"Dead Player Rename"
+	{
+		"chi"		"{1} 将会在下局被改名"
+	}
+
+}

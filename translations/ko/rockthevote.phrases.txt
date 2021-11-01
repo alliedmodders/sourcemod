@@ -1,0 +1,103 @@
+"Phrases"
+{
+	"Rock The Vote"
+	{
+		"ko"		"맵 투표 :"
+	}
+
+	"RTV Not Allowed"
+	{
+		"ko"		"맵 투표가 아직 허용되지 않습니다."
+	}
+
+	"RTV Started"
+	{
+		"ko"		"맵 투표가 이미 시작되었습니다."
+	}
+
+	"RTV Ended"
+	{
+		"ko"		"맵 투표가 이미 끝났습니다. 투표를 다시 시작하거나 맵 추천을 할 수 없습니다."
+	}
+
+	"Already Voted"
+	{
+		"ko"		"당신은 이미 맵 투표에 동의했습니다. ({1} 명이 동의했고, {2} 명의 동의가 필요합니다)"
+	}
+
+	"Minimal Players Not Met"
+	{
+		"ko"		"필요한 최소 플레이어 숫자에 맞지 않습니다."
+	}
+
+	"Map Already In Vote"
+	{
+		"ko"		"맵 '{1}' 은 이미 맵 투표 목록에 있습니다."
+	}
+
+	"Map Inserted"
+	{
+		"ko"		"맵 '{1}' 이 맵 투표 목록에 추가되었습니다."
+	}
+
+	"RTV Requested"
+	{
+		"ko"		"{1} 님이 맵 투표를 원하십니다. ({2} 명이 동의하셨고, {3} 명의 동의가 필요합니다)"
+	}
+
+	"RTV Vote Ready"
+	{
+		"ko"		"맵을 투표합니다!"
+	}
+
+	"Don't Change"
+	{
+		"ko"		"현재 맵 계속 하기"
+	}
+
+	"Already Nominated"
+	{
+		"ko"		"당신은 이미 맵을 추천했습니다."
+	}
+
+	"Max Nominations"
+	{
+		"ko"		"허용된 최대 추천 횟수를 넘었습니다."
+	}
+
+	"Selected Map"
+	{
+		"ko"		"{1} 님이 {2} 을(를) 선택했습니다"
+	}
+
+	"No Votes"
+	{
+		"ko"		"맵 투표에 아무도 투표하지 않았습니다. 현재 맵을 계속합니다."
+	}
+
+	"Current Map Stays"
+	{
+		"ko"		"현재 맵이 유지됩니다! 맵 투표로 결정되었습니다!"
+	}
+
+	"Changing Maps"
+	{
+		"ko"		"맵을 {1} 로 바꿉니다! 맵 투표로 결정되었습니다!"
+	}
+
+	"Map Already Nominated"
+	{
+		"ko"		"당신이 고른 맵은 이미 추천된 맵입니다."
+	}
+
+	"Map Nominated"
+	{
+		"ko"		"{1} 님이 {2} 를 맵 투표에 추천하셨습니다."
+	}
+
+	"Nominate Title"
+	{
+		"ko"		"맵 추천 :"
+	}
+
+}

@@ -1,0 +1,253 @@
+"Phrases"
+{
+	"Yes"
+	{
+		"jp"		"はい"
+	}
+
+	"No"
+	{
+		"jp"		"いいえ"
+	}
+
+	"No matching client"
+	{
+		"jp"		"条件にマッチするクライアントは見つかりませんでした。"
+	}
+
+	"No matching clients"
+	{
+		"jp"		"条件にマッチするクライアントは見つかりませんでした。"
+	}
+
+	"More than one client matches"
+	{
+		"jp"		"指定された条件 \"{1}\" に一つ以上のクライアントがマッチしました。"
+	}
+
+	"More than one client matched"
+	{
+		"jp"		"指定された条件に一つ以上のクライアントがマッチしました。"
+	}
+
+	"Player no longer available"
+	{
+		"jp"		"選択したプレイヤーは存在しません。"
+	}
+
+	"Kick player"
+	{
+		"jp"		"プレイヤーキック"
+	}
+
+	"Kicked by admin"
+	{
+		"jp"		"管理者によってキックされました。"
+	}
+
+	"Changing map"
+	{
+		"jp"		"{1}にマップを変更しています..."
+	}
+
+	"Map was not found"
+	{
+		"jp"		"マップ \"{1}\" は存在しません。"
+	}
+
+	"Unable to target"
+	{
+		"jp"		"このプレイヤーをターゲット出来ません。"
+	}
+
+	"Name"
+	{
+		"jp"		"名前"
+	}
+
+	"Access"
+	{
+		"jp"		"アクセス"
+	}
+
+	"See console for output"
+	{
+		"jp"		"結果はコンソールを見てください。"
+	}
+
+	"Cannot target bot"
+	{
+		"jp"		"このコマンドはボットには実行出来ません。"
+	}
+
+	"Unable to find cvar"
+	{
+		"jp"		"CVar \"{1}\" が見つかりません。"
+	}
+
+	"No access to cvar"
+	{
+		"jp"		"このCVarにはアクセス出来ません。"
+	}
+
+	"Value of cvar"
+	{
+		"jp"		"CVar \"{1}\" の値は \"{2}\""
+	}
+
+	"Cvar changed"
+	{
+		"jp"		"CVar \"{1}\"を\"{2}\"に変更しました。"
+	}
+
+	"Config not found"
+	{
+		"jp"		"設定ファイル\"{1}\"が存在しません。"
+	}
+
+	"Executed config"
+	{
+		"jp"		"コンフィグ\"{1}\"を実行しました。"
+	}
+
+	"Admin cache refreshed"
+	{
+		"jp"		"管理者キャッシュを更新しました。"
+	}
+
+	"Invalid Amount"
+	{
+		"jp"		"不正な数量が指定されました。"
+	}
+
+	"Cannot be performed on dead"
+	{
+		"jp"		"死亡しているクライアント\"{1}\"にはこのアクションを実行出来ません。"
+	}
+
+	"Player has since died"
+	{
+		"jp"		"プレイヤーは死んでいます。"
+	}
+
+	"Vote in Progress"
+	{
+		"jp"		"この投票は既に進行中です。"
+	}
+
+	"Vote Not In Progress"
+	{
+		"jp"		"投票は現在受け付けていません。"
+	}
+
+	"Cancelled Vote"
+	{
+		"jp"		"キャンセル済み投票"
+	}
+
+	"Cancel vote"
+	{
+		"jp"		"キャンセル投票"
+	}
+
+	"Vote Select"
+	{
+		"jp"		"{1}が{2}を選択しました。"
+	}
+
+	"No Votes Cast"
+	{
+		"jp"		"投票がありませんでした。"
+	}
+
+	"Vote Delay Minutes"
+	{
+		"jp"		"別の投票を開始するには{1}分間待つ必要があります。"
+	}
+
+	"Vote Delay Seconds"
+	{
+		"jp"		"別の投票を開始するには{1}秒間待つ必要があります。"
+	}
+
+	"Could not connect to database"
+	{
+		"jp"		"データベースに接続出来ませんでした。"
+	}
+
+	"Failed to query database"
+	{
+		"jp"		"データベースへのクエリーに失敗しました。"
+	}
+
+	"Invalid SteamID specified"
+	{
+		"jp"		"不正なSteam IDが指定されました。('STEAM_0:'から始まる必要があります。)"
+	}
+
+	"Reload admins"
+	{
+		"jp"		"管理者をリロード"
+	}
+
+	"Command is in-game only"
+	{
+		"jp"		"このコマンドはゲーム内でのみ使用可能です。"
+	}
+
+	"Target must be dead"
+	{
+		"jp"		"このコマンドは死亡しているプレイヤーにのみ使用可能です。"
+	}
+
+	"Target must be alive"
+	{
+		"jp"		"このコマンドは生存しているプレイヤーにのみ使用可能です。"
+	}
+
+	"Target is not in game"
+	{
+		"jp"		"指定されたプレイヤーはゲーム内にいません。"
+	}
+
+	"Played Sound"
+	{
+		"jp"		"プレイヤー \"{1}\" にサウンドを再生しました。"
+	}
+
+	"Slapped player"
+	{
+		"jp"		"プレイヤー \"{1}\" を叩きました。"
+	}
+
+	"Slayed player"
+	{
+		"jp"		"プレイヤー \"{1}\" を殺害しました。"
+	}
+
+	"Kicked player"
+	{
+		"jp"		"プレイヤー\"{1}\"をキックしました。"
+	}
+
+	"Cannot participate in vote"
+	{
+		"jp"		"この投票には参加出来ません。"
+	}
+
+	"Cannot change vote"
+	{
+		"jp"		"投票の選択を変えることは出来ません。"
+	}
+
+	"On"
+	{
+		"jp"		"オン"
+	}
+
+	"Off"
+	{
+		"jp"		"オフ"
+	}
+
+}

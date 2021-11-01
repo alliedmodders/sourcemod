@@ -1,0 +1,93 @@
+"Phrases"
+{
+	"Initiate Vote"
+	{
+		"lv"		"Uzsāka aptauju: {1}"
+	}
+
+	"Initiated Vote Map"
+	{
+		"lv"		"Uzsāka kartes maiņas aptauju."
+	}
+
+	"Initiated Vote Kick"
+	{
+		"lv"		"Uzsāka izmešanas aptauju pret {1}."
+	}
+
+	"Initiated Vote Ban"
+	{
+		"lv"		"Uzsāka banošanas aptauju pret {1}."
+	}
+
+	"Map Vote"
+	{
+		"lv"		"Aptauja par karti: {1}"
+	}
+
+	"Change Map To"
+	{
+		"lv"		"Nomainīt karti uz {1}?"
+	}
+
+	"Votekick Player"
+	{
+		"lv"		"Izmest {1}?"
+	}
+
+	"Voteban Player"
+	{
+		"lv"		"Nobanot {1}?"
+	}
+
+	"Vote Successful"
+	{
+		"lv"		"Aptauja veiksmīga. (Saņēma {1}%% no {2} balsīm)"
+	}
+
+	"Vote Failed"
+	{
+		"lv"		"Aptauja neveiksmīga. {1}%% balsis nepieciešamas. (Saņēma {2}%% no {3} balsīm)"
+	}
+
+	"Vote End"
+	{
+		"lv"		"Atbilde uz {1} ir: {2}."
+	}
+
+	"Kick vote"
+	{
+		"lv"		"Izmešanas aptauja"
+	}
+
+	"Ban vote"
+	{
+		"lv"		"Banošanas aptauja"
+	}
+
+	"Map vote"
+	{
+		"lv"		"Aptauja par karti"
+	}
+
+	"Confirm Vote"
+	{
+		"lv"		"Apstiprināt aptauju"
+	}
+
+	"Map Vote In Use"
+	{
+		"lv"		"Kāds cits admins patreiz lieto karšu aptaujas izvēlni."
+	}
+
+	"Please select a map"
+	{
+		"lv"		"Lūdzu izvēlies karti"
+	}
+
+	"Start the Vote"
+	{
+		"lv"		"Sākt aptauju"
+	}
+
+}

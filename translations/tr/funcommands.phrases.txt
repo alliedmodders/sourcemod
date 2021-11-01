@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"tr"		"Oyuncuyu yak"
+	}
+
+	"FireBomb player"
+	{
+		"tr"		"Oyuncuyu ateş bombası yap"
+	}
+
+	"Freeze player"
+	{
+		"tr"		"Oyuncuyu dondur"
+	}
+
+	"FreezeBomb player"
+	{
+		"tr"		"Oyuncuyu donma bombası yap"
+	}
+
+	"TimeBomb player"
+	{
+		"tr"		"Oyuncuyu zaman bombası yap"
+	}
+
+	"Beacon player"
+	{
+		"tr"		"Oyuncuyu işaret yap"
+	}
+
+	"NoClip player"
+	{
+		"tr"		"Oyuncuyu hayalet yap"
+	}
+
+	"Blind player"
+	{
+		"tr"		"Oyuncuyu kör et"
+	}
+
+	"Drug player"
+	{
+		"tr"		"Oyuncuyu ilaçla"
+	}
+
+	"Gravity player"
+	{
+		"tr"		"Oyuncunun yerçekimini değiştir"
+	}
+
+	"Blind amount"
+	{
+		"tr"		"Nasıl kör et?"
+	}
+
+	"Fully blind"
+	{
+		"tr"		"Tamamen kör et"
+	}
+
+	"Half blind"
+	{
+		"tr"		"Yarı kör"
+	}
+
+	"No blind"
+	{
+		"tr"		"Kör değil"
+	}
+
+	"Gravity amount"
+	{
+		"tr"		"Yerçekimi?"
+	}
+
+	"Gravity Very High"
+	{
+		"tr"		"Yerçekimi Çok Yüksek"
+	}
+
+	"Gravity High"
+	{
+		"tr"		"Yerçekimi Yüksek"
+	}
+
+	"Gravity Normal"
+	{
+		"tr"		"Yerçekimi Normal"
+	}
+
+	"Gravity Low"
+	{
+		"tr"		"Yerçekimi Düşük"
+	}
+
+	"Gravity Very Low"
+	{
+		"tr"		"Yerçekimi Çok Az"
+	}
+
+	"Set target on fire"
+	{
+		"tr"		"{1} adlı oyuncuyu ateşe ver."
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"tr"		"{1} adlı oyuncunun ateş bombası yapılması değiştirildi."
+	}
+
+	"Froze target"
+	{
+		"tr"		"{1} dondu."
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"tr"		"{1} adlı oyuncunun donma bombası yapılması değiştirildi."
+	}
+
+	"Toggled beacon on target"
+	{
+		"tr"		"{1} adlı oyuncunun işaretlenmesi değiştirildi."
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"tr"		"{1} adlı oyuncunun zaman bombası yapılması değiştirildi."
+	}
+
+	"Toggled noclip on target"
+	{
+		"tr"		"{1} adlı oyuncunun hayaletliği değiştirildi."
+	}
+
+	"Toggled drug on target"
+	{
+		"tr"		"{1} adlı oyuncunun ilaçlanması değiştirildi."
+	}
+
+	"Set blind on target"
+	{
+		"tr"		"{1} üzerinde kör etme kullan."
+	}
+
+	"Set gravity on target"
+	{
+		"tr"		"{1} adlı oyuncunun yerçekimini değiştir."
+	}
+
+	"Till Explodes"
+	{
+		"tr"		"{1} adlı oyuncunun patlamasına {2} saniye kaldı."
+	}
+
+	"Unfrozen"
+	{
+		"tr"		"Donmanız geçti."
+	}
+
+	"You will be unfrozen"
+	{
+		"tr"		"{1} saniye içinde donmanız geçecek."
+	}
+
+}

@@ -1,0 +1,93 @@
+"Phrases"
+{
+	"Initiate Vote"
+	{
+		"chi"		"已启动投票: {1}"
+	}
+
+	"Initiated Vote Map"
+	{
+		"chi"		"已启动地图投票."
+	}
+
+	"Initiated Vote Kick"
+	{
+		"chi"		"已启动踢出 {1} 的投票."
+	}
+
+	"Initiated Vote Ban"
+	{
+		"chi"		"已启动封禁 {1} 的投票."
+	}
+
+	"Map Vote"
+	{
+		"chi"		"地图投票: {1}"
+	}
+
+	"Change Map To"
+	{
+		"chi"		"更换地图为 {1}?"
+	}
+
+	"Votekick Player"
+	{
+		"chi"		"踢出 {1}?"
+	}
+
+	"Voteban Player"
+	{
+		"chi"		"封禁 {1}?"
+	}
+
+	"Vote Successful"
+	{
+		"chi"		"投票通过. (同意 {1}%% 总共 {2} 票)"
+	}
+
+	"Vote Failed"
+	{
+		"chi"		"投票失败. 至少需要 {1}%% 支持. (同意 {2}%% 总共 {3} 票)"
+	}
+
+	"Vote End"
+	{
+		"chi"		"投票 {1} 的结果为: {2}."
+	}
+
+	"Kick vote"
+	{
+		"chi"		"踢出投票"
+	}
+
+	"Ban vote"
+	{
+		"chi"		"封禁投票"
+	}
+
+	"Map vote"
+	{
+		"chi"		"地图投票"
+	}
+
+	"Confirm Vote"
+	{
+		"chi"		"确认投票"
+	}
+
+	"Map Vote In Use"
+	{
+		"chi"		"地图投票正被调用"
+	}
+
+	"Please select a map"
+	{
+		"chi"		"请选择地图"
+	}
+
+	"Start the Vote"
+	{
+		"chi"		"开始投票"
+	}
+
+}

@@ -1,0 +1,68 @@
+"Phrases"
+{
+	"Already Nominated"
+	{
+		"it"		"Hai gia nominato una mappa."
+	}
+
+	"Max Nominations"
+	{
+		"it"		"È stato raggiunto il numero massimo di nominazioni consentite."
+	}
+
+	"Map Already In Vote"
+	{
+		"it"		"La mappa '{1}' è già nella lista delle nominazioni. "
+	}
+
+	"Map Inserted"
+	{
+		"it"		"La mappa '{1}' è stata aggiunta alla lista delle nominazioni. "
+	}
+
+	"Map Already Nominated"
+	{
+		"it"		"La mappa che hai scelto è gia stata nominata."
+	}
+
+	"Map Nominated"
+	{
+		"it"		"{1} ha nominato {2}.  "
+	}
+
+	"Map Nomination Changed"
+	{
+		"it"		"{1} ha cambiato la sua nominazione in {2}."
+	}
+
+	"Nominate Title"
+	{
+		"it"		"Nomina una mappa:"
+	}
+
+	"Can't Nominate Current Map"
+	{
+		"it"		"La mappa che hai scelto è quella attuale e non può essere nominata"
+	}
+
+	"Map in Exclude List"
+	{
+		"it"		"La mappa che hai scelto è stata giocata di recente e non può essere nominata."
+	}
+
+	"Current Map"
+	{
+		"it"		"Mappa attuale"
+	}
+
+	"Recently Played"
+	{
+		"it"		"Giocata di recente"
+	}
+
+	"Nominated"
+	{
+		"it"		"Nominata"
+	}
+
+}

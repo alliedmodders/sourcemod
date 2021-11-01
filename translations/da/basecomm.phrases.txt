@@ -1,0 +1,73 @@
+"Phrases"
+{
+	"Gag/Mute player"
+	{
+		"da"		"Gør spiller stum/tavs"
+	}
+
+	"Choose Type"
+	{
+		"da"		"Vælg type"
+	}
+
+	"Gagged target"
+	{
+		"da"		"{1} er blevet gjort tavs."
+	}
+
+	"Ungagged target"
+	{
+		"da"		"{1} er ikke længere tavs."
+	}
+
+	"Muted target"
+	{
+		"da"		"{1} er nu stum."
+	}
+
+	"Unmuted target"
+	{
+		"da"		"{1} er ikke længere stum."
+	}
+
+	"Silenced target"
+	{
+		"da"		"{1} er blevet gjort stum og tavs."
+	}
+
+	"Unsilenced target"
+	{
+		"da"		"{1} kan tale igen."
+	}
+
+	"Mute Player"
+	{
+		"da"		"Gør spiller stum"
+	}
+
+	"UnMute Player"
+	{
+		"da"		"Fjern stumhed fra spiller "
+	}
+
+	"Gag Player"
+	{
+		"da"		"Gør spiller tavs"
+	}
+
+	"UnGag Player"
+	{
+		"da"		"Fjern tavshed fra spiller"
+	}
+
+	"Silence Player"
+	{
+		"da"		"Gør spiller stum og tavs "
+	}
+
+	"UnSilence Player"
+	{
+		"da"		"Fjern stumhed og tavshed fra spiller"
+	}
+
+}

@@ -1,0 +1,128 @@
+"Phrases"
+{
+	"Unable to find cvar"
+	{
+		"hu"		"{1} nevű szerver parancs nem található"
+	}
+
+	"No access to cvar"
+	{
+		"hu"		"{1} nincs hozzáférési jogosultságod ehhez a szerverváltozóhoz"
+	}
+
+	"Value of cvar"
+	{
+		"hu"		"{1} változó értéke: {2}"
+	}
+
+	"Cvar changed"
+	{
+		"hu"		"{1} értéke mostantól {2}"
+	}
+
+	"Config not found"
+	{
+		"hu"		"{1} nevű config nem található"
+	}
+
+	"Executed config"
+	{
+		"hu"		"{1} config betöltve"
+	}
+
+	"Permabanned player"
+	{
+		"hu"		"{1} véglegesen bannolva"
+	}
+
+	"Permabanned player reason"
+	{
+		"hu"		"{1} végleg kitiltásra került a következő indokkal: {2}."
+	}
+
+	"Banned player"
+	{
+		"hu"		"{1} {2} percre bannolva lett"
+	}
+
+	"Banned player reason"
+	{
+		"hu"		"{1} {2} percre bannolva lett. Oka: {3}"
+	}
+
+	"Removed bans matching"
+	{
+		"hu"		"A {1} szűrőnek megfelelő bannok el lettek távolítva"
+	}
+
+	"Ban added"
+	{
+		"hu"		"Ban hozzáadva"
+	}
+
+	"Admin cache refreshed"
+	{
+		"hu"		"Az admin tár frissítve lett"
+	}
+
+	"Identify player"
+	{
+		"hu"		"Játékos azonosítása"
+	}
+
+	"Choose Map"
+	{
+		"hu"		"Pálya kiválasztása"
+	}
+
+	"Exec CFG"
+	{
+		"hu"		"Config betöltése"
+	}
+
+	"Admin logged in as"
+	{
+		"hu"		"{1} {2}-ként van bejelentkezve, {3} jogosultságokkal"
+	}
+
+	"Admin logged in anon"
+	{
+		"hu"		"{1} hozzáférési jogosultságai: {2}"
+	}
+
+	"Player is not an admin"
+	{
+		"hu"		"{1} nem admin"
+	}
+
+	"Player is an admin"
+	{
+		"hu"		"{1} admin"
+	}
+
+	"Username"
+	{
+		"hu"		"Felhasználónév"
+	}
+
+	"Kicked target"
+	{
+		"hu"		"{1} kirúgva"
+	}
+
+	"Admin access"
+	{
+		"hu"		"Admin jogosultság"
+	}
+
+	"Cvar is now protected"
+	{
+		"hu"		"{1} mostmár védett szerverváltozó"
+	}
+
+	"Kicked target reason"
+	{
+		"hu"		"{1} kirúgva (Oka: {2})"
+	}
+
+}

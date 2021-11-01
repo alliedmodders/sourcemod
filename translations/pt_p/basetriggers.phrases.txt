@@ -1,0 +1,108 @@
+"Phrases"
+{
+	"Timeleft"
+	{
+		"pt_p"		"Tempo restante do mapa:"
+	}
+
+	"Thetime"
+	{
+		"pt_p"		"O horário atual do servidor é {1}"
+	}
+
+	"Friendly Fire On"
+	{
+		"pt_p"		"O fogo amigável está ligado."
+	}
+
+	"Friendly Fire Off"
+	{
+		"pt_p"		"O fogo amigável está desligado."
+	}
+
+	"Current Map"
+	{
+		"pt_p"		"O mapa atual é {1}."
+	}
+
+	"LastRound"
+	{
+		"pt_p"		"Esta é a última ronda!!"
+	}
+
+	"NoTimelimit"
+	{
+		"pt_p"		"Mapa sem limite de tempo"
+	}
+
+	"Next Map"
+	{
+		"pt_p"		"Próximo mapa: {1} "
+	}
+
+	"Pending Vote"
+	{
+		"pt_p"		"Votação pendente"
+	}
+
+	"WinLimitAppend"
+	{
+		"pt_p"		" ou depois de uma equipa ganhar uma ronda"
+	}
+
+	"WinLimit"
+	{
+		"pt_p"		"O mapa será alterado depois de uma equipa ganhar uma ronda"
+	}
+
+	"MaxRoundsAppend"
+	{
+		"pt_p"		" ou após mais uma ronda "
+	}
+
+	"MaxRounds"
+	{
+		"pt_p"		"O mapa será alterado após mais uma ronda"
+	}
+
+	"FragLimitAppend"
+	{
+		"pt_p"		" ou quando um jogador alcança um ponto "
+	}
+
+	"FragLimit"
+	{
+		"pt_p"		"O mapa será alterado quando um jogador alcançar um ponto"
+	}
+
+	"WinLimitAppendPlural"
+	{
+		"pt_p"		" ou depois de uma equipa ganhar {1} rondas"
+	}
+
+	"WinLimitPlural"
+	{
+		"pt_p"		"O mapa será alterado depois de uma equipa ganhar {1} rondas "
+	}
+
+	"MaxRoundsAppendPlural"
+	{
+		"pt_p"		" ou após mais {1} rondas"
+	}
+
+	"MaxRoundsPlural"
+	{
+		"pt_p"		"O mapa será alterado após mais {1} rondas"
+	}
+
+	"FragLimitAppendPlural"
+	{
+		"pt_p"		" ou quando um jogador alcança {1} pontos "
+	}
+
+	"FragLimitPlural"
+	{
+		"pt_p"		"O mapa será alterado quando um jogador alcançar {1} pontos "
+	}
+
+}

@@ -1,0 +1,108 @@
+"Phrases"
+{
+	"Timeleft"
+	{
+		"de"		"Verbleibende Zeit für diese Map: "
+	}
+
+	"Thetime"
+	{
+		"de"		"Die aktuelle Serverzeit ist {1}"
+	}
+
+	"Friendly Fire On"
+	{
+		"de"		"Friendly Fire ist aktiviert."
+	}
+
+	"Friendly Fire Off"
+	{
+		"de"		"Friendly Fire ist deaktiviert."
+	}
+
+	"Current Map"
+	{
+		"de"		"Die aktuelle Map ist {1}."
+	}
+
+	"LastRound"
+	{
+		"de"		"Dies ist die letzte Runde!"
+	}
+
+	"NoTimelimit"
+	{
+		"de"		"Kein Zeitlimit für diese Map"
+	}
+
+	"Next Map"
+	{
+		"de"		"Nächste Map: {1}"
+	}
+
+	"Pending Vote"
+	{
+		"de"		"Ausstehende Abstimmung"
+	}
+
+	"WinLimitAppend"
+	{
+		"de"		", oder Map wechselt, nachdem ein Team eine Runde gewinnt "
+	}
+
+	"WinLimit"
+	{
+		"de"		"Map wechselt, nachdem ein Team eine Runde gewinnt "
+	}
+
+	"MaxRoundsAppend"
+	{
+		"de"		", oder Map nach einer weiteren Runde wechseln "
+	}
+
+	"MaxRounds"
+	{
+		"de"		"Map wechselt nach einer weiteren Runde "
+	}
+
+	"FragLimitAppend"
+	{
+		"de"		", oder Map wechseln nachdem ein Spieler einen Kill erlangt "
+	}
+
+	"FragLimit"
+	{
+		"de"		"Die Map wechselt, nachdem ein Spieler einen Kill erlangt hat "
+	}
+
+	"WinLimitAppendPlural"
+	{
+		"de"		", oder Map wechselt, nachdem ein Team {1} Runden gewinnt "
+	}
+
+	"WinLimitPlural"
+	{
+		"de"		"Map wechselt, nachdem ein Team {1} Runden gewinnt "
+	}
+
+	"MaxRoundsAppendPlural"
+	{
+		"de"		", oder Map-Change nach {1} weiteren Runden "
+	}
+
+	"MaxRoundsPlural"
+	{
+		"de"		"Map wechselt nach {1} weiteren Runden "
+	}
+
+	"FragLimitAppendPlural"
+	{
+		"de"		", oder Map wechseln nachdem ein Spieler {1} Kills erlangt hat "
+	}
+
+	"FragLimitPlural"
+	{
+		"de"		"Map wechselt, nachdem ein Spieler {1} Kills erlangt hat "
+	}
+
+}

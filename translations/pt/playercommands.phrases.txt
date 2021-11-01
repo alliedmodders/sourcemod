@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Slap player"
+	{
+		"pt"		"Estapear jogador"
+	}
+
+	"Slap damage"
+	{
+		"pt"		"Dano do tapa"
+	}
+
+	"Slay player"
+	{
+		"pt"		"Assassinar jogador"
+	}
+
+	"Slapped target"
+	{
+		"pt"		"Estapeou {1}."
+	}
+
+	"Slayed target"
+	{
+		"pt"		"Assassinou {1}."
+	}
+
+	"Name changed"
+	{
+		"pt"		"Um administrador alterou o nome"
+	}
+
+	"Renamed target"
+	{
+		"pt"		"Renomeou {1}."
+	}
+
+	"Rename player"
+	{
+		"pt"		"Renomear jogador"
+	}
+
+	"Dead Player Rename"
+	{
+		"pt"		"{1} será renomeado na próxima rodada."
+	}
+
+}

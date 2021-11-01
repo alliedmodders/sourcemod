@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Ban player"
+	{
+		"he"		"השעה שחקן"
+	}
+
+	"Ban reason"
+	{
+		"he"		"סיבת השעייה"
+	}
+
+	"Permabanned player"
+	{
+		"he"		"השחקן \"{1}\" הושעה לתמיד."
+	}
+
+	"Permabanned player reason"
+	{
+		"he"		"השחקן \"{1}\" הושעה לתמיד (סיבה: {2}). "
+	}
+
+	"Banned player"
+	{
+		"he"		"הושעה השחקן \"{1}\" ל {2} דקות."
+	}
+
+	"Banned player reason"
+	{
+		"he"		"הושעה השחקן \"{1}\" ל {2} דקות (סיבה : {3}). "
+	}
+
+	"Removed bans matching"
+	{
+		"he"		"נמחקו השעיות שהותאמו ל: {1}"
+	}
+
+	"Ban added"
+	{
+		"he"		"השעייה הוספה."
+	}
+
+	"Cannot ban that IP"
+	{
+		"he"		"אינך יכול להשעות את האייפי הזה"
+	}
+
+}

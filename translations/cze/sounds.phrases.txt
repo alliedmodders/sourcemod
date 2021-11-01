@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Played sound to target"
+	{
+		"cze"		"Prehral zvuk hraci {1}"
+	}
+
+}

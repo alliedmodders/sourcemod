@@ -1,0 +1,103 @@
+"Phrases"
+{
+	"Rock The Vote"
+	{
+		"chi"		"滚动投票:"
+	}
+
+	"RTV Not Allowed"
+	{
+		"chi"		"当前无法启动RTV (滚动投票)."
+	}
+
+	"RTV Started"
+	{
+		"chi"		"RTV (滚动投票)已开始."
+	}
+
+	"RTV Ended"
+	{
+		"chi"		"RTV (滚动投票)已结束, 您无法重来或再预订地图."
+	}
+
+	"Already Voted"
+	{
+		"chi"		"您已经发起了投票(现有{1}票,仍需{2}票)"
+	}
+
+	"Minimal Players Not Met"
+	{
+		"chi"		"未达所需人数下限."
+	}
+
+	"Map Already In Vote"
+	{
+		"chi"		"地图 '{1}' 已在 RTV (滚动投票)列表中."
+	}
+
+	"Map Inserted"
+	{
+		"chi"		"地图 '{1}' 加入了 RTV (滚动投票)."
+	}
+
+	"RTV Requested"
+	{
+		"chi"		"{1} 要滚动投票. ({2} 票同意, 至少需要 {3} 票)"
+	}
+
+	"RTV Vote Ready"
+	{
+		"chi"		"开始滚动投票!"
+	}
+
+	"Don't Change"
+	{
+		"chi"		"继续运行当前地图"
+	}
+
+	"Already Nominated"
+	{
+		"chi"		"您已经提名过一张地图"
+	}
+
+	"Max Nominations"
+	{
+		"chi"		"已达最大预订数"
+	}
+
+	"Selected Map"
+	{
+		"chi"		"{1} 选了 {2}"
+	}
+
+	"No Votes"
+	{
+		"chi"		"RTV (滚动投票)无选票投递, 当前地图继续运行."
+	}
+
+	"Current Map Stays"
+	{
+		"chi"		"当前地图继续运行! 滚动投票已显示!"
+	}
+
+	"Changing Maps"
+	{
+		"chi"		"更换地图为 {1}! 滚动投票已显示!"
+	}
+
+	"Map Already Nominated"
+	{
+		"chi"		"您所选的地图已有人预订."
+	}
+
+	"Map Nominated"
+	{
+		"chi"		"{1} 预订了地图 {2} 加入滚动投票."
+	}
+
+	"Nominate Title"
+	{
+		"chi"		"预订地图:"
+	}
+
+}

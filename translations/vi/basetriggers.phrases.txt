@@ -1,0 +1,108 @@
+"Phrases"
+{
+	"Timeleft"
+	{
+		"vi"		"Thời gian còn lại cho bản đồ này: "
+	}
+
+	"Thetime"
+	{
+		"vi"		"Bây giờ là {1}"
+	}
+
+	"Friendly Fire On"
+	{
+		"vi"		"Hỏa lực thân thiện đã được kích hoạt."
+	}
+
+	"Friendly Fire Off"
+	{
+		"vi"		"Hỏa lực thân thiện bị vô hiệu hóa."
+	}
+
+	"Current Map"
+	{
+		"vi"		"Bản đồ hiện tại là {1}."
+	}
+
+	"LastRound"
+	{
+		"vi"		"Đây là ván cuối cùng!!"
+	}
+
+	"NoTimelimit"
+	{
+		"vi"		"Không có giới hạn thời gian cho bản đồ này"
+	}
+
+	"Next Map"
+	{
+		"vi"		"Bản đồ tiếp theo: {1}"
+	}
+
+	"Pending Vote"
+	{
+		"vi"		"Đang chờ bình chọn"
+	}
+
+	"WinLimitAppend"
+	{
+		"vi"		" hoặc bản đồ sẽ thay đổi nếu một đội thắng một ván nữa"
+	}
+
+	"WinLimit"
+	{
+		"vi"		"Bản đồ sẽ thay đổi khi một đội thằng một ván nữa"
+	}
+
+	"MaxRoundsAppend"
+	{
+		"vi"		" hoặc bản đồ thay đổi sau 1 ván nữa"
+	}
+
+	"MaxRounds"
+	{
+		"vi"		"Bản đồ sẽ thay đổi sau một ván nữa,"
+	}
+
+	"FragLimitAppend"
+	{
+		"vi"		" hoặc bản đồ sẽ thay đổi nếu một người chơi giết được một mạng"
+	}
+
+	"FragLimit"
+	{
+		"vi"		"Bản đồ sẽ thay đổi nếu một người chơi giết được một mạng"
+	}
+
+	"WinLimitAppendPlural"
+	{
+		"vi"		" hoặc bản đồ sẽ thay đổi nếu một đội thắng {1} ván nữa"
+	}
+
+	"WinLimitPlural"
+	{
+		"vi"		"Bản đồ sẽ thay đổi khi một đội thằng {1} ván nữa"
+	}
+
+	"MaxRoundsAppendPlural"
+	{
+		"vi"		" hoặc bản đồ thay đổi sau {1} ván nữa"
+	}
+
+	"MaxRoundsPlural"
+	{
+		"vi"		"Bản đồ sẽ thay đổi sau {1} ván nữa"
+	}
+
+	"FragLimitAppendPlural"
+	{
+		"vi"		" hoặc bản đồ sẽ thay đổi nếu một người chơi giết được {1} mạng"
+	}
+
+	"FragLimitPlural"
+	{
+		"vi"		"Bản đồ sẽ thay đổi nếu một người chơi giết được {1} mạng"
+	}
+
+}

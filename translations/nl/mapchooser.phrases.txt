@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Vote Nextmap"
+	{
+		"nl"		"Stem voor de volgende map!"
+	}
+
+	"Nextmap Voting Started"
+	{
+		"nl"		"Stemmen voor de volgende map is gestart."
+	}
+
+	"Nextmap Voting Finished"
+	{
+		"nl"		"Map stemmen gestopt. De volgende map wordt {1}."
+	}
+
+	"Current Map Extended"
+	{
+		"nl"		"De huidige map is verlengd. ({1}%% van de {2} stemmen ontvangen)"
+	}
+
+	"Extend Map"
+	{
+		"nl"		"Verleng huidige map"
+	}
+
+	"Dont Change"
+	{
+		"nl"		"Niet veranderen"
+	}
+
+	"Current Map Stays"
+	{
+		"nl"		"Huidige map gaat verder! De Stem heeft gesproken! ({1}%% van de {2} stemmen ontvangen)"
+	}
+
+	"Changed Next Map"
+	{
+		"nl"		"Volgende map veranderd naar \"{1}\"."
+	}
+
+	"Starting Runoff"
+	{
+		"nl"		"Geen map kreeg meer dan {1}%% stemmen ({2} [{3}%%] & {4} [{5}%%]), alternatieve stemming wordt gestart"
+	}
+
+}

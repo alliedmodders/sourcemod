@@ -1,0 +1,43 @@
+"Phrases"
+{
+	"Next Map"
+	{
+		"da"		"Næste bane: {1}"
+	}
+
+	"Map History"
+	{
+		"da"		"Bane historie"
+	}
+
+	"Map"
+	{
+		"da"		"[Bane]"
+	}
+
+	"Started"
+	{
+		"da"		"[Startede]"
+	}
+
+	"Played Time"
+	{
+		"da"		"[Spillet tid]"
+	}
+
+	"Reason"
+	{
+		"da"		"[Afslutningsårsag]"
+	}
+
+	"Current Map"
+	{
+		"da"		"Aktuelle bane"
+	}
+
+	"ago"
+	{
+		"da"		"siden"
+	}
+
+}

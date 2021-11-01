@@ -1,0 +1,93 @@
+"Phrases"
+{
+	"Initiate Vote"
+	{
+		"it"		"Votazione iniziata: {1} "
+	}
+
+	"Initiated Vote Map"
+	{
+		"it"		"Votazione per cambiare mappa iniziata."
+	}
+
+	"Initiated Vote Kick"
+	{
+		"it"		"Votazione per espellere {1} iniziata."
+	}
+
+	"Initiated Vote Ban"
+	{
+		"it"		"Votazione per bandire {1} iniziata."
+	}
+
+	"Map Vote"
+	{
+		"it"		"Votazione per cambiare mappa: {1}"
+	}
+
+	"Change Map To"
+	{
+		"it"		"Cambiare la mappa in {1}?"
+	}
+
+	"Votekick Player"
+	{
+		"it"		"Espellere {1}?"
+	}
+
+	"Voteban Player"
+	{
+		"it"		"Bandire {1}?"
+	}
+
+	"Vote Successful"
+	{
+		"it"		"Votazione avvenuta con successo. (Voti ricevuti: {1}%% di {2}) "
+	}
+
+	"Vote Failed"
+	{
+		"it"		"Votazione respinta. Voti richiesti: {1}%% (Voti ricevuti: {2}%% di {3})"
+	}
+
+	"Vote End"
+	{
+		"it"		"La risposta a {1} è: {2}.  "
+	}
+
+	"Kick vote"
+	{
+		"it"		"Votazione per espellere..."
+	}
+
+	"Ban vote"
+	{
+		"it"		"Votazione per bandire..."
+	}
+
+	"Map vote"
+	{
+		"it"		"Votazione per cambiare mappa"
+	}
+
+	"Confirm Vote"
+	{
+		"it"		"Conferma votazione"
+	}
+
+	"Map Vote In Use"
+	{
+		"it"		"Il menu di votazione delle mappe è attualmente in uso da un altro amministratore."
+	}
+
+	"Please select a map"
+	{
+		"it"		"Seleziona una mappa"
+	}
+
+	"Start the Vote"
+	{
+		"it"		"Inizia la votazione"
+	}
+
+}

@@ -1,0 +1,93 @@
+"Phrases"
+{
+	"Initiate Vote"
+	{
+		"fi"		"Aloitettiin äänestys: {1}"
+	}
+
+	"Initiated Vote Map"
+	{
+		"fi"		"Aloitettiin karttaäänestys."
+	}
+
+	"Initiated Vote Kick"
+	{
+		"fi"		"Aloitettiin erotusäänestys pelaajaa {1} kohtaan."
+	}
+
+	"Initiated Vote Ban"
+	{
+		"fi"		"Aloitettiin porttikieltoäänestys pelaajaa {1} kohtaan."
+	}
+
+	"Map Vote"
+	{
+		"fi"		"Karttaäänestys: {1}"
+	}
+
+	"Change Map To"
+	{
+		"fi"		"Vaihdetaanko kartaksi {1}?"
+	}
+
+	"Votekick Player"
+	{
+		"fi"		"Erota {1}?"
+	}
+
+	"Voteban Player"
+	{
+		"fi"		"Anna porttikielto pelaajalle {1}?"
+	}
+
+	"Vote Successful"
+	{
+		"fi"		"Äänestys onnistui. (Vastaanotettiin {1}%% {2} äänestä)"
+	}
+
+	"Vote Failed"
+	{
+		"fi"		"Äänestys epäonnistui. {1}%% äänistä vaadittiin. (Saatiin {2}%% {3} äänestä)"
+	}
+
+	"Vote End"
+	{
+		"fi"		"Vastaus kysymykseen {1} on: {2}"
+	}
+
+	"Kick vote"
+	{
+		"fi"		"Erotusäänestys"
+	}
+
+	"Ban vote"
+	{
+		"fi"		"Porttikieltoäänestys"
+	}
+
+	"Map vote"
+	{
+		"fi"		"Karttaäänestys"
+	}
+
+	"Confirm Vote"
+	{
+		"fi"		"Vahvista äänestys"
+	}
+
+	"Map Vote In Use"
+	{
+		"fi"		"Toinen ylläpitäjä käyttää karttaäänestysvalikkoa tällä hetkellä."
+	}
+
+	"Please select a map"
+	{
+		"fi"		"Valitse kartta"
+	}
+
+	"Start the Vote"
+	{
+		"fi"		"Aloita äänestys"
+	}
+
+}

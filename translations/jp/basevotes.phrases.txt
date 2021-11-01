@@ -1,0 +1,93 @@
+"Phrases"
+{
+	"Initiate Vote"
+	{
+		"jp"		"開始している投票: {1}"
+	}
+
+	"Initiated Vote Map"
+	{
+		"jp"		"マップ投票を開始しました。"
+	}
+
+	"Initiated Vote Kick"
+	{
+		"jp"		"{1}へのキック投票を開始しました。"
+	}
+
+	"Initiated Vote Ban"
+	{
+		"jp"		"{1}へのBAN投票を開始しました。"
+	}
+
+	"Map Vote"
+	{
+		"jp"		"マップ投票: {1}"
+	}
+
+	"Change Map To"
+	{
+		"jp"		"マップを{1}に変更?"
+	}
+
+	"Votekick Player"
+	{
+		"jp"		"{1}をキック?"
+	}
+
+	"Voteban Player"
+	{
+		"jp"		"{1}をBAN?"
+	}
+
+	"Vote Successful"
+	{
+		"jp"		"投票が可決されました。({2}中{1}%%)"
+	}
+
+	"Vote Failed"
+	{
+		"jp"		"投票が否決されました。{1}%%の得票率が必要です。({3}中{2}%%) "
+	}
+
+	"Vote End"
+	{
+		"jp"		"{1}は{2}です。"
+	}
+
+	"Kick vote"
+	{
+		"jp"		"キック投票"
+	}
+
+	"Ban vote"
+	{
+		"jp"		"BAN投票"
+	}
+
+	"Map vote"
+	{
+		"jp"		"マップ投票"
+	}
+
+	"Confirm Vote"
+	{
+		"jp"		"確認投票"
+	}
+
+	"Map Vote In Use"
+	{
+		"jp"		"他の管理者がマップ投票メニューを開いています。"
+	}
+
+	"Please select a map"
+	{
+		"jp"		"マップを選択してください。"
+	}
+
+	"Start the Vote"
+	{
+		"jp"		"マップ投票を開始"
+	}
+
+}

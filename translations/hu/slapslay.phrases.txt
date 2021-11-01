@@ -1,0 +1,28 @@
+"Phrases"
+{
+	"Slay player"
+	{
+		"hu"		"Játékos levágása"
+	}
+
+	"Slap player"
+	{
+		"hu"		"Játékos megütése"
+	}
+
+	"Slap damage"
+	{
+		"hu"		"Ütés erőssége"
+	}
+
+	"Slapped target"
+	{
+		"hu"		"{1} megütve"
+	}
+
+	"Slayed target"
+	{
+		"hu"		"{1} levágva"
+	}
+
+}

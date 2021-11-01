@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Cookie List"
+	{
+		"sv"		"Sourcemods cookielista "
+	}
+
+	"Printing Cookie List"
+	{
+		"sv"		"Skriver ut cookielistan till consolen"
+	}
+
+	"Cookie not Found"
+	{
+		"sv"		"Kunde inte hitta cookie \"{1}\"  "
+	}
+
+	"Cookie Value"
+	{
+		"sv"		"{1}s värde är {2}  "
+	}
+
+	"Protected Cookie"
+	{
+		"sv"		"Kan inte ändra värdet av den skyddade cookien \"{1}\"  "
+	}
+
+	"Cookie Changed Value"
+	{
+		"sv"		"Ändrade värdet av cookie \"{1}\" till \"{2}\"  "
+	}
+
+	"No Console"
+	{
+		"sv"		"Kan inte visa inställningsmenyn i consolen"
+	}
+
+	"Choose Option"
+	{
+		"sv"		"Välj alternativ"
+	}
+
+	"Client Settings"
+	{
+		"sv"		"Spelarinställningar"
+	}
+
+}

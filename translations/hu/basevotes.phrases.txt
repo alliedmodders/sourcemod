@@ -1,0 +1,93 @@
+"Phrases"
+{
+	"Initiate Vote"
+	{
+		"hu"		"Szavazás inditása: {1}"
+	}
+
+	"Initiated Vote Map"
+	{
+		"hu"		"Pályaszavazás inditása"
+	}
+
+	"Initiated Vote Kick"
+	{
+		"hu"		"{1} játékos kirúgásának szavazása"
+	}
+
+	"Initiated Vote Ban"
+	{
+		"hu"		"{1} játékos kitiltásának szavazása"
+	}
+
+	"Map Vote"
+	{
+		"hu"		"Pályaszavazás: {1}"
+	}
+
+	"Change Map To"
+	{
+		"hu"		"Elváltsunk a {1} pályára?"
+	}
+
+	"Votekick Player"
+	{
+		"hu"		"Kidobjuk {1} -t?"
+	}
+
+	"Voteban Player"
+	{
+		"hu"		"Kitiltsuk {1} -t?"
+	}
+
+	"Vote Successful"
+	{
+		"hu"		"Sikeres szavazás! (Bejött {1}%% a {2} szavazatoknak)"
+	}
+
+	"Vote Failed"
+	{
+		"hu"		"Szavazás sikertelen. {1}%% kellett volna. (Bejött {2}%% a {3} szavazatoknak)"
+	}
+
+	"Vote End"
+	{
+		"hu"		"Válasz a {1} kérdésre: {2}"
+	}
+
+	"Kick vote"
+	{
+		"hu"		"Kirúgás szavazás"
+	}
+
+	"Ban vote"
+	{
+		"hu"		"Kititltás szavazás"
+	}
+
+	"Map vote"
+	{
+		"hu"		"Pálya szavazás"
+	}
+
+	"Confirm Vote"
+	{
+		"hu"		"Szavazás elfogadása"
+	}
+
+	"Map Vote In Use"
+	{
+		"hu"		"Egy másik admin jelenleg is használja a szavazás menüt!"
+	}
+
+	"Please select a map"
+	{
+		"hu"		"Válassz egy pályát"
+	}
+
+	"Start the Vote"
+	{
+		"hu"		"Szavazás elindítása"
+	}
+
+}

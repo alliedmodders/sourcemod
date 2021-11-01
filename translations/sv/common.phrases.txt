@@ -1,0 +1,253 @@
+"Phrases"
+{
+	"Yes"
+	{
+		"sv"		"Ja"
+	}
+
+	"No"
+	{
+		"sv"		"Nej"
+	}
+
+	"No matching client"
+	{
+		"sv"		"Ingen matchande klient hittades."
+	}
+
+	"No matching clients"
+	{
+		"sv"		"Inga matchade klienter var hittade."
+	}
+
+	"More than one client matches"
+	{
+		"sv"		"Mer än en klient matchade mönstret \"{1}\""
+	}
+
+	"More than one client matched"
+	{
+		"sv"		"Mer än en klient matchade mönstret."
+	}
+
+	"Player no longer available"
+	{
+		"sv"		"Spelaren du valde är inte längre tillgänglig."
+	}
+
+	"Kick player"
+	{
+		"sv"		"Kasta ut spelare"
+	}
+
+	"Kicked by admin"
+	{
+		"sv"		"Utkastad av administratören "
+	}
+
+	"Changing map"
+	{
+		"sv"		"Byter bana till {1}..."
+	}
+
+	"Map was not found"
+	{
+		"sv"		"Bana {1} kunde inte hittas."
+	}
+
+	"Unable to target"
+	{
+		"sv"		"Du kan inte välja den här spelaren."
+	}
+
+	"Name"
+	{
+		"sv"		"Namn"
+	}
+
+	"Access"
+	{
+		"sv"		"Tillgång"
+	}
+
+	"See console for output"
+	{
+		"sv"		"Se consolen för utmatning. "
+	}
+
+	"Cannot target bot"
+	{
+		"sv"		"Kan inte utföra detta kommando på en bot."
+	}
+
+	"Unable to find cvar"
+	{
+		"sv"		"Kunde inte hitta cvar: {1}"
+	}
+
+	"No access to cvar"
+	{
+		"sv"		" Du har inte tillgång till denna cvar."
+	}
+
+	"Value of cvar"
+	{
+		"sv"		"Värde av cvar \"{1}\": \"{2}\""
+	}
+
+	"Cvar changed"
+	{
+		"sv"		"Ändrade cvar \"{1}\" till \"{2}\". "
+	}
+
+	"Config not found"
+	{
+		"sv"		"Konfigurations fil \"{1}\" kan inte hittas."
+	}
+
+	"Executed config"
+	{
+		"sv"		"Utför konfiguration \"{1}\". "
+	}
+
+	"Admin cache refreshed"
+	{
+		"sv"		"Administratör arkivet har blivit förnyat."
+	}
+
+	"Invalid Amount"
+	{
+		"sv"		"Fel mängd specificerad"
+	}
+
+	"Cannot be performed on dead"
+	{
+		"sv"		"Du kan inte utföra denna funktion på döda spelaren {1}"
+	}
+
+	"Player has since died"
+	{
+		"sv"		"Inga handlingar kan bli utförda sedan spelaren har dött"
+	}
+
+	"Vote in Progress"
+	{
+		"sv"		"En röstning är redan igång."
+	}
+
+	"Vote Not In Progress"
+	{
+		"sv"		"En röstning är inte igång ännu."
+	}
+
+	"Cancelled Vote"
+	{
+		"sv"		"Avbröt röstningen."
+	}
+
+	"Cancel vote"
+	{
+		"sv"		"Avbryt röstning"
+	}
+
+	"Vote Select"
+	{
+		"sv"		"{1} har valt {2}."
+	}
+
+	"No Votes Cast"
+	{
+		"sv"		"Inga röstningar var utförda."
+	}
+
+	"Vote Delay Minutes"
+	{
+		"sv"		"Du måste vänta {1} minuter innan du kan starta en annan röstning."
+	}
+
+	"Vote Delay Seconds"
+	{
+		"sv"		"Du måste vänta {1} sekunder innan du kan starta en till röstning."
+	}
+
+	"Could not connect to database"
+	{
+		"sv"		"Kunde inte ansluta till databasen"
+	}
+
+	"Failed to query database"
+	{
+		"sv"		"Misslyckade att förfråga databasen. "
+	}
+
+	"Invalid SteamID specified"
+	{
+		"sv"		"Du har specificerat ett ogiltigt Steam ID (måste börja med 'STEAM_:'). "
+	}
+
+	"Reload admins"
+	{
+		"sv"		"Ladda om administratörer"
+	}
+
+	"Command is in-game only"
+	{
+		"sv"		"Denna funktion kan bara användas i spelet."
+	}
+
+	"Target must be dead"
+	{
+		"sv"		"Detta kommando kan bara användas på döda spelare."
+	}
+
+	"Target must be alive"
+	{
+		"sv"		" Detta kommando kan bara användas på levande spelare."
+	}
+
+	"Target is not in game"
+	{
+		"sv"		"Den valda spelaren är inte helt inne i spelet ännu."
+	}
+
+	"Played Sound"
+	{
+		"sv"		"Spelade ljud på spelaren '{1}'"
+	}
+
+	"Slapped player"
+	{
+		"sv"		"Smiskade spelare '{1}'"
+	}
+
+	"Slayed player"
+	{
+		"sv"		"Dräpte spelare '{1}'"
+	}
+
+	"Kicked player"
+	{
+		"sv"		"Kastade ut spelare '{1}' "
+	}
+
+	"Cannot participate in vote"
+	{
+		"sv"		"Du kan inte delta i denna röstning"
+	}
+
+	"Cannot change vote"
+	{
+		"sv"		"Du kan inte ändra ditt val för denna röstning"
+	}
+
+	"On"
+	{
+		"sv"		"På"
+	}
+
+	"Off"
+	{
+		"sv"		"Av"
+	}
+
+}

@@ -1,0 +1,93 @@
+"Phrases"
+{
+	"Initiate Vote"
+	{
+		"da"		"Afstemning startet: {1}"
+	}
+
+	"Initiated Vote Map"
+	{
+		"da"		"Afsteming om bane-skift startet."
+	}
+
+	"Initiated Vote Kick"
+	{
+		"da"		"Afstemning om udsmidning mod {1} startet."
+	}
+
+	"Initiated Vote Ban"
+	{
+		"da"		"Afstemning om bandlysning mod {1} startet."
+	}
+
+	"Map Vote"
+	{
+		"da"		"Bane afstemning: {1}"
+	}
+
+	"Change Map To"
+	{
+		"da"		"Skift bane til {1}?"
+	}
+
+	"Votekick Player"
+	{
+		"da"		"Smid {1} ud?"
+	}
+
+	"Voteban Player"
+	{
+		"da"		"Bandlys {1}?"
+	}
+
+	"Vote Successful"
+	{
+		"da"		"Afstemning er succesfuld. (Modtog {1}%% af {2} stemmer)"
+	}
+
+	"Vote Failed"
+	{
+		"da"		"Afstemning slog fejl. {1}%% stemmer er påkrævet. (Modtog {2}%% af {3} stemmer)"
+	}
+
+	"Vote End"
+	{
+		"da"		"Svaret på {1} er: {2}"
+	}
+
+	"Kick vote"
+	{
+		"da"		"Stem om udsmidning"
+	}
+
+	"Ban vote"
+	{
+		"da"		"Stem om bandlysning"
+	}
+
+	"Map vote"
+	{
+		"da"		"Stem om bane skift"
+	}
+
+	"Confirm Vote"
+	{
+		"da"		"Bekræft stemme"
+	}
+
+	"Map Vote In Use"
+	{
+		"da"		"Map afstemningen er allerede i brug."
+	}
+
+	"Please select a map"
+	{
+		"da"		"Vælg venligst en bane"
+	}
+
+	"Start the Vote"
+	{
+		"da"		"Start afstemningen"
+	}
+
+}

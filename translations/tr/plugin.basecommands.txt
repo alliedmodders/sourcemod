@@ -1,0 +1,128 @@
+"Phrases"
+{
+	"Unable to find cvar"
+	{
+		"tr"		"Aranan cvar bulunamadı: {1}"
+	}
+
+	"No access to cvar"
+	{
+		"tr"		"Bu cvar'a erişiminiz yok."
+	}
+
+	"Value of cvar"
+	{
+		"tr"		"\"{1}\" adlı cvar'ın değeri: \"{2}\""
+	}
+
+	"Cvar changed"
+	{
+		"tr"		"\"{1}\" adlı cvar \"{2}\" olarak değiştirildi."
+	}
+
+	"Config not found"
+	{
+		"tr"		"Ayar dosyası \"{1}\" bulunamadı."
+	}
+
+	"Executed config"
+	{
+		"tr"		"Ayar çalıştırıldı \"{1}\"."
+	}
+
+	"Permabanned player"
+	{
+		"tr"		"\"{1}\" adlı oyuncu kalıcı olarak yasaklandı."
+	}
+
+	"Permabanned player reason"
+	{
+		"tr"		"\"{1}\" adlı oyuncu kalıcı olarak yasaklandı (neden: {2})."
+	}
+
+	"Banned player"
+	{
+		"tr"		"\"{1}\" adlı oyuncu {2} dakikalığına yasaklandı."
+	}
+
+	"Banned player reason"
+	{
+		"tr"		"\"{1}\" adlı oyuncu {2} dakikalığına yasaklandı (neden: {3})."
+	}
+
+	"Removed bans matching"
+	{
+		"tr"		"Şu süzgeçle eşleşen yasaklar kaldırıldı: {1}"
+	}
+
+	"Ban added"
+	{
+		"tr"		"Yasak eklendi."
+	}
+
+	"Admin cache refreshed"
+	{
+		"tr"		"Yönetici önbelleği yenilendi"
+	}
+
+	"Identify player"
+	{
+		"tr"		"Oyuncuyu teşhis et"
+	}
+
+	"Choose Map"
+	{
+		"tr"		"Harita Seç"
+	}
+
+	"Exec CFG"
+	{
+		"tr"		"CFG Çalıştır"
+	}
+
+	"Admin logged in as"
+	{
+		"tr"		"\"{1}\", \"{2}\" olarak şu erişimle oturum açtı: {3}"
+	}
+
+	"Admin logged in anon"
+	{
+		"tr"		"\"{1}\" şu erişime sahip: {2} "
+	}
+
+	"Player is not an admin"
+	{
+		"tr"		"\"{1}\" bir yönetici değil."
+	}
+
+	"Player is an admin"
+	{
+		"tr"		"\"{1}\" bir yönetici."
+	}
+
+	"Username"
+	{
+		"tr"		"Kullanıcı Adı"
+	}
+
+	"Kicked target"
+	{
+		"tr"		"{1} atıldı."
+	}
+
+	"Admin access"
+	{
+		"tr"		"Yönetici erişimi"
+	}
+
+	"Cvar is now protected"
+	{
+		"tr"		"{1} adlı cvar artık korunuyor."
+	}
+
+	"Kicked target reason"
+	{
+		"tr"		"{1} oyundan atıldı (Neden: {2})"
+	}
+
+}

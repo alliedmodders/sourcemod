@@ -1,0 +1,28 @@
+"Phrases"
+{
+	"Slap damage"
+	{
+		"lv"		"Pēriena bojājumi"
+	}
+
+	"Slap player"
+	{
+		"lv"		"Iepērt spēlētāju"
+	}
+
+	"Slapped target"
+	{
+		"lv"		"Iepēra {1}."
+	}
+
+	"Slay player"
+	{
+		"lv"		"Nonāvēt spēlētāju"
+	}
+
+	"Slayed target"
+	{
+		"lv"		"Nonāvēja {1}."
+	}
+
+}

@@ -1,0 +1,28 @@
+"Phrases"
+{
+	"Slap player"
+	{
+		"jp"		"プレイヤーを叩く"
+	}
+
+	"Slapped target"
+	{
+		"jp"		"{1}を叩きました。"
+	}
+
+	"Slap damage"
+	{
+		"jp"		"叩くダメージ"
+	}
+
+	"Slay player"
+	{
+		"jp"		"プレイヤーを殺害"
+	}
+
+	"Slayed target"
+	{
+		"jp"		"{1}を殺害しました。"
+	}
+
+}

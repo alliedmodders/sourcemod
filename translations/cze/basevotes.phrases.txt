@@ -1,0 +1,93 @@
+"Phrases"
+{
+	"Initiate Vote"
+	{
+		"cze"		" Zahajil hlasovani: {1}"
+	}
+
+	"Initiated Vote Map"
+	{
+		"cze"		"Zahajil hlasovani o mape."
+	}
+
+	"Initiated Vote Kick"
+	{
+		"cze"		"Zahajil hlasovani o vyhozeni proti hraci {1}."
+	}
+
+	"Initiated Vote Ban"
+	{
+		"cze"		"Zahajil hlasovani o banu proti hraci {1}"
+	}
+
+	"Map Vote"
+	{
+		"cze"		"Hlasovani o mape: {1}"
+	}
+
+	"Change Map To"
+	{
+		"cze"		"Zmenit mapu na {1}?"
+	}
+
+	"Votekick Player"
+	{
+		"cze"		"Vyhodit {1}?"
+	}
+
+	"Voteban Player"
+	{
+		"cze"		"Zabanovat {1}?"
+	}
+
+	"Vote Successful"
+	{
+		"cze"		"Hlasovani prijato. (Obdrzeno {1}%% z {2} hlasu)"
+	}
+
+	"Vote Failed"
+	{
+		"cze"		"Hlasovani selhalo. Bylo potreba {1}%% hlasu. (Obdrzeno {2}%% z {3} hlasu)"
+	}
+
+	"Vote End"
+	{
+		"cze"		"Odpoved na otazku {1} je: {2}."
+	}
+
+	"Kick vote"
+	{
+		"cze"		"Hlasovani o vyhozeni"
+	}
+
+	"Ban vote"
+	{
+		"cze"		"Hlasovani o banu"
+	}
+
+	"Map vote"
+	{
+		"cze"		"Hlasovani o mape"
+	}
+
+	"Confirm Vote"
+	{
+		"cze"		"Potvrdit hlasovani"
+	}
+
+	"Map Vote In Use"
+	{
+		"cze"		"Jiny admin prave pouziva hlasovaci menu."
+	}
+
+	"Please select a map"
+	{
+		"cze"		"Prosim, zvol mapu"
+	}
+
+	"Start the Vote"
+	{
+		"cze"		"Zacit hlasovani"
+	}
+
+}

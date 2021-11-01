@@ -1,0 +1,28 @@
+"Phrases"
+{
+	"Slap damage"
+	{
+		"ru"		"Урон"
+	}
+
+	"Slap player"
+	{
+		"ru"		"Шлепнуть игрока"
+	}
+
+	"Slapped target"
+	{
+		"ru"		"Игрок {1} шлепнут."
+	}
+
+	"Slay player"
+	{
+		"ru"		"Убить игрока"
+	}
+
+	"Slayed target"
+	{
+		"ru"		"Игрок {1} убит."
+	}
+
+}

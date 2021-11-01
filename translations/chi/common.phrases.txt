@@ -1,0 +1,253 @@
+"Phrases"
+{
+	"Yes"
+	{
+		"chi"		"是"
+	}
+
+	"No"
+	{
+		"chi"		"否"
+	}
+
+	"No matching client"
+	{
+		"chi"		"未发现匹配的客户端."
+	}
+
+	"No matching clients"
+	{
+		"chi"		"未发现匹配的客户端."
+	}
+
+	"More than one client matches"
+	{
+		"chi"		"存在多个符合样式 \"{1}\" 的客户端"
+	}
+
+	"More than one client matched"
+	{
+		"chi"		"存在多个符合所提样式的客户端."
+	}
+
+	"Player no longer available"
+	{
+		"chi"		"您选定的玩家已不再适用."
+	}
+
+	"Kick player"
+	{
+		"chi"		"踢出玩家"
+	}
+
+	"Kicked by admin"
+	{
+		"chi"		"被管理员踢出"
+	}
+
+	"Changing map"
+	{
+		"chi"		"更换地图为 {1}..."
+	}
+
+	"Map was not found"
+	{
+		"chi"		"地图 {1} 未找到."
+	}
+
+	"Unable to target"
+	{
+		"chi"		"您无法操作该玩家."
+	}
+
+	"Name"
+	{
+		"chi"		"名称"
+	}
+
+	"Access"
+	{
+		"chi"		"权限"
+	}
+
+	"See console for output"
+	{
+		"chi"		"请看控制台输出."
+	}
+
+	"Cannot target bot"
+	{
+		"chi"		"无法对机器人发出该指令."
+	}
+
+	"Unable to find cvar"
+	{
+		"chi"		"无法找到 cvar: {1}"
+	}
+
+	"No access to cvar"
+	{
+		"chi"		"您无权设置该 cvar."
+	}
+
+	"Value of cvar"
+	{
+		"chi"		"cvar \"{1}\" 值: \"{2}\""
+	}
+
+	"Cvar changed"
+	{
+		"chi"		"更改 cvar \"{1}\" 为 \"{2}\"."
+	}
+
+	"Config not found"
+	{
+		"chi"		"配置文件 \"{1}\" 未找到."
+	}
+
+	"Executed config"
+	{
+		"chi"		"执行配置 \"{1}\"."
+	}
+
+	"Admin cache refreshed"
+	{
+		"chi"		"管理员缓存已被刷新."
+	}
+
+	"Invalid Amount"
+	{
+		"chi"		"指定数量无效"
+	}
+
+	"Cannot be performed on dead"
+	{
+		"chi"		"该操作无法在暂时“死亡”的客户端 \"{1}\" 上生效"
+	}
+
+	"Player has since died"
+	{
+		"chi"		"操作无法执行, 玩家已死亡."
+	}
+
+	"Vote in Progress"
+	{
+		"chi"		"已有投票在进行中."
+	}
+
+	"Vote Not In Progress"
+	{
+		"chi"		"当前无投票进行."
+	}
+
+	"Cancelled Vote"
+	{
+		"chi"		"投票已取消."
+	}
+
+	"Cancel vote"
+	{
+		"chi"		"取消投票"
+	}
+
+	"Vote Select"
+	{
+		"chi"		"{1} 选了 {2}."
+	}
+
+	"No Votes Cast"
+	{
+		"chi"		"无投票发起."
+	}
+
+	"Vote Delay Minutes"
+	{
+		"chi"		"您必须再等 {1} 分钟后才能发起新一轮投票."
+	}
+
+	"Vote Delay Seconds"
+	{
+		"chi"		"您必须再等 {1} 秒钟后才能发起新一轮投票."
+	}
+
+	"Could not connect to database"
+	{
+		"chi"		"无法连接至该数据库."
+	}
+
+	"Failed to query database"
+	{
+		"chi"		"查询数据库失败."
+	}
+
+	"Invalid SteamID specified"
+	{
+		"chi"		"您指定了一个无效 Steam ID (有效格式须以 'STEAM_:' 开头)."
+	}
+
+	"Reload admins"
+	{
+		"chi"		"重载管理员"
+	}
+
+	"Command is in-game only"
+	{
+		"chi"		"该指令只能在游戏界面中使用."
+	}
+
+	"Target must be dead"
+	{
+		"chi"		"该指令只能用于已死玩家."
+	}
+
+	"Target must be alive"
+	{
+		"chi"		"该指令只能用于活人玩家."
+	}
+
+	"Target is not in game"
+	{
+		"chi"		"指定玩家尚未完全进入游戏."
+	}
+
+	"Played Sound"
+	{
+		"chi"		"已播放声音给玩家 '{1}'"
+	}
+
+	"Slapped player"
+	{
+		"chi"		"已拍打玩家 '{1}'"
+	}
+
+	"Slayed player"
+	{
+		"chi"		"已处死玩家 '{1}'"
+	}
+
+	"Kicked player"
+	{
+		"chi"		"已踢出玩家 '{1}'"
+	}
+
+	"Cannot participate in vote"
+	{
+		"chi"		"您无法参与该项投票."
+	}
+
+	"Cannot change vote"
+	{
+		"chi"		"您无法改变对该项投票作出的选择."
+	}
+
+	"On"
+	{
+		"chi"		"开"
+	}
+
+	"Off"
+	{
+		"chi"		"关"
+	}
+
+}

@@ -1,0 +1,93 @@
+"Phrases"
+{
+	"Initiate Vote"
+	{
+		"vi"		"Bắt đầu bầu chọn: {1}"
+	}
+
+	"Initiated Vote Map"
+	{
+		"vi"		"Băt đầu bầu chọn bản đồ."
+	}
+
+	"Initiated Vote Kick"
+	{
+		"vi"		"Bắt đầu bầu chọn đuổi {1}."
+	}
+
+	"Initiated Vote Ban"
+	{
+		"vi"		"Bắt đầu bầu chọn cấm {1}."
+	}
+
+	"Map Vote"
+	{
+		"vi"		"Bầu chọn bản đồ: {1}"
+	}
+
+	"Change Map To"
+	{
+		"vi"		"Đổi bản đồ sang {1}?"
+	}
+
+	"Votekick Player"
+	{
+		"vi"		"Đuổi {1}?"
+	}
+
+	"Voteban Player"
+	{
+		"vi"		"Cấm {1}?"
+	}
+
+	"Vote Successful"
+	{
+		"vi"		"Bầu chọn thành công. (Nhận được {1}%% trên {2} lượt bầu)"
+	}
+
+	"Vote Failed"
+	{
+		"vi"		"Bầu chọn thất bại. Cần {1}%% phiếu. (Nhận được {2} trên {3} phiếu)"
+	}
+
+	"Vote End"
+	{
+		"vi"		"Câu trả lời của {1} là: {2}"
+	}
+
+	"Kick vote"
+	{
+		"vi"		"Bầu chọn đuổi"
+	}
+
+	"Ban vote"
+	{
+		"vi"		"Bầu chọn cấm"
+	}
+
+	"Map vote"
+	{
+		"vi"		"Bầu chọn bản đồ"
+	}
+
+	"Confirm Vote"
+	{
+		"vi"		"Xác nhận lựa chọn"
+	}
+
+	"Map Vote In Use"
+	{
+		"vi"		"Một quản trị viên khác hiện đang chọn bản đồ."
+	}
+
+	"Please select a map"
+	{
+		"vi"		"Hãy chọn một bản đồ"
+	}
+
+	"Start the Vote"
+	{
+		"vi"		"Bắt đầu bầu chọn"
+	}
+
+}

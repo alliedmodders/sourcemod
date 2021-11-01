@@ -1,0 +1,93 @@
+"Phrases"
+{
+	"Initiate Vote"
+	{
+		"sk"		"Spustené hlasovanie : {1} "
+	}
+
+	"Initiated Vote Map"
+	{
+		"sk"		"Spustené hlasovanie mapy."
+	}
+
+	"Initiated Vote Kick"
+	{
+		"sk"		"Spustené hlasovanie o vykopnutie hráča {1}. "
+	}
+
+	"Initiated Vote Ban"
+	{
+		"sk"		"Spustené hlasovanie o zabanovanie hráča {1}. "
+	}
+
+	"Map Vote"
+	{
+		"sk"		"Hlasovanie mapy: {1}  "
+	}
+
+	"Change Map To"
+	{
+		"sk"		"Zmeniť mapu na {1}? "
+	}
+
+	"Votekick Player"
+	{
+		"sk"		"Vykopnúť {1}? "
+	}
+
+	"Voteban Player"
+	{
+		"sk"		"Zabanovať {1}? "
+	}
+
+	"Vote Successful"
+	{
+		"sk"		"Hlasovanie úspešné. (Získaných {1}%% z {2} hlasov)  "
+	}
+
+	"Vote Failed"
+	{
+		"sk"		"Hlasovanie zlyhalo. {1}%% potrebných hlasov. (Získaných {2}%% z {3} hlasov) "
+	}
+
+	"Vote End"
+	{
+		"sk"		"Odpoveď na {1} je: {2}. "
+	}
+
+	"Kick vote"
+	{
+		"sk"		"Hlasovanie vyhodenia"
+	}
+
+	"Ban vote"
+	{
+		"sk"		"Hlasovať o zabanovanie"
+	}
+
+	"Map vote"
+	{
+		"sk"		"Hlasovanie mapy"
+	}
+
+	"Confirm Vote"
+	{
+		"sk"		"Potvrdiť hlasovanie"
+	}
+
+	"Map Vote In Use"
+	{
+		"sk"		"Iný admin práve používa menu hlasovania mapy."
+	}
+
+	"Please select a map"
+	{
+		"sk"		"Prosím vyberte mapu"
+	}
+
+	"Start the Vote"
+	{
+		"sk"		"Začiatok hlasovania"
+	}
+
+}

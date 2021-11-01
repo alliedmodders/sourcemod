@@ -1,0 +1,103 @@
+"Phrases"
+{
+	"Rock The Vote"
+	{
+		"cze"		"Rock the Vote:"
+	}
+
+	"RTV Not Allowed"
+	{
+		"cze"		"Rock the Vote zatim neni povoleno."
+	}
+
+	"RTV Started"
+	{
+		"cze"		"Rock the Vote jiz zacalo."
+	}
+
+	"RTV Ended"
+	{
+		"cze"		"RTV jiz skoncilo, nemuzete ho znovu zacit ani nominovat mapy."
+	}
+
+	"Already Voted"
+	{
+		"cze"		"Uz jste hlasoval pro Rock the Vote. ({1} hlasu z {2} potrebnych)"
+	}
+
+	"Minimal Players Not Met"
+	{
+		"cze"		"Nebyl dosahnut minimalni pocet potrebnych hracu."
+	}
+
+	"Map Already In Vote"
+	{
+		"cze"		"Mapa '{1}' je jiz v Rock the Vote seznamu."
+	}
+
+	"Map Inserted"
+	{
+		"cze"		"Mapa '{1}' byla pridana do Rock the Vote."
+	}
+
+	"RTV Requested"
+	{
+		"cze"		"{1} chce zacit Rock the Vote. ({2} hlasu z {3} potrebnych)"
+	}
+
+	"RTV Vote Ready"
+	{
+		"cze"		"Rock the Vote zacalo!"
+	}
+
+	"Don't Change"
+	{
+		"cze"		"Zachovat soucasnou mapu"
+	}
+
+	"Already Nominated"
+	{
+		"cze"		"Uz jsi nominoval mapu."
+	}
+
+	"Max Nominations"
+	{
+		"cze"		"Maximalni pocet nominaci byl dosahnut."
+	}
+
+	"Selected Map"
+	{
+		"cze"		"{1} hlasoval pro {2}"
+	}
+
+	"No Votes"
+	{
+		"cze"		"Nebyly prijaty zadne hlasy pro Rock the Vote, zachovana soucasna mapa."
+	}
+
+	"Current Map Stays"
+	{
+		"cze"		"Soucasna mapa pokracuje! Rock the Vote promluvilo!"
+	}
+
+	"Changing Maps"
+	{
+		"cze"		"Zmena mapy na {1}! Rock the Vote promluvilo!"
+	}
+
+	"Map Already Nominated"
+	{
+		"cze"		"Mapa, kterou jsi zvolil, byla jiz nominovana."
+	}
+
+	"Map Nominated"
+	{
+		"cze"		"{1} nominoval {2} pro Rock the Vote."
+	}
+
+	"Nominate Title"
+	{
+		"cze"		"Nominovat mapu:"
+	}
+
+}

@@ -1,0 +1,128 @@
+"Phrases"
+{
+	"Unable to find cvar"
+	{
+		"jp"		"CVarが見つかりませんでした: {1}"
+	}
+
+	"No access to cvar"
+	{
+		"jp"		"あなたはこのCVarにアクセス出来ません。"
+	}
+
+	"Value of cvar"
+	{
+		"jp"		"CVar \"{1]\" の値: \"{2}\""
+	}
+
+	"Cvar changed"
+	{
+		"jp"		"Cvar \"{1}\" を \"{2}\" に変更しました。"
+	}
+
+	"Config not found"
+	{
+		"jp"		"コンフィグファイル \"{1}\" は存在しません。"
+	}
+
+	"Executed config"
+	{
+		"jp"		"コンフィグ \"{1}\" を実行しました。"
+	}
+
+	"Permabanned player"
+	{
+		"jp"		"プレイヤー \"{1}\" を永久BANしました。"
+	}
+
+	"Permabanned player reason"
+	{
+		"jp"		"プレイヤー \"{1}\" を永久BANしました。(理由: {2})"
+	}
+
+	"Banned player"
+	{
+		"jp"		"プレイヤー \"{1}\" を{2}分間BANしました。"
+	}
+
+	"Banned player reason"
+	{
+		"jp"		"プレイヤー \"{1}\" を{2}分間BANしました。 (理由: {3})"
+	}
+
+	"Removed bans matching"
+	{
+		"jp"		"フィルターにマッチするBANを削除しました:"
+	}
+
+	"Ban added"
+	{
+		"jp"		"BANを追加しました。"
+	}
+
+	"Admin cache refreshed"
+	{
+		"jp"		"管理者キャッシュを更新しました。"
+	}
+
+	"Identify player"
+	{
+		"jp"		"プレイヤーを特定"
+	}
+
+	"Choose Map"
+	{
+		"jp"		"マップを選択"
+	}
+
+	"Exec CFG"
+	{
+		"jp"		"CFGを実行"
+	}
+
+	"Admin logged in as"
+	{
+		"jp"		"\"{1}\" は \"{2}\" としてログインしています。権限: {3}"
+	}
+
+	"Admin logged in anon"
+	{
+		"jp"		"\"{1}\"の権限: {2}"
+	}
+
+	"Player is not an admin"
+	{
+		"jp"		"\"{1}\"は管理者ではありません。"
+	}
+
+	"Player is an admin"
+	{
+		"jp"		"\"{1}\"は管理者です。"
+	}
+
+	"Username"
+	{
+		"jp"		"ユーザ名"
+	}
+
+	"Kicked target"
+	{
+		"jp"		"{1}をキックしました。"
+	}
+
+	"Admin access"
+	{
+		"jp"		"管理者アクセス"
+	}
+
+	"Cvar is now protected"
+	{
+		"jp"		"Cvar {1} は保護されています。"
+	}
+
+	"Kicked target reason"
+	{
+		"jp"		"{1}をキックしました。(理由: {2})"
+	}
+
+}

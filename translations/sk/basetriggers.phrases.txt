@@ -1,0 +1,108 @@
+"Phrases"
+{
+	"Timeleft"
+	{
+		"sk"		"Zostávajúci čas pre túto mapu :"
+	}
+
+	"Thetime"
+	{
+		"sk"		"Aktuálny čas servera je {1} "
+	}
+
+	"Friendly Fire On"
+	{
+		"sk"		"Zranenie vlastných je zapnuté."
+	}
+
+	"Friendly Fire Off"
+	{
+		"sk"		"Zranenie vlastných je vypnuté."
+	}
+
+	"Current Map"
+	{
+		"sk"		"Aktuálna mapa je {1}. "
+	}
+
+	"LastRound"
+	{
+		"sk"		"Toto je posledné kolo !"
+	}
+
+	"NoTimelimit"
+	{
+		"sk"		"Žiadny časový limit pre túto mapu."
+	}
+
+	"Next Map"
+	{
+		"sk"		"Ďalšia mapa : {1} "
+	}
+
+	"Pending Vote"
+	{
+		"sk"		"Prebiehajúce hlasovanie"
+	}
+
+	"WinLimitAppend"
+	{
+		"sk"		", alebo sa mapa zmení potom ako nejaký tím vyhrá jedno kolo"
+	}
+
+	"WinLimit"
+	{
+		"sk"		"Mapa sa zmení potom ako nejaký tím vyhrá jedno kolo"
+	}
+
+	"MaxRoundsAppend"
+	{
+		"sk"		", alebo sa mapa zmení po ďalšom kole"
+	}
+
+	"MaxRounds"
+	{
+		"sk"		"Mapa sa zmení po ďalšom kole"
+	}
+
+	"FragLimitAppend"
+	{
+		"sk"		", alebo sa mapa zmení potom ako hráč získa jeden bod za zabitie"
+	}
+
+	"FragLimit"
+	{
+		"sk"		"Mapa sa zmení potom ako hráč získa jeden bod za zabitie"
+	}
+
+	"WinLimitAppendPlural"
+	{
+		"sk"		", alebo sa mapa zmení potom ako nejaký tím vyhrá {1} kôl "
+	}
+
+	"WinLimitPlural"
+	{
+		"sk"		"Mapa sa zmení potom ako nejaký tím vyhrá {1} kôl "
+	}
+
+	"MaxRoundsAppendPlural"
+	{
+		"sk"		", alebo sa mapa zmení po {1} ďalších kolách "
+	}
+
+	"MaxRoundsPlural"
+	{
+		"sk"		"Mapa sa zmení po {1} ďalších kolách"
+	}
+
+	"FragLimitAppendPlural"
+	{
+		"sk"		", alebo sa mapa zmení potom ako hráč získa {1} bodov za zabitie"
+	}
+
+	"FragLimitPlural"
+	{
+		"sk"		"Mapa sa zmení potom ako hráč získa {1} bodov za zabitie"
+	}
+
+}

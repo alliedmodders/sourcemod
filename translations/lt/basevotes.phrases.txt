@@ -1,0 +1,93 @@
+"Phrases"
+{
+	"Initiate Vote"
+	{
+		"lt"		"Pradėjo balsavimą: {1}"
+	}
+
+	"Initiated Vote Map"
+	{
+		"lt"		"Pradėjo balsavimą dėl naujo žemėlapio."
+	}
+
+	"Initiated Vote Kick"
+	{
+		"lt"		"Pradėjo pašalinimo balsavimą prieš {1}."
+	}
+
+	"Initiated Vote Ban"
+	{
+		"lt"		"Pradėjo draudimo balsavimą prieš {1}."
+	}
+
+	"Map Vote"
+	{
+		"lt"		"Balsavimas už žemėlapį: {1}"
+	}
+
+	"Change Map To"
+	{
+		"lt"		"Pakeisti žemėlapį į {1}?"
+	}
+
+	"Votekick Player"
+	{
+		"lt"		"Pašalinti {1}?"
+	}
+
+	"Voteban Player"
+	{
+		"lt"		"Uždrausti {1}?"
+	}
+
+	"Vote Successful"
+	{
+		"lt"		"Balsavimas pavyko. (Surinkta {1}%% iš {2} galimų)"
+	}
+
+	"Vote Failed"
+	{
+		"lt"		"Balsavimas nepavyko. {1}%% balsų reikia. (Surinkta {2}%% iš {3} galimų)"
+	}
+
+	"Vote End"
+	{
+		"lt"		"Atsakymas į {1} yra: {2}."
+	}
+
+	"Kick vote"
+	{
+		"lt"		"Pašalinimo balsavimas"
+	}
+
+	"Ban vote"
+	{
+		"lt"		"Draudimo balsavimas"
+	}
+
+	"Map vote"
+	{
+		"lt"		"Balsavimas už žemėlapį"
+	}
+
+	"Confirm Vote"
+	{
+		"lt"		"Patvirtinti balsavimą"
+	}
+
+	"Map Vote In Use"
+	{
+		"lt"		"Šiuo metu kitas administratorius naudoja balsavimo už žemėlapį meniu."
+	}
+
+	"Please select a map"
+	{
+		"lt"		"Pasirinkti žemėlapį"
+	}
+
+	"Start the Vote"
+	{
+		"lt"		"Pradėti balsavimą"
+	}
+
+}

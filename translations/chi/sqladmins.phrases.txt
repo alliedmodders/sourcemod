@@ -1,0 +1,78 @@
+"Phrases"
+{
+	"Invalid authtype"
+	{
+		"chi"		"认证方式必须为 'steam', 'name', 或 'ip'."
+	}
+
+	"Invalid immunity"
+	{
+		"chi"		"免疫级别必须为正整数."
+	}
+
+	"SQL Admin already exists"
+	{
+		"chi"		"授予该凭证标志的管理员已存在."
+	}
+
+	"SQL Admin added"
+	{
+		"chi"		"管理员被成功添加进数据库."
+	}
+
+	"SQL Admin deleted"
+	{
+		"chi"		"管理员被已从数据库中成功删除."
+	}
+
+	"SQL Admin not found"
+	{
+		"chi"		"授予该凭证标志的管理员未找到."
+	}
+
+	"SQL Group already exists"
+	{
+		"chi"		"符合该名称的组已存在."
+	}
+
+	"SQL Group added"
+	{
+		"chi"		"组被成功添加进数据库."
+	}
+
+	"SQL Group deleted"
+	{
+		"chi"		"组已从数据库中成功删除."
+	}
+
+	"SQL Group not found"
+	{
+		"chi"		"符合该名称的组未找到."
+	}
+
+	"SQL Admin groups reset"
+	{
+		"chi"		"管理员组已被成功重置."
+	}
+
+	"SQL Group X not found"
+	{
+		"chi"		"未找到组: \"{1}\""
+	}
+
+	"SQL Group X failed to bind"
+	{
+		"chi"		"无法绑定组: \"{1}\""
+	}
+
+	"Added group to user"
+	{
+		"chi"		"成功添加一个组至指定管理员类别."
+	}
+
+	"Added groups to user"
+	{
+		"chi"		"成功添加 {1} 个组至指定管理员类别."
+	}
+
+}

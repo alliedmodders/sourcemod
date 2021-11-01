@@ -1,0 +1,68 @@
+"Phrases"
+{
+	"Already Nominated"
+	{
+		"ko"		"당신은 이미 맵을 추천했습니다."
+	}
+
+	"Max Nominations"
+	{
+		"ko"		"최대 추천 가능 횟수를 넘었습니다."
+	}
+
+	"Map Already In Vote"
+	{
+		"ko"		"맵 '{1}' 은 이미 추천 목록에 있습니다."
+	}
+
+	"Map Inserted"
+	{
+		"ko"		"맵 '{1}' 이 추천 목록에 추가되었습니다."
+	}
+
+	"Map Already Nominated"
+	{
+		"ko"		"당신이 고른 맵은 이미 추천된 맵입니다."
+	}
+
+	"Map Nominated"
+	{
+		"ko"		"{1} 님이 맵 {2} 를 추천했습니다."
+	}
+
+	"Map Nomination Changed"
+	{
+		"ko"		"{1} 님이 추천하는 맵을 {2} 으로 바꾸었습니다."
+	}
+
+	"Nominate Title"
+	{
+		"ko"		"맵 추천하기 :"
+	}
+
+	"Can't Nominate Current Map"
+	{
+		"ko"		"당신이 고른 맵은 현재 맵이므로 추천할 수 없습니다"
+	}
+
+	"Map in Exclude List"
+	{
+		"ko"		"당신이 고른 맵은 최근에 플레이된 맵이므로 추천할 수 없습니다"
+	}
+
+	"Current Map"
+	{
+		"ko"		"현재 맵"
+	}
+
+	"Recently Played"
+	{
+		"ko"		"최근에 했던 맵"
+	}
+
+	"Nominated"
+	{
+		"ko"		"추천됨"
+	}
+
+}

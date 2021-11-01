@@ -1,0 +1,93 @@
+"Phrases"
+{
+	"Initiate Vote"
+	{
+		"ro"		"Iniţializare vot: {1}"
+	}
+
+	"Initiated Vote Map"
+	{
+		"ro"		"Iniţializare vot pentru hartă."
+	}
+
+	"Initiated Vote Kick"
+	{
+		"ro"		"Iniţializare vot de kick împotriva {1}."
+	}
+
+	"Initiated Vote Ban"
+	{
+		"ro"		"Iniţializare vot de ban împotriva {1}."
+	}
+
+	"Map Vote"
+	{
+		"ro"		"Vot hartă: {1}"
+	}
+
+	"Change Map To"
+	{
+		"ro"		"Schimbi harta în {1}?"
+	}
+
+	"Votekick Player"
+	{
+		"ro"		"Kick {1}?"
+	}
+
+	"Voteban Player"
+	{
+		"ro"		"Ban {1}?"
+	}
+
+	"Vote Successful"
+	{
+		"ro"		"Vot reuşit. (s-au primit {1}%% din {2} voturi)"
+	}
+
+	"Vote Failed"
+	{
+		"ro"		"Vot eşuat. {1}%% voturi necesare. (s-au primit {2}%% din {3} voturi)"
+	}
+
+	"Vote End"
+	{
+		"ro"		"Răspunsul la {1} este: {2}."
+	}
+
+	"Kick vote"
+	{
+		"ro"		"Vot kick"
+	}
+
+	"Ban vote"
+	{
+		"ro"		"Vot pentru ban"
+	}
+
+	"Map vote"
+	{
+		"ro"		"Vot hartă"
+	}
+
+	"Confirm Vote"
+	{
+		"ro"		"Confirmă vot"
+	}
+
+	"Map Vote In Use"
+	{
+		"ro"		"Un alt admin foloseste acum meniul de vot pentru harta."
+	}
+
+	"Please select a map"
+	{
+		"ro"		"Selecteaza o harta"
+	}
+
+	"Start the Vote"
+	{
+		"ro"		"Porneste votul"
+	}
+
+}

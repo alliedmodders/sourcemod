@@ -1,0 +1,108 @@
+"Phrases"
+{
+	"Timeleft"
+	{
+		"tr"		"Harita için kalan zaman:"
+	}
+
+	"Thetime"
+	{
+		"tr"		"Geçerli sunucu saati {1}"
+	}
+
+	"Friendly Fire On"
+	{
+		"tr"		"Dost ateşi etkin."
+	}
+
+	"Friendly Fire Off"
+	{
+		"tr"		"Dost ateşi etkisiz."
+	}
+
+	"Current Map"
+	{
+		"tr"		"Geçerli harita {1}."
+	}
+
+	"LastRound"
+	{
+		"tr"		"Bu son tur!!"
+	}
+
+	"NoTimelimit"
+	{
+		"tr"		"Haritanın süre sınırı yok"
+	}
+
+	"Next Map"
+	{
+		"tr"		"Sıradaki Harita: {1}"
+	}
+
+	"Pending Vote"
+	{
+		"tr"		"Oylama Bekleniyor"
+	}
+
+	"WinLimitAppend"
+	{
+		"tr"		" ya da harita bir takım bir tur kazandığında değişecek"
+	}
+
+	"WinLimit"
+	{
+		"tr"		"Harita bir takım bir tur kazandığında değişecek"
+	}
+
+	"MaxRoundsAppend"
+	{
+		"tr"		" ya da harita bir tur sonra değişecek"
+	}
+
+	"MaxRounds"
+	{
+		"tr"		"Harita bir tur sonra değişecek"
+	}
+
+	"FragLimitAppend"
+	{
+		"tr"		" ya da harita bir oyuncu bir öldürme sayısına ulaştığında değişecek"
+	}
+
+	"FragLimit"
+	{
+		"tr"		"Harita bir oyuncu bir öldürme sayısına ulaştığında değişecek"
+	}
+
+	"WinLimitAppendPlural"
+	{
+		"tr"		" ya da harita {1} takım bir tur kazandığında değişecek"
+	}
+
+	"WinLimitPlural"
+	{
+		"tr"		"Harita bir takım {1} tur kazandığında değişecek"
+	}
+
+	"MaxRoundsAppendPlural"
+	{
+		"tr"		" ya da harita {1} tur sonra değişecek"
+	}
+
+	"MaxRoundsPlural"
+	{
+		"tr"		"Harita {1} tur sonra değişecek"
+	}
+
+	"FragLimitAppendPlural"
+	{
+		"tr"		" ya da harita bir oyuncu {1} öldürme sayısına ulaştığında değişecek"
+	}
+
+	"FragLimitPlural"
+	{
+		"tr"		"Harita bir oyuncu {1} öldürme sayısına ulaştığında değişecek"
+	}
+
+}

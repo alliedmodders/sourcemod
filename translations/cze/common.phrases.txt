@@ -1,0 +1,253 @@
+"Phrases"
+{
+	"Yes"
+	{
+		"cze"		"Ano"
+	}
+
+	"No"
+	{
+		"cze"		"Ne"
+	}
+
+	"No matching client"
+	{
+		"cze"		"Nebyl nalezen zadny shodny hrac."
+	}
+
+	"No matching clients"
+	{
+		"cze"		"Nebyli nalezeni zadni shodni hraci."
+	}
+
+	"More than one client matches"
+	{
+		"cze"		"Vice nez jeden hrac splnuje podminku \"{1}\""
+	}
+
+	"More than one client matched"
+	{
+		"cze"		"Vice nez jeden hrac splnuje danou podminku."
+	}
+
+	"Player no longer available"
+	{
+		"cze"		"Hrac, ktereho jste zvolil, jiz neni dostupny."
+	}
+
+	"Kick player"
+	{
+		"cze"		"Vyhodit hrace"
+	}
+
+	"Kicked by admin"
+	{
+		"cze"		"Vyhozen administratorem"
+	}
+
+	"Changing map"
+	{
+		"cze"		"Zmena mapy na {1}..."
+	}
+
+	"Map was not found"
+	{
+		"cze"		"Mapa {1} nebyla nalezena."
+	}
+
+	"Unable to target"
+	{
+		"cze"		"Nemuzete zvolit tohoto hrace."
+	}
+
+	"Name"
+	{
+		"cze"		"Jmeno"
+	}
+
+	"Access"
+	{
+		"cze"		"Pristup"
+	}
+
+	"See console for output"
+	{
+		"cze"		"Pro vystup se podivejte do konzole."
+	}
+
+	"Cannot target bot"
+	{
+		"cze"		"Tento prikaz nelze vykonat na botovi."
+	}
+
+	"Unable to find cvar"
+	{
+		"cze"		"Nelze nalezt cvar: {1}"
+	}
+
+	"No access to cvar"
+	{
+		"cze"		"Nemate pristup k tomuto cvaru."
+	}
+
+	"Value of cvar"
+	{
+		"cze"		"Hodnota cvaru \"{1}\" je: \"{2}\""
+	}
+
+	"Cvar changed"
+	{
+		"cze"		"Zmenen cvar \"{1}\" na \"{2}\"."
+	}
+
+	"Config not found"
+	{
+		"cze"		"Konfiguracni soubor \"{1}\" nebyl nalezen."
+	}
+
+	"Executed config"
+	{
+		"cze"		"Spustil konfiguracni soubor \"{1}\"."
+	}
+
+	"Admin cache refreshed"
+	{
+		"cze"		"Cache adminu byla obnovena."
+	}
+
+	"Invalid Amount"
+	{
+		"cze"		"Byla zadana neplatna hodnota"
+	}
+
+	"Cannot be performed on dead"
+	{
+		"cze"		"Tato akce nemuze byt vykonana na mrtvem hraci \"{1}\""
+	}
+
+	"Player has since died"
+	{
+		"cze"		"Akce nemuze byt vykonana, hrac mezitim zemrel."
+	}
+
+	"Vote in Progress"
+	{
+		"cze"		"Hlasovani jiz probiha."
+	}
+
+	"Vote Not In Progress"
+	{
+		"cze"		"V tuto chvili neprobiha zadne hlasovani."
+	}
+
+	"Cancelled Vote"
+	{
+		"cze"		"Zrusil hlasovani."
+	}
+
+	"Cancel vote"
+	{
+		"cze"		"Zrusit hlasovani"
+	}
+
+	"Vote Select"
+	{
+		"cze"		"{1} zvolil {2}."
+	}
+
+	"No Votes Cast"
+	{
+		"cze"		"Nebyly prijaty zadne hlasy."
+	}
+
+	"Vote Delay Minutes"
+	{
+		"cze"		"Musite pockat {1} minut pred zapocetim dalsiho hlasovani."
+	}
+
+	"Vote Delay Seconds"
+	{
+		"cze"		"Musite pockat {1} vterin pred zapocetim dalsiho hlasovani."
+	}
+
+	"Could not connect to database"
+	{
+		"cze"		"Nelze se pripojit k databazi."
+	}
+
+	"Failed to query database"
+	{
+		"cze"		"Nelze se spojit s databazi."
+	}
+
+	"Invalid SteamID specified"
+	{
+		"cze"		"Byl zadan neplatny Steam ID (musi zacinat 'STEAM_')"
+	}
+
+	"Reload admins"
+	{
+		"cze"		"Obnovit adminy"
+	}
+
+	"Command is in-game only"
+	{
+		"cze"		"Tento prikaz lze pouzit pouze ze hry."
+	}
+
+	"Target must be dead"
+	{
+		"cze"		"Tento prikaz muze byt pouzit pouze na mrtve hrace."
+	}
+
+	"Target must be alive"
+	{
+		"cze"		"Tento prikaz muze byt pouzit pouze na zive hrace."
+	}
+
+	"Target is not in game"
+	{
+		"cze"		"Zvoleny hrac jeste neni plne pripojen do hry."
+	}
+
+	"Played Sound"
+	{
+		"cze"		" Byl prehran zvuk hraci '{1}'"
+	}
+
+	"Slapped player"
+	{
+		"cze"		"Vyliskal hrace '{1}'"
+	}
+
+	"Slayed player"
+	{
+		"cze"		"Zabil hrace '{1}'"
+	}
+
+	"Kicked player"
+	{
+		"cze"		"Vyhodil hrace '{1}'"
+	}
+
+	"Cannot participate in vote"
+	{
+		"cze"		"Nemuzete se zucastnit tohoto hlasovani."
+	}
+
+	"Cannot change vote"
+	{
+		"cze"		"Nemuzete zmenit svoji volbu v tomto hlasovani."
+	}
+
+	"On"
+	{
+		"cze"		"Zapnout"
+	}
+
+	"Off"
+	{
+		"cze"		"Vypnout"
+	}
+
+}

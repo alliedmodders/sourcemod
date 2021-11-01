@@ -1,0 +1,128 @@
+"Phrases"
+{
+	"Unable to find cvar"
+	{
+		"de"		"Konsolenvariable {1} kann nicht gefunden werden."
+	}
+
+	"No access to cvar"
+	{
+		"de"		"Du hast keinen Zugriff auf diese Konsolenvariable. "
+	}
+
+	"Value of cvar"
+	{
+		"de"		" Wert der Konsolenvariable \"{1}\": \"{2}\""
+	}
+
+	"Cvar changed"
+	{
+		"de"		"Konsolenvariable \"{1}\" auf \"{2}\" geändert. "
+	}
+
+	"Config not found"
+	{
+		"de"		"Konfigurations-Datei \"{1}\" wurde nicht gefunden. "
+	}
+
+	"Executed config"
+	{
+		"de"		"Konfiguration \"{1}\" wurde ausgeführt. "
+	}
+
+	"Permabanned player"
+	{
+		"de"		"\"{1}\" wurde permanent gebannt."
+	}
+
+	"Permabanned player reason"
+	{
+		"de"		"\"{1}\" permanent gebannt (Grund: {2}). "
+	}
+
+	"Banned player"
+	{
+		"de"		"\"{1}\" für {2} Minuten gebannt. "
+	}
+
+	"Banned player reason"
+	{
+		"de"		"\"{1}\" für {2} Minuten gebannt (Grund: {3}). "
+	}
+
+	"Removed bans matching"
+	{
+		"de"		"Entfernte Verbannungen zu den passenden Kriterien: {1} "
+	}
+
+	"Ban added"
+	{
+		"de"		"Bann wurde hinzugefügt."
+	}
+
+	"Admin cache refreshed"
+	{
+		"de"		"Admin-Zwischenspeicher wurde aktualisiert. "
+	}
+
+	"Identify player"
+	{
+		"de"		"Spieler identifizieren"
+	}
+
+	"Choose Map"
+	{
+		"de"		"Karte wählen"
+	}
+
+	"Exec CFG"
+	{
+		"de"		"Konfiguration ausführen"
+	}
+
+	"Admin logged in as"
+	{
+		"de"		"\"{1}\" ist angemeldet als \"{2}\" mit dem Zugriff: {3} "
+	}
+
+	"Admin logged in anon"
+	{
+		"de"		"\"{1}\" hat Zugriff: {2}"
+	}
+
+	"Player is not an admin"
+	{
+		"de"		"\"{1}\" ist kein Admin."
+	}
+
+	"Player is an admin"
+	{
+		"de"		"\"{1}\" ist ein Admin."
+	}
+
+	"Username"
+	{
+		"de"		"Benutzername"
+	}
+
+	"Kicked target"
+	{
+		"de"		"{1} wurde gekickt"
+	}
+
+	"Admin access"
+	{
+		"de"		"Admin-Zugriff"
+	}
+
+	"Cvar is now protected"
+	{
+		"de"		"Konsolenvariable {1} ist jetzt geschützt. "
+	}
+
+	"Kicked target reason"
+	{
+		"de"		"{1} wurde gekickt (Grund: {2})"
+	}
+
+}

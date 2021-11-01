@@ -1,0 +1,63 @@
+"Phrases"
+{
+	"Ban player"
+	{
+		"tr"		"Oyuncuyu yasakla"
+	}
+
+	"Ban reason"
+	{
+		"tr"		"Yasaklama nedeni"
+	}
+
+	"Permabanned player"
+	{
+		"tr"		"\"{1}\" adlı kullanıcı kalıcı olarak yasaklandı."
+	}
+
+	"Permabanned player reason"
+	{
+		"tr"		"\"{1}\" adlı kullanıcı kalıcı olarak yasaklandı (neden: {2})."
+	}
+
+	"Banned player"
+	{
+		"tr"		"\"{1}\" adlı oyuncu {2} dakikalığına yasaklandı."
+	}
+
+	"Banned player reason"
+	{
+		"tr"		"\"{1}\" adlı kullanıcı {2} dakikalığına yasaklandı (neden: {3})."
+	}
+
+	"Removed bans matching"
+	{
+		"tr"		"Bu süzgeçe uyan yasaklamalar kaldırıldı: {1}"
+	}
+
+	"Ban added"
+	{
+		"tr"		"Yasaklama eklendi."
+	}
+
+	"Cannot ban that IP"
+	{
+		"tr"		"O IP adresini yasaklayamazsınız."
+	}
+
+	"Custom ban reason explanation"
+	{
+		"tr"		"Nedeni bir sohbet mesajı olarak girin. İptal etmek için {1} kullanın."
+	}
+
+	"AbortBan applied successfully"
+	{
+		"tr"		"Yasaklama iptal edildi."
+	}
+
+	"AbortBan not waiting for custom reason"
+	{
+		"tr"		"Bir yasak nedeninin yazılması beklenmiyor, iptal edilecek yasak yok."
+	}
+
+}

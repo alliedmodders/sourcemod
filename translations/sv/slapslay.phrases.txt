@@ -1,0 +1,28 @@
+"Phrases"
+{
+	"Slap damage"
+	{
+		"sv"		"Smisk skada"
+	}
+
+	"Slap player"
+	{
+		"sv"		"Smiska spelare"
+	}
+
+	"Slapped target"
+	{
+		"sv"		"Smiskade {1}."
+	}
+
+	"Slay player"
+	{
+		"sv"		"Dräp spelare"
+	}
+
+	"Slayed target"
+	{
+		"sv"		"Dräpte {1}."
+	}
+
+}

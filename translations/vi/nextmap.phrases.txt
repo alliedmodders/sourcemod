@@ -1,0 +1,43 @@
+"Phrases"
+{
+	"Next Map"
+	{
+		"vi"		"Bản đồ tiếp theo: {1}"
+	}
+
+	"Map History"
+	{
+		"vi"		"Lịch sử bản đồ"
+	}
+
+	"Map"
+	{
+		"vi"		"[Bản đồ]"
+	}
+
+	"Started"
+	{
+		"vi"		"[Đã bắt đầu]"
+	}
+
+	"Played Time"
+	{
+		"vi"		"[Thời gian đã chơi]"
+	}
+
+	"Reason"
+	{
+		"vi"		"[Lý do kết thúc]"
+	}
+
+	"Current Map"
+	{
+		"vi"		"Bản đồ hiện tại"
+	}
+
+	"ago"
+	{
+		"vi"		"trước"
+	}
+
+}

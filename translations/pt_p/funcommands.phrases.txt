@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"pt_p"		"Queimar jogador"
+	}
+
+	"FireBomb player"
+	{
+		"pt_p"		"Bomba de fogo no jogador"
+	}
+
+	"Freeze player"
+	{
+		"pt_p"		"Congelar jogador"
+	}
+
+	"FreezeBomb player"
+	{
+		"pt_p"		"Bomba de gelo no jogador"
+	}
+
+	"TimeBomb player"
+	{
+		"pt_p"		"Bomba-relógio no jogador"
+	}
+
+	"Beacon player"
+	{
+		"pt_p"		"Sinalizar jogador"
+	}
+
+	"NoClip player"
+	{
+		"pt_p"		"Alterar NoClip em jogador"
+	}
+
+	"Blind player"
+	{
+		"pt_p"		"Cegar jogador"
+	}
+
+	"Drug player"
+	{
+		"pt_p"		"Drogar jogador"
+	}
+
+	"Gravity player"
+	{
+		"pt_p"		"Gravidade do jogador"
+	}
+
+	"Blind amount"
+	{
+		"pt_p"		"Quanto?"
+	}
+
+	"Fully blind"
+	{
+		"pt_p"		"Totalmente cego"
+	}
+
+	"Half blind"
+	{
+		"pt_p"		"Parcialmente cego"
+	}
+
+	"No blind"
+	{
+		"pt_p"		"Visão normal"
+	}
+
+	"Gravity amount"
+	{
+		"pt_p"		"Gravidade?"
+	}
+
+	"Gravity Very High"
+	{
+		"pt_p"		"Gravidade muito alta"
+	}
+
+	"Gravity High"
+	{
+		"pt_p"		"Gravidade alta"
+	}
+
+	"Gravity Normal"
+	{
+		"pt_p"		"Gravidade normal"
+	}
+
+	"Gravity Low"
+	{
+		"pt_p"		"Gravidade alta"
+	}
+
+	"Gravity Very Low"
+	{
+		"pt_p"		"Gravidade muito baixa"
+	}
+
+	"Set target on fire"
+	{
+		"pt_p"		"- Foi ateado um fogo em {1}."
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"pt_p"		"- A bomba de fogo em {1} foi alterada."
+	}
+
+	"Froze target"
+	{
+		"pt_p"		"- {1} foi congelado(a)."
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"pt_p"		"- A bomba de gelo em {1} foi alterada."
+	}
+
+	"Toggled beacon on target"
+	{
+		"pt_p"		"- O sinalizador em {1} foi alterado. "
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"pt_p"		"- A bomba-relógio em {1} foi alterada."
+	}
+
+	"Toggled noclip on target"
+	{
+		"pt_p"		"- Os valores de noclip em {1} foram alterados."
+	}
+
+	"Toggled drug on target"
+	{
+		"pt_p"		"- As drogas em {1} foram alteradas."
+	}
+
+	"Set blind on target"
+	{
+		"pt_p"		"- {1} foi cegado(a)."
+	}
+
+	"Set gravity on target"
+	{
+		"pt_p"		"- A gravidade de {1} foi alterada."
+	}
+
+	"Till Explodes"
+	{
+		"pt_p"		"{2} segundos até que {1} expluda."
+	}
+
+	"Unfrozen"
+	{
+		"pt_p"		"Foste descongelado."
+	}
+
+	"You will be unfrozen"
+	{
+		"pt_p"		"Serás descongelado dentro de {1} segundos."
+	}
+
+}

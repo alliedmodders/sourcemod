@@ -1,0 +1,93 @@
+"Phrases"
+{
+	"Initiate Vote"
+	{
+		"de"		"Abstimmung gestartet: {1}"
+	}
+
+	"Initiated Vote Map"
+	{
+		"de"		"Map-Abstimmung gestartet."
+	}
+
+	"Initiated Vote Kick"
+	{
+		"de"		"Kick-Abstimmung gegen {1} gestartet."
+	}
+
+	"Initiated Vote Ban"
+	{
+		"de"		"Bann-Abstimmung gegen {1} gestartet."
+	}
+
+	"Map Vote"
+	{
+		"de"		"Map-Abstimmung: {1} "
+	}
+
+	"Change Map To"
+	{
+		"de"		"Ändere Map zu {1}?"
+	}
+
+	"Votekick Player"
+	{
+		"de"		"{1} kicken?"
+	}
+
+	"Voteban Player"
+	{
+		"de"		"{1} bannen? "
+	}
+
+	"Vote Successful"
+	{
+		"de"		"Abstimmung erfolgreich. ({1}%% von {2} Stimmen) "
+	}
+
+	"Vote Failed"
+	{
+		"de"		"Abstimmung fehlgeschlagen. ({1}%% der Stimmen benötigt; {2}%% von {3} Stimmen erhalten) "
+	}
+
+	"Vote End"
+	{
+		"de"		"Das Ergebnis von {1} ist: {2}."
+	}
+
+	"Kick vote"
+	{
+		"de"		"Kick-Abstimmung"
+	}
+
+	"Ban vote"
+	{
+		"de"		"Bann-Abstimmung"
+	}
+
+	"Map vote"
+	{
+		"de"		"Map-Abstimmung "
+	}
+
+	"Confirm Vote"
+	{
+		"de"		"Abstimmung bestätigen "
+	}
+
+	"Map Vote In Use"
+	{
+		"de"		"Ein anderer Admin benutzt derzeit das Map-Abstimmungs-Menü."
+	}
+
+	"Please select a map"
+	{
+		"de"		"Bitte wähle eine Map "
+	}
+
+	"Start the Vote"
+	{
+		"de"		"Starte die Abstimmung"
+	}
+
+}

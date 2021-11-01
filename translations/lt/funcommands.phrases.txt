@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"lt"		"Uždegti žaidėją"
+	}
+
+	"FireBomb player"
+	{
+		"lt"		"Degančios bombos žaidėjas"
+	}
+
+	"Freeze player"
+	{
+		"lt"		"Sušaldyti žaidėją"
+	}
+
+	"FreezeBomb player"
+	{
+		"lt"		"Šaldomosios bombos žaidėjas"
+	}
+
+	"TimeBomb player"
+	{
+		"lt"		"Laiko bomba žaidėjas"
+	}
+
+	"Beacon player"
+	{
+		"lt"		"Švyturiuojantis žaidėjas"
+	}
+
+	"NoClip player"
+	{
+		"lt"		"NoClip žaidėjas"
+	}
+
+	"Blind player"
+	{
+		"lt"		"Apakinti žaidėją"
+	}
+
+	"Drug player"
+	{
+		"lt"		"Apsvaiginti žaidėją"
+	}
+
+	"Gravity player"
+	{
+		"lt"		"Žaidėjas su nestandartine gravitacija"
+	}
+
+	"Blind amount"
+	{
+		"lt"		"Kiek apakinti?"
+	}
+
+	"Fully blind"
+	{
+		"lt"		"Visiškai aklas"
+	}
+
+	"Half blind"
+	{
+		"lt"		"Pusiau apakintas"
+	}
+
+	"No blind"
+	{
+		"lt"		"Neapakintas"
+	}
+
+	"Gravity amount"
+	{
+		"lt"		"Gravitacija?"
+	}
+
+	"Gravity Very High"
+	{
+		"lt"		"Gravitacija labai didelė"
+	}
+
+	"Gravity High"
+	{
+		"lt"		"Gravitacija didelė"
+	}
+
+	"Gravity Normal"
+	{
+		"lt"		"Gravitacija standartinė"
+	}
+
+	"Gravity Low"
+	{
+		"lt"		"Gravitacija maža"
+	}
+
+	"Gravity Very Low"
+	{
+		"lt"		"Gravitacija labai maža"
+	}
+
+	"Set target on fire"
+	{
+		"lt"		"{1} buvo padegtas."
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"lt"		"įjungta ugnies bomba žaidėjui {1}."
+	}
+
+	"Froze target"
+	{
+		"lt"		"sušalo {1}."
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"lt"		"įjungta sušaldymo bomba žaidėjui {1}."
+	}
+
+	"Toggled beacon on target"
+	{
+		"lt"		"įjungtas švyturiavimas žaidėjui {1}."
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"lt"		"įjungta laiko bomba žaidėjui {1}."
+	}
+
+	"Toggled noclip on target"
+	{
+		"lt"		"įjungtas noclip žaidėjui {1}."
+	}
+
+	"Toggled drug on target"
+	{
+		"lt"		"įjungtas apsvaiginimas žaidėjui {1}"
+	}
+
+	"Set blind on target"
+	{
+		"lt"		"žaidėjas {1} tapo aklas."
+	}
+
+	"Set gravity on target"
+	{
+		"lt"		"nustatė {1} gravitaciją."
+	}
+
+	"Till Explodes"
+	{
+		"lt"		"{2} sekundžių(ės) iki {1} sprogs."
+	}
+
+	"Unfrozen"
+	{
+		"lt"		"Jūs buvote atšildytas"
+	}
+
+	"You will be unfrozen"
+	{
+		"lt"		"Jūs būsite atšildytas po {1} sekundžių"
+	}
+
+}

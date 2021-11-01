@@ -1,0 +1,108 @@
+"Phrases"
+{
+	"Timeleft"
+	{
+		"fi"		"Kartan aikaa jäljellä:"
+	}
+
+	"Thetime"
+	{
+		"fi"		"Palvelimen kello on {1}"
+	}
+
+	"Friendly Fire On"
+	{
+		"fi"		"Omien tulitus on päällä."
+	}
+
+	"Friendly Fire Off"
+	{
+		"fi"		"Omien tulitus on pois päältä."
+	}
+
+	"Current Map"
+	{
+		"fi"		"Tämänhetkinen kartta on {1}."
+	}
+
+	"LastRound"
+	{
+		"fi"		"Tämä on viimeinen erä!"
+	}
+
+	"NoTimelimit"
+	{
+		"fi"		"Kartalle ei ole aikarajaa"
+	}
+
+	"Next Map"
+	{
+		"fi"		"Seuraava kartta: {1}"
+	}
+
+	"Pending Vote"
+	{
+		"fi"		"Keskeneräinen äänestys"
+	}
+
+	"WinLimitAppend"
+	{
+		"fi"		", tai vaihda karttaa kun toinen tiimi voittaa yhden erän"
+	}
+
+	"WinLimit"
+	{
+		"fi"		"Kartta vaihtuu toisen tiimin voitettua yhden erän"
+	}
+
+	"MaxRoundsAppend"
+	{
+		"fi"		", tai vaihda karttaa yhden erän kuluttua"
+	}
+
+	"MaxRounds"
+	{
+		"fi"		"Kartta vaihtuu yhden erän kuluttua"
+	}
+
+	"FragLimitAppend"
+	{
+		"fi"		", tai vaihda karttaa kun joku saa yhden tapon"
+	}
+
+	"FragLimit"
+	{
+		"fi"		"Kartta vaihtuu kun joku saa yhden tapon"
+	}
+
+	"WinLimitAppendPlural"
+	{
+		"fi"		", tai vaihda karttaa kun toinen tiimi voittaa {1} erää"
+	}
+
+	"WinLimitPlural"
+	{
+		"fi"		"Kartta vaihtuu toisen tiimin voitettua {1} erää"
+	}
+
+	"MaxRoundsAppendPlural"
+	{
+		"fi"		", tai vaihda karttaa {1} erän kuluttua"
+	}
+
+	"MaxRoundsPlural"
+	{
+		"fi"		"Kartta vaihtuu {1} erän kuluttua"
+	}
+
+	"FragLimitAppendPlural"
+	{
+		"fi"		", tai vaihda karttaa kun joku saa {1} tappoa"
+	}
+
+	"FragLimitPlural"
+	{
+		"fi"		"Kartta vaihtuu kun joku saa {1} tappoa"
+	}
+
+}

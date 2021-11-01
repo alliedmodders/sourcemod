@@ -1,0 +1,98 @@
+"Phrases"
+{
+	"Initiated Vote Gravity"
+	{
+		"hu"		"Gravitacios szavazas"
+	}
+
+	"Initiated Vote Burn"
+	{
+		"hu"		"{1} megégetése szavazásra bocsájtva"
+	}
+
+	"Initiated Vote Slay"
+	{
+		"hu"		"Levágas szavazás {1} ellen "
+	}
+
+	"Initiated Vote Alltalk"
+	{
+		"hu"		"Alltalk szavazas"
+	}
+
+	"Initiated Vote FF"
+	{
+		"hu"		"FF szavazas"
+	}
+
+	"Gravity Vote"
+	{
+		"hu"		"Gravitáció szavazás: {1}?"
+	}
+
+	"Change Gravity To"
+	{
+		"hu"		"Gravitációs érték változtatása {1} - ra"
+	}
+
+	"Voteburn player"
+	{
+		"hu"		"{1} megegetese?"
+	}
+
+	"Voteslay Player"
+	{
+		"hu"		"{1} levagasa?"
+	}
+
+	"Votealltalk Off"
+	{
+		"hu"		"Kikapcsoljuk az Alltalk-ot? {1}"
+	}
+
+	"Votealltalk On"
+	{
+		"hu"		"Bekapcsoljuk az Alltalk-ot? {1}"
+	}
+
+	"Voteff Off"
+	{
+		"hu"		"Kikapcsoljuk az FF-et? {1}"
+	}
+
+	"Voteff On"
+	{
+		"hu"		"Bekapcsoljuk az FF-et? {1}"
+	}
+
+	"Gravity vote"
+	{
+		"hu"		"Gravitáció szavazás"
+	}
+
+	"Vote FF"
+	{
+		"hu"		"Csapatsebzés szavazás"
+	}
+
+	"Burn vote"
+	{
+		"hu"		"Égetés szavazás"
+	}
+
+	"Alltalk vote"
+	{
+		"hu"		"Alltalk szavazás"
+	}
+
+	"Slay vote"
+	{
+		"hu"		"Levagas szavazasa"
+	}
+
+	"Slayed player"
+	{
+		"hu"		"Megölt játékos: {1}"
+	}
+
+}

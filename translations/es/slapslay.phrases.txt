@@ -1,0 +1,28 @@
+"Phrases"
+{
+	"Slay player"
+	{
+		"es"		"Matar jugador"
+	}
+
+	"Slap player"
+	{
+		"es"		"Abofetear jugador"
+	}
+
+	"Slap damage"
+	{
+		"es"		"Daño de bofetada"
+	}
+
+	"Slapped target"
+	{
+		"es"		"{1} abofeteado."
+	}
+
+	"Slayed target"
+	{
+		"es"		"{1} matado."
+	}
+
+}

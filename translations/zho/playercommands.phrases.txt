@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Slap player"
+	{
+		"zho"		"掌摑玩家"
+	}
+
+	"Slap damage"
+	{
+		"zho"		"掌摑傷害值"
+	}
+
+	"Slay player"
+	{
+		"zho"		"處死玩家"
+	}
+
+	"Slapped target"
+	{
+		"zho"		"已掌摑 {1}."
+	}
+
+	"Slayed target"
+	{
+		"zho"		"已處死 {1}."
+	}
+
+	"Name changed"
+	{
+		"zho"		"一位管理員己改變你的名字"
+	}
+
+	"Renamed target"
+	{
+		"zho"		"{1} 已改名"
+	}
+
+	"Rename player"
+	{
+		"zho"		"玩家改名"
+	}
+
+	"Dead Player Rename"
+	{
+		"zho"		"{1} 將會在下一局被改名."
+	}
+
+}

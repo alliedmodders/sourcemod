@@ -1,0 +1,253 @@
+"Phrases"
+{
+	"Yes"
+	{
+		"lv"		"Jā"
+	}
+
+	"No"
+	{
+		"lv"		"Nē"
+	}
+
+	"No matching client"
+	{
+		"lv"		"Atbilstošs klients netika atrasts."
+	}
+
+	"No matching clients"
+	{
+		"lv"		"Atbilstoši klienti netika atrasti."
+	}
+
+	"More than one client matches"
+	{
+		"lv"		"Vairāk par vienu spēlētāju atbilst tavām norādēm \"{1}\""
+	}
+
+	"More than one client matched"
+	{
+		"lv"		"Vairāk kā viens klients atbilst tavām norādēm."
+	}
+
+	"Player no longer available"
+	{
+		"lv"		"Spēlētājs ko esi izvēlējies vairs nav pieejams."
+	}
+
+	"Kick player"
+	{
+		"lv"		"Izmest spēlētāju"
+	}
+
+	"Kicked by admin"
+	{
+		"lv"		"Administrators izmeta"
+	}
+
+	"Changing map"
+	{
+		"lv"		"Maina karti uz {1}..."
+	}
+
+	"Map was not found"
+	{
+		"lv"		"Karte {1} netika atrasta."
+	}
+
+	"Unable to target"
+	{
+		"lv"		"Tu nevari veikt attiecīgo darbību šim spēlētājam."
+	}
+
+	"Name"
+	{
+		"lv"		"Niks"
+	}
+
+	"Access"
+	{
+		"lv"		"Pieeja"
+	}
+
+	"See console for output"
+	{
+		"lv"		"Skaties konsolē rezultātu."
+	}
+
+	"Cannot target bot"
+	{
+		"lv"		"Nevar izpildīt šo komandu uz Botu."
+	}
+
+	"Unable to find cvar"
+	{
+		"lv"		"Nevar atrast cvaru: {1}"
+	}
+
+	"No access to cvar"
+	{
+		"lv"		"Tev nav pieejas šim cvaram."
+	}
+
+	"Value of cvar"
+	{
+		"lv"		"Vērība cvaram \"{1}\": \"{2}\""
+	}
+
+	"Cvar changed"
+	{
+		"lv"		"Nomainija cvaru \"{1}\" uz \"{2}\"."
+	}
+
+	"Config not found"
+	{
+		"lv"		"Konfigurācijas fails \"{1}\" netika atrasts."
+	}
+
+	"Executed config"
+	{
+		"lv"		"Palaida \"{1}\" konfigurācijas failu."
+	}
+
+	"Admin cache refreshed"
+	{
+		"lv"		"Administratoru sarakst ir atjaunināts."
+	}
+
+	"Invalid Amount"
+	{
+		"lv"		"Tu norādiji nederīgu lielumu"
+	}
+
+	"Cannot be performed on dead"
+	{
+		"lv"		"Šī darbība nevar tikt izmantota uz mirušu spēletāju \"{1}\""
+	}
+
+	"Player has since died"
+	{
+		"lv"		"Darbība nevar tikt veikta, jo spēlētājs ir miris."
+	}
+
+	"Vote in Progress"
+	{
+		"lv"		"Aptauja jau ir aktīva."
+	}
+
+	"Vote Not In Progress"
+	{
+		"lv"		"Dotajā brīdī nav aktīvu aptauju."
+	}
+
+	"Cancelled Vote"
+	{
+		"lv"		"Atcēla aptauju."
+	}
+
+	"Cancel vote"
+	{
+		"lv"		"Atcelt aptauju"
+	}
+
+	"Vote Select"
+	{
+		"lv"		"{1} izvēlējās {2}."
+	}
+
+	"No Votes Cast"
+	{
+		"lv"		"Nav aktīvu aptauju."
+	}
+
+	"Vote Delay Minutes"
+	{
+		"lv"		"Tev ir jāuzgaida {1} minūtes pirms jaunas aptaujas veikšanas."
+	}
+
+	"Vote Delay Seconds"
+	{
+		"lv"		"Tev ir jāuzgaida {1} sekundes pirms jaunas aptaujas veikšanas."
+	}
+
+	"Could not connect to database"
+	{
+		"lv"		"Nevar pievienoties datubāzei."
+	}
+
+	"Failed to query database"
+	{
+		"lv"		"Nevar sazināties ar datubāzi."
+	}
+
+	"Invalid SteamID specified"
+	{
+		"lv"		"Tu norādīji nepareizu Steam ID (jāsākas ar 'STEAM_:'). "
+	}
+
+	"Reload admins"
+	{
+		"lv"		"Pārlādēt administratorus"
+	}
+
+	"Command is in-game only"
+	{
+		"lv"		"Šī komanda ir pieejama tikai iekš spēles."
+	}
+
+	"Target must be dead"
+	{
+		"lv"		"Šī komanda ir izmantojama tikai uz beigtiem spēlētajiem."
+	}
+
+	"Target must be alive"
+	{
+		"lv"		"Šī komanda ir izmantojama tikai uz dzīviem spēlētajiem."
+	}
+
+	"Target is not in game"
+	{
+		"lv"		"Konkrētais spēlētājs vēl nav pilnībā pievienojies spēlei."
+	}
+
+	"Played Sound"
+	{
+		"lv"		"Atskaņoja skaņu spēlētājam '{1}'"
+	}
+
+	"Slapped player"
+	{
+		"lv"		"Iepēra spēlētāju '{1}'"
+	}
+
+	"Slayed player"
+	{
+		"lv"		"Nogalēja spēlētāju '{1}'"
+	}
+
+	"Kicked player"
+	{
+		"lv"		"Izmeta spēlētāju '{1}'"
+	}
+
+	"Cannot participate in vote"
+	{
+		"lv"		"Tu nevari piedalīties šinī aptaujā."
+	}
+
+	"Cannot change vote"
+	{
+		"lv"		"Tu nevari mainīt savu izvēli šinī aptaujā."
+	}
+
+	"On"
+	{
+		"lv"		"Ieslēgts"
+	}
+
+	"Off"
+	{
+		"lv"		"Izslēgts"
+	}
+
+}

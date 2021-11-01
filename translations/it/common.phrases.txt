@@ -1,0 +1,253 @@
+"Phrases"
+{
+	"Yes"
+	{
+		"it"		"Sì"
+	}
+
+	"No"
+	{
+		"it"		"No"
+	}
+
+	"No matching client"
+	{
+		"it"		"Non è stato trovato nessun client corrispondente."
+	}
+
+	"No matching clients"
+	{
+		"it"		"Non è stato trovato nessun client corrispondente."
+	}
+
+	"More than one client matches"
+	{
+		"it"		"È stato trovato più di un client corrispondente a \"{1}\""
+	}
+
+	"More than one client matched"
+	{
+		"it"		"È stato trovato più di un client corrispondente al pattern specificato."
+	}
+
+	"Player no longer available"
+	{
+		"it"		"Il giocatore che hai scelto non è più disponibile."
+	}
+
+	"Kick player"
+	{
+		"it"		"Espelli un giocatore"
+	}
+
+	"Kicked by admin"
+	{
+		"it"		"Espulso da un amministratore"
+	}
+
+	"Changing map"
+	{
+		"it"		"Cambio della mappa in {1}..."
+	}
+
+	"Map was not found"
+	{
+		"it"		"La mappa {1} non è stata trovata."
+	}
+
+	"Unable to target"
+	{
+		"it"		"Non puoi bersagliare questo giocatore."
+	}
+
+	"Name"
+	{
+		"it"		"Nome"
+	}
+
+	"Access"
+	{
+		"it"		"Accesso"
+	}
+
+	"See console for output"
+	{
+		"it"		"Controlla la console per il risultato."
+	}
+
+	"Cannot target bot"
+	{
+		"it"		"Impossibile eseguire questo comando su un bot."
+	}
+
+	"Unable to find cvar"
+	{
+		"it"		"Impossibile trovare la cvar: {1}  "
+	}
+
+	"No access to cvar"
+	{
+		"it"		"Non hai accesso a questa cvar."
+	}
+
+	"Value of cvar"
+	{
+		"it"		"Valore della cvar \"{1}\": \"{2}\""
+	}
+
+	"Cvar changed"
+	{
+		"it"		"La cvar \"{1}\" è stata modificata in \"{2}\". "
+	}
+
+	"Config not found"
+	{
+		"it"		"Il file di configurazione \"{1}\" non è stato trovato."
+	}
+
+	"Executed config"
+	{
+		"it"		"Configurazione \"{1}\" eseguita."
+	}
+
+	"Admin cache refreshed"
+	{
+		"it"		"La cache da amministratore è stata aggiornata."
+	}
+
+	"Invalid Amount"
+	{
+		"it"		"La quantità specificata non è valida."
+	}
+
+	"Cannot be performed on dead"
+	{
+		"it"		"Questa azione non può essere eseguita sul client morto \"{1}\""
+	}
+
+	"Player has since died"
+	{
+		"it"		"L'azione non può essere eseguita poiché il giocatore è morto."
+	}
+
+	"Vote in Progress"
+	{
+		"it"		"C'è già una votazione in corso."
+	}
+
+	"Vote Not In Progress"
+	{
+		"it"		"Al momento non c'è nessuna votazione attiva."
+	}
+
+	"Cancelled Vote"
+	{
+		"it"		"La votazione è stata annullata."
+	}
+
+	"Cancel vote"
+	{
+		"it"		"Annulla votazione"
+	}
+
+	"Vote Select"
+	{
+		"it"		"{1} ha scelto {2}.  "
+	}
+
+	"No Votes Cast"
+	{
+		"it"		"Non è stata avviata nessuna votazione."
+	}
+
+	"Vote Delay Minutes"
+	{
+		"it"		"Devi aspettare {1} minuto/i prima di poter avviare un'altra votazione."
+	}
+
+	"Vote Delay Seconds"
+	{
+		"it"		"Devi aspettare {1} secondo/i prima di poter avviare un'altra votazione."
+	}
+
+	"Could not connect to database"
+	{
+		"it"		"Impossibile collegarsi al database."
+	}
+
+	"Failed to query database"
+	{
+		"it"		"Impossibile contattare il database."
+	}
+
+	"Invalid SteamID specified"
+	{
+		"it"		"Hai specificato un'ID di Steam non valida. (deve iniziare con \"STEAM_:\")"
+	}
+
+	"Reload admins"
+	{
+		"it"		"Ricarica gli amministratori"
+	}
+
+	"Command is in-game only"
+	{
+		"it"		"Questo comando può essere usato solo in gioco."
+	}
+
+	"Target must be dead"
+	{
+		"it"		"Questo comando può essere usato solo sui giocatori morti."
+	}
+
+	"Target must be alive"
+	{
+		"it"		"Questo comando può essere usato solo sui giocatori in vita."
+	}
+
+	"Target is not in game"
+	{
+		"it"		"Il giocatore che hai scelto non è ancora totalmente in gioco."
+	}
+
+	"Played Sound"
+	{
+		"it"		"Avviato un suono per il giocatore '{1}'"
+	}
+
+	"Slapped player"
+	{
+		"it"		"Il giocatore '{1}' è stato colpito. "
+	}
+
+	"Slayed player"
+	{
+		"it"		"Il giocatore '{1}' è stato giustiziato."
+	}
+
+	"Kicked player"
+	{
+		"it"		"Il giocatore '{1}' è stato espulso "
+	}
+
+	"Cannot participate in vote"
+	{
+		"it"		"Non puoi partecipare a questa votazione."
+	}
+
+	"Cannot change vote"
+	{
+		"it"		"Non puoi modificare la tua selezione per questa votazione."
+	}
+
+	"On"
+	{
+		"it"		"Sì"
+	}
+
+	"Off"
+	{
+		"it"		"No"
+	}
+
+}

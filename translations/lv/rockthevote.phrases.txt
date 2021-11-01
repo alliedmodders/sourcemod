@@ -1,0 +1,103 @@
+"Phrases"
+{
+	"Rock The Vote"
+	{
+		"lv"		"Aptauja:"
+	}
+
+	"RTV Not Allowed"
+	{
+		"lv"		"Aptauja dotajā momentā nav atļauta."
+	}
+
+	"RTV Started"
+	{
+		"lv"		"Aptauja jau ir sākusies."
+	}
+
+	"RTV Ended"
+	{
+		"lv"		"Aptauja jau ir beigusies, tu nevari sākt vēl vienu aptauju kā arī nevari pievienot kartes."
+	}
+
+	"Already Voted"
+	{
+		"lv"		"Tu jau esi nobalsojis lai palaistu aptauju."
+	}
+
+	"Minimal Players Not Met"
+	{
+		"lv"		"Minimālais spēlētāju skaits nav sasniegts."
+	}
+
+	"Map Already In Vote"
+	{
+		"lv"		"Karte '{1}' jau ir aptaujas sarakstā."
+	}
+
+	"Map Inserted"
+	{
+		"lv"		"Karte '{1}' pievienota aptaujas sarakstam."
+	}
+
+	"RTV Requested"
+	{
+		"lv"		"{1} vēlas uzsākt aptauju. ({2} balsis, {3} nepieciešamas)"
+	}
+
+	"RTV Vote Ready"
+	{
+		"lv"		"Sākas aptauja:"
+	}
+
+	"Don't Change"
+	{
+		"lv"		"Atstāt esošo karti"
+	}
+
+	"Already Nominated"
+	{
+		"lv"		"Tu jau esi nominējis karti."
+	}
+
+	"Max Nominations"
+	{
+		"lv"		"Maksimālais nomināciju skaits ir sasniegts."
+	}
+
+	"Selected Map"
+	{
+		"lv"		"{1} izvēlējās {2}"
+	}
+
+	"No Votes"
+	{
+		"lv"		"Netika saņemta neviena balss, patreizējā karte netiek mainīta."
+	}
+
+	"Current Map Stays"
+	{
+		"lv"		"Esošā karte turpinās! Tas tika noteikts aptaujas rezultātā!"
+	}
+
+	"Changing Maps"
+	{
+		"lv"		"Maina karti uz {1}! Kas tika noteikta aptaujas rezultātā!"
+	}
+
+	"Map Already Nominated"
+	{
+		"lv"		"Karte ko esi izvēlējies jau ir nominētā."
+	}
+
+	"Map Nominated"
+	{
+		"lv"		"{1} nominēja {2} aptaujai."
+	}
+
+	"Nominate Title"
+	{
+		"lv"		"Nominēt karti:"
+	}
+
+}

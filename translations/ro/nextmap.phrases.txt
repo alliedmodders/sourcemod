@@ -1,0 +1,43 @@
+"Phrases"
+{
+	"Next Map"
+	{
+		"ro"		"Harta următoare: {1}"
+	}
+
+	"Map History"
+	{
+		"ro"		"Harti anterioare"
+	}
+
+	"Map"
+	{
+		"ro"		"[Harta]"
+	}
+
+	"Started"
+	{
+		"ro"		"[A inceput]"
+	}
+
+	"Played Time"
+	{
+		"ro"		"[Timp jucat]"
+	}
+
+	"Reason"
+	{
+		"ro"		"[Motiv pentru oprire]"
+	}
+
+	"Current Map"
+	{
+		"ro"		"Harta curenta"
+	}
+
+	"ago"
+	{
+		"ro"		"[acum]"
+	}
+
+}

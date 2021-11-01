@@ -1,0 +1,63 @@
+"Phrases"
+{
+	"Ban player"
+	{
+		"pl"		"Zbanuj gracza"
+	}
+
+	"Ban reason"
+	{
+		"pl"		"Powód bana"
+	}
+
+	"Permabanned player"
+	{
+		"pl"		"Permanentnie zbanowano \"{1}\"."
+	}
+
+	"Permabanned player reason"
+	{
+		"pl"		"Permanentnie zbanowano \"{1}\" (powód: {2})."
+	}
+
+	"Banned player"
+	{
+		"pl"		"Zbanowano \"{1}\" na {2} min."
+	}
+
+	"Banned player reason"
+	{
+		"pl"		" Gracz \"{1}\" został zbanowany na {2} min. (powód: {3}). "
+	}
+
+	"Removed bans matching"
+	{
+		"pl"		"Usunięto bany pasujące do filtra: {1} "
+	}
+
+	"Ban added"
+	{
+		"pl"		"Ban został dodany."
+	}
+
+	"Cannot ban that IP"
+	{
+		"pl"		"Nie możesz zbanować tego adresu IP."
+	}
+
+	"Custom ban reason explanation"
+	{
+		"pl"		"Wpisz na czacie powód bana. Użyj {1}, aby anulować."
+	}
+
+	"AbortBan applied successfully"
+	{
+		"pl"		"Ban anulowany."
+	}
+
+	"AbortBan not waiting for custom reason"
+	{
+		"pl"		"Nie trzeba wpisywać powodu, nie ma bana do anulowania."
+	}
+
+}

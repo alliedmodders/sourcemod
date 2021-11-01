@@ -1,0 +1,128 @@
+"Phrases"
+{
+	"Unable to find cvar"
+	{
+		"it"		"Impossibile trovare la cvar: {1}  "
+	}
+
+	"No access to cvar"
+	{
+		"it"		"Non hai accesso a questa cvar."
+	}
+
+	"Value of cvar"
+	{
+		"it"		"Valore della cvar \"{1}\": \"{2}\""
+	}
+
+	"Cvar changed"
+	{
+		"it"		"La cvar \"{1}\" è stata modificata in \"{2}\"."
+	}
+
+	"Config not found"
+	{
+		"it"		"Il file di configurazione \"{1}\" non è stato trovato."
+	}
+
+	"Executed config"
+	{
+		"it"		"Configurazione \"{1}\" eseguita."
+	}
+
+	"Permabanned player"
+	{
+		"it"		"Il giocatore \"{1}\" è stato bandito permanentemente."
+	}
+
+	"Permabanned player reason"
+	{
+		"it"		"Il giocatore \"{1}\" è stato bandito permanentemente (motivo: {2}). "
+	}
+
+	"Banned player"
+	{
+		"it"		"Il giocatore \"{1}\" è stato bandito per {2} minuti."
+	}
+
+	"Banned player reason"
+	{
+		"it"		"Il giocatore \"{1}\" è stato bandito per {2} minuti (motivo: {3})."
+	}
+
+	"Removed bans matching"
+	{
+		"it"		"Rimossi i ban corrispondenti al filtro: {1}"
+	}
+
+	"Ban added"
+	{
+		"it"		"Il ban è stato aggiunto "
+	}
+
+	"Admin cache refreshed"
+	{
+		"it"		"La cache da amministratore è stata aggiornata."
+	}
+
+	"Identify player"
+	{
+		"it"		"Identifica un giocatore"
+	}
+
+	"Choose Map"
+	{
+		"it"		"Scegli una mappa"
+	}
+
+	"Exec CFG"
+	{
+		"it"		"Esegui configurazione"
+	}
+
+	"Admin logged in as"
+	{
+		"it"		"\"{1}\" ha eseguito l'accesso come \"{2}\" ed è abilitato alle seguenti funzionalità: {3}"
+	}
+
+	"Admin logged in anon"
+	{
+		"it"		"\"{1}\" è abilitato alle seguenti funzionalità: {2}"
+	}
+
+	"Player is not an admin"
+	{
+		"it"		"\"{1}\" non è un amministratore. "
+	}
+
+	"Player is an admin"
+	{
+		"it"		"\"{1}\" è un amministratore."
+	}
+
+	"Username"
+	{
+		"it"		"Nome utente"
+	}
+
+	"Kicked target"
+	{
+		"it"		"Il giocatore \"{1}\" è stato espulso"
+	}
+
+	"Admin access"
+	{
+		"it"		"Accesso da amministratore"
+	}
+
+	"Cvar is now protected"
+	{
+		"it"		"La cvar {1} ora è protetta."
+	}
+
+	"Kicked target reason"
+	{
+		"it"		"Il giocatore \"{1}\" è stato espulso (Motivo: {2})"
+	}
+
+}

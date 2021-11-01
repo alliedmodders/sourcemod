@@ -1,0 +1,253 @@
+"Phrases"
+{
+	"Yes"
+	{
+		"da"		"Ja"
+	}
+
+	"No"
+	{
+		"da"		"Nej"
+	}
+
+	"No matching client"
+	{
+		"da"		"Ingen matchende klient blev fundet."
+	}
+
+	"No matching clients"
+	{
+		"da"		"Ingen matchende klienter blev fundet."
+	}
+
+	"More than one client matches"
+	{
+		"da"		"Mere end 1 klient matcher mønsteret \"{1}\""
+	}
+
+	"More than one client matched"
+	{
+		"da"		"Mere end 1 klient matcher det givne mønster."
+	}
+
+	"Player no longer available"
+	{
+		"da"		"Spilleren som du valgte er ikke længere tilgængelig."
+	}
+
+	"Kick player"
+	{
+		"da"		"Fjern spiller"
+	}
+
+	"Kicked by admin"
+	{
+		"da"		"Fjernet af administrator"
+	}
+
+	"Changing map"
+	{
+		"da"		"Skifter bane til {1}..."
+	}
+
+	"Map was not found"
+	{
+		"da"		"Banen {1} blev ikke fundet."
+	}
+
+	"Unable to target"
+	{
+		"da"		"Du kan ikke vælge denne spiller."
+	}
+
+	"Name"
+	{
+		"da"		"Navn"
+	}
+
+	"Access"
+	{
+		"da"		"Adgang"
+	}
+
+	"See console for output"
+	{
+		"da"		"Se konsollen for svar."
+	}
+
+	"Cannot target bot"
+	{
+		"da"		"Det er ikke muligt at udføre denne handling på en robot."
+	}
+
+	"Unable to find cvar"
+	{
+		"da"		"Kan ikke finde cvar: {1}"
+	}
+
+	"No access to cvar"
+	{
+		"da"		"Du har ikke adgang til denne cvar."
+	}
+
+	"Value of cvar"
+	{
+		"da"		"Værdien af cvar \"{1}\": \"{2}\""
+	}
+
+	"Cvar changed"
+	{
+		"da"		"Skiftede cvar \"{1}\" til \"{2}\"."
+	}
+
+	"Config not found"
+	{
+		"da"		"Konfigurations fil \"{1}\" blev ikke fundet."
+	}
+
+	"Executed config"
+	{
+		"da"		"Konfigurations fil \"{1}\" blev kørt."
+	}
+
+	"Admin cache refreshed"
+	{
+		"da"		"Administrator lageret er blevet genopfrisket."
+	}
+
+	"Invalid Amount"
+	{
+		"da"		"Ugyldig mængde angivet"
+	}
+
+	"Cannot be performed on dead"
+	{
+		"da"		"Denne handling kan ikke udføres på en død klient \"{1}\""
+	}
+
+	"Player has since died"
+	{
+		"da"		"Handling kan ikke udføres, spilleren er sidenhen død."
+	}
+
+	"Vote in Progress"
+	{
+		"da"		"En afstemning er allerede igang."
+	}
+
+	"Vote Not In Progress"
+	{
+		"da"		"Der er ingen afstemning igang på nuværende tidspunkt."
+	}
+
+	"Cancelled Vote"
+	{
+		"da"		"Afsteming blev afbrudt."
+	}
+
+	"Cancel vote"
+	{
+		"da"		"Afbryd afstemning"
+	}
+
+	"Vote Select"
+	{
+		"da"		"{1} har valgt {2}."
+	}
+
+	"No Votes Cast"
+	{
+		"da"		"Ingen stemmer blev registreret."
+	}
+
+	"Vote Delay Minutes"
+	{
+		"da"		"Du skal vente {1} minutter før du kan starte en ny afstemning. "
+	}
+
+	"Vote Delay Seconds"
+	{
+		"da"		"Du må vente {1} sekunder før du kan starte en ny afstemning."
+	}
+
+	"Could not connect to database"
+	{
+		"da"		"Kunne ikke få forbindelse til databasen."
+	}
+
+	"Failed to query database"
+	{
+		"da"		"Svar fra databasen slog fejl."
+	}
+
+	"Invalid SteamID specified"
+	{
+		"da"		"Du har angivet et ugyldigt Steam ID (skal starte med 'STEAM_')."
+	}
+
+	"Reload admins"
+	{
+		"da"		"Opdater administratorer."
+	}
+
+	"Command is in-game only"
+	{
+		"da"		"Denne kommando kan kun bruges inde i spillet."
+	}
+
+	"Target must be dead"
+	{
+		"da"		"Denne kommando kan kun bruges på døde spillere."
+	}
+
+	"Target must be alive"
+	{
+		"da"		"Denne kommando kan kun bruges på spillere som er i live."
+	}
+
+	"Target is not in game"
+	{
+		"da"		"Den givne spiller er ikke inde i spillet endnu."
+	}
+
+	"Played Sound"
+	{
+		"da"		"Afspillede lyd til spiller '{1}'"
+	}
+
+	"Slapped player"
+	{
+		"da"		"Slog spiller '{1}'"
+	}
+
+	"Slayed player"
+	{
+		"da"		"Dræbte spiller '{1}'"
+	}
+
+	"Kicked player"
+	{
+		"da"		"Fjernet spiller '{1}'"
+	}
+
+	"Cannot participate in vote"
+	{
+		"da"		"Du kan ikke deltage i denne afstemning"
+	}
+
+	"Cannot change vote"
+	{
+		"da"		"Du kan ikke ændre dit valg til denne afstemning"
+	}
+
+	"On"
+	{
+		"da"		"På"
+	}
+
+	"Off"
+	{
+		"da"		"Af"
+	}
+
+}

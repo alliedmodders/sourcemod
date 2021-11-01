@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Cookie List"
+	{
+		"pl"		"Lista ciasteczek SourceModa "
+	}
+
+	"Printing Cookie List"
+	{
+		"pl"		"Wyświetlanie listy ciasteczek w konsoli"
+	}
+
+	"Cookie not Found"
+	{
+		"pl"		"Nie można znaleźć ciasteczka \"{1}\""
+	}
+
+	"Cookie Value"
+	{
+		"pl"		"{1} posiada wartość {2}"
+	}
+
+	"Protected Cookie"
+	{
+		"pl"		"Nie można zmienić wartości zabezpieczonego ciasteczka \"{1}\""
+	}
+
+	"Cookie Changed Value"
+	{
+		"pl"		"Zmieniono wartość ciasteczka \"{1}\" na \"{2}\""
+	}
+
+	"No Console"
+	{
+		"pl"		"Nie można wyświetlić menu ustawień w konsoli"
+	}
+
+	"Choose Option"
+	{
+		"pl"		"Wybierz opcję"
+	}
+
+	"Client Settings"
+	{
+		"pl"		"Ustawienia klienta"
+	}
+
+}

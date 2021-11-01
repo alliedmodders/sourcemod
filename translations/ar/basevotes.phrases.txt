@@ -1,0 +1,93 @@
+"Phrases"
+{
+	"Initiate Vote"
+	{
+		"ar"		"أبدأ التصويت: {1}"
+	}
+
+	"Initiated Vote Map"
+	{
+		"ar"		"إبتدأ تصويت المابة "
+	}
+
+	"Initiated Vote Kick"
+	{
+		"ar"		"تصويت الطرد  المبتدأ  ضد {1}"
+	}
+
+	"Initiated Vote Ban"
+	{
+		"ar"		"تصويت الحظر المبتدأ ضد {1}"
+	}
+
+	"Map Vote"
+	{
+		"ar"		"تصويت المابة {1}:"
+	}
+
+	"Change Map To"
+	{
+		"ar"		"غير المابة ل: {1} ؟"
+	}
+
+	"Votekick Player"
+	{
+		"ar"		"إطرد اللاعب {1} ؟"
+	}
+
+	"Voteban Player"
+	{
+		"ar"		"إحظر اللعب على {1} ؟"
+	}
+
+	"Vote Successful"
+	{
+		"ar"		"تصويت ناجح. (تم الحصول على {1}%% من {2})"
+	}
+
+	"Vote Failed"
+	{
+		"ar"		"فشل التصويت. {1}%% تصويت لازم. (حصل {2}%% من {3} تصويتات)"
+	}
+
+	"Vote End"
+	{
+		"ar"		"الجواب ل {1} هو: {2}"
+	}
+
+	"Kick vote"
+	{
+		"ar"		"تصويت الطرد"
+	}
+
+	"Ban vote"
+	{
+		"ar"		"تصويت الحظر"
+	}
+
+	"Map vote"
+	{
+		"ar"		"تصويت المابة"
+	}
+
+	"Confirm Vote"
+	{
+		"ar"		"أكد التصويت"
+	}
+
+	"Map Vote In Use"
+	{
+		"ar"		"تصويت المابة في إستعمال"
+	}
+
+	"Please select a map"
+	{
+		"ar"		"من فضلك إختر"
+	}
+
+	"Start the Vote"
+	{
+		"ar"		"إبدأ التصويت"
+	}
+
+}

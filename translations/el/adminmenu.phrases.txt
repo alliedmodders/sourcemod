@@ -1,0 +1,23 @@
+"Phrases"
+{
+	"Admin Menu"
+	{
+		"el"		"Μενού Διαχειριστή"
+	}
+
+	"Player Commands"
+	{
+		"el"		"Εντολές Παίκτη"
+	}
+
+	"Server Commands"
+	{
+		"el"		"Εντολές Διακομιστή"
+	}
+
+	"Voting Commands"
+	{
+		"el"		"Εντολές Ψηφοφορίας"
+	}
+
+}

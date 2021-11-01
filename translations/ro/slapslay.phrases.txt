@@ -1,0 +1,28 @@
+"Phrases"
+{
+	"Slap damage"
+	{
+		"ro"		"Damage pentru slap"
+	}
+
+	"Slap player"
+	{
+		"ro"		"Slap jucător"
+	}
+
+	"Slapped target"
+	{
+		"ro"		"{1} a primit slap."
+	}
+
+	"Slay player"
+	{
+		"ro"		"Slay jucător"
+	}
+
+	"Slayed target"
+	{
+		"ro"		"{1} a primit slay."
+	}
+
+}

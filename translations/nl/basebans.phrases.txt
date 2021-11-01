@@ -1,0 +1,63 @@
+"Phrases"
+{
+	"Ban player"
+	{
+		"nl"		"Verban speler"
+	}
+
+	"Ban reason"
+	{
+		"nl"		"Ban reden"
+	}
+
+	"Permabanned player"
+	{
+		"nl"		"Speler \"{1}\" is permanent verbannen."
+	}
+
+	"Permabanned player reason"
+	{
+		"nl"		"Speler \"{1}\" is permanent verbannen (reden: {2})."
+	}
+
+	"Banned player"
+	{
+		"nl"		"Speler \"{1}\" verbannen voor {2} minuten."
+	}
+
+	"Banned player reason"
+	{
+		"nl"		"Speler \"{1}\" verbannen voor {2} minuten (reden: {3})."
+	}
+
+	"Removed bans matching"
+	{
+		"nl"		"Bans verwijderd die overkomen met filter: {1}"
+	}
+
+	"Ban added"
+	{
+		"nl"		"Ban toegevoegd."
+	}
+
+	"Cannot ban that IP"
+	{
+		"nl"		"Je kunt dat IP adres niet verbannen."
+	}
+
+	"Custom ban reason explanation"
+	{
+		"nl"		"Geef de reden als chatbericht in. Gebruik {1} om dit af te breken."
+	}
+
+	"AbortBan applied successfully"
+	{
+		"nl"		"Ban afgebroken."
+	}
+
+	"AbortBan not waiting for custom reason"
+	{
+		"nl"		"Geen ban om af te breken, er wordt geen banreden verwacht."
+	}
+
+}

@@ -1,0 +1,88 @@
+"Phrases"
+{
+	"No Access"
+	{
+		"cze"		"Nemate pristup k tomuto prikazu"
+	}
+
+	"Back"
+	{
+		"cze"		"Zpet"
+	}
+
+	"Next"
+	{
+		"cze"		"Dalsi"
+	}
+
+	"Exit"
+	{
+		"cze"		"Exit"
+	}
+
+	"Previous"
+	{
+		"cze"		"Predchozi"
+	}
+
+	"all players"
+	{
+		"cze"		"vsichni hraci"
+	}
+
+	"all humans"
+	{
+		"cze"		"vsichni lide"
+	}
+
+	"all bots"
+	{
+		"cze"		"vsichni boti"
+	}
+
+	"all dead players"
+	{
+		"cze"		"vsichni mrtvi hraci"
+	}
+
+	"all alive players"
+	{
+		"cze"		"vsichni zivi hraci"
+	}
+
+	"_s"
+	{
+		"cze"		"{1}"
+	}
+
+	"all spectators"
+	{
+		"cze"		"vsichni pozorovatele"
+	}
+
+	"Vote Count"
+	{
+		"cze"		"Hlasy: {1}/{2}, zbyva {3}s"
+	}
+
+	"Voted For"
+	{
+		"cze"		"{1} hlasoval pro {2}"
+	}
+
+	"Changed Vote"
+	{
+		"cze"		" {1} zmenil svou volbu na {2}"
+	}
+
+	"No Vote"
+	{
+		"cze"		"Zadny hlas"
+	}
+
+	"Name Reserved"
+	{
+		"cze"		"Tvuj nick je rezervovan SourceModem; nastav sve heslo, abys ho mohl pouzivat."
+	}
+
+}
