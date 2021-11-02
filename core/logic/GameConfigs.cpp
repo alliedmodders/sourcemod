@@ -46,6 +46,7 @@
 #include <am-string.h>
 #include <bridge/include/ILogger.h>
 #include <bridge/include/CoreProvider.h>
+#include <bridge/include/IFileSystemBridge.h>
 
 #if defined PLATFORM_POSIX
 #include <dlfcn.h>
@@ -103,8 +104,6 @@ struct TempSigInfo
 	char sig[1024];
 	char library[64];
 } s_TempSig;
-unsigned int s_ServerBinCRC;
-bool s_ServerBinCRC_Ok = false;
 
 static bool DoesGameMatch(const char *value)
 {
@@ -303,38 +302,21 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 		{
 			char error[255];
 			error[0] = '\0';
-			if (strcmp(name, "server") != 0)
+			GameBinaryInfo binInfo;
+			if (!g_GameConfigs.TryGetGameBinaryInfo(name, &binInfo))
 			{
 				ke::SafeSprintf(error, sizeof(error), "Unrecognized library \"%s\"", name);
 			} 
-			else if (!s_ServerBinCRC_Ok)
+			else if (!binInfo.m_crcOK)
 			{
-				FILE *fp;
-				char path[PLATFORM_MAX_PATH];
-
-				char binName[64];
-				bridge->FormatSourceBinaryName(name, binName, sizeof(binName));
-
-				g_pSM->BuildPath(Path_Game, path, sizeof(path), "bin/%s", binName);
-				if ((fp = fopen(path, "rb")) == NULL)
-				{
-					ke::SafeSprintf(error, sizeof(error), "Could not open binary: %s", path);
-				} else {
-					size_t size;
-					void *buffer;
-
-					fseek(fp, 0, SEEK_END);
-					size = ftell(fp);
-					fseek(fp, 0, SEEK_SET);
-
-					buffer = malloc(size);
-					fread(buffer, size, 1, fp);
-					s_ServerBinCRC = UTIL_CRC32(buffer, size);
-					free(buffer);
-					s_ServerBinCRC_Ok = true;
-					fclose(fp);
-				}
+				ke::SafeSprintf(error, sizeof(error), "Could not get CRC for binary: %s", name);
 			}
+			else
+			{
+				bCurrentBinCRC_Ok = binInfo.m_crcOK;
+				bCurrentBinCRC = binInfo.m_crc;
+			}
+
 			if (error[0] != '\0')
 			{
 				m_IgnoreLevel = 1;
@@ -461,12 +443,12 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_CRC_BINARY) {
 		if (DoesPlatformMatch(key)
-			&& s_ServerBinCRC_Ok
+			&& bCurrentBinCRC_Ok
 			&& !bShouldBeReadingDefault)
 		{
 			unsigned int crc = 0;
 			sscanf(value, "%08X", &crc);
-			if (s_ServerBinCRC == crc)
+			if (bCurrentBinCRC == crc)
 			{
 				bShouldBeReadingDefault = true;
 			}
@@ -603,18 +585,12 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 				strncopy(s_TempSig.library, "server", sizeof(s_TempSig.library));
 			}
 			void *addrInBase = NULL;
-			if (strcmp(s_TempSig.library, "server") == 0)
+			GameBinaryInfo binInfo;
+			if (g_GameConfigs.TryGetGameBinaryInfo(s_TempSig.library, &binInfo))
 			{
-				addrInBase = bridge->serverFactory;
-			} else if (strcmp(s_TempSig.library, "engine") == 0) {
-				addrInBase = bridge->engineFactory;
-			} else if (strcmp(s_TempSig.library, "matchmaking_ds") == 0) {
-				addrInBase = bridge->matchmakingDSFactory;
-			} else if (strcmp(s_TempSig.library, "soundemittersystem") == 0) {
-				addrInBase = bridge->soundemittersystemFactory;
-			} else if (strcmp(s_TempSig.library, "vscript") == 0) {
-				addrInBase = bridge->vscriptFactory;
+				addrInBase = binInfo.m_pAddr;
 			}
+
 			void *final_addr = NULL;
 			if (addrInBase == NULL)
 			{
@@ -1237,4 +1213,55 @@ void GameConfigManager::ReleaseLock()
 void GameConfigManager::RemoveCachedConfig(CGameConfig *config)
 {
 	m_Lookup.remove(config->m_File);
+}
+
+void GameConfigManager::CacheGameBinaryInfo(const char* pszName)
+{
+	GameBinaryInfo info;
+	info.m_pAddr = bridge->filesystem->LoadModule(pszName, "GAMEBIN");
+
+	// Don't bother trying to get CRC if we couldn't find the bin loaded
+	if (info.m_pAddr)
+	{
+		FILE* fp;
+		char path[PLATFORM_MAX_PATH];
+		char name[64];
+		bridge->FormatSourceBinaryName(pszName, name, sizeof(name));
+
+		// This pattern doesn't work for every game. Instead, we need to use the GAMEBIN search path properly
+		g_pSM->BuildPath(Path_Game, path, sizeof(path), "bin/%s", name);
+		if ((fp = fopen(path, "rb")) == NULL)
+		{
+			info.m_crc = 0;
+		}
+		else
+		{
+			size_t size;
+			void* buffer;
+
+			fseek(fp, 0, SEEK_END);
+			size = ftell(fp);
+			fseek(fp, 0, SEEK_SET);
+
+			buffer = malloc(size);
+			fread(buffer, size, 1, fp);
+			info.m_crc = UTIL_CRC32(buffer, size);
+			free(buffer);
+			info.m_crcOK = true;
+			fclose(fp);
+		}
+	}
+
+	// But insert regardless, to cache the first lookup (even as failed)
+	m_gameBinInfos.insert(pszName, info);
+}
+
+bool GameConfigManager::TryGetGameBinaryInfo(const char* pszName, GameBinaryInfo* pDest)
+{
+	if (m_gameBinInfos.retrieve(pszName, pDest))
+		return pDest->m_pAddr != nullptr;
+
+	CacheGameBinaryInfo(pszName);
+
+	return m_gameBinInfos.retrieve(pszName, pDest);
 }
