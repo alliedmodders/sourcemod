@@ -35,10 +35,11 @@
 // >> INCLUDES
 // ============================================================================
 #include "hook.h"
-#include "utilities.h"
 #include <asm/asm.h>
 #include <macro-assembler-x86.h>
 #include "extension.h"
+#include <jit/jit_helpers.h>
+#include <CDetour/detourhelpers.h>
 
 using namespace sp;
 
@@ -79,7 +80,7 @@ CHook::CHook(void* pFunc, ICallingConvention* pConvention)
 	copy_bytes(pTarget, pCopiedBytes, JMP_SIZE);
 
 	// Write a jump after the copied bytes to the function/bridge + number of bytes to copy
-	WriteJMP(pCopiedBytes + iBytesToCopy, pTarget + iBytesToCopy);
+	DoGatePatch(pCopiedBytes + iBytesToCopy, pTarget + iBytesToCopy);
 
 	// Save the trampoline
 	m_pTrampoline = (void *) pCopiedBytes;
@@ -88,7 +89,7 @@ CHook::CHook(void* pFunc, ICallingConvention* pConvention)
 	m_pBridge = CreateBridge();
 
 	// Write a jump to the bridge
-	WriteJMP((unsigned char *) pFunc, m_pBridge);
+	DoGatePatch((unsigned char *) pFunc, m_pBridge);
 }
 
 CHook::~CHook()
