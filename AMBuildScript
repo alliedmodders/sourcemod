@@ -804,6 +804,7 @@ else:
     'extensions/clientprefs/AMBuilder',
     'extensions/curl/AMBuilder',
     'extensions/cstrike/AMBuilder',
+    'extensions/dhooks/AMBuilder',
     'extensions/geoip/AMBuilder',
     'extensions/mysql/AMBuilder',
     'extensions/pgsql/AMBuilder',
