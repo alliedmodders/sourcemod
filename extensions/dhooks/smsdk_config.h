@@ -32,6 +32,8 @@
 #ifndef _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_
 #define _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_
 
+#include <sourcemod_version.h>
+
 /**
  * @file smsdk_config.h
  * @brief Contains macros for configuring basic extension information.
@@ -40,12 +42,12 @@
 /* Basic information exposed publicly */
 #define SMEXT_CONF_NAME			"DHooks"
 #define SMEXT_CONF_DESCRIPTION	"Dynamic Hooks"
-#define SMEXT_CONF_VERSION		"2.2.0-detours17"
-#define SMEXT_CONF_AUTHOR		"Dr!fter and Peace-Maker"
-#define SMEXT_CONF_URL			"http://www.sourcemod.net/"
+#define SMEXT_CONF_VERSION		SOURCEMOD_VERSION
+#define SMEXT_CONF_AUTHOR		"AlliedModders LLC"
+#define SMEXT_CONF_URL			"https://www.sourcemod.net/"
 #define SMEXT_CONF_LOGTAG		"DHOOKS"
 #define SMEXT_CONF_LICENSE		"GPL"
-#define SMEXT_CONF_DATESTRING	__DATE__
+#define SMEXT_CONF_DATESTRING	SOURCEMOD_BUILD_TIME
 
 /** 
  * @brief Exposes plugin's main interface.
