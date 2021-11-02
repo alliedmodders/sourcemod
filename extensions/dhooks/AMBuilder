@@ -19,6 +19,8 @@ for cxx in builder.targets:
   binary.compiler.cxxincludes += [
     os.path.join(SM.mms_root, 'core'),
     os.path.join(SM.mms_root, 'core', 'sourcehook'),
+    os.path.join(builder.sourcePath, 'public', 'jit'),
+    os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
     os.path.join(builder.sourcePath, 'sourcepawn', 'include'),
     os.path.join(builder.sourcePath, 'sourcepawn', 'vm'),
     os.path.join(builder.sourcePath, 'sourcepawn', 'vm', 'x86'),
@@ -49,7 +51,6 @@ for cxx in builder.targets:
     os.path.join('DynamicHooks', 'hook.cpp'),
     os.path.join('DynamicHooks', 'manager.cpp'),
     os.path.join('DynamicHooks', 'registers.cpp'),
-    os.path.join('DynamicHooks', 'utilities.cpp'),
     os.path.join('DynamicHooks', 'conventions', 'x86MsCdecl.cpp'),
     os.path.join('DynamicHooks', 'conventions', 'x86MsStdcall.cpp'),
     os.path.join('DynamicHooks', 'conventions', 'x86MsFastcall.cpp'),
