@@ -30,6 +30,7 @@
 #include "common_logic.h"
 #include <string.h>
 #include <stdlib.h>
+#include <sstream>
 #include <sh_list.h>
 #include <sh_string.h>
 #include "GameConfigs.h"
@@ -1092,6 +1093,30 @@ GameConfigManager::~GameConfigManager()
 
 void GameConfigManager::OnSourceModStartup(bool late)
 {
+	char search_path[MAX_PATH * 8];
+	bridge->filesystem->GetSearchPath("GAMEBIN", false, search_path, sizeof(search_path));
+
+	char addons_folder[12];
+	ke::SafeSprintf(addons_folder, sizeof(addons_folder), "%caddons%c", PLATFORM_SEP_CHAR, PLATFORM_SEP_CHAR);
+
+	std::istringstream iss(search_path);
+	for (std::string path; std::getline(iss, path, ';');)
+	{
+		if (path.length() > 0
+			&& path.find(addons_folder) == std::string::npos
+			&& m_gameBinDirectories.find(path.c_str()) == m_gameBinDirectories.cend()
+			)
+			m_gameBinDirectories.insert(path);
+	}
+
+	bridge->filesystem->GetSearchPath("EXECUTABLE_PATH", false, search_path, sizeof(search_path));
+	std::istringstream iss2(search_path);
+	for (std::string path; std::getline(iss2, path, ';');)
+	{
+		if (m_gameBinDirectories.find(path.c_str()) == m_gameBinDirectories.cend())
+			m_gameBinDirectories.insert(path);
+	}
+
 	LoadGameConfigFile("core.games", &g_pGameConf, NULL, 0);
 
 	strncopy(g_Game, g_pSM->GetGameFolderName(), sizeof(g_Game));
@@ -1218,19 +1243,29 @@ void GameConfigManager::RemoveCachedConfig(CGameConfig *config)
 void GameConfigManager::CacheGameBinaryInfo(const char* pszName)
 {
 	GameBinaryInfo info;
-	info.m_pAddr = bridge->filesystem->LoadModule(pszName, "GAMEBIN");
+
+	char name[64];
+	bridge->FormatSourceBinaryName(pszName, name, sizeof(name));
+
+	bool binary_found = false;
+	char binary_path[PLATFORM_MAX_PATH];
+	for (auto it = m_gameBinDirectories.begin(); it != m_gameBinDirectories.end(); ++it)
+	{
+		ke::SafeSprintf(binary_path, sizeof(binary_path), "%s%s%s", it->c_str(), it->back() == PLATFORM_SEP_CHAR ? "" : PLATFORM_SEP, name);
+#if defined PLATFORM_WINDOWS
+		if ((info.m_pAddr = LoadLibraryA(binary_path)))
+#else
+		if ((info.m_pAddr = dlopen(binary_path, RTLD_NOW)))
+#endif
+			break;
+	}
 
 	// Don't bother trying to get CRC if we couldn't find the bin loaded
 	if (info.m_pAddr)
 	{
-		FILE* fp;
-		char path[PLATFORM_MAX_PATH];
-		char name[64];
-		bridge->FormatSourceBinaryName(pszName, name, sizeof(name));
+		FILE *fp;
 
-		// This pattern doesn't work for every game. Instead, we need to use the GAMEBIN search path properly
-		g_pSM->BuildPath(Path_Game, path, sizeof(path), "bin/%s", name);
-		if ((fp = fopen(path, "rb")) == NULL)
+		if ((fp = fopen(binary_path, "rb")) == 0)
 		{
 			info.m_crc = 0;
 		}

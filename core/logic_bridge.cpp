@@ -186,9 +186,9 @@ public:
 	{
 		filesystem->CreateDirHierarchy(path, pathID);
 	}
-	void* LoadModule(const char* pFileName, const char* pPathID) override
+	int GetSearchPath(const char* pathID, bool bGetPackFiles, char* pPath, int nMaxLen) override
 	{
-		return filesystem->LoadModule(pFileName, pPathID);
+		return filesystem->GetSearchPath(pathID, bGetPackFiles, pPath, nMaxLen);
 	}
 } fs_wrapper;
 

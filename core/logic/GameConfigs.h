@@ -38,6 +38,7 @@
 #include <am-refcounting.h>
 #include <sm_stringhashmap.h>
 #include <sm_namehashset.h>
+#include <set>
 
 using namespace SourceMod;
 
@@ -163,10 +164,10 @@ private:
 	void CacheGameBinaryInfo(const char* pszName);
 private:
 	NameHashSet<CGameConfig *> m_Lookup;
+	StringHashMap<GameBinaryInfo> m_gameBinInfos;
+	std::set<std::string> m_gameBinDirectories;
 public:
 	StringHashMap<ITextListener_SMC *> m_customHandlers;
-	StringHashMap<GameBinaryInfo> m_gameBinInfos;
-
 };
 
 extern GameConfigManager g_GameConfigs;
