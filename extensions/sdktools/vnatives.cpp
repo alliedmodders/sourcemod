@@ -1602,6 +1602,60 @@ static cell_t SetEntityCollisionGroup(IPluginContext *pContext, const cell_t *pa
 
 }
 
+static cell_t SendFile(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	if ((client < 1) || (client > playerhelpers->GetMaxClients()))
+	{
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
+	}
+
+	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(client));
+
+	if (!pNetChan)
+	{
+		return pContext->ThrowNativeError("Client index %i has no valid NetChannel", client);
+	}
+
+	char path[PLATFORM_MAX_PATH];
+	g_pSM->FormatString(path, sizeof(path), pContext, params, 2);
+
+	static unsigned int transferID = 0;
+
+#if SOURCE_ENGINE < SE_CSGO
+	return pNetChan->SendFile(path, transferID++) ? transferID : 0;
+#else
+	return pNetChan->SendFile(path, transferID++, false) ? transferID : 0;
+#endif
+}
+
+static cell_t RequestFile(IPluginContext *pContext, const cell_t *params)
+{
+	int client = params[1];
+
+	if ((client < 1) || (client > playerhelpers->GetMaxClients()))
+	{
+		return pContext->ThrowNativeError("Client index %d is invalid", client);
+	}
+
+	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(client));
+
+	if (!pNetChan)
+	{
+		return pContext->ThrowNativeError("Client index %i has no valid NetChannel", client);
+	}
+
+	char path[PLATFORM_MAX_PATH];
+	g_pSM->FormatString(path, sizeof(path), pContext, params, 2);
+
+#if SOURCE_ENGINE < SE_CSGO
+	return pNetChan->RequestFile(path);
+#else
+	return pNetChan->RequestFile(path, false);
+#endif
+}
+
 sp_nativeinfo_t g_Natives[] = 
 {
 	{"ExtinguishEntity",		ExtinguishEntity},
@@ -1634,5 +1688,7 @@ sp_nativeinfo_t g_Natives[] =
 	{"GetPlayerResourceEntity", GetPlayerResourceEntity},
 	{"GivePlayerAmmo",		GivePlayerAmmo},
 	{"SetEntityCollisionGroup",	SetEntityCollisionGroup},
+	{"RequestFile", 			RequestFile},
+	{"SendFile",				SendFile},
 	{NULL,						NULL},
 };
