@@ -366,6 +366,7 @@ native void SetEntityCollisionGroup(int entity, int collisionGroup);
  *
  * @param client          Client to send file.
  * @param file            File to send.
+ * @param ...             Variable number of format parameters.
  * @return                TransferID on success, otherwise 0.
  */
 native int SendFile(int client, const char[] file, any ...);
@@ -375,6 +376,7 @@ native int SendFile(int client, const char[] file, any ...);
  *
  * @param client          Client to get file from.
  * @param file            File to request.
+ * @param ...             Variable number of format parameters.
  * @return                TransferID of the request.
  */
 native int RequestFile(int client, const char[] file, any ...);
