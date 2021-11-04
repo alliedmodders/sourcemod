@@ -1093,7 +1093,7 @@ GameConfigManager::~GameConfigManager()
 
 void GameConfigManager::OnSourceModStartup(bool late)
 {
-	char search_path[MAX_PATH * 8];
+	char search_path[PLATFORM_MAX_PATH * 8];
 	bridge->filesystem->GetSearchPath("GAMEBIN", false, search_path, sizeof(search_path));
 
 	char addons_folder[12];
