@@ -360,3 +360,21 @@ native int GivePlayerAmmo(int client, int amount, int ammotype, bool suppressSou
  * @error                   Invalid entity or lack of mod support.
  */
 native void SetEntityCollisionGroup(int entity, int collisionGroup);
+
+/**
+ * Sends a file to a client
+ *
+ * @param client          Client to send file.
+ * @param file            File to send.
+ * @return                TransferID on success, otherwise 0.
+ */
+native int SendFile(int client, const char[] file, any ...);
+
+/**
+ * Requests a file from a client
+ *
+ * @param client          Client to get file from.
+ * @param file            File to request.
+ * @return                TransferID of the request.
+ */
+native int RequestFile(int client, const char[] file, any ...);
