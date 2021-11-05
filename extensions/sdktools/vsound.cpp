@@ -658,10 +658,10 @@ bool GetSoundParams(CSoundParameters *soundParams, const char *soundname, cell_t
 	HSOUNDSCRIPTHASH index = (HSOUNDSCRIPTHASH)soundemitterbase->GetSoundIndex(soundname);
 #else
 	HSOUNDSCRIPTHANDLE index = (HSOUNDSCRIPTHANDLE)soundemitterbase->GetSoundIndex(soundname);
-#endif
+#endif // SOURCE_ENGINE >= SE_PORTAL2
 	if (!soundemitterbase->IsValidIndex(index))
 		return false;
-#endif
+#endif // SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 
 	gender_t gender = GENDER_NONE;
 
