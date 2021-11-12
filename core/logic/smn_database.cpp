@@ -318,7 +318,7 @@ public:
 		me = scripts->FindPluginByContext(m_pFunction->GetParentContext()->GetContext());
 		
 		m_pInfo = g_DBMan.GetDatabaseConf(dbname);
-		if (!m_pInfo)
+		if (!m_pInfo.isValid())
 		{
 			g_pSM->Format(error, sizeof(error), "Could not find database config \"%s\"", dbname);
 		}
@@ -333,9 +333,9 @@ public:
 	}
 	void RunThreadPart()
 	{
-		if (m_pInfo)
+		if (m_pInfo.isValid())
 		{
-			m_pDatabase = m_pDriver->Connect(&m_pInfo->info, false, error, sizeof(error));
+			m_pDatabase = m_pDriver->Connect(&m_pInfo.get().get()->info, false, error, sizeof(error));
 		}
 	}
 	void CancelThinkPart()
@@ -386,7 +386,7 @@ public:
 		delete this;
 	}
 private:
-	ke::RefPtr<ConfDbInfo> m_pInfo;
+	ke::Maybe<ke::RefPtr<ConfDbInfo>> m_pInfo;
 	IPlugin *me;
 	IPluginFunction *m_pFunction;
 	IDBDriver *m_pDriver;
@@ -1427,7 +1427,8 @@ static cell_t SQL_CheckConfig(IPluginContext *pContext, const cell_t *params)
 	char *name;
 	pContext->LocalToString(params[1], &name);
 
-	return (g_DBMan.GetDatabaseConf(name) != nullptr) ? 1 : 0;
+	ke::Maybe<ke::RefPtr<ConfDbInfo>> conf = g_DBMan.GetDatabaseConf(name);
+	return conf.isValid();
 }
 
 static cell_t SQL_ConnectCustom(IPluginContext *pContext, const cell_t *params)

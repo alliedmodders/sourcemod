@@ -36,8 +36,8 @@
 #define DBPARSE_LEVEL_DATABASE	2
 
 DatabaseConfBuilder::DatabaseConfBuilder()
-	: m_ParseList(nullptr),
-	  m_InfoList(new ConfDbInfoList())
+	: m_ParseList(),
+	  m_InfoList()
 {
 }
 
@@ -50,7 +50,7 @@ DatabaseConfBuilder::~DatabaseConfBuilder()
 {
 }
 
-ConfDbInfoList *DatabaseConfBuilder::GetConfigList()
+ConfDbInfoList &DatabaseConfBuilder::GetConfigList()
 {
 	return m_InfoList;
 }
@@ -75,7 +75,7 @@ void DatabaseConfBuilder::ReadSMC_ParseStart()
 	m_ParseLevel = 0;
 	m_ParseState = DBPARSE_LEVEL_NONE;
 	
-	m_ParseList = new ConfDbInfoList();
+	m_ParseList.clear();
 }
  
 SMCResult DatabaseConfBuilder::ReadSMC_NewSection(const SMCStates *states, const char *name)
@@ -116,7 +116,7 @@ SMCResult DatabaseConfBuilder::ReadSMC_KeyValue(const SMCStates *states, const c
 	{
 		if (strcmp(key, "driver_default") == 0)
 		{
-			m_ParseList->SetDefaultDriver(value);
+			m_ParseList.SetDefaultDriver(value);
 		}
 	} else if (m_ParseState == DBPARSE_LEVEL_DATABASE) {
 		if (strcmp(key, "driver") == 0)
@@ -161,7 +161,7 @@ SMCResult DatabaseConfBuilder::ReadSMC_LeavingSection(const SMCStates *states)
 		
 		/* Save it.. */
 		m_ParseCurrent->AddRef();
-		m_ParseList->push_back(m_ParseCurrent);
+		m_ParseList.push_back(m_ParseCurrent);
 		m_ParseCurrent = nullptr;
 		
 		/* Go up one level */
@@ -176,9 +176,7 @@ SMCResult DatabaseConfBuilder::ReadSMC_LeavingSection(const SMCStates *states)
 
 void DatabaseConfBuilder::ReadSMC_ParseEnd(bool halted, bool failed)
 {
-	m_InfoList->ReleaseMembers();
-	delete m_InfoList;
+	m_InfoList.clear();
 	m_InfoList = m_ParseList;
-	
-	m_ParseList = nullptr;
+	m_ParseList.clear();
 }

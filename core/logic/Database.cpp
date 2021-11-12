@@ -128,10 +128,10 @@ void DBManager::OnHandleDestroy(HandleType_t type, void *object)
 
 bool DBManager::Connect(const char *name, IDBDriver **pdr, IDatabase **pdb, bool persistent, char *error, size_t maxlength)
 {
-	ConfDbInfoList *list = m_Builder.GetConfigList();
-	ke::RefPtr<ConfDbInfo> pInfo = list->GetDatabaseConf(name);
+	ConfDbInfoList &list = m_Builder.GetConfigList();
+	ke::Maybe<ke::RefPtr<ConfDbInfo>> pInfo = list.GetDatabaseConf(name);
 
-	if (!pInfo)
+	if (!pInfo.isValid())
 	{
 		if (pdr)
 		{
@@ -142,31 +142,32 @@ bool DBManager::Connect(const char *name, IDBDriver **pdr, IDatabase **pdb, bool
 		return false;
 	}
 
-	const char *dname = pInfo->info.driver;
-	if (!pInfo->realDriver)
+	auto info = *pInfo;
+	const char *dname = info->info.driver;
+	if (!info->realDriver)
 	{
 		/* Try to assign a real driver pointer */
-		if (pInfo->info.driver[0] == '\0')
+		if (info->info.driver[0] == '\0')
 		{
-			std::string defaultDriver = list->GetDefaultDriver();
+			std::string defaultDriver = list.GetDefaultDriver();
 			if (!m_pDefault && defaultDriver.length() > 0)
 			{
 				m_pDefault = FindOrLoadDriver(defaultDriver.c_str());
 			}
 			dname = defaultDriver.length() ? defaultDriver.c_str() : "default";
-			pInfo->realDriver = m_pDefault;
+			info->realDriver = m_pDefault;
 		} else {
-			pInfo->realDriver = FindOrLoadDriver(pInfo->info.driver);
+			info->realDriver = FindOrLoadDriver(info->info.driver);
 		}
 	}
 
-	if (pInfo->realDriver)
+	if (info->realDriver)
 	{
 		if (pdr)
 		{
-			*pdr = pInfo->realDriver;
+			*pdr = info->realDriver;
 		}
-		*pdb = pInfo->realDriver->Connect(&pInfo->info, persistent, error, maxlength);
+		*pdb = info->realDriver->Connect(&info->info, persistent, error, maxlength);
 		return (*pdb != NULL);
 	}
 
@@ -209,16 +210,13 @@ void DBManager::RemoveDriver(IDBDriver *pDriver)
 		}
 	}
 
-	ConfDbInfoList *list = m_Builder.GetConfigList();
-	for (size_t i = 0; i < list->size(); i++)
-	{
-		ke::RefPtr<ConfDbInfo> current = list->at(i);
-		if (current->realDriver == pDriver)
+	ConfDbInfoList &list = m_Builder.GetConfigList();
+	for (auto conf : list) {
+		if (conf->realDriver == pDriver)
 		{
-			current->realDriver = NULL;
+			conf->realDriver = NULL;
 		}
 	}
-
 
 	/* Someone unloaded the default driver? Silly.. */
 	if (pDriver == m_pDefault)
@@ -255,8 +253,8 @@ void DBManager::RemoveDriver(IDBDriver *pDriver)
 
 IDBDriver *DBManager::GetDefaultDriver()
 {
-	ConfDbInfoList *list = m_Builder.GetConfigList();
-	std::string defaultDriver = list->GetDefaultDriver();
+	ConfDbInfoList &list = m_Builder.GetConfigList();
+	std::string defaultDriver = list.GetDefaultDriver();
 	if (!m_pDefault && defaultDriver.length() > 0)
 	{
 		m_pDefault = FindOrLoadDriver(defaultDriver.c_str());
@@ -322,26 +320,25 @@ IDBDriver *DBManager::GetDriver(unsigned int index)
 
 const DatabaseInfo *DBManager::FindDatabaseConf(const char *name)
 {
-	ConfDbInfoList *list = m_Builder.GetConfigList();
-	ke::RefPtr<ConfDbInfo> info = list->GetDatabaseConf(name);
-	if (!info)
+	ConfDbInfoList &list = m_Builder.GetConfigList();
+	ke::Maybe<ke::RefPtr<ConfDbInfo>> info = list.GetDatabaseConf(name);
+	if (!info.isValid())
 	{
 		// couldn't find requested conf, return default if exists
-		info = list->GetDefaultConfiguration();
-		if (!info)
+		info = list.GetDefaultConfiguration();
+		if (!info.isValid())
 		{
 			return NULL;
 		}
 	}
 
-	return &info->info;
+	return &info.get()->info;
 }
 
-ConfDbInfo *DBManager::GetDatabaseConf(const char *name)
+ke::Maybe<ke::RefPtr<ConfDbInfo>> DBManager::GetDatabaseConf(const char *name)
 {
-	ConfDbInfoList *list = m_Builder.GetConfigList();
-	ke::RefPtr<ConfDbInfo> info(list->GetDatabaseConf(name));
-	return info;
+	ConfDbInfoList &list = m_Builder.GetConfigList();
+	return list.GetDatabaseConf(name);
 }
 
 IDBDriver *DBManager::FindOrLoadDriver(const char *name)
@@ -582,8 +579,8 @@ void DBManager::OnPluginWillUnload(IPlugin *plugin)
 
 std::string DBManager::GetDefaultDriverName()
 {
-	ConfDbInfoList *list = m_Builder.GetConfigList();
-	return list->GetDefaultDriver();
+	ConfDbInfoList &list = m_Builder.GetConfigList();
+	return list.GetDefaultDriver();
 }
 
 void DBManager::AddDependency(IExtension *myself, IDBDriver *driver)
