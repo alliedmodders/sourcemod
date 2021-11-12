@@ -129,9 +129,9 @@ void DBManager::OnHandleDestroy(HandleType_t type, void *object)
 bool DBManager::Connect(const char *name, IDBDriver **pdr, IDatabase **pdb, bool persistent, char *error, size_t maxlength)
 {
 	ConfDbInfoList &list = m_Builder.GetConfigList();
-	ke::Maybe<ke::RefPtr<ConfDbInfo>> pInfo = list.GetDatabaseConf(name);
+	ke::RefPtr<ConfDbInfo> pInfo = list.GetDatabaseConf(name);
 
-	if (!pInfo.isValid())
+	if (!pInfo)
 	{
 		if (pdr)
 		{
@@ -142,12 +142,11 @@ bool DBManager::Connect(const char *name, IDBDriver **pdr, IDatabase **pdb, bool
 		return false;
 	}
 
-	auto info = *pInfo;
-	const char *dname = info->info.driver;
-	if (!info->realDriver)
+	const char *dname = pInfo->info.driver;
+	if (!pInfo->realDriver)
 	{
 		/* Try to assign a real driver pointer */
-		if (info->info.driver[0] == '\0')
+		if (pInfo->info.driver[0] == '\0')
 		{
 			std::string defaultDriver = list.GetDefaultDriver();
 			if (!m_pDefault && defaultDriver.length() > 0)
@@ -155,19 +154,19 @@ bool DBManager::Connect(const char *name, IDBDriver **pdr, IDatabase **pdb, bool
 				m_pDefault = FindOrLoadDriver(defaultDriver.c_str());
 			}
 			dname = defaultDriver.length() ? defaultDriver.c_str() : "default";
-			info->realDriver = m_pDefault;
+			pInfo->realDriver = m_pDefault;
 		} else {
-			info->realDriver = FindOrLoadDriver(info->info.driver);
+			pInfo->realDriver = FindOrLoadDriver(pInfo->info.driver);
 		}
 	}
 
-	if (info->realDriver)
+	if (pInfo->realDriver)
 	{
 		if (pdr)
 		{
-			*pdr = info->realDriver;
+			*pdr = pInfo->realDriver;
 		}
-		*pdb = info->realDriver->Connect(&info->info, persistent, error, maxlength);
+		*pdb = pInfo->realDriver->Connect(&pInfo->info, persistent, error, maxlength);
 		return (*pdb != NULL);
 	}
 
@@ -321,21 +320,21 @@ IDBDriver *DBManager::GetDriver(unsigned int index)
 const DatabaseInfo *DBManager::FindDatabaseConf(const char *name)
 {
 	ConfDbInfoList &list = m_Builder.GetConfigList();
-	ke::Maybe<ke::RefPtr<ConfDbInfo>> info = list.GetDatabaseConf(name);
-	if (!info.isValid())
+	ke::RefPtr<ConfDbInfo> info = list.GetDatabaseConf(name);
+	if (!info)
 	{
 		// couldn't find requested conf, return default if exists
 		info = list.GetDefaultConfiguration();
-		if (!info.isValid())
+		if (!info)
 		{
 			return NULL;
 		}
 	}
 
-	return &info.get()->info;
+	return &info->info;
 }
 
-ke::Maybe<ke::RefPtr<ConfDbInfo>> DBManager::GetDatabaseConf(const char *name)
+ke::RefPtr<ConfDbInfo> DBManager::GetDatabaseConf(const char *name)
 {
 	ConfDbInfoList &list = m_Builder.GetConfigList();
 	return list.GetDatabaseConf(name);

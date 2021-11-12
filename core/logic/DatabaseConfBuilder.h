@@ -38,7 +38,6 @@
 
 #include <am-vector.h>
 #include <am-string.h>
-#include <am-maybe.h>
 #include <am-refcounting.h>
 #include <am-refcounting-threadsafe.h>
 
@@ -68,8 +67,7 @@ private:
 		return m_DefDriver;
 	}
 	
-	ke::Maybe<ke::RefPtr<ConfDbInfo>> GetDatabaseConf(const char *name) {
-		auto retval = ke::Maybe<ke::RefPtr<ConfDbInfo>>();
+	ke::RefPtr<ConfDbInfo> GetDatabaseConf(const char *name) {
 		for (size_t i = 0; i < this->size(); i++)
 		{
 			ke::RefPtr<ConfDbInfo> current = this->at(i);
@@ -77,25 +75,24 @@ private:
 			 * for the next call to GetDefaultConfiguration */ 
 			if (strcmp(current->name.c_str(), "default") == 0)
 			{
-				m_DefaultConfig.init(current);
+				m_DefaultConfig = current;
 			}
 			if (strcmp(current->name.c_str(), name) == 0)
 			{
-				retval.init(current);
-				return retval;
+				return current;
 			}
 		}
-		return retval;
+		return nullptr;
 	}
 
-	ke::Maybe<ke::RefPtr<ConfDbInfo>> GetDefaultConfiguration() {
+	ke::RefPtr<ConfDbInfo> GetDefaultConfiguration() {
 		return m_DefaultConfig;
 	}
 	void SetDefaultDriver(const char *input) {
 		m_DefDriver = std::string(input);
 	}
 private:
-	ke::Maybe<ke::RefPtr<ConfDbInfo>> m_DefaultConfig;
+	ke::RefPtr<ConfDbInfo> m_DefaultConfig;
 	std::string m_DefDriver;
 };
 
