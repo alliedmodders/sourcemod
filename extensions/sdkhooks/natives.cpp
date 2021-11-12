@@ -201,13 +201,7 @@ cell_t Native_TakeDamage(IPluginContext *pContext, const cell_t *params)
 			pCall = g_pBinTools->CreateVCall(offset, 0, 0, &pass[1], &pass[0], 1);
 		}
 
-		// Can't ArgBuffer here until we upgrade our Clang version on the Linux builder
-		unsigned char vstk[sizeof(CBaseEntity *) + sizeof(CTakeDamageInfoHack &)];
-		unsigned char* vptr = vstk;
-
-		*(CBaseEntity **)vptr = pVictim;
-		vptr += sizeof(CBaseEntity *);
-		*(CTakeDamageInfoHack *&)vptr = info;
+		ArgBuffer<CBaseEntity*, CTakeDamageInfoHack&> vstk(pVictim, info);
 
 		int ret;
 		pCall->Execute(vstk, &ret);
