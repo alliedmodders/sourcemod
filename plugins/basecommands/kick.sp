@@ -133,7 +133,12 @@ public Action Command_Kick(int client, int args)
 		}
 		else
 		{
-			ReplyToCommand(client, "[SM] Usage: sm_kick <#userid|name> [reason]");
+			if(GetEngineVersion() == Engine_TF2){
+				ReplyToCommand(client, "[SM] Usage: sm_kick <#userid|name>");
+			}
+			else{
+				ReplyToCommand(client, "[SM] Usage: sm_kick <#userid|name> [reason]");
+			}
 		}
 		
 		return Plugin_Handled;
