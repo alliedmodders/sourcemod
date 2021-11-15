@@ -501,68 +501,121 @@ void CMenuHandler::OnMenuVoteResults(IBaseMenu *menu, const menu_vote_result_t *
 		bool no_call = false;
 		int err;
 
-		/* First array */
 		cell_t client_array_address = -1;
 		cell_t *client_array_base = NULL;
 		cell_t client_array_size = results->num_clients + (results->num_clients * 2);
-		if (client_array_size)
-		{
-			if ((err = pContext->HeapAlloc(client_array_size, &client_array_address, &client_array_base))
-				!= SP_ERROR_NONE)
-			{
-				g_DbgReporter.GenerateError(pContext, m_fnVoteResult, err, "Menu callback could not allocate %d bytes for client list.", client_array_size * sizeof(cell_t));
-				no_call = true;
-			} else {
-				cell_t target_offs = sizeof(cell_t) * results->num_clients;
-				cell_t *cur_index = client_array_base;
-				cell_t *cur_array;
-				for (unsigned int i=0; i<results->num_clients; i++)
-				{
-					/* Copy the array index */
-					*cur_index = target_offs;
-					/* Get the current array address */
-					cur_array = (cell_t *)((char *)cur_index + target_offs);
-					/* Store information */
-					cur_array[0] = results->client_list[i].client;
-					cur_array[1] = results->client_list[i].item;
-					/* Adjust for the new target by subtracting one indirection
-					 * and adding one array.
-					 */
-					target_offs += (sizeof(cell_t) * 2) - sizeof(cell_t);
-					cur_index++;
-				}
-			}
-		}
 
-		/* Second array */
 		cell_t item_array_address = -1;
 		cell_t *item_array_base = NULL;
 		cell_t item_array_size = results->num_items + (results->num_items * 2);
-		if (item_array_size)
-		{
-			if ((err = pContext->HeapAlloc(item_array_size, &item_array_address, &item_array_base))
-				!= SP_ERROR_NONE)
-			{
-				g_DbgReporter.GenerateError(pContext, m_fnVoteResult, err, "Menu callback could not allocate %d bytes for item list.", item_array_size);
-				no_call = true;
-			} else {
-				cell_t target_offs = sizeof(cell_t) * results->num_items;
-				cell_t *cur_index = item_array_base;
-				cell_t *cur_array;
-				for (unsigned int i=0; i<results->num_items; i++)
+
+		// Using direct arrays for 1.11 plugins
+		if (pContext->GetRuntime()->UsesDirectArrays()) {
+			/* First array */
+			if (client_array_size) {
+				if ((err = pContext->HeapAlloc(client_array_size, &client_array_address, &client_array_base))
+					!= SP_ERROR_NONE)
 				{
-					/* Copy the array index */
-					*cur_index = target_offs;
-					/* Get the current array address */
-					cur_array = (cell_t *)((char *)cur_index + target_offs);
-					/* Store information */
-					cur_array[0] = results->item_list[i].item;
-					cur_array[1] = results->item_list[i].count;
-					/* Adjust for the new target by subtracting one indirection
-					 * and adding one array.
-					 */
-					target_offs += (sizeof(cell_t) * 2) - sizeof(cell_t);
-					cur_index++;
+					g_DbgReporter.GenerateError(pContext, m_fnVoteResult, err, "Menu callback could not allocate %d bytes for client list.", results->num_clients * 2 * sizeof(cell_t));
+					no_call = true;
+				} else {
+					cell_t cur_index;
+					cell_t *cur_array;
+					for (unsigned int i=0; i<results->num_clients; i++)
+					{
+						cur_index = results->num_clients + i*2;
+						cur_array = &client_array_base[cur_index];
+						client_array_base[i] = client_array_address + cur_index * sizeof(cell_t);
+
+						/* Store information */
+						cur_array[0] = results->client_list[i].client;
+						cur_array[1] = results->client_list[i].item;
+					}
+				}
+			}
+
+			/* Second array */
+			if (item_array_size)
+			{
+				if ((err = pContext->HeapAlloc(item_array_size, &item_array_address, &item_array_base))
+					!= SP_ERROR_NONE)
+				{
+					g_DbgReporter.GenerateError(pContext, m_fnVoteResult, err, "Menu callback could not allocate %d bytes for item list.", results->num_items * 2 * sizeof(cell_t));
+					no_call = true;
+				} else {
+					cell_t cur_index;
+					cell_t *cur_array;
+					for (unsigned int i=0; i<results->num_items; i++)
+					{
+						cur_index = results->num_items + i*2;
+						cur_array = &item_array_base[cur_index];
+						item_array_base[i] = item_array_address + cur_index * sizeof(cell_t);
+
+						/* Store information */
+						cur_array[0] = results->item_list[i].item;
+						cur_array[1] = results->item_list[i].count;
+					}
+				}
+			}
+		}
+		else {
+			/* First array */
+			if (client_array_size)
+			{
+				if ((err = pContext->HeapAlloc(client_array_size, &client_array_address, &client_array_base))
+					!= SP_ERROR_NONE)
+				{
+					g_DbgReporter.GenerateError(pContext, m_fnVoteResult, err, "Menu callback could not allocate %d bytes for client list.", client_array_size * sizeof(cell_t));
+					no_call = true;
+				} else {
+					cell_t target_offs = sizeof(cell_t) * results->num_clients;
+					cell_t *cur_index = client_array_base;
+					cell_t *cur_array;
+					for (unsigned int i=0; i<results->num_clients; i++)
+					{
+						/* Copy the array index */
+						*cur_index = target_offs;
+						/* Get the current array address */
+						cur_array = (cell_t *)((char *)cur_index + target_offs);
+						/* Store information */
+						cur_array[0] = results->client_list[i].client;
+						cur_array[1] = results->client_list[i].item;
+						/* Adjust for the new target by subtracting one indirection
+						 * and adding one array.
+						 */
+						target_offs += (sizeof(cell_t) * 2) - sizeof(cell_t);
+						cur_index++;
+					}
+				}
+			}
+
+			/* Second array */
+			if (item_array_size)
+			{
+				if ((err = pContext->HeapAlloc(item_array_size, &item_array_address, &item_array_base))
+					!= SP_ERROR_NONE)
+				{
+					g_DbgReporter.GenerateError(pContext, m_fnVoteResult, err, "Menu callback could not allocate %d bytes for item list.", item_array_size);
+					no_call = true;
+				} else {
+					cell_t target_offs = sizeof(cell_t) * results->num_items;
+					cell_t *cur_index = item_array_base;
+					cell_t *cur_array;
+					for (unsigned int i=0; i<results->num_items; i++)
+					{
+						/* Copy the array index */
+						*cur_index = target_offs;
+						/* Get the current array address */
+						cur_array = (cell_t *)((char *)cur_index + target_offs);
+						/* Store information */
+						cur_array[0] = results->item_list[i].item;
+						cur_array[1] = results->item_list[i].count;
+						/* Adjust for the new target by subtracting one indirection
+						 * and adding one array.
+						 */
+						target_offs += (sizeof(cell_t) * 2) - sizeof(cell_t);
+						cur_index++;
+					}
 				}
 			}
 		}
