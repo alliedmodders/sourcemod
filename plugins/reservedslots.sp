@@ -64,6 +64,18 @@ enum KickType
 	Kick_Random,	
 };
 
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	if (GetEngineVersion() == Engine_Contagion)
+	{
+		// sv_visiblemaxplayers doesn't exist
+		strcopy(error, err_max, "Reserved Slots is incompatible with this game");
+		return APLRes_SilentFailure;
+	}
+
+	return APLRes_Success;
+}
+
 public void OnPluginStart()
 {
 	LoadTranslations("reservedslots.phrases");
