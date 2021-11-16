@@ -18,57 +18,57 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"402"
-				"linux"		"406"
-				"mac"		"406"
+				"windows"	"408"
+				"linux"		"409"
+				"mac"		"409"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"274"
-				"linux"		"275"
-				"mac"		"275"
+				"windows"	"277"
+				"linux"		"278"
+				"mac"		"278"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"272"
-				"linux"		"273"
-				"mac"		"273"
+				"windows"	"275"
+				"linux"		"276"
+				"mac"		"276"
 			}
 			"Ignite"
 			{
-				"windows"	"213"
-				"linux"		"214"
-				"mac"		"214"
+				"windows"	"216"
+				"linux"		"217"
+				"mac"		"217"
 			}
 			"Extinguish"
 			{
-				"windows"	"217"
-				"linux"		"218"
-				"mac"		"218"
+				"windows"	"220"
+				"linux"		"221"
+				"mac"		"221"
 			}
 			"Teleport"
 			{
-				"windows"	"108"
-				"linux"		"109"
-				"mac"		"109"
+				"windows"	"111"
+				"linux"		"112"
+				"mac"		"112"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"446"
-				"linux"		"446"
-				"mac"		"446"
+				"windows"	"449"
+				"linux"		"449"
+				"mac"		"449"
 			}
 			"GetVelocity"
 			{
-				"windows"	"140"
-				"linux"		"141"
-				"mac"		"141"
+				"windows"	"143"
+				"linux"		"144"
+				"mac"		"144"
 			}
 			"EyeAngles"
 			{
-				"windows"	"131"
-				"linux"		"132"
-				"mac"		"132"
+				"windows"	"134"
+				"linux"		"135"
+				"mac"		"135"
 			}
 			"SetEntityModel"
 			{
@@ -84,9 +84,9 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"265"
-				"linux"		"266"
-				"mac"		"266"
+				"windows"	"268"
+				"linux"		"269"
+				"mac"		"269"
 			}
 			"Activate"
 			{
@@ -96,15 +96,15 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"423"
-				"linux"		"424"
-				"mac"		"424"
+				"windows"	"426"
+				"linux"		"427"
+				"mac"		"427"
 			}
 			"GiveAmmo"
 			{
-				"windows"	"256"
-				"linux"		"257"
-				"mac"		"257"
+				"windows"	"259"
+				"linux"		"260"
+				"mac"		"260"
 			}
 		}
 		
