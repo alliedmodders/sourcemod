@@ -328,7 +328,6 @@ bool CollisionRulesChanged(CBaseEntity *pEntity)
 		int offset = -1;
 		if (!g_pGameConf->GetOffset("SetOwnerEntity", &offset))
 		{
-			g_pSM->LogMessage(myself, "Failed to get SetOwnerEntity");
 			return false;
 		}
 
@@ -344,7 +343,6 @@ bool CollisionRulesChanged(CBaseEntity *pEntity)
 		// Couldn't find the world (what)
 		if (pWorldEntity == nullptr)
 		{
-			g_pSM->LogMessage(myself, "No world entity");
 			return false;
 		}
 
@@ -359,7 +357,6 @@ bool CollisionRulesChanged(CBaseEntity *pEntity)
 		if (offsethOwnerEntity == -1)
 		{
 			// Well...
-			g_pSM->LogMessage(myself, "No m_hOwnerEntity wat");
 			return false;
 		}
 
