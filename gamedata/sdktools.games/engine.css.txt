@@ -131,21 +131,4 @@
 			}
 		}
 	}
-
-	"#default"
-	{
-		"Keys"
-		{
-			// Netprop on the team entity for team score
-			"m_iScore"		"m_scoreTotal"
-		}
-		"Offsets"
-		{
-			"SetOwnerEntity"
-			{
-				"windows"	"17"
-				"linux"		"18"
-			}
-		}
-	}
 }
