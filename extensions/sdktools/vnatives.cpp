@@ -1564,7 +1564,6 @@ static cell_t GivePlayerAmmo(IPluginContext *pContext, const cell_t *params)
 }
 
 // SetEntityCollisionGroup(int entity, int collisionGroup)
-// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/sp/src/game/shared/baseentity_shared.cpp#L2477L2484
 static cell_t SetEntityCollisionGroup(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
@@ -1581,11 +1580,12 @@ static cell_t SetEntityCollisionGroup(IPluginContext *pContext, const cell_t *pa
 	offsetCollisionGroup = offset_data_info.actual_offset;
 
 	// Reimplementation of CBaseEntity::SetCollisionGroup
+	// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/sp/src/game/shared/baseentity_shared.cpp#L2477L2484
 	int *collisionGroup = (int *)((uint8_t *)pEntity + offsetCollisionGroup);
 	if ((*collisionGroup) != params[2])
 	{
 		*collisionGroup = params[2];
-		// Returns false if CollisionRulesChanged hack isn't supported for this game
+		// Returns false if CollisionRulesChanged hack isn't supported for this mod
 		if (!CollisionRulesChanged(pEntity))
 		{
 			return pContext->ThrowNativeError("\"SetEntityCollisionGroup\" unsupported mod");
@@ -1598,7 +1598,7 @@ static cell_t EntityCollisionRulesChanged(IPluginContext *pContext, const cell_t
 {
 	CBaseEntity *pEntity;
 	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
-	// Returns false if CollisionRulesChanged hack isn't supported for this game
+	// Returns false if CollisionRulesChanged hack isn't supported for this mod
 	if (!CollisionRulesChanged(pEntity))
 	{
 		return pContext->ThrowNativeError("\"EntityCollisionRulesChanged\" unsupported mod");

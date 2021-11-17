@@ -319,7 +319,7 @@ bool CollisionRulesChanged(CBaseEntity *pEntity)
 	// CBaseEntity::SetOwnerEntity is a virtual function, and while not many classes override it
 	// Only CNodeEnt, as confirmed by a valve comment
 	// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/baseentity.h#L493
-	// In order to keep consitent behaviour across all entities, including CNodeEnt and potential source game that have entities class overriding this function.
+	// In order to keep consitent behaviour across all entities, including CNodeEnt and potential source games that have entity classes overriding this function.
 	// We are going to fetch the world entity, which doesn't have this function overriden (on all source games hopefully), and obtain the function address
 	static void *func = nullptr;
 	static int offsethOwnerEntity = -1;
@@ -361,9 +361,9 @@ bool CollisionRulesChanged(CBaseEntity *pEntity)
 		}
 
 		// Hopefully the world vtable...
-		void **worldentity_vtable = *reinterpret_cast<void***>(pWorldEntity);
+		void **world_vtable = *reinterpret_cast<void***>(pWorldEntity);
 		// Hopefully CBaseEntity::SetOwnerEntity and not an overriden function...
-		func = worldentity_vtable[offset];
+		func = world_vtable[offset];
 	}
 
 	// Build our member function ptr
@@ -389,7 +389,7 @@ bool CollisionRulesChanged(CBaseEntity *pEntity)
 	CBaseEntity *oldOwner = gamehelpers->ReferenceToEntity(hndl->GetEntryIndex());
 
 	// Now change the owner to something else, so we fall through the if statement
-	// when calling CBaseEntity::SetOwnerEntity and only end only calling CBaseEntity::CollisionRulesChanged
+	// when calling CBaseEntity::SetOwnerEntity and only end up calling CBaseEntity::CollisionRulesChanged
 	if (oldOwner)
 	{
 		hndl->Set(nullptr);
