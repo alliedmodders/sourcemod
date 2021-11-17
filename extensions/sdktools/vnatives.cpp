@@ -1576,7 +1576,7 @@ static cell_t SetEntityCollisionGroup(IPluginContext *pContext, const cell_t *pa
 	datamap_t *offsetMap = gamehelpers->GetDataMap(pEntity);
 	if (!offsetMap || !gamehelpers->FindDataMapInfo(offsetMap, "m_CollisionGroup", &offset_data_info))
 	{
-		return pContext->ThrowNativeError("\"SetEntityCollisionGroup\" unsupported entity");
+		return pContext->ThrowNativeError("\"SetEntityCollisionGroup\" Failed to retrieve m_CollisionGroup datamap on entity");
 	}
 	offsetCollisionGroup = offset_data_info.actual_offset;
 
@@ -1588,7 +1588,7 @@ static cell_t SetEntityCollisionGroup(IPluginContext *pContext, const cell_t *pa
 		// Returns false if CollisionRulesChanged hack isn't supported for this game
 		if (!CollisionRulesChanged(pEntity))
 		{
-			return pContext->ThrowNativeError("\"SetEntityCollisionGroup\" unsupported entity");
+			return pContext->ThrowNativeError("\"SetEntityCollisionGroup\" unsupported mod");
 		}
 	}
 	return 1;
@@ -1601,7 +1601,7 @@ static cell_t EntityCollisionRulesChanged(IPluginContext *pContext, const cell_t
 	// Returns false if CollisionRulesChanged hack isn't supported for this game
 	if (!CollisionRulesChanged(pEntity))
 	{
-		return pContext->ThrowNativeError("\"EntityCollisionRulesChanged\" unsupported entity");
+		return pContext->ThrowNativeError("\"EntityCollisionRulesChanged\" unsupported mod");
 	}
 	return 1;
 }
@@ -1640,36 +1640,36 @@ static cell_t SetEntityOwner(IPluginContext *pContext, const cell_t *params)
 
 sp_nativeinfo_t g_Natives[] = 
 {
-	{"ExtinguishEntity",			ExtinguishEntity},
-	{"ForcePlayerSuicide",			ForcePlayerSuicide},
-	{"GivePlayerItem",				GiveNamedItem},
-	{"GetPlayerWeaponSlot",			GetPlayerWeaponSlot},
-	{"IgniteEntity",				IgniteEntity},
-	{"RemovePlayerItem",			RemovePlayerItem},
-	{"TeleportEntity",				TeleportEntity},
-	{"SetClientViewEntity",			SetClientViewEntity},
-	{"SetLightStyle",				SetLightStyle},
-	{"SlapPlayer",					SlapPlayer},
-	{"GetClientEyePosition",		GetClientEyePosition},
-	{"GetClientEyeAngles",			GetClientEyeAngles},
-	{"FindEntityByClassname",		FindEntityByClassname},
-	{"CreateEntityByName",			CreateEntityByName},
-	{"DispatchSpawn",				DispatchSpawn},
-	{"DispatchKeyValue",			DispatchKeyValue},
-	{"DispatchKeyValueFloat",		DispatchKeyValueFloat},
-	{"DispatchKeyValueVector",		DispatchKeyValueVector},
-	{"GetClientAimTarget",			sm_GetClientAimTarget},
-	{"SetEntityModel",				sm_SetEntityModel},
-	{"GetPlayerDecalFile",			GetPlayerDecalFile},
-	{"GetPlayerJingleFile",			GetPlayerJingleFile},
-	{"GetServerNetStats",			GetServerNetStats},
-	{"EquipPlayerWeapon",			WeaponEquip},
-	{"ActivateEntity",				ActivateEntity},
-	{"SetClientInfo",				SetClientInfo},
-	{"SetClientName",           	SetClientName},
-	{"GetPlayerResourceEntity", 	GetPlayerResourceEntity},
-	{"GivePlayerAmmo",				GivePlayerAmmo},
-	{"SetEntityCollisionGroup",		SetEntityCollisionGroup},
+	{"ExtinguishEntity",		ExtinguishEntity},
+	{"ForcePlayerSuicide",		ForcePlayerSuicide},
+	{"GivePlayerItem",			GiveNamedItem},
+	{"GetPlayerWeaponSlot",		GetPlayerWeaponSlot},
+	{"IgniteEntity",			IgniteEntity},
+	{"RemovePlayerItem",		RemovePlayerItem},
+	{"TeleportEntity",			TeleportEntity},
+	{"SetClientViewEntity",		SetClientViewEntity},
+	{"SetLightStyle",			SetLightStyle},
+	{"SlapPlayer",				SlapPlayer},
+	{"GetClientEyePosition",	GetClientEyePosition},
+	{"GetClientEyeAngles",		GetClientEyeAngles},
+	{"FindEntityByClassname",	FindEntityByClassname},
+	{"CreateEntityByName",		CreateEntityByName},
+	{"DispatchSpawn",			DispatchSpawn},
+	{"DispatchKeyValue",		DispatchKeyValue},
+	{"DispatchKeyValueFloat",	DispatchKeyValueFloat},
+	{"DispatchKeyValueVector",	DispatchKeyValueVector},
+	{"GetClientAimTarget",		sm_GetClientAimTarget},
+	{"SetEntityModel",			sm_SetEntityModel},
+	{"GetPlayerDecalFile",		GetPlayerDecalFile},
+	{"GetPlayerJingleFile",		GetPlayerJingleFile},
+	{"GetServerNetStats",		GetServerNetStats},
+	{"EquipPlayerWeapon",		WeaponEquip},
+	{"ActivateEntity",			ActivateEntity},
+	{"SetClientInfo",			SetClientInfo},
+	{"SetClientName",           SetClientName},
+	{"GetPlayerResourceEntity", GetPlayerResourceEntity},
+	{"GivePlayerAmmo",		GivePlayerAmmo},
+	{"SetEntityCollisionGroup",	SetEntityCollisionGroup},
 	{"EntityCollisionRulesChanged",	EntityCollisionRulesChanged},
 	{"SetEntityOwner", 				SetEntityOwner},
 	{NULL,						NULL},

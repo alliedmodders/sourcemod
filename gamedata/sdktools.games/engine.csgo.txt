@@ -244,10 +244,10 @@
 		{
 			"SetOwnerEntity"
 			{
-				"windows"	"17"
-				"linux"		"18"
-				"linux64"	"18"
-				"mac64"		"18"
+				"windows"	"19"
+				"linux"		"20"
+				"linux64"	"20"
+				"mac64"		"20"
 			}
 			"GiveNamedItem"
 			{
