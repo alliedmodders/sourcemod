@@ -85,15 +85,12 @@ static const char *g_pParseEngine = NULL;
 
 #if defined PLATFORM_WINDOWS
 #define PLATFORM_NAME				"windows" PLATFORM_ARCH_SUFFIX
-#define PLATFORM_SERVER_BINARY		"server.dll"
 #elif defined PLATFORM_LINUX
 #define PLATFORM_NAME				"linux" PLATFORM_ARCH_SUFFIX
 #define PLATFORM_COMPAT_ALT			"mac" PLATFORM_ARCH_SUFFIX	/* Alternate platform name if game data is missing for primary one */
-#define PLATFORM_SERVER_BINARY		"server_i486.so"
 #elif defined PLATFORM_APPLE
 #define PLATFORM_NAME				"mac" PLATFORM_ARCH_SUFFIX
 #define PLATFORM_COMPAT_ALT			"linux" PLATFORM_ARCH_SUFFIX
-#define PLATFORM_SERVER_BINARY		"server.dylib"
 #endif
 
 struct TempSigInfo
@@ -315,7 +312,10 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 				FILE *fp;
 				char path[PLATFORM_MAX_PATH];
 
-				g_pSM->BuildPath(Path_Game, path, sizeof(path), "bin/" PLATFORM_SERVER_BINARY);
+				char binName[64];
+				bridge->FormatSourceBinaryName(name, binName, sizeof(binName));
+
+				g_pSM->BuildPath(Path_Game, path, sizeof(path), "bin/%s", binName);
 				if ((fp = fopen(path, "rb")) == NULL)
 				{
 					ke::SafeSprintf(error, sizeof(error), "Could not open binary: %s", path);

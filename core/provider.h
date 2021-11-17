@@ -67,6 +67,7 @@ public:
 	int QueryClientConVar(int client, const char *cvar) override;
 	bool IsClientConVarQueryingSupported() override;
 	void DefineCommand(const char *cmd, const char *help, const SourceMod::CommandFunc &callback) override;
+	void FormatSourceBinaryName(const char *basename, char *buffer, size_t maxlength) override;
 
 	ke::RefPtr<CommandHook> AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
 	ke::RefPtr<CommandHook> AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);

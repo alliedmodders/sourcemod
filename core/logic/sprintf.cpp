@@ -1218,7 +1218,7 @@ reswitch:
 				cell_t *target;
 				pCtx->LocalToString(params[arg++], &key);
 				pCtx->LocalToPhysAddr(params[arg++], &target);
-				res = Translate(buf_p, llen, pCtx, key, *target, params, &arg, &error);
+				res = Translate(buf_p, llen + 1, pCtx, key, *target, params, &arg, &error);
 				if (error)
 				{
 					return 0;
@@ -1235,7 +1235,7 @@ reswitch:
 				size_t res;
 				cell_t target = bridge->GetGlobalTarget();
 				pCtx->LocalToString(params[arg++], &key);
-				res = Translate(buf_p, llen, pCtx, key, target, params, &arg, &error);
+				res = Translate(buf_p, llen + 1, pCtx, key, target, params, &arg, &error);
 				if (error)
 				{
 					return 0;

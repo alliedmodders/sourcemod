@@ -35,20 +35,14 @@
 			"GetTEName"
 			{
 				"windows"	"4"
-				"linux"		"4"
-				"mac"		"4"
 			}
 			"GetTENext"
 			{
 				"windows"	"8"
-				"linux"		"8"
-				"mac"		"8"
 			}
 			"TE_GetServerClass"
 			{
 				"windows"	"0"
-				"linux"		"0"
-				"mac"		"0"
 			}
 		}
 
@@ -58,12 +52,6 @@
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x89\x41\x04\xC7\x01"
-			}
-			"s_pTempEntities"
-			{
-				"library"	"server"
-				"linux"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
-				"mac"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
 			}
 		}
 	}
@@ -77,9 +65,7 @@
 			"FindEntityByClassname"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x53\x56\x57\x8B\xF9\x8B\x4D\x08\x85\xC9\x74\x2A\x8B\x01\xFF\x50\x08\x8B\x30\x81\xE6\xFF\x1F\x00\x00"
-				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
-				"mac"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
+				"windows"	"\x55\x8B\xEC\x53\x56\x8B\xF1\x8B\x4D\x08\x57\x85\xC9\x74\x2A\x8B\x01\xFF\x50\x08\x8B\x00\x83\xF8\xFF\x75\x2A\xB8\xFF\x1F\x00\x00\x40\x03\xC0\x8B\x34\xC6\xEB\x2A\x0F\xB7\xC0\x40\x03\xC0\x8B\x34\xC6\xEB\x2A\x8B\xB6\x04\x00\x02\x00\x85\xF6\x74\x2A\x8B\x5D\x0C\x8B\x3E\x85\xFF\x75\x2A\x68\x2A\x2A\x2A\x2A\xFF\x15\x2A\x2A\x2A\x2A\x83\xC4\x04\xEB\x2A\x39\x5F\x7C"
 			}
 		}
 	}
@@ -92,9 +78,7 @@
 			"FireOutput"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x81\xEC\x2A\x2A\x2A\x2A\x53\x8B\xC1\xC7\x45"
-				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
-				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+				"windows"	"\x55\x8B\xEC\x81\xEC\x20\x01\x00\x00\x53"
 			}
 		}
 	}
@@ -112,7 +96,7 @@
 			 * the expected code. A pointer to sv (IServer interface) is used
 			 * here.
 			 */
-			"CreateFakeClient_Windows"	"\x8B\x44\x24\x04\x50\xB9\x2A\x2A\x2A\x2A\xE8"
+			"CreateFakeClient_Windows"	"\x55\x8B\xEC\xFF\x75\x08\xB9"
 		}
 		
 		"Offsets"
@@ -123,20 +107,11 @@
 				"windows"	"6"
 			}
 		}
-
-		"Signatures"
-		{
-			/* CBaseServer object for IServer interface */
-			"sv"
-			{
-				"library"	"engine"
-				"linux"		"@sv"
-				"mac"		"@sv"
-			}
-		}
 	}
 	
 	/* EntityFactoryDictionary function */
+	/* Can't be made unique in current version */
+	/*
 	"#default"
 	{
 		"Signatures"
@@ -144,12 +119,11 @@
 			"EntityFactory"
 			{
 				"library"	"server"
-				"windows"	"\xA1\x2A\x2A\x2A\x2A\xA8\x01\x75\x1F\x83\xC8\x01\xB9\x2A\x2A\x2A\x2A\xA3\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8"
-				"linux"		"@_Z23EntityFactoryDictionaryv"
-				"mac"		"@_Z23EntityFactoryDictionaryv"
+				"windows"	"xA1\x2A\x2A\x2A\x2A\xA8\x01\x75\x1F\x83\xC8\x01\xB9\x2A\x2A\x2A\x2A\xA3\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x68\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\xB8"
 			}
 		}
 	}
+	*/
 	
 	/* SetUserInfo data */
 	"#default"
@@ -203,63 +177,63 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"434"
+				"windows"	"445"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"292"
+				"windows"	"303"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"290"
+				"windows"	"301"
 			}
 			"Ignite"
 			{
-				"windows"	"224"
+				"windows"	"229"
 			}
 			"Extinguish"
 			{
-				"windows"	"227"
+				"windows"	"232"
 			}
 			"Teleport"
 			{
-				"windows"	"119"
+				"windows"	"125"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"478"
+				"windows"	"489"
 			}
 			"GetVelocity"
 			{
-				"windows"	"151"
+				"windows"	"157"
 			}
 			"EyeAngles"
 			{
-				"windows"	"142"
+				"windows"	"148"
 			}
 			"AcceptInput"
 			{
-				"windows"	"43"
+				"windows"	"49"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"26"
+				"windows"	"32"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"283"
+				"windows"	"294"
 			}
 			"Activate"
 			{
-				"windows"	"35"
+				"windows"	"41"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"457"
+				"windows"	"468"
 			}
 			"GiveAmmo"
 			{
-				"windows"	"276"
+				"windows"	"287"
 			}
 		}
 		

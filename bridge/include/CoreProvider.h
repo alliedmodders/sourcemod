@@ -115,6 +115,8 @@ public:
 	virtual void ConsolePrint(const char *fmt, ...) = 0;
 	virtual void ConsolePrintVa(const char *fmt, va_list ap) = 0;
 
+	virtual void FormatSourceBinaryName(const char *basename, char *buffer, size_t maxlength) = 0;
+
 	// Game engine helper functions.
 	virtual bool IsClientConVarQueryingSupported() = 0;
 	virtual int QueryClientConVar(int client, const char *cvar) = 0;
