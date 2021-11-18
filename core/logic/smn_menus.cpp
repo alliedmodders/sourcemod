@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -141,10 +141,6 @@ public:
 	void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);
 	unsigned int OnMenuDisplayItem(IBaseMenu *menu, int client, IMenuPanel *panel, unsigned int item, const ItemDrawInfo &dr);
 	bool OnSetHandlerOption(const char *option, const void *data);
-#if 0
-	void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);
-	void OnMenuDisplayItem(IBaseMenu *menu, int client, unsigned int item, const char **display);
-#endif
 private:
 	cell_t DoAction(IBaseMenu *menu, MenuAction action, cell_t param1, cell_t param2, cell_t def_res=0);
 private:
@@ -496,98 +492,99 @@ void CMenuHandler::OnMenuVoteResults(IBaseMenu *menu, const menu_vote_result_t *
 		unsigned int winning_votes = results->item_list[0].count;
 
 		DoAction(menu, MenuAction_VoteEnd, winning_item, (total_votes << 16) | (winning_votes & 0xFFFF));
-	} else {
-		IPluginContext *pContext = m_pVoteResults->GetParentContext();
-		bool no_call = false;
-		int err;
+		return;
+	}
 
-		/* First array */
-		cell_t client_array_address = -1;
-		cell_t *client_array_base = NULL;
-		cell_t client_array_size = results->num_clients + (results->num_clients * 2);
-		if (client_array_size)
+	IPluginContext *pContext = m_pVoteResults->GetParentContext();
+	bool no_call = false;
+	int err;
+
+	/* First array */
+	cell_t client_array_address = -1;
+	cell_t *client_array_base = NULL;
+	cell_t client_array_size = results->num_clients + (results->num_clients * 2);
+	if (client_array_size)
+	{
+		if ((err = pContext->HeapAlloc(client_array_size, &client_array_address, &client_array_base))
+			!= SP_ERROR_NONE)
 		{
-			if ((err = pContext->HeapAlloc(client_array_size, &client_array_address, &client_array_base))
-				!= SP_ERROR_NONE)
+			g_DbgReporter.GenerateError(pContext, m_fnVoteResult, err, "Menu callback could not allocate %d bytes for client list.", client_array_size * sizeof(cell_t));
+			no_call = true;
+		} else {
+			cell_t target_offs = sizeof(cell_t) * results->num_clients;
+			cell_t *cur_index = client_array_base;
+			cell_t *cur_array;
+			for (unsigned int i=0; i<results->num_clients; i++)
 			{
-				g_DbgReporter.GenerateError(pContext, m_fnVoteResult, err, "Menu callback could not allocate %d bytes for client list.", client_array_size * sizeof(cell_t));
-				no_call = true;
-			} else {
-				cell_t target_offs = sizeof(cell_t) * results->num_clients;
-				cell_t *cur_index = client_array_base;
-				cell_t *cur_array;
-				for (unsigned int i=0; i<results->num_clients; i++)
-				{
-					/* Copy the array index */
-					*cur_index = target_offs;
-					/* Get the current array address */
-					cur_array = (cell_t *)((char *)cur_index + target_offs);
-					/* Store information */
-					cur_array[0] = results->client_list[i].client;
-					cur_array[1] = results->client_list[i].item;
-					/* Adjust for the new target by subtracting one indirection
-					 * and adding one array.
-					 */
-					target_offs += (sizeof(cell_t) * 2) - sizeof(cell_t);
-					cur_index++;
-				}
+				/* Copy the array index */
+				*cur_index = target_offs;
+				/* Get the current array address */
+				cur_array = (cell_t *)((char *)cur_index + target_offs);
+				/* Store information */
+				cur_array[0] = results->client_list[i].client;
+				cur_array[1] = results->client_list[i].item;
+				/* Adjust for the new target by subtracting one indirection
+				 * and adding one array.
+				 */
+				target_offs += (sizeof(cell_t) * 2) - sizeof(cell_t);
+				cur_index++;
 			}
 		}
+	}
 
-		/* Second array */
-		cell_t item_array_address = -1;
-		cell_t *item_array_base = NULL;
-		cell_t item_array_size = results->num_items + (results->num_items * 2);
-		if (item_array_size)
+	/* Second array */
+	cell_t item_array_address = -1;
+	cell_t *item_array_base = NULL;
+	cell_t item_array_size = results->num_items + (results->num_items * 2);
+	if (item_array_size)
+	{
+		if ((err = pContext->HeapAlloc(item_array_size, &item_array_address, &item_array_base))
+			!= SP_ERROR_NONE)
 		{
-			if ((err = pContext->HeapAlloc(item_array_size, &item_array_address, &item_array_base))
-				!= SP_ERROR_NONE)
+			g_DbgReporter.GenerateError(pContext, m_fnVoteResult, err, "Menu callback could not allocate %d bytes for item list.", item_array_size);
+			no_call = true;
+		} else {
+			cell_t target_offs = sizeof(cell_t) * results->num_items;
+			cell_t *cur_index = item_array_base;
+			cell_t *cur_array;
+			for (unsigned int i=0; i<results->num_items; i++)
 			{
-				g_DbgReporter.GenerateError(pContext, m_fnVoteResult, err, "Menu callback could not allocate %d bytes for item list.", item_array_size);
-				no_call = true;
-			} else {
-				cell_t target_offs = sizeof(cell_t) * results->num_items;
-				cell_t *cur_index = item_array_base;
-				cell_t *cur_array;
-				for (unsigned int i=0; i<results->num_items; i++)
-				{
-					/* Copy the array index */
-					*cur_index = target_offs;
-					/* Get the current array address */
-					cur_array = (cell_t *)((char *)cur_index + target_offs);
-					/* Store information */
-					cur_array[0] = results->item_list[i].item;
-					cur_array[1] = results->item_list[i].count;
-					/* Adjust for the new target by subtracting one indirection
-					 * and adding one array.
-					 */
-					target_offs += (sizeof(cell_t) * 2) - sizeof(cell_t);
-					cur_index++;
-				}
+				/* Copy the array index */
+				*cur_index = target_offs;
+				/* Get the current array address */
+				cur_array = (cell_t *)((char *)cur_index + target_offs);
+				/* Store information */
+				cur_array[0] = results->item_list[i].item;
+				cur_array[1] = results->item_list[i].count;
+				/* Adjust for the new target by subtracting one indirection
+				 * and adding one array.
+				 */
+				target_offs += (sizeof(cell_t) * 2) - sizeof(cell_t);
+				cur_index++;
 			}
 		}
+	}
 
-		/* Finally, push everything */
-		if (!no_call)
-		{
-			m_pVoteResults->PushCell(menu->GetHandle());
-			m_pVoteResults->PushCell(results->num_votes);
-			m_pVoteResults->PushCell(results->num_clients);
-			m_pVoteResults->PushCell(client_array_address);
-			m_pVoteResults->PushCell(results->num_items);
-			m_pVoteResults->PushCell(item_array_address);
-			m_pVoteResults->Execute(NULL);
-		}
+	/* Finally, push everything */
+	if (!no_call)
+	{
+		m_pVoteResults->PushCell(menu->GetHandle());
+		m_pVoteResults->PushCell(results->num_votes);
+		m_pVoteResults->PushCell(results->num_clients);
+		m_pVoteResults->PushCell(client_array_address);
+		m_pVoteResults->PushCell(results->num_items);
+		m_pVoteResults->PushCell(item_array_address);
+		m_pVoteResults->Execute(NULL);
+	}
 
-		/* Free what we allocated, in reverse order as required */
-		if (item_array_address != -1)
-		{
-			pContext->HeapPop(item_array_address);
-		}
-		if (client_array_address != -1)
-		{
-			pContext->HeapPop(client_array_address);
-		}
+	/* Free what we allocated, in reverse order as required */
+	if (item_array_address != -1)
+	{
+		pContext->HeapPop(item_array_address);
+	}
+	if (client_array_address != -1)
+	{
+		pContext->HeapPop(client_array_address);
 	}
 }
 
