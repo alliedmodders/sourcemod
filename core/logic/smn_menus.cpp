@@ -1014,7 +1014,7 @@ static cell_t GetMenuExitBackButton(IPluginContext *pContext, const cell_t *para
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
 
-	return ((menu->GetMenuOptionFlags() & MENUFLAG_BUTTON_EXITBACK) == MENUFLAG_BUTTON_EXIT) ? 1 : 0;
+	return ((menu->GetMenuOptionFlags() & MENUFLAG_BUTTON_EXITBACK) == MENUFLAG_BUTTON_EXITBACK) ? 1 : 0;
 }
 
 static cell_t SetMenuExitButton(IPluginContext *pContext, const cell_t *params)
