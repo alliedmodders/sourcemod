@@ -362,6 +362,22 @@ native int GivePlayerAmmo(int client, int amount, int ammotype, bool suppressSou
 native void SetEntityCollisionGroup(int entity, int collisionGroup);
 
 /**
+ * Recaculates entity collision rules (CBaseEntity::CollisionRulesChanged).
+ * 
+ * @param entity            The entity index.
+ * @error                   Invalid entity or lack of mod support.
+ */
+native void EntityCollisionRulesChanged(int entity);
+
+/**
+ * Sets an entity's owner (CBaseEntity::SetEntityOwner).
+ * 
+ * @param entity            The entity index.
+ * @param owner    			The owner entity index, can be invalid.
+ * @error                   Invalid entity or lack of mod support.
+ */
+native void SetEntityOwner(int entity, int owner=INVALID_ENT_REFERENCE);
+
  * Sends a file to a client
  *
  * @param client          Client to send file.
