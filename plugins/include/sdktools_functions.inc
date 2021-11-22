@@ -376,4 +376,4 @@ native void EntityCollisionRulesChanged(int entity);
  * @param owner    			The owner entity index, can be invalid.
  * @error                   Invalid entity or lack of mod support.
  */
-native void SetEntityOwner(int entity, int owner);
+native void SetEntityOwner(int entity, int owner=INVALID_ENT_REFERENCE);
