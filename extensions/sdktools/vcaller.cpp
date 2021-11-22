@@ -336,15 +336,25 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 			}
 			break;
 		case ValveCall_Server:
-            {
-                if (iserver == NULL)
-                {
-                    vc->stk_put(ptr);
-                    return pContext->ThrowNativeError("Server unsupported or not available; file a bug report");
-                }
-                *(void **)ptr = iserver;
-            }
-            break;
+			{
+				if (iserver == NULL)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("Server unsupported or not available; file a bug report");
+				}
+				*(void **)ptr = iserver;
+			}
+			break;
+		case ValveCall_Engine:
+			{
+				if (engine == NULL)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("Engine unsupported or not available; file a bug report");
+				}
+				*(void **)ptr = engine;
+			}
+			break;
 		case ValveCall_GameRules:
 			{
 				void *pGameRules = GameRules();
