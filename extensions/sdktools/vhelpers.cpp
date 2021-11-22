@@ -398,6 +398,7 @@ bool CollisionRulesChanged(CBaseEntity *pEntity)
 	{
 		hndl->Set((IHandleEntity *)pEntity);
 	}
+
 	(reinterpret_cast<VEmptyClass*>(pEntity)->*u.mfpnew)(oldOwner);
 	return true;
 }
