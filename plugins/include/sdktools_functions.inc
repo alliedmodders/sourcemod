@@ -378,6 +378,7 @@ native void EntityCollisionRulesChanged(int entity);
  */
 native void SetEntityOwner(int entity, int owner=INVALID_ENT_REFERENCE);
 
+/**
  * Sends a file to a client
  *
  * @param client          Client to send file.
