@@ -496,7 +496,7 @@ class SMConfig(object):
           '-current_version', self.productVersion
         ]
     if self.use_auto_versioning():
-      binary.compiler.linkflags += [self.versionlib[binary.compiler.target.arch]]
+      binary.compiler.postlink += [self.versionlib[binary.compiler.target.arch]]
       binary.compiler.sourcedeps += SM.generated_headers
     return binary
     
