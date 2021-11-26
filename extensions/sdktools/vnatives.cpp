@@ -1638,6 +1638,120 @@ static cell_t SetEntityOwner(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t LookupEntityAttachment(IPluginContext* pContext, const cell_t* params)
+{
+	CBaseEntity* pEntity;
+	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
+
+	ServerClass* pClass = ((IServerUnknown*)pEntity)->GetNetworkable()->GetServerClass();
+	if (!FindNestedDataTable(pClass->m_pTable, "DT_BaseAnimating"))
+	{
+		return pContext->ThrowNativeError("Entity %d (%d) is not a CBaseAnimating", gamehelpers->ReferenceToIndex(params[1]), params[1]);
+	}
+
+	static ICallWrapper* pLookupAttachment = NULL;
+	if (!pLookupAttachment)
+	{
+		void *addr;
+		if (!g_pGameConf->GetMemSig("LookupAttachment", &addr))
+		{
+			return pContext->ThrowNativeError("\"LookupAttachment\" not supported by this mod");
+		}
+
+		PassInfo retpass;
+		retpass.type = PassType_Basic;
+		retpass.flags = PASSFLAG_BYVAL;
+		retpass.size = sizeof(int);
+
+		PassInfo pass[1];
+		pass[0].type = PassType_Basic;
+		pass[0].flags = PASSFLAG_BYVAL;
+		pass[0].size = sizeof(char *);
+
+		if (!(pLookupAttachment = g_pBinTools->CreateCall(addr, CallConv_ThisCall, &retpass, pass, 1)))
+		{
+			return pContext->ThrowNativeError("\"LookupAttachment\" wrapper failed to initialize");
+		}
+	}
+	
+	char* buffer;
+	pContext->LocalToString(params[2], &buffer);
+	ArgBuffer<CBaseEntity *, char *> vstk(pEntity, buffer);
+
+	int ret;
+	pLookupAttachment->Execute(vstk, &ret);
+
+	return ret;
+}
+
+static cell_t GetEntityAttachment(IPluginContext* pContext, const cell_t* params)
+{
+	CBaseEntity* pEntity;
+	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
+
+	ServerClass *pClass = ((IServerUnknown*)pEntity)->GetNetworkable()->GetServerClass();
+	if (!FindNestedDataTable(pClass->m_pTable, "DT_BaseAnimating"))
+	{
+		return pContext->ThrowNativeError("Entity %d (%d) is not a CBaseAnimating", gamehelpers->ReferenceToIndex(params[1]), params[1]);
+	}
+
+	static ICallWrapper* pGetAttachment = NULL;
+	if (!pGetAttachment)
+	{
+		int offset = -1;
+		if (!g_pGameConf->GetOffset("GetAttachment", &offset))
+		{
+			return pContext->ThrowNativeError("\"GetAttachment\" not supported by this mod");
+		}
+
+		PassInfo retpass;
+		retpass.type = PassType_Basic;
+		retpass.flags = PASSFLAG_BYVAL;
+		retpass.size = sizeof(bool);
+
+		PassInfo pass[2];
+		pass[0].type = PassType_Basic;
+		pass[0].flags = PASSFLAG_BYVAL;
+		pass[0].size = sizeof(int);
+		pass[1].type = PassType_Basic;
+		pass[1].flags = PASSFLAG_BYVAL;
+		pass[1].size = sizeof(matrix3x4_t *);
+
+		if (!(pGetAttachment = g_pBinTools->CreateVCall(offset, 0, 0, &retpass, pass, 2)))
+		{
+			return pContext->ThrowNativeError("\"GetAttachment\" wrapper failed to initialize");
+		}
+	}
+
+	matrix3x4_t attachmentToWorld;
+	ArgBuffer<CBaseEntity *, int, matrix3x4_t *> vstk(pEntity, params[2], &attachmentToWorld);
+
+	bool ret;
+	pGetAttachment->Execute(vstk, &ret);
+
+	// GetAttachment returns a matrix3x4_t but plugins can't do anything with this.
+	// Convert it to world origin and world angles.
+	QAngle absAngles;
+	Vector absOrigin;
+	MatrixAngles(attachmentToWorld, absAngles, absOrigin);
+	
+	cell_t *pVec;
+	pContext->LocalToPhysAddr(params[3], &pVec);
+
+	pVec[0] = sp_ftoc(absOrigin.x);
+	pVec[1] = sp_ftoc(absOrigin.y);
+	pVec[2] = sp_ftoc(absOrigin.z);
+
+	cell_t *pAng;
+	pContext->LocalToPhysAddr(params[4], &pAng);
+
+	pAng[0] = sp_ftoc(absAngles.x);
+	pAng[1] = sp_ftoc(absAngles.y);
+	pAng[2] = sp_ftoc(absAngles.z);
+
+	return ret;
+}
+
 sp_nativeinfo_t g_Natives[] = 
 {
 	{"ExtinguishEntity",		ExtinguishEntity},
@@ -1672,5 +1786,7 @@ sp_nativeinfo_t g_Natives[] =
 	{"SetEntityCollisionGroup",	SetEntityCollisionGroup},
 	{"EntityCollisionRulesChanged",	EntityCollisionRulesChanged},
 	{"SetEntityOwner", 				SetEntityOwner},
+	{"LookupEntityAttachment", 		LookupEntityAttachment},
+	{"GetEntityAttachment", 		GetEntityAttachment},
 	{NULL,						NULL},
 };

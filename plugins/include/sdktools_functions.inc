@@ -35,6 +35,8 @@
 #endif
 #define _sdktools_functions_included
 
+#define INVALID_ATTACHMENT 0
+
 /**
  * Removes a player's item.
  *
@@ -377,3 +379,24 @@ native void EntityCollisionRulesChanged(int entity);
  * @error                   Invalid entity or lack of mod support.
  */
 native void SetEntityOwner(int entity, int owner=INVALID_ENT_REFERENCE);
+
+/**
+ * Returns the index number of a given named attachment.
+ * 
+ * @param entity        The entity index.
+ * @param name          The attachment name.
+ * @return              An attachment index on success, INVALID_ATTACHMENT otherwise.
+ * @error               Invalid entity or lack of mod support.
+ */
+native int LookupEntityAttachment(int entity, const char[] name);
+
+/**
+ * Returns the world location and world angles of an attachment.
+ * 
+ * @param entity        The entity index.
+ * @param attachment    The attachment index.
+ * @param origin        Destination vector to store the attachment's origin vector.
+ * @param angles        Destination vector to store the attachment's position angle.
+ * @error               Invalid entity or lack of mod support.
+ */
+native bool GetEntityAttachment(int entity, int attachment, float origin[3], float angles[3]);
