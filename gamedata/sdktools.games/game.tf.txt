@@ -127,11 +127,11 @@
 		}
 	}
 	
+	/* CBaseEntityOutput::FireOutput */
 	"#default"
 	{
 		"Signatures"
 		{
-			/* CBaseEntityOutput::FireOutput */
 			"FireOutput"
 			{
 				"library"	"server"
