@@ -53,6 +53,11 @@ SourceHook::List<ICallWrapper *> g_CallWraps;
 		return pContext->ThrowNativeError("Entity %d (%d) is not a CBaseEntity", gamehelpers->ReferenceToIndex(ref), ref); \
 	}
 
+#define SET_VECTOR(addr, vec) \
+	addr[0] = sp_ftoc(vec.x); \
+	addr[1] = sp_ftoc(vec.y); \
+	addr[2] = sp_ftoc(vec.z); 
+
 inline void InitPass(ValvePassInfo &info, ValveType vtype, PassType type, unsigned int flags, unsigned int decflags=0)
 {
 	info.decflags = decflags;
@@ -1652,7 +1657,7 @@ static cell_t LookupEntityAttachment(IPluginContext* pContext, const cell_t* par
 	static ICallWrapper* pLookupAttachment = NULL;
 	if (!pLookupAttachment)
 	{
-		void *addr;
+		void* addr;
 		if (!g_pGameConf->GetMemSig("LookupAttachment", &addr))
 		{
 			return pContext->ThrowNativeError("\"LookupAttachment\" not supported by this mod");
@@ -1666,17 +1671,17 @@ static cell_t LookupEntityAttachment(IPluginContext* pContext, const cell_t* par
 		PassInfo pass[1];
 		pass[0].type = PassType_Basic;
 		pass[0].flags = PASSFLAG_BYVAL;
-		pass[0].size = sizeof(char *);
+		pass[0].size = sizeof(char*);
 
 		if (!(pLookupAttachment = g_pBinTools->CreateCall(addr, CallConv_ThisCall, &retpass, pass, 1)))
 		{
 			return pContext->ThrowNativeError("\"LookupAttachment\" wrapper failed to initialize");
 		}
 	}
-	
+
 	char* buffer;
 	pContext->LocalToString(params[2], &buffer);
-	ArgBuffer<CBaseEntity *, char *> vstk(pEntity, buffer);
+	ArgBuffer<CBaseEntity*, char*> vstk(pEntity, buffer);
 
 	int ret;
 	pLookupAttachment->Execute(vstk, &ret);
@@ -1689,7 +1694,7 @@ static cell_t GetEntityAttachment(IPluginContext* pContext, const cell_t* params
 	CBaseEntity* pEntity;
 	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
 
-	ServerClass *pClass = ((IServerUnknown*)pEntity)->GetNetworkable()->GetServerClass();
+	ServerClass* pClass = ((IServerUnknown*)pEntity)->GetNetworkable()->GetServerClass();
 	if (!FindNestedDataTable(pClass->m_pTable, "DT_BaseAnimating"))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is not a CBaseAnimating", gamehelpers->ReferenceToIndex(params[1]), params[1]);
@@ -1715,7 +1720,7 @@ static cell_t GetEntityAttachment(IPluginContext* pContext, const cell_t* params
 		pass[0].size = sizeof(int);
 		pass[1].type = PassType_Basic;
 		pass[1].flags = PASSFLAG_BYVAL;
-		pass[1].size = sizeof(matrix3x4_t *);
+		pass[1].size = sizeof(matrix3x4_t*);
 
 		if (!(pGetAttachment = g_pBinTools->CreateVCall(offset, 0, 0, &retpass, pass, 2)))
 		{
@@ -1724,7 +1729,7 @@ static cell_t GetEntityAttachment(IPluginContext* pContext, const cell_t* params
 	}
 
 	matrix3x4_t attachmentToWorld;
-	ArgBuffer<CBaseEntity *, int, matrix3x4_t *> vstk(pEntity, params[2], &attachmentToWorld);
+	ArgBuffer<CBaseEntity*, int, matrix3x4_t*> vstk(pEntity, params[2], &attachmentToWorld);
 
 	bool ret;
 	pGetAttachment->Execute(vstk, &ret);
@@ -1734,20 +1739,13 @@ static cell_t GetEntityAttachment(IPluginContext* pContext, const cell_t* params
 	QAngle absAngles;
 	Vector absOrigin;
 	MatrixAngles(attachmentToWorld, absAngles, absOrigin);
-	
-	cell_t *pVec;
-	pContext->LocalToPhysAddr(params[3], &pVec);
 
-	pVec[0] = sp_ftoc(absOrigin.x);
-	pVec[1] = sp_ftoc(absOrigin.y);
-	pVec[2] = sp_ftoc(absOrigin.z);
+	cell_t* pOrigin, * pAngles;
+	pContext->LocalToPhysAddr(params[3], &pOrigin);
+	pContext->LocalToPhysAddr(params[4], &pAngles);
 
-	cell_t *pAng;
-	pContext->LocalToPhysAddr(params[4], &pAng);
-
-	pAng[0] = sp_ftoc(absAngles.x);
-	pAng[1] = sp_ftoc(absAngles.y);
-	pAng[2] = sp_ftoc(absAngles.z);
+	SET_VECTOR(pOrigin, absOrigin);
+	SET_VECTOR(pAngles, absAngles);
 
 	return ret;
 }
