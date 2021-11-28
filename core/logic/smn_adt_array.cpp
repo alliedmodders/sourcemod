@@ -529,12 +529,24 @@ static cell_t FindStringInArray(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
 	}
 
+	// the blocknumber is not guaranteed to always be passed
+	size_t blocknumber = 0;
+	if (params[0] >= 3)
+	{
+		blocknumber = (size_t)params[3];
+	}
+
+	if (blocknumber >= array->blocksize())
+	{
+		return pContext->ThrowNativeError("Invalid block %d (blocksize: %d)", blocknumber, array->blocksize());
+	}
+
 	char *str;
 	pContext->LocalToString(params[2], &str);
 
 	for (unsigned int i = 0; i < array->size(); i++)
 	{
-		const char *array_str = (const char *)array->at(i);
+		const char *array_str = (const char *)&array->base()[i * array->blocksize() + blocknumber];
 		if (strcmp(str, array_str) == 0)
 		{
 			return (cell_t) i;
