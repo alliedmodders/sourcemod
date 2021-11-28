@@ -129,9 +129,11 @@ methodmap ArrayList < Handle {
 	// @param index         Index in the array.
 	// @param buffer        Buffer to copy to.
 	// @param maxlength     Maximum size of the buffer.
+	// @param block         Optionally specify which block to read from
+	//                      (useful if the blocksize > 0).
 	// @return              Number of characters copied.
 	// @error               Invalid index.
-	public native int GetString(int index, char[] buffer, int maxlength);
+	public native int GetString(int index, char[] buffer, int maxlength, int block=0);
 
 	// Retrieves an array of cells from an array.
 	//
@@ -139,9 +141,11 @@ methodmap ArrayList < Handle {
 	// @param buffer        Buffer to store the array in.
 	// @param size          If not set, assumes the buffer size is equal to the
 	//                      blocksize.  Otherwise, the size passed is used.
+	// @param block         Optionally specify which block to read from
+	//                      (useful if the blocksize > 0).
 	// @return              Number of cells copied.
 	// @error               Invalid index.
-	public native int GetArray(int index, any[] buffer, int size=-1);
+	public native int GetArray(int index, any[] buffer, int size=-1, int block=0);
 
 	// Sets a cell value in an array.
 	//
@@ -157,9 +161,11 @@ methodmap ArrayList < Handle {
 	//
 	// @param index         Index in the array.
 	// @param value         String value to set.
+	// @param block         Optionally specify which block to write to
+	//                      (useful if the blocksize > 0).
 	// @return              Number of characters copied.
 	// @error               Invalid index.
-	public native void SetString(int index, const char[] value);
+	public native void SetString(int index, const char[] value, int block=0);
 
 	// Sets an array of cells in an array.
 	//
@@ -167,9 +173,11 @@ methodmap ArrayList < Handle {
 	// @param values        Array to copy.
 	// @param size          If not set, assumes the buffer size is equal to the
 	//                      blocksize.  Otherwise, the size passed is used.
+	// @param block         Optionally specify which block to write to
+	//                      (useful if the blocksize > 0).
 	// @return              Number of cells copied.
 	// @error               Invalid index.
-	public native void SetArray(int index, const any[] values, int size=-1);
+	public native void SetArray(int index, const any[] values, int size=-1, int block=0);
 
 	// Shifts an array up.  All array contents after and including the given
 	// index are shifted up by one, and the given index is then "free."
@@ -350,10 +358,12 @@ native any GetArrayCell(Handle array, int index, int block=0, bool asChar=false)
  * @param index         Index in the array.
  * @param buffer        Buffer to copy to.
  * @param maxlength     Maximum size of the buffer.
+ * @param block         Optionally specify which block to read from
+ *                      (useful if the blocksize > 0).
  * @return              Number of characters copied.
  * @error               Invalid Handle or invalid index.
  */
-native int GetArrayString(Handle array, int index, char[] buffer, int maxlength);
+native int GetArrayString(Handle array, int index, char[] buffer, int maxlength, int block=0);
 
 /**
  * Retrieves an array of cells from an array.
@@ -363,10 +373,12 @@ native int GetArrayString(Handle array, int index, char[] buffer, int maxlength)
  * @param buffer        Buffer to store the array in.
  * @param size          If not set, assumes the buffer size is equal to the
  *                      blocksize.  Otherwise, the size passed is used.
+ * @param block         Optionally specify which block to read from
+ *                      (useful if the blocksize > 0).
  * @return              Number of cells copied.
  * @error               Invalid Handle or invalid index.
  */
-native int GetArrayArray(Handle array, int index, any[] buffer, int size=-1);
+native int GetArrayArray(Handle array, int index, any[] buffer, int size=-1, int block=0);
 
 /**
  * Sets a cell value in an array.
@@ -387,10 +399,12 @@ native void SetArrayCell(Handle array, int index, any value, int block=0, bool a
  * @param array         Array Handle.
  * @param index         Index in the array.
  * @param value         String value to set.
+ * @param block         Optionally specify which block to write to
+ *                      (useful if the blocksize > 0).
  * @return              Number of characters copied.
  * @error               Invalid Handle or invalid index.
  */
-native int SetArrayString(Handle array, int index, const char[] value);
+native int SetArrayString(Handle array, int index, const char[] value, int block=0);
 
 /**
  * Sets an array of cells in an array.
@@ -400,10 +414,12 @@ native int SetArrayString(Handle array, int index, const char[] value);
  * @param values        Array to copy.
  * @param size          If not set, assumes the buffer size is equal to the
  *                      blocksize.  Otherwise, the size passed is used.
+ * @param block         Optionally specify which block to write to
+ *                      (useful if the blocksize > 0).
  * @return              Number of cells copied.
  * @error               Invalid Handle or invalid index.
  */
-native int SetArrayArray(Handle array, int index, const any[] values, int size=-1);
+native int SetArrayArray(Handle array, int index, const any[] values, int size=-1, int block=0);
 
 /**
  * Shifts an array up.  All array contents after and including the given
