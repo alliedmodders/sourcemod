@@ -397,6 +397,7 @@ native int LookupEntityAttachment(int entity, const char[] name);
  * @param attachment    The attachment index.
  * @param origin        Destination vector to store the attachment's origin vector.
  * @param angles        Destination vector to store the attachment's position angle.
+ * @return              True on success, otherwise false.
  * @error               Invalid entity or lack of mod support.
  */
 native bool GetEntityAttachment(int entity, int attachment, float origin[3], float angles[3]);
