@@ -375,7 +375,8 @@ methodmap DHookParam < Handle
 
 	// Get param address (Use only for ptr param types)
 	//
-	// @param num           Param number to get. (Example if the function has 2 params and you need the value of the first param num would be 1.)
+	// @param num           Param number to get. (Example if the function has 2 params and you need the value
+	//                      of the first param num would be 1.)
 	//
 	// @return              Address of the parameter.
 	// @error               Invalid handle. Invalid param number. Invalid param type.
@@ -668,7 +669,8 @@ native DynamicDetour DHookCreateDetour(Address funcaddr, CallingConvention callC
  * @param name              Name of the function in the gamedata to load.
  *
  * @return                  Setup handle for the detour or INVALID_HANDLE if offset/signature/address wasn't found.
- * @error                   Failed to create detour setup handle, invalid gamedata handle, invalid callback function or failed to find function in gamedata.
+ * @error                   Failed to create detour setup handle, invalid gamedata handle, invalid callback function or
+ *                          failed to find function in gamedata.
  */
 native DHookSetup DHookCreateFromConf(Handle gameconf, const char[] name);
 
@@ -689,7 +691,8 @@ native bool DHookSetFromConf(Handle setup, Handle gameconf, SDKFuncConfSource so
  * Enable the detour of the function described in the hook setup handle.
  *
  * @param setup             Hook setup handle
- * @param post              true to make the hook a post hook. (If you need to change the retunr value or need the return value use a post hook! If you need to change params and return use a pre and post hook!)
+ * @param post              true to make the hook a post hook. (If you need to change the return value or need the return
+ *                          value use a post hook! If you need to change params and return use a pre and post hook!)
  * @param callback          Callback function
  *
  * @return                  true if detour was enabled, false otherwise.
@@ -726,9 +729,11 @@ native void DHookAddParam(Handle setup, HookParamType type, int size=-1, DHookPa
  * Hook entity
  *
  * @param setup             Setup handle to use to add the hook.
- * @param post              true to make the hook a post hook. (If you need to change the return value or need the return value use a post hook! If you need to change params and return use a pre and post hook!)
+ * @param post              true to make the hook a post hook. (If you need to change the return value or need the return
+ *                          value use a post hook! If you need to change params and return use a pre and post hook!)
  * @param entity            Entity index to hook on.
- * @param removalcb         Callback for when the hook is removed (Entity hooks are auto-removed on entity destroyed and will call this callback)
+ * @param removalcb         Callback for when the hook is removed (Entity hooks are auto-removed on entity destroyed and
+ *                          will call this callback)
  * @param callback          Optional callback function, if not set here must be set when creating the hook.
  *
  * @return                  INVALID_HOOK_ID on fail a hookid on success
@@ -740,8 +745,10 @@ native int DHookEntity(Handle setup, bool post, int entity, DHookRemovalCB remov
  * Hook gamerules
  *
  * @param setup             Setup handle to use to add the hook.
- * @param post              true to make the hook a post hook. (If you need to change the return value or need the return value use a post hook! If you need to change params and return use a pre and post hook!)
- * @param removalcb         Callback for when the hook is removed (Game rules hooks are auto-removed on map end and will call this callback)
+ * @param post              true to make the hook a post hook. (If you need to change the return value or need the return
+ *                          value use a post hook! If you need to change params and return use a pre and post hook!)
+ * @param removalcb         Callback for when the hook is removed (Game rules hooks are auto-removed on map end and will
+ *                          call this callback)
  * @param callback          Optional callback function, if not set here must be set when creating the hook.
  *
  * @return                  INVALID_HOOK_ID on fail a hookid on success
@@ -753,9 +760,11 @@ native int DHookGamerules(Handle setup, bool post, DHookRemovalCB removalcb=INVA
  * Hook a raw pointer
  *
  * @param setup             Setup handle to use to add the hook.
- * @param post              true to make the hook a post hook. (If you need to change the return value or need the return value use a post hook! If you need to change params and return use a pre and post hook!)
+ * @param post              true to make the hook a post hook. (If you need to change the return value or need the return 
+ *                          alue use a post hook! If you need to change params and return use a pre and post hook!)
  * @param addr              This pointer address.
- * @param removalcb         Callback for when the hook is removed (Entity hooks are auto-removed on entity destroyed and will call this callback)
+ * @param removalcb         Callback for when the hook is removed (Entity hooks are auto-removed on entity destroyed and
+ *                          will call this callback)
  * @param callback          Optional callback function, if not set here must be set when creating the hook.
  *
  * @return                  INVALID_HOOK_ID on fail a hookid on success
@@ -777,7 +786,8 @@ native bool DHookRemoveHookID(int hookid);
  * Get param value (Use only for: int, entity, bool or float param types)
  *
  * @param hParams           Handle to params structure
- * @param num               Param number to get. (Example if the function has 2 params and you need the value of the first param num would be 1. 0 Will return the number of params stored)
+ * @param num               Param number to get. (Example if the function has 2 params and you need the value of the first
+ *                          param num would be 1. 0 Will return the number of params stored)
  *
  * @return                  value if num greater than 0. If 0 returns paramcount.
  * @error                   Invalid handle. Invalid param number. Invalid param type.
@@ -788,7 +798,8 @@ native any DHookGetParam(Handle hParams, int num);
  * Get vector param value
  *
  * @param hParams           Handle to params structure
- * @param num               Param number to get. (Example if the function has 2 params and you need the value of the first param num would be 1.)
+ * @param num               Param number to get. (Example if the function has 2 params and you need the value of the first
+ *                          param num would be 1.)
  * @param vec               Vector buffer to store result.
  *
  * @error                   Invalid handle. Invalid param number. Invalid param type.
@@ -799,7 +810,8 @@ native void DHookGetParamVector(Handle hParams, int num, float vec[3]);
  * Get string param value
  *
  * @param hParams           Handle to params structure
- * @param num               Param number to get. (Example if the function has 2 params and you need the value of the first param num would be 1.)
+ * @param num               Param number to get. (Example if the function has 2 params and you need the value of the first
+ *                          param num would be 1.)
  * @param buffer            String buffer to store result
  * @param size              Buffer size
  *
@@ -811,7 +823,8 @@ native void DHookGetParamString(Handle hParams, int num, char[] buffer, int size
  * Set param value (Use only for: int, entity, bool or float param types)
  *
  * @param hParams           Handle to params structure
- * @param num               Param number to set (Example if the function has 2 params and you need to set the value of the first param num would be 1.)
+ * @param num               Param number to set (Example if the function has 2 params and you need to set the value of the
+ *                          first param num would be 1.)
  * @param value             Value to set it as (only pass int, bool, float or entity index)
  *
  * @error                   Invalid handle. Invalid param number. Invalid param type.
@@ -822,7 +835,8 @@ native void DHookSetParam(Handle hParams, int num, any value);
  * Set vector param value
  *
  * @param hParams           Handle to params structure
- * @param num               Param number to set (Example if the function has 2 params and you need to set the value of the first param num would be 1.)
+ * @param num               Param number to set (Example if the function has 2 params and you need to set the value of the
+ *                          first param num would be 1.)
  * @param vec               Value to set vector as.
  *
  * @error                   Invalid handle. Invalid param number. Invalid param type.
@@ -833,7 +847,8 @@ native void DHookSetParamVector(Handle hParams, int num, float vec[3]);
  * Set string param value
  *
  * @param hParams           Handle to params structure
- * @param num               Param number to set (Example if the function has 2 params and you need to set the value of the first param num would be 1.)
+ * @param num               Param number to set (Example if the function has 2 params and you need to set the value of the
+ *                          first param num would be 1.)
  * @param value             Value to set string as.
  *
  * @error                   Invalid handle. Invalid param number. Invalid param type.
@@ -984,7 +999,8 @@ native bool DHookIsNullParam(Handle hParams, int num);
  * Get param address (Use only for ptr param types)
  *
  * @param hParams           Handle to params structure
- * @param num               Param number to get. (Example if the function has 2 params and you need the value of the first param num would be 1.)
+ * @param num               Param number to get. (Example if the function has 2 params and you need the value of the first
+ *                          param num would be 1.)
  * 
  * @return                  Address of the parameter.
  * @error                   Invalid handle. Invalid param number. Invalid param type.
