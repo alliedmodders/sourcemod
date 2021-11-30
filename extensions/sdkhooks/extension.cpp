@@ -729,7 +729,7 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 				hookid = SH_ADD_MANUALVPHOOK(Weapon_Switch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponSwitchPost), true);
 				break;
 			case SDKHook_ShouldCollide:
-				hookid = SH_ADD_MANUALVPHOOK(ShouldCollide, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_ShouldCollide), false);
+				hookid = SH_ADD_MANUALVPHOOK(ShouldCollide, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_ShouldCollide), true);
 				break;
 			case SDKHook_Blocked:
 				hookid = SH_ADD_MANUALVPHOOK(Blocked, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Blocked), false);
