@@ -2,7 +2,9 @@
 #include "libudis86/udis86.h"
 
 #ifndef WIN32
-#define _GNU_SOURCE
+#ifndef _GNU_SOURCE
+	#define _GNU_SOURCE
+#endif
 #include <dlfcn.h>
 #include <string.h>
 #include <stdio.h>
