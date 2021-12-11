@@ -92,8 +92,13 @@ void RulesFix::OnLoad()
 #endif
 	, nullptr, 0);
 	if (pLibrary != nullptr)
-	{
-		const char *pSteamGameServerFuncName = "SteamAPI_SteamGameServer_v013";
+	{       
+		#if SOURCE_ENGINE == SE_CSGO
+		#define SteamGameServerFuncName "SteamAPI_SteamGameServer_v014"
+		#else
+		#define SteamGameServerFuncName "SteamAPI_SteamGameServer_v013"
+		#endif
+		const char *pSteamGameServerFuncName = SteamGameServerFuncName;
 		const char *pSetKeyValueFuncName = "SteamAPI_ISteamGameServer_SetKeyValue";
 
 		// When will hl2sdk-csgo be updated the SteamWorks SDK, change this to export.
