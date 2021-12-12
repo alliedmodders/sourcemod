@@ -5,7 +5,7 @@ builder.SetBuildFolder('symbols')
 
 UPLOAD_SCRIPT = os.path.join(builder.sourcePath, 'tools', 'buildbot', 'upload_symbols.py')
 
-cxx_tasks = SM.binaries + SM.extensions + [SM.spcomp]
+cxx_tasks = SM.binaries + SM.extensions + SM.spvm + SM.spcomp_bins
 for cxx_task in cxx_tasks:
 	if cxx_task.target.platform in ['windows']:
 		debug_entry = cxx_task.debug
