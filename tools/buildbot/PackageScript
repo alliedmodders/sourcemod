@@ -74,7 +74,7 @@ helpers.CopySpcomp('addons/sourcemod/scripting')
 # Export PDB files. We write to a file in the build folder which is pretty
 # verboten, but it's okay if it's in the root since AMBuild will never try
 # to rmdir the root.
-full_binary_list = SM.binaries + SM.extensions + SM.spcomp_bins
+full_binary_list = SM.binaries + SM.extensions + SM.spvm + SM.spcomp_bins
 with open(os.path.join(builder.buildPath, 'pdblog.txt'), 'w') as fp:
   for task in full_binary_list:
     fp.write(task.debug.path + '\n')
