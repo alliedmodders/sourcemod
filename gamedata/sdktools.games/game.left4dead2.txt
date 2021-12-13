@@ -120,6 +120,12 @@
 	{
 		"Offsets"
 		{
+			"SetOwnerEntity"
+			{
+				"windows"	"19"
+				"linux"		"20"
+				"mac"		"20"
+			}
 			/* CTerrorPlayer::GiveNamedItem(char const*, int, bool, CBaseEntity*) */
 			"GiveNamedItem"
 			{

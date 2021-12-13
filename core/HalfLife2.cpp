@@ -1234,7 +1234,7 @@ bool IsWindowsReservedDeviceName(const char *pMapname)
 }
 #endif 
 
-#if SOURCE_ENGINE >= SE_LEFT4DEAD && defined PLATFORM_WINDOWS
+#if SOURCE_ENGINE >= SE_LEFT4DEAD && defined PLATFORM_WINDOWS && SOURCE_ENGINE != SE_MOCK
 // This frees memory allocated by the game using the game's CRT on Windows,
 // avoiding a crash due to heap corruption (issue #910).
 template< class T, class I >

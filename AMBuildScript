@@ -1,6 +1,7 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import collections
 import os, sys
+import subprocess
 import traceback
 
 class SDK(object):
@@ -121,7 +122,8 @@ class SMConfig(object):
     self.versionlib = None
     self.all_targets = []
     self.target_archs = set()
-
+    self.enable_asan = getattr(builder.options, 'enable_asan', False)
+    self.asan_libs = {}
 
     if builder.options.targets:
       target_archs = builder.options.targets.split(',')
@@ -349,6 +351,11 @@ class SMConfig(object):
         cxx.cxxflags += ['-Wno-deprecated']
       cxx.cflags += ['-Wno-sometimes-uninitialized']
 
+    if self.enable_asan:
+      if not have_clang:
+        raise Exception('--enable-asan only supported when using Clang')
+      self.configure_asan(cxx)
+
     # Work around SDK warnings.
     if cxx.version >= 'clang-10.0' or cxx.version >= 'apple-clang-12.0':
         cxx.cflags += [
@@ -361,12 +368,18 @@ class SMConfig(object):
       cxx.cflags += ['-Wno-maybe-uninitialized']
 
     if builder.options.opt == '1':
-      cxx.cflags += ['-O3']
+      if self.enable_asan:
+        cxx.cflags += ['-O1']
+      else:
+        cxx.cflags += ['-O3']
 
     # Don't omit the frame pointer.
     cxx.cflags += ['-fno-omit-frame-pointer']
 
   def configure_msvc(self, cxx):
+    if self.enable_asan:
+      raise Exception('--enable-asan only supported when using Clang')
+
     if builder.options.debug == '1':
       cxx.cflags += ['/MTd']
       cxx.linkflags += ['/NODEFAULTLIB:libcmt']
@@ -411,6 +424,29 @@ class SMConfig(object):
     # This needs to be after our optimization flags which could otherwise disable it.
     # Don't omit the frame pointer.
     cxx.cflags += ['/Oy-']
+
+  def configure_asan(self, cxx):
+    if cxx.target.platform != 'linux':
+      raise Exception('--enable-asan only supported on Linux')
+    cxx.cflags += ['-fsanitize=address']
+    cxx.linkflags += ['-fsanitize=address']
+    if cxx.target.arch == 'x86':
+      libclang_rt = 'libclang_rt.asan-i386.so'
+    else:
+      libclang_rt = 'libclang_rt.asan-x86_64.so'
+
+    try:
+      argv = cxx.cxx_argv + ['--print-file-name', libclang_rt]
+      output = subprocess.check_output(argv)
+      output = output.decode('utf-8')
+      output = output.strip()
+    except:
+      raise Exception('Could not find {}'.format(libclang_rt))
+
+    print('ASAN library for {}: {}'.format(cxx.target.arch, output))
+    print('You will need to LD_PRELOAD this into srcds.')
+
+    self.asan_libs[cxx.target.arch] = os.path.dirname(output)
 
   def configure_linux(self, cxx):
     cxx.defines += ['_LINUX', 'POSIX', '_FILE_OFFSET_BITS=64']
@@ -460,7 +496,7 @@ class SMConfig(object):
           '-current_version', self.productVersion
         ]
     if self.use_auto_versioning():
-      binary.compiler.linkflags += [self.versionlib[binary.compiler.target.arch]]
+      binary.compiler.postlink += [self.versionlib[binary.compiler.target.arch]]
       binary.compiler.sourcedeps += SM.generated_headers
     return binary
     
@@ -469,6 +505,13 @@ class SMConfig(object):
     self.AddVersioning(binary)
     if binary.compiler.like('msvc'):
       binary.compiler.linkflags += ['/SUBSYSTEM:WINDOWS']
+
+    # Dumb clang behavior means we have to manually find libclang_rt.
+    if self.enable_asan:
+      binary.compiler.linkflags += [
+        '-shared-libsan',
+        '-Wl,-rpath={}'.format(self.asan_libs[binary.compiler.target.arch]),
+      ]
     return binary
 
   def ProgramBuilder(self, compiler, name):
@@ -476,6 +519,8 @@ class SMConfig(object):
     self.AddVersioning(binary)
     if '-static-libgcc' in binary.compiler.linkflags:
       binary.compiler.linkflags.remove('-static-libgcc')
+    if self.enable_asan:
+      binary.compiler.linkflags.append('-static-libsan')
     if '-lgcc_eh' in binary.compiler.linkflags:
       binary.compiler.linkflags.remove('-lgcc_eh')
     if binary.compiler.like('gcc'):
@@ -759,6 +804,7 @@ else:
     'extensions/clientprefs/AMBuilder',
     'extensions/curl/AMBuilder',
     'extensions/cstrike/AMBuilder',
+    'extensions/dhooks/AMBuilder',
     'extensions/geoip/AMBuilder',
     'extensions/mysql/AMBuilder',
     'extensions/pgsql/AMBuilder',

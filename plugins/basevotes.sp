@@ -60,15 +60,15 @@ ConVar g_Cvar_Limits[3] = {null, ...};
 ConVar g_Cvar_Voteban = null;
 //ConVar g_Cvar_VoteSay = null;
 
-enum voteType
+enum VoteType
 {
-	map,
-	kick,
-	ban,
-	question
+	VoteType_Map,
+	VoteType_Kick,
+	VoteType_Ban,
+	VoteType_Question
 }
 
-voteType g_voteType = question;
+VoteType g_voteType = VoteType_Question;
 
 // Menu API does not provide us with a way to pass multiple peices of data with a single
 // choice, so some globals are used to hold stuff.
@@ -202,7 +202,7 @@ public Action Command_Vote(int client, int args)
 			len += pos;
 		}	
 	}
-	g_voteType = question;
+	g_voteType = VoteType_Question;
 	
 	g_hVoteMenu = new Menu(Handler_VoteCallback, MENU_ACTIONS_ALL);
 	g_hVoteMenu.SetTitle("%s?", g_voteArg);
@@ -239,7 +239,7 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 	}
 	else if (action == MenuAction_Display)
 	{
-	 	if (g_voteType != question)
+	 	if (g_voteType != VoteType_Question)
 	 	{
 			char title[64];
 			menu.GetTitle(title, sizeof(title));
@@ -288,7 +288,7 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 		
 		percent = GetVotePercent(votes, totalVotes);
 		
-		if (g_voteType != question)
+		if (g_voteType != VoteType_Question)
 		{
 			limit = g_Cvar_Limits[g_voteType].FloatValue;
 		}
@@ -307,7 +307,7 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 			
 			switch (g_voteType)
 			{
-				case (question):
+				case VoteType_Question:
 				{
 					if (strcmp(item, VOTE_NO) == 0 || strcmp(item, VOTE_YES) == 0)
 					{
@@ -317,7 +317,7 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 					PrintToChatAll("[SM] %t", "Vote End", g_voteArg, item);
 				}
 				
-				case (map):
+				case VoteType_Map:
 				{
 					// single-vote items don't use the display item
 					char displayName[PLATFORM_MAX_PATH];
@@ -329,7 +329,7 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 					dp.WriteString(item);		
 				}
 					
-				case (kick):
+				case VoteType_Kick:
 				{
 					int voteTarget;
 					if((voteTarget = GetClientOfUserId(g_voteTarget)) == 0)
@@ -350,7 +350,7 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 					}
 				}
 					
-				case (ban):
+				case VoteType_Ban:
 				{
 					if (g_voteArg[0] == '\0')
 					{

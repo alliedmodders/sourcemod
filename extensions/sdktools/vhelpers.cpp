@@ -310,6 +310,99 @@ bool FindNestedDataTable(SendTable *pTable, const char *name)
 	return false;
 }
 
+// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/baseentity.cpp#L3396L3404
+// CBaseEntity::SetOwnerEntity offers a more or less direct access to CBaseEntity::CollisionRulesChanged
+// The function will return false if something went wrong during call setup/game is unsupported
+class VEmptyClass {};
+bool CollisionRulesChanged(CBaseEntity *pEntity)
+{
+	// CBaseEntity::SetOwnerEntity is a virtual function, and while not many classes override it
+	// Only CNodeEnt, as confirmed by a valve comment
+	// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/baseentity.h#L493
+	// In order to keep consitent behaviour across all entities, including CNodeEnt and potential source games that have entity classes overriding this function.
+	// We are going to fetch the world entity, which doesn't have this function overriden (on all source games hopefully), and obtain the function address
+	static void *func = nullptr;
+	static int offsethOwnerEntity = -1;
+	if (func == nullptr)
+	{
+		int offset = -1;
+		if (!g_pGameConf->GetOffset("SetOwnerEntity", &offset))
+		{
+			return false;
+		}
+
+#if SOURCE_ENGINE < SE_ORANGEBOX
+		CBaseEntity *pWorldEntity = nullptr;
+		for (int i = 0; i < gpGlobals->maxEntities && pWorldEntity == nullptr; ++i)
+		{
+			pWorldEntity = gamehelpers->ReferenceToEntity(i);
+		}
+#else
+		CBaseEntity *pWorldEntity = ((IServerUnknown *)servertools->FirstEntity())->GetBaseEntity();
+#endif
+		// Couldn't find the world (what)
+		if (pWorldEntity == nullptr)
+		{
+			return false;
+		}
+
+		// Retrieve m_hOwnerEntity offset
+		sm_datatable_info_t offset_data_info;
+		datamap_t *offsetMap = gamehelpers->GetDataMap(pWorldEntity);
+		if (gamehelpers->FindDataMapInfo(offsetMap, "m_hOwnerEntity", &offset_data_info))
+		{
+			offsethOwnerEntity = offset_data_info.actual_offset;
+		}
+
+		if (offsethOwnerEntity == -1)
+		{
+			// Well...
+			return false;
+		}
+
+		// Hopefully the world vtable...
+		void **world_vtable = *reinterpret_cast<void***>(pWorldEntity);
+		// Hopefully CBaseEntity::SetOwnerEntity and not an overriden function...
+		func = world_vtable[offset];
+	}
+
+	// Build our member function ptr
+	union
+	{
+		void (VEmptyClass::*mfpnew)(CBaseEntity *pOwner);
+#ifndef PLATFORM_POSIX
+		void *addr;
+	} u;
+	u.addr = func;
+#else
+		struct  
+		{
+			void *addr;
+			intptr_t adjustor;
+		} s;
+	} u;
+	u.s.addr = func;
+	u.s.adjustor = 0;
+#endif
+	// Retrieve m_hOwnerEntity
+	CBaseHandle *hndl = (CBaseHandle *)((uint8_t *)pEntity + offsethOwnerEntity);
+	CBaseEntity *oldOwner = gamehelpers->ReferenceToEntity(hndl->GetEntryIndex());
+
+	// Now change the owner to something else, so we fall through the if statement
+	// when calling CBaseEntity::SetOwnerEntity and only end up calling CBaseEntity::CollisionRulesChanged
+	if (oldOwner)
+	{
+		hndl->Set(nullptr);
+	}
+	else
+	{
+		hndl->Set((IHandleEntity *)pEntity);
+	}
+
+	(reinterpret_cast<VEmptyClass*>(pEntity)->*u.mfpnew)(oldOwner);
+	return true;
+}
+
 char *UTIL_SendFlagsToString(int flags, int type)
 {
 	static char str[1024];

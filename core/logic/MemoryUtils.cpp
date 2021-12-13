@@ -49,6 +49,7 @@ MemoryUtils g_MemUtils;
 
 MemoryUtils::MemoryUtils()
 {
+	m_InfoMap.init();
 #ifdef PLATFORM_APPLE
 
 	task_dyld_info_data_t dyld_info;
@@ -77,20 +78,19 @@ void MemoryUtils::OnSourceModAllInitialized()
 
 void *MemoryUtils::FindPattern(const void *libPtr, const char *pattern, size_t len)
 {
-	DynLibInfo lib;
-	bool found;
-	char *ptr, *end;
+	const DynLibInfo* lib = nullptr;
 
-	memset(&lib, 0, sizeof(DynLibInfo));
-
-	if (!GetLibraryInfo(libPtr, lib))
+	if ((lib = GetLibraryInfo(libPtr)) == nullptr)
 	{
 		return NULL;
 	}
 
-	ptr = reinterpret_cast<char *>(lib.baseAddress);
-	end = ptr + lib.memorySize - len;
+	// Search in the original unaltered state of the binary.
+	char *start = lib->originalCopy.get();
+	char *ptr = start;
+	char *end = ptr + lib->memorySize - len;
 
+	bool found;
 	while (ptr < end)
 	{
 		found = true;
@@ -103,8 +103,9 @@ void *MemoryUtils::FindPattern(const void *libPtr, const char *pattern, size_t l
 			}
 		}
 
+		// Translate the found offset into the actual live binary memory space.
 		if (found)
-			return ptr;
+			return reinterpret_cast<char *>(lib->baseAddress) + (ptr - start);
 
 		ptr++;
 	}
@@ -116,6 +117,8 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 {
 #ifdef PLATFORM_WINDOWS
 
+	/* Add this this library into the cache */
+	GetLibraryInfo(handle);
 	return GetProcAddress((HMODULE)handle, symbol);
 	
 #elif defined PLATFORM_LINUX
@@ -161,6 +164,9 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 			break;
 		}
 	}
+
+	/* Add this this library into the cache */
+	GetLibraryInfo((void *)dlmap->l_addr);
 
 	/* If we don't have a symbol table for this library, then create one */
 	if (table == NULL)
@@ -325,6 +331,9 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 		/* Uh oh, we couldn't find a matching handle */
 		return NULL;
 	}
+
+	/* Add this this library into the cache */
+	GetLibraryInfo((void *)dlbase);
 	
 	/* See if we already have a symbol table for this library */
 	for (size_t i = 0; i < m_SymTables.size(); i++)
@@ -429,14 +438,16 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 #endif
 }
 
-bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
+const DynLibInfo *MemoryUtils::GetLibraryInfo(const void *libPtr)
 {
 	uintptr_t baseAddr;
 
 	if (libPtr == NULL)
 	{
-		return false;
+		return nullptr;
 	}
+
+	DynLibInfo lib;
 
 #ifdef PLATFORM_WINDOWS
 
@@ -456,7 +467,7 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 
 	if (!VirtualQuery(libPtr, &info, sizeof(MEMORY_BASIC_INFORMATION)))
 	{
-		return false;
+		return nullptr;
 	}
 
 	baseAddr = reinterpret_cast<uintptr_t>(info.AllocationBase);
@@ -470,19 +481,19 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 	/* Check PE magic and signature */
 	if (dos->e_magic != IMAGE_DOS_SIGNATURE || pe->Signature != IMAGE_NT_SIGNATURE || opt->Magic != PE_NT_OPTIONAL_HDR_MAGIC)
 	{
-		return false;
+		return nullptr;
 	}
 
 	/* Check architecture */
 	if (file->Machine != PE_FILE_MACHINE)
 	{
-		return false;
+		return nullptr;
 	}
 
 	/* For our purposes, this must be a dynamic library */
 	if ((file->Characteristics & IMAGE_FILE_DLL) == 0)
 	{
-		return false;
+		return nullptr;
 	}
 
 	/* Finally, we can do this */
@@ -509,12 +520,12 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 
 	if (!dladdr(libPtr, &info))
 	{
-		return false;
+		return nullptr;
 	}
 
 	if (!info.dli_fbase || !info.dli_fname)
 	{
-		return false;
+		return nullptr;
 	}
 
 	/* This is for our insane sanity checks :o */
@@ -524,31 +535,31 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 	/* Check ELF magic */
 	if (memcmp(ELFMAG, file->e_ident, SELFMAG) != 0)
 	{
-		return false;
+		return nullptr;
 	}
 
 	/* Check ELF version */
 	if (file->e_ident[EI_VERSION] != EV_CURRENT)
 	{
-		return false;
+		return nullptr;
 	}
 	
 	/* Check ELF endianness */
 	if (file->e_ident[EI_DATA] != ELFDATA2LSB)
 	{
-		return false;
+		return nullptr;
 	}
 
 	/* Check ELF architecture */
 	if (file->e_ident[EI_CLASS] != ELF_CLASS || file->e_machine != ELF_MACHINE)
 	{
-		return false;
+		return nullptr;
 	}
 
 	/* For our purposes, this must be a dynamic library/shared object */
 	if (file->e_type != ET_DYN)
 	{
-		return false;
+		return nullptr;
 	}
 
 	phdrCount = file->e_phnum;
@@ -598,12 +609,12 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 
 	if (!dladdr(libPtr, &info))
 	{
-		return false;
+		return nullptr;
 	}
 
 	if (!info.dli_fbase || !info.dli_fname)
 	{
-		return false;
+		return nullptr;
 	}
 
 	/* This is for our insane sanity checks :o */
@@ -613,19 +624,19 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 	/* Check Mach-O magic */
 	if (file->magic != MACH_MAGIC)
 	{
-		return false;
+		return nullptr;
 	}
 
 	/* Check architecture */
 	if (file->cputype != MACH_CPU_TYPE || file->cpusubtype != MACH_CPU_SUBTYPE)
 	{
-		return false;
+		return nullptr;
 	}
 
 	/* For our purposes, this must be a dynamic library */
 	if (file->filetype != MH_DYLIB)
 	{
-		return false;
+		return nullptr;
 	}
 
 	cmd_count = file->ncmds;
@@ -646,5 +657,17 @@ bool MemoryUtils::GetLibraryInfo(const void *libPtr, DynLibInfo &lib)
 
 	lib.baseAddress = reinterpret_cast<void *>(baseAddr);
 
-	return true;
+	LibraryInfoMap::Insert i = m_InfoMap.findForAdd(lib.baseAddress);
+	if (i.found())
+	{
+		// We already loaded this binary before.
+		return &i->value;
+	}
+	
+	// Keep a copy of the binary in its initial unpatched state for lookup.
+	lib.originalCopy = std::make_unique<char[]>(lib.memorySize);
+	memcpy(lib.originalCopy.get(), lib.baseAddress, lib.memorySize);
+	m_InfoMap.add(i, lib.baseAddress, std::move(lib));
+
+	return &i->value;
 }

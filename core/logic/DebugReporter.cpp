@@ -69,13 +69,13 @@ void DebugReport::GenerateErrorVA(IPluginContext *ctx, cell_t func_idx, int err,
 	ke::SafeVsprintf(buffer, sizeof(buffer), message, ap);
 
 	const char *plname = pluginsys->FindPluginByContext(ctx->GetContext())->GetFilename();
-	const char *error = g_pSourcePawn2->GetErrorString(err);
 
-	if (error)
-	{
-		g_Logger.LogError("[SM] Plugin \"%s\" encountered error %d: %s", plname, err, error);
-	} else {
-		g_Logger.LogError("[SM] Plugin \"%s\" encountered unknown error %d", plname, err);
+	if (err >= 0) {
+		const char *error = g_pSourcePawn2->GetErrorString(err);
+		if (error)
+			g_Logger.LogError("[SM] Plugin \"%s\" encountered error %d: %s", plname, err, error);
+		else
+			g_Logger.LogError("[SM] Plugin \"%s\" encountered unknown error %d", plname, err);
 	}
 
 	g_Logger.LogError("[SM] %s", buffer);

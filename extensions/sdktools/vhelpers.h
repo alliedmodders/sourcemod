@@ -74,4 +74,6 @@ void ShutdownHelpers();
 
 bool FindNestedDataTable(SendTable *pTable, const char *name);
 
+bool CollisionRulesChanged(CBaseEntity *pEntity);
+
 #endif //_INCLUDE_SDKTOOLS_VHELPERS_H_
