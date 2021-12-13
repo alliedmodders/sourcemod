@@ -7,6 +7,7 @@ use File::Copy;
 use File::stat;
 use File::Temp qw/ tempfile :seekable/;
 use Net::FTP;
+use autodie qw(:all);
 
 my ($ftp_file, $ftp_host, $ftp_user, $ftp_pass, $ftp_path, $tag);
 
@@ -147,7 +148,13 @@ $ftp->put($tmpfile, $latest)
 
 $ftp->close();
 
-print "File sent to drop site as $filename -- build succeeded.\n";
+print "File sent to drop site as $filename.\n";
+
+print "Deleting file \"$filename\"...\n";
+unlink($filename) or die "Cannot delete file \"$filename\"\n";
+print "Successfully deleted file.\n"
+
+print "Build succeeded.\n"
 
 exit(0);
 
