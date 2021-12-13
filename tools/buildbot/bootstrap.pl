@@ -9,6 +9,8 @@ use File::Path;
 my ($myself, $path) = fileparse($0);
 chdir($path);
 
+use FindBin;
+use lib $FindBin::Bin;
 require 'helpers.pm';
 
 #Go back to tree root.
