@@ -648,12 +648,6 @@ bool GetSoundParams(CSoundParameters *soundParams, const char *soundname, cell_t
 	if ( !soundname[0] )
 		return false;
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
-	HSOUNDSCRIPTHASH index = soundemitterbase->HashSoundName(soundname);
-	
-	if(!soundemitterbase->IsValidHash(index))
-		return false;
-#else
 #if SOURCE_ENGINE >= SE_PORTAL2
 	HSOUNDSCRIPTHASH index = (HSOUNDSCRIPTHASH)soundemitterbase->GetSoundIndex(soundname);
 #else
@@ -661,7 +655,6 @@ bool GetSoundParams(CSoundParameters *soundParams, const char *soundname, cell_t
 #endif
 	if (!soundemitterbase->IsValidIndex(index))
 		return false;
-#endif
 
 	gender_t gender = GENDER_NONE;
 
@@ -1616,10 +1609,8 @@ static cell_t smn_GetGameSoundParams(IPluginContext *pContext, const cell_t *par
 
 	pContext->StringToLocal(params[6], params[7], soundParams.soundname);
 
-#if SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_BLADE
 	// Precache the sound we're returning
 	InternalPrecacheScriptSound(soundname);
-#endif
 
 	return true;
 }
