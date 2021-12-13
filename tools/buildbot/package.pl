@@ -7,6 +7,7 @@ use File::Copy;
 use File::stat;
 use File::Temp qw/ tempfile :seekable/;
 use Net::FTP;
+use autodie qw(:all)
 
 my ($ftp_file, $ftp_host, $ftp_user, $ftp_pass, $ftp_path, $tag);
 
