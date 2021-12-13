@@ -39,9 +39,6 @@ bool bPatched = false;
 
 RulesFix rulesfix;
 
-ISteamGameServer *(*SteamAPI_SteamGameServer)();
-void (*SteamAPI_ISteamGameServer_SetKeyValue)(ISteamGameServer *self, const char *pKey, const char *pValue);
-
 SH_DECL_HOOK1_void(IServerGameDLL, GameServerSteamAPIActivated, SH_NOATTRIB, 0, bool);
 
 RulesFix::RulesFix() :
@@ -93,23 +90,6 @@ void RulesFix::OnLoad()
 	, nullptr, 0);
 	if (pLibrary != nullptr)
 	{
-		const char *pSteamGameServerFuncName = "SteamAPI_SteamGameServer_v013";
-		const char *pSetKeyValueFuncName = "SteamAPI_ISteamGameServer_SetKeyValue";
-
-		// When will hl2sdk-csgo be updated the SteamWorks SDK, change this to export.
-		SteamAPI_SteamGameServer = reinterpret_cast<ISteamGameServer *(*)()>(pLibrary->GetSymbolAddress(pSteamGameServerFuncName));
-		SteamAPI_ISteamGameServer_SetKeyValue = reinterpret_cast<void (*)(ISteamGameServer *self, const char *pKey, const char *pValue)>(pLibrary->GetSymbolAddress(pSetKeyValueFuncName));
-
-		if(SteamAPI_SteamGameServer == nullptr)
-		{
-			g_pSM->LogError(myself, "[CStrike] Failed to get %s function", pSteamGameServerFuncName);
-		}
-
-		if(SteamAPI_ISteamGameServer_SetKeyValue == nullptr)
-		{
-			g_pSM->LogError(myself, "[CStrike] Failed to get %s function", pSetKeyValueFuncName);
-		}
-
 		pLibrary->CloseLibrary();
 	}
 	
@@ -185,20 +165,18 @@ static void OnConVarChanged(IConVar *var, const char *pOldValue, float flOldValu
 
 void RulesFix::OnNotifyConVarChanged(ConVar *pVar)
 {
-	if (!bPatched || !SteamAPI_SteamGameServer || !SteamAPI_ISteamGameServer_SetKeyValue)
+	if (!bPatched)
 		return;
 
-	ISteamGameServer *pSteamClientGameServer = SteamAPI_SteamGameServer();
-
-	if (pSteamClientGameServer)
+	if (SteamGameServer())
 	{
 		if (pVar->IsFlagSet(FCVAR_PROTECTED))
 		{
-			SteamAPI_ISteamGameServer_SetKeyValue(pSteamClientGameServer, pVar->GetName(), !pVar->GetString()[0] ? "0" : "1");
+			SteamGameServer()->SetKeyValue(pVar->GetName(), !pVar->GetString()[0] ? "0" : "1");
 		}
 		else
 		{
-			SteamAPI_ISteamGameServer_SetKeyValue(pSteamClientGameServer, pVar->GetName(), pVar->GetString());
+			SteamGameServer()->SetKeyValue(pVar->GetName(), pVar->GetString());
 		}
 	}
 }
