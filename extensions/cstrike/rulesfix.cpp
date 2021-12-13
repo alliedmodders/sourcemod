@@ -93,18 +93,25 @@ void RulesFix::OnLoad()
 	, nullptr, 0);
 	if (pLibrary != nullptr)
 	{
-		const char *pSteamGameServerFuncName = "SteamAPI_SteamGameServer_v013";
+		char szSteamGameServerFuncName[30];
 		const char *pSetKeyValueFuncName = "SteamAPI_ISteamGameServer_SetKeyValue";
-
-		// When will hl2sdk-csgo be updated the SteamWorks SDK, change this to export.
-		SteamAPI_SteamGameServer = reinterpret_cast<ISteamGameServer *(*)()>(pLibrary->GetSymbolAddress(pSteamGameServerFuncName));
-		SteamAPI_ISteamGameServer_SetKeyValue = reinterpret_cast<void (*)(ISteamGameServer *self, const char *pKey, const char *pValue)>(pLibrary->GetSymbolAddress(pSetKeyValueFuncName));
-
+		
+		for (unsigned int i = 14; i <= 50; i++)
+		{
+			snprintf(szSteamGameServerFuncName, sizeof(szSteamGameServerFuncName), "SteamAPI_SteamGameServer_v%03u", i);
+			if ((SteamAPI_SteamGameServer = reinterpret_cast<ISteamGameServer *(*)()>(pLibrary->GetSymbolAddress(szSteamGameServerFuncName))) != nullptr)
+			{
+				break;
+			}
+		}
+		
 		if(SteamAPI_SteamGameServer == nullptr)
 		{
-			g_pSM->LogError(myself, "[CStrike] Failed to get %s function", pSteamGameServerFuncName);
+			g_pSM->LogError(myself, "[CStrike] Failed to get SteamAPI_SteamGameServer function");
 		}
-
+		
+		SteamAPI_ISteamGameServer_SetKeyValue = reinterpret_cast<void (*)(ISteamGameServer *self, const char *pKey, const char *pValue)>(pLibrary->GetSymbolAddress(pSetKeyValueFuncName));
+		
 		if(SteamAPI_ISteamGameServer_SetKeyValue == nullptr)
 		{
 			g_pSM->LogError(myself, "[CStrike] Failed to get %s function", pSetKeyValueFuncName);
