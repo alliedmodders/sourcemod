@@ -77,22 +77,6 @@ bool SetMTUMax(int iValue)
 
 void RulesFix::OnLoad()
 {
-	ILibrary *pLibrary = libsys->OpenLibrary(
-#if defined ( PLATFORM_WINDOWS )
-	"steam_api.dll"
-#elif defined( PLATFORM_LINUX )
-	"libsteam_api.so"
-#elif defined( PLATFORM_APPLE )
-	"libsteam_api.dylib"
-#else
-#error Unsupported platform
-#endif
-	, nullptr, 0);
-	if (pLibrary != nullptr)
-	{
-		pLibrary->CloseLibrary();
-	}
-	
 	host_rules_show = g_pCVar->FindVar("host_rules_show");
 	if (host_rules_show)
 	{
