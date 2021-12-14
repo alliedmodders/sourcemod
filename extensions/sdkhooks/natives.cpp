@@ -296,7 +296,7 @@ cell_t Native_DropWeapon(IPluginContext *pContext, const cell_t *params)
 				return pContext->ThrowNativeError("Could not find Weapon_Drop offset");
 			}
 
-			PassInfo pass[2];
+			PassInfo pass[3];
 			pass[0].type = PassType_Basic;
 			pass[0].size = sizeof(CBaseEntity *);
 			pass[0].flags = PASSFLAG_BYVAL;
