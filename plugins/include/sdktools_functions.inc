@@ -35,8 +35,6 @@
 #endif
 #define _sdktools_functions_included
 
-#define INVALID_ATTACHMENT 0
-
 /**
  * Removes a player's item.
  *
@@ -385,7 +383,7 @@ native void SetEntityOwner(int entity, int owner=INVALID_ENT_REFERENCE);
  * 
  * @param entity        The entity index.
  * @param name          The attachment name.
- * @return              An attachment index on success, INVALID_ATTACHMENT otherwise.
+ * @return              An attachment index, or 0 if the attachment name is invalid or unused.
  * @error               Invalid entity or lack of mod support.
  */
 native int LookupEntityAttachment(int entity, const char[] name);
