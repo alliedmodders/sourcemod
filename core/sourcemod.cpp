@@ -42,6 +42,7 @@
 #include "frame_hooks.h"
 #include "logic_bridge.h"
 #include "provider.h"
+#include "LumpManager.h"
 #include <amtl/os/am-shared-library.h>
 #include <amtl/os/am-path.h>
 #include <bridge/include/IExtensionBridge.h>
@@ -416,10 +417,22 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 
 	g_LevelEndBarrier = true;
 
+	EntityLumpParseResult result = lumpmanager->Parse(pMapEntities);
+
+	g_bLumpAvailableForWriting = true;
 	g_pOnMapInit->PushString(pMapName);
 	g_pOnMapInit->Execute();
+	g_bLumpAvailableForWriting = false;
 
-	RETURN_META_VALUE(MRES_IGNORED, true);
+	if (!result)
+	{
+		g_strMapEntities.clear();
+		logger->LogError("Map entity lump parsing for %s failed with error code %d on position %d", pMapName, result.m_Status, result.m_Position);
+		RETURN_META_VALUE(MRES_IGNORED, true);
+	}
+	g_strMapEntities = lumpmanager->Dump();
+
+	RETURN_META_VALUE_NEWPARAMS(MRES_HANDLED, true, &IServerGameDLL::LevelInit, (pMapName, g_strMapEntities.c_str(), pOldLevel, pLandmarkName, loadGame, background));
 }
 
 void SourceModBase::LevelShutdown()
