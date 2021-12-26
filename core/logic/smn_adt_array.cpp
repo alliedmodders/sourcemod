@@ -383,6 +383,44 @@ static cell_t SetArrayString(IPluginContext *pContext, const cell_t *params)
 	return strncopy((char *)blk, str, array->blocksize() * sizeof(cell_t));
 }
 
+static cell_t SetArrayStringEx(IPluginContext *pContext, const cell_t *params)
+{
+	CellArray *array;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = handlesys->ReadHandle(params[1], htCellArray, &sec, (void **)&array))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
+	}
+
+	size_t idx = (size_t)params[2];
+	if (idx >= array->size())
+	{
+		return pContext->ThrowNativeError("Invalid index %d (count: %d)", idx, array->size());
+	}
+
+	cell_t *blk = array->at(idx);
+
+	idx = (size_t)params[4];
+	if (idx >= array->blocksize())
+	{
+		return pContext->ThrowNativeError("Invalid block %d (blocksize: %d)", idx, array->blocksize());
+	}
+
+	char *str;
+	pContext->LocalToString(params[3], &str);
+
+	size_t maxlength = (array->blocksize() - idx) * sizeof(cell_t);
+	if (maxlength > (size_t)params[5])
+	{
+		maxlength = (size_t)params[5];
+	}
+
+	return strncopy((char *)(blk + idx), str, maxlength);
+}
+
 static cell_t SetArrayArray(IPluginContext *pContext, const cell_t *params)
 {
 	CellArray *array;
@@ -631,6 +669,7 @@ REGISTER_NATIVES(cellArrayNatives)
 	{"ArrayList.PushArray",			PushArrayArray},
 	{"ArrayList.Set",				SetArrayCell},
 	{"ArrayList.SetString",			SetArrayString},
+	{"ArrayList.SetStringEx",		SetArrayStringEx},
 	{"ArrayList.SetArray",			SetArrayArray},
 	{"ArrayList.Erase",				RemoveFromArray},
 	{"ArrayList.ShiftUp",			ShiftArrayUp},

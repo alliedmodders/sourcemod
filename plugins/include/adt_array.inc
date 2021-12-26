@@ -161,6 +161,16 @@ methodmap ArrayList < Handle {
 	// @error               Invalid index.
 	public native void SetString(int index, const char[] value);
 
+	// Sets a string value in an array, specifying which block to write to.
+	//
+	// @param index         Index in the array.
+	// @param value         String value to set.
+	// @param block         Block to write to.
+	// @param maxlength     Maximum size of the buffer (in bytes).
+	// @return              Number of characters copied.
+	// @error               Invalid index, or invalid block.
+	public native int SetStringEx(int index, const char[] value, int block, int maxlength);
+
 	// Sets an array of cells in an array.
 	//
 	// @param index         Index in the array.
