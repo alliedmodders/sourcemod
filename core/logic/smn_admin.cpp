@@ -111,6 +111,22 @@ static cell_t SetAdmGroupAddFlag(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t SetAdmGroupAddFlags(IPluginContext *pContext, const cell_t *params)
+{
+	GroupId id = (GroupId)params[1];
+	AdminFlag flags[AdminFlags_TOTAL];
+	bool enabled = params[3] ? true : false;
+
+	unsigned int num = adminsys->FlagBitsToArray(params[2], flags, AdminFlags_TOTAL);
+
+	for (unsigned int i=0; i<num; i++)
+	{
+		adminsys->SetGroupAddFlag(id, flags[i], enabled);
+	}
+
+	return 1;
+}
+
 static cell_t GetAdmGroupAddFlag(IPluginContext *pContext, const cell_t *params)
 {
 	GroupId id = (GroupId)params[1];
@@ -260,6 +276,22 @@ static cell_t SetAdminFlag(IPluginContext *pContext, const cell_t *params)
 	bool enabled = params[3] ? true : false;
 
 	adminsys->SetAdminFlag(id, flag, enabled);
+
+	return 1;
+}
+
+static cell_t SetAdminFlags(IPluginContext *pContext, const cell_t *params)
+{
+	AdminId id = params[1];
+	AdminFlag flags[AdminFlags_TOTAL];
+	bool enabled = params[3] ? true : false;
+
+	unsigned int num = adminsys->FlagBitsToArray(params[2], flags, AdminFlags_TOTAL);
+
+	for (unsigned int i=0; i<num; i++)
+	{
+		adminsys->SetAdminFlag(id, flags[i], enabled);
+	}
 
 	return 1;
 }
@@ -588,6 +620,7 @@ REGISTER_NATIVES(adminNatives)
 	{"AdminId.GetUsername",		GetAdminUsername},
 	{"AdminId.BindIdentity",	BindAdminIdentity},
 	{"AdminId.SetFlag",			SetAdminFlag},
+	{"AdminId.SetFlags",		SetAdminFlags},
 	{"AdminId.HasFlag",			GetAdminFlag},
 	{"AdminId.GetFlags",		GetAdminFlags},
 	{"AdminId.InheritGroup",	AdminInheritGroup},
@@ -600,6 +633,7 @@ REGISTER_NATIVES(adminNatives)
 	{"AdminId.ImmunityLevel.set",	SetAdminImmunityLevel},
 	{"GroupId.HasFlag",			GetAdmGroupAddFlag},
 	{"GroupId.SetFlag",			SetAdmGroupAddFlag},
+	{"GroupId.SetFlags",		SetAdmGroupAddFlags},
 	{"GroupId.GetFlags",		GetAdmGroupAddFlags},
 	{"GroupId.GetGroupImmunity",	GetAdmGroupImmuneFrom},
 	{"GroupId.AddGroupImmunity",	SetAdmGroupImmuneFrom},
