@@ -119,7 +119,6 @@ public Action HelpCmd(int client, int args)
 			for (i=0; CmdIter.Next() && i<EndCmd; )
 			{
 				CmdIter.GetName(Name, sizeof(Name));
-				CmdIter.GetDescription(Desc, sizeof(Desc));
 
 				if (CheckCommandAccess(client, Name, CmdIter.Flags))
 				{
@@ -160,8 +159,6 @@ public Action HelpCmd(int client, int args)
 		/* Test if there are more commands available */
 		if (CmdIter.Next())
 		{
-			CmdIter.GetName(Name, sizeof(Name));
-
 			PrintToConsole(client, "%t", "Type sm_help to see more", PageNum+1);
 		}
 	}
