@@ -475,6 +475,11 @@ cell_t TF2_IsPlayerInDuel(IPluginContext *pContext, const cell_t *params)
 // native bool:TF2_IsHolidayActive(TFHoliday:holiday);
 cell_t TF2_IsHolidayActive(IPluginContext *pContext, const cell_t *params)
 {
+	if (!g_pSM->IsMapRunning())
+	{
+		return pContext->ThrowNativeError("Cannot check active holiday when no map is running");
+	}
+
 	void *pGameRules;
 	if (!g_pSDKTools || !(pGameRules = g_pSDKTools->GetGameRules()))
 	{
