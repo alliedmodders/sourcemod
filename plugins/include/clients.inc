@@ -71,6 +71,7 @@ enum AuthIdType
 
 #define MAXPLAYERS      65  /**< Maximum number of players SourceMod supports */
 #define MAX_NAME_LENGTH 128 /**< Maximum buffer required to store a client name */
+#define MAX_AUTHID_LENGTH 64 /**< Maximum buffer required to store any AuthID type */
 
 public const int MaxClients;   /**< Maximum number of players the server supports (dynamic) */
 
