@@ -32,6 +32,8 @@
 #include <time.h>
 #include <string.h>
 #include <stdlib.h>
+#include <iomanip>
+#include <sstream>
 #include "common_logic.h"
 #include "Logger.h"
 
@@ -204,6 +206,56 @@ static cell_t FormatTime(IPluginContext *pContext, const cell_t *params)
 	}
 
 	return 1;
+}
+
+static int DaysFromEpoch(int year, unsigned month, unsigned day)
+{
+	/* https://howardhinnant.github.io/date_algorithms.html#days_from_civil */
+	year -= (month <= 2);
+	const int era = (year >= 0 ? year : year-399) / 400; // C++11 trunc. division
+	const unsigned yearOfEra = static_cast<unsigned>(year - era * 400); /* [0, 399] */
+	const unsigned dayOfYear = (153*(month > 2 ? month-3 : month+9) + 2)/5 + day-1; /* [0, 365] */
+	const unsigned dayOfEra = yearOfEra * 365 + yearOfEra/4 - yearOfEra/100 + dayOfYear; /* [0, 146096] */
+	return era * 146097 + static_cast<int>(dayOfEra) - 719468;
+}
+
+static cell_t GetTimeStamp(IPluginConext *pContext, const cell_t *params)
+{
+	char *format, *datetime;
+	pContext->LocalToStringNULL(params[1], datetime);
+	pContext->LocalToStringNULL(params[2], format);
+
+	if (format == NULL)
+	{
+		format = const_cast<char *>(bridge->GetCvarString(g_datetime_format));
+	}
+
+	std::tm t;
+	std::istringstream input(datetime);
+	input.imbue(std::locale(setlocale(LC_ALL, nullptr)));
+	input >> std::get_time(&t, format);
+	if (input.fail())
+	{
+		return pContext->ThrowNativeError("Invalid date/time string or time format.");
+	}
+
+	/* https://stackoverflow.com/a/58037981 */
+	int year = t.tm_year + 1900;
+	int month = t.tm_mon; // 0-11
+	if (month > 11)
+	{
+		year += month / 12;
+		month %= 12;
+	}
+	else if (month < 0)
+	{
+		int yearsDiff = (11 - month) / 12;
+		year -= yearsDiff;
+		month += 12 * yearsDiff;
+	}
+
+	int totalDays = DaysFromEpoch(year, month + 1, t.tm_mday);
+	return 60 * (60 * (24L * totalDays + t.tm_hour) + t.tm_min) + t.tm_sec;
 }
 
 static cell_t GetPluginIterator(IPluginContext *pContext, const cell_t *params)
@@ -967,6 +1019,7 @@ REGISTER_NATIVES(coreNatives)
 	{"ThrowError",				ThrowError},
 	{"GetTime",					GetTime},
 	{"FormatTime",				FormatTime},
+	{"GetTimeStamp",			GetTimeStamp},
 	{"GetPluginIterator",		GetPluginIterator},
 	{"MorePlugins",				MorePlugins},
 	{"ReadPlugin",				ReadPlugin},
