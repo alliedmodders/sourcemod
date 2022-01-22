@@ -212,18 +212,18 @@ static int DaysFromEpoch(int year, unsigned month, unsigned day)
 {
 	/* https://howardhinnant.github.io/date_algorithms.html#days_from_civil */
 	year -= (month <= 2);
-	const int era = (year >= 0 ? year : year-399) / 400; // C++11 trunc. division
+	const int era = (year >= 0 ? year : year-399) / 400; /* C++11 trunc. division */
 	const unsigned yearOfEra = static_cast<unsigned>(year - era * 400); /* [0, 399] */
 	const unsigned dayOfYear = (153*(month > 2 ? month-3 : month+9) + 2)/5 + day-1; /* [0, 365] */
 	const unsigned dayOfEra = yearOfEra * 365 + yearOfEra/4 - yearOfEra/100 + dayOfYear; /* [0, 146096] */
 	return era * 146097 + static_cast<int>(dayOfEra) - 719468;
 }
 
-static cell_t GetTimeStamp(IPluginConext *pContext, const cell_t *params)
+static cell_t GetTimeStamp(IPluginContext *pContext, const cell_t *params)
 {
 	char *format, *datetime;
-	pContext->LocalToStringNULL(params[1], datetime);
-	pContext->LocalToStringNULL(params[2], format);
+	pContext->LocalToStringNULL(params[1], &datetime);
+	pContext->LocalToStringNULL(params[2], &format);
 
 	if (format == NULL)
 	{
