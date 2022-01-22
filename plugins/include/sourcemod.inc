@@ -389,7 +389,7 @@ native int GetTime(int bigStamp[2]={0,0});
 native void FormatTime(char[] buffer, int maxlength, const char[] format, int stamp=-1);
 
 /**
- * Parses a string representing a time into a unix timestamp.
+ * Parses a string representing a date and/or time into a unix timestamp.
  *
  * See this URL for valid parameters:
  * http://cplusplus.com/reference/clibrary/ctime/strftime.html
