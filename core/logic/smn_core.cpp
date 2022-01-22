@@ -219,10 +219,10 @@ static int DaysFromEpoch(int year, unsigned month, unsigned day)
 	return era * 146097 + static_cast<int>(dayOfEra) - 719468;
 }
 
-static cell_t GetTimeStamp(IPluginContext *pContext, const cell_t *params)
+static cell_t ParseTime(IPluginContext *pContext, const cell_t *params)
 {
 	char *format, *datetime;
-	pContext->LocalToStringNULL(params[1], &datetime);
+	pContext->LocalToString(params[1], &datetime);
 	pContext->LocalToStringNULL(params[2], &format);
 
 	if (format == NULL)
@@ -232,7 +232,7 @@ static cell_t GetTimeStamp(IPluginContext *pContext, const cell_t *params)
 
 	std::tm t;
 	std::istringstream input(datetime);
-	input.imbue(std::locale(setlocale(LC_ALL, nullptr)));
+	input.imbue(std::locale(setlocale(LC_TIME, nullptr)));
 	input >> std::get_time(&t, format);
 	if (input.fail())
 	{
@@ -1019,7 +1019,7 @@ REGISTER_NATIVES(coreNatives)
 	{"ThrowError",				ThrowError},
 	{"GetTime",					GetTime},
 	{"FormatTime",				FormatTime},
-	{"GetTimeStamp",			GetTimeStamp},
+	{"ParseTime",				ParseTime},
 	{"GetPluginIterator",		GetPluginIterator},
 	{"MorePlugins",				MorePlugins},
 	{"ReadPlugin",				ReadPlugin},

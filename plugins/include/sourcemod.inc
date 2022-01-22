@@ -403,7 +403,7 @@ native void FormatTime(char[] buffer, int maxlength, const char[] format, int st
  * @return             32bit timestamp (number of seconds since unix epoch).
  * @error              Invalid date/time string or time format.
  */
-native int GetTimeStamp(const char[] dateTime, const char[] format);
+native int ParseTime(const char[] dateTime, const char[] format);
 
 /**
  * Loads a game config file.
