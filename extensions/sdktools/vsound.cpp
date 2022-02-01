@@ -1616,10 +1616,8 @@ static cell_t smn_GetGameSoundParams(IPluginContext *pContext, const cell_t *par
 
 	pContext->StringToLocal(params[6], params[7], soundParams.soundname);
 
-#if SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_BLADE
 	// Precache the sound we're returning
 	InternalPrecacheScriptSound(soundname);
-#endif
 
 	return true;
 }
