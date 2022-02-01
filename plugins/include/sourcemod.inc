@@ -348,6 +348,7 @@ native void SetFailState(const char[] string, any ...);
  *
  * @param fmt           String format.
  * @param ...           Format arguments.
+ * @noreturn
  * @error               Always!
  */
 native void ThrowError(const char[] fmt, any ...);

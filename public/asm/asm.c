@@ -24,7 +24,6 @@
 *
 * @param dest		Destination buffer where a call opcode + addr (5 bytes) has just been written.
 * @param pc		The program counter value that needs to be set (usually the next address from the source).
-* @noreturn
 */
 void check_thunks(unsigned char *dest, unsigned char *pc)
 {
