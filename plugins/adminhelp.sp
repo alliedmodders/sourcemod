@@ -86,17 +86,19 @@ public Action HelpCmd(int client, int args)
 	char Name[64];
 	char Desc[255];
 	char NoDesc[128];
-	int Flags;
-	Handle CmdIter = GetCommandIterator();
+	CommandIterator CmdIter = new CommandIterator();
 
 	FormatEx(NoDesc, sizeof(NoDesc), "%T", "No description available", client);
 
 	if (DoSearch)
 	{
 		int i = 1;
-		while (ReadCommandIterator(CmdIter, Name, sizeof(Name), Flags, Desc, sizeof(Desc)))
+		while (CmdIter.Next())
 		{
-			if ((StrContains(Name, arg, false) != -1) && CheckCommandAccess(client, Name, Flags))
+			CmdIter.GetName(Name, sizeof(Name));
+			CmdIter.GetDescription(Desc, sizeof(Desc));
+
+			if ((StrContains(Name, arg, false) != -1) && CheckCommandAccess(client, Name, CmdIter.Flags))
 			{
 				PrintToConsole(client, "[%03d] %s - %s", i++, Name, (Desc[0] == '\0') ? NoDesc : Desc);
 			}
@@ -114,9 +116,11 @@ public Action HelpCmd(int client, int args)
 		{
 			int i;
 			int EndCmd = (PageNum-1) * COMMANDS_PER_PAGE - 1;
-			for (i=0; ReadCommandIterator(CmdIter, Name, sizeof(Name), Flags, Desc, sizeof(Desc)) && i<EndCmd; )
+			for (i=0; CmdIter.Next() && i<EndCmd; )
 			{
-				if (CheckCommandAccess(client, Name, Flags))
+				CmdIter.GetName(Name, sizeof(Name));
+
+				if (CheckCommandAccess(client, Name, CmdIter.Flags))
 				{
 					i++;
 				}
@@ -133,9 +137,12 @@ public Action HelpCmd(int client, int args)
 		/* Start printing the commands to the client */
 		int i;
 		int StartCmd = (PageNum-1) * COMMANDS_PER_PAGE;
-		for (i=0; ReadCommandIterator(CmdIter, Name, sizeof(Name), Flags, Desc, sizeof(Desc)) && i<COMMANDS_PER_PAGE; )
+		for (i=0; CmdIter.Next() && i<COMMANDS_PER_PAGE; )
 		{
-			if (CheckCommandAccess(client, Name, Flags))
+			CmdIter.GetName(Name, sizeof(Name));
+			CmdIter.GetDescription(Desc, sizeof(Desc));
+			
+			if (CheckCommandAccess(client, Name, CmdIter.Flags))
 			{
 				i++;
 				PrintToConsole(client, "[%03d] %s - %s", i+StartCmd, Name, (Desc[0] == '\0') ? NoDesc : Desc);
@@ -150,7 +157,7 @@ public Action HelpCmd(int client, int args)
 		}
 
 		/* Test if there are more commands available */
-		if (ReadCommandIterator(CmdIter, Name, sizeof(Name), Flags, Desc, sizeof(Desc)) && CheckCommandAccess(client, Name, Flags))
+		if (CmdIter.Next())
 		{
 			PrintToConsole(client, "%t", "Type sm_help to see more", PageNum+1);
 		}
