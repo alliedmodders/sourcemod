@@ -79,6 +79,21 @@
 		}
 	}
 	
+	/* CBaseAnimating::LookupAttachment */
+	"#default"
+	{
+		"Signatures"
+		{
+			"LookupAttachment"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x83\xBE\xD0\x13\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x86\xD0\x13\x00\x00\x5E\x85\xC0\x74\x2A\x83\x38\x00\x75\x2A\x33\xC0\x5D\xC2\x04\x00\x8B\x4D\x08"
+				"linux"		"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
+				"mac"		"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
+			}
+		}
+	}
+
 	/* IServer interface pointer */
 	"#default"
 	{
@@ -216,6 +231,12 @@
 				"windows"	"274"
 				"linux"		"275"
 				"mac"		"275"
+			}
+			"GetAttachment"
+			{
+				"windows"	"219"
+				"linux"		"220"
+				"mac"		"220"
 			}
 		}
 		
