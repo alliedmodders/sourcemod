@@ -202,7 +202,7 @@ public Action Command_Vote(int client, int args)
 	g_voteType = question;
 	
 	g_hVoteMenu = new Menu(Handler_VoteCallback, MENU_ACTIONS_ALL);
-	g_hVoteMenu.SetTitle("%s?", g_voteArg);
+	g_hVoteMenu.SetTitle("%s", g_voteArg);
 	
 	if (answerCount < 2)
 	{
