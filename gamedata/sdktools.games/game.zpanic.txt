@@ -107,5 +107,10 @@
 				"linux"		"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
 			}
 		}
+		"Keys"
+		{
+			"GameRulesProxy"	"CGameMode_Manager"
+			"GameRulesDataTable"	"zps_gamerules_data"
+		}
 	}
 }
