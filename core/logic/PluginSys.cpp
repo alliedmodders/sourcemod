@@ -1130,6 +1130,15 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin)
 					return false;
 				}
 
+				/* Ensure required plugins finish loading before their dependencies */
+				if (found->GetStatus() == Plugin_Loaded) {
+					char error[256] = {0};
+					if (!RunSecondPass(found)) {
+						g_Logger.LogError("[SM] Unable to load plugin \"%s\": %s", found->GetFilename(), found->GetErrorMsg());
+						Purge(found);
+						found->FinishEviction();
+					}
+				}
 				found->AddDependent(pPlugin);
 			}
 		}
