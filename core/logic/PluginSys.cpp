@@ -1138,6 +1138,8 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin)
 						Purge(found);
 						found->FinishEviction();
 					}
+					pPlugin->EvictWithError(Plugin_Failed, "Could not find required plugin \"%s\"", name);
+					return false;
 				}
 				found->AddDependent(pPlugin);
 			}
