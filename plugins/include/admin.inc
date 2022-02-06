@@ -195,7 +195,15 @@ methodmap AdminId {
 	//
 	// @param flags         Bitwise admin flags (ADMFLAG_*).
 	// @param enabled       True to set the flag, false to unset/disable.
-	public native void SetFlags(int flags, bool enabled);
+	public void SetBitFlags(int flags, bool enabled)
+	{
+		AdminFlag flagArray[AdminFlags_TOTAL];
+		int num = FlagBitsToArray(flags, flagArray, sizeof(flagArray));
+		for (int i = 0; i < num; i++)
+		{
+			this.SetFlag(flagArray[i], enabled);
+		}
+	}
 
 	// Returns whether or not a flag is enabled on an admin.
 	//
@@ -288,7 +296,15 @@ methodmap GroupId {
 	//
 	// @param flags         Bitwise admin flags (ADMFLAG_*).
 	// @param enabled       True to set the flag, false to unset/disable.
-	public native void SetFlags(int flags, bool enabled);
+	public void SetBitFlags(int flags, bool enabled)
+	{
+		AdminFlag flagArray[AdminFlags_TOTAL];
+		int num = FlagBitsToArray(flags, flagArray, sizeof(flagArray));
+		for (int i = 0; i < num; i++)
+		{
+			this.SetFlag(flagArray[i], enabled);
+		}
+	}
 
 	// Returns the flag set that is added to users from this group.
 	//
