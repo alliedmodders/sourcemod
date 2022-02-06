@@ -1130,7 +1130,7 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin)
 					return false;
 				}
 
-				/* Ensure required plugins finish loading before their dependencies */
+				/* Ensure required plugins finish loading before their dependents */
 				if (found->GetStatus() == Plugin_Loaded) {
 					char error[256] = {0};
 					if (!RunSecondPass(found)) {
