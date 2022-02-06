@@ -91,6 +91,11 @@
 				"windows"	"219"
 				"linux"		"220"
 			}
+			"SetOwnerEntity"
+			{
+				"windows"	"25"
+				"linux"		"26"
+			}
 		}
 		"Signatures"
 		{
