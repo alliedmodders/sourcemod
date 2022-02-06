@@ -818,6 +818,12 @@ static cell_t FindSendPropOffs(IPluginContext *pContext, const cell_t *params)
 		return -1;
 	}
 
+	// Before we added support for DPT_Array props, FindInSendTable would have given us the inner array prop itself.
+	// To maintain compatibility with older plugins still using us, pluck out the inner array prop ourselves.
+	if (pSend->GetType() == DPT_Array && pSend->GetArrayProp()) {
+		return pSend->GetArrayProp()->GetOffset();
+	}
+
 	return pSend->GetOffset();
 }
 
