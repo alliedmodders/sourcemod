@@ -1127,7 +1127,7 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin)
 				}
 
 				/* Ensure required plugins finish loading before their dependents */
-				if (found->GetStatus() == Plugin_Loaded) {
+				if (found && found->GetStatus() == Plugin_Loaded) {
 					char error[256] = {0};
 					if (!RunSecondPass(found)) {
 						g_Logger.LogError("[SM] Unable to load plugin \"%s\": %s", found->GetFilename(), found->GetErrorMsg());
@@ -1141,6 +1141,7 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin)
 					pPlugin->EvictWithError(Plugin_Failed, "Could not find required plugin \"%s\"", name);
 					return false;
 				}
+
 				found->AddDependent(pPlugin);
 			}
 		}
