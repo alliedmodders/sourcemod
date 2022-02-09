@@ -1125,10 +1125,6 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin)
 						break;
 					}
 				}
-				if (!found) {
-					pPlugin->EvictWithError(Plugin_Failed, "Could not find required plugin \"%s\"", name);
-					return false;
-				}
 
 				/* Ensure required plugins finish loading before their dependents */
 				if (found->GetStatus() == Plugin_Loaded) {
@@ -1137,7 +1133,11 @@ bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin)
 						g_Logger.LogError("[SM] Unable to load plugin \"%s\": %s", found->GetFilename(), found->GetErrorMsg());
 						Purge(found);
 						found->FinishEviction();
+						found = nullptr;
 					}
+				}
+
+				if (!found) {
 					pPlugin->EvictWithError(Plugin_Failed, "Could not find required plugin \"%s\"", name);
 					return false;
 				}
