@@ -1325,11 +1325,26 @@ bool CPluginManager::MalwareCheckPass(CPlugin *pPlugin)
 
 bool CPluginManager::RunSecondPass(CPlugin *pPlugin)
 {
+	static std::list<CPlugin *> s_RecursivelyLoadedPlugins;
+
+	auto result = std::find(s_RecursivelyLoadedPlugins.begin(), s_RecursivelyLoadedPlugins.end(), pPlugin);
+	if (result != s_RecursivelyLoadedPlugins.end())
+	{
+		// This is a circular dependency - we can't guarantee that all plugins in the chain have been started.
+		// Since it's in the process of loading, we'll return true here; this will exhibit previous behavior of not all of each other's natives being ready by OnPluginStart.
+		return true;
+	}
+
+	s_RecursivelyLoadedPlugins.push_back(pPlugin);
+
 	// Make sure external dependencies are around.
 	if (!RequireExtensions(pPlugin))
 		return false;
 	if (!FindOrRequirePluginDeps(pPlugin))
 		return false;
+
+	assert(s_RecursivelyLoadedPlugins.back() == pPlugin);
+	s_RecursivelyLoadedPlugins.pop_back();
 
 	// Run another binding pass.
 	g_ShareSys.BindNativesToPlugin(pPlugin, false);
