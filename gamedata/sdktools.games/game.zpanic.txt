@@ -18,48 +18,48 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"420"
-				"linux"		"421"
+				"windows"	"417"
+				"linux"		"418"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"288"
-				"linux"		"289"
+				"windows"	"285"
+				"linux"		"286"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"283"
-				"linux"		"284"
+				"windows"	"280"
+				"linux"		"281"
 			}
 			"Ignite"
 			{
-				"windows"	"223"
-				"linux"		"224"
+				"windows"	"220"
+				"linux"		"221"
 			}
 			"Extinguish"
 			{
-				"windows"	"227"
-				"linux"		"228"
+				"windows"	"224"
+				"linux"		"225"
 			}
 			"Teleport"
 			{
-				"windows"	"118"
-				"linux"		"119"
+				"windows"	"115"
+				"linux"		"116"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"461"
-				"linux"		"461"
+				"windows"	"453"
+				"linux"		"453"
 			}
 			"GetVelocity"
 			{
-				"windows"	"154"
-				"linux"		"155"
+				"windows"	"151"
+				"linux"		"152"
 			}
 			"EyeAngles"
 			{
-				"windows"	"145"
-				"linux"		"146"
+				"windows"	"142"
+				"linux"		"143"
 			}
 			"AcceptInput"
 			{
@@ -73,8 +73,8 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"276"
-				"linux"		"277"
+				"windows"	"273"
+				"linux"		"274"
 			}
 			"Activate"
 			{
@@ -83,8 +83,8 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"440"
-				"linux"		"441"
+				"windows"	"433"
+				"linux"		"434"
 			}
 		}
 		"Signatures"
@@ -92,7 +92,7 @@
 			"FireOutput"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x2A\x2A\x53\x8B\x5D\x2A\x8B\xC1\x8B\x2A\x2A\x56\x57"
+				"windows"	"\x55\x8B\xEC\x81\xEC\x30\x01\x00\x00\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\xFC\x53\x8B\x5D\x20"
 				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
