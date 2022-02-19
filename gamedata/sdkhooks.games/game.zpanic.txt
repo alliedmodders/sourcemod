@@ -6,28 +6,28 @@
 		{
 			"EndTouch"
 			{
-				"windows"	"110"
-				"linux"		"111"
+				"windows"	"107"
+				"linux"		"108"
 			}
 			"FireBullets"
 			{
-				"windows"	"124"
-				"linux"		"124"
+				"windows"	"121"
+				"linux"		"121"
 			}
 			"OnTakeDamage"
 			{
-				"windows"	"72"
-				"linux"		"73"
+				"windows"	"69"
+				"linux"		"70"
 			}
 			"PreThink"
 			{
-				"windows"	"351"
-				"linux"		"352"
+				"windows"	"348"
+				"linux"		"349"
 			}
 			"PostThink"
 			{
-				"windows"	"352"
-				"linux"		"353"
+				"windows"	"349"
+				"linux"		"350"
 			}
 			"SetTransmit"
 			{
@@ -46,8 +46,8 @@
 			}
 			"StartTouch"
 			{
-				"windows"	"108"
-				"linux"		"109"
+				"windows"	"105"
+				"linux"		"106"
 			}
 			"Think"
 			{
@@ -56,48 +56,48 @@
 			}
 			"Touch"
 			{
-				"windows"	"109"
-				"linux"		"110"
+				"windows"	"106"
+				"linux"		"107"
 			}
 			"TraceAttack"
 			{
-				"windows"	"70"
-				"linux"		"71"
+				"windows"	"67"
+				"linux"		"68"
 			}
 			"Use"
 			{
-				"windows"	"107"
-				"linux"		"108"
+				"windows"	"104"
+				"linux"		"105"
 			}
 			"VPhysicsUpdate"
 			{
-				"windows"	"171"
-				"linux"		"172"
+				"windows"	"168"
+				"linux"		"169"
 			}
 			"Weapon_CanSwitchTo"
-			{
-				"windows"	"281"
-				"linux"		"282"
-			}
-			"Weapon_CanUse"
-			{
-				"windows"	"275"
-				"linux"		"276"
-			}
-			"Weapon_Drop"
 			{
 				"windows"	"278"
 				"linux"		"279"
 			}
+			"Weapon_CanUse"
+			{
+				"windows"	"272"
+				"linux"		"273"
+			}
+			"Weapon_Drop"
+			{
+				"windows"	"275"
+				"linux"		"276"
+			}
 			"Weapon_Equip"
 			{
-				"windows"	"276"
-				"linux"		"277"
+				"windows"	"273"
+				"linux"		"274"
 			}
 			"Weapon_Switch"
 			{
-				"windows"	"279"
-				"linux"		"280"
+				"windows"	"276"
+				"linux"		"277"
 			}
 		}
 	}
