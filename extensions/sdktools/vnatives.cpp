@@ -516,12 +516,24 @@ static cell_t ForcePlayerSuicide(IPluginContext *pContext, const cell_t *params)
 			return pContext->ThrowNativeError("\"CommitSuicide\" wrapper failed to initialize");
 		}
 	}
-
-	START_CALL();
-	DECODE_VALVE_PARAM(1, thisinfo, 0);
-	*(bool *)(vptr + pCall->vparams[0].offset) = false;
-	*(bool *)(vptr + pCall->vparams[1].offset) = false;
-	FINISH_CALL_SIMPLE(NULL);
+#if SOURCE_ENGINE == SE_SDK2013
+	if (!strcmp(g_pSM->GetGameFolderName(), "zps"))
+	{
+		START_CALL();
+		DECODE_VALVE_PARAM(1, thisinfo, 0);
+		*(bool *)(vptr + pCall->vparams[0].offset) = false;
+		*(bool *)(vptr + pCall->vparams[1].offset) = true;
+		FINISH_CALL_SIMPLE(NULL);
+	}
+	else
+	{
+		START_CALL();
+		DECODE_VALVE_PARAM(1, thisinfo, 0);
+		*(bool *)(vptr + pCall->vparams[0].offset) = false;
+		*(bool *)(vptr + pCall->vparams[1].offset) = false;
+		FINISH_CALL_SIMPLE(NULL);
+	}
+#endif // SDK2013
 
 	return 1;
 }
