@@ -4,6 +4,31 @@
 	{
 		"Offsets"
 		{
+			"GroundEntChanged"
+			{
+				"windows"	"188"
+				"linux"		"190"
+			}
+			"OnTakeDamage_Alive"
+			{
+				"windows"	"287"
+				"linux"		"288"
+			}
+			"GetMaxHealth"
+			{
+				"windows"	"126"
+				"linux"		"127"
+			}
+			"Blocked"
+			{
+				"windows"	"109"
+				"linux"		"110"
+			}
+			"Reload"
+			{
+				"windows"	"287"
+				"linux"		"288"
+			}
 			"EndTouch"
 			{
 				"windows"	"107"
