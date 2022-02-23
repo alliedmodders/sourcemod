@@ -516,25 +516,19 @@ static cell_t ForcePlayerSuicide(IPluginContext *pContext, const cell_t *params)
 			return pContext->ThrowNativeError("\"CommitSuicide\" wrapper failed to initialize");
 		}
 	}
-#if SOURCE_ENGINE == SE_SDK2013
+	bool bForce = false;
 	if (!strcmp(g_pSM->GetGameFolderName(), "zps"))
 	{
-		START_CALL();
-		DECODE_VALVE_PARAM(1, thisinfo, 0);
-		*(bool *)(vptr + pCall->vparams[0].offset) = false;
-		*(bool *)(vptr + pCall->vparams[1].offset) = true;
-		FINISH_CALL_SIMPLE(NULL);
+		// ZPS requires force to be set as true otherwise the action itself is delayed.
+		// Which affects Slay and Timebomb.
+		bForce = true;
 	}
-	else
-	{
-		START_CALL();
-		DECODE_VALVE_PARAM(1, thisinfo, 0);
-		*(bool *)(vptr + pCall->vparams[0].offset) = false;
-		*(bool *)(vptr + pCall->vparams[1].offset) = false;
-		FINISH_CALL_SIMPLE(NULL);
-	}
-#endif // SDK2013
 
+	START_CALL();
+	DECODE_VALVE_PARAM(1, thisinfo, 0);
+	*(bool *)(vptr + pCall->vparams[0].offset) = false;
+	*(bool *)(vptr + pCall->vparams[1].offset) = bForce;
+	FINISH_CALL_SIMPLE(NULL);
 	return 1;
 }
 #else
