@@ -546,8 +546,7 @@ methodmap DynamicHook < DHookSetup
 	// @error               Invalid setup handle, invalid address, invalid hook type or invalid callback.
 	public native int HookRaw(HookMode mode, Address addr, DHookCallback callback);
 
-	// Remove hook by hook id:
-	// This will NOT fire the removal callback!
+	// Remove hook by hook id.
 	//
 	// @param hookid        Hook id to remove.
 	//
@@ -778,7 +777,6 @@ native int DHookRaw(Handle setup, bool post, Address addr, DHookRemovalCB remova
  * @param hookid            Hook id to remove
  *
  * @return                  true on success, false otherwise
- * @note                    This will not fire the removal callback!
  */
 native bool DHookRemoveHookID(int hookid);
 
