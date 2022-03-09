@@ -41,6 +41,8 @@ for sdk_name in SM.sdks:
   for cxx in builder.targets:
     if not cxx.target.arch in sdk.platformSpec[cxx.target.platform]:
       continue
+    if sdk_name == 'mock':
+      continue
 
     binary = SM.HL2ExtConfig(project, builder, cxx, 'sdktools.ext.' + sdk.ext, sdk)
     binary.compiler.cxxincludes += [
