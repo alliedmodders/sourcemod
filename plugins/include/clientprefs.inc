@@ -171,9 +171,9 @@ methodmap Cookie < Handle {
 	// @param client        Client index.
 	// @return              Integer value of cookie
 	// @error               Invalid cookie handle or invalid client index.
-	public float GetInt(int client) {
+	public int GetInt(int client) {
 		char sValue[11];
-		FloatToString(value, sValue, sizeof(sValue));
+		this.Get(client, sValue, sizeof(sValue));
 		
 		return StringToInt(sValue);
 	}
@@ -185,7 +185,7 @@ methodmap Cookie < Handle {
 	// @error               Invalid cookie handle or invalid client index.
 	public float GetFloat(int client) {
 		char sValue[11];
-		FloatToString(value, sValue, sizeof(sValue));
+		this.Get(client, sValue, sizeof(sValue));
 		
 		return StringToFloat(sValue);
 	}
