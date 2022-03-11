@@ -126,12 +126,37 @@ methodmap Cookie < Handle {
 
 	public static native Cookie Find(const char[] name);
 
-	// Set the value of a Client preference cookie.
+	// Set the string value of a Client preference cookie.
 	//
 	// @param client        Client index.
 	// @param value         String value to set.
 	// @error               Invalid cookie handle or invalid client index.
 	public native void Set(int client, const char[] value);
+	
+	// Set the integer value of a Client preference cookie.
+	//
+	// @param client        Client index.
+	// @param value         Integer value to set.
+	// @error               Invalid cookie handle or invalid client index.
+	public void SetInt(int client, int value) {
+		char sValue[11];
+		IntToString(value, sValue, sizeof(sValue));
+		
+		this.Set(client, sValue);
+	}
+	
+	// Set the float value of a Client preference cookie.
+	//
+	// @param client        Client index.
+	// @param value         Float value to set.
+	// @error               Invalid cookie handle or invalid client index.
+	public void SetFloat(int client, float value) {
+		char sValue[11];
+		FloatToString(value, sValue, sizeof(sValue));
+		
+		this.Set(client, sValue);
+	}
+
 
 	// Retrieve the value of a Client preference cookie.
 	//
@@ -141,6 +166,30 @@ methodmap Cookie < Handle {
 	// @error               Invalid cookie handle or invalid client index.
 	public native void Get(int client, char[] buffer, int maxlen);
 
+	// Retrieve the integer value of a Client preference cookie.
+	//
+	// @param client        Client index.
+	// @return              Integer value of cookie
+	// @error               Invalid cookie handle or invalid client index.
+	public float GetInt(int client) {
+		char sValue[11];
+		FloatToString(value, sValue, sizeof(sValue));
+		
+		return StringToInt(sValue)
+	}
+	
+	// Retrieve the float value of a Client preference cookie.
+	//
+	// @param client        Client index.
+	// @return              Float value of cookie
+	// @error               Invalid cookie handle or invalid client index.
+	public float GetFloat(int client) {
+		char sValue[11];
+		FloatToString(value, sValue, sizeof(sValue));
+		
+		return StringToFloat(sValue)
+	}
+	
 	// Sets the value of a Client preference cookie based on an authID string.
 	//
 	// @param authID        String Auth/STEAM ID of player to set.
