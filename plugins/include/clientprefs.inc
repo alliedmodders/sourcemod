@@ -175,7 +175,7 @@ methodmap Cookie < Handle {
 		char sValue[11];
 		FloatToString(value, sValue, sizeof(sValue));
 		
-		return StringToInt(sValue)
+		return StringToInt(sValue);
 	}
 	
 	// Retrieve the float value of a Client preference cookie.
@@ -187,7 +187,7 @@ methodmap Cookie < Handle {
 		char sValue[11];
 		FloatToString(value, sValue, sizeof(sValue));
 		
-		return StringToFloat(sValue)
+		return StringToFloat(sValue);
 	}
 	
 	// Sets the value of a Client preference cookie based on an authID string.
