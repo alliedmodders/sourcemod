@@ -420,11 +420,7 @@ public void __ext_cprefs_SetNTVOptional()
 	MarkNativeAsOptional("Cookie.Cookie");
 	MarkNativeAsOptional("Cookie.Find");
 	MarkNativeAsOptional("Cookie.Set");
-	MarkNativeAsOptional("Cookie.SetInt");
-	MarkNativeAsOptional("Cookie.SetFloat");
 	MarkNativeAsOptional("Cookie.Get");
-	MarkNativeAsOptional("Cookie.GetInt");
-	MarkNativeAsOptional("Cookie.GetFloat");
 	MarkNativeAsOptional("Cookie.SetByAuthId");
 	MarkNativeAsOptional("Cookie.SetPrefabMenu");
 	MarkNativeAsOptional("Cookie.GetClientTime");
