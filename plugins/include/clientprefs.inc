@@ -171,11 +171,17 @@ methodmap Cookie < Handle {
 	// @param client        Client index.
 	// @return              Integer value of cookie
 	// @error               Invalid cookie handle or invalid client index.
-	public int GetInt(int client) {
-		char sValue[11];
-		this.Get(client, sValue, sizeof(sValue));
-		
-		return StringToInt(sValue);
+	public int GetInt(int client, int defaultValue = 0)
+	{
+		char buffer[11];
+		this.Get(client, buffer, sizeof(buffer));
+
+                int value;
+                if (!StringToIntEx(buffer, value))
+                {
+                       value = defaultValue;
+                }
+		return value;
 	}
 	
 	// Retrieve the float value of a Client preference cookie.
@@ -183,11 +189,17 @@ methodmap Cookie < Handle {
 	// @param client        Client index.
 	// @return              Float value of cookie
 	// @error               Invalid cookie handle or invalid client index.
-	public float GetFloat(int client) {
-		char sValue[11];
-		this.Get(client, sValue, sizeof(sValue));
-		
-		return StringToFloat(sValue);
+	public float GetFloat(int client, float defaultValue = 0.0)
+	{
+		char buffer[11];
+		this.Get(client, buffer, sizeof(buffer));
+
+                float value;
+                if (!StringToFloatEx(buffer, value))
+                {
+                       value = defaultValue;
+                }
+		return value;
 	}
 	
 	// Sets the value of a Client preference cookie based on an authID string.
