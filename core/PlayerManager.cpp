@@ -2393,6 +2393,11 @@ bool CPlayer::IsAuthorized()
 	return m_IsAuthorized;
 }
 
+bool CPlayer::IsAdminChecked()
+{
+	return m_bAdminCheckSignalled;
+}
+
 bool CPlayer::IsAuthStringValidated()
 {     
 #if SOURCE_ENGINE >= SE_ORANGEBOX
