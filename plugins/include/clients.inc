@@ -399,6 +399,13 @@ stock bool IsPlayerInGame(int client)
 native bool IsClientAuthorized(int client);
 
 /**
+ * Returns if all post-connection authorizations have been performed for a client.
+ *
+ * Note: See OnClientPostAdminCheck
+ */
+native bool IsClientAdminChecked(int client);
+
+/**
  * Returns if a certain player is a fake client.
  *
  * @param client        Player index.
