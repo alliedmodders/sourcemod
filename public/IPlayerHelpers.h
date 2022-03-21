@@ -202,6 +202,13 @@ namespace SourceMod
 		virtual bool IsAuthorized() =0;
 		
 		/**
+		 * @brief Returns if all post-connection authorizations have been performed for a client.
+		 *
+		 * @return		True if post-connection authorizations performed, else false
+		 */
+		virtual bool IsAdminChecked() =0;
+		
+		/**
 		 * @brief Kicks the client with a message
 		 *
 		 * @param message   The message shown to the client when kicked
