@@ -87,6 +87,7 @@ public:
 	bool WasCountedAsInGame();
 	bool IsConnected();
 	bool IsAuthorized();
+	bool IsAdminChecked();
 	bool IsFakeClient();
 	bool IsSourceTV() const;
 	bool IsReplay() const;
