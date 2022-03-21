@@ -402,6 +402,8 @@ native bool IsClientAuthorized(int client);
  * Returns if all post-connection authorizations have been performed for a client.
  *
  * Note: See OnClientPostAdminCheck
+ *
+ * @return              True if post-connection authorizations performed, false otherwise
  */
 native bool IsClientAdminChecked(int client);
 
