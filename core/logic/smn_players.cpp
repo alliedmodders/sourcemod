@@ -486,6 +486,17 @@ static cell_t sm_IsClientAuthorized(IPluginContext *pCtx, const cell_t *params)
 	return (playerhelpers->GetGamePlayer(index)->IsAuthorized()) ? 1 : 0;
 }
 
+static cell_t sm_IsClientAdminChecked(IPluginContext *pCtx, const cell_t *params)
+{
+	int index = params[1];
+	if ((index < 1) || (index > playerhelpers->GetMaxClients()))
+	{
+		return pCtx->ThrowNativeError("Client index %d is invalid", index);
+	}
+
+	return (playerhelpers->GetGamePlayer(index)->IsAdminChecked()) ? 1 : 0;
+}
+
 static cell_t sm_IsClientFakeClient(IPluginContext *pCtx, const cell_t *params)
 {
 	int index = params[1];
@@ -1630,6 +1641,7 @@ REGISTER_NATIVES(playernatives)
 	{ "GetUserAdmin", GetUserAdmin },
 	{ "GetUserFlagBits", GetUserFlagBits },
 	{ "IsClientAuthorized", sm_IsClientAuthorized },
+	{ "IsClientAdminChecked", sm_IsClientAdminChecked },
 	{ "IsClientConnected", sm_IsClientConnected },
 	{ "IsFakeClient", sm_IsClientFakeClient },
 	{ "IsClientSourceTV", sm_IsClientSourceTV },
