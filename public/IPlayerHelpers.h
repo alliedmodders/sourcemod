@@ -41,7 +41,7 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	21
+#define SMINTERFACE_PLAYERMANAGER_VERSION	22
 
 struct edict_t;
 class IPlayerInfo;
