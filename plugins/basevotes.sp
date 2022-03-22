@@ -408,6 +408,13 @@ bool TestVoteDelay(int client)
 {
  	int delay = CheckVoteDelay();
  	
+	int client_flags = client == 0 ? ADMFLAG_ROOT : GetUserFlagBits(client);
+	
+	if (client_flags & ADMFLAG_ROOT)
+	{
+		return true;
+	}
+	
  	if (delay > 0)
  	{
  		if (delay > 60)
