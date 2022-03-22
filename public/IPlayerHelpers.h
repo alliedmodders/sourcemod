@@ -204,7 +204,7 @@ namespace SourceMod
 		/**
 		 * @brief Returns if all post-connection authorizations have been performed for a client.
 		 *
-		 * @return		True if post-connection authorizations performed, else false
+		 * @return		True if post-connection authorizations performed, false otherwise
 		 */
 		virtual bool IsAdminChecked() =0;
 		
