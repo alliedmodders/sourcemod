@@ -308,14 +308,12 @@ void VoteSelect(Menu menu, int param1, int param2 = 0)
 
 bool TestVoteDelay(int client)
 {
- 	int delay = CheckVoteDelay();
-	
- 	int client_flags = client == 0 ? ADMFLAG_ROOT : GetUserFlagBits(client);
-	
-	if (client_flags & ADMFLAG_ROOT)
+	if (CheckCommandAccess(client, "sm_vote_access", ADMFLAG_ROOT, true))
 	{
 		return true;
 	}
+	
+ 	int delay = CheckVoteDelay();
 
  	if (delay > 0)
  	{
