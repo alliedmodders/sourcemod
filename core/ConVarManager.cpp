@@ -428,7 +428,11 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 	pInfo->handle = hndl;
 
 	/* Since an existing convar (or concmd with the same name) was not found , now we can finally create it */
-	pConVar = new ConVar(sm_strdup(name), sm_strdup(defaultVal), flags, sm_strdup(description), hasMin, min, hasMax, max);
+	pConVar = new ConVar(sm_strdup(name), sm_strdup(defaultVal), flags
+#if SOURCE_ENGINE >= SE_L4D2
+	 | FCVAR_RELEASE
+#endif
+	 , sm_strdup(description), hasMin, min, hasMax, max);
 	pInfo->pVar = pConVar;
 
 	/* Add convar to plugin's list */
