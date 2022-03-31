@@ -37,7 +37,10 @@
 
 #define INVALID_FCVAR_FLAGS (-1)
 
-#define MAX_CONSOLE_LENGTH 1024     /**< Maximum buffer size for console messages */
+#define MAX_CONSOLE_LENGTH         1024     /**< Maximum buffer size for console messages */
+
+#define COMMAND_MAX_ARGC           64       /**< Maxmimum allowed command args */
+#define COMMAND_MAX_LENGTH         512      /**< Maxmimum allowed command length */
 
 /**
  * Console variable query helper values.
