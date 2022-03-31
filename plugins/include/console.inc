@@ -39,8 +39,8 @@
 
 #define MAX_CONSOLE_LENGTH         1024     /**< Maximum buffer size for console messages */
 
-#define COMMAND_MAX_ARGC           64       /**< Maxmimum allowed command args */
-#define COMMAND_MAX_LENGTH         512      /**< Maxmimum allowed command length */
+#define COMMAND_MAX_ARGC           64       /**< Maxmimum allowed command argument count */
+#define COMMAND_MAX_LENGTH         512      /**< Maxmimum allowed command length of a command argument */
 
 /**
  * Console variable query helper values.
