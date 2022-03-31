@@ -37,6 +37,8 @@
 
 #define INVALID_FCVAR_FLAGS (-1)
 
+#define MAX_CONSOLE_LENGTH 1024
+
 /**
  * Console variable query helper values.
  */
