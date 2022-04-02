@@ -167,7 +167,7 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 {
 	if (action == MenuAction_End)
 	{
-		VoteMenuClose();
+		delete g_hVoteMenu;
 	}
 	else if (action == MenuAction_Display)
 	{
@@ -215,7 +215,7 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 			votes = totalVotes - votes; // Reverse the votes to be in relation to the Yes option.
 		}
 		
-		percent = GetVotePercent(votes, totalVotes);
+		percent = float(votes) / float(totalVotes);
 		
 		limit = g_Cvar_Limits[g_voteType].FloatValue;
 		
@@ -305,16 +305,6 @@ void VoteSelect(Menu menu, int param1, int param2 = 0)
 	}
 }
 */
-
-void VoteMenuClose()
-{
-	delete g_hVoteMenu;
-}
-
-float GetVotePercent(int votes, int totalVotes)
-{
-	return float(votes) / float(totalVotes);
-}
 
 bool TestVoteDelay(int client)
 {
