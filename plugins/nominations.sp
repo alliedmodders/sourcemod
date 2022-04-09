@@ -245,7 +245,11 @@ public Action Command_Nominate(int client, int args)
 		for (int i = 0; i < results.Length; i++)
 		{
 			g_MapList.GetString(results.Get(i), mapResult, sizeof(mapResult));
-			menu.AddItem(mapResult, mapResult);
+
+			char displayName[PLATFORM_MAX_PATH];
+			GetMapDisplayName(mapResult, displayName, sizeof(displayName));
+
+			menu.AddItem(mapResult, displayName);
 		}
 
 		menu.Display(client, 30);
