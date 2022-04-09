@@ -476,21 +476,24 @@ public int MenuHandler_MapSelect(Menu menu, MenuAction action, int param1, int p
 			
 			if ((status & MAPSTATUS_DISABLED) == MAPSTATUS_DISABLED)
 			{
+				char displayName[PLATFORM_MAX_PATH];
+				GetMapDisplayName(mapname, displayName, sizeof(displayName));
+
 				if ((status & MAPSTATUS_EXCLUDE_CURRENT) == MAPSTATUS_EXCLUDE_CURRENT)
 				{
-					Format(mapname, sizeof(mapname), "%s (%T)", mapname, "Current Map", param1);
+					Format(mapname, sizeof(mapname), "%s (%T)", displayName, "Current Map", param1);
 					return RedrawMenuItem(mapname);
 				}
 				
 				if ((status & MAPSTATUS_EXCLUDE_PREVIOUS) == MAPSTATUS_EXCLUDE_PREVIOUS)
 				{
-					Format(mapname, sizeof(mapname), "%s (%T)", mapname, "Recently Played", param1);
+					Format(mapname, sizeof(mapname), "%s (%T)", displayName, "Recently Played", param1);
 					return RedrawMenuItem(mapname);
 				}
 				
 				if ((status & MAPSTATUS_EXCLUDE_NOMINATED) == MAPSTATUS_EXCLUDE_NOMINATED)
 				{
-					Format(mapname, sizeof(mapname), "%s (%T)", mapname, "Nominated", param1);
+					Format(mapname, sizeof(mapname), "%s (%T)", displayName, "Nominated", param1);
 					return RedrawMenuItem(mapname);
 				}
 			}
