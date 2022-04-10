@@ -119,11 +119,7 @@ native void SortCustom1D(int[] array, int array_size, SortFunc1D sortfunc, any d
  *                      0 if first is equal to second
  *                      1 if first should go after second
  */
-typeset SortFunc2D
-{
-	function int (int[] elem1, int[] elem2, const int[][] array, any data);
-	function int (char[] elem1, char[] elem2, const char[][] array, any data);
-};
+typedef SortFunc2D = function int (any[] elem1, any[] elem2, const any[][] array, any data);
 
 /**
  * Sorts a custom 2D array.  You must pass in a comparison function.
