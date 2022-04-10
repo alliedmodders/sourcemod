@@ -308,7 +308,7 @@ void VoteSelect(Menu menu, int param1, int param2 = 0)
 
 bool TestVoteDelay(int client)
 {
-	if (CheckCommandAccess(client, "sm_vote_access", ADMFLAG_ROOT, true))
+	if (CheckCommandAccess(client, "sm_vote_delay_bypass", ADMFLAG_CONVARS, true))
 	{
 		return true;
 	}
