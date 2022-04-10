@@ -219,8 +219,8 @@ methodmap ArrayList < Handle {
 	// Custom sorts an ADT Array. You must pass in a comparison function.
 	//
 	// @param sortfunc      Sort comparison function to use
-	// @param hndl          Optional Handle to pass through the comparison calls.
-	public native void SortCustom(SortFuncADTArray sortfunc, Handle hndl=INVALID_HANDLE); 
+	// @param data          Optional Handle or data to pass through the comparison calls.
+	public native void SortCustom(SortFuncADTArray sortfunc, any data=0); 
 
 	// Retrieve the size of the array.
 	property int Length {
