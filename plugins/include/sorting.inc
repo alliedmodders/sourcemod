@@ -95,7 +95,7 @@ native void SortStrings(char[][] array, int array_size, SortOrder order = Sort_A
  *                      0 if first is equal to second
  *                      1 if first should go after second
  */
-typedef SortFunc1D = function int (int elem1, int elem2, const int[] array, any data);
+typedef SortFunc1D = function int (any elem1, any elem2, const any[] array, any data);
 
 /**
  * Sorts a custom 1D array.  You must pass in a comparison function.
@@ -105,7 +105,7 @@ typedef SortFunc1D = function int (int elem1, int elem2, const int[] array, any 
  * @param sortfunc      Sort function.
  * @param data          Optional Handle or value to pass through the comparison calls.
  */
-native void SortCustom1D(int[] array, int array_size, SortFunc1D sortfunc, any data=0);
+native void SortCustom1D(any[] array, int array_size, SortFunc1D sortfunc, any data=0);
 
 /**
  * Sort comparison function for 2D array elements (sub-arrays).
@@ -127,7 +127,7 @@ typedef SortFunc2D = function int (any[] elem1, any[] elem2, const any[][] array
  * @param array         Array to sort.
  * @param array_size    Size of the major array to sort (first index, outermost).
  * @param sortfunc      Sort comparison function to use.
- * @param hndl          Optional Handle to pass through the comparison calls.
+ * @param data          Optional Handle or value to pass through the comparison calls.
  */
 native void SortCustom2D(any[][] array, int array_size, SortFunc2D sortfunc, any data=0);
 
@@ -160,6 +160,6 @@ typedef SortFuncADTArray = function int (int index1, int index2, Handle array, a
  *
  * @param array         Array Handle to sort
  * @param sortfunc      Sort comparison function to use
- * @param data          Optional Handle or data to pass through the comparison calls.
+ * @param data          Optional Handle or value to pass through the comparison calls.
  */
 native void SortADTArrayCustom(Handle array, SortFuncADTArray sortfunc, any data=0);
