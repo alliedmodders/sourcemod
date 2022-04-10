@@ -51,7 +51,7 @@ typeset Timer
 	 * Called when the timer interval has elapsed.
 	 *
 	 * @param timer         Handle to the timer object.
-	 * @param data          Data passed to CreateTimer() when timer was created.
+	 * @param data          Handle or value passed to CreateTimer() when timer was created.
 	 * @return              Plugin_Stop to stop a repeating timer, any other value for
 	 *                      default behavior.
 	 */
