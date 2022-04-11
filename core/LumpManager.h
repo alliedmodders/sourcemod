@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * Entity Lump Manager
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2021-2022 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -35,6 +35,11 @@
 #include <vector>
 #include <memory>
 
+#include <IHandleSys.h>
+#include "sm_globals.h"
+
+using namespace SourceMod;
+
 /**
  * @file lumpmanager.h
  * @brief Class definition for object that parses lumps.
@@ -65,7 +70,9 @@ struct EntityLumpParseResult {
 /**
  * @brief Manages entity lump entries.
  */
-class EntityLumpManager
+class EntityLumpManager :
+		public SMGlobalClass,
+		public IHandleTypeDispatch
 {
 public:
 	/**
@@ -91,6 +98,14 @@ public:
 
 	size_t Length();
 
+public: //IHandleTypeDispatch
+	void OnHandleDestroy(HandleType_t type, void* object);
+
+public: //SMGlobalClass
+	void OnSourceModAllInitialized();
+	void OnSourceModLevelChange(const char *mapName);
+	void OnSourceModShutdown();
+
 private:
 	std::vector<std::shared_ptr<EntityLumpEntry>> m_Entities;
 };
@@ -98,5 +113,7 @@ private:
 extern EntityLumpManager *lumpmanager;
 extern std::string g_strMapEntities;
 extern bool g_bLumpAvailableForWriting;
+
+extern HandleType_t g_EntityLumpEntryType;
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_

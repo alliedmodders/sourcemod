@@ -2,7 +2,7 @@
  * vim: set ts=4 :
  * =============================================================================
  * Entity Lump Manager
- * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
+ * Copyright (C) 2021-2022 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -33,26 +33,11 @@
 #include "sm_globals.h"
 #include "sourcemod.h"
 #include "sourcemm_api.h"
-#include <IGameConfigs.h>
 #include "logic_bridge.h"
 
 #include "LumpManager.h"
 
 #include <algorithm>
-
-class EntityLumpEntryHandler : public IHandleTypeDispatch {
-public:
-	void OnHandleDestroy(HandleType_t type, void* object);
-};
-
-HandleType_t g_EntityLumpEntryType = 0;
-EntityLumpEntryHandler g_EntityLumpEntryHandler;
-
-void EntityLumpEntryHandler::OnHandleDestroy(HandleType_t type, void* object) {
-	if (type == g_EntityLumpEntryType) {
-		delete reinterpret_cast<std::weak_ptr<EntityLumpEntry>*>(object);
-	}
-}
 
 cell_t sm_LumpManagerGet(IPluginContext *pContext, const cell_t *params) {
 	int index = params[1];
