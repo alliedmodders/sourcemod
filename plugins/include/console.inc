@@ -466,7 +466,7 @@ stock bool GetCmdArgIntEx(int argnum, int &value)
  */
 stock float GetCmdArgFloat(int argnum)
 {
-    char str[12];
+    char str[18];
     GetCmdArg(argnum, str, sizeof(str));
 
     return StringToFloat(str);
@@ -483,7 +483,7 @@ stock float GetCmdArgFloat(int argnum)
  */
 stock bool GetCmdArgFloatEx(int argnum, float &value)
 {
-    char str[12];
+    char str[18];
     int len = GetCmdArg(argnum, str, sizeof(str));
 
     return StringToFloatEx(str, value) == len && len > 0;
