@@ -34,6 +34,7 @@
 
 #include <vector>
 #include <memory>
+#include <string>
 
 #include <IHandleSys.h>
 #include "sm_globals.h"
