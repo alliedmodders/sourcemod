@@ -406,8 +406,13 @@ void VoteSelect(Menu menu, int param1, int param2 = 0)
 
 bool TestVoteDelay(int client)
 {
+	if (CheckCommandAccess(client, "sm_vote_delay_bypass", ADMFLAG_CONVARS, true))
+	{
+		return true;
+	}
+	
  	int delay = CheckVoteDelay();
- 	
+	
  	if (delay > 0)
  	{
  		if (delay > 60)
