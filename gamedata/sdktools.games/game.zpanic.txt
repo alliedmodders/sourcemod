@@ -96,6 +96,11 @@
 				"windows"	"25"
 				"linux"		"26"
 			}
+			"GiveAmmo"
+			{
+				"windows"	"264"
+				"linux"		"265"
+			}
 		}
 		"Signatures"
 		{
