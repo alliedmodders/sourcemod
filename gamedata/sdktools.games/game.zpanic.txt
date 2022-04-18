@@ -48,8 +48,8 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"453"
-				"linux"		"453"
+				"windows"	"452"
+				"linux"		"452"
 			}
 			"GetVelocity"
 			{
@@ -83,8 +83,8 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"433"
-				"linux"		"434"
+				"windows"	"432"
+				"linux"		"433"
 			}
 			"GetAttachment"
 			{
@@ -95,6 +95,11 @@
 			{
 				"windows"	"25"
 				"linux"		"26"
+			}
+			"GiveAmmo"
+			{
+				"windows"	"264"
+				"linux"		"265"
 			}
 		}
 		"Signatures"
