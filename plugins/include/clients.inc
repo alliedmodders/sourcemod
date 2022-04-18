@@ -235,6 +235,15 @@ forward void OnClientPostAdminCheck(int client);
 forward void OnClientLanguageChanged(int client, int language);
 
 /**
+ * Called for calls to KickClient().
+ *
+ * @param client        Client being kicked.
+ * @param reason        Reason passed via KickClient().
+ * @return              Plugin_Handled to block the actual server kicking.
+ */
+forward Action OnKickClient(int client, const char[] reason);
+
+/**
  * This function is deprecated. Use the MaxClients variable instead.
  *
  * Returns the maximum number of clients allowed on the server.  This may 
