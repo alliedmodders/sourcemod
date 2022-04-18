@@ -346,7 +346,7 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 						PrintToChatAll("[SM] %t", "Kicked target", "_s", g_voteInfo[VOTE_NAME]);					
 						LogAction(-1, voteTarget, "Vote kick successful, kicked \"%L\" (reason \"%s\")", voteTarget, g_voteArg);
 						
-						ServerCommand("kickid %d \"%s\"", g_voteTarget, g_voteArg);					
+						KickClient(voteTarget, "%s", g_voteArg);
 					}
 				}
 					
