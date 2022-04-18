@@ -59,6 +59,7 @@ bool g_OnMapStarted = false;
 IForward *PreAdminCheck = NULL;
 IForward *PostAdminCheck = NULL;
 IForward *PostAdminFilter = NULL;
+IForward *OnKickClient = NULL;
 
 const unsigned int *g_NumPlayersToAuth = NULL;
 int lifestate_offset = -1;
@@ -203,6 +204,8 @@ void PlayerManager::OnSourceModAllInitialized()
 	PreAdminCheck = forwardsys->CreateForward("OnClientPreAdminCheck", ET_Event, 1, p1);
 	PostAdminCheck = forwardsys->CreateForward("OnClientPostAdminCheck", ET_Ignore, 1, p1);
 	PostAdminFilter = forwardsys->CreateForward("OnClientPostAdminFilter", ET_Ignore, 1, p1);
+	
+	OnKickClient = forwardsys->CreateForward("OnKickClient", ET_Event, 2, NULL, Param_Cell, Param_String);
 
 	m_bIsListenServer = !engine->IsDedicatedServer();
 	m_ListenClient = 0;
@@ -254,6 +257,8 @@ void PlayerManager::OnSourceModShutdown()
 	forwardsys->ReleaseForward(PreAdminCheck);
 	forwardsys->ReleaseForward(PostAdminCheck);
 	forwardsys->ReleaseForward(PostAdminFilter);
+	
+	forwardsys->ReleaseForward(OnKickClient);
 
 	delete [] m_Players;
 
@@ -2468,25 +2473,40 @@ void CPlayer::DumpAdmin(bool deleting)
 
 void CPlayer::Kick(const char *str)
 {
-	MarkAsBeingKicked();
 	IClient *pClient = GetIClient();
-	if (pClient == nullptr)
+	
+	int userid = GetUserId();
+	
+	cell_t handled = 0;
+	
+	if (OnKickClient->GetFunctionCount() > 0)
 	{
-		int userid = GetUserId();
-		if (userid > 0)
-		{
-			char buffer[255];
-			ke::SafeSprintf(buffer, sizeof(buffer), "kickid %d %s\n", userid, str);
-			engine->ServerCommand(buffer);
-		}
+		OnKickClient->PushCell(g_Players.GetClientOfUserId(userid));		
+		OnKickClient->PushString(str);
+		OnKickClient->Execute(&handled);
 	}
-	else
+	
+	if (!handled)
 	{
+		MarkAsBeingKicked();
+		
+		if (pClient == nullptr)
+		{
+			if (userid > 0)
+			{
+				char buffer[255];
+				ke::SafeSprintf(buffer, sizeof(buffer), "kickid %d %s\n", userid, str);
+				engine->ServerCommand(buffer);
+			}
+		}
+		else
+		{
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
-		pClient->Disconnect(str);
+			pClient->Disconnect(str);
 #else
-		pClient->Disconnect("%s", str);
+			pClient->Disconnect("%s", str);
 #endif
+		}
 	}
 }
 
