@@ -63,11 +63,11 @@ public Action HelpCmd(int client, int args)
 		return Plugin_Handled;
 	}
 	
-	char arg[64], CmdName[20];
+	char arg[64], cmdName[20];
 	int pageNum = 1;
 	bool doSearch;
 
-	GetCmdArg(0, CmdName, sizeof(CmdName));
+	GetCmdArg(0, cmdName, sizeof(cmdName));
 
 	if (args >= 1)
 	{
@@ -76,7 +76,7 @@ public Action HelpCmd(int client, int args)
 		pageNum = (pageNum <= 0) ? 1 : pageNum;
 	}
 
-	doSearch = (strcmp("sm_help", CmdName) == 0) ? false : true;
+	doSearch = (strcmp("sm_help", cmdName) == 0) ? false : true;
 
 	if (GetCmdReplySource() == SM_REPLY_TO_CHAT)
 	{
