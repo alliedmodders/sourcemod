@@ -86,19 +86,19 @@ public Action HelpCmd(int client, int args)
 	char Name[64];
 	char Desc[255];
 	char NoDesc[128];
-	CommandIterator CmdIter = new CommandIterator();
+	CommandIterator cmdIter = new CommandIterator();
 
 	FormatEx(NoDesc, sizeof(NoDesc), "%T", "No description available", client);
 
 	if (DoSearch)
 	{
 		int i = 1;
-		while (CmdIter.Next())
+		while (cmdIter.Next())
 		{
-			CmdIter.GetName(Name, sizeof(Name));
-			CmdIter.GetDescription(Desc, sizeof(Desc));
+			cmdIter.GetName(Name, sizeof(Name));
+			cmdIter.GetDescription(Desc, sizeof(Desc));
 
-			if ((StrContains(Name, arg, false) != -1) && CheckCommandAccess(client, Name, CmdIter.Flags))
+			if ((StrContains(Name, arg, false) != -1) && CheckCommandAccess(client, Name, cmdIter.Flags))
 			{
 				PrintToConsole(client, "[%03d] %s - %s", i++, Name, (Desc[0] == '\0') ? NoDesc : Desc);
 			}
@@ -116,11 +116,11 @@ public Action HelpCmd(int client, int args)
 		{
 			int i;
 			int EndCmd = (PageNum-1) * COMMANDS_PER_PAGE - 1;
-			for (i=0; CmdIter.Next() && i<EndCmd; )
+			for (i=0; cmdIter.Next() && i<EndCmd; )
 			{
-				CmdIter.GetName(Name, sizeof(Name));
+				cmdIter.GetName(Name, sizeof(Name));
 
-				if (CheckCommandAccess(client, Name, CmdIter.Flags))
+				if (CheckCommandAccess(client, Name, cmdIter.Flags))
 				{
 					i++;
 				}
@@ -129,7 +129,7 @@ public Action HelpCmd(int client, int args)
 			if (i == 0)
 			{
 				PrintToConsole(client, "%t", "No commands available");
-				delete CmdIter;
+				delete cmdIter;
 				return Plugin_Handled;
 			}
 		}
@@ -137,12 +137,12 @@ public Action HelpCmd(int client, int args)
 		/* Start printing the commands to the client */
 		int i;
 		int StartCmd = (PageNum-1) * COMMANDS_PER_PAGE;
-		for (i=0; CmdIter.Next() && i<COMMANDS_PER_PAGE; )
+		for (i=0; cmdIter.Next() && i<COMMANDS_PER_PAGE; )
 		{
-			CmdIter.GetName(Name, sizeof(Name));
-			CmdIter.GetDescription(Desc, sizeof(Desc));
+			cmdIter.GetName(Name, sizeof(Name));
+			cmdIter.GetDescription(Desc, sizeof(Desc));
 			
-			if (CheckCommandAccess(client, Name, CmdIter.Flags))
+			if (CheckCommandAccess(client, Name, cmdIter.Flags))
 			{
 				i++;
 				PrintToConsole(client, "[%03d] %s - %s", i+StartCmd, Name, (Desc[0] == '\0') ? NoDesc : Desc);
@@ -157,13 +157,13 @@ public Action HelpCmd(int client, int args)
 		}
 
 		/* Test if there are more commands available */
-		if (CmdIter.Next())
+		if (cmdIter.Next())
 		{
 			PrintToConsole(client, "%t", "Type sm_help to see more", PageNum+1);
 		}
 	}
 
-	delete CmdIter;
+	delete cmdIter;
 
 	return Plugin_Handled;
 }
