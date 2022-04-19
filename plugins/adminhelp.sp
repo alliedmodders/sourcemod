@@ -153,13 +153,13 @@ public Action HelpCmd(int client, int args)
 		{
 			PrintToConsole(client, "%t", "No commands available");
 		} else {
-			PrintToConsole(client, "%t", "Entries n - m in page k", StartCmd+1, i+StartCmd, PageNum);
+			PrintToConsole(client, "%t", "Entries n - m in page k", StartCmd+1, i+StartCmd, pageNum);
 		}
 
 		/* Test if there are more commands available */
 		if (cmdIter.Next())
 		{
-			PrintToConsole(client, "%t", "Type sm_help to see more", PageNum+1);
+			PrintToConsole(client, "%t", "Type sm_help to see more", pageNum+1);
 		}
 	}
 
