@@ -55,7 +55,7 @@ void HolidayManager::OnSDKLoad(bool bLate)
 
 void HolidayManager::OnSDKUnload()
 {
-	UnhookIfNecessary();
+	Unhook();
 	SH_REMOVE_HOOK(IServerGameDLL, LevelShutdown, gamedll, SH_MEMBER(this, &HolidayManager::Hook_LevelShutdown), false);
 
 	plsys->RemovePluginsListener(this);
@@ -72,7 +72,7 @@ void HolidayManager::OnServerActivated()
 void HolidayManager::Hook_LevelShutdown()
 {
 	// GameRules is going away momentarily. Unhook before it does.
-	UnhookIfNecessary();
+	Unhook();
 
 	m_bInMap = false;
 }
@@ -112,7 +112,7 @@ void HolidayManager::HookIfNecessary()
 	m_iHookID = SH_ADD_MANUALHOOK(IsHolidayActive, pGameRules, SH_MEMBER(this, &HolidayManager::Hook_IsHolidayActive), false);
 }
 
-void HolidayManager::UnhookIfNecessary()
+void HolidayManager::Unhook()
 {
 	// Not hooked
 	if (!m_iHookID)
@@ -165,7 +165,7 @@ void HolidayManager::OnPluginUnloaded(IPlugin *plugin)
 	if (m_isHolidayForward->GetFunctionCount() > 0)
 		return;
 
-	UnhookIfNecessary();
+	Unhook();
 }
 
 bool HolidayManager::Hook_IsHolidayActive(int holiday)
