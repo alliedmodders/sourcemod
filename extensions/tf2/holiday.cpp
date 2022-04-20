@@ -118,10 +118,6 @@ void HolidayManager::UnhookIfNecessary()
 	if (!m_iHookID)
 		return;
 
-	// We're still wanted
-	if (m_isHolidayForward->GetFunctionCount() > 0)
-		return;
-
 	SH_REMOVE_HOOK_ID(m_iHookID);
 	m_iHookID = 0;
 }
@@ -165,6 +161,10 @@ void HolidayManager::OnPluginLoaded(IPlugin *plugin)
 
 void HolidayManager::OnPluginUnloaded(IPlugin *plugin)
 {
+	// We're still wanted
+	if (m_isHolidayForward->GetFunctionCount() > 0)
+		return;
+
 	UnhookIfNecessary();
 }
 
