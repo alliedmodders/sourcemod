@@ -273,6 +273,8 @@ methodmap DHookParam < Handle
 	// Set the value of a parameter.
 	// Use only for: int, entity, edict, bool or float parameter types.
 	//
+	// An entity parameter type can be set to NULL using INVALID_ENT_REFERENCE (-1).
+	//
 	// The changes are only applied when MRES_ChangedHandled or MRES_ChangedOverride
 	// is returned in the callback.
 	//
@@ -389,6 +391,8 @@ methodmap DHookReturn < Handle
 {
  	// Retrieves or sets the return value.
  	// Use only for: int, entity, edict, bool or float return types.
+ 	//
+ 	// An entity return type can be set to NULL using INVALID_ENT_REFERENCE (-1).
  	//
  	// The return value is only readable in a post hook.
  	// The value is only applied when MRES_Override or MRES_Supercede is returned
@@ -781,7 +785,7 @@ native int DHookRaw(Handle setup, bool post, Address addr, DHookRemovalCB remova
 native bool DHookRemoveHookID(int hookid);
 
 /**
- * Get param value (Use only for: int, entity, bool or float param types)
+ * Get param value (Use only for: int, entity, edict, bool or float param types)
  *
  * @param hParams           Handle to params structure
  * @param num               Param number to get. (Example if the function has 2 params and you need the value of the first
@@ -818,7 +822,9 @@ native void DHookGetParamVector(Handle hParams, int num, float vec[3]);
 native void DHookGetParamString(Handle hParams, int num, char[] buffer, int size);
 
 /**
- * Set param value (Use only for: int, entity, bool or float param types)
+ * Set param value (Use only for: int, entity, edict, bool or float param types)
+ *
+ * An entity param type can be set to NULL using INVALID_ENT_REFERENCE (-1).
  *
  * @param hParams           Handle to params structure
  * @param num               Param number to set (Example if the function has 2 params and you need to set the value of the
@@ -886,6 +892,8 @@ native void DHookGetReturnString(Handle hReturn, char[] buffer, int size);
 
 /**
  * Set return value (Use only for: int, entity, bool or float return types)
+ *
+ * An entity return type can be set to NULL using INVALID_ENT_REFERENCE (-1).
  *
  * @param hReturn           Handle to return structure
  * @param value             Value to set return as
