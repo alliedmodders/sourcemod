@@ -331,7 +331,11 @@ public Extension __ext_cprefs =
 {
 	name = "Client Preferences",
 	file = "clientprefs.ext",
+#if defined AUTOLOAD_EXTENSIONS
 	autoload = 1,
+#else
+	autoload = 0,
+#endif
 #if defined REQUIRE_EXTENSIONS
 	required = 1,
 #else
