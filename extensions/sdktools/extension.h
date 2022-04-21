@@ -132,6 +132,7 @@ public: //ICommandTargetProcessor
 public:
 	bool LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
 	void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
+	void LevelShutdown();
 public:
 	bool HasAnyLevelInited() { return m_bAnyLevelInited; }
 #if SOURCE_ENGINE == SE_CSGO

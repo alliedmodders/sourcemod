@@ -151,6 +151,11 @@ void UpdateValveGlobals()
 	}
 }
 
+void ClearValveGlobals()
+{
+	s_pGameRules = nullptr;
+}
+
 size_t UTIL_StringToSignature(const char *str, char buffer[], size_t maxlength)
 {
 	size_t real_bytes = 0;
