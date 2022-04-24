@@ -52,7 +52,7 @@
  * @param seed          Random seed. Used to determine weapon recoil, spread, and other predicted elements.
  * @param mouse         Mouse direction (x, y).
  */
-forward Action OnPlayerRunCmdPre(int client, int buttons, int impulse, float vel[3], float angles[3], int weapon, int subtype, int cmdnum, int tickcount, int seed, int mouse[2]);
+forward void OnPlayerRunCmdPre(int client, int buttons, int impulse, float vel[3], float angles[3], int weapon, int subtype, int cmdnum, int tickcount, int seed, int mouse[2]);
 
 /**
  * Called when a clients movement buttons are being processed
