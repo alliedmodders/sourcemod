@@ -613,7 +613,7 @@ void CHookManager::OnPluginLoaded(IPlugin *plugin)
 	if (PRCH_enabled)
 	{
 		bool changed = false;
-		if (!PRCH_used && ((m_usercmdsFwd->GetFunctionCount() > 0) || m_usercmdsPreFwd->GetFunctionCount() > 0)))
+		if (!PRCH_used && ((m_usercmdsFwd->GetFunctionCount() > 0) || (m_usercmdsPreFwd->GetFunctionCount() > 0)))
 		{
 			PRCH_used = true;
 			changed = true;
