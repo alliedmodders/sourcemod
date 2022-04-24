@@ -51,8 +51,6 @@
  * @param tickcount     Tick count. A client's prediction based on the server's GetGameTickCount value.
  * @param seed          Random seed. Used to determine weapon recoil, spread, and other predicted elements.
  * @param mouse         Mouse direction (x, y).
- *
- * @note To see if all 11 params are available, use FeatureType_Capability and FEATURECAP_PLAYERRUNCMD_11PARAMS.
  */
 forward Action OnPlayerRunCmdPre(int client, int buttons, int impulse, float vel[3], float angles[3], int weapon, int subtype, int cmdnum, int tickcount, int seed, int mouse[2]);
 
