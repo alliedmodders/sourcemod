@@ -69,6 +69,7 @@ CHookManager::CHookManager()
 	: replay_enabled("replay_enabled", false)
 #endif
 {
+	m_usercmdsPreFwd = NULL;
 	m_usercmdsFwd = NULL;
 	m_usercmdsPostFwd = NULL;
 	m_netFileSendFwd = NULL;
@@ -97,6 +98,19 @@ void CHookManager::Initialize()
 
 	plsys->AddPluginsListener(this);
 	sharesys->AddCapabilityProvider(myself, this, FEATURECAP_PLAYERRUNCMD_11PARAMS);
+	
+	m_usercmdsPreFwd = forwards->CreateForward("OnPlayerRunCmdPre", ET_Ignore, 11, NULL,
+		Param_Cell,			// int client
+		Param_Cell,			// int buttons
+		Param_Cell,			// int impulse
+		Param_Array,		// float vel[3]
+		Param_Array,		// float angles[3]
+		Param_Cell,			// int weapon
+		Param_Cell,			// int subtype
+		Param_Cell,			// int cmdnum
+		Param_Cell,			// int tickcount
+		Param_Cell,			// int seed
+		Param_Array);		// int mouse[2]
 
 	m_usercmdsFwd = forwards->CreateForward("OnPlayerRunCmd", ET_Event, 11, NULL,
 		Param_Cell,			// client
@@ -179,6 +193,7 @@ void CHookManager::Shutdown()
 	}
 #endif
 
+	forwards->ReleaseForward(m_usercmdsPreFwd);
 	forwards->ReleaseForward(m_usercmdsFwd);
 	forwards->ReleaseForward(m_usercmdsPostFwd);
 	forwards->ReleaseForward(m_netFileSendFwd);
@@ -283,7 +298,7 @@ void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 		RETURN_META(MRES_IGNORED);
 	}
 
-	if (m_usercmdsFwd->GetFunctionCount() == 0)
+	if (m_usercmdsFwd->GetFunctionCount() == 0 && m_usercmdsPreFwd->GetFunctionCount() == 0)
 	{
 		RETURN_META(MRES_IGNORED);
 	}
@@ -311,6 +326,19 @@ void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 	cell_t vel[3] = {sp_ftoc(ucmd->forwardmove), sp_ftoc(ucmd->sidemove), sp_ftoc(ucmd->upmove)};
 	cell_t angles[3] = {sp_ftoc(ucmd->viewangles.x), sp_ftoc(ucmd->viewangles.y), sp_ftoc(ucmd->viewangles.z)};
 	cell_t mouse[2] = {ucmd->mousedx, ucmd->mousedy};
+	
+	m_usercmdsPreFwd->PushCell(client);
+	m_usercmdsPreFwd->PushCell(ucmd->buttons);
+	m_usercmdsPreFwd->PushCell(ucmd->impulse);
+	m_usercmdsPreFwd->PushArray(vel, 3);
+	m_usercmdsPreFwd->PushArray(angles, 3);
+	m_usercmdsPreFwd->PushCell(ucmd->weaponselect);
+	m_usercmdsPreFwd->PushCell(ucmd->weaponsubtype);
+	m_usercmdsPreFwd->PushCell(ucmd->command_number);
+	m_usercmdsPreFwd->PushCell(ucmd->tick_count);
+	m_usercmdsPreFwd->PushCell(ucmd->random_seed);
+	m_usercmdsPreFwd->PushArray(mouse, 2);
+	m_usercmdsPreFwd->Execute();
 
 	m_usercmdsFwd->PushCell(client);
 	m_usercmdsFwd->PushCellByRef(&ucmd->buttons);
@@ -576,7 +604,7 @@ void CHookManager::OnPluginLoaded(IPlugin *plugin)
 	if (PRCH_enabled)
 	{
 		bool changed = false;
-		if (!PRCH_used && (m_usercmdsFwd->GetFunctionCount() > 0))
+		if (!PRCH_used && ((m_usercmdsFwd->GetFunctionCount() > 0) || m_usercmdsPreFwd->GetFunctionCount() > 0)))
 		{
 			PRCH_used = true;
 			changed = true;
@@ -634,7 +662,7 @@ void CHookManager::OnPluginLoaded(IPlugin *plugin)
 
 void CHookManager::OnPluginUnloaded(IPlugin *plugin)
 {
-	if (PRCH_used && !m_usercmdsFwd->GetFunctionCount())
+	if (PRCH_used && (!m_usercmdsFwd->GetFunctionCount() && !m_usercmdsPreFwd->GetFunctionCount()))
 	{
 		for (size_t i = 0; i < m_runUserCmdHooks.size(); ++i)
 		{
