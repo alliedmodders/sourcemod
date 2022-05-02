@@ -700,14 +700,21 @@ cell_t Native_SetParam(IPluginContext *pContext, const cell_t *params)
 			break;
 		case HookParamType_CBaseEntity:
 		{
-			CBaseEntity *pEnt = gamehelpers->ReferenceToEntity(params[2]);
-
-			if(!pEnt)
+			if(params[2] == -1)
 			{
-				return pContext->ThrowNativeError("Invalid entity index passed for param value");
+				*(CBaseEntity **)addr = nullptr;
 			}
+			else
+			{
+				CBaseEntity *pEnt = gamehelpers->ReferenceToEntity(params[2]);
 
-			*(CBaseEntity **)addr = pEnt;
+				if(!pEnt)
+				{
+					return pContext->ThrowNativeError("Invalid entity index passed for param value");
+				}
+
+				*(CBaseEntity **)addr = pEnt;
+			}
 			break;
 		}
 		case HookParamType_Edict:
