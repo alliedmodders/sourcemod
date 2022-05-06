@@ -170,6 +170,23 @@ native bool DispatchSpawn(int entity);
 native bool DispatchKeyValue(int entity, const char[] keyName, const char[] value);
 
 /**
+ * Dispatches a KeyValue into given entity using an integer value.
+ *
+ * @param entity        Destination entity index.
+ * @param keyName       Name of the key.
+ * @param value         Integer value.
+ * @return              True on success, false otherwise.
+ * @error               Invalid entity index or lack of mod support.
+ */
+stock bool DispatchKeyValueInt(int entity, const char[] keyName, int value)
+{
+    char str[12];
+    FormatEx(str, sizeof(str), "%d", value);
+
+    return DispatchKeyValue(entity, keyName, str);
+}
+
+/**
  * Dispatches a KeyValue into given entity using a floating point value.
  *
  * @param entity        Destination entity index.
@@ -373,7 +390,7 @@ native void EntityCollisionRulesChanged(int entity);
  * Sets an entity's owner (CBaseEntity::SetEntityOwner).
  * 
  * @param entity            The entity index.
- * @param owner    			The owner entity index, can be invalid.
+ * @param owner             The owner entity index, can be invalid.
  * @error                   Invalid entity or lack of mod support.
  */
 native void SetEntityOwner(int entity, int owner=INVALID_ENT_REFERENCE);
