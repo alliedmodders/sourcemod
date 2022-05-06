@@ -180,7 +180,7 @@ native bool DispatchKeyValue(int entity, const char[] keyName, const char[] valu
  */
 stock bool DispatchKeyValueInt(int entity, const char[] keyName, int value)
 {
-    char str[256];
+    char str[12];
     FormatEx(str, sizeof str, "%d", value);
 
     return DispatchKeyValue(entity, keyName, str);
