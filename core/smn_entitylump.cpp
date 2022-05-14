@@ -39,6 +39,39 @@
 
 #include <algorithm>
 
+HandleType_t g_EntityLumpEntryType;
+
+std::string g_strMapEntities;
+bool g_bLumpAvailableForWriting = false;
+
+static EntityLumpManager s_LumpManager;
+EntityLumpManager *lumpmanager = &s_LumpManager;
+
+class LumpManagerNatives :
+	public IHandleTypeDispatch,
+	public SMGlobalClass
+{
+public: //SMGlobalClass
+	void OnSourceModAllInitialized()
+	{
+		g_EntityLumpEntryType = handlesys->CreateType("EntityLumpEntry", this, 0, NULL, NULL, g_pCoreIdent, NULL);
+	}
+	void OnSourceModShutdown()
+	{
+		handlesys->RemoveType(g_EntityLumpEntryType, g_pCoreIdent);
+	}
+public: //IHandleTypeDispatch
+	void OnHandleDestroy(HandleType_t type, void* object)
+	{
+		if (type == g_EntityLumpEntryType)
+		{
+			delete reinterpret_cast<std::weak_ptr<EntityLumpEntry>*>(object);
+		}
+	}
+};
+
+static LumpManagerNatives s_LumpManagerNatives;
+
 cell_t sm_LumpManagerGet(IPluginContext *pContext, const cell_t *params) {
 	int index = params[1];
 	if (index < 0 || index >= static_cast<int>(lumpmanager->Length())) {

@@ -30,35 +30,9 @@
  */
 
 #include "LumpManager.h"
-#include "logic_bridge.h"
 
 #include <iomanip>
 #include <sstream>
-
-static EntityLumpManager s_LumpManager;
-EntityLumpManager *lumpmanager = &s_LumpManager;
-
-std::string g_strMapEntities;
-bool g_bLumpAvailableForWriting = false;
-
-HandleType_t g_EntityLumpEntryType = 0;
-
-void EntityLumpManager::OnHandleDestroy(HandleType_t type, void* object) {
-	if (type == g_EntityLumpEntryType) {
-		delete reinterpret_cast<std::weak_ptr<EntityLumpEntry>*>(object);
-	}
-}
-
-void EntityLumpManager::OnSourceModAllInitialized() {
-	g_EntityLumpEntryType = handlesys->CreateType("EntityLumpEntry", this, 0, NULL, NULL, g_pCoreIdent, NULL);
-}
-
-void EntityLumpManager::OnSourceModLevelChange(const char *mapName) {
-}
-
-void EntityLumpManager::OnSourceModShutdown() {
-	handlesys->RemoveType(g_EntityLumpEntryType, g_pCoreIdent);
-}
 
 EntityLumpParseResult::operator bool() const {
 	return m_Status == Status_OK;

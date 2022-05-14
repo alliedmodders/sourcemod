@@ -36,11 +36,6 @@
 #include <memory>
 #include <string>
 
-#include <IHandleSys.h>
-#include "sm_globals.h"
-
-using namespace SourceMod;
-
 /**
  * @file lumpmanager.h
  * @brief Class definition for object that parses lumps.
@@ -71,9 +66,7 @@ struct EntityLumpParseResult {
 /**
  * @brief Manages entity lump entries.
  */
-class EntityLumpManager :
-		public SMGlobalClass,
-		public IHandleTypeDispatch
+class EntityLumpManager
 {
 public:
 	/**
@@ -99,22 +92,8 @@ public:
 
 	size_t Length();
 
-public: //IHandleTypeDispatch
-	void OnHandleDestroy(HandleType_t type, void* object);
-
-public: //SMGlobalClass
-	void OnSourceModAllInitialized();
-	void OnSourceModLevelChange(const char *mapName);
-	void OnSourceModShutdown();
-
 private:
 	std::vector<std::shared_ptr<EntityLumpEntry>> m_Entities;
 };
 
-extern EntityLumpManager *lumpmanager;
-extern std::string g_strMapEntities;
-extern bool g_bLumpAvailableForWriting;
-
-extern HandleType_t g_EntityLumpEntryType;
-
-#endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_
+#endif // _INCLUDE_LUMPMANAGER_H_

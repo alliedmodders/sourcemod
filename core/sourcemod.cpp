@@ -42,13 +42,13 @@
 #include "frame_hooks.h"
 #include "logic_bridge.h"
 #include "provider.h"
-#include "LumpManager.h"
 #include <amtl/os/am-shared-library.h>
 #include <amtl/os/am-path.h>
 #include <bridge/include/IExtensionBridge.h>
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/IProviderCallbacks.h>
 #include <bridge/include/ILogger.h>
+#include "smn_entitylump.h"
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
