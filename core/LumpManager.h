@@ -37,6 +37,11 @@
 #include <string>
 
 /**
+ * Entity lump manager.  Provides a list that stores a list of key / value pairs and the
+ * functionality to (de)serialize it from / to an entity string.
+ * This file and its corresponding .cpp should be compilable independently of SourceMod;
+ * the SourceMod interop is located within smn_entitylump.
+ *
  * @file lumpmanager.h
  * @brief Class definition for object that parses lumps.
  */
@@ -84,12 +89,24 @@ public:
 	 */
 	std::weak_ptr<EntityLumpEntry> Get(size_t index);
 
+	/**
+	 * @brief Removes an EntityLumpEntry at the given index, shifting down all entries after it by one.
+	 */
 	void Erase(size_t index);
 
+	/**
+	 * @brief Inserts a new EntityLumpEntry at the given index, shifting up the entries previously at the index and after it up by one.
+	 */
 	void Insert(size_t index);
 
+	/**
+	 * @brief Adds a new EntityLumpEntry to the end.  Returns the index of the entry.
+	 */
 	size_t Append();
 
+	/**
+	 * @brief Returns the number of EntityLumpEntry items in the list.
+	 */
 	size_t Length();
 
 private:
