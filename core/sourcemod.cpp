@@ -48,7 +48,6 @@
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/IProviderCallbacks.h>
 #include <bridge/include/ILogger.h>
-#include "smn_entitylump.h"
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
@@ -419,29 +418,30 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 
 	g_LevelEndBarrier = true;
 
-	EntityLumpParseResult result = lumpmanager->Parse(pMapEntities);
+	int parseError;
+	size_t position;
+	bool success = logicore.ParseEntityLumpString(pMapEntities, parseError, position);
 
-	g_bLumpAvailableForWriting = true;
+	logicore.SetEntityLumpWritable(true);
 	g_pOnMapInit->PushString(pMapName);
 	g_pOnMapInit->Execute();
-	g_bLumpAvailableForWriting = false;
+	logicore.SetEntityLumpWritable(false);
 
-	if (!result)
+	if (!success)
 	{
-		g_strMapEntities.clear();
-		logger->LogError("Map entity lump parsing for %s failed with error code %d on position %d", pMapName, result.m_Status, result.m_Position);
+		logger->LogError("Map entity lump parsing for %s failed with error code %d on position %d", pMapName, parseError, position);
 		RETURN_META_VALUE(MRES_IGNORED, true);
 	}
-	g_strMapEntities = lumpmanager->Dump();
 
-	RETURN_META_VALUE_NEWPARAMS(MRES_HANDLED, true, &IServerGameDLL::LevelInit, (pMapName, g_strMapEntities.c_str(), pOldLevel, pLandmarkName, loadGame, background));
+	RETURN_META_VALUE_NEWPARAMS(MRES_HANDLED, true, &IServerGameDLL::LevelInit, (pMapName, logicore.GetEntityLumpString(), pOldLevel, pLandmarkName, loadGame, background));
 }
 
 const char *SourceModBase::GetMapEntitiesString()
 {
-	if (!g_strMapEntities.empty())
+	const char *pNewMapEntities = logicore.GetEntityLumpString();
+	if (pNewMapEntities != nullptr)
 	{
-		RETURN_META_VALUE(MRES_SUPERCEDE, g_strMapEntities.c_str());
+		RETURN_META_VALUE(MRES_SUPERCEDE, pNewMapEntities);
 	}
 	RETURN_META_VALUE(MRES_IGNORED, NULL);
 }

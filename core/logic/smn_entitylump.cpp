@@ -29,11 +29,8 @@
  * Version: $Id$
  */
 
-#include <IHandleSys.h>
-#include "sm_globals.h"
-#include "sourcemod.h"
-#include "sourcemm_api.h"
-#include "logic_bridge.h"
+#include "HandleSys.h"
+#include "common_logic.h"
 
 #include "LumpManager.h"
 
