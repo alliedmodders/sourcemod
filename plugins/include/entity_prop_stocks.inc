@@ -534,32 +534,39 @@ stock void SetEntityHealth(int entity, int amount)
 		gotconfig = true;
 	}
 
-	char cls[64];
-	PropFieldType type;
-	int offset;
-
-	if (!GetEntityNetClass(entity, cls, sizeof(cls)))
+	if (HasEntProp(entity, Prop_Send, prop))
 	{
-		ThrowError("SetEntityHealth not supported by this mod: Could not get serverclass name");
-		return;
-	}
+		char cls[64];
+		PropFieldType type;
+		int offset;
 
-	offset = FindSendPropInfo(cls, prop, type);
+		if (!GetEntityNetClass(entity, cls, sizeof(cls)))
+		{
+			ThrowError("SetEntityHealth not supported by this mod: Could not get serverclass name");
+			return;
+		}
 
-	if (offset <= 0)
-	{
-		ThrowError("SetEntityHealth not supported by this mod");
-		return;
-	}
+		offset = FindSendPropInfo(cls, prop, type);
 
-	/* Dark Messiah uses a float for the health instead an integer */
-	if (type == PropField_Float)
-	{
-		SetEntDataFloat(entity, offset, float(amount));
+		if (offset <= 0)
+		{
+			ThrowError("SetEntityHealth not supported by this mod: Could not find property offset");
+			return;
+		}
+
+		/* Dark Messiah uses a float for the health instead an integer */
+		if (type == PropField_Float)
+		{
+			SetEntDataFloat(entity, offset, float(amount));
+		}
+		else
+		{
+			SetEntProp(entity, Prop_Send, prop, amount);
+		}
 	}
 	else
 	{
-		SetEntProp(entity, Prop_Send, prop, amount);
+		SetEntProp(entity, Prop_Data, prop, amount);
 	}
 }
 
