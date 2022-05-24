@@ -71,7 +71,7 @@ public: //IDBManager
 	void AddDriver(IDBDriver *pDrivera);
 	void RemoveDriver(IDBDriver *pDriver);
 	const DatabaseInfo *FindDatabaseConf(const char *name);
-	ConfDbInfo *GetDatabaseConf(const char *name);
+	ke::RefPtr<ConfDbInfo> GetDatabaseConf(const char *name);
 	bool Connect(const char *name, IDBDriver **pdr, IDatabase **pdb, bool persistent, char *error, size_t maxlength);
 	unsigned int GetDriverCount();
 	IDBDriver *GetDriver(unsigned int index);
