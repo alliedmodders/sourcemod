@@ -256,6 +256,15 @@ cell_t Native_SetFromConf(IPluginContext *pContext, const cell_t *params)
 	setup->funcAddr = addr;
 	setup->offset = offset;
 
+	if (addr == nullptr)
+	{
+		setup->hookMethod = Virtual;
+	}
+	else
+	{
+		setup->hookMethod = Detour;
+	}
+
 	return 1;
 }
 
@@ -280,6 +289,13 @@ cell_t Native_AddParam(IPluginContext *pContext, const cell_t *params)
 	else
 	{
 		info.flags = PASSFLAG_BYVAL;
+	}
+
+	// DynamicDetours doesn't expose the passflags concept like SourceHook.
+	// See if we're trying to set some invalid flags on detour arguments.
+	if(setup->hookMethod == Detour && (info.flags & ~PASSFLAG_BYVAL) > 0)
+	{
+		return pContext->ThrowNativeError("Pass flags are only supported for virtual hooks.");
 	}
 
 	if (params[0] >= 5)
