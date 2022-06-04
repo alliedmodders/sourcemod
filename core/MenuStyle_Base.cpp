@@ -419,7 +419,7 @@ bool BaseMenuStyle::DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh,
 		time);
 #endif
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
-	if (!pPlayer || pPlayer->IsFakeClient() || !pPlayer->IsInGame())
+	if (!pPlayer || (pPlayer->IsFakeClient() && !pPlayer->IsSourceTV()) || !pPlayer->IsInGame())
 	{
 		return false;
 	}
@@ -484,7 +484,7 @@ bool BaseMenuStyle::DoClientMenu(int client,
 	mh->OnMenuStart(menu);
 
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
-	if (!pPlayer || pPlayer->IsFakeClient() || !pPlayer->IsInGame())
+	if (!pPlayer || (pPlayer->IsFakeClient() && !pPlayer->IsSourceTV()) || !pPlayer->IsInGame())
 	{
 #if defined MENU_DEBUG
 		logger->LogMessage("[SM_MENU] DoClientMenu(): Failed to display to client %d", client);
