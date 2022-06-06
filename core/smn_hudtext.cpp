@@ -373,7 +373,7 @@ static cell_t ShowSyncHudText(IPluginContext *pContext, const cell_t *params)
 	Handle_t err;
 	CPlayer *pPlayer;
 	hud_syncobj_t *obj;
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	char message_buffer[512];
 #else
 	char message_buffer[255-36];
@@ -457,7 +457,7 @@ static cell_t ShowHudText(IPluginContext *pContext, const cell_t *params)
 {
 	int client;
 	CPlayer *pPlayer;
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	char message_buffer[512];
 #else
 	char message_buffer[255-36];
