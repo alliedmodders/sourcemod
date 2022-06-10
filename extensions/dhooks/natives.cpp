@@ -256,6 +256,15 @@ cell_t Native_SetFromConf(IPluginContext *pContext, const cell_t *params)
 	setup->funcAddr = addr;
 	setup->offset = offset;
 
+	if (addr == nullptr)
+	{
+		setup->hookMethod = Virtual;
+	}
+	else
+	{
+		setup->hookMethod = Detour;
+	}
+
 	return 1;
 }
 
@@ -280,6 +289,13 @@ cell_t Native_AddParam(IPluginContext *pContext, const cell_t *params)
 	else
 	{
 		info.flags = PASSFLAG_BYVAL;
+	}
+
+	// DynamicDetours doesn't expose the passflags concept like SourceHook.
+	// See if we're trying to set some invalid flags on detour arguments.
+	if(setup->hookMethod == Detour && (info.flags & ~PASSFLAG_BYVAL) > 0)
+	{
+		return pContext->ThrowNativeError("Pass flags are only supported for virtual hooks.");
 	}
 
 	if (params[0] >= 5)
@@ -884,7 +900,8 @@ cell_t Native_SetParamVector(IPluginContext *pContext, const cell_t *params)
 	int index = params[2] - 1;
 
 	size_t offset = GetParamOffset(paramStruct, index);
-	void *addr = (void **)((intptr_t)paramStruct->newParams + offset);
+	void **origAddr = (void **)((intptr_t)paramStruct->orgParams + offset);
+	void **newAddr = (void **)((intptr_t)paramStruct->newParams + offset);
 
 	switch(paramStruct->dg->params.at(index).type)
 	{
@@ -892,11 +909,23 @@ cell_t Native_SetParamVector(IPluginContext *pContext, const cell_t *params)
 		{
 			cell_t *buffer;
 			pContext->LocalToPhysAddr(params[3], &buffer);
+			SDKVector *origVec = *(SDKVector **)origAddr;
+			SDKVector **newVec = (SDKVector **)newAddr;
 
-			*(SDKVector **)addr = new SDKVector(sp_ctof(buffer[0]), sp_ctof(buffer[1]), sp_ctof(buffer[2]));
+			if(origVec == nullptr)
+			{
+				*newVec = new SDKVector(sp_ctof(buffer[0]), sp_ctof(buffer[1]), sp_ctof(buffer[2]));
+				// Free it later (cheaply) after the function returned.
+				smutils->AddFrameAction(FreeChangedVector, *newVec);
+			}
+			else
+			{
+				origVec->x = sp_ctof(buffer[0]);
+				origVec->y = sp_ctof(buffer[1]);
+				origVec->z = sp_ctof(buffer[2]);
+				*newVec = origVec;
+			}
 			paramStruct->isChanged[index] = true;
-			// Free it later (cheaply) after the function returned.
-			smutils->AddFrameAction(FreeChangedVector, *(SDKVector **)addr);
 			return 1;
 		}
 	}

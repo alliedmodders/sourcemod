@@ -12,14 +12,8 @@
 "Games"
 {
 	/* CGlobalEntityList */
-	"#default"
+	"swarm"
 	{
-		"#supported"
-		{
-			"game"		"swarm"
-			"game"		"reactivedrop"
-		}
-		
 		"Offsets"
 		{
 			/* Offset into LevelShutdown */
@@ -40,6 +34,38 @@
 			{
 				"library"	"server"
 				"windows"	"\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8"
+			}
+		}
+	}
+
+	"reactivedrop"
+	{
+		/*
+		 * Alien Swarm: Reactive Drop
+		 * Symbol Server: https://symsrv.reactivedrop.com
+		 */
+		
+		"Offsets"
+		{
+			/* Offset into "LevelShutdown" */
+			"gEntList"
+			{
+				"windows"	"28"
+			}
+
+			"EntInfo"
+			{
+				"windows"	"4"	
+			}
+		}
+		
+		"Signatures"
+		{
+			/* CGlobalEntityList::Clear() */
+			"LevelShutdown"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x51\xA1\x2A\x2A\x2A\x2A\xC6\x05\x2A\x2A\x2A\x2A\x01"
 			}
 		}
 	}
