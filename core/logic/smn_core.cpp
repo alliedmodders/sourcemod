@@ -967,9 +967,6 @@ REGISTER_NATIVES(coreNatives)
 	{"ThrowError",				ThrowError},
 	{"GetTime",					GetTime},
 	{"FormatTime",				FormatTime},
-	{"PluginIterator.PluginIterator", GetPluginIterator},
-	{"PluginIterator.MorePlugins", MorePlugins},
-	{"PluginIterator.ReadPlugin", ReadPlugin},
 	{"GetPluginIterator",		GetPluginIterator},
 	{"MorePlugins",				MorePlugins},
 	{"ReadPlugin", 				ReadPlugin},
@@ -1003,5 +1000,9 @@ REGISTER_NATIVES(coreNatives)
 	{"FrameIterator.LineNumber.get",			FrameIterator_LineNumber},
 	{"FrameIterator.GetFunctionName",			FrameIterator_GetFunctionName},
 	{"FrameIterator.GetFilePath",				FrameIterator_GetFilePath},
+
+	{"PluginIterator.PluginIterator", 	GetPluginIterator},
+	{"PluginIterator.MorePlugins", 		MorePlugins},
+	{"PluginIterator.Plugin.get", 		ReadPlugin},
 	{NULL,						NULL},
 };

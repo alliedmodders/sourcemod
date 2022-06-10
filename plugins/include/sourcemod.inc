@@ -261,7 +261,9 @@ methodmap PluginIterator < Handle
     // @return              Current plugin the iterator is at, before
     //                      the iterator is advanced.
     // @error               Invalid Handle.
-    public native Handle ReadPlugin();
+    property Handle Plugin {
+		public native get();
+	}
 }
 
 /**
