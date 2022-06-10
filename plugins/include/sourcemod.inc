@@ -262,8 +262,8 @@ methodmap PluginIterator < Handle
     //                      the iterator is advanced.
     // @error               Invalid Handle.
     property Handle Plugin {
-		public native get();
-	}
+        public native get();
+    }
 }
 
 /**
