@@ -1002,7 +1002,7 @@ REGISTER_NATIVES(coreNatives)
 	{"FrameIterator.GetFilePath",				FrameIterator_GetFilePath},
 
 	{"PluginIterator.PluginIterator", 	GetPluginIterator},
-	{"PluginIterator.MorePlugins", 		MorePlugins},
+	{"PluginIterator.Next", 			MorePlugins},
 	{"PluginIterator.Plugin.get", 		ReadPlugin},
 	{NULL,						NULL},
 };
