@@ -213,12 +213,12 @@ BuildScripts = [
 binary = Tool.Program(builder, 'entlump_parser')
 binary.sources += [
   'console_main.cpp',
-  os.path.join(builder.options.sm_path, 'core', 'LumpManager.cpp'),
+  os.path.join(builder.options.sm_path, 'core', 'logic', 'LumpManager.cpp'),
 ]
 
 binary.compiler.includes += [
   os.path.join(builder.sourcePath),
-  os.path.join(builder.options.sm_path, 'core'),
+  os.path.join(builder.options.sm_path, 'core', 'logic'),
 ]
 
 builder.Add(binary)
