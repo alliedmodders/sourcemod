@@ -250,16 +250,15 @@ methodmap PluginIterator < Handle
 	// @return              A new Handle to a PluginIterator.
 	public native PluginIterator();
 
-	// Returns whether there are more plugins available in the iterator.
+	// Advances the iterator. Returns whether there are more plugins available in the iterator.
 	//
 	// @return              True on more plugins, false otherwise.
 	// @error               Invalid Handle.
 	public native bool Next();
 
-	// Returns the current plugin in the iterator and advances the iterator.
+	// Returns the current plugin in the iterator.
 	//
-	// @return              Current plugin the iterator is at, before
-	//                      the iterator is advanced.
+	// @return              Current plugin the iterator is at
 	// @error               Invalid Handle.
 	property Handle Plugin {
 		public native get();

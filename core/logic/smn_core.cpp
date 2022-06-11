@@ -264,6 +264,46 @@ static cell_t ReadPlugin(IPluginContext *pContext, const cell_t *params)
 	return pPlugin->GetMyHandle();
 }
 
+static cell_t PluginIterator_Next(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleSecurity sec{pContext->GetIdentity(), g_pCoreIdent};
+	HandleError err{};
+	IPluginIterator *pIter = nullptr;
+
+	if ((err=handlesys->ReadHandle(hndl, g_PlIter, &sec, (void **)&pIter)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
+	}
+
+	if(!pIter->MorePlugins())
+		return 0;
+
+	pIter->NextPlugin();
+	return 1;
+}
+
+static cell_t PluginIterator_Plugin_get(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleSecurity sec{pContext->GetIdentity(), g_pCoreIdent};
+	HandleError err{};
+	IPluginIterator *pIter = nullptr;
+
+	if ((err=handlesys->ReadHandle(hndl, g_PlIter, &sec, (void **)&pIter)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
+	}
+	
+	IPlugin *pPlugin = pIter->GetPlugin();
+	if (!pPlugin)
+	{
+		return BAD_HANDLE;
+	}
+
+	return pPlugin->GetMyHandle();
+}
+
 IPlugin *GetPluginFromHandle(IPluginContext *pContext, Handle_t hndl)
 {
 	if (hndl == BAD_HANDLE)
@@ -1001,8 +1041,8 @@ REGISTER_NATIVES(coreNatives)
 	{"FrameIterator.GetFunctionName",			FrameIterator_GetFunctionName},
 	{"FrameIterator.GetFilePath",				FrameIterator_GetFilePath},
 
-	{"PluginIterator.PluginIterator", 	GetPluginIterator},
-	{"PluginIterator.Next", 			MorePlugins},
-	{"PluginIterator.Plugin.get", 		ReadPlugin},
+	{"PluginIterator.PluginIterator", 			GetPluginIterator},
+	{"PluginIterator.Next", 					PluginIterator_Next},
+	{"PluginIterator.Plugin.get", 				PluginIterator_Plugin_get},
 	{NULL,						NULL},
 };
