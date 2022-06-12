@@ -56,6 +56,7 @@
 #include <bridge/include/CoreProvider.h>
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/IExtensionBridge.h>
+#include <sh_vector.h>
 
 using namespace SourceMod;
 using namespace SourcePawn;
@@ -113,6 +114,71 @@ public:
 		handlesys->RemoveType(g_FrameIter, g_pCoreIdent);
 	}
 } g_CoreNativeHelpers;
+
+/**
+ * @brief Nearly identical to the standard core plugin iterator
+ * with one key difference. Next doesn't increment the counter
+ * the first time it is ran. This is a hack for the methodmap..
+ */
+class CMMPluginIterator
+	: public IPluginIterator,
+	  public IPluginsListener
+{
+public:
+	CMMPluginIterator(const CVector<SMPlugin *> *list)
+		: m_hasStarted(false)
+	{
+		for(auto &iter = list->begin(); iter != list->end(); ++iter) {
+			m_list.push_back(*iter);
+		}
+		scripts->FreePluginList(list);
+
+		m_current = m_list.begin();
+
+		scripts->AddPluginsListener(this);
+	}
+
+	virtual ~CMMPluginIterator()
+	{
+		scripts->RemovePluginsListener(this);
+	}
+	virtual bool MorePlugins() override
+	{
+		return (m_current != m_list.end());
+	}
+	virtual IPlugin *GetPlugin() override
+	{
+		return *m_current;
+	}
+	virtual void NextPlugin() override
+	{
+		if(!m_hasStarted)
+		{
+			m_hasStarted = true;
+			return;
+		}
+
+		m_current++;
+	}
+	virtual void Release() override
+	{
+		delete this;
+	}
+
+public:
+	virtual void OnPluginDestroyed(IPlugin *plugin) override
+	{
+		if (*m_current == plugin)
+			m_current = m_list.erase(m_current);
+		else
+			m_list.remove(static_cast<CPlugin *>(plugin));
+	}
+
+private:
+	std::list<SMPlugin *> m_list;
+	std::list<SMPlugin *>::iterator m_current;
+	bool m_hasStarted;
+}
 
 void LogAction(Handle_t hndl, int type, int client, int target, const char *message)
 {
@@ -262,6 +328,20 @@ static cell_t ReadPlugin(IPluginContext *pContext, const cell_t *params)
 	pIter->NextPlugin();
 
 	return pPlugin->GetMyHandle();
+}
+
+static cell_t PluginIterator_Create(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginIterator *iter = new CMMPluginIterator(scripts->ListPlugins());
+
+	Handle_t hndl = handlesys->CreateHandle(g_PlIter, iter, pContext->GetIdentity(), g_pCoreIdent, NULL);
+
+	if (hndl == BAD_HANDLE)
+	{
+		iter->Release();
+	}
+
+	return hndl;
 }
 
 static cell_t PluginIterator_Next(IPluginContext *pContext, const cell_t *params)
@@ -1041,7 +1121,7 @@ REGISTER_NATIVES(coreNatives)
 	{"FrameIterator.GetFunctionName",			FrameIterator_GetFunctionName},
 	{"FrameIterator.GetFilePath",				FrameIterator_GetFilePath},
 
-	{"PluginIterator.PluginIterator", 			GetPluginIterator},
+	{"PluginIterator.PluginIterator", 			PluginIterator_Create},
 	{"PluginIterator.Next", 					PluginIterator_Next},
 	{"PluginIterator.Plugin.get", 				PluginIterator_Plugin_get},
 	{NULL,						NULL},
