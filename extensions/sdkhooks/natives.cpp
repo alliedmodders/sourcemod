@@ -116,7 +116,7 @@ cell_t Native_TakeDamage(IPluginContext *pContext, const cell_t *params)
 		pAttacker = gamehelpers->ReferenceToEntity(params[3]);
 		if (!pAttacker)
 		{
-			return pContext->ThrowNativeError("Invalid entity index %d for attackerr", params[3]);
+			return pContext->ThrowNativeError("Invalid entity index %d for attacker", params[3]);
 		}
 	}
 	else
