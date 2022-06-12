@@ -32,6 +32,7 @@
 #include <time.h>
 #include <string.h>
 #include <stdlib.h>
+#include <list>
 #include "common_logic.h"
 #include "Logger.h"
 
@@ -128,7 +129,7 @@ public:
 	CMMPluginIterator(const CVector<SMPlugin *> *list)
 		: m_hasStarted(false)
 	{
-		for(auto &iter = list->begin(); iter != list->end(); ++iter) {
+		for(auto iter = list->begin(); iter != list->end(); ++iter) {
 			m_list.push_back(*iter);
 		}
 		scripts->FreePluginList(list);
@@ -171,14 +172,14 @@ public:
 		if (*m_current == plugin)
 			m_current = m_list.erase(m_current);
 		else
-			m_list.remove(static_cast<CPlugin *>(plugin));
+			m_list.remove(static_cast<SMPlugin *>(plugin));
 	}
 
 private:
 	std::list<SMPlugin *> m_list;
 	std::list<SMPlugin *>::iterator m_current;
 	bool m_hasStarted;
-}
+};
 
 void LogAction(Handle_t hndl, int type, int client, int target, const char *message)
 {
