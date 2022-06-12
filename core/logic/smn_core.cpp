@@ -146,7 +146,7 @@ void LogAction(Handle_t hndl, int type, int client, int target, const char *mess
 	g_Logger.LogMessage("[%s] %s", logtag, message);
 }
  
- static cell_t ThrowError(IPluginContext *pContext, const cell_t *params)
+static cell_t ThrowError(IPluginContext *pContext, const cell_t *params)
 {
 	char buffer[512];
 
