@@ -524,7 +524,7 @@ static cell_t ForcePlayerSuicide(IPluginContext *pContext, const cell_t *params)
 	{
 		// ZPS requires force to be set as true otherwise the action itself is delayed.
 		// Which affects Slay and Timebomb.
-		*(bool*)(vptr + pCall->vparams[1].offset) = true;
+		*(bool *)(vptr + pCall->vparams[1].offset) = true;
 	}
 	else
 	{
