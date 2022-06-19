@@ -272,7 +272,7 @@ methodmap PluginIterator < Handle
  *                      CloseHandle().
  * @error               Invalid Handle.
  */
-native PluginIterator GetPluginIterator();
+native Handle GetPluginIterator();
 
 /**
  * Returns whether there are more plugins available in the iterator.
