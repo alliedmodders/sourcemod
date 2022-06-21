@@ -519,17 +519,25 @@ static cell_t ForcePlayerSuicide(IPluginContext *pContext, const cell_t *params)
 
 	START_CALL();
 	DECODE_VALVE_PARAM(1, thisinfo, 0);
-	DECODE_VALVE_PARAM(2, vparams, 0);
+
+	if (params[0] >= 3)
+	{
+		DECODE_VALVE_PARAM(2, vparams, 0);
+		DECODE_VALVE_PARAM(3, vparams, 1);
+	}
+	else
+	{
+		*(bool *)(vptr + pCall->vparams[0].offset) = false;
+		*(bool *)(vptr + pCall->vparams[1].offset) = false;
+	}
+
 	if (!strcmp(g_pSM->GetGameFolderName(), "zps"))
 	{
 		// ZPS requires force to be set as true otherwise the action itself is delayed.
 		// Which affects Slay and Timebomb.
 		*(bool *)(vptr + pCall->vparams[1].offset) = true;
 	}
-	else
-	{
-		DECODE_VALVE_PARAM(3, vparams, 1);
-	}
+
 	FINISH_CALL_SIMPLE(NULL);
 
 	return 1;
