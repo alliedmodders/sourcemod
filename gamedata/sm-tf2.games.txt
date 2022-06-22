@@ -140,9 +140,9 @@
 
 			"RemoveWearable"
 			{
-				"windows"	"435"
-				"linux"		"436"
-				"mac"		"436"
+				"windows"	"436"
+				"linux"		"437"
+				"mac"		"437"
 			}
 		}
 	}
