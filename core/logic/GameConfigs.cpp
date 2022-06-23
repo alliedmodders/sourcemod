@@ -610,6 +610,8 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 				addrInBase = bridge->engineFactory;
 			} else if (strcmp(s_TempSig.library, "matchmaking_ds") == 0) {
 				addrInBase = bridge->matchmakingDSFactory;
+			} else if (strcmp(s_TempSig.library, "soundemittersystem") == 0) {
+				addrInBase = bridge->soundemittersystemFactory;
 			}
 			void *final_addr = NULL;
 			if (addrInBase == NULL)
