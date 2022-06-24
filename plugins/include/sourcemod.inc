@@ -243,6 +243,28 @@ forward void OnAllPluginsLoaded();
  */
 native Handle GetMyHandle();
 
+methodmap PluginIterator < Handle
+{
+	// Returns an iterator that can be used to search through plugins.
+	//
+	// @return              A new Handle to a PluginIterator.
+	public native PluginIterator();
+
+	// Advances the iterator. Returns whether there are more plugins available in the iterator.
+	//
+	// @return              True on more plugins, false otherwise.
+	// @error               Invalid Handle.
+	public native bool Next();
+
+	// Returns the current plugin in the iterator.
+	//
+	// @return              Current plugin the iterator is at
+	// @error               Invalid Handle.
+	property Handle Plugin {
+		public native get();
+	}
+}
+
 /**
  * Returns an iterator that can be used to search through plugins.
  *
