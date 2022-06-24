@@ -103,10 +103,9 @@ native void TeleportEntity(int entity, const float origin[3] = NULL_VECTOR, cons
  *
  * @param client        Client index.
  * @param explode       If true, explode the player.
- * @param force         If true, ignore the suicide cooldown.
  * @error               Invalid client or client not in game, or lack of mod support.
  */
-native void ForcePlayerSuicide(int client, bool explode = false, bool force = false);
+native void ForcePlayerSuicide(int client, bool explode = false);
 
 /**
  * Slaps a player in a random direction.
