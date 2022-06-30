@@ -375,6 +375,8 @@ void UTIL_ConsolePrint(const char *fmt, ...)
 #define GAMEFIX "2.pvkii"
 #elif SOURCE_ENGINE == SE_MCV
 #define GAMEFIX "2.mcv"
+#elif SOURCE_ENGINE == SE_MOCK
+#define GAMEFIX "2.mock"
 #else
 #define GAMEFIX "2.ep1"
 #endif
