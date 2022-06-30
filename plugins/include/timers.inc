@@ -187,14 +187,16 @@ native bool IsServerProcessing();
  *
  * @param interval      Interval from the current game time to execute the given function.
  * @param func          Function to execute once the given interval has elapsed.
- * @param datapack      The newly created datapack is passed though this by-reference
- *                      parameter to the timer callback function.
+ * @param datapack      By-reference datapack Handle to pass to the timer callback function. If null, a new datapack is created. 
  * @param flags         Timer flags.
  * @return              Handle to the timer object.  You do not need to call CloseHandle().
  */
 stock Handle CreateDataTimer(float interval, Timer func, Handle &datapack, int flags=0)
 {
-	datapack = new DataPack();
+	if (!datapack) 
+	{
+		datapack = new DataPack();
+	}
 	flags |= TIMER_DATA_HNDL_CLOSE;
 	return CreateTimer(interval, func, datapack, flags);
 }
