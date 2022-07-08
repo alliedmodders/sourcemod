@@ -509,16 +509,7 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 					|| vc->retinfo->vtype == Valve_CBasePlayer)
 		{
 			CBaseEntity *pEntity = *(CBaseEntity **)(vc->retbuf);
-			if (!pEntity)
-			{
-				return -1;
-			}
-			edict_t *pEdict = gameents->BaseEntityToEdict(pEntity);
-			if (!pEdict || pEdict->IsFree())
-			{
-				return -1;
-			}
-			return IndexOfEdict(pEdict);
+			return gamehelpers->EntityToBCompatRef(pEntity);
 		} else if (vc->retinfo->vtype == Valve_Edict) {
 			edict_t *pEdict = *(edict_t **)(vc->retbuf);
 			if (!pEdict || pEdict->IsFree())
