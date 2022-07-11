@@ -138,6 +138,10 @@ for sdk_name in SM.sdks:
       binary.sources += pb_sources
       binary.compiler.cxxdefines += ['PROTOBUF_ENABLE']
 
+    # Instead of using the external SourceMod SDK.
+    if cxx.target.platform in ['linux', 'mac']:
+      binary.sources += [os.path.join(sdk.path, 'public', 'tier0', 'memoverride.cpp')]
+
     if cxx.target.platform == 'mac' and sdk.name in ['csgo']:
       # We need a proxy library since the game uses libstdc++.
       pb_binary = SM.HL2Library(builder, cxx, 'pbproxy.' + sdk.ext, sdk)

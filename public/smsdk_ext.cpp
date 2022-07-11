@@ -474,8 +474,9 @@ bool SDKExtension::SDK_OnMetamodPauseChange(bool paused, char *error, size_t max
 
 #endif
 
+#if defined(__linux__) || defined(__APPLE__)
 /* Overload a few things to prevent libstdc++ linking */
-#if defined __linux__ || defined __APPLE__
+#if !defined(SOURCE_ENGINE) || defined(NO_MALLOC_OVERRIDE) || defined(META_NO_HL2SDK)
 extern "C" void __cxa_pure_virtual(void)
 {
 }
@@ -499,5 +500,7 @@ void operator delete[](void * ptr)
 {
 	free(ptr);
 }
-#endif
-
+#else
+#include <tier0/memoverride.cpp>
+#endif // !defined(SOURCE_ENGINE) || defined(NO_MALLOC_OVERRIDE) || defined(META_NO_HL2SDK)
+#endif // defined(__linux__) || defined(__APPLE__)
