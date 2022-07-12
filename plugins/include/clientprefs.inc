@@ -191,7 +191,7 @@ methodmap Cookie < Handle {
 	// @error               Invalid cookie handle or invalid client index.
 	public float GetFloat(int client, float defaultValue = 0.0)
 	{
-		char buffer[11];
+		char buffer[32];
 		this.Get(client, buffer, sizeof(buffer));
 
                 float value;
