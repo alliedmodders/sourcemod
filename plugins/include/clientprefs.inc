@@ -176,7 +176,7 @@ methodmap Cookie < Handle {
 		char buffer[11];
 		this.Get(client, buffer, sizeof(buffer));
 
-                int value;
+		int value;
                 if (!StringToIntEx(buffer, value))
                 {
                        value = defaultValue;
