@@ -126,7 +126,7 @@ methodmap Cookie < Handle {
 
 	public static native Cookie Find(const char[] name);
 
-	// Set the string value of a Client preference cookie.
+	// Set the value of a Client preference cookie.
 	//
 	// @param client        Client index.
 	// @param value         String value to set.
@@ -202,7 +202,7 @@ methodmap Cookie < Handle {
 		return value;
 	}
 	
-	// Sets the value of a Client preference cookie based on an authID string.
+	// Set the value of a Client preference cookie based on an authID string.
 	//
 	// @param authID        String Auth/STEAM ID of player to set.
 	// @param value         String value to set.
