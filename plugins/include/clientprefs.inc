@@ -177,10 +177,10 @@ methodmap Cookie < Handle {
 		this.Get(client, buffer, sizeof(buffer));
 
 		int value;
-                if (!StringToIntEx(buffer, value))
-                {
-                       value = defaultValue;
-                }
+		if (!StringToIntEx(buffer, value))
+		{
+			value = defaultValue;
+		}
 		return value;
 	}
 	
@@ -194,11 +194,11 @@ methodmap Cookie < Handle {
 		char buffer[32];
 		this.Get(client, buffer, sizeof(buffer));
 
-                float value;
-                if (!StringToFloatEx(buffer, value))
-                {
-                       value = defaultValue;
-                }
+		float value;
+		if (!StringToFloatEx(buffer, value))
+		{
+			value = defaultValue;
+		}
 		return value;
 	}
 	
