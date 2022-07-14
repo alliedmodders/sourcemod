@@ -151,7 +151,7 @@ methodmap Cookie < Handle {
 	// @param value         Float value to set.
 	// @error               Invalid cookie handle or invalid client index.
 	public void SetFloat(int client, float value) {
-		char sValue[11];
+		char sValue[32];
 		FloatToString(value, sValue, sizeof(sValue));
 		
 		this.Set(client, sValue);
