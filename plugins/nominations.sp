@@ -197,15 +197,7 @@ public Action Command_Nominate(int client, int args)
 	
 	if (args == 0)
 	{	
-		if (source == SM_REPLY_TO_CHAT)
-		{
-			OpenNominationMenu(client);
-		}
-		else
-		{
-			ReplyToCommand(client, "[SM] Usage: sm_nominate <mapname>");
-		}
-		
+		OpenNominationMenu(client);
 		return Plugin_Handled;
 	}
 	
