@@ -96,7 +96,9 @@ public:
 	bool IsInKickQueue();
 	IPlayerInfo *GetPlayerInfo();
 	unsigned int GetLanguageId();
+	unsigned int GetOriginalLanguageId();
 	void SetLanguageId(unsigned int id);
+	void ResetLanguageId();
 	int GetUserId();
 	bool RunAdminCacheChecks();
 	void NotifyPostAdminChecks();
@@ -145,6 +147,7 @@ private:
 	bool m_bAdminCheckSignalled = false;
 	int m_iIndex;
 	unsigned int m_LangId = SOURCEMOD_LANGUAGE_ENGLISH;
+	unsigned int m_OriginalLangId = SOURCEMOD_LANGUAGE_ENGLISH;
 	int m_UserId = -1;
 	bool m_bFakeClient = false;
 	bool m_bIsSourceTV = false;
