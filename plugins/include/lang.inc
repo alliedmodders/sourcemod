@@ -100,12 +100,13 @@ native void GetLanguageInfo(int language, char[] code="", int codeLen=0, char[] 
 native void SetClientLanguage(int client, int language);
 
 /**
- * Resets the language number of a client to its original value.
+ * Retrieves the language number a client had when they connected.
  *
  * @param client        Client index.
+ * @return              Language number client originally had.
  * @error               Invalid client index or client not connected.
  */
-native void ResetClientLanguage(int client);
+native int GetOriginalLanguage(int client);
 
 /**
  * Retrieves the language number from a language code.

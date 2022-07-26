@@ -41,7 +41,7 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	21
+#define SMINTERFACE_PLAYERMANAGER_VERSION	22
 
 struct edict_t;
 class IPlayerInfo;
@@ -145,14 +145,6 @@ namespace SourceMod
 		virtual unsigned int GetLanguageId() =0;
 
 		/**
-		 * @brief Returns the original language id the client had when
-		 * they connected.
-		 *
-		 * @return		Language id.
-		 */
-		virtual unsigned int GetOriginalLanguageId() =0;
-
-		/**
 		 * @brief Returns a player's IPlayerInfo object, if any.
 		 *
 		 * @return		IPlayerInfo pointer, or NULL if none.
@@ -235,12 +227,6 @@ namespace SourceMod
 		virtual void SetLanguageId(unsigned int id) =0;
 
 		/**
-		 * @brief Sets the client's language id to the value they had when
-		 * they connected.
-		 */
-		virtual void ResetLanguageId() =0;
-
-		/**
 		 * @brief Returns whether the player is the SourceTV bot.
 		 *
 		 * @return		True if the SourceTV bot, false otherwise.
@@ -308,6 +294,14 @@ namespace SourceMod
 		 * @return			Steam3 Id on success or NULL if not available.
 		 */
 		virtual const char *GetSteam3Id(bool validated = true) =0;
+
+		/**
+		 * @brief Returns the original language id the client had when
+		 * they connected.
+		 *
+		 * @return		Language id.
+		 */
+		virtual unsigned int GetOriginalLanguageId() =0;
 	};
 
 	/**

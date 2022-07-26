@@ -2646,15 +2646,6 @@ void CPlayer::SetLanguageId(unsigned int id)
 	}
 }
 
-void CPlayer::ResetLanguageId()
-{
-	if(m_LangId != m_OriginalLangId)
-	{
-		m_LangId = m_OriginalLangId;
-		g_Players.OnClientLanguageChanged(m_iIndex, m_OriginalLangId);
-	}
-}
-
 int CPlayer::GetUserId()
 {
 	if (m_UserId == -1)

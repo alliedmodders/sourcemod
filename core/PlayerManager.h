@@ -98,7 +98,6 @@ public:
 	unsigned int GetLanguageId();
 	unsigned int GetOriginalLanguageId();
 	void SetLanguageId(unsigned int id);
-	void ResetLanguageId();
 	int GetUserId();
 	bool RunAdminCacheChecks();
 	void NotifyPostAdminChecks();
