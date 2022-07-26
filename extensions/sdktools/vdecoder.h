@@ -83,6 +83,7 @@ enum ValveCallType
 	ValveCall_EntityList,	/**< Thiscall (CGlobalEntityList implicit first paramater) */
 	ValveCall_Raw, 		/**< Thiscall (address explicit first parameter) */
 	ValveCall_Server,       /**< Thiscall (CBaseServer implicit first parameter) */
+	ValveCall_Engine,       /**< Thiscall (CVEngineServer implicit first parameter) */
 };
 
 /**
