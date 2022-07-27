@@ -106,7 +106,7 @@ native void SetClientLanguage(int client, int language);
  * @return              Language number client originally had.
  * @error               Invalid client index or client not connected.
  */
-native int GetOriginalLanguage(int client);
+native int GetClientOriginalLanguage(int client);
 
 /**
  * Retrieves the language number from a language code.
