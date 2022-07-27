@@ -90,11 +90,11 @@ private:
 	unsigned int m_ColCount;	/** DOES NOT CHANGE */
 	BaseStringTable m_Strings;	/** DOES NOT CHANGE */
 	BaseMemTable *m_pMemory;	/** DOES NOT CHANGE */
-	unsigned int m_RowCount;
-	unsigned int m_MaxRows;
+	int m_RowCount;
+	int m_MaxRows;
 	SqField *m_Rows;
-	unsigned int m_CurRow;
-	unsigned int m_NextRow;
+	int m_CurRow;
+	int m_NextRow;
 };
 
 #endif //_INCLUDE_SQLITE_SOURCEMOD_RESULT_SET_H_

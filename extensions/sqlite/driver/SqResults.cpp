@@ -37,7 +37,7 @@
 SqResults::SqResults(SqQuery *query) : 
 	m_pStmt(query->GetStmt()), m_Strings(1024),
 	m_RowCount(0), m_MaxRows(0), m_Rows(NULL),
-	m_CurRow(0), m_NextRow(0)
+	m_CurRow(-1), m_NextRow(0)
 {
 	m_ColCount = sqlite3_column_count(m_pStmt);
 	if (m_ColCount)
@@ -99,7 +99,7 @@ bool SqResults::FieldNameToNum(const char *name, unsigned int *columnId)
 void SqResults::ResetResultCount()
 {
 	m_RowCount = 0;
-	m_CurRow = 0;
+	m_CurRow = -1;
 	m_NextRow = 0;
 	m_pMemory->Reset();
 }
@@ -163,7 +163,7 @@ void SqResults::PushResult()
 
 bool SqResults::MoreRows()
 {
-	return (m_CurRow < m_RowCount);
+	return (m_CurRow < 0) ? (m_RowCount > 0) : (m_CurRow < m_RowCount);
 }
 
 IResultRow *SqResults::FetchRow()
@@ -179,7 +179,7 @@ IResultRow *SqResults::FetchRow()
 
 IResultRow *SqResults::CurrentRow()
 {
-	if (!m_RowCount || m_CurRow >= m_RowCount)
+	if (!m_RowCount || m_CurRow < 0 || m_CurRow >= m_RowCount)
 	{
 		return NULL;
 	}
@@ -188,14 +188,14 @@ IResultRow *SqResults::CurrentRow()
 
 bool SqResults::Rewind()
 {
-	m_CurRow = 0;
+	m_CurRow = -1;
 	m_NextRow = 0;
 	return true;
 }
 
 SqField *SqResults::GetField(unsigned int col)
 {
-	if (m_CurRow >= m_RowCount || col >= m_ColCount)
+	if (m_CurRow < 0 || m_CurRow >= m_RowCount || col >= m_ColCount)
 	{
 		return NULL;
 	}

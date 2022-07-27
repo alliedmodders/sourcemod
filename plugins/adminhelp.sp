@@ -63,42 +63,44 @@ public Action HelpCmd(int client, int args)
 		return Plugin_Handled;
 	}
 	
-	char arg[64], CmdName[20];
-	int PageNum = 1;
-	bool DoSearch;
+	char arg[64], cmdName[20];
+	int pageNum = 1;
+	bool doSearch;
 
-	GetCmdArg(0, CmdName, sizeof(CmdName));
+	GetCmdArg(0, cmdName, sizeof(cmdName));
 
 	if (args >= 1)
 	{
 		GetCmdArg(1, arg, sizeof(arg));
-		StringToIntEx(arg, PageNum);
-		PageNum = (PageNum <= 0) ? 1 : PageNum;
+		StringToIntEx(arg, pageNum);
+		pageNum = (pageNum <= 0) ? 1 : pageNum;
 	}
 
-	DoSearch = (strcmp("sm_help", CmdName) == 0) ? false : true;
+	doSearch = (strcmp("sm_help", cmdName) == 0) ? false : true;
 
 	if (GetCmdReplySource() == SM_REPLY_TO_CHAT)
 	{
 		ReplyToCommand(client, "[SM] %t", "See console for output");
 	}
 
-	char Name[64];
-	char Desc[255];
-	char NoDesc[128];
-	int Flags;
-	Handle CmdIter = GetCommandIterator();
+	char name[64];
+	char desc[255];
+	char noDesc[128];
+	CommandIterator cmdIter = new CommandIterator();
 
-	FormatEx(NoDesc, sizeof(NoDesc), "%T", "No description available", client);
+	FormatEx(noDesc, sizeof(noDesc), "%T", "No description available", client);
 
-	if (DoSearch)
+	if (doSearch)
 	{
 		int i = 1;
-		while (ReadCommandIterator(CmdIter, Name, sizeof(Name), Flags, Desc, sizeof(Desc)))
+		while (cmdIter.Next())
 		{
-			if ((StrContains(Name, arg, false) != -1) && CheckCommandAccess(client, Name, Flags))
+			cmdIter.GetName(name, sizeof(name));
+			cmdIter.GetDescription(desc, sizeof(desc));
+
+			if ((StrContains(name, arg, false) != -1) && CheckCommandAccess(client, name, cmdIter.Flags))
 			{
-				PrintToConsole(client, "[%03d] %s - %s", i++, Name, (Desc[0] == '\0') ? NoDesc : Desc);
+				PrintToConsole(client, "[%03d] %s - %s", i++, name, (desc[0] == '\0') ? noDesc : desc);
 			}
 		}
 
@@ -110,13 +112,15 @@ public Action HelpCmd(int client, int args)
 		PrintToConsole(client, "%t", "SM help commands");		
 
 		/* Skip the first N commands if we need to */
-		if (PageNum > 1)
+		if (pageNum > 1)
 		{
 			int i;
-			int EndCmd = (PageNum-1) * COMMANDS_PER_PAGE - 1;
-			for (i=0; ReadCommandIterator(CmdIter, Name, sizeof(Name), Flags, Desc, sizeof(Desc)) && i<EndCmd; )
+			int endCmd = (pageNum-1) * COMMANDS_PER_PAGE - 1;
+			for (i=0; cmdIter.Next() && i<endCmd; )
 			{
-				if (CheckCommandAccess(client, Name, Flags))
+				cmdIter.GetName(name, sizeof(name));
+
+				if (CheckCommandAccess(client, name, cmdIter.Flags))
 				{
 					i++;
 				}
@@ -125,20 +129,23 @@ public Action HelpCmd(int client, int args)
 			if (i == 0)
 			{
 				PrintToConsole(client, "%t", "No commands available");
-				delete CmdIter;
+				delete cmdIter;
 				return Plugin_Handled;
 			}
 		}
 
 		/* Start printing the commands to the client */
 		int i;
-		int StartCmd = (PageNum-1) * COMMANDS_PER_PAGE;
-		for (i=0; ReadCommandIterator(CmdIter, Name, sizeof(Name), Flags, Desc, sizeof(Desc)) && i<COMMANDS_PER_PAGE; )
+		int StartCmd = (pageNum-1) * COMMANDS_PER_PAGE;
+		for (i=0; cmdIter.Next() && i<COMMANDS_PER_PAGE; )
 		{
-			if (CheckCommandAccess(client, Name, Flags))
+			cmdIter.GetName(name, sizeof(name));
+			cmdIter.GetDescription(desc, sizeof(desc));
+			
+			if (CheckCommandAccess(client, name, cmdIter.Flags))
 			{
 				i++;
-				PrintToConsole(client, "[%03d] %s - %s", i+StartCmd, Name, (Desc[0] == '\0') ? NoDesc : Desc);
+				PrintToConsole(client, "[%03d] %s - %s", i+StartCmd, name, (desc[0] == '\0') ? noDesc : desc);
 			}
 		}
 
@@ -146,17 +153,17 @@ public Action HelpCmd(int client, int args)
 		{
 			PrintToConsole(client, "%t", "No commands available");
 		} else {
-			PrintToConsole(client, "%t", "Entries n - m in page k", StartCmd+1, i+StartCmd, PageNum);
+			PrintToConsole(client, "%t", "Entries n - m in page k", StartCmd+1, i+StartCmd, pageNum);
 		}
 
 		/* Test if there are more commands available */
-		if (ReadCommandIterator(CmdIter, Name, sizeof(Name), Flags, Desc, sizeof(Desc)) && CheckCommandAccess(client, Name, Flags))
+		if (cmdIter.Next())
 		{
-			PrintToConsole(client, "%t", "Type sm_help to see more", PageNum+1);
+			PrintToConsole(client, "%t", "Type sm_help to see more", pageNum+1);
 		}
 	}
 
-	delete CmdIter;
+	delete cmdIter;
 
 	return Plugin_Handled;
 }

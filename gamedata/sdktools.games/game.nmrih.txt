@@ -185,5 +185,11 @@
 				"mac"		"211"
 			}
 		}
+		
+		"Keys"
+		{
+			"GameRulesProxy"		"CNMRiH_GameRulesProxy"
+			"GameRulesDataTable"	"nmrih_gamerules_data"
+		}
 	}
 }

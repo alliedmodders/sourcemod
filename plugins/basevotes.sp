@@ -205,7 +205,7 @@ public Action Command_Vote(int client, int args)
 	g_voteType = VoteType_Question;
 	
 	g_hVoteMenu = new Menu(Handler_VoteCallback, MENU_ACTIONS_ALL);
-	g_hVoteMenu.SetTitle("%s?", g_voteArg);
+	g_hVoteMenu.SetTitle("%s", g_voteArg);
 	
 	if (answerCount < 2)
 	{
@@ -235,7 +235,7 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 {
 	if (action == MenuAction_End)
 	{
-		VoteMenuClose();
+		delete g_hVoteMenu;
 	}
 	else if (action == MenuAction_Display)
 	{
@@ -286,7 +286,7 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 			votes = totalVotes - votes; // Reverse the votes to be in relation to the Yes option.
 		}
 		
-		percent = GetVotePercent(votes, totalVotes);
+		percent = float(votes) / float(totalVotes);
 		
 		if (g_voteType != VoteType_Question)
 		{
@@ -404,20 +404,15 @@ void VoteSelect(Menu menu, int param1, int param2 = 0)
 }
 */
 
-void VoteMenuClose()
-{
-	delete g_hVoteMenu;
-}
-
-float GetVotePercent(int votes, int totalVotes)
-{
-	return float(votes) / float(totalVotes);
-}
-
 bool TestVoteDelay(int client)
 {
+	if (CheckCommandAccess(client, "sm_vote_delay_bypass", ADMFLAG_CONVARS, true))
+	{
+		return true;
+	}
+	
  	int delay = CheckVoteDelay();
- 	
+	
  	if (delay > 0)
  	{
  		if (delay > 60)

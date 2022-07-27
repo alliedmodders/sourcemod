@@ -121,7 +121,8 @@ stock bool StrEqual(const char[] str1, const char[] str2, bool caseSensitive=tru
  * @param dest          Destination string buffer to copy to.
  * @param destLen       Destination buffer length (includes null terminator).
  * @param source        Source string buffer to copy from.
- * @return              Number of cells written.
+ * @return              Number of characters written to the buffer,
+ *                      not including the null terminator.
  */
 native int strcopy(char[] dest, int destLen, const char[] source);
 
@@ -142,7 +143,8 @@ stock int StrCopy(char[] dest, int destLen, const char[] source)
  * @param maxlength     Maximum length of output string buffer.
  * @param format        Formatting rules.
  * @param ...           Variable number of format parameters.
- * @return              Number of cells written.
+ * @return              Number of characters written to the buffer,
+ *                      not including the null terminator.
  */
 native int Format(char[] buffer, int maxlength, const char[] format, any ...);
 
@@ -156,7 +158,8 @@ native int Format(char[] buffer, int maxlength, const char[] format, any ...);
  * @param maxlength     Maximum length of output string buffer.
  * @param format        Formatting rules.
  * @param ...           Variable number of format parameters.
- * @return              Number of cells written.
+ * @return              Number of characters written to the buffer,
+ *                      not including the null terminator.
  */
 native int FormatEx(char[] buffer, int maxlength, const char[] format, any ...);
 
@@ -212,7 +215,8 @@ native int StringToInt64(const char[] str, int result[2], int nBase=10);
  * @param num           Integer to convert.
  * @param str           Buffer to store string in.
  * @param maxlength     Maximum length of string buffer.
- * @return              Number of cells written to buffer.
+ * @return              Number of characters written to the buffer,
+ *                      not including the null terminator.
  */
 native int IntToString(int num, char[] str, int maxlength);
 
@@ -251,7 +255,8 @@ native int StringToFloatEx(const char[] str, float &result);
  * @param num           Floating point number to convert.
  * @param str           Buffer to store string in.
  * @param maxlength     Maximum length of string buffer.
- * @return              Number of cells written to buffer.
+ * @return              Number of characters written to the buffer,
+ *                      not including the null terminator.
  */
 native int FloatToString(float num, char[] str, int maxlength);
 

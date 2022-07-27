@@ -77,6 +77,7 @@ private:
 	void NetChannelHook(int client);
 
 private:
+	IForward *m_usercmdsPreFwd;
 	IForward *m_usercmdsFwd;
 	IForward *m_usercmdsPostFwd;
 	IForward *m_netFileSendFwd;

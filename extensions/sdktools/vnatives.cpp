@@ -519,8 +519,18 @@ static cell_t ForcePlayerSuicide(IPluginContext *pContext, const cell_t *params)
 
 	START_CALL();
 	DECODE_VALVE_PARAM(1, thisinfo, 0);
-	*(bool *)(vptr + pCall->vparams[0].offset) = false;
-	*(bool *)(vptr + pCall->vparams[1].offset) = false;
+
+	if (params[0] >= 2)
+	{
+		DECODE_VALVE_PARAM(2, vparams, 0);
+	}
+	else
+	{
+		*(bool *)(vptr + pCall->vparams[0].offset) = false;
+	}
+	
+	*(bool *)(vptr + pCall->vparams[1].offset) = true;
+
 	FINISH_CALL_SIMPLE(NULL);
 
 	return 1;
