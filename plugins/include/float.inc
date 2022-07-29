@@ -390,9 +390,9 @@ stock bool operator<=(int oper1, float oper2)
 /**
  * Forbidden operators.
  */
-forward operator%(float oper1, float oper2);
-forward operator%(float oper1, int oper2);
-forward operator%(int oper1, float oper2);
+forward float operator%(float oper1, float oper2);
+forward float operator%(float oper1, int oper2);
+forward float operator%(int oper1, float oper2);
 #endif // __sourcepawn2__
 
 #define FLOAT_PI 3.1415926535897932384626433832795
