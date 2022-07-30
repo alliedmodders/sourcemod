@@ -469,7 +469,7 @@ native void CreateNative(const char[] name, NativeCall func);
  * @noreturn
  * @error               Always!
  */
-native int ThrowNativeError(int error, const char[] fmt, any ...);
+native void ThrowNativeError(int error, const char[] fmt, any ...);
 
 /**
  * Retrieves the string length from a native parameter string.  This is useful for
