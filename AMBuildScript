@@ -629,7 +629,7 @@ class SMConfig(object):
         compiler.linkflags.remove('-static-libstdc++')
         compiler.linkflags += ['-lstdc++']
         compiler.defines += ['_GLIBCXX_USE_CXX11_ABI=0']
-    elif builder.target.platform == 'mac':
+    elif compiler.target.platform == 'mac':
       if sdk.name in ['csgo']:
         # Switch libc++ to libstdc++ for protobuf linkage.
         compiler.cxxflags.remove('-stdlib=libc++')
