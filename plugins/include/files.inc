@@ -575,9 +575,7 @@ native bool RemoveDir(const char[] path);
 /**
  * Creates a directory.
  *
- * Note: Does not work recursively. Parent directory has to exist.
- *
- * @param path          Path to create.
+ * @param path          Path to create. Note that the parent directory has to exist and directories are not created recursively.
  * @param mode          Permissions (default is o=rx,g=rx,u=rwx).  Note that folders must have
  *                      the execute bit set on Linux.  On Windows, the mode is ignored.
  * @param use_valve_fs  If true, the Valve file system will be used instead.
