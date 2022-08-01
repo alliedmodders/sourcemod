@@ -575,6 +575,8 @@ native bool RemoveDir(const char[] path);
 /**
  * Creates a directory.
  *
+ * Note: Does not work recursively. Parent directory has to exist.
+ *
  * @param path          Path to create.
  * @param mode          Permissions (default is o=rx,g=rx,u=rwx).  Note that folders must have
  *                      the execute bit set on Linux.  On Windows, the mode is ignored.
@@ -585,7 +587,7 @@ native bool RemoveDir(const char[] path);
  *                      In this case, mode is ignored.
  * @return              True on success, false otherwise.
  */
-native bool CreateDirectory(const char[] path, int mode, bool use_valve_fs=false, const char[] valve_path_id="DEFAULT_WRITE_PATH");
+native bool CreateDirectory(const char[] path, int mode=FPERM_O_READ|FPERM_O_EXEC|FPERM_G_READ|FPERM_G_EXEC|FPERM_U_READ|FPERM_U_WRITE|FPERM_U_EXEC, bool use_valve_fs=false, const char[] valve_path_id="DEFAULT_WRITE_PATH");
 
 /**
  * Changes a file or directories permissions.
