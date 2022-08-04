@@ -633,6 +633,10 @@ void CoreProviderImpl::InitializeBridge()
 		this->matchmakingDSFactory = (void*)Sys_GetFactory(mmlib);
 	}
 
+	if (auto mmlib = ::filesystem->LoadModule("soundemittersystem" SOURCE_BIN_SUFFIX)) {
+		this->soundemittersystemFactory = (void*)Sys_GetFactory(mmlib);
+	}
+
 	logic_init_(this, &logicore);
 
 	// Join logic's SMGlobalClass instances.
