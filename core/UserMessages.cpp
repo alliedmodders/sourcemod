@@ -312,12 +312,12 @@ bool UserMessages::EndMessage()
 	}
 
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
-	PbHandle localBuffer = std::move(m_FakeEngineBuffer);
 	if (m_CurFlags & USERMSG_BLOCKHOOKS)
 	{
-		PbHandle priv = localBuffer.ToPrivate(m_CurId);
+		PbHandle priv = m_FakeEngineBuffer.ToPrivate(m_CurId);
 		ENGINE_CALL(SendUserMessage)(static_cast<IRecipientFilter &>(m_CellRecFilter), m_CurId,
 		                             *priv.GetPrivateMessage());
+		m_FakeEngineBuffer = nullptr;
 	} else {
 		OnMessageEnd_Pre();
 
@@ -327,9 +327,10 @@ bool UserMessages::EndMessage()
 		case MRES_HANDLED:
 		case MRES_OVERRIDE:
 		{
-			PbHandle priv = localBuffer.ToPrivate(m_CurId);
+			PbHandle priv = m_FakeEngineBuffer.ToPrivate(m_CurId);
 			engine->SendUserMessage(static_cast<IRecipientFilter &>(m_CellRecFilter), m_CurId,
 			                        *priv.GetPrivateMessage());
+			m_FakeEngineBuffer = nullptr;
 			break;
 		}
 		//case MRES_SUPERCEDE:

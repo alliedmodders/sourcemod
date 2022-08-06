@@ -105,8 +105,7 @@ public:
 	}
 
 	PbHandle& operator =(PbHandle&& other) {
-		if (other.msg_ != msg_)
-			maybe_free();
+		maybe_free();
 		msg_ = other.msg_;
 		ownership_ = other.ownership_;
 		locality_ = other.locality_;
