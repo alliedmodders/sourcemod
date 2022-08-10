@@ -274,6 +274,24 @@ native ReplySource SetCmdReplySource(ReplySource source);
 native bool IsChatTrigger();
 
 /**
+ * Get the list of characters used for public chat triggers.
+ *
+ * @param buffer        Buffer to use for storing the string.
+ * @param maxlength     Maximum length of the buffer.
+ * @return              Length of string written to buffer.
+ */
+native int GetPublicChatTriggers(char[] buffer, int maxlength);
+
+/**
+ * Get the list of characters used for silent chat triggers.
+ *
+ * @param buffer        Buffer to use for storing the string.
+ * @param maxlength     Maximum length of the buffer.
+ * @return              Length of string written to buffer.
+ */
+native int GetSilentChatTriggers(char[] buffer, int maxlength);
+
+/**
  * Displays usage of an admin command to users depending on the 
  * setting of the sm_show_activity cvar.  All users receive a message 
  * in their chat text, except for the originating client, who receives 
