@@ -80,7 +80,7 @@ void RulesFix::OnLoad()
 	host_rules_show = g_pCVar->FindVar("host_rules_show");
 	if (host_rules_show)
 	{
-		if (SetMTUMax(5000))
+		if (SetMTUMax(65000))
 		{
 			// Default to enabled. Explicit disable via cfg will still be obeyed.
 			host_rules_show->SetValue(true);
