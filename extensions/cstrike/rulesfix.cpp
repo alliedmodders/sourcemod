@@ -124,7 +124,7 @@ static void OnConVarChanged(IConVar *var, const char *pOldValue, float flOldValu
 		{
 			if (!bPatched)
 			{
-				if (SetMTUMax(5000))
+				if (SetMTUMax(65000))
 				{
 					bPatched = true;
 					NotifyAllCVars();
