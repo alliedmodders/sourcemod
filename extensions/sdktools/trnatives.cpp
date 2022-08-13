@@ -489,7 +489,7 @@ static cell_t smn_TRTraceRayFilter(IPluginContext *pContext, const cell_t *param
 
 	if (params[0] >= 7)
 	{
-		traceType = params[7];
+		traceType = (TraceType_t)params[7];
 	}
 	else
 	{
@@ -549,7 +549,7 @@ static cell_t smn_TRTraceHullFilter(IPluginContext *pContext, const cell_t *para
 
 	if (params[0] >= 8)
 	{
-		traceType = params[8];
+		traceType = (TraceType_t)params[8];
 	}
 	else
 	{
@@ -811,7 +811,7 @@ static cell_t smn_TRTraceRayFilterEx(IPluginContext *pContext, const cell_t *par
 	
 	if (params[0] >= 7)
 	{
-		traceType = params[7];
+		traceType = (TraceType_t)params[7];
 	}
 	else
 	{
@@ -886,7 +886,7 @@ static cell_t smn_TRTraceHullFilterEx(IPluginContext *pContext, const cell_t *pa
 	
 	if (params[0] >= 8)
 	{
-		traceType = params[8];
+		traceType = (TraceType_t)params[8];
 	}
 	else
 	{
