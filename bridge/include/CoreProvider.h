@@ -90,6 +90,7 @@ public:
 	void *          engineFactory;
 	void *          matchmakingDSFactory;
 	void *          soundemittersystemFactory;
+	void *          vscriptFactory;
 	SMGlobalClass *	listeners;
 
 	// ConVar functions.

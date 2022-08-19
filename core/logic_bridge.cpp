@@ -637,6 +637,10 @@ void CoreProviderImpl::InitializeBridge()
 		this->soundemittersystemFactory = (void*)Sys_GetFactory(mmlib);
 	}
 
+	if (auto mmlib = ::filesystem->LoadModule("vscript" SOURCE_BIN_SUFFIX)) {
+		this->vscriptFactory = (void*)Sys_GetFactory(mmlib);
+	}
+
 	logic_init_(this, &logicore);
 
 	// Join logic's SMGlobalClass instances.
