@@ -1,174 +1,138 @@
-/**
- * vim: set ts=4 :
- * =============================================================================
- * SourceMod Map Management Plugin
- * Provides all map related functionality, including map changing, map voting,
- * and nextmap.
- *
- * SourceMod (C)2004-2008 AlliedModders LLC.  All rights reserved.
- * =============================================================================
- *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, version 3.0, as published by the
- * Free Software Foundation.
- * 
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * As a special exception, AlliedModders LLC gives you permission to link the
- * code of this program (as well as its derivative works) to "Half-Life 2," the
- * "Source Engine," the "SourcePawn JIT," and any Game MODs that run on software
- * by the Valve Corporation.  You must obey the GNU General Public License in
- * all respects for all other code used.  Additionally, AlliedModders LLC grants
- * this exception to all derivative works.  AlliedModders LLC defines further
- * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
- * or <http://www.sourcemod.net/license.php>.
- *
- * Version: $Id$
- */
- 
-
-#pragma semicolon 1
 #include <sourcemod>
 #include <clientprefs>
 
+#pragma semicolon 1
 #pragma newdecls required
+
+bool gB_IsReady = false;
+bool gB_Connecting = false;
+
+Database g_Database = null;
+
+#include "clientprefs/utils.sp"
+#include "clientprefs/cookies.sp"
+#include "clientprefs/commands.sp"
+#include "clientprefs/database.sp"
+#include "clientprefs/forwards.sp"
+#include "clientprefs/natives.sp"
 
 public Plugin myinfo =
 {
 	name = "Client Preferences",
 	author = "AlliedModders LLC",
-	description = "Client preferences and settings menu",
+	description = "Saves client preference settings",
 	version = SOURCEMOD_VERSION,
 	url = "http://www.sourcemod.net/"
 };
 
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+    InitCookies();
+    CreateNatives();
+    CreateForwards();
+
+    RegPluginLibrary("clientprefs");
+    return APLRes_Success;
+}
+
 public void OnPluginStart()
 {
-	LoadTranslations("clientprefs.phrases");
-	
-	RegConsoleCmd("sm_cookies", Command_Cookie, "sm_cookies <name> [value]");
-	RegConsoleCmd("sm_settings", Command_Settings);	
+    LoadTranslations("common.phrases");
+    LoadTranslations("clientprefs.phrases");
+
+    CreateCommands();
+
+    gB_Connecting = DB_TryConnect(true);
 }
 
-public Action Command_Cookie(int client, int args)
+public void OnPluginEnd()
 {
-	if (args == 0)
-	{
-		ReplyToCommand(client, "[SM] Usage: sm_cookies <name> [value]");
-		ReplyToCommand(client, "[SM] %t", "Printing Cookie List");
-		
-		/* Show list of cookies */
-		Handle iter = GetCookieIterator();
-		
-		char name[30];
-		char description[255];
-		
-		PrintToConsole(client, "%t:", "Cookie List");
-		
-		CookieAccess access;
-		
-		int count = 1;
-		
-		while (ReadCookieIterator(iter, name, sizeof(name), access, description, sizeof(description)) != false)
-		{
-			if (access < CookieAccess_Private)
-			{
-				PrintToConsole(client, "[%03d] %s - %s", count++, name, description);
-			}
-		}
-		
-		delete iter;		
-		return Plugin_Handled;
-	}
-	
-	if (client == 0)
-	{
-		PrintToServer("%T", "No Console", LANG_SERVER);
-		return Plugin_Handled;	
-	}
-	
-	char name[30];
-
-	GetCmdArg(1, name, sizeof(name));
-	
-	Handle cookie = FindClientCookie(name);
-	
-	if (cookie == null)
-	{
-		ReplyToCommand(client, "[SM] %t", "Cookie not Found", name);
-		return Plugin_Handled;
-	}
-	
-	CookieAccess access = GetCookieAccess(cookie);
-	
-	if (access == CookieAccess_Private)
-	{
-		ReplyToCommand(client, "[SM] %t", "Cookie not Found", name);
-		delete cookie;
-		return Plugin_Handled;
-	}
-	
-	char value[100];
-	
-	if (args == 1)
-	{
-		Handle iter = GetCookieIterator();
-		
-		GetClientCookie(client, cookie, value, sizeof(value));
-		ReplyToCommand(client, "[SM] %t", "Cookie Value", name, value);
-		
-		char CookieName[30];
-		char description[255];
-		
-		while (ReadCookieIterator(iter, CookieName, sizeof(CookieName), access, description, sizeof(description)) != false) // We're allowed to re-use access since we're about to return anyways.
-		{
-			if (StrEqual(CookieName, name, true))
-			{
-				TrimString(description);
-				if (description[0] != EOS)
-					ReplyToCommand(client, "- %s", description);
-					
-				break;
-			}
-		}
-		
-		delete iter;
-		delete cookie;
-		return Plugin_Handled;
-	}
-	if (access == CookieAccess_Protected)
-	{
-		ReplyToCommand(client, "[SM] %t", "Protected Cookie", name);
-		delete cookie;
-		return Plugin_Handled;
-	}
-	
-	/* Set the new value of the cookie */
-	
-	GetCmdArg(2, value, sizeof(value));
-	
-	SetClientCookie(client, cookie, value);
-	delete cookie;
-	ReplyToCommand(client, "[SM] %t", "Cookie Changed Value", name, value);
-	
-	return Plugin_Handled;
+    // Try to save player data
+    for (int i = 1; i <= MaxClients; i++)
+    {
+        OnClientDisconnect(i);
+    }
 }
 
-public Action Command_Settings(int client, int args)
+public void OnMapStart()
 {
-	if (client == 0)
-	{
-		PrintToServer("%T", "No Console", LANG_SERVER);
-		return Plugin_Handled;	
-	}
-	
-	ShowCookieMenu(client);
-	
-	return Plugin_Handled;
+    if (!g_Database && !gB_Connecting)
+    {
+        gB_Connecting = DB_TryConnect(false);
+    }
+}
+
+// Second param is unused
+public void OnClientAuthorized(int client)
+{
+    if (!gB_IsReady || IsFakeClient(client))
+    {
+        return;
+    }
+
+    SetPlayerDataPending(client, true);
+
+    char steamId2[32];
+    GetClientAuthId(client, AuthId_Steam2, steamId2, sizeof(steamId2));
+
+    DB_SelectPlayerData(client, steamId2);
+}
+
+public void OnClientDisconnect(int client)
+{
+    if (!IsClientConnected(client) || IsFakeClient(client))
+    {
+        return;
+    }
+
+    char authId[32];
+
+    bool hasAuth = GetClientAuthId(client, AuthId_Steam2, authId, sizeof(authId));
+    if (!hasAuth)
+    {
+        // Unlucky
+        return;
+    }
+
+    StringMapSnapshot snap = GetCookieDataSnapshot();
+    for (int i = 0; i < snap.Length; i++)
+    {
+        char name[30];
+        snap.GetKey(i, name, sizeof(name));
+
+        CookieData cookieData;
+        GetCookieDataByName(name, cookieData);
+
+        if (cookieData.dbId > 0)
+        {
+            PlayerData playerData;
+            GetCookiePlayerData(client, name, playerData);
+
+            DB_InsertPlayerData(authId, cookieData.dbId, playerData.Value);
+        }
+    }
+
+    delete snap;
+
+    ClearPlayerData(client);
+    SetPlayerDataLoaded(client, false);
+    SetPlayerDataPending(client, false);
+}
+
+void LateLoadClients()
+{
+    for (int i = 1; i <= MaxClients; i++)
+    {
+        if (IsPlayerDataCached(i) || IsPlayerDataPending(i))
+        {
+            continue;
+        }
+
+        if (!IsClientAuthorized(i))
+        {
+            continue;
+        }
+
+        OnClientAuthorized(i);
+    }
 }

@@ -29,7 +29,7 @@
  *
  * Version: $Id$
  */
- 
+
 #if defined _clientprefs_included
  #endinput
 #endif
@@ -65,7 +65,7 @@ enum CookieMenuAction
 	 * OUTPUT: Buffer for rendering, maxlength of buffer.
 	 */
 	CookieMenuAction_DisplayOption = 0,
-	
+
 	/**
 	 * A menu option has been selected.
 	 *
@@ -74,8 +74,9 @@ enum CookieMenuAction
 	CookieMenuAction_SelectOption = 1
 };
 
-#define COOKIE_MAX_NAME_LENGTH 30 		/**< Maximum Cookie name length. */
-#define COOKIE_MAX_DESCRIPTION_LENGTH 255 	/**< Maximum Cookie description length. */
+#define COOKIE_MAX_NAME_LENGTH 30           /**< Maximum Cookie name length. */
+#define COOKIE_MAX_VALUE_LENGTH 100         /**< Maximum Cookie value length. */
+#define COOKIE_MAX_DESCRIPTION_LENGTH 255   /**< Maximum Cookie description length. */
 
 /**
  * Cookie Menu Callback prototype
@@ -96,13 +97,14 @@ typedef CookieMenuHandler = function void (
 
 /**
  * Note:
- * 
+ *
  * A successful return value/result on any client prefs native only guarantees that the local cache has been updated.
  * Database connection problems can still prevent the data from being permanently saved. Connection problems will be logged as
  * errors by the clientprefs extension.
  */
 
-methodmap Cookie < Handle {
+methodmap Cookie < Handle
+{
 	// Creates a new Client preference cookie.
 	//
 	// Handles returned can be closed via CloseHandle() when
@@ -132,31 +134,6 @@ methodmap Cookie < Handle {
 	// @param value         String value to set.
 	// @error               Invalid cookie handle or invalid client index.
 	public native void Set(int client, const char[] value);
-	
-	// Set the integer value of a Client preference cookie.
-	//
-	// @param client        Client index.
-	// @param value         Integer value to set.
-	// @error               Invalid cookie handle or invalid client index.
-	public void SetInt(int client, int value) {
-		char sValue[11];
-		IntToString(value, sValue, sizeof(sValue));
-		
-		this.Set(client, sValue);
-	}
-	
-	// Set the float value of a Client preference cookie.
-	//
-	// @param client        Client index.
-	// @param value         Float value to set.
-	// @error               Invalid cookie handle or invalid client index.
-	public void SetFloat(int client, float value) {
-		char sValue[32];
-		FloatToString(value, sValue, sizeof(sValue));
-		
-		this.Set(client, sValue);
-	}
-
 
 	// Retrieve the value of a Client preference cookie.
 	//
@@ -166,43 +143,7 @@ methodmap Cookie < Handle {
 	// @error               Invalid cookie handle or invalid client index.
 	public native void Get(int client, char[] buffer, int maxlen);
 
-	// Retrieve the integer value of a Client preference cookie.
-	//
-	// @param client        Client index.
-	// @return              Integer value of cookie
-	// @error               Invalid cookie handle or invalid client index.
-	public int GetInt(int client, int defaultValue = 0)
-	{
-		char buffer[11];
-		this.Get(client, buffer, sizeof(buffer));
-
-		int value;
-		if (!StringToIntEx(buffer, value))
-		{
-			value = defaultValue;
-		}
-		return value;
-	}
-	
-	// Retrieve the float value of a Client preference cookie.
-	//
-	// @param client        Client index.
-	// @return              Float value of cookie
-	// @error               Invalid cookie handle or invalid client index.
-	public float GetFloat(int client, float defaultValue = 0.0)
-	{
-		char buffer[32];
-		this.Get(client, buffer, sizeof(buffer));
-
-		float value;
-		if (!StringToFloatEx(buffer, value))
-		{
-			value = defaultValue;
-		}
-		return value;
-	}
-	
-	// Set the value of a Client preference cookie based on an authID string.
+	// Sets the value of a Client preference cookie based on an authID string.
 	//
 	// @param authID        String Auth/STEAM ID of player to set.
 	// @param value         String value to set.
@@ -230,7 +171,8 @@ methodmap Cookie < Handle {
 	//
 	// @return              CookieAccess access level.
 	// @error               Invalid cookie handle.
-	property CookieAccess AccessLevel {
+	property CookieAccess AccessLevel
+    {
 		public native get();
 	}
 };
@@ -360,11 +302,11 @@ native Handle GetCookieIterator();
  * @param descLen       Cookie description buffer size.
  * @return              True on success, false if there are no more commands.
  */
-native bool ReadCookieIterator(Handle iter, 
-								char[] name, 
+native bool ReadCookieIterator(Handle iter,
+								char[] name,
 								int nameLen,
-								CookieAccess &access, 
-								char[] desc="", 
+								CookieAccess &access,
+								char[] desc="",
 								int descLen=0);
 
 /**
@@ -388,23 +330,18 @@ native int GetClientCookieTime(int client, Handle cookie);
 /**
  * Do not edit below this line!
  */
-public Extension __ext_cprefs = 
+public SharedPlugin __ext_cprefs =
 {
 	name = "Client Preferences",
-	file = "clientprefs.ext",
-#if defined AUTOLOAD_EXTENSIONS
-	autoload = 1,
-#else
-	autoload = 0,
-#endif
-#if defined REQUIRE_EXTENSIONS
+	file = "clientprefs.smx",
+#if defined REQUIRE_PLUGIN
 	required = 1,
 #else
 	required = 0,
 #endif
 };
 
-#if !defined REQUIRE_EXTENSIONS
+#if !defined REQUIRE_PLUGIN
 public void __ext_cprefs_SetNTVOptional()
 {
 	MarkNativeAsOptional("RegClientCookie");
