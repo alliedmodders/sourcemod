@@ -40,9 +40,9 @@
  */
 enum CookieAccess
 {
-	CookieAccess_Public,            /**< Visible and Changeable by users */
-	CookieAccess_Protected,         /**< Read only to users */
-	CookieAccess_Private            /**< Completely hidden cookie */
+    CookieAccess_Public,            /**< Visible and Changeable by users */
+    CookieAccess_Protected,         /**< Read only to users */
+    CookieAccess_Private            /**< Completely hidden cookie */
 };
 
 /**
@@ -50,28 +50,28 @@ enum CookieAccess
  */
 enum CookieMenu
 {
-	CookieMenu_YesNo,           /**< Yes/No menu with "yes"/"no" results saved into the cookie */
-	CookieMenu_YesNo_Int,       /**< Yes/No menu with 1/0 saved into the cookie */
-	CookieMenu_OnOff,           /**< On/Off menu with "on"/"off" results saved into the cookie */
-	CookieMenu_OnOff_Int        /**< On/Off menu with 1/0 saved into the cookie */
+    CookieMenu_YesNo,           /**< Yes/No menu with "yes"/"no" results saved into the cookie */
+    CookieMenu_YesNo_Int,       /**< Yes/No menu with 1/0 saved into the cookie */
+    CookieMenu_OnOff,           /**< On/Off menu with "on"/"off" results saved into the cookie */
+    CookieMenu_OnOff_Int        /**< On/Off menu with 1/0 saved into the cookie */
 };
 
 enum CookieMenuAction
 {
-	/**
-	 * An option is being drawn for a menu.
-	 *
-	 * INPUT : Client index and data if available.
-	 * OUTPUT: Buffer for rendering, maxlength of buffer.
-	 */
-	CookieMenuAction_DisplayOption = 0,
+    /**
+     * An option is being drawn for a menu.
+     *
+     * INPUT : Client index and data if available.
+     * OUTPUT: Buffer for rendering, maxlength of buffer.
+     */
+    CookieMenuAction_DisplayOption = 0,
 
-	/**
-	 * A menu option has been selected.
-	 *
-	 * INPUT : Client index and any data if available.
-	 */
-	CookieMenuAction_SelectOption = 1
+    /**
+     * A menu option has been selected.
+     *
+     * INPUT : Client index and any data if available.
+     */
+    CookieMenuAction_SelectOption = 1
 };
 
 #define COOKIE_MAX_NAME_LENGTH 30           /**< Maximum Cookie name length. */
@@ -105,76 +105,131 @@ typedef CookieMenuHandler = function void (
 
 methodmap Cookie < Handle
 {
-	// Creates a new Client preference cookie.
-	//
-	// Handles returned can be closed via CloseHandle() when
-	// no longer needed.
-	//
-	// @param name          Name of the new preference cookie.
-	// @param description   Optional description of the preference cookie.
-	// @param access        What CookieAccess level to assign to this cookie.
-	// @return              A handle to the newly created cookie. If the cookie already
-	//                      exists, a handle to it will still be returned.
-	// @error               Cookie name is blank.
-	public native Cookie(const char[] name, const char[] description, CookieAccess access);
+    // Creates a new Client preference cookie.
+    //
+    // Handles returned can be closed via CloseHandle() when
+    // no longer needed.
+    //
+    // @param name          Name of the new preference cookie.
+    // @param description   Optional description of the preference cookie.
+    // @param access        What CookieAccess level to assign to this cookie.
+    // @return              A handle to the newly created cookie. If the cookie already
+    //                      exists, a handle to it will still be returned.
+    // @error               Cookie name is blank.
+    public native Cookie(const char[] name, const char[] description, CookieAccess access);
 
-	// Searches for a Client preference cookie.
-	//
-	// Handles returned by Cookie.Find can be closed via CloseHandle() when
-	// no longer needed.
-	//
-	// @param name          Name of cookie to find.
-	// @return              A handle to the cookie if it is found, null otherwise.
+    // Searches for a Client preference cookie.
+    //
+    // Handles returned by Cookie.Find can be closed via CloseHandle() when
+    // no longer needed.
+    //
+    // @param name          Name of cookie to find.
+    // @return              A handle to the cookie if it is found, null otherwise.
 
-	public static native Cookie Find(const char[] name);
+    public static native Cookie Find(const char[] name);
 
-	// Set the value of a Client preference cookie.
-	//
-	// @param client        Client index.
-	// @param value         String value to set.
-	// @error               Invalid cookie handle or invalid client index.
-	public native void Set(int client, const char[] value);
+    // Set the value of a Client preference cookie.
+    //
+    // @param client        Client index.
+    // @param value         String value to set.
+    // @error               Invalid cookie handle or invalid client index.
+    public native void Set(int client, const char[] value);
 
-	// Retrieve the value of a Client preference cookie.
-	//
-	// @param client        Client index.
-	// @param buffer        Copyback buffer for value.
-	// @param maxlen        Maximum length of the buffer.
-	// @error               Invalid cookie handle or invalid client index.
-	public native void Get(int client, char[] buffer, int maxlen);
+    // Set the integer value of a Client preference cookie.
+    //
+    // @param client        Client index.
+    // @param value         Integer value to set.
+    // @error               Invalid cookie handle or invalid client index.
+    public void SetInt(int client, int value) {
+        char sValue[11];
+        IntToString(value, sValue, sizeof(sValue));
 
-	// Sets the value of a Client preference cookie based on an authID string.
-	//
-	// @param authID        String Auth/STEAM ID of player to set.
-	// @param value         String value to set.
-	// @error               Invalid cookie handle.
-	public native void SetByAuthId(const char[] authID, const char[] value);
+        this.Set(client, sValue);
+    }
 
-	// Add a new prefab item to the client cookie settings menu.
-	//
-	// Note: This handles everything automatically and does not require a callback
-	//
-	// @param type          A CookieMenu prefab menu type.
-	// @param display       Text to show on the menu.
-	// @param handler       Optional handler callback for translations and output on selection
-	// @param info          Info data to pass to the callback.
-	// @error               Invalid cookie handle.
-	public native void SetPrefabMenu(CookieMenu type, const char[] display, CookieMenuHandler handler=INVALID_FUNCTION, any info=0);
+    // Set the float value of a Client preference cookie.
+    //
+    // @param client        Client index.
+    // @param value         Float value to set.
+    // @error               Invalid cookie handle or invalid client index.
+    public void SetFloat(int client, float value) {
+        char sValue[32];
+        FloatToString(value, sValue, sizeof(sValue));
 
-	// Returns the last updated timestamp for a client cookie
-	//
-	// @param client        Client index.
-	// @return              Last updated timestamp.
-	public native int GetClientTime(int client);
+        this.Set(client, sValue);
+    }
 
-	// Returns the access level of a cookie
-	//
-	// @return              CookieAccess access level.
-	// @error               Invalid cookie handle.
-	property CookieAccess AccessLevel
+    // Retrieve the value of a Client preference cookie.
+    //
+    // @param client        Client index.
+    // @param buffer        Copyback buffer for value.
+    // @param maxlen        Maximum length of the buffer.
+    // @error               Invalid cookie handle or invalid client index.
+    public native void Get(int client, char[] buffer, int maxlen);
+
+    public int GetInt(int client, int defaultValue = 0)
     {
-		public native get();
-	}
+        char buffer[11];
+        this.Get(client, buffer, sizeof(buffer));
+
+        int value;
+        if (!StringToIntEx(buffer, value))
+        {
+            value = defaultValue;
+        }
+        return value;
+    }
+
+    // Retrieve the float value of a Client preference cookie.
+    //
+    // @param client        Client index.
+    // @return              Float value of cookie
+    // @error               Invalid cookie handle or invalid client index.
+    public float GetFloat(int client, float defaultValue = 0.0)
+    {
+        char buffer[32];
+        this.Get(client, buffer, sizeof(buffer));
+
+        float value;
+        if (!StringToFloatEx(buffer, value))
+        {
+            value = defaultValue;
+        }
+        return value;
+    }
+
+    // Sets the value of a Client preference cookie based on an authID string.
+    //
+    // @param authID        String Auth/STEAM ID of player to set.
+    // @param value         String value to set.
+    // @error               Invalid cookie handle.
+    public native void SetByAuthId(const char[] authID, const char[] value);
+
+    // Add a new prefab item to the client cookie settings menu.
+    //
+    // Note: This handles everything automatically and does not require a callback
+    //
+    // @param type          A CookieMenu prefab menu type.
+    // @param display       Text to show on the menu.
+    // @param handler       Optional handler callback for translations and output on selection
+    // @param info          Info data to pass to the callback.
+    // @error               Invalid cookie handle.
+    public native void SetPrefabMenu(CookieMenu type, const char[] display, CookieMenuHandler handler=INVALID_FUNCTION, any info=0);
+
+    // Returns the last updated timestamp for a client cookie
+    //
+    // @param client        Client index.
+    // @return              Last updated timestamp.
+    public native int GetClientTime(int client);
+
+    // Returns the access level of a cookie
+    //
+    // @return              CookieAccess access level.
+    // @error               Invalid cookie handle.
+    property CookieAccess AccessLevel
+    {
+        public native get();
+    }
 };
 
 /**
@@ -303,11 +358,11 @@ native Handle GetCookieIterator();
  * @return              True on success, false if there are no more commands.
  */
 native bool ReadCookieIterator(Handle iter,
-								char[] name,
-								int nameLen,
-								CookieAccess &access,
-								char[] desc="",
-								int descLen=0);
+                                char[] name,
+                                int nameLen,
+                                CookieAccess &access,
+                                char[] desc="",
+                                int descLen=0);
 
 /**
  * Returns the access level of a cookie
@@ -332,39 +387,39 @@ native int GetClientCookieTime(int client, Handle cookie);
  */
 public SharedPlugin __ext_cprefs =
 {
-	name = "Client Preferences",
-	file = "clientprefs.smx",
+    name = "Client Preferences",
+    file = "clientprefs.smx",
 #if defined REQUIRE_PLUGIN
-	required = 1,
+    required = 1,
 #else
-	required = 0,
+    required = 0,
 #endif
 };
 
 #if !defined REQUIRE_PLUGIN
 public void __ext_cprefs_SetNTVOptional()
 {
-	MarkNativeAsOptional("RegClientCookie");
-	MarkNativeAsOptional("FindClientCookie");
-	MarkNativeAsOptional("SetClientCookie");
-	MarkNativeAsOptional("GetClientCookie");
-	MarkNativeAsOptional("SetAuthIdCookie");
-	MarkNativeAsOptional("AreClientCookiesCached");
-	MarkNativeAsOptional("SetCookiePrefabMenu");
-	MarkNativeAsOptional("SetCookieMenuItem");
-	MarkNativeAsOptional("ShowCookieMenu");
-	MarkNativeAsOptional("GetCookieIterator");
-	MarkNativeAsOptional("ReadCookieIterator");
-	MarkNativeAsOptional("GetCookieAccess");
-	MarkNativeAsOptional("GetClientCookieTime");
+    MarkNativeAsOptional("RegClientCookie");
+    MarkNativeAsOptional("FindClientCookie");
+    MarkNativeAsOptional("SetClientCookie");
+    MarkNativeAsOptional("GetClientCookie");
+    MarkNativeAsOptional("SetAuthIdCookie");
+    MarkNativeAsOptional("AreClientCookiesCached");
+    MarkNativeAsOptional("SetCookiePrefabMenu");
+    MarkNativeAsOptional("SetCookieMenuItem");
+    MarkNativeAsOptional("ShowCookieMenu");
+    MarkNativeAsOptional("GetCookieIterator");
+    MarkNativeAsOptional("ReadCookieIterator");
+    MarkNativeAsOptional("GetCookieAccess");
+    MarkNativeAsOptional("GetClientCookieTime");
 
-	MarkNativeAsOptional("Cookie.Cookie");
-	MarkNativeAsOptional("Cookie.Find");
-	MarkNativeAsOptional("Cookie.Set");
-	MarkNativeAsOptional("Cookie.Get");
-	MarkNativeAsOptional("Cookie.SetByAuthId");
-	MarkNativeAsOptional("Cookie.SetPrefabMenu");
-	MarkNativeAsOptional("Cookie.GetClientTime");
-	MarkNativeAsOptional("Cookie.AccessLevel.get");
+    MarkNativeAsOptional("Cookie.Cookie");
+    MarkNativeAsOptional("Cookie.Find");
+    MarkNativeAsOptional("Cookie.Set");
+    MarkNativeAsOptional("Cookie.Get");
+    MarkNativeAsOptional("Cookie.SetByAuthId");
+    MarkNativeAsOptional("Cookie.SetPrefabMenu");
+    MarkNativeAsOptional("Cookie.GetClientTime");
+    MarkNativeAsOptional("Cookie.AccessLevel.get");
 }
 #endif
