@@ -333,6 +333,7 @@ public void OnDatabaseConnect(Database db, const char[] error, bool isInitialCon
 public void OnTablesSuccess(Database db, any data, int numQueries, Handle[] results, any[] queryData)
 {
     gB_IsReady = true;
+
     LateLoadClients();
 
     StringMapSnapshot snap = GetCookieDataSnapshot();

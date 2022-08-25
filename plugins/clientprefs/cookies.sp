@@ -44,21 +44,9 @@ bool IsPlayerDataPending(int client)
     return gB_DataPending[client];
 }
 
-bool SetCookieData(const char[] name, CookieData data)
+void SetCookieData(const char[] name, CookieData data)
 {
-    CookieData existingData;
-
-    bool exists = GetCookieDataByName(name, existingData);
-    if (!exists)
-    {
-        // ArrayList handle = new ArrayList(ByteCountToCells(30), 1);
-        // handle.SetString(0, name);
-
-        // data.ConsumerHandle = handle;
-    }
-
     g_Cookies.SetArray(name, data, sizeof(data));
-    return true;
 }
 
 void SetCookieKnownDatabaseId(const char[] name, int id)

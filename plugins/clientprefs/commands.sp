@@ -88,7 +88,7 @@ public Action Command_Cookies(int client, int args)
     {
         ReplyToCommand(client, "[SM] %t", "Protected Cookie", name);
         return Plugin_Handled;
-	}
+    }
 
     char value[100];
     GetCmdArg(2, value, sizeof(value));
