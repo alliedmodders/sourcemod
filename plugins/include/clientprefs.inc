@@ -75,6 +75,7 @@ enum CookieMenuAction
 };
 
 #define COOKIE_MAX_NAME_LENGTH 30 		/**< Maximum Cookie name length. */
+#define COOKIE_MAX_VALUE_LENGTH 100 		/**< Maximum Cookie value length. */
 #define COOKIE_MAX_DESCRIPTION_LENGTH 255 	/**< Maximum Cookie description length. */
 
 /**
