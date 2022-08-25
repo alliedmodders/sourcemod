@@ -402,27 +402,27 @@ public SharedPlugin __pl_cprefs =
 #if !defined REQUIRE_PLUGIN
 public void __pl_cprefs_SetNTVOptional()
 {
-    MarkNativeAsOptional("RegClientCookie");
-    MarkNativeAsOptional("FindClientCookie");
-    MarkNativeAsOptional("SetClientCookie");
-    MarkNativeAsOptional("GetClientCookie");
-    MarkNativeAsOptional("SetAuthIdCookie");
-    MarkNativeAsOptional("AreClientCookiesCached");
-    MarkNativeAsOptional("SetCookiePrefabMenu");
-    MarkNativeAsOptional("SetCookieMenuItem");
-    MarkNativeAsOptional("ShowCookieMenu");
-    MarkNativeAsOptional("GetCookieIterator");
-    MarkNativeAsOptional("ReadCookieIterator");
-    MarkNativeAsOptional("GetCookieAccess");
-    MarkNativeAsOptional("GetClientCookieTime");
+	MarkNativeAsOptional("RegClientCookie");
+	MarkNativeAsOptional("FindClientCookie");
+	MarkNativeAsOptional("SetClientCookie");
+	MarkNativeAsOptional("GetClientCookie");
+	MarkNativeAsOptional("SetAuthIdCookie");
+	MarkNativeAsOptional("AreClientCookiesCached");
+	MarkNativeAsOptional("SetCookiePrefabMenu");
+	MarkNativeAsOptional("SetCookieMenuItem");
+	MarkNativeAsOptional("ShowCookieMenu");
+	MarkNativeAsOptional("GetCookieIterator");
+	MarkNativeAsOptional("ReadCookieIterator");
+	MarkNativeAsOptional("GetCookieAccess");
+	MarkNativeAsOptional("GetClientCookieTime");
 
-    MarkNativeAsOptional("Cookie.Cookie");
-    MarkNativeAsOptional("Cookie.Find");
-    MarkNativeAsOptional("Cookie.Set");
-    MarkNativeAsOptional("Cookie.Get");
-    MarkNativeAsOptional("Cookie.SetByAuthId");
-    MarkNativeAsOptional("Cookie.SetPrefabMenu");
-    MarkNativeAsOptional("Cookie.GetClientTime");
-    MarkNativeAsOptional("Cookie.AccessLevel.get");
+	MarkNativeAsOptional("Cookie.Cookie");
+	MarkNativeAsOptional("Cookie.Find");
+	MarkNativeAsOptional("Cookie.Set");
+	MarkNativeAsOptional("Cookie.Get");
+	MarkNativeAsOptional("Cookie.SetByAuthId");
+	MarkNativeAsOptional("Cookie.SetPrefabMenu");
+	MarkNativeAsOptional("Cookie.GetClientTime");
+	MarkNativeAsOptional("Cookie.AccessLevel.get");
 }
 #endif
