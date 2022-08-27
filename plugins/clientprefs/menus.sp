@@ -33,8 +33,6 @@ void AddSettingsMenuItem(
     any userData
 ) {
     CookieMenuData data;
-    data.Type = type;
-    data.UserData = userData;
 
     bool hasData = GetMenuDataByName(cookieData.Name, data);
     if (!hasData)
@@ -47,6 +45,9 @@ void AddSettingsMenuItem(
     {
         data.Handler.AddFunction(callingPlugin, handler);
     }
+
+    data.Type = type;
+    data.UserData = userData;
 
     SetMenuDataByName(cookieData.Name, data);
 }
