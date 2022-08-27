@@ -10,7 +10,7 @@ void CreateNatives()
     CreateNative("AreClientCookiesCached", Native_AreClientCookiesCached);
     CreateNative("SetCookiePrefabMenu", Native_SetCookiePrefabMenu);
     //CreateNative("SetCookieMenuItem", Native_SetCookieMenuItem);
-    //CreateNative("ShowCookieMenu", Native_ShowCookieMenu);
+    CreateNative("ShowCookieMenu", Native_ShowCookieMenu);
     CreateNative("GetCookieIterator", Native_GetCookieIterator);
     CreateNative("ReadCookieIterator", Native_ReadCookieIterator);
 
@@ -198,6 +198,12 @@ public any Native_SetCookieValueByAuthId_Old(Handle plugin, int numParams)
     GetNativeString(3, value, sizeof(value));
 
     return SetCookieValueByAuthId_Impl(authId, value, handle);
+}
+
+public any Native_ShowCookieMenu(Handle plugin, int numParams)
+{
+    int client = GetNativeCell(1);
+    return DisplaySettingsMenu(client);
 }
 
 public any Native_GetCookieIterator(Handle plugin, int numParams)
