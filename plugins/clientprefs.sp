@@ -7,6 +7,7 @@
 Database g_Database = null;
 
 #include "clientprefs/utils.sp"
+#include "clientprefs/menus.sp"
 #include "clientprefs/cookies.sp"
 #include "clientprefs/commands.sp"
 #include "clientprefs/database.sp"
@@ -24,6 +25,7 @@ public Plugin myinfo =
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
+    InitMenus();
     InitCookies();
     CreateNatives();
     CreateForwards();

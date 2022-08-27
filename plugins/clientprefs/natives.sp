@@ -7,6 +7,10 @@ void CreateNatives()
     CreateNative("GetCookieAccess", Native_GetCookieAccess);
     CreateNative("GetClientCookieTime", Native_GetClientCookieTime_Old);
     CreateNative("SetAuthIdCookie", Native_SetCookieValueByAuthId_Old);
+    CreateNative("AreClientCookiesCached", Native_AreClientCookiesCached);
+    CreateNative("SetCookiePrefabMenu", Native_SetCookiePrefabMenu);
+    //CreateNative("SetCookieMenuItem", Native_SetCookieMenuItem);
+    //CreateNative("ShowCookieMenu", Native_ShowCookieMenu);
     CreateNative("GetCookieIterator", Native_GetCookieIterator);
     CreateNative("ReadCookieIterator", Native_ReadCookieIterator);
 
@@ -16,9 +20,8 @@ void CreateNatives()
     CreateNative("Cookie.Get", Native_GetCookieValue);
     CreateNative("Cookie.AccessLevel.get", Native_GetCookieAccess);
     CreateNative("Cookie.GetClientTime", Native_GetClientCookieTime);
+    CreateNative("Cookie.SetPrefabMenu", Native_SetCookiePrefabMenu);
     CreateNative("Cookie.SetByAuthId", Native_SetCookieValueByAuthId);
-
-    CreateNative("AreClientCookiesCached", Native_AreClientCookiesCached);
 }
 
 public any Native_RegCookie(Handle plugin, int numParams)
@@ -133,6 +136,44 @@ public any Native_GetClientCookieTime_Old(Handle plugin, int numParams)
     return GetClientCookieTime_Impl(client, handle);
 }
 
+public any Native_AreClientCookiesCached(Handle plugin, int numParams)
+{
+    int client = GetNativeCell(1);
+    if (client < 1 || client > MaxClients)
+    {
+        ThrowNativeError(SP_ERROR_NATIVE, "Client index %d is invalid", client);
+        return false;
+    }
+
+    return IsPlayerDataCached(client);
+}
+
+public any Native_SetCookiePrefabMenu(Handle plugin, int numParams)
+{
+    any handle = GetNativeCell(1);
+
+    CookieData data;
+
+    bool hasData = GetCookieDataFromConsumerHandle(handle, data);
+    if (!hasData)
+    {
+        // TODO: Throw?
+        return false;
+    }
+
+    CookieMenu type = GetNativeCell(2);
+
+    char display[128];
+    GetNativeString(3, display, sizeof(display));
+
+    Function handler = GetNativeFunction(4);
+
+    any userData = GetNativeCell(5);
+
+    AddSettingsMenuItem(plugin, data, display, type, handler, userData);
+    return true;
+}
+
 public any Native_SetCookieValueByAuthId(Handle plugin, int numParams)
 {
     any handle = GetNativeCell(1);
@@ -187,36 +228,12 @@ public any Native_ReadCookieIterator(Handle plugin, int numParams)
     return true;
 }
 
-public any Native_AreClientCookiesCached(Handle plugin, int numParams)
-{
-    int client = GetNativeCell(1);
-    if (client < 1 || client > MaxClients)
-    {
-        ThrowNativeError(SP_ERROR_NATIVE, "Client index %d is invalid", client);
-        return false;
-    }
-
-    return IsPlayerDataCached(client);
-}
-
 any SetCookieValue_Impl(int client, const char value[100], any handle)
 {
     CookieData cookieData;
+    GetCookieDataFromConsumerHandle(handle, cookieData);
 
-    bool hasCookieData = GetCookieDataFromConsumerHandle(handle, cookieData);
-    if (!hasCookieData)
-    {
-        return false;
-    }
-
-    PlayerData playerData;
-    GetCookiePlayerData(client, cookieData.Name, playerData);
-
-    playerData.Value = value;
-    playerData.Timestamp = GetTime();
-
-    SetPlayerData(client, cookieData.Name, playerData);
-    return true;
+    return UpdatePlayerCookieValue(client, cookieData.Name, value);
 }
 
 any GetCookieValue_Impl(int client, any handle)

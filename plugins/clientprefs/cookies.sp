@@ -118,6 +118,26 @@ int GetIteratorIndexFromConsumerHandle(ArrayList consumerHandle)
     return consumerHandle.Get(0);
 }
 
+bool UpdatePlayerCookieValue(int client, const char[] cookieName, const char value[100])
+{
+    CookieData cookieData;
+
+    bool hasCookieData = GetCookieDataByName(cookieName, cookieData);
+    if (!hasCookieData)
+    {
+        return false;
+    }
+
+    PlayerData playerData;
+    GetCookiePlayerData(client, cookieName, playerData);
+
+    playerData.Value = value;
+    playerData.Timestamp = GetTime();
+
+    SetPlayerData(client, cookieName, playerData);
+    return true;
+}
+
 bool IncrementIteratorIndexForConsumerHandle(ArrayList consumerHandle)
 {
     int index = GetIteratorIndexFromConsumerHandle(consumerHandle);

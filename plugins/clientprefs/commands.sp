@@ -1,7 +1,7 @@
 void CreateCommands()
 {
     RegConsoleCmd("sm_cookies", Command_Cookies, "sm_cookies <name> [value]");
-	//RegConsoleCmd("sm_settings", Command_Settings);
+    RegConsoleCmd("sm_settings", Command_Settings);
 }
 
 public Action Command_Cookies(int client, int args)
@@ -102,5 +102,11 @@ public Action Command_Cookies(int client, int args)
     // TODO: Decide on using internal state/funcs vs Plugin API
 
     ReplyToCommand(client, "[SM] %t", "Cookie Changed Value", name, value);
+    return Plugin_Handled;
+}
+
+public Action Command_Settings(int client, int args)
+{
+    DisplaySettingsMenu(client);
     return Plugin_Handled;
 }
