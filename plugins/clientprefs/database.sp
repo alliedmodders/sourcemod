@@ -1,14 +1,49 @@
-bool DB_TryConnect(bool isInitialConnect)
+static bool HasMigrated = false;
+static bool IsConnecting = false;
+
+bool DB_HasMigrated()
 {
+    return HasMigrated;
+}
+
+bool DB_IsConnected()
+{
+    return g_Database != null;
+}
+
+bool DB_IsConnecting()
+{
+    return IsConnecting;
+}
+
+void DB_SetHasMigrated(bool migrated)
+{
+    HasMigrated = migrated;
+}
+
+void DB_SetIsConnecting(bool connecting)
+{
+    IsConnecting = connecting;
+}
+
+bool DB_TryConnect()
+{
+    if (DB_IsConnected() || DB_IsConnecting())
+    {
+        return false;
+    }
+
+    DB_SetIsConnecting(true);
+
     if (SQL_CheckConfig("clientprefs"))
     {
-        Database.Connect(OnDatabaseConnect, "clientprefs", isInitialConnect);
+        Database.Connect(OnDatabaseConnect, "clientprefs");
         return true;
     }
 
     if (SQL_CheckConfig("storage-local"))
     {
-        Database.Connect(OnDatabaseConnect, "storage-local", isInitialConnect);
+        Database.Connect(OnDatabaseConnect, "storage-local");
         return true;
     }
 
@@ -18,7 +53,7 @@ bool DB_TryConnect(bool isInitialConnect)
 
 void DB_CreateTables()
 {
-    if (g_Database == null)
+    if (!DB_IsConnected())
     {
         return;
     }
@@ -130,7 +165,7 @@ void DB_CreateTables()
 
 void DB_SelectCookieId(const char[] name)
 {
-    if (g_Database == null)
+    if (!DB_IsConnected())
     {
         return;
     }
@@ -146,7 +181,7 @@ void DB_SelectCookieId(const char[] name)
 
 void DB_SelectPlayerData(int client, const char[] authId)
 {
-    if (g_Database == null)
+    if (!DB_IsConnected())
     {
         return;
     }
@@ -167,7 +202,7 @@ void DB_SelectPlayerData(int client, const char[] authId)
 
 void DB_InsertCookie(const char[] name, const char[] desc, CookieAccess accessLevel)
 {
-    if (g_Database == null)
+    if (!DB_IsConnected())
     {
         return;
     }
@@ -221,7 +256,7 @@ void DB_InsertCookie(const char[] name, const char[] desc, CookieAccess accessLe
 
 void DB_InsertPlayerData(const char[] authId, int cookieId, const char[] value)
 {
-    if (g_Database == null)
+    if (!DB_IsConnected())
     {
         return;
     }
@@ -288,10 +323,11 @@ void DB_InsertPlayerData(const char[] authId, int cookieId, const char[] value)
     g_Database.Query(OnInsertPlayerData, query);
 }
 
-public void OnDatabaseConnect(Database db, const char[] error, bool isInitialConnect)
+public void OnDatabaseConnect(Database db, const char[] error, any data)
 {
     g_Database = db;
-    gB_Connecting = false;
+
+    DB_SetIsConnecting(false);
 
     if (!db || strlen(error) > 0)
     {
@@ -299,60 +335,22 @@ public void OnDatabaseConnect(Database db, const char[] error, bool isInitialCon
         return;
     }
 
-    if (isInitialConnect)
+    if (!DB_HasMigrated())
     {
         DB_CreateTables();
     }
     else
     {
-        // TODO: Can we end up trying to insert more than once?
-        // Perhaps we need a property to the cookie data that indicates if one is in progress.
-
-        // TODO: Split into a function, this is re-used below in OnTablesSuccess
-
-        StringMapSnapshot snap = GetCookieDataSnapshot();
-        for (int i = 0; i < snap.Length; i++)
-        {
-            char name[30];
-            snap.GetKey(i, name, sizeof(name));
-
-            CookieData cookieData;
-            GetCookieDataByName(name, cookieData);
-
-            // If the database id is not set, this has not yet made it into the db
-            if (cookieData.dbId == 0)
-            {
-                DB_InsertCookie(cookieData.Name, cookieData.Description, cookieData.AccessLevel);
-            }
-        }
-
-        delete snap;
+        InsertPendingCookies();
     }
 }
 
 public void OnTablesSuccess(Database db, any data, int numQueries, Handle[] results, any[] queryData)
 {
-    gB_IsReady = true;
+    DB_SetHasMigrated(true);
 
     LateLoadClients();
-
-    StringMapSnapshot snap = GetCookieDataSnapshot();
-    for (int i = 0; i < snap.Length; i++)
-    {
-        char name[30];
-        snap.GetKey(i, name, sizeof(name));
-
-        CookieData cookieData;
-        GetCookieDataByName(name, cookieData);
-
-        // If the database id is not set, this has not yet made it into the db
-        if (cookieData.dbId == 0)
-        {
-            DB_InsertCookie(cookieData.Name, cookieData.Description, cookieData.AccessLevel);
-        }
-    }
-
-    delete snap;
+    InsertPendingCookies();
 }
 
 public void OnTablesFailure(Database db, any data, int numQueries, const char[] error, int failIndex, any[] queryData)

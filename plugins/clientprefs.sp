@@ -4,9 +4,6 @@
 #pragma semicolon 1
 #pragma newdecls required
 
-bool gB_IsReady = false;
-bool gB_Connecting = false;
-
 Database g_Database = null;
 
 #include "clientprefs/utils.sp"
@@ -42,7 +39,7 @@ public void OnPluginStart()
 
     CreateCommands();
 
-    gB_Connecting = DB_TryConnect(true);
+    DB_TryConnect();
 }
 
 public void OnPluginEnd()
@@ -56,16 +53,13 @@ public void OnPluginEnd()
 
 public void OnMapStart()
 {
-    if (!g_Database && !gB_Connecting)
-    {
-        gB_Connecting = DB_TryConnect(false);
-    }
+    DB_TryConnect();
 }
 
 // Second param is unused
 public void OnClientAuthorized(int client)
 {
-    if (!gB_IsReady || IsFakeClient(client))
+    if (!DB_HasMigrated() || IsFakeClient(client))
     {
         return;
     }
@@ -94,7 +88,9 @@ public void OnClientDisconnect(int client)
         return;
     }
 
+    // TODO: Could this use transactions per player?
     StringMapSnapshot snap = GetCookieDataSnapshot();
+
     for (int i = 0; i < snap.Length; i++)
     {
         char name[30];
@@ -135,4 +131,26 @@ void LateLoadClients()
 
         OnClientAuthorized(i);
     }
+}
+
+void InsertPendingCookies()
+{
+    StringMapSnapshot snap = GetCookieDataSnapshot();
+
+    for (int i = 0; i < snap.Length; i++)
+    {
+        char name[30];
+        snap.GetKey(i, name, sizeof(name));
+
+        CookieData cookieData;
+        GetCookieDataByName(name, cookieData);
+
+        // If the database id is not set, this has not yet made it into the db
+        if (cookieData.dbId == 0)
+        {
+            DB_InsertCookie(cookieData.Name, cookieData.Description, cookieData.AccessLevel);
+        }
+    }
+
+    delete snap;
 }
