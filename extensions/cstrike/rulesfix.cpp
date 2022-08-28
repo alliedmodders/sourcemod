@@ -36,6 +36,7 @@
 // Grab the convar ref
 ConVar *host_rules_show = nullptr;
 bool bPatched = false;
+int iPatchSize = -1;
 
 RulesFix rulesfix;
 
@@ -53,7 +54,7 @@ bool SetMTUMax(int iValue)
 
 	//If we never changed skip resetting
 	if (iOriginalValue == -1 && iValue == -1)
-		return true;
+		return false;
 
 	if (m_pMaxMTU == nullptr)
 	{
@@ -77,10 +78,16 @@ bool SetMTUMax(int iValue)
 
 void RulesFix::OnLoad()
 {
+	const char *patchSize = g_pGameConf->GetKeyValue("MTUPatchSize");
+	if (patchSize != NULL)
+	{
+		iPatchSize = atoi(patchSize);
+	}
+
 	host_rules_show = g_pCVar->FindVar("host_rules_show");
 	if (host_rules_show)
 	{
-		if (SetMTUMax(5000))
+		if (SetMTUMax(iPatchSize))
 		{
 			// Default to enabled. Explicit disable via cfg will still be obeyed.
 			host_rules_show->SetValue(true);
@@ -124,7 +131,7 @@ static void OnConVarChanged(IConVar *var, const char *pOldValue, float flOldValu
 		{
 			if (!bPatched)
 			{
-				if (SetMTUMax(5000))
+				if (SetMTUMax(iPatchSize))
 				{
 					bPatched = true;
 					NotifyAllCVars();
