@@ -706,6 +706,36 @@ static cell_t GetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 	return g_HL2.EntityToBCompatRef(pHandleEntity);
 }
 
+//memory addresses below 0x10000 are automatically considered invalid for dereferencing
+//this is copied over from smn_core.cpp
+#define VALID_MINIMUM_MEMORY_ADDRESS 0x10000
+
+static cell_t LoadEntityFromHandleAddress(IPluginContext *pContext, const cell_t *params)
+{
+#ifdef PLATFORM_X86
+	void *addr = reinterpret_cast<void*>(params[1]);
+#else
+	void *addr = pseudoAddr.FromPseudoAddress(params[1]);
+#endif
+
+	if (addr == NULL)
+	{
+		return pContext->ThrowNativeError("Address cannot be null");
+	}
+	else if (reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
+	{
+		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory.", addr);
+	}
+
+	CBaseHandle &hndl = *reinterpret_cast<CBaseHandle*>(addr);
+	CBaseEntity *pHandleEntity = g_HL2.ReferenceToEntity(hndl.GetEntryIndex());
+
+	if (!pHandleEntity || hndl != reinterpret_cast<IHandleEntity *>(pHandleEntity)->GetRefEHandle())
+		return -1;
+
+	return g_HL2.EntityToBCompatRef(pHandleEntity);
+}
+
 /* THIS GUY IS DEPRECATED. */
 static cell_t SetEntDataEnt(IPluginContext *pContext, const cell_t *params)
 {
@@ -788,6 +818,45 @@ static cell_t SetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 		g_HL2.SetEdictStateChanged(pEdict, offset);
 	}
 
+	return 1;
+}
+
+static cell_t StoreEntityToHandleAddress(IPluginContext *pContext, const cell_t *params)
+{
+#ifdef PLATFORM_X86
+	void *addr = reinterpret_cast<void*>(params[1]);
+#else
+	void *addr = pseudoAddr.FromPseudoAddress(params[1]);
+#endif
+
+	if (addr == NULL)
+	{
+		return pContext->ThrowNativeError("Address cannot be null");
+	}
+	else if (reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
+	{
+		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory.", addr);
+	}
+
+	CBaseHandle &hndl = *reinterpret_cast<CBaseHandle*>(addr);
+	CBaseEntity *pHandleEntity = g_HL2.ReferenceToEntity(hndl.GetEntryIndex());
+
+	if ((unsigned)params[2] == INVALID_EHANDLE_INDEX)
+	{
+		hndl.Set(NULL);
+	}
+	else
+	{
+		CBaseEntity *pOther = GetEntity(params[2]);
+
+		if (!pOther)
+		{
+			return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[3]), params[3]);
+		}
+
+		IHandleEntity *pHandleEnt = (IHandleEntity *)pOther;
+		hndl.Set(pHandleEnt);
+	}
 	return 1;
 }
 
@@ -2750,5 +2819,7 @@ REGISTER_NATIVES(entityNatives)
 	{"SetEntPropVector",		SetEntPropVector},
 	{"GetEntityAddress",		GetEntityAddress},
 	{"FindDataMapInfo",		FindDataMapInfo},
+	{"LoadEntityFromHandleAddress",	LoadEntityFromHandleAddress},
+	{"StoreEntityToHandleAddress",	StoreEntityToHandleAddress},
 	{NULL,						NULL}
 };
