@@ -90,6 +90,8 @@ CNativeOwner g_CoreNatives;
 PseudoAddressManager pseudoAddr;
 #endif
 
+EntityLumpParseResult lastParseResult;
+
 static void AddCorePhraseFile(const char *filename)
 {
 	g_pCorePhrases->AddPhraseFile(filename);
@@ -149,16 +151,16 @@ static void SetEntityLumpWritable(bool writable)
 
 static bool ParseEntityLumpString(const char *pMapEntities, int &status, size_t &position)
 {
-	EntityLumpParseResult result = lumpmanager->Parse(pMapEntities);
-	status = static_cast<int>(result.m_Status);
-	position = static_cast<size_t>(result.m_Position);
-	return result;
+	lastParseResult = lumpmanager->Parse(pMapEntities);
+	status = static_cast<int>(lastParseResult.m_Status);
+	position = static_cast<size_t>(lastParseResult.m_Position);
+	return lastParseResult;
 }
 
 // returns nullptr if the original lump failed to parse
 static const char* GetEntityLumpString()
 {
-	if (g_strMapEntities.empty())
+	if (!lastParseResult)
 	{
 		return nullptr;
 	}
