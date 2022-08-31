@@ -715,7 +715,7 @@ static cell_t LoadEntityFromHandleAddress(IPluginContext *pContext, const cell_t
 #ifdef PLATFORM_X86
 	void *addr = reinterpret_cast<void*>(params[1]);
 #else
-	void *addr = pseudoAddr.FromPseudoAddress(params[1]);
+	void *addr = g_SourceMod.FromPseudoAddress(params[1]);
 #endif
 
 	if (addr == NULL)
@@ -826,7 +826,7 @@ static cell_t StoreEntityToHandleAddress(IPluginContext *pContext, const cell_t 
 #ifdef PLATFORM_X86
 	void *addr = reinterpret_cast<void*>(params[1]);
 #else
-	void *addr = pseudoAddr.FromPseudoAddress(params[1]);
+	void *addr = g_SourceMod.FromPseudoAddress(params[1]);
 #endif
 
 	if (addr == NULL)
