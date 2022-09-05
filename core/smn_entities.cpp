@@ -850,7 +850,7 @@ static cell_t StoreEntityToHandleAddress(IPluginContext *pContext, const cell_t 
 
 		if (!pOther)
 		{
-			return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[3]), params[3]);
+			return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[2]), params[2]);
 		}
 
 		IHandleEntity *pHandleEnt = (IHandleEntity *)pOther;
