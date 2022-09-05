@@ -54,6 +54,7 @@ SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
 SH_DECL_HOOK1_void(IServerGameDLL, GameFrame, SH_NOATTRIB, false, bool);
 SH_DECL_HOOK1_void(IServerGameDLL, Think, SH_NOATTRIB, false, bool);
 SH_DECL_HOOK1_void(IVEngineServer, ServerCommand, SH_NOATTRIB, false, const char *);
+SH_DECL_HOOK0(IVEngineServer, GetMapEntitiesString, SH_NOATTRIB, 0, const char *);
 
 SourceModBase g_SourceMod;
 
@@ -278,6 +279,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 
 	/* Hook this now so we can detect startup without calling StartSourceMod() */
 	SH_ADD_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(this, &SourceModBase::LevelInit), false);
+	SH_ADD_HOOK(IVEngineServer, GetMapEntitiesString, engine, SH_MEMBER(this, &SourceModBase::GetMapEntitiesString), false);
 
 	/* Only load if we're not late */
 	if (!late)
@@ -416,10 +418,32 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 
 	g_LevelEndBarrier = true;
 
+	int parseError;
+	size_t position;
+	bool success = logicore.ParseEntityLumpString(pMapEntities, parseError, position);
+
+	logicore.SetEntityLumpWritable(true);
 	g_pOnMapInit->PushString(pMapName);
 	g_pOnMapInit->Execute();
+	logicore.SetEntityLumpWritable(false);
 
-	RETURN_META_VALUE(MRES_IGNORED, true);
+	if (!success)
+	{
+		logger->LogError("Map entity lump parsing for %s failed with error code %d on position %d", pMapName, parseError, position);
+		RETURN_META_VALUE(MRES_IGNORED, true);
+	}
+
+	RETURN_META_VALUE_NEWPARAMS(MRES_HANDLED, true, &IServerGameDLL::LevelInit, (pMapName, logicore.GetEntityLumpString(), pOldLevel, pLandmarkName, loadGame, background));
+}
+
+const char *SourceModBase::GetMapEntitiesString()
+{
+	const char *pNewMapEntities = logicore.GetEntityLumpString();
+	if (pNewMapEntities != nullptr)
+	{
+		RETURN_META_VALUE(MRES_SUPERCEDE, pNewMapEntities);
+	}
+	RETURN_META_VALUE(MRES_IGNORED, NULL);
 }
 
 void SourceModBase::LevelShutdown()
@@ -534,6 +558,7 @@ void SourceModBase::CloseSourceMod()
 		return;
 
 	SH_REMOVE_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(this, &SourceModBase::LevelInit), false);
+	SH_REMOVE_HOOK(IVEngineServer, GetMapEntitiesString, engine, SH_MEMBER(this, &SourceModBase::GetMapEntitiesString), false);
 
 	if (g_Loaded)
 	{

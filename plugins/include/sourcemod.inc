@@ -76,6 +76,7 @@ struct Plugin
 #include <commandfilters>
 #include <nextmap>
 #include <commandline>
+#include <entitylump>
 
 enum APLRes
 {
