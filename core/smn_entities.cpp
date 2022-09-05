@@ -839,7 +839,6 @@ static cell_t StoreEntityToHandleAddress(IPluginContext *pContext, const cell_t 
 	}
 
 	CBaseHandle &hndl = *reinterpret_cast<CBaseHandle*>(addr);
-	CBaseEntity *pHandleEntity = g_HL2.ReferenceToEntity(hndl.GetEntryIndex());
 
 	if ((unsigned)params[2] == INVALID_EHANDLE_INDEX)
 	{
