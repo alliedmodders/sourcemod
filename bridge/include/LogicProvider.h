@@ -73,6 +73,9 @@ struct sm_logic_t
 	void            (*FreeCellArray)(ICellArray *arr);
 	void *			(*FromPseudoAddress)(uint32_t pseudoAddr);
 	uint32_t		(*ToPseudoAddress)(void *addr);
+	void			(*SetEntityLumpWritable)(bool writable);
+	bool			(*ParseEntityLumpString)(const char *entityString, int &status, size_t &position);
+	const char *	(*GetEntityLumpString)();
 	IScriptManager	*scripts;
 	IShareSys		*sharesys;
 	IExtensionSys	*extsys;
