@@ -67,8 +67,8 @@ public Action Command_Play(int client, int args)
  	char Arg[65];
 	int len = BreakString(Arguments, Arg, sizeof(Arg));
 
-	/* Make sure it does not go out of bound by doing "sm_play user  "*/
-	if (len == -1)
+	/* Make sure it does not go out of bound by doing "sm_play user  " - also check for semicolons to prevent additional commands from being run on the client */
+	if (len == -1 || StrContains(Arguments, ";") != -1)
 	{
 		ReplyToCommand(client, "[SM] Usage: sm_play <#userid|name> <filename>");
 		return Plugin_Handled;
