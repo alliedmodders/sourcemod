@@ -757,7 +757,6 @@ static cell_t smn_KeyValuesExport(IPluginContext *pCtx, const cell_t *params)
 	HandleError herr;
 	HandleSecurity sec;
 	KeyValueStack *pStk;
-	char *name;
 
 	sec.pOwner = NULL;
 	sec.pIdentity = g_pCoreIdent;
@@ -767,11 +766,10 @@ static cell_t smn_KeyValuesExport(IPluginContext *pCtx, const cell_t *params)
 	{
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
 	}
-	pCtx->LocalToString(params[2], &name);
 
-	KeyValues *pNewKV = new KeyValues(name[0] == '\0' ? NULL : name); 
+	KeyValues *pNewKV = new KeyValues(NULL /* Will be initialized in KeyValues::operator=() */ ); 
 
-	*pNewKV = *(pStk->pCurRoot.front()); // KeyValues::operator= to recursive copy.
+	*pNewKV = *(pStk->pCurRoot.front()); // KeyValues::operator=() to recursive copy.
 
 	KeyValueStack *pExportStk = new KeyValueStack;
 

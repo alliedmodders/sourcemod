@@ -65,10 +65,8 @@ methodmap KeyValues < Handle
 	// Exports a KeyValues tree to new descriptor. The tree is dumped from the current position.
 	// The Handle must be closed.
 	//
-	// @param name          Name of the root section where the export is placed.
-	//                      If NULL_STIRNG, export without a root section.
 	// @return              A Handle to a new KeyValues structure.
-	public native KeyValues Export(const char[] name = NULL_STRING);
+	public native KeyValues Export();
 
 	// Exports a KeyValues tree to a file. The tree is dumped from the current position.
 	//
