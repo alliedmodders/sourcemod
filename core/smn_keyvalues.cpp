@@ -751,7 +751,7 @@ static cell_t smn_KvGetDataType(IPluginContext *pCtx, const cell_t *params)
 	return pStk->pCurRoot.front()->GetDataType(name);
 }
 
-staitc cell_t smn_KeyValuesExport(IPluginContext *pCtx, const cell_t *params)
+static cell_t smn_KeyValuesExport(IPluginContext *pCtx, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
@@ -771,7 +771,7 @@ staitc cell_t smn_KeyValuesExport(IPluginContext *pCtx, const cell_t *params)
 
 	KeyValues *pNewKV = new KeyValues(name[0] == '\0' ? NULL : name); 
 
-	*pNewKV = *pStk->pCurRoot; // KeyValues::operator= to recursive copy.
+	*pNewKV = *(pStk->pCurRoot.front()); // KeyValues::operator= to recursive copy.
 
 	KeyValueStack *pExportStk = new KeyValueStack;
 
