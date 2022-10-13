@@ -859,6 +859,39 @@ inline static cell_t ReadSecureAddressCell(IPluginContext *pContext, cell_t cadd
 	return (cell_t)*reinterpret_cast<T *>(addr);
 }
 
+template <typename T>
+inline static cell_t WriteSecureAddressCell(IPluginContext *pContext, cell_t caddr, cell_t coffset, cell_t cvalue)
+{
+#ifdef PLATFORM_X86
+	void *addr = reinterpret_cast<void *>(caddr + coffset);
+#else
+	void *addr = pseudoAddr.FromPseudoAddress((uint32_t)caddr, (uint32_t)coffset);
+#endif
+
+	if (!IsAddressValidRange(addr))
+	{
+	#ifdef _DEBUG
+		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory (base is 0x%x, offset is 0x%x, read block size is %d)", addr, caddr, coffset, sizeof(T));
+	#else
+		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory", addr);
+	#endif
+	}
+
+#ifdef _DEBUG
+	if (!HasAddressAccess<SH_MEM_WRITE>(addr))
+	{
+		return pContext->ThrowNativeError("Invalid address access by 0x%x to write memory (base is 0x%x, offset is 0x%x, read block size is %d)", addr, caddr, coffset, sizeof(T));
+	}
+#endif
+
+	// If you have crash, enable _DEBUG for profiling which plugin the address is not valid.
+	cell_t old_cvalue = (cell_t)*reinterpret_cast<T *>(addr);
+
+	*reinterpret_cast<T *>(addr) = (T)cvalue;
+
+	return old_cvalue;
+}
+
 static cell_t Address_ReadInt8(IPluginContext *pContext, const cell_t *params)
 {
 	return ReadSecureAddressCell<uint8_t>(pContext, params[1], params[2]);
@@ -872,6 +905,21 @@ static cell_t Address_ReadInt16(IPluginContext *pContext, const cell_t *params)
 static cell_t Address_ReadInt32(IPluginContext *pContext, const cell_t *params)
 {
 	return ReadSecureAddressCell<uint32_t>(pContext, params[1], params[2]);
+}
+
+static cell_t Address_WriteInt8(IPluginContext *pContext, const cell_t *params)
+{
+	return WriteSecureAddressCell<uint8_t>(pContext, params[1], params[3], params[2]);
+}
+
+static cell_t Address_WriteInt16(IPluginContext *pContext, const cell_t *params)
+{
+	return WriteSecureAddressCell<uint16_t>(pContext, params[1], params[3], params[2]);
+}
+
+static cell_t Address_WriteInt32(IPluginContext *pContext, const cell_t *params)
+{
+	return WriteSecureAddressCell<uint32_t>(pContext, params[1], params[3], params[2]);
 }
 
 static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
@@ -1176,6 +1224,9 @@ REGISTER_NATIVES(coreNatives)
 	{"Address.ReadInt8",						Address_ReadInt8},
 	{"Address.ReadInt16",						Address_ReadInt16},
 	{"Address.ReadInt32",						Address_ReadInt32},
+	{"Address.WriteInt8",						Address_WriteInt8},
+	{"Address.WriteInt16",						Address_WriteInt16},
+	{"Address.WriteInt32",						Address_WriteInt32},
 	
 	{"FrameIterator.FrameIterator",				FrameIterator_Create},
 	{"FrameIterator.Next",						FrameIterator_Next},

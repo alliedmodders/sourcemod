@@ -717,6 +717,10 @@ methodmap Address
 	public native any ReadInt8(int offset = 0);
 	public native any ReadInt16(int offset = 0);
 	public native any ReadInt32(int offset = 0);
+
+	public native any WriteInt8(any data, int offset = 0);
+	public native any WriteInt16(any data, int offset = 0);
+	public native any WriteInt32(any data, int offset = 0);
 };
 
 /**
