@@ -816,7 +816,7 @@ enum NumberType
 //memory addresses below 0x10000 are automatically considered invalid for dereferencing
 #define VALID_MINIMUM_MEMORY_ADDRESS 0x10000
 
-inline static void *GetAddress(cell_t caddr, cell_t coffset)
+static inline void *GetAddress(cell_t caddr, cell_t coffset)
 {
 #ifdef PLATFORM_X86
 	return reinterpret_cast<void *>(caddr + coffset);
@@ -825,32 +825,32 @@ inline static void *GetAddress(cell_t caddr, cell_t coffset)
 #endif
 }
 
-inline static bool IsAddressValidRange(void *addr)
+static inline bool IsAddressValidRange(void *addr)
 {
 	return addr != NULL && reinterpret_cast<uintptr_t>(addr) >= VALID_MINIMUM_MEMORY_ADDRESS;
 }
 
-inline static int GetAddressAccess(void *addr)
+static inline int GetAddressAccess(void *addr)
 {
 	int bits;
 
 	return SourceHook::GetPageBits(addr, &bits) ? bits : 0;
 }
 
-inline static bool SetAddressAccess(void *addr, size_t len, int access)
+static inline bool SetAddressAccess(void *addr, size_t len, int access)
 {
 	return SourceHook::SetMemAccess(addr, len, access);
 }
 
 // Very slowly if iterate by each address cell.
 template <int A /* By SH_MEM_* defines. */>
-inline static bool HasAddressAccess(void *addr)
+static inline bool HasAddressAccess(void *addr)
 {
 	return (GetAddressAccess(addr) & A) != 0;
 }
 
 template <typename T>
-inline static cell_t ReadSecureAddressCell(IPluginContext *pContext, cell_t caddr, cell_t coffset)
+static inline cell_t ReadSecureAddressCell(IPluginContext *pContext, cell_t caddr, cell_t coffset)
 {
 	void *addr = GetAddress(caddr, coffset);
 
@@ -875,7 +875,7 @@ inline static cell_t ReadSecureAddressCell(IPluginContext *pContext, cell_t cadd
 }
 
 template <typename T>
-inline static cell_t WriteSecureAddressCell(IPluginContext *pContext, cell_t caddr, cell_t coffset, cell_t cvalue)
+static inline cell_t WriteSecureAddressCell(IPluginContext *pContext, cell_t caddr, cell_t coffset, cell_t cvalue)
 {
 	void *addr = GetAddress(caddr, coffset);
 
@@ -903,12 +903,12 @@ inline static cell_t WriteSecureAddressCell(IPluginContext *pContext, cell_t cad
 	return old_cvalue;
 }
 
-inline static int GetSecureAddressAccessCell(IPluginContext *pContext, cell_t caddr, cell_t coffset)
+static inline int GetSecureAddressAccessCell(IPluginContext *pContext, cell_t caddr, cell_t coffset)
 {
 	return GetAddressAccess(GetAddress(caddr, coffset));
 }
 
-inline static cell_t SetSecureAddressAccessCell(IPluginContext *pContext, cell_t caddr, cell_t coffset, cell_t size, cell_t access)
+static inline cell_t SetSecureAddressAccessCell(IPluginContext *pContext, cell_t caddr, cell_t coffset, cell_t size, cell_t access)
 {
 	return (cell_t)SetAddressAccess(GetAddress(caddr, coffset), (size_t)size, (int)access);
 }
