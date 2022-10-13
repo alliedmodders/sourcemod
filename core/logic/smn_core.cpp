@@ -816,28 +816,38 @@ enum NumberType
 //memory addresses below 0x10000 are automatically considered invalid for dereferencing
 #define VALID_MINIMUM_MEMORY_ADDRESS 0x10000
 
+inline static void *GetAddress(cell_t caddr, cell_t coffset)
+{
+#ifdef PLATFORM_X86
+	return reinterpret_cast<void *>(caddr + coffset);
+#else
+	return pseudoAddr.FromPseudoAddress((uint32_t)caddr, (uint32_t)coffset);
+#endif
+}
+
 inline static bool IsAddressValidRange(void *addr)
 {
 	return addr != NULL && reinterpret_cast<uintptr_t>(addr) >= VALID_MINIMUM_MEMORY_ADDRESS;
+}
+
+inline static int GetAddressAccess(void *addr)
+{
+	int bits;
+
+	return SourceHook::GetPageBits(addr, &bits) ? bits : 0;
 }
 
 // Very slowly if iterate by each address cell.
 template <int A /* By SH_MEM_* defines. */>
 inline static bool HasAddressAccess(void *addr)
 {
-	int bits;
-
-	return SourceHook::GetPageBits(addr, &bits) && bits & A;
+	return (GetAddressAccess(addr) & A) != 0;
 }
 
 template <typename T>
 inline static cell_t ReadSecureAddressCell(IPluginContext *pContext, cell_t caddr, cell_t coffset)
 {
-#ifdef PLATFORM_X86
-	void *addr = reinterpret_cast<void *>(caddr + coffset);
-#else
-	void *addr = pseudoAddr.FromPseudoAddress((uint32_t)caddr, (uint32_t)coffset);
-#endif
+	void *addr = GetAddress(caddr, coffset);
 
 	if (!IsAddressValidRange(addr))
 	{
@@ -862,11 +872,7 @@ inline static cell_t ReadSecureAddressCell(IPluginContext *pContext, cell_t cadd
 template <typename T>
 inline static cell_t WriteSecureAddressCell(IPluginContext *pContext, cell_t caddr, cell_t coffset, cell_t cvalue)
 {
-#ifdef PLATFORM_X86
-	void *addr = reinterpret_cast<void *>(caddr + coffset);
-#else
-	void *addr = pseudoAddr.FromPseudoAddress((uint32_t)caddr, (uint32_t)coffset);
-#endif
+	void *addr = GetAddress(caddr, coffset);
 
 	if (!IsAddressValidRange(addr))
 	{
@@ -890,6 +896,11 @@ inline static cell_t WriteSecureAddressCell(IPluginContext *pContext, cell_t cad
 	*reinterpret_cast<T *>(addr) = (T)cvalue;
 
 	return old_cvalue;
+}
+
+inline static int GetSecureAddressAccessCell(IPluginContext *pContext, cell_t caddr, cell_t coffset)
+{
+	return GetAddressAccess(GetAddress(caddr, coffset));
 }
 
 static cell_t Address_ReadInt8(IPluginContext *pContext, const cell_t *params)
@@ -920,6 +931,11 @@ static cell_t Address_WriteInt16(IPluginContext *pContext, const cell_t *params)
 static cell_t Address_WriteInt32(IPluginContext *pContext, const cell_t *params)
 {
 	return WriteSecureAddressCell<uint32_t>(pContext, params[1], params[3], params[2]);
+}
+
+static cell_t Address_GetAccess(IPluginContext *pContext, const cell_t *params)
+{
+	return (cell_t)GetSecureAddressAccessCell(pContext, params[1], params[2]);
 }
 
 static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
@@ -1227,6 +1243,7 @@ REGISTER_NATIVES(coreNatives)
 	{"Address.WriteInt8",						Address_WriteInt8},
 	{"Address.WriteInt16",						Address_WriteInt16},
 	{"Address.WriteInt32",						Address_WriteInt32},
+	{"Address.GetAccess",						Address_GetAccess},
 	
 	{"FrameIterator.FrameIterator",				FrameIterator_Create},
 	{"FrameIterator.Next",						FrameIterator_Next},

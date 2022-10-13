@@ -697,6 +697,10 @@ native FeatureStatus GetFeatureStatus(FeatureType type, const char[] name);
 native void RequireFeature(FeatureType type, const char[] name,
                            const char[] fmt="", any ...);
 
+#define SH_MEM_READ (1 << 0)
+#define SH_MEM_WRITE (1 << 1)
+#define SH_MEM_EXEC (1 << 2)
+
 /**
  * Represents how many bytes we can read from an address with one load
  */
@@ -721,6 +725,8 @@ methodmap Address
 	public native any WriteInt8(any data, int offset = 0);
 	public native any WriteInt16(any data, int offset = 0);
 	public native any WriteInt32(any data, int offset = 0);
+
+	public native int GetAccess(int offset = 0);
 };
 
 /**
