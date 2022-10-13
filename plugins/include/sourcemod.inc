@@ -712,6 +712,13 @@ enum Address
     Address_Null = 0               // a typical invalid result when an address lookup fails
 };
 
+methodmap Address
+{
+	public native any ReadInt8(int offset = 0);
+	public native any ReadInt16(int offset = 0);
+	public native any ReadInt32(int offset = 0);
+};
+
 /**
  * Load up to 4 bytes from a memory address.
  *
