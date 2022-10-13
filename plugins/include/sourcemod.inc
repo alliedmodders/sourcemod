@@ -743,7 +743,7 @@ methodmap Address
 	// 
  	// @param data          Value to store at the address.
 	// @param offset        Offset from the base address (in bytes).
-	// @return              The value that is stored.
+	// @return              The old value that was stored.
 	// @error               Address is null or pointing to reserved memory.
 	public native any WriteInt8(any data, int offset = 0);
 
@@ -751,7 +751,7 @@ methodmap Address
 	// 
  	// @param data          Value to store at the address.
 	// @param offset        Offset from the base address (in bytes).
-	// @return              The value that is stored.
+	// @return              The old value that was stored.
 	// @error               Address is null or pointing to reserved memory.
 	public native any WriteInt16(any data, int offset = 0);
 
@@ -759,7 +759,7 @@ methodmap Address
 	// 
  	// @param data          Value to store at the address.
 	// @param offset        Offset from the base address (in bytes).
-	// @return              The value that is stored.
+	// @return              The old value that was stored.
 	// @error               Address is null or pointing to reserved memory.
 	public native any WriteInt32(any data, int offset = 0);
 
