@@ -837,6 +837,11 @@ inline static int GetAddressAccess(void *addr)
 	return SourceHook::GetPageBits(addr, &bits) ? bits : 0;
 }
 
+inline static bool SetAddressAccess(void *addr, size_t len, int access)
+{
+	return SourceHook::SetMemAccess(addr, len, access);
+}
+
 // Very slowly if iterate by each address cell.
 template <int A /* By SH_MEM_* defines. */>
 inline static bool HasAddressAccess(void *addr)
@@ -903,6 +908,11 @@ inline static int GetSecureAddressAccessCell(IPluginContext *pContext, cell_t ca
 	return GetAddressAccess(GetAddress(caddr, coffset));
 }
 
+inline static cell_t SetSecureAddressAccessCell(IPluginContext *pContext, cell_t caddr, cell_t coffset, cell_t size, cell_t access)
+{
+	return (cell_t)SetAddressAccess(GetAddress(caddr, coffset), (size_t)size, (int)access);
+}
+
 static cell_t Address_ReadInt8(IPluginContext *pContext, const cell_t *params)
 {
 	return ReadSecureAddressCell<uint8_t>(pContext, params[1], params[2]);
@@ -936,6 +946,11 @@ static cell_t Address_WriteInt32(IPluginContext *pContext, const cell_t *params)
 static cell_t Address_GetAccess(IPluginContext *pContext, const cell_t *params)
 {
 	return (cell_t)GetSecureAddressAccessCell(pContext, params[1], params[2]);
+}
+
+static cell_t Address_SetAccess(IPluginContext *pContext, const cell_t *params)
+{
+	return SetSecureAddressAccessCell(pContext, params[1], params[4], params[3], params[2]);
 }
 
 static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)

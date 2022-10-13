@@ -727,6 +727,7 @@ methodmap Address
 	public native any WriteInt32(any data, int offset = 0);
 
 	public native int GetAccess(int offset = 0);
+	public native bool SetAccess(int access, int size = 4, int offset = 0);
 };
 
 /**
