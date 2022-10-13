@@ -1259,6 +1259,7 @@ REGISTER_NATIVES(coreNatives)
 	{"Address.WriteInt16",						Address_WriteInt16},
 	{"Address.WriteInt32",						Address_WriteInt32},
 	{"Address.GetAccess",						Address_GetAccess},
+	{"Address.SetAccess",						Address_SetAccess},
 	
 	{"FrameIterator.FrameIterator",				FrameIterator_Create},
 	{"FrameIterator.Next",						FrameIterator_Next},
