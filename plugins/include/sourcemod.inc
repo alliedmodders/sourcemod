@@ -697,9 +697,9 @@ native FeatureStatus GetFeatureStatus(FeatureType type, const char[] name);
 native void RequireFeature(FeatureType type, const char[] name,
                            const char[] fmt="", any ...);
 
-#define SH_MEM_READ (1 << 0)
-#define SH_MEM_WRITE (1 << 1)
-#define SH_MEM_EXEC (1 << 2)
+#define SH_MEM_READ (1 << 0)    // Memory block can be read.
+#define SH_MEM_WRITE (1 << 1)   // Memory block can be write.
+#define SH_MEM_EXEC (1 << 2)    // Memory block can be execute. Usually the bytecode to be executed by CPU.
 
 /**
  * Represents how many bytes we can read from an address with one load
@@ -718,15 +718,64 @@ enum Address
 
 methodmap Address
 {
+	// Reads 1 byte from a memory address.
+	// 
+	// @param offset        Offset from the base address (in bytes).
+	// @return              The value that is stored.
+	// @error               Address is null or pointing to reserved memory.
 	public native any ReadInt8(int offset = 0);
+
+	// Reads 2 bytes from a memory address.
+	// 
+	// @param offset        Offset from the base address (in bytes).
+	// @return              The value that is stored.
+	// @error               Address is null or pointing to reserved memory.
 	public native any ReadInt16(int offset = 0);
+
+	// Reads 4 bytes from a memory address.
+	// 
+	// @param offset        Offset from the base address (in bytes).
+	// @return              The value that is stored.
+	// @error               Address is null or pointing to reserved memory.
 	public native any ReadInt32(int offset = 0);
 
+	// Writes 1 byte to a memory address.
+	// 
+ 	// @param data          Value to store at the address.
+	// @param offset        Offset from the base address (in bytes).
+	// @return              The value that is stored.
+	// @error               Address is null or pointing to reserved memory.
 	public native any WriteInt8(any data, int offset = 0);
+
+	// Writes 2 bytes to a memory address.
+	// 
+ 	// @param data          Value to store at the address.
+	// @param offset        Offset from the base address (in bytes).
+	// @return              The value that is stored.
+	// @error               Address is null or pointing to reserved memory.
 	public native any WriteInt16(any data, int offset = 0);
+
+	// Writes 4 bytes to a memory address.
+	// 
+ 	// @param data          Value to store at the address.
+	// @param offset        Offset from the base address (in bytes).
+	// @return              The value that is stored.
+	// @error               Address is null or pointing to reserved memory.
 	public native any WriteInt32(any data, int offset = 0);
 
+	// Gets accesses from a memory address block.
+	// 
+	// @param offset        Offset from the base address (in bytes).
+	// @return              Access flags. See SH_MEM_* for details.
 	public native int GetAccess(int offset = 0);
+
+	// Sets access flags to a memory address.
+	// Very effectively with setting accesses for large memory block.
+	// 
+	// @param access        Access flags. See SH_MEM_* for details.
+	// @param size          Memory block size to set accesses.
+	// @param offset        Offset from the base address (in bytes).
+	// @return              If true, accesses have been protected, otherwise failure.
 	public native bool SetAccess(int access, int size = 4, int offset = 0);
 };
 
