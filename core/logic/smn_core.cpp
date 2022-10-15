@@ -846,7 +846,7 @@ static inline bool SetAddressAccess(void *addr, size_t len, int access)
 template <int A /* By SH_MEM_* defines. */>
 static inline bool HasAddressAccess(void *addr)
 {
-	return (GetAddressAccess(addr) & A) != 0;
+	return (GetAddressAccess(addr) & A) == A;
 }
 
 template <typename T>
@@ -889,7 +889,7 @@ static inline cell_t WriteSecureAddressCell(IPluginContext *pContext, cell_t cad
 	}
 
 #ifdef _DEBUG
-	if (!HasAddressAccess<SH_MEM_WRITE>(addr))
+	if (!HasAddressAccess<SH_MEM_READ /* Old value is being read */ | SH_MEM_WRITE>(addr))
 	{
 		return pContext->ThrowNativeError("Invalid address access by 0x%x to write memory (base is 0x%x, offset is 0x%x, read block size is %d)", addr, caddr, coffset, sizeof(T));
 	}
