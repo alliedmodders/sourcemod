@@ -376,6 +376,20 @@ SMCResult SignatureGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 			return SMCResult_HaltFail;
 		}
 
+		if (!g_CurrentSignature->offset.length())
+		{
+			// DynamicDetours doesn't expose the passflags concept like SourceHook.
+			// See if we're trying to set some invalid flags on detour arguments.
+			for (auto &arg : g_CurrentSignature->args)
+			{
+				if ((arg.info.flags & ~PASSFLAG_BYVAL) > 0)
+				{
+					smutils->LogError(myself, "Function \"%s\" uses unsupported pass flags in argument \"%s\". Flags are only supported for virtual hooks: line: %i col: %i", g_CurrentFunctionName.c_str(), arg.name.c_str(), states->line, states->col);
+					return SMCResult_HaltFail;
+				}
+			}
+		}
+
 		// Save this function signature in our cache.
 		signatures_.insert(g_CurrentFunctionName.c_str(), g_CurrentSignature);
 		g_CurrentFunctionName = "";

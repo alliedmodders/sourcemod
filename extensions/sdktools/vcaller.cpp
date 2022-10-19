@@ -336,15 +336,25 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 			}
 			break;
 		case ValveCall_Server:
-            {
-                if (iserver == NULL)
-                {
-                    vc->stk_put(ptr);
-                    return pContext->ThrowNativeError("Server unsupported or not available; file a bug report");
-                }
-                *(void **)ptr = iserver;
-            }
-            break;
+			{
+				if (iserver == NULL)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("Server unsupported or not available; file a bug report");
+				}
+				*(void **)ptr = iserver;
+			}
+			break;
+		case ValveCall_Engine:
+			{
+				if (engine == NULL)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("Engine unsupported or not available; file a bug report");
+				}
+				*(void **)ptr = engine;
+			}
+			break;
 		case ValveCall_GameRules:
 			{
 				void *pGameRules = GameRules();
@@ -509,16 +519,7 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 					|| vc->retinfo->vtype == Valve_CBasePlayer)
 		{
 			CBaseEntity *pEntity = *(CBaseEntity **)(vc->retbuf);
-			if (!pEntity)
-			{
-				return -1;
-			}
-			edict_t *pEdict = gameents->BaseEntityToEdict(pEntity);
-			if (!pEdict || pEdict->IsFree())
-			{
-				return -1;
-			}
-			return IndexOfEdict(pEdict);
+			return gamehelpers->EntityToBCompatRef(pEntity);
 		} else if (vc->retinfo->vtype == Valve_Edict) {
 			edict_t *pEdict = *(edict_t **)(vc->retbuf);
 			if (!pEdict || pEdict->IsFree())

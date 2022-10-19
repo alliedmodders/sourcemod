@@ -31,7 +31,7 @@
 			// -*(_DWORD *)(v34 + 8) in ida 7 -v34[52]
 			"WeaponPrice"
 			{
-				"windows"		"200"
+				"windows"		"208"
 				"linux"			"208"
 				"linux64"		"328"
 				"mac64"			"328"

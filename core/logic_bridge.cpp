@@ -51,9 +51,6 @@
 #include <bridge/include/IVEngineServerBridge.h>
 #include <bridge/include/IPlayerInfoBridge.h>
 #include <bridge/include/IFileSystemBridge.h>
-#if PROTOBUF_PROXY_ENABLE
-# include "pb_handle.h"
-#endif
 
 sm_logic_t logicore;
 
@@ -636,6 +633,14 @@ void CoreProviderImpl::InitializeBridge()
 		this->matchmakingDSFactory = (void*)Sys_GetFactory(mmlib);
 	}
 
+	if (auto mmlib = ::filesystem->LoadModule("soundemittersystem" SOURCE_BIN_SUFFIX)) {
+		this->soundemittersystemFactory = (void*)Sys_GetFactory(mmlib);
+	}
+
+	if (auto mmlib = ::filesystem->LoadModule("vscript" SOURCE_BIN_SUFFIX)) {
+		this->vscriptFactory = (void*)Sys_GetFactory(mmlib);
+	}
+
 	logic_init_(this, &logicore);
 
 	// Join logic's SMGlobalClass instances.
@@ -655,41 +660,6 @@ void CoreProviderImpl::InitializeBridge()
 	adminsys = logicore.adminsys;
 	logger = logicore.logger;
 	rootmenu = logicore.rootmenu;
-}
-
-bool CoreProviderImpl::LoadProtobufProxy(char *error, size_t maxlength)
-{
-#if !defined(PROTOBUF_PROXY_ENABLE)
-	return false;
-#else
-	char file[PLATFORM_MAX_PATH];
-
-#if !defined(PROTOBUF_PROXY_BINARY_NAME)
-# error "No engine suffix defined"
-#endif
-
-	/* Now it's time to load the logic binary */
-	g_SMAPI->PathFormat(file,
-		sizeof(file),
-		"%s/bin/" PLATFORM_ARCH_FOLDER PROTOBUF_PROXY_BINARY_NAME PLATFORM_LIB_EXT,
-		g_SourceMod.GetSourceModPath());
-
-	char myerror[255];
-	pbproxy_ = ke::SharedLib::Open(file, myerror, sizeof(myerror));
-	if (!pbproxy_) {
-		ke::SafeSprintf(error, maxlength, "failed to load %s: %s", file, myerror);
-		return false;
-	}
-
-	auto fn = pbproxy_->get<GetProtobufProxyFn>("GetProtobufProxy");
-	if (!fn) {
-		ke::SafeStrcpy(error, maxlength, "could not find GetProtobufProxy function");
-		return false;
-	}
-
-	gProtobufProxy = fn();
-	return true;
-#endif
 }
 
 bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)

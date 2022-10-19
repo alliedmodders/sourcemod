@@ -528,6 +528,7 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 			pPlayer->m_LangId = translator->GetServerLanguage();
 		}
 #endif
+		pPlayer->m_OriginalLangId = pPlayer->m_LangId;
 	}
 	
 	List<IClientListener *>::iterator iter;
@@ -2035,6 +2036,7 @@ bool PlayerManager::HandleConVarQuery(QueryCvarCookie_t cookie, int client, EQue
 			unsigned int langid;
 			unsigned int new_langid = (translator->GetLanguageByName(cvarValue, &langid)) ? langid : translator->GetServerLanguage();
 			m_Players[i].m_LangId = new_langid;
+			m_Players[i].m_OriginalLangId = new_langid;
 			OnClientLanguageChanged(i, new_langid);
 
 			return true;
@@ -2063,6 +2065,7 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	m_pEdict = pEntity;
 	m_iIndex = IndexOfEdict(pEntity);
 	m_LangId = translator->GetServerLanguage();
+	m_OriginalLangId = m_LangId;
 
 	m_Serial.bits.index = m_iIndex;
 	m_Serial.bits.serial = g_PlayerSerialCount++;
@@ -2627,6 +2630,11 @@ void CPlayer::DoBasicAdminChecks()
 unsigned int CPlayer::GetLanguageId()
 {
 	return m_LangId;
+}
+
+unsigned int CPlayer::GetOriginalLanguageId()
+{
+	return m_OriginalLangId;
 }
 
 void CPlayer::SetLanguageId(unsigned int id)

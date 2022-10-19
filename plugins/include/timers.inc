@@ -51,17 +51,7 @@ typeset Timer
 	 * Called when the timer interval has elapsed.
 	 *
 	 * @param timer         Handle to the timer object.
-	 * @param hndl          Handle passed to CreateTimer() when timer was created.
-	 * @return              Plugin_Stop to stop a repeating timer, any other value for
-	 *                      default behavior.
-	 */
-	function Action(Handle timer, Handle hndl);
-
-	/**
-	 * Called when the timer interval has elapsed.
-	 *
-	 * @param timer         Handle to the timer object.
-	 * @param data          Data passed to CreateTimer() when timer was created.
+	 * @param data          Handle or value passed to CreateTimer() when timer was created.
 	 * @return              Plugin_Stop to stop a repeating timer, any other value for
 	 *                      default behavior.
 	 */
@@ -87,7 +77,7 @@ typeset Timer
  * @return              Handle to the timer object.  You do not need to call CloseHandle().
  *                      If the timer could not be created, INVALID_HANDLE will be returned.
  */
-native Handle CreateTimer(float interval, Timer func, any data=INVALID_HANDLE, int flags=0);
+native Handle CreateTimer(float interval, Timer func, any data=0, int flags=0);
 
 /**
  * Kills a timer.  Use this instead of CloseHandle() if you need more options.

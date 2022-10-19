@@ -38,6 +38,7 @@
 
 #include <am-vector.h>
 #include <am-string.h>
+#include <am-refcounting.h>
 #include <am-refcounting-threadsafe.h>
 
 class ConfDbInfo : public ke::RefcountedThreadsafe<ConfDbInfo>
@@ -56,7 +57,7 @@ public:
 	DatabaseInfo info;
 };
 
-class ConfDbInfoList : public std::vector<ConfDbInfo *>
+class ConfDbInfoList : public std::vector<ke::RefPtr<ConfDbInfo>>
 {
 	/* Allow internal usage of ConfDbInfoList */
 	friend class DBManager;
@@ -66,10 +67,10 @@ private:
 		return m_DefDriver;
 	}
 	
-	ConfDbInfo *GetDatabaseConf(const char *name) {
+	ke::RefPtr<ConfDbInfo> GetDatabaseConf(const char *name) {
 		for (size_t i = 0; i < this->size(); i++)
 		{
-			ConfDbInfo *current = this->at(i);
+			ke::RefPtr<ConfDbInfo> current = this->at(i);
 			/* If we run into the default configuration, then we'll save it
 			 * for the next call to GetDefaultConfiguration */ 
 			if (strcmp(current->name.c_str(), "default") == 0)
@@ -83,20 +84,15 @@ private:
 		}
 		return nullptr;
 	}
-	ConfDbInfo *GetDefaultConfiguration() {
+
+	ke::RefPtr<ConfDbInfo> GetDefaultConfiguration() {
 		return m_DefaultConfig;
 	}
 	void SetDefaultDriver(const char *input) {
 		m_DefDriver = std::string(input);
 	}
-	void ReleaseMembers() {
-		for (size_t i = 0; i < this->size(); i++) {
-			ConfDbInfo *current = this->at(i);
-			current->Release();
-		}
-	}
 private:
-	ConfDbInfo *m_DefaultConfig;
+	ke::RefPtr<ConfDbInfo> m_DefaultConfig;
 	std::string m_DefDriver;
 };
 
@@ -108,7 +104,7 @@ public:
 	~DatabaseConfBuilder();
 	void StartParse();
 	void SetPath(char* path);
-	ConfDbInfoList *GetConfigList();
+	ConfDbInfoList &GetConfigList();
 public: //ITextListener_SMC
 	void ReadSMC_ParseStart();
 	SMCResult ReadSMC_NewSection(const SMCStates *states, const char *name);
@@ -120,10 +116,10 @@ private:
 	unsigned int m_ParseLevel;
 	unsigned int m_ParseState;
 	ConfDbInfo *m_ParseCurrent;
-	ConfDbInfoList *m_ParseList;
+	ConfDbInfoList m_ParseList;
 private:
 	std::string m_Filename;
-	ConfDbInfoList *m_InfoList;
+	ConfDbInfoList m_InfoList;
 };
 
 #endif //_INCLUDE_DATABASE_CONF_BUILDER_H_
