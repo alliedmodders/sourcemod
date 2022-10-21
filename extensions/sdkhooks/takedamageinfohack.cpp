@@ -85,7 +85,7 @@ CTakeDamageInfoHack::CTakeDamageInfoHack( CBaseEntity *pInflictor, CBaseEntity *
 	m_eCritType = kCritType_None;
 #endif
 
-#if SOURCE_ENGINE >= SE_ALIENSWARM
+#if SOURCE_ENGINE >= SE_ALIENSWARM && SOURCE_ENGINE != SE_PVKII
 	m_flRadius = 0.0f;
 #endif
 

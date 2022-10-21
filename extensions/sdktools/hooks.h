@@ -56,7 +56,7 @@ public:
 	void OnMapStart();
 public: /* NetChannel/Related Hooks */
 	bool FileExists(const char *filename, const char *pathID);
-#if SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2
+#if (SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2) && SOURCE_ENGINE != SE_PVKII
 	bool SendFile(const char *filename, unsigned int transferID, bool isReplayDemo);
 #else
 	bool SendFile(const char *filename, unsigned int transferID);

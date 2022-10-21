@@ -52,7 +52,7 @@ static bool PVD_used = false;
 
 SH_DECL_MANUALHOOK2_void(PlayerRunCmdHook, 0, 0, 0, CUserCmd *, IMoveHelper *);
 SH_DECL_HOOK2(IBaseFileSystem, FileExists, SH_NOATTRIB, 0, bool, const char*, const char *);
-#if SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2
+#if (SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2) && SOURCE_ENGINE != SE_PVKII
 SH_DECL_HOOK3(INetChannel, SendFile, SH_NOATTRIB, 0, bool, const char *, unsigned int, bool);
 #else
 SH_DECL_HOOK2(INetChannel, SendFile, SH_NOATTRIB, 0, bool, const char *, unsigned int);
@@ -540,7 +540,7 @@ void CHookManager::ProcessPacket_Post(struct netpacket_s* packet, bool bHasHeade
 	RETURN_META(MRES_IGNORED);
 }
 
-#if SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2
+#if (SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2) && SOURCE_ENGINE != SE_PVKII
 bool CHookManager::SendFile(const char *filename, unsigned int transferID, bool isReplayDemo)
 #else
 bool CHookManager::SendFile(const char *filename, unsigned int transferID)
@@ -572,7 +572,7 @@ bool CHookManager::SendFile(const char *filename, unsigned int transferID)
 	if (res != Pl_Continue)
 	{
 		/* Mimic the Engine. */
-#if SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2
+#if (SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2) && SOURCE_ENGINE != SE_PVKII
 		pNetChannel->DenyFile(filename, transferID, isReplayDemo);
 #else
 		pNetChannel->DenyFile(filename, transferID);

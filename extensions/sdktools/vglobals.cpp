@@ -377,7 +377,7 @@ const char *GetDTTypeName(int type)
 		{
 			return "datatable";
 		}
-#if SOURCE_ENGINE >= SE_ALIENSWARM
+#if SOURCE_ENGINE >= SE_ALIENSWARM && SOURCE_ENGINE != SE_PVKII
 	case DPT_Int64:
 		{
 			return "int64";

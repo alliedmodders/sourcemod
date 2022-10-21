@@ -121,7 +121,7 @@ typedef int QueryCvarCookie_t;
 	typedef FnChangeCallback					FnChangeCallback_t;
 #endif //SOURCE_ENGINE >= SE_ORANGEBOX
 
-#if SOURCE_ENGINE >= SE_LEFT4DEAD
+#if SOURCE_ENGINE >= SE_LEFT4DEAD && SOURCE_ENGINE != SE_PVKII
 	inline int IndexOfEdict(const edict_t *pEdict)
 	{
 		return (int)(pEdict - gpGlobals->pEdicts);
@@ -151,6 +151,6 @@ typedef int QueryCvarCookie_t;
 	{
 		return td->fieldOffset[TD_OFFSET_NORMAL];
 	}
-#endif //SOURCE_ENGINE >= SE_LEFT4DEAD
+#endif //SOURCE_ENGINE >= SE_LEFT4DEAD && SOURCE_ENGINE != SE_PVKII
 
 #endif //_INCLUDE_SOURCEMOD_COMPAT_WRAPPERS_H_

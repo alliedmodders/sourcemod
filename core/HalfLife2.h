@@ -163,7 +163,7 @@ public:
 	int				m_SerialNumber;
 	CEntInfo		*m_pPrev;
 	CEntInfo		*m_pNext;
-#if SOURCE_ENGINE >= SE_PORTAL2
+#if SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
 	string_t		m_iName;
 	string_t		m_iClassName;
 #endif
@@ -179,7 +179,7 @@ enum class SMFindMapResult : cell_t {
 	PossiblyAvailable
 };
 
-#if SOURCE_ENGINE >= SE_LEFT4DEAD && defined PLATFORM_WINDOWS
+#if SOURCE_ENGINE >= SE_LEFT4DEAD && defined PLATFORM_WINDOWS && SOURCE_ENGINE != SE_PVKII
 template< class T, class I = int >
 class CUtlMemoryGlobalMalloc;
 class CUtlString;
@@ -235,7 +235,7 @@ public: //IGameHelpers
 	bool IsMapValid(const char *map);
 	SMFindMapResult FindMap(char *pMapName, size_t nMapNameMax);
 	SMFindMapResult FindMap(const char *pMapName, char *pFoundMap = NULL, size_t nMapNameMax = 0);
-#if SOURCE_ENGINE >= SE_LEFT4DEAD && defined PLATFORM_WINDOWS && SOURCE_ENGINE != SE_MOCK
+#if SOURCE_ENGINE >= SE_LEFT4DEAD && defined PLATFORM_WINDOWS && SOURCE_ENGINE != SE_MOCK && SOURCE_ENGINE != SE_PVKII
 	void FreeUtlVectorUtlString(CUtlVector<CUtlString, CUtlMemoryGlobalMalloc<CUtlString>> &vec);
 #endif
 	bool GetMapDisplayName(const char *pMapName, char *pDisplayname, size_t nMapNameMax);
