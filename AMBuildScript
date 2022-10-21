@@ -71,7 +71,7 @@ SDKMap = {
   'bms':  SDK('HL2SDKBMS', '2.bms', '10', 'BMS', WinLinux, 'bms'),
   'doi':  SDK('HL2SDKDOI', '2.doi', '20', 'DOI', WinLinuxMac, 'doi'),
   'mock': SDK('HL2SDK-MOCK', '2.mock', '999', 'MOCK', Mock, 'mock'),
-  'pvkii': SDK('HL2SDKPVKII', '2.pvkii', '22', 'PVKII', WinLinux, 'pvkii'),
+  'pvkii': SDK('HL2SDKPVKII', '2.pvkii', '23', 'PVKII', WinLinux, 'pvkii'),
 }
 
 # Stable sorting for command equivalence in AMBuild.
