@@ -235,11 +235,12 @@ void GetIServer()
 	|| SOURCE_ENGINE == SE_BMS     \
 	|| SOURCE_ENGINE == SE_DOI     \
 	|| SOURCE_ENGINE == SE_BLADE   \
-	|| SOURCE_ENGINE == SE_INSURGENCY
+	|| SOURCE_ENGINE == SE_INSURGENCY \
+	|| SOURCE_ENGINE == SE_PVKII
 
-#if SOURCE_ENGINE == SE_SDK2013
+#if SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_PVKII
 	if (g_SMAPI->GetEngineFactory(false)("VEngineServer022", nullptr))
-#endif // SE_SDK2013
+#endif // SE_SDK2013 || SE_PVKII
 	{
 		iserver = engine->GetIServer();
 		return;

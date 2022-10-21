@@ -1458,7 +1458,7 @@ static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 			// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS \
 	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+	|| SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_PVKII
 			if (pProp->GetFlags() & SPROP_VARINT)
 			{
 				bit_count = sizeof(int) * 8;
@@ -1577,7 +1577,7 @@ static cell_t SetEntProp(IPluginContext *pContext, const cell_t *params)
 			// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS \
 	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+	|| SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_PVKII
 			if (pProp->GetFlags() & SPROP_VARINT)
 			{
 				bit_count = sizeof(int) * 8;
@@ -2508,7 +2508,7 @@ static int32_t SDKEntFlagToSMEntFlag(int flag)
 		case FL_FREEZING:
 			return ENTFLAG_FREEZING;
 #elif SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 		case FL_EP2V_UNKNOWN:
 			return ENTFLAG_EP2V_UNKNOWN1;
 #endif
@@ -2587,7 +2587,7 @@ static int32_t SMEntFlagToSDKEntFlag(int32_t flag)
 		case ENTFLAG_FREEZING:
 			return FL_FREEZING;
 #elif SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 		case ENTFLAG_EP2V_UNKNOWN1:
 			return FL_EP2V_UNKNOWN;
 #endif

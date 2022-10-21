@@ -40,6 +40,7 @@ PossibleSDKs = {
   'contagion':  SDK('HL2SDKCONTAGION', '2.contagion', '14', 'CONTAGION', WinOnly, 'contagion'),
   'bms':  SDK('HL2SDKBMS', '2.bms', '10', 'BMS', WinLinux, 'bms'),
   'doi':  SDK('HL2SDKDOI', '2.doi', '20', 'DOI', WinLinuxMac, 'doi'),
+  'pvkii': SDK('HL2SDKPVKII', '2.pvkii', '22', 'PVKII', WinLinux, 'pvkii'),
 }
 
 def ResolveEnvPath(env, folder):
@@ -328,7 +329,7 @@ class ExtensionConfig(object):
 
     compiler.defines += ['SOURCE_ENGINE=' + sdk.code]
 
-    if sdk.name in ['sdk2013', 'bms'] and compiler.like('gcc'):
+    if sdk.name in ['sdk2013', 'bms', 'pvkii'] and compiler.like('gcc'):
       # The 2013 SDK already has these in public/tier0/basetypes.h
       compiler.defines.remove('stricmp=strcasecmp')
       compiler.defines.remove('_stricmp=strcasecmp')
@@ -345,7 +346,7 @@ class ExtensionConfig(object):
     if sdk.name in ['blade', 'insurgency', 'doi', 'csgo']:
       compiler.defines += ['NETWORK_VARS_ENABLED']
 
-    if sdk.name in ['css', 'hl2dm', 'dods', 'sdk2013', 'bms', 'tf2', 'l4d', 'nucleardawn', 'l4d2']:
+    if sdk.name in ['css', 'hl2dm', 'dods', 'sdk2013', 'bms', 'tf2', 'l4d', 'nucleardawn', 'l4d2', 'pvkii']:
       if builder.target_platform in ['linux', 'mac']:
         compiler.defines += ['NO_HOOK_MALLOC', 'NO_MALLOC_OVERRIDE']
 
@@ -358,7 +359,7 @@ class ExtensionConfig(object):
     if builder.target_platform == 'linux':
       if sdk.name == 'episode1':
         lib_folder = os.path.join(sdk.path, 'linux_sdk')
-      elif sdk.name in ['sdk2013', 'bms']:
+      elif sdk.name in ['sdk2013', 'bms', 'pvkii']:
         lib_folder = os.path.join(sdk.path, 'lib', 'public', 'linux32')
       else:
         lib_folder = os.path.join(sdk.path, 'lib', 'linux')
@@ -369,7 +370,7 @@ class ExtensionConfig(object):
         lib_folder = os.path.join(sdk.path, 'lib', 'mac')
 
     if builder.target_platform in ['linux', 'mac']:
-      if sdk.name in ['sdk2013', 'bms']:
+      if sdk.name in ['sdk2013', 'bms', 'pvkii']:
         compiler.postlink += [
           compiler.Dep(os.path.join(lib_folder, 'tier1.a')),
           compiler.Dep(os.path.join(lib_folder, 'mathlib.a'))
@@ -387,7 +388,7 @@ class ExtensionConfig(object):
     if builder.target_platform == 'linux':
       if sdk.name in ['css', 'hl2dm', 'dods', 'tf2', 'sdk2013', 'bms', 'nucleardawn', 'l4d2', 'insurgency', 'doi']:
         dynamic_libs = ['libtier0_srv.so', 'libvstdlib_srv.so']
-      elif sdk.name in ['l4d', 'blade', 'insurgency', 'doi', 'csgo']:
+      elif sdk.name in ['l4d', 'blade', 'insurgency', 'doi', 'csgo', 'pvkii']:
         dynamic_libs = ['libtier0.so', 'libvstdlib.so']
       else:
         dynamic_libs = ['tier0_i486.so', 'vstdlib_i486.so']
