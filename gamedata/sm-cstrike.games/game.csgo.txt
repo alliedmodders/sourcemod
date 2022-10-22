@@ -40,7 +40,7 @@
 			"CTTeamScoreOffset"
 			{
 				"windows"	"98"
-				"linux"		"115"
+				"linux"		"107"
 				"linux64"	"143"
 				"mac64"		"148"
 			}
@@ -48,7 +48,7 @@
 			"TTeamScoreOffset"
 			{
 				"windows"	"125"
-				"linux"		"148"
+				"linux"		"140"
 				"linux64"	"174"
 				"mac64"		"177"
 			}
