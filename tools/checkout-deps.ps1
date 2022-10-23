@@ -28,7 +28,8 @@ param(
         'bgt',
         'eye',
         'contagion',
-        'doi'
+        'doi',
+        'pvkii'
         )
 )
 
