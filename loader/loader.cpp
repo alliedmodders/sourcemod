@@ -342,6 +342,11 @@ DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, co
 			break;
 		}
 #endif
+	case SOURCE_ENGINE_PVKII:
+		{
+			filename = FILENAME_1_6_PVKII;
+			break;
+		}
 	default:
 		{
 			return NULL;
