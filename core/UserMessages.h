@@ -110,7 +110,7 @@ public:
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	protobuf::Message *OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name);
 	protobuf::Message *OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name);
-#elif SOURCE_ENGINE >= SE_LEFT4DEAD && SOURCE_ENGINE != SE_PVKII
+#elif SOURCE_ENGINE >= SE_LEFT4DEAD
 	bf_write *OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name);
 	bf_write *OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name);
 #else

@@ -97,7 +97,7 @@ static cell_t IsDedicatedServer(IPluginContext *pContext, const cell_t *params)
 
 static cell_t GetEngineTime(IPluginContext *pContext, const cell_t *params)
 {
-#if SOURCE_ENGINE >= SE_NUCLEARDAWN && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_NUCLEARDAWN
 	float fTime = Plat_FloatTime();
 #else
 	float fTime = engine->Time();

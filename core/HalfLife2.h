@@ -74,7 +74,7 @@ using namespace SourceMod;
 	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_INSURGENCY || SOURCE_ENGINE == SE_DOI
 #define SOURCE_BIN_PREFIX "lib"
 #define SOURCE_BIN_SUFFIX "_srv"
-#elif SOURCE_ENGINE >= SE_LEFT4DEAD
+#elif SOURCE_ENGINE >= SE_LEFT4DEAD || SOURCE_ENGINE == SE_PVKII
 #define SOURCE_BIN_PREFIX "lib"
 #define SOURCE_BIN_SUFFIX ""
 #else
@@ -163,7 +163,7 @@ public:
 	int				m_SerialNumber;
 	CEntInfo		*m_pPrev;
 	CEntInfo		*m_pNext;
-#if SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_PORTAL2
 	string_t		m_iName;
 	string_t		m_iClassName;
 #endif
@@ -179,7 +179,7 @@ enum class SMFindMapResult : cell_t {
 	PossiblyAvailable
 };
 
-#if SOURCE_ENGINE >= SE_LEFT4DEAD && defined PLATFORM_WINDOWS && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_LEFT4DEAD && defined PLATFORM_WINDOWS
 template< class T, class I = int >
 class CUtlMemoryGlobalMalloc;
 class CUtlString;
@@ -235,7 +235,7 @@ public: //IGameHelpers
 	bool IsMapValid(const char *map);
 	SMFindMapResult FindMap(char *pMapName, size_t nMapNameMax);
 	SMFindMapResult FindMap(const char *pMapName, char *pFoundMap = NULL, size_t nMapNameMax = 0);
-#if SOURCE_ENGINE >= SE_LEFT4DEAD && defined PLATFORM_WINDOWS && SOURCE_ENGINE != SE_MOCK && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_LEFT4DEAD && defined PLATFORM_WINDOWS && SOURCE_ENGINE != SE_MOCK
 	void FreeUtlVectorUtlString(CUtlVector<CUtlString, CUtlMemoryGlobalMalloc<CUtlString>> &vec);
 #endif
 	bool GetMapDisplayName(const char *pMapName, char *pDisplayname, size_t nMapNameMax);

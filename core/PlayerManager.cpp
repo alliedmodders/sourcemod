@@ -82,7 +82,7 @@ SH_DECL_HOOK2_void(IServerGameClients, ClientCommandKeyValues, SH_NOATTRIB, 0, e
 
 SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, int, int);
 
-#if SOURCE_ENGINE >= SE_LEFT4DEAD && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
 SH_DECL_HOOK1_void(IServerGameDLL, ServerHibernationUpdate, SH_NOATTRIB, 0, bool);
 #elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox.
 SH_DECL_HOOK1_void(IServerGameDLL, SetServerHibernation, SH_NOATTRIB, 0, bool);
@@ -174,7 +174,7 @@ void PlayerManager::OnSourceModAllInitialized()
 #endif
 	SH_ADD_HOOK(IServerGameClients, ClientSettingsChanged, serverClients, SH_MEMBER(this, &PlayerManager::OnClientSettingsChanged), true);
 	SH_ADD_HOOK(IServerGameDLL, ServerActivate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerActivate), true);
-#if SOURCE_ENGINE >= SE_LEFT4DEAD && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
 	SH_ADD_HOOK(IServerGameDLL, ServerHibernationUpdate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
 #elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox.
 	SH_ADD_HOOK(IServerGameDLL, SetServerHibernation, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
@@ -229,7 +229,7 @@ void PlayerManager::OnSourceModShutdown()
 #endif
 	SH_REMOVE_HOOK(IServerGameClients, ClientSettingsChanged, serverClients, SH_MEMBER(this, &PlayerManager::OnClientSettingsChanged), true);
 	SH_REMOVE_HOOK(IServerGameDLL, ServerActivate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerActivate), true);
-#if SOURCE_ENGINE >= SE_LEFT4DEAD && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
 	SH_REMOVE_HOOK(IServerGameDLL, ServerHibernationUpdate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
 #elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox.
 	SH_REMOVE_HOOK(IServerGameDLL, SetServerHibernation, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
@@ -1393,7 +1393,7 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 			}
 		}
 
-#if SOURCE_ENGINE >= SE_LEFT4DEAD && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
 		const char* networkid_force;
 		if ((networkid_force = engine->GetClientConVarValue(client, "networkid_force")) && networkid_force[0] != '\0')
 		{

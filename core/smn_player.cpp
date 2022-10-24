@@ -41,7 +41,7 @@ static cell_t sm_GetMaxHumanPlayers(IPluginContext *pCtx, const cell_t *params)
 {
 	int maxHumans = -1;
 
-#if SOURCE_ENGINE >= SE_LEFT4DEAD && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
 	maxHumans = serverClients->GetMaxHumanPlayers();
 #endif
 

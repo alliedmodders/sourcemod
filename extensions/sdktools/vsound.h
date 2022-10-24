@@ -62,7 +62,7 @@ public:
 		float flVolume, float flAttenuation, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
 		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 		float soundtime, int speakerentity, void *pUnknown);
-#elif SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#elif SOURCE_ENGINE >= SE_PORTAL2
 	int OnEmitSound(IRecipientFilter& filter, int iEntIndex, int iChannel, const char *, unsigned int, const char *pSample, float flVolume, 
 		soundlevel_t iSoundlevel, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
 		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
@@ -93,7 +93,7 @@ public:
 		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 		float soundtime, int speakerentity);
 #endif // SOURCE_ENGINE == SE_CSS, SE_HL2DM, SE_DODS, SE_SDK2013, SE_BMS, SE_TF2, SE_PVKII
-#endif // SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#endif // SOURCE_ENGINE >= SE_PORTAL2
 private:
 	size_t _FillInPlayers(int *pl_array, IRecipientFilter *pFilter);
 	void _IncRefCounter(int type);

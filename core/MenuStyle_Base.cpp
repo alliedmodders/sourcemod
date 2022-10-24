@@ -326,14 +326,14 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 						enginesound->EmitSound(filter, 
 							client, 
 							CHAN_AUTO, 
-#if SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_PORTAL2
 							sound, 
 							-1, 
 #endif
 							sound, 
 							VOL_NORM, 
 							ATTN_NORM, 
-#if SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_PORTAL2
 							0, 
 #endif
 							0, 

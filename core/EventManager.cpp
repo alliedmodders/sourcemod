@@ -158,7 +158,7 @@ void EventManager::FireGameEvent(IGameEvent *pEvent)
 	   Just need to add ourselves as a listener to make our hook on IGameEventManager2::FireEvent work */
 }
 
-#if SOURCE_ENGINE >= SE_LEFT4DEAD && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
 int EventManager::GetEventDebugID()
 {
 	return EVENT_DEBUG_ID_INIT;

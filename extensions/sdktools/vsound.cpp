@@ -37,7 +37,7 @@ SH_DECL_HOOK8_void(IVEngineServer, EmitAmbientSound, SH_NOATTRIB, 0, int, const 
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 SH_DECL_HOOK18(IEngineSound, EmitSound, SH_NOATTRIB, 0, int, IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, float, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *);
 SH_DECL_HOOK18(IEngineSound, EmitSound, SH_NOATTRIB, 1, int, IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *);
-#elif SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#elif SOURCE_ENGINE >= SE_PORTAL2
 SH_DECL_HOOK17(IEngineSound, EmitSound, SH_NOATTRIB, 0, int, IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, float, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
 SH_DECL_HOOK17(IEngineSound, EmitSound, SH_NOATTRIB, 1, int, IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
 #elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
@@ -265,7 +265,7 @@ void SoundHooks::OnEmitAmbientSound(int entindex, const Vector &pos, const char 
 	}
 }
 
-#if SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_PORTAL2
 // This should probably be moved to the gamedata
 #define SOUND_ENTRY_HASH_SEED 0x444F5441
 
@@ -321,7 +321,7 @@ int SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChanne
 							 float flVolume, soundlevel_t iSoundlevel, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
 							 const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 							 float soundtime, int speakerentity, void *pUnknown)
-#elif SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#elif SOURCE_ENGINE >= SE_PORTAL2
 int SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChannel, const char *pSoundEntry, unsigned int nSoundEntryHash, const char *pSample, 
 							 float flVolume, soundlevel_t iSoundlevel, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
 							 const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
@@ -346,11 +346,11 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 	strcpy(buffer, pSample);
 
 	char soundEntry[PLATFORM_MAX_PATH] = "";
-#if SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_PORTAL2
 	Q_strncpy(soundEntry, pSoundEntry, sizeof(soundEntry));
 #endif
 
-#if SOURCE_ENGINE < SE_PORTAL2 || SOURCE_ENGINE == SE_PVKII
+#if SOURCE_ENGINE < SE_PORTAL2
 	int nSeed = 0;
 #endif
 
@@ -380,7 +380,7 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 		case Pl_Handled:
 		case Pl_Stop:
 			{
-#if SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_PORTAL2
 				RETURN_META_VALUE(MRES_SUPERCEDE, -1);
 #else
 				RETURN_META(MRES_SUPERCEDE);
@@ -392,7 +392,7 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 				{
 					pFunc->GetParentContext()->BlamePluginError(pFunc, "Callback-provided size %d is invalid", size);
 
-#if SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_PORTAL2
 					RETURN_META_VALUE(MRES_IGNORED, -1);
 #else
 					return;
@@ -409,7 +409,7 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 					{
 						pFunc->GetParentContext()->BlamePluginError(pFunc, "Callback-provided client index %d is invalid", client);
 
-#if SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_PORTAL2
 						RETURN_META_VALUE(MRES_IGNORED, -1);
 #else
 						return;
@@ -422,7 +422,7 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 					}
 				}
 
-#if SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_PORTAL2
 				if (strcmp(pSoundEntry, soundEntry) != 0 || strcmp(pSample, buffer) != 0)
 				{
 					if (strcmp(soundEntry, buffer) == 0)
@@ -443,7 +443,7 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 					(crf, iEntIndex, iChannel, soundEntry, nSoundEntryHash, buffer, flVolume, iSoundlevel, nSeed, iFlags, iPitch, pOrigin,
 					pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity, nullptr)
 					);
-#elif SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#elif SOURCE_ENGINE >= SE_PORTAL2
 				RETURN_META_VALUE_NEWPARAMS(
 					MRES_IGNORED,
 					-1,
@@ -474,7 +474,7 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 		}
 	}
 
-#if SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_PORTAL2
 	RETURN_META_VALUE(MRES_IGNORED, -1 );
 #endif
 }
@@ -484,7 +484,7 @@ int SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChann
 							 float flVolume, float flAttenuation, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
 							 const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 							 float soundtime, int speakerentity, void *pUnknown)
-#elif SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#elif SOURCE_ENGINE >= SE_PORTAL2
 int SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChannel, const char *pSoundEntry, unsigned int nSoundEntryHash, const char *pSample, 
 							 float flVolume, float flAttenuation, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
 							 const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
@@ -510,11 +510,11 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 	strcpy(buffer, pSample);
 
 	char soundEntry[PLATFORM_MAX_PATH] = "";
-#if SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_PORTAL2
 	Q_strncpy(soundEntry, pSoundEntry, sizeof(soundEntry));
 #endif
 
-#if SOURCE_ENGINE < SE_PORTAL2 || SOURCE_ENGINE == SE_PVKII
+#if SOURCE_ENGINE < SE_PORTAL2
 	int nSeed = 0;
 #endif
 
@@ -544,7 +544,7 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 		case Pl_Handled:
 		case Pl_Stop:
 			{
-#if SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_PORTAL2
 				RETURN_META_VALUE(MRES_SUPERCEDE, -1);
 #else
 				RETURN_META(MRES_SUPERCEDE);
@@ -556,7 +556,7 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 				{
 					pFunc->GetParentContext()->BlamePluginError(pFunc, "Callback-provided size %d is invalid", size);
 
-#if SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_PORTAL2
 					RETURN_META_VALUE(MRES_IGNORED, -1);
 #else
 					return;
@@ -573,7 +573,7 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 					{
 						pFunc->GetParentContext()->BlamePluginError(pFunc, "Client index %d is invalid", client);
 
-#if SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_PORTAL2
 						RETURN_META_VALUE(MRES_IGNORED, -1);
 #else
 						return;
@@ -586,7 +586,7 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 					}
 				}
 
-#if SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_PORTAL2
 				if (strcmp(pSoundEntry, soundEntry) != 0 || strcmp(pSample, buffer) != 0)
 				{
 					if (strcmp(soundEntry, buffer) == 0)
@@ -607,7 +607,7 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 					(crf, iEntIndex, iChannel, soundEntry, nSoundEntryHash, buffer, flVolume, SNDLVL_TO_ATTN(static_cast<soundlevel_t>(sndlevel)),
 					nSeed, iFlags, iPitch, pOrigin, pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity, pUnknown)
 					);
-#elif SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#elif SOURCE_ENGINE >= SE_PORTAL2
 				RETURN_META_VALUE_NEWPARAMS(
 					MRES_IGNORED,
 					-1,
@@ -638,7 +638,7 @@ RETURN_META_NEWPARAMS(
 		}
 	}
 
-#if SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_PORTAL2
 	RETURN_META_VALUE(MRES_IGNORED, -1 );
 #endif
 }
@@ -654,11 +654,11 @@ bool GetSoundParams(CSoundParameters *soundParams, const char *soundname, cell_t
 	if(!soundemitterbase->IsValidHash(index))
 		return false;
 #else
-#if SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_PORTAL2
 	HSOUNDSCRIPTHASH index = (HSOUNDSCRIPTHASH)soundemitterbase->GetSoundIndex(soundname);
 #else
 	HSOUNDSCRIPTHANDLE index = (HSOUNDSCRIPTHANDLE)soundemitterbase->GetSoundIndex(soundname);
-#endif // SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#endif // SOURCE_ENGINE >= SE_PORTAL2
 	if (!soundemitterbase->IsValidIndex(index))
 		return false;
 #endif // SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
@@ -808,7 +808,7 @@ static cell_t StopSound(IPluginContext *pContext, const cell_t *params)
 	char *name;
 	pContext->LocalToString(params[3], &name);
 
-#if SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_PORTAL2
 	engsound->StopSound(entity, channel, name, -1);
 #else
 	engsound->StopSound(entity, channel, name);
@@ -955,7 +955,7 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 					speakerentity,
 					nullptr);
 			}
-#elif SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#elif SOURCE_ENGINE >= SE_PORTAL2
 			if (g_InSoundHook)
 			{
 				SH_CALL(enginesoundPatch, 
@@ -1132,7 +1132,7 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 				speakerentity,
 				nullptr);
 		}
-#elif SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#elif SOURCE_ENGINE >= SE_PORTAL2
 		if (g_InSoundHook)
 		{
 			SH_CALL(enginesoundPatch, 
@@ -1266,7 +1266,7 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 
 static cell_t EmitSoundEntry(IPluginContext *pContext, const cell_t *params)
 {
-#if SOURCE_ENGINE < SE_PORTAL2 || SOURCE_ENGINE == SE_PVKII
+#if SOURCE_ENGINE < SE_PORTAL2
 	return pContext->ThrowNativeError("EmitSoundEntry is not available in this game.");
 #else
 	cell_t *addr, *cl_array;
@@ -1503,7 +1503,7 @@ static cell_t EmitSentence(IPluginContext *pContext, const cell_t *params)
 		sentence, 
 		vol, 
 		(soundlevel_t)level, 
-#if SOURCE_ENGINE >= SE_PORTAL2 && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_PORTAL2
 		0, 
 #endif
 		flags, 

@@ -61,7 +61,7 @@
 #define NETMSG_BITS 5
 #endif
 
-#if SOURCE_ENGINE >= SE_LEFT4DEAD && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
 #define NET_SETCONVAR	6
 #else
 #define NET_SETCONVAR	5
@@ -884,7 +884,7 @@ cell_t g_ServerCommandBufferLength;
 
 bool g_ShouldCatchSpew = false;
 
-#if SOURCE_ENGINE < SE_NUCLEARDAWN || SOURCE_ENGINE == SE_PVKII
+#if SOURCE_ENGINE < SE_NUCLEARDAWN
 SpewOutputFunc_t g_OriginalSpewOutputFunc = NULL;
 
 SpewRetval_t SourcemodSpewOutputFunc(SpewType_t spewType, tchar const *pMsg)
@@ -923,11 +923,11 @@ CON_COMMAND(sm_conhook_start, "")
 		return;
 	}
 
-#if SOURCE_ENGINE < SE_NUCLEARDAWN || SOURCE_ENGINE == SE_PVKII
+#if SOURCE_ENGINE < SE_NUCLEARDAWN
 	g_OriginalSpewOutputFunc = GetSpewOutputFunc();
 	SpewOutputFunc(SourcemodSpewOutputFunc);
 #else
-#if SOURCE_ENGINE < SE_ALIENSWARM || SOURCE_ENGINE == SE_PVKII
+#if SOURCE_ENGINE < SE_ALIENSWARM
 	LoggingSystem_PushLoggingState(false);
 #else
 	LoggingSystem_PushLoggingState(false, false);
@@ -944,7 +944,7 @@ CON_COMMAND(sm_conhook_stop, "")
 		return;
 	}
 
-#if SOURCE_ENGINE < SE_NUCLEARDAWN || SOURCE_ENGINE == SE_PVKII
+#if SOURCE_ENGINE < SE_NUCLEARDAWN
 	SpewOutputFunc(g_OriginalSpewOutputFunc);
 #else
 	LoggingSystem_PopLoggingState(false);

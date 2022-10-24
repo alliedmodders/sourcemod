@@ -116,7 +116,7 @@ public: // IPluginsListener
 	void OnPluginUnloaded(IPlugin *plugin);
 public: // IGameEventListener2
 	void FireGameEvent(IGameEvent *pEvent);
-#if SOURCE_ENGINE >= SE_LEFT4DEAD && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
 	int GetEventDebugID();
 #endif
 public:

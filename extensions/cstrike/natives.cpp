@@ -675,7 +675,7 @@ static inline T *GetPlayerVarAddressOrError(const char *pszGamedataName, IPlugin
 		typedescription_t *td = gamehelpers->FindInDataMap(pMap, pszBaseVar);
 		if (td)
 		{
-#if SOURCE_ENGINE >= SE_LEFT4DEAD && SOURCE_ENGINE != SE_PVKII
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
 			interimOffset = td->fieldOffset;
 #else
 			interimOffset = td->fieldOffset[TD_OFFSET_NORMAL];
