@@ -177,7 +177,7 @@ SH_DECL_MANUALHOOK1_void(StartTouch, 0, 0, 0, CBaseEntity *);
 SH_DECL_MANUALHOOK0_void(Think, 0, 0, 0);
 SH_DECL_MANUALHOOK1_void(Touch, 0, 0, 0, CBaseEntity *);
 #if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_PVKII
 SH_DECL_MANUALHOOK4_void(TraceAttack, 0, 0, 0, CTakeDamageInfoHack &, const Vector &, CGameTrace *, CDmgAccumulator *);
 #else
 SH_DECL_MANUALHOOK3_void(TraceAttack, 0, 0, 0, CTakeDamageInfoHack &, const Vector &, CGameTrace *);
@@ -1455,7 +1455,7 @@ void SDKHooks::Hook_TouchPost(CBaseEntity *pOther)
 }
 
 #if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_PVKII
 void SDKHooks::Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator)
 #else
 void SDKHooks::Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr)
@@ -1536,7 +1536,7 @@ void SDKHooks::Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir,
 }
 
 #if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_PVKII
 void SDKHooks::Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator)
 #else
 void SDKHooks::Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr)

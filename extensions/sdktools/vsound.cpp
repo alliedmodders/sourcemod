@@ -41,7 +41,7 @@ SH_DECL_HOOK18(IEngineSound, EmitSound, SH_NOATTRIB, 1, int, IRecipientFilter &,
 SH_DECL_HOOK17(IEngineSound, EmitSound, SH_NOATTRIB, 0, int, IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, float, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
 SH_DECL_HOOK17(IEngineSound, EmitSound, SH_NOATTRIB, 1, int, IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
 #elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 SH_DECL_HOOK15_void(IEngineSound, EmitSound, SH_NOATTRIB, 0, IRecipientFilter &, int, int, const char *, float, float, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
 SH_DECL_HOOK15_void(IEngineSound, EmitSound, SH_NOATTRIB, 1, IRecipientFilter &, int, int, const char *, float, soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
 #else
@@ -327,7 +327,7 @@ int SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChanne
 							 const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 							 float soundtime, int speakerentity)
 #elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChannel, const char *pSample, 
 							 float flVolume, soundlevel_t iSoundlevel, int iFlags, int iPitch, int iSpecialDSP, const Vector *pOrigin, 
 							 const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
@@ -453,7 +453,7 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 					pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity)
 					);
 #elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 				RETURN_META_NEWPARAMS(
 					MRES_IGNORED,
 					static_cast<void (IEngineSound::*)(IRecipientFilter &, int, int, const char*, float, soundlevel_t, 
@@ -490,7 +490,7 @@ int SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChann
 							 const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 							 float soundtime, int speakerentity)
 #elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChannel, const char *pSample, 
 							 float flVolume, float flAttenuation, int iFlags, int iPitch, int iSpecialDSP, const Vector *pOrigin, 
 							 const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
@@ -617,7 +617,7 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 					nSeed, iFlags, iPitch, pOrigin, pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity)
 					);
 #elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 RETURN_META_NEWPARAMS(
 					MRES_IGNORED,
 					static_cast<void (IEngineSound::*)(IRecipientFilter &, int, int, const char *, float, float, 
@@ -1002,7 +1002,7 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 					speakerentity);
 			}
 #elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 			if (g_InSoundHook)
 			{
 				SH_CALL(enginesoundPatch, 
@@ -1178,7 +1178,7 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 				speakerentity);
 		}
 #elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 		if (g_InSoundHook)
 		{
 			SH_CALL(enginesoundPatch, 
@@ -1509,7 +1509,7 @@ static cell_t EmitSentence(IPluginContext *pContext, const cell_t *params)
 		flags, 
 		pitch, 
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 		0, 
 #endif
 		pOrigin,

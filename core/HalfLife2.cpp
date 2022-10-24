@@ -184,7 +184,8 @@ void CHalfLife2::InitLogicalEntData()
 	|| SOURCE_ENGINE == SE_SDK2013 \
 	|| SOURCE_ENGINE == SE_BMS     \
 	|| SOURCE_ENGINE == SE_BLADE   \
-	|| SOURCE_ENGINE == SE_NUCLEARDAWN
+	|| SOURCE_ENGINE == SE_NUCLEARDAWN \
+	|| SOURCE_ENGINE == SE_PVKII
 
 	if (g_SMAPI->GetServerFactory(false)("VSERVERTOOLS003", nullptr))
 	{
@@ -1339,7 +1340,7 @@ SMFindMapResult CHalfLife2::FindMap(const char *pMapName, char *pFoundMap, size_
 	}
 
 #elif SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_HL2DM \
-	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_BMS
+	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_PVKII
 	static IVEngineServer *engine23 = (IVEngineServer *)(g_SMAPI->GetEngineFactory()("VEngineServer023", nullptr));
 	if (engine23)
 	{
@@ -1526,7 +1527,8 @@ uint64_t CHalfLife2::GetServerSteamId64() const
 	|| SOURCE_ENGINE == SE_DOI  \
 	|| SOURCE_ENGINE == SE_SDK2013     \
 	|| SOURCE_ENGINE == SE_ALIENSWARM  \
-	|| SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_TF2 \
+	|| SOURCE_ENGINE == SE_PVKII
 	const CSteamID *sid = engine->GetGameServerSteamID();
 	if (sid)
 	{

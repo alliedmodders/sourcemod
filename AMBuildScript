@@ -55,22 +55,23 @@ SDKMap = {
   'hl2dm':  SDK('HL2SDKHL2DM', '2.hl2dm', '7', 'HL2DM', WinLinuxMac, 'hl2dm'),
   'dods': SDK('HL2SDKDODS', '2.dods', '8', 'DODS', WinLinuxMac, 'dods'),
   'sdk2013': SDK('HL2SDK2013', '2.sdk2013', '9', 'SDK2013', WinLinuxMac, 'sdk2013'),
-  'tf2':  SDK('HL2SDKTF2', '2.tf2', '11', 'TF2', WinLinuxMac, 'tf2'),
-  'l4d':  SDK('HL2SDKL4D', '2.l4d', '12', 'LEFT4DEAD', WinLinuxMac, 'l4d'),
-  'nucleardawn': SDK('HL2SDKND', '2.nd', '13', 'NUCLEARDAWN', WinLinuxMac, 'nucleardawn'),
-  'l4d2': SDK('HL2SDKL4D2', '2.l4d2', '15', 'LEFT4DEAD2', WinLinuxMac, 'l4d2'),
+  'tf2':  SDK('HL2SDKTF2', '2.tf2', '12', 'TF2', WinLinuxMac, 'tf2'),
+  'l4d':  SDK('HL2SDKL4D', '2.l4d', '13', 'LEFT4DEAD', WinLinuxMac, 'l4d'),
+  'nucleardawn': SDK('HL2SDKND', '2.nd', '14', 'NUCLEARDAWN', WinLinuxMac, 'nucleardawn'),
+  'l4d2': SDK('HL2SDKL4D2', '2.l4d2', '16', 'LEFT4DEAD2', WinLinuxMac, 'l4d2'),
   'darkm':  SDK('HL2SDK-DARKM', '2.darkm', '2', 'DARKMESSIAH', WinOnly, 'darkm'),
-  'swarm':  SDK('HL2SDK-SWARM', '2.swarm', '16', 'ALIENSWARM', WinOnly, 'swarm'),
+  'swarm':  SDK('HL2SDK-SWARM', '2.swarm', '17', 'ALIENSWARM', WinOnly, 'swarm'),
   'bgt':  SDK('HL2SDK-BGT', '2.bgt', '4', 'BLOODYGOODTIME', WinOnly, 'bgt'),
   'eye':  SDK('HL2SDK-EYE', '2.eye', '5', 'EYE', WinOnly, 'eye'),
-  'csgo': SDK('HL2SDKCSGO', '2.csgo', '21', 'CSGO', CSGO, 'csgo'),
-  'portal2':  SDK('HL2SDKPORTAL2', '2.portal2', '17', 'PORTAL2', [], 'portal2'),
-  'blade':  SDK('HL2SDKBLADE', '2.blade', '18', 'BLADE', Blade, 'blade'),
-  'insurgency':  SDK('HL2SDKINSURGENCY', '2.insurgency', '19', 'INSURGENCY', WinLinuxMac, 'insurgency'),
-  'contagion':  SDK('HL2SDKCONTAGION', '2.contagion', '14', 'CONTAGION', WinOnly, 'contagion'),
-  'bms':  SDK('HL2SDKBMS', '2.bms', '10', 'BMS', WinLinux, 'bms'),
-  'doi':  SDK('HL2SDKDOI', '2.doi', '20', 'DOI', WinLinuxMac, 'doi'),
+  'csgo': SDK('HL2SDKCSGO', '2.csgo', '22', 'CSGO', CSGO, 'csgo'),
+  'portal2':  SDK('HL2SDKPORTAL2', '2.portal2', '18', 'PORTAL2', [], 'portal2'),
+  'blade':  SDK('HL2SDKBLADE', '2.blade', '19', 'BLADE', Blade, 'blade'),
+  'insurgency':  SDK('HL2SDKINSURGENCY', '2.insurgency', '20', 'INSURGENCY', WinLinuxMac, 'insurgency'),
+  'contagion':  SDK('HL2SDKCONTAGION', '2.contagion', '15', 'CONTAGION', WinOnly, 'contagion'),
+  'bms':  SDK('HL2SDKBMS', '2.bms', '11', 'BMS', WinLinux, 'bms'),
+  'doi':  SDK('HL2SDKDOI', '2.doi', '21', 'DOI', WinLinuxMac, 'doi'),
   'mock': SDK('HL2SDK-MOCK', '2.mock', '999', 'MOCK', Mock, 'mock'),
+  'pvkii': SDK('HL2SDKPVKII', '2.pvkii', '10', 'PVKII', WinLinux, 'pvkii'),
 }
 
 # Stable sorting for command equivalence in AMBuild.
@@ -595,7 +596,7 @@ class SMConfig(object):
 
     compiler.defines += ['SOURCE_ENGINE=' + sdk.code]
 
-    if sdk.name in ['sdk2013', 'bms'] and compiler.like('gcc'):
+    if sdk.name in ['sdk2013', 'bms', 'pvkii'] and compiler.like('gcc'):
       # The 2013 SDK already has these in public/tier0/basetypes.h
       compiler.defines.remove('stricmp=strcasecmp')
       compiler.defines.remove('_stricmp=strcasecmp')
@@ -620,7 +621,7 @@ class SMConfig(object):
     if sdk.name in ['blade', 'insurgency', 'doi', 'csgo']:
       compiler.defines += ['NETWORK_VARS_ENABLED']
 
-    if sdk.name in ['css', 'hl2dm', 'dods', 'sdk2013', 'bms', 'tf2', 'l4d', 'nucleardawn', 'l4d2']:
+    if sdk.name in ['css', 'hl2dm', 'dods', 'sdk2013', 'bms', 'tf2', 'l4d', 'nucleardawn', 'l4d2', 'pvkii']:
       if compiler.target.platform in ['linux', 'mac']:
         compiler.defines += ['NO_HOOK_MALLOC', 'NO_MALLOC_OVERRIDE']
 
@@ -653,14 +654,14 @@ class SMConfig(object):
     if compiler.target.platform == 'linux':
       if sdk.name == 'episode1':
         lib_folder = os.path.join(sdk.path, 'linux_sdk')
-      elif sdk.name in ['sdk2013', 'bms']:
+      elif sdk.name in ['sdk2013', 'bms', 'pvkii']:
         lib_folder = os.path.join(sdk.path, 'lib', 'public', 'linux32')
       elif compiler.target.arch == 'x86_64':
         lib_folder = os.path.join(sdk.path, 'lib', 'linux64')
       else:
         lib_folder = os.path.join(sdk.path, 'lib', 'linux')
     elif compiler.target.platform == 'mac':
-      if sdk.name in ['sdk2013', 'bms']:
+      if sdk.name in ['sdk2013', 'bms', 'pvkii']:
         lib_folder = os.path.join(sdk.path, 'lib', 'public', 'osx32')
       elif compiler.target.arch == 'x86_64':
         lib_folder = os.path.join(sdk.path, 'lib', 'osx64')
@@ -668,7 +669,7 @@ class SMConfig(object):
         lib_folder = os.path.join(sdk.path, 'lib', 'mac')
 
     if compiler.target.platform in ['linux', 'mac']:
-      if sdk.name in ['sdk2013', 'bms'] or compiler.target.arch == 'x86_64':
+      if sdk.name in ['sdk2013', 'bms', 'pvkii'] or compiler.target.arch == 'x86_64':
         compiler.postlink += [
           os.path.join(lib_folder, 'tier1.a'),
           os.path.join(lib_folder, 'mathlib.a')
@@ -691,7 +692,7 @@ class SMConfig(object):
         dynamic_libs = ['libtier0_srv.so', 'libvstdlib_srv.so']
       elif compiler.target.arch == 'x86_64' and sdk.name in ['csgo', 'mock']:
         dynamic_libs = ['libtier0_client.so', 'libvstdlib_client.so']
-      elif sdk.name in ['l4d', 'blade', 'insurgency', 'doi', 'csgo']:
+      elif sdk.name in ['l4d', 'blade', 'insurgency', 'doi', 'csgo', 'pvkii']:
         dynamic_libs = ['libtier0.so', 'libvstdlib.so']
       else:
         dynamic_libs = ['tier0_i486.so', 'vstdlib_i486.so']

@@ -339,7 +339,7 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 							0, 
 							PITCH_NORM, 
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS \
-	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 							0,
 #endif
 							&pos);
