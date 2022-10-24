@@ -788,7 +788,7 @@ void PlayerManager::OnServerHibernationUpdate(bool bHibernating)
 			CPlayer *pPlayer = &m_Players[i];
 			if (pPlayer->IsConnected() && pPlayer->IsFakeClient())
 			{
-#if SOURCE_ENGINE < SE_LEFT4DEAD || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_NUCLEARDAWN || SOURCE_ENGINE == SE_PVKII
+#if SOURCE_ENGINE < SE_LEFT4DEAD || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_NUCLEARDAWN
 				// These games have the bug fixed where hltv/replay was getting kicked on hibernation
 				if (pPlayer->IsSourceTV() || pPlayer->IsReplay())
 					continue;
@@ -2087,10 +2087,11 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	|| SOURCE_ENGINE == SE_BMS   \
 	|| SOURCE_ENGINE == SE_INSURGENCY \
 	|| SOURCE_ENGINE == SE_DOI   \
-	|| SOURCE_ENGINE == SE_BLADE
+	|| SOURCE_ENGINE == SE_BLADE \
+	|| SOURCE_ENGINE == SE_PVKII
 	m_pIClient = engine->GetIServer()->GetClient(m_iIndex - 1);
 #else
-  #if SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_PVKII
+  #if SOURCE_ENGINE == SE_SDK2013
 	// Source SDK 2013 mods that ship on Steam can be using older engine binaries
 	static IVEngineServer *engine22 = (IVEngineServer *)(g_SMAPI->GetEngineFactory()("VEngineServer022", nullptr));
 	if (engine22)

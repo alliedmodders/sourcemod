@@ -238,9 +238,9 @@ void GetIServer()
 	|| SOURCE_ENGINE == SE_INSURGENCY \
 	|| SOURCE_ENGINE == SE_PVKII
 
-#if SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_PVKII
+#if SOURCE_ENGINE == SE_SDK2013
 	if (g_SMAPI->GetEngineFactory(false)("VEngineServer022", nullptr))
-#endif // SE_SDK2013 || SE_PVKII
+#endif // SE_SDK2013
 	{
 		iserver = engine->GetIServer();
 		return;
