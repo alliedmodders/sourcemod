@@ -355,13 +355,13 @@ void CHook::Write_CallHandler(sp::MacroAssembler& masm, HookType_t type)
 	Write_SaveRegisters(masm, type);
 
 	// Align the stack to 16 bytes.
-	masm.subl(esp, 8);
+	masm.subl(esp, 4);
 
 	// Call the global hook handler
 	masm.push(type);
 	masm.push(intptr_t(this));
 	masm.call(ExternalAddress((void *&)HookHandler));
-	masm.addl(esp, 16);
+	masm.addl(esp, 12);
 }
 
 void CHook::Write_SaveRegisters(sp::MacroAssembler& masm, HookType_t type)
