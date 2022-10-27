@@ -105,6 +105,7 @@
 			"engine"			"csgo"
 			"engine"			"sdk2013"
 			"engine"			"contagion"
+			"engine"			"pvkii"
 		}
 		
 		"Offsets"
