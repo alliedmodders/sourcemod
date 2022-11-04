@@ -1,15 +1,30 @@
-/*****************************************************************************
- *                                  _   _ ____  _     
- *  Project                     ___| | | |  _ \| |    
- *                             / __| | | | |_) | |    
- *                            | (__| |_| |  _ <| |___ 
+/***************************************************************************
+ *                                  _   _ ____  _
+ *  Project                     ___| | | |  _ \| |
+ *                             / __| | | | |_) | |
+ *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * $Id: multi-double.c,v 1.4 2006-10-13 14:01:19 bagder Exp $
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
- * This is a very simple example using the multi interface.
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution. The terms
+ * are also available at https://curl.se/docs/copyright.html.
+ *
+ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+ * copies of the Software, and permit persons to whom the Software is
+ * furnished to do so, under the terms of the COPYING file.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
+ *
+ ***************************************************************************/
+/* <DESC>
+ * multi interface code doing two parallel HTTP transfers
+ * </DESC>
  */
-
 #include <stdio.h>
 #include <string.h>
 
@@ -23,19 +38,19 @@
 /*
  * Simply download two HTTP files!
  */
-int main(int argc, char **argv)
+int main(void)
 {
   CURL *http_handle;
   CURL *http_handle2;
   CURLM *multi_handle;
 
-  int still_running; /* keep number of running handles */
+  int still_running = 1; /* keep number of running handles */
 
   http_handle = curl_easy_init();
   http_handle2 = curl_easy_init();
 
   /* set options */
-  curl_easy_setopt(http_handle, CURLOPT_URL, "http://www.haxx.se/");
+  curl_easy_setopt(http_handle, CURLOPT_URL, "https://www.example.com/");
 
   /* set options */
   curl_easy_setopt(http_handle2, CURLOPT_URL, "http://localhost/");
@@ -47,48 +62,31 @@ int main(int argc, char **argv)
   curl_multi_add_handle(multi_handle, http_handle);
   curl_multi_add_handle(multi_handle, http_handle2);
 
-  /* we start some action by calling perform right away */
-  while(CURLM_CALL_MULTI_PERFORM ==
-        curl_multi_perform(multi_handle, &still_running));
-
   while(still_running) {
-    struct timeval timeout;
-    int rc; /* select() return code */
+    CURLMsg *msg;
+    int queued;
+    CURLMcode mc = curl_multi_perform(multi_handle, &still_running);
 
-    fd_set fdread;
-    fd_set fdwrite;
-    fd_set fdexcep;
-    int maxfd;
+    if(still_running)
+      /* wait for activity, timeout or "nothing" */
+      mc = curl_multi_poll(multi_handle, NULL, 0, 1000, NULL);
 
-    FD_ZERO(&fdread);
-    FD_ZERO(&fdwrite);
-    FD_ZERO(&fdexcep);
-
-    /* set a suitable timeout to play around with */
-    timeout.tv_sec = 1;
-    timeout.tv_usec = 0;
-
-    /* get file descriptors from the transfers */
-    curl_multi_fdset(multi_handle, &fdread, &fdwrite, &fdexcep, &maxfd);
-
-    /* In a real-world program you OF COURSE check the return code of the
-       function calls, *and* you make sure that maxfd is bigger than -1 so
-       that the call to select() below makes sense! */
-
-    rc = select(maxfd+1, &fdread, &fdwrite, &fdexcep, &timeout);
-
-    switch(rc) {
-    case -1:
-      /* select error */
+    if(mc)
       break;
-    case 0:
-    default:
-      /* timeout or readable/writable sockets */
-      while(CURLM_CALL_MULTI_PERFORM ==
-            curl_multi_perform(multi_handle, &still_running));
-      break;
-    }
+
+    do {
+      msg = curl_multi_info_read(multi_handle, &queued);
+      if(msg) {
+        if(msg->msg == CURLMSG_DONE) {
+          /* a transfer ended */
+          fprintf(stderr, "Transfer completed\n");
+        }
+      }
+    } while(msg);
   }
+
+  curl_multi_remove_handle(multi_handle, http_handle);
+  curl_multi_remove_handle(multi_handle, http_handle2);
 
   curl_multi_cleanup(multi_handle);
 

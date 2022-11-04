@@ -29,7 +29,7 @@ ftp
 FTP GET with type=A style ASCII URL using %20 codes
  </name>
  <command>
-"ftp://%HOSTIP:%FTPPORT//path%20with%20%20spaces//and%20things2/106;type=A"
+"ftp://%HOSTIP:%FTPPORT//path%20with%20%20spaces//and%20things2/%TESTNUMBER;type=A"
 </command>
 </client>
 
@@ -39,12 +39,12 @@ FTP GET with type=A style ASCII URL using %20 codes
 USER anonymous
 PASS ftp@example.com
 PWD
-CWD /path with  spaces
+CWD /
+CWD path with  spaces
 CWD and things2
 EPSV
 TYPE A
-SIZE 106
-RETR 106
+RETR %TESTNUMBER
 QUIT
 </protocol>
 </verify>

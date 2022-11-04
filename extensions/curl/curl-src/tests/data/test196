@@ -1,8 +1,15 @@
 <testcase>
+<info>
+<keywords>
+FTP
+retry
+</keywords>
+</info>
+
 # Server-side
 <reply>
 <servercmd>
-REPLY PASS 530 temporarily not available
+REPLY PASS 430 temporarily not available
 </servercmd>
 </reply>
 
@@ -15,7 +22,7 @@ ftp
 FTP transient error, retry request once
  </name>
  <command>
-ftp://%HOSTIP:%FTPPORT/196 --retry 1
+ftp://%HOSTIP:%FTPPORT/%TESTNUMBER --retry 1
 </command>
 </client>
 

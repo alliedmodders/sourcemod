@@ -1,4 +1,11 @@
 <testcase>
+<info>
+<keywords>
+FILE
+FAILURE
+</keywords>
+</info>
+
 # Server-side
 <reply>
 <data>
@@ -14,7 +21,7 @@ file
 missing file:// file
  </name>
  <command>
-file://localhost/%PWD/log/non-existant-file.txt
+file://localhost/%PWD/log/non-existent-file.txt
 </command>
 </client>
 

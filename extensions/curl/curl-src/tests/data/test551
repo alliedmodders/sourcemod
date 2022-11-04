@@ -61,39 +61,32 @@ http
 lib547
 </tool>
 <features>
+!SSPI
+crypto
+proxy
 </features>
  <name>
 HTTP proxy auth Digest with POST data from read callback
  </name>
  <command>
-http://test.remote.server.com/path/551 http://%HOSTIP:%HTTPPORT s1lly:pers0n
+http://test.remote.example.com/path/%TESTNUMBER http://%HOSTIP:%HTTPPORT s1lly:pers0n
 </command>
 </client>
 
 # Verify data after the test has been "shot"
 <verify>
-<strip>
-^User-Agent: curl/.*
-</strip>
-# We strip off a large chunk of the type-2 NTLM message since it depends on
-# the local host name and thus differs on different machines!
-<strippart>
-s/^(Proxy-Authorization: NTLM TlRMTVNTUAADAAAAGAAYAEAAAAAYABgAWAAAAAAAAABwAAAABQAFAHAAAAA).*/$1/
-</strippart>
 <protocol>
-POST http://test.remote.server.com/path/551 HTTP/1.1
-Host: test.remote.server.com
-Pragma: no-cache
+POST http://test.remote.example.com/path/%TESTNUMBER HTTP/1.1
+Host: test.remote.example.com
 Accept: */*
 Proxy-Connection: Keep-Alive
 Content-Length: 36
 Content-Type: application/x-www-form-urlencoded
 
 this is the blurb we want to upload
-POST http://test.remote.server.com/path/551 HTTP/1.1
-Proxy-Authorization: Digest username="s1lly", realm="something fun to read", nonce="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", uri="/path/551", response="3325240726fbdaf1e61f3a0dd40b930c"
-Host: test.remote.server.com
-Pragma: no-cache
+POST http://test.remote.example.com/path/%TESTNUMBER HTTP/1.1
+Host: test.remote.example.com
+Proxy-Authorization: Digest username="s1lly", realm="something fun to read", nonce="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", uri="/path/%TESTNUMBER", response="3325240726fbdaf1e61f3a0dd40b930c"
 Accept: */*
 Proxy-Connection: Keep-Alive
 Content-Length: 36

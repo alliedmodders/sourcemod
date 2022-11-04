@@ -5,11 +5,11 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2008, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
-# are also available at http://curl.haxx.se/docs/copyright.html.
+# are also available at https://curl.se/docs/copyright.html.
 #
 # You may opt to use, copy, modify, merge, publish, distribute and/or sell
 # copies of the Software, and permit persons to whom the Software is
@@ -18,17 +18,70 @@
 # This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 # KIND, either express or implied.
 #
-# $Id: curl-reentrant.m4,v 1.3 2008-10-14 18:44:27 yangtse Exp $
+# SPDX-License-Identifier: curl
+#
 #***************************************************************************
 
 # File version for 'aclocal' use. Keep it a single number.
-# serial 3
+# serial 10
 
 dnl Note 1
 dnl ------
 dnl None of the CURL_CHECK_NEED_REENTRANT_* macros shall use HAVE_FOO_H to
 dnl conditionally include header files. These macros are used early in the
 dnl configure process much before header file availability is known.
+
+
+dnl CURL_CHECK_NEED_REENTRANT_ERRNO
+dnl -------------------------------------------------
+dnl Checks if the preprocessor _REENTRANT definition
+dnl makes errno available as a preprocessor macro.
+
+AC_DEFUN([CURL_CHECK_NEED_REENTRANT_ERRNO], [
+  AC_COMPILE_IFELSE([
+    AC_LANG_PROGRAM([[
+#include <errno.h>
+    ]],[[
+      if(0 != errno)
+        return 1;
+    ]])
+  ],[
+    tmp_errno="yes"
+  ],[
+    tmp_errno="no"
+  ])
+  if test "$tmp_errno" = "yes"; then
+    AC_COMPILE_IFELSE([
+      AC_LANG_PROGRAM([[
+#include <errno.h>
+      ]],[[
+#ifdef errno
+        int dummy=1;
+#else
+        force compilation error
+#endif
+      ]])
+    ],[
+      tmp_errno="errno_macro_defined"
+    ],[
+      AC_COMPILE_IFELSE([
+        AC_LANG_PROGRAM([[
+#define _REENTRANT
+#include <errno.h>
+        ]],[[
+#ifdef errno
+          int dummy=1;
+#else
+          force compilation error
+#endif
+        ]])
+      ],[
+        tmp_errno="errno_macro_needs_reentrant"
+        tmp_need_reentrant="yes"
+      ])
+    ])
+  fi
+])
 
 
 dnl CURL_CHECK_NEED_REENTRANT_GMTIME_R
@@ -163,76 +216,6 @@ AC_DEFUN([CURL_CHECK_NEED_REENTRANT_STRTOK_R], [
 ])
 
 
-dnl CURL_CHECK_NEED_REENTRANT_INET_NTOA_R
-dnl -------------------------------------------------
-dnl Checks if the preprocessor _REENTRANT definition
-dnl makes function inet_ntoa_r compiler visible.
-
-AC_DEFUN([CURL_CHECK_NEED_REENTRANT_INET_NTOA_R], [
-  AC_LINK_IFELSE([
-    AC_LANG_FUNC_LINK_TRY([inet_ntoa_r])
-  ],[
-    tmp_inet_ntoa_r="yes"
-  ],[
-    tmp_inet_ntoa_r="no"
-  ])
-  if test "$tmp_inet_ntoa_r" = "yes"; then
-    AC_EGREP_CPP([inet_ntoa_r],[
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-    ],[
-      tmp_inet_ntoa_r="proto_declared"
-    ],[
-      AC_EGREP_CPP([inet_ntoa_r],[
-#define _REENTRANT
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-      ],[
-        tmp_inet_ntoa_r="proto_needs_reentrant"
-        tmp_need_reentrant="yes"
-      ])
-    ])
-  fi
-])
-
-
-dnl CURL_CHECK_NEED_REENTRANT_GETHOSTBYADDR_R
-dnl -------------------------------------------------
-dnl Checks if the preprocessor _REENTRANT definition
-dnl makes function gethostbyaddr_r compiler visible.
-
-AC_DEFUN([CURL_CHECK_NEED_REENTRANT_GETHOSTBYADDR_R], [
-  AC_LINK_IFELSE([
-    AC_LANG_FUNC_LINK_TRY([gethostbyaddr_r])
-  ],[
-    tmp_gethostbyaddr_r="yes"
-  ],[
-    tmp_gethostbyaddr_r="no"
-  ])
-  if test "$tmp_gethostbyaddr_r" = "yes"; then
-    AC_EGREP_CPP([gethostbyaddr_r],[
-#include <sys/types.h>
-#include <netdb.h>
-    ],[
-      tmp_gethostbyaddr_r="proto_declared"
-    ],[
-      AC_EGREP_CPP([gethostbyaddr_r],[
-#define _REENTRANT
-#include <sys/types.h>
-#include <netdb.h>
-      ],[
-        tmp_gethostbyaddr_r="proto_needs_reentrant"
-        tmp_need_reentrant="yes"
-      ])
-    ])
-  fi
-])
-
-
 dnl CURL_CHECK_NEED_REENTRANT_GETHOSTBYNAME_R
 dnl -------------------------------------------------
 dnl Checks if the preprocessor _REENTRANT definition
@@ -299,39 +282,6 @@ AC_DEFUN([CURL_CHECK_NEED_REENTRANT_GETPROTOBYNAME_R], [
 ])
 
 
-dnl CURL_CHECK_NEED_REENTRANT_GETSERVBYPORT_R
-dnl -------------------------------------------------
-dnl Checks if the preprocessor _REENTRANT definition
-dnl makes function getservbyport_r compiler visible.
-
-AC_DEFUN([CURL_CHECK_NEED_REENTRANT_GETSERVBYPORT_R], [
-  AC_LINK_IFELSE([
-    AC_LANG_FUNC_LINK_TRY([getservbyport_r])
-  ],[
-    tmp_getservbyport_r="yes"
-  ],[
-    tmp_getservbyport_r="no"
-  ])
-  if test "$tmp_getservbyport_r" = "yes"; then
-    AC_EGREP_CPP([getservbyport_r],[
-#include <sys/types.h>
-#include <netdb.h>
-    ],[
-      tmp_getservbyport_r="proto_declared"
-    ],[
-      AC_EGREP_CPP([getservbyport_r],[
-#define _REENTRANT
-#include <sys/types.h>
-#include <netdb.h>
-      ],[
-        tmp_getservbyport_r="proto_needs_reentrant"
-        tmp_need_reentrant="yes"
-      ])
-    ])
-  fi
-])
-
-
 dnl CURL_CHECK_NEED_REENTRANT_FUNCTIONS_R
 dnl -------------------------------------------------
 dnl Checks if the preprocessor _REENTRANT definition
@@ -352,19 +302,10 @@ AC_DEFUN([CURL_CHECK_NEED_REENTRANT_FUNCTIONS_R], [
     CURL_CHECK_NEED_REENTRANT_STRTOK_R
   fi
   if test "$tmp_need_reentrant" = "no"; then
-    CURL_CHECK_NEED_REENTRANT_INET_NTOA_R
-  fi
-  if test "$tmp_need_reentrant" = "no"; then
-    CURL_CHECK_NEED_REENTRANT_GETHOSTBYADDR_R
-  fi
-  if test "$tmp_need_reentrant" = "no"; then
     CURL_CHECK_NEED_REENTRANT_GETHOSTBYNAME_R
   fi
   if test "$tmp_need_reentrant" = "no"; then
     CURL_CHECK_NEED_REENTRANT_GETPROTOBYNAME_R
-  fi
-  if test "$tmp_need_reentrant" = "no"; then
-    CURL_CHECK_NEED_REENTRANT_GETSERVBYPORT_R
   fi
 ])
 
@@ -376,12 +317,35 @@ dnl must be unconditionally done for this platform.
 dnl Internal macro for CURL_CONFIGURE_REENTRANT.
 
 AC_DEFUN([CURL_CHECK_NEED_REENTRANT_SYSTEM], [
-  case $host in
-    *-*-solaris*)
+  case $host_os in
+    solaris*)
       tmp_need_reentrant="yes"
       ;;
     *)
       tmp_need_reentrant="no"
+      ;;
+  esac
+])
+
+
+dnl CURL_CHECK_NEED_THREAD_SAFE_SYSTEM
+dnl -------------------------------------------------
+dnl Checks if the preprocessor _THREAD_SAFE definition
+dnl must be unconditionally done for this platform.
+dnl Internal macro for CURL_CONFIGURE_THREAD_SAFE.
+
+AC_DEFUN([CURL_CHECK_NEED_THREAD_SAFE_SYSTEM], [
+  case $host_os in
+    aix[[123]].* | aix4.[[012]].*)
+      dnl aix 4.2 and older
+      tmp_need_thread_safe="no"
+      ;;
+    aix*)
+      dnl AIX 4.3 and newer
+      tmp_need_thread_safe="yes"
+      ;;
+    *)
+      tmp_need_thread_safe="no"
       ;;
   esac
 ])
@@ -393,7 +357,7 @@ dnl This macro ensures that configuration tests done
 dnl after this will execute with preprocessor symbol
 dnl _REENTRANT defined. This macro also ensures that
 dnl the generated config file defines NEED_REENTRANT
-dnl and that in turn setup.h will define _REENTRANT.
+dnl and that in turn curl_setup.h will define _REENTRANT.
 dnl Internal macro for CURL_CONFIGURE_REENTRANT.
 
 AC_DEFUN([CURL_CONFIGURE_FROM_NOW_ON_WITH_REENTRANT], [
@@ -402,6 +366,26 @@ AC_DEFINE(NEED_REENTRANT, 1,
 cat >>confdefs.h <<_EOF
 #ifndef _REENTRANT
 #  define _REENTRANT
+#endif
+_EOF
+])
+
+
+dnl CURL_CONFIGURE_FROM_NOW_ON_WITH_THREAD_SAFE
+dnl -------------------------------------------------
+dnl This macro ensures that configuration tests done
+dnl after this will execute with preprocessor symbol
+dnl _THREAD_SAFE defined. This macro also ensures that
+dnl the generated config file defines NEED_THREAD_SAFE
+dnl and that in turn curl_setup.h will define _THREAD_SAFE.
+dnl Internal macro for CURL_CONFIGURE_THREAD_SAFE.
+
+AC_DEFUN([CURL_CONFIGURE_FROM_NOW_ON_WITH_THREAD_SAFE], [
+AC_DEFINE(NEED_THREAD_SAFE, 1,
+  [Define to 1 if _THREAD_SAFE preprocessor symbol must be defined.])
+cat >>confdefs.h <<_EOF
+#ifndef _THREAD_SAFE
+#  define _THREAD_SAFE
 #endif
 _EOF
 ])
@@ -444,6 +428,9 @@ AC_DEFUN([CURL_CONFIGURE_REENTRANT], [
     AC_MSG_CHECKING([if _REENTRANT is actually needed])
     CURL_CHECK_NEED_REENTRANT_SYSTEM
     if test "$tmp_need_reentrant" = "no"; then
+      CURL_CHECK_NEED_REENTRANT_ERRNO
+    fi
+    if test "$tmp_need_reentrant" = "no"; then
       CURL_CHECK_NEED_REENTRANT_FUNCTIONS_R
     fi
     if test "$tmp_need_reentrant" = "yes"; then
@@ -464,3 +451,56 @@ AC_DEFUN([CURL_CONFIGURE_REENTRANT], [
   #
 ])
 
+
+dnl CURL_CONFIGURE_THREAD_SAFE
+dnl -------------------------------------------------
+dnl This first checks if the preprocessor _THREAD_SAFE
+dnl symbol is already defined. If it isn't currently
+dnl defined a set of checks are performed to verify
+dnl if its definition is required. Finally, if
+dnl _THREAD_SAFE is already defined or needed it takes
+dnl care of making adjustments necessary to ensure
+dnl that it is defined equally for further configure
+dnl tests and generated config file.
+
+AC_DEFUN([CURL_CONFIGURE_THREAD_SAFE], [
+  AC_PREREQ([2.50])dnl
+  #
+  AC_MSG_CHECKING([if _THREAD_SAFE is already defined])
+  AC_COMPILE_IFELSE([
+    AC_LANG_PROGRAM([[
+    ]],[[
+#ifdef _THREAD_SAFE
+      int dummy=1;
+#else
+      force compilation error
+#endif
+    ]])
+  ],[
+    AC_MSG_RESULT([yes])
+    tmp_thread_safe_initially_defined="yes"
+  ],[
+    AC_MSG_RESULT([no])
+    tmp_thread_safe_initially_defined="no"
+  ])
+  #
+  if test "$tmp_thread_safe_initially_defined" = "no"; then
+    AC_MSG_CHECKING([if _THREAD_SAFE is actually needed])
+    CURL_CHECK_NEED_THREAD_SAFE_SYSTEM
+    if test "$tmp_need_thread_safe" = "yes"; then
+      AC_MSG_RESULT([yes])
+    else
+      AC_MSG_RESULT([no])
+    fi
+  fi
+  #
+  AC_MSG_CHECKING([if _THREAD_SAFE is onwards defined])
+  if test "$tmp_thread_safe_initially_defined" = "yes" ||
+    test "$tmp_need_thread_safe" = "yes"; then
+    CURL_CONFIGURE_FROM_NOW_ON_WITH_THREAD_SAFE
+    AC_MSG_RESULT([yes])
+  else
+    AC_MSG_RESULT([no])
+  fi
+  #
+])

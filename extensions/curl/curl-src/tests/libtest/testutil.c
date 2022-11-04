@@ -5,11 +5,11 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2008, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at http://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -18,11 +18,11 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
- * $Id: testutil.c,v 1.8 2008-09-20 04:26:57 yangtse Exp $
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
-
-#include "setup.h"
-
+#include "curl_setup.h"
+#include <curl/curl.h>
 #include "testutil.h"
 #include "memdebug.h"
 
@@ -57,7 +57,7 @@ struct timeval tutil_tvnow(void)
   struct timespec tsnow;
   if(0 == clock_gettime(CLOCK_MONOTONIC, &tsnow)) {
     now.tv_sec = tsnow.tv_sec;
-    now.tv_usec = tsnow.tv_nsec / 1000;
+    now.tv_usec = (int)(tsnow.tv_nsec / 1000);
   }
   /*
   ** Even when the configure process has truly detected monotonic clock
@@ -69,7 +69,7 @@ struct timeval tutil_tvnow(void)
     (void)gettimeofday(&now, NULL);
 #else
   else {
-    now.tv_sec = (long)time(NULL);
+    now.tv_sec = time(NULL);
     now.tv_usec = 0;
   }
 #endif
@@ -98,7 +98,7 @@ struct timeval tutil_tvnow(void)
   ** time() returns the value of time in seconds since the Epoch.
   */
   struct timeval now;
-  now.tv_sec = (long)time(NULL);
+  now.tv_sec = time(NULL);
   now.tv_usec = 0;
   return now;
 }
@@ -113,9 +113,10 @@ struct timeval tutil_tvnow(void)
  */
 long tutil_tvdiff(struct timeval newer, struct timeval older)
 {
-  return (newer.tv_sec-older.tv_sec)*1000+
-    (newer.tv_usec-older.tv_usec)/1000;
+  return (long)(newer.tv_sec-older.tv_sec)*1000+
+    (long)(newer.tv_usec-older.tv_usec)/1000;
 }
+
 
 /*
  * Same as tutil_tvdiff but with full usec resolution.
@@ -124,13 +125,8 @@ long tutil_tvdiff(struct timeval newer, struct timeval older)
  */
 double tutil_tvdiff_secs(struct timeval newer, struct timeval older)
 {
-  return (double)(newer.tv_sec-older.tv_sec)+
-    (double)(newer.tv_usec-older.tv_usec)/1000000.0;
+  if(newer.tv_sec != older.tv_sec)
+    return (double)(newer.tv_sec-older.tv_sec)+
+      (double)(newer.tv_usec-older.tv_usec)/1000000.0;
+  return (double)(newer.tv_usec-older.tv_usec)/1000000.0;
 }
-
-/* return the number of seconds in the given input timeval struct */
-long tutil_tvlong(struct timeval t1)
-{
-  return t1.tv_sec;
-}
-

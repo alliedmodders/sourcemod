@@ -1,13 +1,29 @@
-/*****************************************************************************
+/***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
  *                             / __| | | | |_) | |
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * An example of curl_easy_send() and curl_easy_recv() usage.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
- * $Id: sendrecv.c,v 1.2 2008-08-14 18:41:37 danf Exp $
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution. The terms
+ * are also available at https://curl.se/docs/copyright.html.
+ *
+ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+ * copies of the Software, and permit persons to whom the Software is
+ * furnished to do so, under the terms of the COPYING file.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
+ *
+ ***************************************************************************/
+/* <DESC>
+ * An example of curl_easy_send() and curl_easy_recv() usage.
+ * </DESC>
  */
 
 #include <stdio.h>
@@ -15,14 +31,14 @@
 #include <curl/curl.h>
 
 /* Auxiliary function that waits on the socket. */
-static int wait_on_socket(int sockfd, int for_recv, long timeout_ms)
+static int wait_on_socket(curl_socket_t sockfd, int for_recv, long timeout_ms)
 {
   struct timeval tv;
   fd_set infd, outfd, errfd;
   int res;
 
   tv.tv_sec = timeout_ms / 1000;
-  tv.tv_usec= (timeout_ms % 1000) * 1000;
+  tv.tv_usec = (timeout_ms % 1000) * 1000;
 
   FD_ZERO(&infd);
   FD_ZERO(&outfd);
@@ -30,83 +46,113 @@ static int wait_on_socket(int sockfd, int for_recv, long timeout_ms)
 
   FD_SET(sockfd, &errfd); /* always check for error */
 
-  if(for_recv)
-  {
+  if(for_recv) {
     FD_SET(sockfd, &infd);
   }
-  else
-  {
+  else {
     FD_SET(sockfd, &outfd);
   }
 
   /* select() returns the number of signalled sockets or -1 */
-  res = select(sockfd + 1, &infd, &outfd, &errfd, &tv);
+  res = select((int)sockfd + 1, &infd, &outfd, &errfd, &tv);
   return res;
 }
 
 int main(void)
 {
   CURL *curl;
-  CURLcode res;
   /* Minimalistic http request */
-  const char *request = "GET / HTTP/1.0\r\nHost: curl.haxx.se\r\n\r\n";
-  int sockfd; /* socket */
-  size_t iolen;
+  const char *request = "GET / HTTP/1.0\r\nHost: example.com\r\n\r\n";
+  size_t request_len = strlen(request);
+
+  /* A general note of caution here: if you are using curl_easy_recv() or
+     curl_easy_send() to implement HTTP or _any_ other protocol libcurl
+     supports "natively", you are doing it wrong and you should stop.
+
+     This example uses HTTP only to show how to use this API, it does not
+     suggest that writing an application doing this is sensible.
+  */
 
   curl = curl_easy_init();
   if(curl) {
-    curl_easy_setopt(curl, CURLOPT_URL, "curl.haxx.se");
+    CURLcode res;
+    curl_socket_t sockfd;
+    size_t nsent_total = 0;
+
+    curl_easy_setopt(curl, CURLOPT_URL, "https://example.com");
     /* Do not do the transfer - only connect to host */
     curl_easy_setopt(curl, CURLOPT_CONNECT_ONLY, 1L);
     res = curl_easy_perform(curl);
 
-    if(CURLE_OK != res)
-    {
-      printf("Error: %s\n", strerror(res));
+    if(res != CURLE_OK) {
+      printf("Error: %s\n", curl_easy_strerror(res));
       return 1;
     }
 
-    /* Extract the socket from the curl handle - we'll need it
-     * for waiting */
-    res = curl_easy_getinfo(curl, CURLINFO_LASTSOCKET, &sockfd);
+    /* Extract the socket from the curl handle - we will need it for
+       waiting. */
+    res = curl_easy_getinfo(curl, CURLINFO_ACTIVESOCKET, &sockfd);
 
-    if(CURLE_OK != res)
-    {
-      printf("Error: %s\n", strerror(res));
+    if(res != CURLE_OK) {
+      printf("Error: %s\n", curl_easy_strerror(res));
       return 1;
     }
 
-    /* wait for the socket to become ready for sending */
-    if(!wait_on_socket(sockfd, 0, 60000L))
-    {
-      printf("Error: timeout.\n");
-      return 1;
-    }
+    printf("Sending request.\n");
 
-    puts("Sending request.");
-    /* Send the request. Real applications should check the iolen
-     * to see if all the request has been sent */
-    res = curl_easy_send(curl, request, strlen(request), &iolen);
+    do {
+      /* Warning: This example program may loop indefinitely.
+       * A production-quality program must define a timeout and exit this loop
+       * as soon as the timeout has expired. */
+      size_t nsent;
+      do {
+        nsent = 0;
+        res = curl_easy_send(curl, request + nsent_total,
+            request_len - nsent_total, &nsent);
+        nsent_total += nsent;
 
-    if(CURLE_OK != res)
-    {
-      printf("Error: %s\n", strerror(res));
-      return 1;
-    }
-    puts("Reading response.");
+        if(res == CURLE_AGAIN && !wait_on_socket(sockfd, 0, 60000L)) {
+          printf("Error: timeout.\n");
+          return 1;
+        }
+      } while(res == CURLE_AGAIN);
 
-    /* read the response */
-    for(;;)
-    {
+      if(res != CURLE_OK) {
+        printf("Error: %s\n", curl_easy_strerror(res));
+        return 1;
+      }
+
+      printf("Sent %lu bytes.\n", (unsigned long)nsent);
+
+    } while(nsent_total < request_len);
+
+    printf("Reading response.\n");
+
+    for(;;) {
+      /* Warning: This example program may loop indefinitely (see above). */
       char buf[1024];
+      size_t nread;
+      do {
+        nread = 0;
+        res = curl_easy_recv(curl, buf, sizeof(buf), &nread);
 
-      wait_on_socket(sockfd, 1, 60000L);
-      res = curl_easy_recv(curl, buf, 1024, &iolen);
+        if(res == CURLE_AGAIN && !wait_on_socket(sockfd, 1, 60000L)) {
+          printf("Error: timeout.\n");
+          return 1;
+        }
+      } while(res == CURLE_AGAIN);
 
-      if(CURLE_OK != res)
+      if(res != CURLE_OK) {
+        printf("Error: %s\n", curl_easy_strerror(res));
         break;
+      }
 
-      printf("Received %u bytes.\n", iolen);
+      if(nread == 0) {
+        /* end of the response */
+        break;
+      }
+
+      printf("Received %lu bytes.\n", (unsigned long)nread);
     }
 
     /* always cleanup */

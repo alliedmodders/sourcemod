@@ -1,13 +1,27 @@
-/*****************************************************************************
+/***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
  *                             / __| | | | |_) | |
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * $Id: lib549.c,v 1.3 2008-09-20 04:26:57 yangtse Exp $
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
- * argv1 = URL
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution. The terms
+ * are also available at https://curl.se/docs/copyright.html.
+ *
+ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+ * copies of the Software, and permit persons to whom the Software is
+ * furnished to do so, under the terms of the COPYING file.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
+ *
+ ***************************************************************************/
+/* argv1 = URL
  * argv2 = proxy
  * argv3 = non-zero means ASCII transfer
  */
@@ -21,30 +35,33 @@ int test(char *URL)
   CURLcode res;
   CURL *curl;
 
-  if (curl_global_init(CURL_GLOBAL_ALL) != CURLE_OK) {
+  if(curl_global_init(CURL_GLOBAL_ALL) != CURLE_OK) {
     fprintf(stderr, "curl_global_init() failed\n");
     return TEST_ERR_MAJOR_BAD;
   }
 
-  if ((curl = curl_easy_init()) == NULL) {
+  curl = curl_easy_init();
+  if(!curl) {
     fprintf(stderr, "curl_easy_init() failed\n");
     curl_global_cleanup();
     return TEST_ERR_MAJOR_BAD;
   }
 
-  curl_easy_setopt(curl, CURLOPT_PROXY, libtest_arg2);
-  curl_easy_setopt(curl, CURLOPT_URL, URL);
-  curl_easy_setopt(curl, CURLOPT_PROXY_TRANSFER_MODE, 1L);
-  curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-  if(libtest_arg3)
+  test_setopt(curl, CURLOPT_PROXY, libtest_arg2);
+  test_setopt(curl, CURLOPT_URL, URL);
+  test_setopt(curl, CURLOPT_PROXY_TRANSFER_MODE, 1L);
+  test_setopt(curl, CURLOPT_VERBOSE, 1L);
+  if(libtest_arg3) {
     /* enable ascii/text mode */
-    curl_easy_setopt(curl, CURLOPT_TRANSFERTEXT, 1L);
+    test_setopt(curl, CURLOPT_TRANSFERTEXT, 1L);
+  }
 
   res = curl_easy_perform(curl);
+
+test_cleanup:
 
   curl_easy_cleanup(curl);
   curl_global_cleanup();
 
   return (int)res;
 }
-

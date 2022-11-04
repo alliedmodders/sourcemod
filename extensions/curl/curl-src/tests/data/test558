@@ -1,4 +1,10 @@
 <testcase>
+<info>
+<keywords>
+TrackMemory
+</keywords>
+</info>
+
 #
 # Server-side
 <reply>
@@ -9,18 +15,17 @@
 <server>
 none
 </server>
+<features>
+TrackMemory
+ipv6
+</features>
 # tool is what to use instead of 'curl'
 <tool>
-lib558
+lib%TESTNUMBER
 </tool>
-# precheck is a command line to run before the test,
-# to see if we can execute the test or not
-<precheck>
-./libtest/lib558 check
-</precheck>
 
 <name>
-internal hash create/destroy testing
+libtest memory tracking operational
 </name>
 <command>
 nothing
@@ -30,15 +35,25 @@ nothing
 #
 # Verify data after the test has been "shot"
 <verify>
-<stdout mode="text">
-easy handle init OK
-creating hash...
-hash creation OK
-destroying hash...
-hash destruction OK
-destroying easy handle...
-easy handle destruction OK
-</stdout>
+<file name="log/memdump">
+MEM easy.c: malloc()
+MEM lib%TESTNUMBER.c: malloc()
+MEM lib%TESTNUMBER.c: free()
+MEM dynbuf.c: realloc()
+MEM dynbuf.c: realloc()
+MEM escape.c: free()
+MEM easy.c: free()
+</file>
+<stripfile>
+s/^MEM escape.c:\d+ free\(\(nil\)\)[\n]$//
+s/ =.*//
+s/\(.*\)/()/
+s/:\d+/:/
+s:^(MEM |FD )(.*/)(.*):$1$3:
+s/\r\n/\n/
+s/^MEM getenv.c: realloc\(\)[\n]$//
+s/^MEM getenv.c: free\(\)[\n]$//
+</stripfile>
 </verify>
 
 </testcase>

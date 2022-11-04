@@ -5,11 +5,11 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2007, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at http://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -18,28 +18,30 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
- * $Id: share.c,v 1.26 2008-10-19 20:17:16 yangtse Exp $
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 
-#include "setup.h"
-#include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
+#include "curl_setup.h"
+
 #include <curl/curl.h>
 #include "urldata.h"
 #include "share.h"
-#include "memory.h"
+#include "psl.h"
+#include "vtls/vtls.h"
+#include "curl_memory.h"
 
 /* The last #include file should be: */
 #include "memdebug.h"
 
-CURLSH *
+struct Curl_share *
 curl_share_init(void)
 {
-  struct Curl_share *share = malloc(sizeof(struct Curl_share));
+  struct Curl_share *share = calloc(1, sizeof(struct Curl_share));
   if(share) {
-    memset (share, 0, sizeof(struct Curl_share));
+    share->magic = CURL_GOOD_SHARE;
     share->specifier |= (1<<CURL_LOCK_DATA_SHARE);
+    Curl_init_dnscache(&share->hostcache, 23);
   }
 
   return share;
@@ -47,14 +49,17 @@ curl_share_init(void)
 
 #undef curl_share_setopt
 CURLSHcode
-curl_share_setopt(CURLSH *sh, CURLSHoption option, ...)
+curl_share_setopt(struct Curl_share *share, CURLSHoption option, ...)
 {
-  struct Curl_share *share = (struct Curl_share *)sh;
   va_list param;
   int type;
   curl_lock_function lockfunc;
   curl_unlock_function unlockfunc;
   void *ptr;
+  CURLSHcode res = CURLSHE_OK;
+
+  if(!GOOD_SHARE_HANDLE(share))
+    return CURLSHE_INVALID;
 
   if(share->dirty)
     /* don't allow setting options while one or more handles are already
@@ -67,64 +72,89 @@ curl_share_setopt(CURLSH *sh, CURLSHoption option, ...)
   case CURLSHOPT_SHARE:
     /* this is a type this share will share */
     type = va_arg(param, int);
-    share->specifier |= (1<<type);
-    switch( type ) {
+
+    switch(type) {
     case CURL_LOCK_DATA_DNS:
-      if(!share->hostcache) {
-        share->hostcache = Curl_mk_dnscache();
-        if(!share->hostcache)
-          return CURLSHE_NOMEM;
-      }
       break;
 
-#if !defined(CURL_DISABLE_HTTP) && !defined(CURL_DISABLE_COOKIES)
     case CURL_LOCK_DATA_COOKIE:
+#if !defined(CURL_DISABLE_HTTP) && !defined(CURL_DISABLE_COOKIES)
       if(!share->cookies) {
-        share->cookies = Curl_cookie_init(NULL, NULL, NULL, TRUE );
+        share->cookies = Curl_cookie_init(NULL, NULL, NULL, TRUE);
         if(!share->cookies)
-          return CURLSHE_NOMEM;
+          res = CURLSHE_NOMEM;
       }
+#else   /* CURL_DISABLE_HTTP */
+      res = CURLSHE_NOT_BUILT_IN;
+#endif
       break;
-#endif   /* CURL_DISABLE_HTTP */
 
-    case CURL_LOCK_DATA_SSL_SESSION: /* not supported (yet) */
-    case CURL_LOCK_DATA_CONNECT:     /* not supported (yet) */
+    case CURL_LOCK_DATA_SSL_SESSION:
+#ifdef USE_SSL
+      if(!share->sslsession) {
+        share->max_ssl_sessions = 8;
+        share->sslsession = calloc(share->max_ssl_sessions,
+                                   sizeof(struct Curl_ssl_session));
+        share->sessionage = 0;
+        if(!share->sslsession)
+          res = CURLSHE_NOMEM;
+      }
+#else
+      res = CURLSHE_NOT_BUILT_IN;
+#endif
+      break;
+
+    case CURL_LOCK_DATA_CONNECT:
+      if(Curl_conncache_init(&share->conn_cache, 103))
+        res = CURLSHE_NOMEM;
+      break;
+
+    case CURL_LOCK_DATA_PSL:
+#ifndef USE_LIBPSL
+      res = CURLSHE_NOT_BUILT_IN;
+#endif
+      break;
 
     default:
-      return CURLSHE_BAD_OPTION;
+      res = CURLSHE_BAD_OPTION;
     }
+    if(!res)
+      share->specifier |= (1<<type);
     break;
 
   case CURLSHOPT_UNSHARE:
     /* this is a type this share will no longer share */
     type = va_arg(param, int);
     share->specifier &= ~(1<<type);
-    switch( type )
-    {
-      case CURL_LOCK_DATA_DNS:
-        if(share->hostcache) {
-          Curl_hash_destroy(share->hostcache);
-          share->hostcache = NULL;
-        }
-        break;
+    switch(type) {
+    case CURL_LOCK_DATA_DNS:
+      break;
 
+    case CURL_LOCK_DATA_COOKIE:
 #if !defined(CURL_DISABLE_HTTP) && !defined(CURL_DISABLE_COOKIES)
-      case CURL_LOCK_DATA_COOKIE:
-        if(share->cookies) {
-          Curl_cookie_cleanup(share->cookies);
-          share->cookies = NULL;
-        }
-        break;
-#endif   /* CURL_DISABLE_HTTP */
+      if(share->cookies) {
+        Curl_cookie_cleanup(share->cookies);
+        share->cookies = NULL;
+      }
+#else   /* CURL_DISABLE_HTTP */
+      res = CURLSHE_NOT_BUILT_IN;
+#endif
+      break;
 
-      case CURL_LOCK_DATA_SSL_SESSION:
-        break;
+    case CURL_LOCK_DATA_SSL_SESSION:
+#ifdef USE_SSL
+      Curl_safefree(share->sslsession);
+#else
+      res = CURLSHE_NOT_BUILT_IN;
+#endif
+      break;
 
-      case CURL_LOCK_DATA_CONNECT:
-        break;
+    case CURL_LOCK_DATA_CONNECT:
+      break;
 
-      default:
-        return CURLSHE_BAD_OPTION;
+    default:
+      res = CURLSHE_BAD_OPTION;
+      break;
     }
     break;
 
@@ -144,18 +174,19 @@ curl_share_setopt(CURLSH *sh, CURLSHoption option, ...)
     break;
 
   default:
-    return CURLSHE_BAD_OPTION;
+    res = CURLSHE_BAD_OPTION;
+    break;
   }
 
-  return CURLSHE_OK;
+  va_end(param);
+
+  return res;
 }
 
 CURLSHcode
-curl_share_cleanup(CURLSH *sh)
+curl_share_cleanup(struct Curl_share *share)
 {
-  struct Curl_share *share = (struct Curl_share *)sh;
-
-  if(share == NULL)
+  if(!GOOD_SHARE_HANDLE(share))
     return CURLSHE_INVALID;
 
   if(share->lockfunc)
@@ -168,18 +199,28 @@ curl_share_cleanup(CURLSH *sh)
     return CURLSHE_IN_USE;
   }
 
-  if(share->hostcache) {
-    Curl_hash_destroy(share->hostcache);
-    share->hostcache = NULL;
-  }
+  Curl_conncache_close_all_connections(&share->conn_cache);
+  Curl_conncache_destroy(&share->conn_cache);
+  Curl_hash_destroy(&share->hostcache);
 
 #if !defined(CURL_DISABLE_HTTP) && !defined(CURL_DISABLE_COOKIES)
-  if(share->cookies)
-    Curl_cookie_cleanup(share->cookies);
-#endif   /* CURL_DISABLE_HTTP */
+  Curl_cookie_cleanup(share->cookies);
+#endif
+
+#ifdef USE_SSL
+  if(share->sslsession) {
+    size_t i;
+    for(i = 0; i < share->max_ssl_sessions; i++)
+      Curl_ssl_kill_session(&(share->sslsession[i]));
+    free(share->sslsession);
+  }
+#endif
+
+  Curl_psl_destroy(&share->psl);
 
   if(share->unlockfunc)
     share->unlockfunc(NULL, CURL_LOCK_DATA_SHARE, share->clientdata);
+  share->magic = 0;
   free(share);
 
   return CURLSHE_OK;
@@ -187,12 +228,12 @@ curl_share_cleanup(CURLSH *sh)
 
 
 CURLSHcode
-Curl_share_lock(struct SessionHandle *data, curl_lock_data type,
+Curl_share_lock(struct Curl_easy *data, curl_lock_data type,
                 curl_lock_access accesstype)
 {
   struct Curl_share *share = data->share;
 
-  if(share == NULL)
+  if(!share)
     return CURLSHE_INVALID;
 
   if(share->specifier & (1<<type)) {
@@ -205,11 +246,11 @@ Curl_share_lock(struct SessionHandle *data, curl_lock_data type,
 }
 
 CURLSHcode
-Curl_share_unlock(struct SessionHandle *data, curl_lock_data type)
+Curl_share_unlock(struct Curl_easy *data, curl_lock_data type)
 {
   struct Curl_share *share = data->share;
 
-  if(share == NULL)
+  if(!share)
     return CURLSHE_INVALID;
 
   if(share->specifier & (1<<type)) {

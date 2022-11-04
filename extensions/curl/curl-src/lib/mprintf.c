@@ -5,11 +5,11 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1999 - 2008, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1999 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at http://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -18,7 +18,8 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
- * $Id: mprintf.c,v 1.80 2008-09-13 16:37:16 yangtse Exp $
+ * SPDX-License-Identifier: curl
+ *
  *
  * Purpose:
  *  A merge of Bjorn Reese's format() function and Daniel's dsprintf()
@@ -33,37 +34,20 @@
  *
  * If you ever want truly portable and good *printf() clones, the project that
  * took on from here is named 'Trio' and you find more details on the trio web
- * page at http://daniel.haxx.se/trio/
+ * page at https://daniel.haxx.se/projects/trio/
  */
 
-#include "setup.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <ctype.h>
-#include <string.h>
-
-#if defined(DJGPP) && (DJGPP_MINOR < 4)
-#undef _MPRINTF_REPLACE /* don't use x_was_used() here */
-#endif
-
+#include "curl_setup.h"
+#include "dynbuf.h"
 #include <curl/mprintf.h>
 
-#include "memory.h"
+#include "curl_memory.h"
 /* The last #include file should be: */
 #include "memdebug.h"
-
-#ifndef SIZEOF_LONG_DOUBLE
-#define SIZEOF_LONG_DOUBLE 0
-#endif
 
 /*
  * If SIZEOF_SIZE_T has not been defined, default to the size of long.
  */
-
-#ifndef SIZEOF_SIZE_T
-#  define SIZEOF_SIZE_T CURL_SIZEOF_LONG
-#endif
 
 #ifdef HAVE_LONGLONG
 #  define LONG_LONG_TYPE long long
@@ -79,6 +63,18 @@
 #endif
 
 /*
+ * Non-ANSI integer extensions
+ */
+
+#if (defined(__BORLANDC__) && (__BORLANDC__ >= 0x520)) || \
+    (defined(__POCC__) && defined(_MSC_VER)) || \
+    (defined(_WIN32_WCE)) || \
+    (defined(__MINGW32__)) || \
+    (defined(_MSC_VER) && (_MSC_VER >= 900) && (_INTEGRAL_MAX_BITS >= 64))
+#  define MP_HAVE_INT_EXTENSIONS
+#endif
+
+/*
  * Max integer data types that mprintf.c is capable
  */
 
@@ -90,7 +86,8 @@
 #  define mp_uintmax_t unsigned long
 #endif
 
-#define BUFFSIZE 256 /* buffer for long-to-str and float-to-str calcs */
+#define BUFFSIZE 326 /* buffer for long-to-str and float-to-str calcs, should
+                        fit negative DBL_MAX (317 letters) */
 #define MAX_PARAMETERS 128 /* lame static limit */
 
 #ifdef __AMIGA__
@@ -103,16 +100,16 @@ static const char lower_digits[] = "0123456789abcdefghijklmnopqrstuvwxyz";
 /* Upper-case digits.  */
 static const char upper_digits[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-#define OUTCHAR(x) \
-  do{ \
+#define OUTCHAR(x)                                     \
+  do {                                                 \
     if(stream((unsigned char)(x), (FILE *)data) != -1) \
-      done++; \
-    else \
-     return done; /* return immediately on failure */ \
+      done++;                                          \
+    else                                               \
+      return done; /* return immediately on failure */ \
   } while(0)
 
 /* Data type to read from the arglist */
-typedef enum  {
+typedef enum {
   FORMAT_UNKNOWN = 0,
   FORMAT_STRING,
   FORMAT_PTR,
@@ -125,7 +122,7 @@ typedef enum  {
   FORMAT_WIDTH /* For internal use */
 } FormatType;
 
-/* convertion and display flags */
+/* conversion and display flags */
 enum {
   FLAGS_NEW        = 0,
   FLAGS_SPACE      = 1<<0,
@@ -150,7 +147,7 @@ enum {
   FLAGS_FLOATG     = 1<<19  /* %g or %G */
 };
 
-typedef struct {
+struct va_stack {
   FormatType type;
   int flags;
   long width;     /* width OR width parameter number */
@@ -164,7 +161,7 @@ typedef struct {
     } num;
     double dnum;
   } data;
-} va_stack_t;
+};
 
 struct nsprintf {
   char *buffer;
@@ -173,136 +170,51 @@ struct nsprintf {
 };
 
 struct asprintf {
-  char *buffer; /* allocated buffer */
-  size_t len;   /* length of string */
-  size_t alloc; /* length of alloc */
-  int fail;     /* (!= 0) if an alloc has failed and thus
-                   the output is not the complete data */
+  struct dynbuf *b;
+  bool fail; /* if an alloc has failed and thus the output is not the complete
+                data */
 };
 
 static long dprintf_DollarString(char *input, char **end)
 {
-  int number=0;
+  int number = 0;
   while(ISDIGIT(*input)) {
-    number *= 10;
-    number += *input-'0';
+    if(number < MAX_PARAMETERS) {
+      number *= 10;
+      number += *input - '0';
+    }
     input++;
   }
-  if(number && ('$'==*input++)) {
-    *end = input;
+  if(number <= MAX_PARAMETERS && ('$' == *input)) {
+    *end = ++input;
     return number;
   }
   return 0;
 }
 
-static int dprintf_IsQualifierNoDollar(char c)
+static bool dprintf_IsQualifierNoDollar(const char *fmt)
 {
-  switch (c) {
+#if defined(MP_HAVE_INT_EXTENSIONS)
+  if(!strncmp(fmt, "I32", 3) || !strncmp(fmt, "I64", 3)) {
+    return TRUE;
+  }
+#endif
+
+  switch(*fmt) {
   case '-': case '+': case ' ': case '#': case '.':
   case '0': case '1': case '2': case '3': case '4':
   case '5': case '6': case '7': case '8': case '9':
   case 'h': case 'l': case 'L': case 'z': case 'q':
   case '*': case 'O':
-    return 1; /* true */
-  default:
-    return 0; /* false */
-  }
-}
-
-#ifdef DPRINTF_DEBUG2
-static void dprintf_Pass1Report(va_stack_t *vto, int max)
-{
-  int i;
-  char buffer[256];
-  int bit;
-  int flags;
-
-  for(i=0; i<max; i++) {
-    char *type;
-    switch(vto[i].type) {
-    case FORMAT_UNKNOWN:
-      type = "unknown";
-      break;
-    case FORMAT_STRING:
-      type ="string";
-      break;
-    case FORMAT_PTR:
-      type ="pointer";
-      break;
-    case FORMAT_INT:
-      type = "int";
-      break;
-    case FORMAT_INTPTR:
-      type = "intptr";
-      break;
-    case FORMAT_LONG:
-      type = "long";
-      break;
-    case FORMAT_LONGLONG:
-      type = "long long";
-      break;
-    case FORMAT_DOUBLE:
-      type = "double";
-      break;
-    case FORMAT_LONGDOUBLE:
-      type = "long double";
-      break;
-    }
-
-
-    buffer[0]=0;
-
-    for(bit=0; bit<31; bit++) {
-      flags = vto[i].flags & (1<<bit);
-
-      if(flags & FLAGS_SPACE)
-        strcat(buffer, "space ");
-      else if(flags & FLAGS_SHOWSIGN)
-        strcat(buffer, "plus ");
-      else if(flags & FLAGS_LEFT)
-        strcat(buffer, "left ");
-      else if(flags & FLAGS_ALT)
-        strcat(buffer, "alt ");
-      else if(flags & FLAGS_SHORT)
-        strcat(buffer, "short ");
-      else if(flags & FLAGS_LONG)
-        strcat(buffer, "long ");
-      else if(flags & FLAGS_LONGLONG)
-        strcat(buffer, "longlong ");
-      else if(flags & FLAGS_LONGDOUBLE)
-        strcat(buffer, "longdouble ");
-      else if(flags & FLAGS_PAD_NIL)
-        strcat(buffer, "padnil ");
-      else if(flags & FLAGS_UNSIGNED)
-        strcat(buffer, "unsigned ");
-      else if(flags & FLAGS_OCTAL)
-        strcat(buffer, "octal ");
-      else if(flags & FLAGS_HEX)
-        strcat(buffer, "hex ");
-      else if(flags & FLAGS_UPPER)
-        strcat(buffer, "upper ");
-      else if(flags & FLAGS_WIDTH)
-        strcat(buffer, "width ");
-      else if(flags & FLAGS_WIDTHPARAM)
-        strcat(buffer, "widthparam ");
-      else if(flags & FLAGS_PREC)
-        strcat(buffer, "precision ");
-      else if(flags & FLAGS_PRECPARAM)
-        strcat(buffer, "precparam ");
-      else if(flags & FLAGS_CHAR)
-        strcat(buffer, "char ");
-      else if(flags & FLAGS_FLOATE)
-        strcat(buffer, "floate ");
-      else if(flags & FLAGS_FLOATG)
-        strcat(buffer, "floatg ");
-    }
-    printf("REPORT: %d. %s [%s]\n", i, type, buffer);
-
-  }
-
-
-}
+#if defined(MP_HAVE_INT_EXTENSIONS)
+  case 'I':
 #endif
+    return TRUE;
+
+  default:
+    return FALSE;
+  }
+}
 
 /******************************************************************
  *
@@ -310,10 +222,12 @@ static void dprintf_Pass1Report(va_stack_t *vto, int max)
  * Create an index with the type of each parameter entry and its
  * value (may vary in size)
  *
+ * Returns zero on success.
+ *
  ******************************************************************/
 
-static long dprintf_Pass1(const char *format, va_stack_t *vto, char **endpos,
-                          va_list arglist)
+static int dprintf_Pass1(const char *format, struct va_stack *vto,
+                         char **endpos, va_list arglist)
 {
   char *fmt = (char *)format;
   int param_num = 0;
@@ -321,7 +235,7 @@ static long dprintf_Pass1(const char *format, va_stack_t *vto, char **endpos,
   long width;
   long precision;
   int flags;
-  long max_param=0;
+  long max_param = 0;
   long i;
 
   while(*fmt) {
@@ -356,8 +270,20 @@ static long dprintf_Pass1(const char *format, va_stack_t *vto, char **endpos,
 
       /* Handle the flags */
 
-      while(dprintf_IsQualifierNoDollar(*fmt)) {
-        switch (*fmt++) {
+      while(dprintf_IsQualifierNoDollar(fmt)) {
+#if defined(MP_HAVE_INT_EXTENSIONS)
+        if(!strncmp(fmt, "I32", 3)) {
+          flags |= FLAGS_LONG;
+          fmt += 3;
+        }
+        else if(!strncmp(fmt, "I64", 3)) {
+          flags |= FLAGS_LONGLONG;
+          fmt += 3;
+        }
+        else
+#endif
+
+        switch(*fmt++) {
         case ' ':
           flags |= FLAGS_SPACE;
           break;
@@ -372,7 +298,6 @@ static long dprintf_Pass1(const char *format, va_stack_t *vto, char **endpos,
           flags |= FLAGS_ALT;
           break;
         case '.':
-          flags |= FLAGS_PREC;
           if('*' == *fmt) {
             /* The precision is picked from a specified parameter */
 
@@ -393,10 +318,24 @@ static long dprintf_Pass1(const char *format, va_stack_t *vto, char **endpos,
             flags |= FLAGS_PREC;
             precision = strtol(fmt, &fmt, 10);
           }
+          if((flags & (FLAGS_PREC | FLAGS_PRECPARAM)) ==
+             (FLAGS_PREC | FLAGS_PRECPARAM))
+            /* it is not permitted to use both kinds of precision for the same
+               argument */
+            return 1;
           break;
         case 'h':
           flags |= FLAGS_SHORT;
           break;
+#if defined(MP_HAVE_INT_EXTENSIONS)
+        case 'I':
+#if (SIZEOF_CURL_OFF_T > SIZEOF_LONG)
+          flags |= FLAGS_LONGLONG;
+#else
+          flags |= FLAGS_LONG;
+#endif
+          break;
+#endif
         case 'l':
           if(flags & FLAGS_LONG)
             flags |= FLAGS_LONGLONG;
@@ -412,14 +351,14 @@ static long dprintf_Pass1(const char *format, va_stack_t *vto, char **endpos,
         case 'z':
           /* the code below generates a warning if -Wunreachable-code is
              used */
-#if (SIZEOF_SIZE_T > CURL_SIZEOF_LONG)
+#if (SIZEOF_SIZE_T > SIZEOF_LONG)
           flags |= FLAGS_LONGLONG;
 #else
           flags |= FLAGS_LONG;
 #endif
           break;
         case 'O':
-#if (CURL_SIZEOF_CURL_OFF_T > CURL_SIZEOF_LONG)
+#if (SIZEOF_CURL_OFF_T > SIZEOF_LONG)
           flags |= FLAGS_LONGLONG;
 #else
           flags |= FLAGS_LONG;
@@ -444,8 +383,10 @@ static long dprintf_Pass1(const char *format, va_stack_t *vto, char **endpos,
           else
             width = param_num;
           if(width > max_param)
-            max_param=width;
+            max_param = width;
           break;
+        case '\0':
+          fmt--;
         default:
           break;
         }
@@ -454,6 +395,10 @@ static long dprintf_Pass1(const char *format, va_stack_t *vto, char **endpos,
       /* Handle the specifier */
 
       i = this_param - 1;
+
+      if((i < 0) || (i >= MAX_PARAMETERS))
+        /* out of allowed range */
+        return 1;
 
       switch (*fmt) {
       case 'S':
@@ -481,11 +426,11 @@ static long dprintf_Pass1(const char *format, va_stack_t *vto, char **endpos,
         break;
       case 'x':
         vto[i].type = FORMAT_INT;
-        flags |= FLAGS_HEX;
+        flags |= FLAGS_HEX|FLAGS_UNSIGNED;
         break;
       case 'X':
         vto[i].type = FORMAT_INT;
-        flags |= FLAGS_HEX|FLAGS_UPPER;
+        flags |= FLAGS_HEX|FLAGS_UPPER|FLAGS_UNSIGNED;
         break;
       case 'c':
         vto[i].type = FORMAT_INT;
@@ -522,96 +467,102 @@ static long dprintf_Pass1(const char *format, va_stack_t *vto, char **endpos,
       if(flags & FLAGS_WIDTHPARAM) {
         /* we have the width specified from a parameter, so we make that
            parameter's info setup properly */
-        vto[i].width = width - 1;
-        i = width - 1;
-        vto[i].type = FORMAT_WIDTH;
-        vto[i].flags = FLAGS_NEW;
-        vto[i].precision = vto[i].width = 0; /* can't use width or precision
-                                                of width! */
+        long k = width - 1;
+        if((k < 0) || (k >= MAX_PARAMETERS))
+          /* out of allowed range */
+          return 1;
+        vto[i].width = k;
+        vto[k].type = FORMAT_WIDTH;
+        vto[k].flags = FLAGS_NEW;
+        /* can't use width or precision of width! */
+        vto[k].width = 0;
+        vto[k].precision = 0;
       }
       if(flags & FLAGS_PRECPARAM) {
         /* we have the precision specified from a parameter, so we make that
            parameter's info setup properly */
-        vto[i].precision = precision - 1;
-        i = precision - 1;
-        vto[i].type = FORMAT_WIDTH;
-        vto[i].flags = FLAGS_NEW;
-        vto[i].precision = vto[i].width = 0; /* can't use width or precision
-                                                of width! */
+        long k = precision - 1;
+        if((k < 0) || (k >= MAX_PARAMETERS))
+          /* out of allowed range */
+          return 1;
+        vto[i].precision = k;
+        vto[k].type = FORMAT_WIDTH;
+        vto[k].flags = FLAGS_NEW;
+        /* can't use width or precision of width! */
+        vto[k].width = 0;
+        vto[k].precision = 0;
       }
-      *endpos++ = fmt + 1; /* end of this sequence */
+      *endpos++ = fmt + ((*fmt == '\0') ? 0 : 1); /* end of this sequence */
     }
   }
 
-#ifdef DPRINTF_DEBUG2
-  dprintf_Pass1Report(vto, max_param);
-#endif
-
   /* Read the arg list parameters into our data list */
-  for (i=0; i<max_param; i++) {
-    if((i + 1 < max_param) && (vto[i + 1].type == FORMAT_WIDTH))
-      {
-        /* Width/precision arguments must be read before the main argument
-         * they are attached to
-         */
-        vto[i + 1].data.num.as_signed = (mp_intmax_t)va_arg(arglist, int);
-      }
+  for(i = 0; i<max_param; i++) {
+    /* Width/precision arguments must be read before the main argument
+       they are attached to */
+    if(vto[i].flags & FLAGS_WIDTHPARAM) {
+      vto[vto[i].width].data.num.as_signed =
+        (mp_intmax_t)va_arg(arglist, int);
+    }
+    if(vto[i].flags & FLAGS_PRECPARAM) {
+      vto[vto[i].precision].data.num.as_signed =
+        (mp_intmax_t)va_arg(arglist, int);
+    }
 
-    switch (vto[i].type)
-      {
-      case FORMAT_STRING:
-        vto[i].data.str = va_arg(arglist, char *);
-        break;
+    switch(vto[i].type) {
+    case FORMAT_STRING:
+      vto[i].data.str = va_arg(arglist, char *);
+      break;
 
-      case FORMAT_INTPTR:
-      case FORMAT_UNKNOWN:
-      case FORMAT_PTR:
-        vto[i].data.ptr = va_arg(arglist, void *);
-        break;
+    case FORMAT_INTPTR:
+    case FORMAT_UNKNOWN:
+    case FORMAT_PTR:
+      vto[i].data.ptr = va_arg(arglist, void *);
+      break;
 
-      case FORMAT_INT:
+    case FORMAT_INT:
 #ifdef HAVE_LONG_LONG_TYPE
-        if((vto[i].flags & FLAGS_LONGLONG) && (vto[i].flags & FLAGS_UNSIGNED))
-          vto[i].data.num.as_unsigned =
-            (mp_uintmax_t)va_arg(arglist, mp_uintmax_t);
-        else if(vto[i].flags & FLAGS_LONGLONG)
-          vto[i].data.num.as_signed =
-            (mp_intmax_t)va_arg(arglist, mp_intmax_t);
-        else
+      if((vto[i].flags & FLAGS_LONGLONG) && (vto[i].flags & FLAGS_UNSIGNED))
+        vto[i].data.num.as_unsigned =
+          (mp_uintmax_t)va_arg(arglist, mp_uintmax_t);
+      else if(vto[i].flags & FLAGS_LONGLONG)
+        vto[i].data.num.as_signed =
+          (mp_intmax_t)va_arg(arglist, mp_intmax_t);
+      else
 #endif
-        {
-          if((vto[i].flags & FLAGS_LONG) && (vto[i].flags & FLAGS_UNSIGNED))
-            vto[i].data.num.as_unsigned =
-              (mp_uintmax_t)va_arg(arglist, unsigned long);
-          else if(vto[i].flags & FLAGS_LONG)
-            vto[i].data.num.as_signed =
-              (mp_intmax_t)va_arg(arglist, long);
-          else if(vto[i].flags & FLAGS_UNSIGNED)
-            vto[i].data.num.as_unsigned =
-              (mp_uintmax_t)va_arg(arglist, unsigned int);
-          else
-            vto[i].data.num.as_signed =
-              (mp_intmax_t)va_arg(arglist, int);
-        }
-        break;
-
-      case FORMAT_DOUBLE:
-        vto[i].data.dnum = va_arg(arglist, double);
-        break;
-
-      case FORMAT_WIDTH:
-        /* Argument has been read. Silently convert it into an integer
-         * for later use
-         */
-        vto[i].type = FORMAT_INT;
-        break;
-
-      default:
-        break;
+      {
+        if((vto[i].flags & FLAGS_LONG) && (vto[i].flags & FLAGS_UNSIGNED))
+          vto[i].data.num.as_unsigned =
+            (mp_uintmax_t)va_arg(arglist, unsigned long);
+        else if(vto[i].flags & FLAGS_LONG)
+          vto[i].data.num.as_signed =
+            (mp_intmax_t)va_arg(arglist, long);
+        else if(vto[i].flags & FLAGS_UNSIGNED)
+          vto[i].data.num.as_unsigned =
+            (mp_uintmax_t)va_arg(arglist, unsigned int);
+        else
+          vto[i].data.num.as_signed =
+            (mp_intmax_t)va_arg(arglist, int);
       }
+      break;
+
+    case FORMAT_DOUBLE:
+      vto[i].data.dnum = va_arg(arglist, double);
+      break;
+
+    case FORMAT_WIDTH:
+      /* Argument has been read. Silently convert it into an integer
+       * for later use
+       */
+      vto[i].type = FORMAT_INT;
+      break;
+
+    default:
+      break;
+    }
   }
 
-  return max_param;
+  return 0;
 
 }
 
@@ -633,18 +584,22 @@ static int dprintf_formatf(
   int done = 0;
 
   long param; /* current parameter to read */
-  long param_num=0; /* parameter counter */
+  long param_num = 0; /* parameter counter */
 
-  va_stack_t vto[MAX_PARAMETERS];
+  struct va_stack vto[MAX_PARAMETERS];
   char *endpos[MAX_PARAMETERS];
   char **end;
-
   char work[BUFFSIZE];
+  struct va_stack *p;
 
-  va_stack_t *p;
+  /* 'workend' points to the final buffer byte position, but with an extra
+     byte as margin to avoid the (false?) warning Coverity gives us
+     otherwise */
+  char *workend = &work[sizeof(work) - 2];
 
   /* Do the actual %-code parsing */
-  dprintf_Pass1(format, vto, endpos, ap_save);
+  if(dprintf_Pass1(format, vto, endpos, ap_save))
+    return 0;
 
   end = &endpos[0]; /* the initial end-position from the list dprintf_Pass1()
                        created for us */
@@ -664,13 +619,15 @@ static int dprintf_formatf(
     int is_neg;
 
     /* Base of a number to be written.  */
-    long base;
+    unsigned long base;
 
     /* Integral values to be written.  */
     mp_uintmax_t num;
 
     /* Used to convert negative in positive.  */
     mp_intmax_t signed_num;
+
+    char *w;
 
     if(*f != '%') {
       /* This isn't a format spec, so write everything out until the next one
@@ -693,9 +650,9 @@ static int dprintf_formatf(
       continue;
     }
 
-    /* If this is a positional parameter, the position must follow imediately
+    /* If this is a positional parameter, the position must follow immediately
        after the %, thus create a %<num>$ sequence */
-    param=dprintf_DollarString(f, &f);
+    param = dprintf_DollarString(f, &f);
 
     if(!param)
       param = param_num;
@@ -708,16 +665,30 @@ static int dprintf_formatf(
     p = &vto[param];
 
     /* pick up the specified width */
-    if(p->flags & FLAGS_WIDTHPARAM)
+    if(p->flags & FLAGS_WIDTHPARAM) {
       width = (long)vto[p->width].data.num.as_signed;
+      param_num++; /* since the width is extracted from a parameter, we
+                      must skip that to get to the next one properly */
+      if(width < 0) {
+        /* "A negative field width is taken as a '-' flag followed by a
+           positive field width." */
+        width = -width;
+        p->flags |= FLAGS_LEFT;
+        p->flags &= ~FLAGS_PAD_NIL;
+      }
+    }
     else
       width = p->width;
 
     /* pick up the specified precision */
     if(p->flags & FLAGS_PRECPARAM) {
       prec = (long)vto[p->precision].data.num.as_signed;
-      param_num++; /* since the precision is extraced from a parameter, we
+      param_num++; /* since the precision is extracted from a parameter, we
                       must skip that to get to the next one properly */
+      if(prec < 0)
+        /* "A negative precision is taken as if the precision were
+           omitted." */
+        prec = -1;
     }
     else if(p->flags & FLAGS_PREC)
       prec = p->precision;
@@ -726,7 +697,7 @@ static int dprintf_formatf(
 
     is_alt = (p->flags & FLAGS_ALT) ? 1 : 0;
 
-    switch (p->type) {
+    switch(p->type) {
     case FORMAT_INT:
       num = p->data.num.as_unsigned;
       if(p->flags & FLAGS_CHAR) {
@@ -740,21 +711,21 @@ static int dprintf_formatf(
             OUTCHAR(' ');
         break;
       }
-      if(p->flags & FLAGS_UNSIGNED) {
-        /* Decimal unsigned integer.  */
-        base = 10;
-        goto unsigned_number;
-      }
       if(p->flags & FLAGS_OCTAL) {
         /* Octal unsigned integer.  */
         base = 8;
         goto unsigned_number;
       }
-      if(p->flags & FLAGS_HEX) {
+      else if(p->flags & FLAGS_HEX) {
         /* Hexadecimal unsigned integer.  */
 
         digits = (p->flags & FLAGS_UPPER)? upper_digits : lower_digits;
         base = 16;
+        goto unsigned_number;
+      }
+      else if(p->flags & FLAGS_UNSIGNED) {
+        /* Decimal unsigned integer.  */
+        base = 10;
         goto unsigned_number;
       }
 
@@ -778,72 +749,68 @@ static int dprintf_formatf(
 
       number:
       /* Number of base BASE.  */
-      {
-        char *workend = &work[sizeof(work) - 1];
-        char *w;
 
-        /* Supply a default precision if none was given.  */
-        if(prec == -1)
-          prec = 1;
+      /* Supply a default precision if none was given.  */
+      if(prec == -1)
+        prec = 1;
 
-        /* Put the number in WORK.  */
-        w = workend;
-        while(num > 0) {
-          *w-- = digits[num % base];
-          num /= base;
-        }
-        width -= (long)(workend - w);
-        prec -= (long)(workend - w);
+      /* Put the number in WORK.  */
+      w = workend;
+      while(num > 0) {
+        *w-- = digits[num % base];
+        num /= base;
+      }
+      width -= (long)(workend - w);
+      prec -= (long)(workend - w);
 
-        if(is_alt && base == 8 && prec <= 0) {
+      if(is_alt && base == 8 && prec <= 0) {
+        *w-- = '0';
+        --width;
+      }
+
+      if(prec > 0) {
+        width -= prec;
+        while(prec-- > 0 && w >= work)
           *w-- = '0';
-          --width;
-        }
+      }
 
-        if(prec > 0) {
-          width -= prec;
-          while(prec-- > 0)
-            *w-- = '0';
-        }
+      if(is_alt && base == 16)
+        width -= 2;
 
-        if(is_alt && base == 16)
-          width -= 2;
+      if(is_neg || (p->flags & FLAGS_SHOWSIGN) || (p->flags & FLAGS_SPACE))
+        --width;
 
-        if(is_neg || (p->flags & FLAGS_SHOWSIGN) || (p->flags & FLAGS_SPACE))
-          --width;
-
-        if(!(p->flags & FLAGS_LEFT) && !(p->flags & FLAGS_PAD_NIL))
-          while(width-- > 0)
-            OUTCHAR(' ');
-
-        if(is_neg)
-          OUTCHAR('-');
-        else if(p->flags & FLAGS_SHOWSIGN)
-          OUTCHAR('+');
-        else if(p->flags & FLAGS_SPACE)
+      if(!(p->flags & FLAGS_LEFT) && !(p->flags & FLAGS_PAD_NIL))
+        while(width-- > 0)
           OUTCHAR(' ');
 
-        if(is_alt && base == 16) {
-          OUTCHAR('0');
-          if(p->flags & FLAGS_UPPER)
-            OUTCHAR('X');
-          else
-            OUTCHAR('x');
-        }
+      if(is_neg)
+        OUTCHAR('-');
+      else if(p->flags & FLAGS_SHOWSIGN)
+        OUTCHAR('+');
+      else if(p->flags & FLAGS_SPACE)
+        OUTCHAR(' ');
 
-        if(!(p->flags & FLAGS_LEFT) && (p->flags & FLAGS_PAD_NIL))
-          while(width-- > 0)
-            OUTCHAR('0');
-
-        /* Write the number.  */
-        while(++w <= workend) {
-          OUTCHAR(*w);
-        }
-
-        if(p->flags & FLAGS_LEFT)
-          while(width-- > 0)
-            OUTCHAR(' ');
+      if(is_alt && base == 16) {
+        OUTCHAR('0');
+        if(p->flags & FLAGS_UPPER)
+          OUTCHAR('X');
+        else
+          OUTCHAR('x');
       }
+
+      if(!(p->flags & FLAGS_LEFT) && (p->flags & FLAGS_PAD_NIL))
+        while(width-- > 0)
+          OUTCHAR('0');
+
+      /* Write the number.  */
+      while(++w <= workend) {
+        OUTCHAR(*w);
+      }
+
+      if(p->flags & FLAGS_LEFT)
+        while(width-- > 0)
+          OUTCHAR(' ');
       break;
 
     case FORMAT_STRING:
@@ -854,7 +821,7 @@ static int dprintf_formatf(
         size_t len;
 
         str = (char *) p->data.str;
-        if( str == NULL) {
+        if(!str) {
           /* Write null[] if there's space.  */
           if(prec == -1 || prec >= (long) sizeof(null) - 1) {
             str = null;
@@ -867,12 +834,14 @@ static int dprintf_formatf(
             len = 0;
           }
         }
+        else if(prec != -1)
+          len = (size_t)prec;
+        else if(*str == '\0')
+          len = 0;
         else
           len = strlen(str);
 
-        if(prec != -1 && (size_t) prec < len)
-          len = prec;
-        width -= (long)len;
+        width -= (len > LONG_MAX) ? LONG_MAX : (long)len;
 
         if(p->flags & FLAGS_ALT)
           OUTCHAR('"');
@@ -881,7 +850,7 @@ static int dprintf_formatf(
           while(width-- > 0)
             OUTCHAR(' ');
 
-        while(len-- > 0)
+        for(; len && *str; len--)
           OUTCHAR(*str++);
         if(p->flags&FLAGS_LEFT)
           while(width-- > 0)
@@ -897,7 +866,7 @@ static int dprintf_formatf(
       {
         void *ptr;
         ptr = (void *) p->data.ptr;
-        if(ptr != NULL) {
+        if(ptr) {
           /* If the pointer is not NULL, write it as a %#x spec.  */
           base = 16;
           digits = (p->flags & FLAGS_UPPER)? upper_digits : lower_digits;
@@ -911,13 +880,13 @@ static int dprintf_formatf(
           static const char strnil[] = "(nil)";
           const char *point;
 
-          width -= sizeof(strnil) - 1;
+          width -= (long)(sizeof(strnil) - 1);
           if(p->flags & FLAGS_LEFT)
             while(width-- > 0)
               OUTCHAR(' ');
-          for (point = strnil; *point != '\0'; ++point)
+          for(point = strnil; *point != '\0'; ++point)
             OUTCHAR(*point);
-          if(! (p->flags & FLAGS_LEFT))
+          if(!(p->flags & FLAGS_LEFT))
             while(width-- > 0)
               OUTCHAR(' ');
         }
@@ -927,7 +896,7 @@ static int dprintf_formatf(
     case FORMAT_DOUBLE:
       {
         char formatbuf[32]="%";
-        char *fptr;
+        char *fptr = &formatbuf[1];
         size_t left = sizeof(formatbuf)-strlen(formatbuf);
         int len;
 
@@ -944,27 +913,43 @@ static int dprintf_formatf(
           prec = (long)vto[p->precision].data.num.as_signed;
 
         if(p->flags & FLAGS_LEFT)
-          strcat(formatbuf, "-");
+          *fptr++ = '-';
         if(p->flags & FLAGS_SHOWSIGN)
-          strcat(formatbuf, "+");
+          *fptr++ = '+';
         if(p->flags & FLAGS_SPACE)
-          strcat(formatbuf, " ");
+          *fptr++ = ' ';
         if(p->flags & FLAGS_ALT)
-          strcat(formatbuf, "#");
+          *fptr++ = '#';
 
-        fptr=&formatbuf[strlen(formatbuf)];
+        *fptr = 0;
 
         if(width >= 0) {
+          if(width >= (long)sizeof(work))
+            width = sizeof(work)-1;
           /* RECURSIVE USAGE */
           len = curl_msnprintf(fptr, left, "%ld", width);
           fptr += len;
           left -= len;
         }
         if(prec >= 0) {
+          /* for each digit in the integer part, we can have one less
+             precision */
+          size_t maxprec = sizeof(work) - 2;
+          double val = p->data.dnum;
+          if(width > 0 && prec <= width)
+            maxprec -= width;
+          while(val >= 10.0) {
+            val /= 10;
+            maxprec--;
+          }
+
+          if(prec > (long)maxprec)
+            prec = (long)maxprec-1;
+          if(prec < 0)
+            prec = 0;
           /* RECURSIVE USAGE */
           len = curl_msnprintf(fptr, left, ".%ld", prec);
           fptr += len;
-          left -= len;
         }
         if(p->flags & FLAGS_LONG)
           *fptr++ = 'l';
@@ -976,13 +961,24 @@ static int dprintf_formatf(
         else
           *fptr++ = 'f';
 
-        *fptr = 0; /* and a final zero termination */
+        *fptr = 0; /* and a final null-termination */
 
-        /* NOTE NOTE NOTE!! Not all sprintf() implementations returns number
-           of output characters */
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
+#endif
+        /* NOTE NOTE NOTE!! Not all sprintf implementations return number of
+           output characters */
+#ifdef HAVE_SNPRINTF
+        (snprintf)(work, sizeof(work), formatbuf, p->data.dnum);
+#else
         (sprintf)(work, formatbuf, p->data.dnum);
-
-        for(fptr=work; *fptr; fptr++)
+#endif
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+        DEBUGASSERT(strlen(work) <= sizeof(work));
+        for(fptr = work; *fptr; fptr++)
           OUTCHAR(*fptr);
       }
       break;
@@ -1014,7 +1010,7 @@ static int dprintf_formatf(
 /* fputc() look-alike */
 static int addbyter(int output, FILE *data)
 {
-  struct nsprintf *infop=(struct nsprintf *)data;
+  struct nsprintf *infop = (struct nsprintf *)data;
   unsigned char outc = (unsigned char)output;
 
   if(infop->length < infop->max) {
@@ -1040,9 +1036,12 @@ int curl_mvsnprintf(char *buffer, size_t maxlength, const char *format,
   retcode = dprintf_formatf(&info, addbyter, format, ap_save);
   if(info.max) {
     /* we terminate this with a zero byte */
-    if(info.max == info.length)
+    if(info.max == info.length) {
       /* we're at maximum, scrap the last letter */
       info.buffer[-1] = 0;
+      DEBUGASSERT(retcode);
+      retcode--; /* don't count the nul byte */
+    }
     else
       info.buffer[0] = 0;
   }
@@ -1062,88 +1061,60 @@ int curl_msnprintf(char *buffer, size_t maxlength, const char *format, ...)
 /* fputc() look-alike */
 static int alloc_addbyter(int output, FILE *data)
 {
-  struct asprintf *infop=(struct asprintf *)data;
+  struct asprintf *infop = (struct asprintf *)data;
   unsigned char outc = (unsigned char)output;
 
-  if(!infop->buffer) {
-    infop->buffer = malloc(32);
-    if(!infop->buffer) {
-      infop->fail = 1;
-      return -1; /* fail */
-    }
-    infop->alloc = 32;
-    infop->len =0;
+  if(Curl_dyn_addn(infop->b, &outc, 1)) {
+    infop->fail = 1;
+    return -1; /* fail */
   }
-  else if(infop->len+1 >= infop->alloc) {
-    char *newptr;
-
-    newptr = realloc(infop->buffer, infop->alloc*2);
-
-    if(!newptr) {
-      infop->fail = 1;
-      return -1; /* fail */
-    }
-    infop->buffer = newptr;
-    infop->alloc *= 2;
-  }
-
-  infop->buffer[ infop->len ] = outc;
-
-  infop->len++;
-
   return outc; /* fputc() returns like this on success */
 }
 
-char *curl_maprintf(const char *format, ...)
-{
-  va_list ap_save; /* argument pointer */
-  int retcode;
-  struct asprintf info;
+extern int Curl_dyn_vprintf(struct dynbuf *dyn,
+                            const char *format, va_list ap_save);
 
-  info.buffer = NULL;
-  info.len = 0;
-  info.alloc = 0;
+/* appends the formatted string, returns 0 on success, 1 on error */
+int Curl_dyn_vprintf(struct dynbuf *dyn, const char *format, va_list ap_save)
+{
+  struct asprintf info;
+  info.b = dyn;
   info.fail = 0;
 
-  va_start(ap_save, format);
-  retcode = dprintf_formatf(&info, alloc_addbyter, format, ap_save);
-  va_end(ap_save);
-  if((-1 == retcode) || info.fail) {
-    if(info.alloc)
-      free(info.buffer);
-    return NULL;
+  (void)dprintf_formatf(&info, alloc_addbyter, format, ap_save);
+  if(info.fail) {
+    Curl_dyn_free(info.b);
+    return 1;
   }
-  if(info.alloc) {
-    info.buffer[info.len] = 0; /* we terminate this with a zero byte */
-    return info.buffer;
-  }
-  else
-    return strdup("");
+  return 0;
 }
 
 char *curl_mvaprintf(const char *format, va_list ap_save)
 {
-  int retcode;
   struct asprintf info;
-
-  info.buffer = NULL;
-  info.len = 0;
-  info.alloc = 0;
+  struct dynbuf dyn;
+  info.b = &dyn;
+  Curl_dyn_init(info.b, DYN_APRINTF);
   info.fail = 0;
 
-  retcode = dprintf_formatf(&info, alloc_addbyter, format, ap_save);
-  if((-1 == retcode) || info.fail) {
-    if(info.alloc)
-      free(info.buffer);
+  (void)dprintf_formatf(&info, alloc_addbyter, format, ap_save);
+  if(info.fail) {
+    Curl_dyn_free(info.b);
     return NULL;
   }
+  if(Curl_dyn_len(info.b))
+    return Curl_dyn_ptr(info.b);
+  return strdup("");
+}
 
-  if(info.alloc) {
-    info.buffer[info.len] = 0; /* we terminate this with a zero byte */
-    return info.buffer;
-  }
-  else
-    return strdup("");
+char *curl_maprintf(const char *format, ...)
+{
+  va_list ap_save;
+  char *s;
+  va_start(ap_save, format);
+  s = curl_mvaprintf(format, ap_save);
+  va_end(ap_save);
+  return s;
 }
 
 static int storebuffer(int output, FILE *data)
@@ -1162,7 +1133,7 @@ int curl_msprintf(char *buffer, const char *format, ...)
   va_start(ap_save, format);
   retcode = dprintf_formatf(&buffer, storebuffer, format, ap_save);
   va_end(ap_save);
-  *buffer=0; /* we terminate this with a zero byte */
+  *buffer = 0; /* we terminate this with a zero byte */
   return retcode;
 }
 
@@ -1191,7 +1162,7 @@ int curl_mvsprintf(char *buffer, const char *format, va_list ap_save)
 {
   int retcode;
   retcode = dprintf_formatf(&buffer, storebuffer, format, ap_save);
-  *buffer=0; /* we terminate this with a zero byte */
+  *buffer = 0; /* we terminate this with a zero byte */
   return retcode;
 }
 
@@ -1204,45 +1175,3 @@ int curl_mvfprintf(FILE *whereto, const char *format, va_list ap_save)
 {
   return dprintf_formatf(whereto, fputc, format, ap_save);
 }
-
-#ifdef DPRINTF_DEBUG
-int main()
-{
-  char buffer[129];
-  char *ptr;
-#ifdef HAVE_LONG_LONG_TYPE
-  LONG_LONG_TYPE one=99;
-  LONG_LONG_TYPE two=100;
-  LONG_LONG_TYPE test = 0x1000000000LL;
-  curl_mprintf("%lld %lld %lld\n", one, two, test);
-#endif
-
-  curl_mprintf("%3d %5d\n", 10, 1998);
-
-  ptr=curl_maprintf("test this then baby %s%s%s%s%s%s %d %d %d loser baby get a hit in yer face now!", "", "pretty long string pretty long string pretty long string pretty long string pretty long string", "/", "/", "/", "pretty long string", 1998, 1999, 2001);
-
-  puts(ptr);
-
-  memset(ptr, 55, strlen(ptr)+1);
-
-  free(ptr);
-
-#if 1
-  curl_mprintf(buffer, "%s %s %d", "daniel", "stenberg", 19988);
-  puts(buffer);
-
-  curl_mfprintf(stderr, "%s %#08x\n", "dummy", 65);
-
-  printf("%s %#08x\n", "dummy", 65);
-  {
-    double tryout = 3.14156592;
-    curl_mprintf(buffer, "%.2g %G %f %e %E", tryout, tryout, tryout, tryout, tryout);
-    puts(buffer);
-    printf("%.2g %G %f %e %E\n", tryout, tryout, tryout, tryout, tryout);
-  }
-#endif
-
-  return 0;
-}
-
-#endif

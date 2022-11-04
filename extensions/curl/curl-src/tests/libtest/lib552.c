@@ -1,18 +1,33 @@
-/*****************************************************************************
+/***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
  *                             / __| | | | |_) | |
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * $Id: lib552.c,v 1.7 2008-09-20 04:26:57 yangtse Exp $
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
- * argv1 = URL
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution. The terms
+ * are also available at https://curl.se/docs/copyright.html.
+ *
+ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+ * copies of the Software, and permit persons to whom the Software is
+ * furnished to do so, under the terms of the COPYING file.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
+ *
+ ***************************************************************************/
+/* argv1 = URL
  * argv2 = proxy with embedded user+password
  */
 
 #include "test.h"
 
+#include "warnless.h"
 #include "memdebug.h"
 
 struct data {
@@ -27,38 +42,40 @@ void dump(const char *text,
   size_t i;
   size_t c;
 
-  unsigned int width=0x10;
+  unsigned int width = 0x10;
 
   if(nohex)
     /* without the hex output, we can fit more on screen */
     width = 0x40;
 
-  fprintf(stream, "%s, %d bytes (0x%x)\n", text, (int)size, (int)size);
+  fprintf(stream, "%s, %zu bytes (0x%zx)\n", text, size, size);
 
-  for(i=0; i<size; i+= width) {
+  for(i = 0; i<size; i += width) {
 
-    fprintf(stream, "%04x: ", (int)i);
+    fprintf(stream, "%04zx: ", i);
 
     if(!nohex) {
       /* hex not disabled, show it */
       for(c = 0; c < width; c++)
-        if(i+c < size)
-          fprintf(stream, "%02x ", ptr[i+c]);
+        if(i + c < size)
+          fprintf(stream, "%02x ", ptr[i + c]);
         else
           fputs("   ", stream);
     }
 
-    for(c = 0; (c < width) && (i+c < size); c++) {
+    for(c = 0; (c < width) && (i + c < size); c++) {
       /* check for 0D0A; if found, skip past and start a new line of output */
-      if (nohex && (i+c+1 < size) && ptr[i+c]==0x0D && ptr[i+c+1]==0x0A) {
-        i+=(c+2-width);
+      if(nohex && (i + c + 1 < size) && ptr[i + c] == 0x0D &&
+         ptr[i + c + 1] == 0x0A) {
+        i += (c + 2 - width);
         break;
       }
       fprintf(stream, "%c",
-              (ptr[i+c]>=0x20) && (ptr[i+c]<0x80)?ptr[i+c]:'.');
+              (ptr[i + c] >= 0x20) && (ptr[i + c]<0x80)? ptr[i + c] : '.');
       /* check again for 0D0A, to avoid an extra \n if it's at width */
-      if (nohex && (i+c+2 < size) && ptr[i+c+1]==0x0D && ptr[i+c+2]==0x0A) {
-        i+=(c+3-width);
+      if(nohex && (i + c + 2 < size) && ptr[i + c + 1] == 0x0D &&
+         ptr[i + c + 2] == 0x0A) {
+        i += (c + 3 - width);
         break;
       }
     }
@@ -76,9 +93,10 @@ int my_trace(CURL *handle, curl_infotype type,
   const char *text;
   (void)handle; /* prevent compiler warning */
 
-  switch (type) {
+  switch(type) {
   case CURLINFO_TEXT:
     fprintf(stderr, "== Info: %s", (char *)data);
+    /* FALLTHROUGH */
   default: /* in case a new one is introduced to shock us */
     return 0;
 
@@ -108,12 +126,14 @@ int my_trace(CURL *handle, curl_infotype type,
 
 
 static size_t current_offset = 0;
-static char databuf[70000]; /* MUST be more than 64k OR MAX_INITIAL_POST_SIZE */
+static char databuf[70000]; /* MUST be more than 64k OR
+                               MAX_INITIAL_POST_SIZE */
 
-static size_t read_callback(void *ptr, size_t size, size_t nmemb, void *stream)
+static size_t read_callback(char *ptr, size_t size, size_t nmemb, void *stream)
 {
   size_t  amount = nmemb * size; /* Total bytes curl wants */
-  size_t  available = sizeof(databuf) - current_offset; /* What we have to give */
+  size_t  available = sizeof(databuf) - current_offset; /* What we have to
+                                                           give */
   size_t  given = amount < available ? amount : available; /* What is given */
   (void)stream;
   memcpy(ptr, databuf + current_offset, given);
@@ -122,20 +142,22 @@ static size_t read_callback(void *ptr, size_t size, size_t nmemb, void *stream)
 }
 
 
-static size_t write_callback(void *ptr, size_t size, size_t nmemb, void *stream)
+static size_t write_callback(void *ptr, size_t size, size_t nmemb,
+                             void *stream)
 {
-  printf("%.*s", (int)(size * nmemb), (char *)ptr);
+  int amount = curlx_uztosi(size * nmemb);
+  printf("%.*s", amount, (char *)ptr);
   (void)stream;
   return size * nmemb;
 }
 
 
-static curlioerr ioctl_callback(CURL * handle, int cmd, void *clientp)
+static curlioerr ioctl_callback(CURL *handle, int cmd, void *clientp)
 {
   (void)clientp;
-  if (cmd == CURLIOCMD_RESTARTREAD ) {
-    printf("APPLICATION: recieved a CURLIOCMD_RESTARTREAD request\n");
-    printf("APPLICATION: ** REWINDING! **\n");
+  if(cmd == CURLIOCMD_RESTARTREAD) {
+    printf("APPLICATION received a CURLIOCMD_RESTARTREAD request\n");
+    printf("APPLICATION ** REWINDING! **\n");
     current_offset = 0;
     return CURLIOE_OK;
   }
@@ -148,50 +170,52 @@ static curlioerr ioctl_callback(CURL * handle, int cmd, void *clientp)
 int test(char *URL)
 {
   CURL *curl;
-  CURLcode res = CURLE_OUT_OF_MEMORY;
+  CURLcode res = CURLE_OK;
   struct data config;
   size_t i;
   static const char fill[] = "test data";
 
   config.trace_ascii = 1; /* enable ascii tracing */
 
-  curl = curl_easy_init();
-  if(curl) {
-    curl_easy_setopt(curl, CURLOPT_DEBUGFUNCTION, my_trace);
-    curl_easy_setopt(curl, CURLOPT_DEBUGDATA, &config);
-    /* the DEBUGFUNCTION has no effect until we enable VERBOSE */
-    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+  global_init(CURL_GLOBAL_ALL);
+  easy_init(curl);
 
-    /* setup repeated data string */
-    for (i=0; i < sizeof(databuf); ++i)
-        databuf[i] = fill[i % sizeof fill];
+  test_setopt(curl, CURLOPT_DEBUGFUNCTION, my_trace);
+  test_setopt(curl, CURLOPT_DEBUGDATA, &config);
+  /* the DEBUGFUNCTION has no effect until we enable VERBOSE */
+  test_setopt(curl, CURLOPT_VERBOSE, 1L);
 
-    /* Post */
-    curl_easy_setopt(curl, CURLOPT_POST, 1L);
+  /* setup repeated data string */
+  for(i = 0; i < sizeof(databuf); ++i)
+    databuf[i] = fill[i % sizeof(fill)];
 
-    /* Setup read callback */
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (long) sizeof(databuf));
-    curl_easy_setopt(curl, CURLOPT_READFUNCTION, read_callback);
+  /* Post */
+  test_setopt(curl, CURLOPT_POST, 1L);
 
-    /* Write callback */
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
+  /* Setup read callback */
+  test_setopt(curl, CURLOPT_POSTFIELDSIZE, (long) sizeof(databuf));
+  test_setopt(curl, CURLOPT_READFUNCTION, read_callback);
 
-    /* Ioctl function */
-    curl_easy_setopt(curl, CURLOPT_IOCTLFUNCTION, ioctl_callback);
+  /* Write callback */
+  test_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
 
-    curl_easy_setopt(curl, CURLOPT_PROXY, libtest_arg2);
+  /* Ioctl function */
+  test_setopt(curl, CURLOPT_IOCTLFUNCTION, ioctl_callback);
 
-    curl_easy_setopt(curl, CURLOPT_URL, URL);
+  test_setopt(curl, CURLOPT_PROXY, libtest_arg2);
 
-    /* Accept any auth. But for this bug configure proxy with DIGEST, basic might work too, not NTLM */
-    curl_easy_setopt(curl, CURLOPT_PROXYAUTH, (long)CURLAUTH_ANY);
+  test_setopt(curl, CURLOPT_URL, URL);
 
-    res = curl_easy_perform(curl);
-    fprintf(stderr, "curl_easy_perform = %d\n", (int)res);
+  /* Accept any auth. But for this bug configure proxy with DIGEST, basic
+     might work too, not NTLM */
+  test_setopt(curl, CURLOPT_PROXYAUTH, (long)CURLAUTH_ANY);
 
-    /* always cleanup */
-    curl_easy_cleanup(curl);
-  }
+  res = curl_easy_perform(curl);
+  fprintf(stderr, "curl_easy_perform = %d\n", (int)res);
+
+test_cleanup:
+
+  curl_easy_cleanup(curl);
   curl_global_cleanup();
   return (int)res;
 }

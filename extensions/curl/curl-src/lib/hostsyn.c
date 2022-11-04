@@ -5,11 +5,11 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2007, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at http://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -18,19 +18,17 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
- * $Id: hostsyn.c,v 1.14 2008-09-29 21:44:50 danf Exp $
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 
-#include "setup.h"
+#include "curl_setup.h"
 
-#include <string.h>
+/***********************************************************************
+ * Only for builds using synchronous name resolves
+ **********************************************************************/
+#ifdef CURLRES_SYNCH
 
-#ifdef NEED_MALLOC_H
-#include <malloc.h>
-#endif
-#ifdef HAVE_SYS_SOCKET_H
-#include <sys/socket.h>
-#endif
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
@@ -40,16 +38,9 @@
 #ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
 #endif
-#ifdef HAVE_STDLIB_H
-#include <stdlib.h>     /* required for free() prototypes */
-#endif
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>     /* for the close() proto */
-#endif
-#ifdef  VMS
+#ifdef __VMS
 #include <in.h>
 #include <inet.h>
-#include <stdlib.h>
 #endif
 
 #ifdef HAVE_PROCESS_H
@@ -61,67 +52,57 @@
 #include "hostip.h"
 #include "hash.h"
 #include "share.h"
-#include "strerror.h"
 #include "url.h"
-
-#define _MPRINTF_REPLACE /* use our functions only */
-#include <curl/mprintf.h>
-
-#include "memory.h"
+#include "curl_memory.h"
 /* The last #include file should be: */
 #include "memdebug.h"
 
-/***********************************************************************
- * Only for builds using synchronous name resolves
- **********************************************************************/
-#ifdef CURLRES_SYNCH
-
 /*
- * Curl_wait_for_resolv() for synch-builds.  Curl_resolv() can never return
- * wait==TRUE, so this function will never be called. If it still gets called,
- * we return failure at once.
- *
- * We provide this function only to allow multi.c to remain unaware if we are
- * doing asynch resolves or not.
+ * Function provided by the resolver backend to set DNS servers to use.
  */
-CURLcode Curl_wait_for_resolv(struct connectdata *conn,
-                              struct Curl_dns_entry **entry)
+CURLcode Curl_set_dns_servers(struct Curl_easy *data,
+                              char *servers)
 {
-  (void)conn;
-  *entry=NULL;
-  return CURLE_COULDNT_RESOLVE_HOST;
+  (void)data;
+  (void)servers;
+  return CURLE_NOT_BUILT_IN;
+
 }
 
 /*
- * This function will never be called when synch-built. If it still gets
- * called, we return failure at once.
- *
- * We provide this function only to allow multi.c to remain unaware if we are
- * doing asynch resolves or not.
+ * Function provided by the resolver backend to set
+ * outgoing interface to use for DNS requests
  */
-CURLcode Curl_is_resolved(struct connectdata *conn,
-                          struct Curl_dns_entry **dns)
+CURLcode Curl_set_dns_interface(struct Curl_easy *data,
+                                const char *interf)
 {
-  (void)conn;
-  *dns = NULL;
-
-  return CURLE_COULDNT_RESOLVE_HOST;
+  (void)data;
+  (void)interf;
+  return CURLE_NOT_BUILT_IN;
 }
 
 /*
- * We just return OK, this function is never actually used for synch builds.
- * It is present here to keep #ifdefs out from multi.c
+ * Function provided by the resolver backend to set
+ * local IPv4 address to use as source address for DNS requests
  */
-
-int Curl_resolv_getsock(struct connectdata *conn,
-                        curl_socket_t *sock,
-                        int numsocks)
+CURLcode Curl_set_dns_local_ip4(struct Curl_easy *data,
+                                const char *local_ip4)
 {
-  (void)conn;
-  (void)sock;
-  (void)numsocks;
+  (void)data;
+  (void)local_ip4;
+  return CURLE_NOT_BUILT_IN;
+}
 
-  return 0; /* no bits since we don't use any socks */
+/*
+ * Function provided by the resolver backend to set
+ * local IPv6 address to use as source address for DNS requests
+ */
+CURLcode Curl_set_dns_local_ip6(struct Curl_easy *data,
+                                const char *local_ip6)
+{
+  (void)data;
+  (void)local_ip6;
+  return CURLE_NOT_BUILT_IN;
 }
 
 #endif /* truly sync */

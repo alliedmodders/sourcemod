@@ -1,19 +1,49 @@
 #!/bin/sh
+#***************************************************************************
+#                                  _   _ ____  _
+#  Project                     ___| | | |  _ \| |
+#                             / __| | | | |_) | |
+#                            | (__| |_| |  _ <| |___
+#                             \___|\___/|_| \_\_____|
+#
+# Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+#
+# This software is licensed as described in the file COPYING, which
+# you should have received as part of this distribution. The terms
+# are also available at https://curl.se/docs/copyright.html.
+#
+# You may opt to use, copy, modify, merge, publish, distribute and/or sell
+# copies of the Software, and permit persons to whom the Software is
+# furnished to do so, under the terms of the COPYING file.
+#
+# This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+# KIND, either express or implied.
+#
+# SPDX-License-Identifier: curl
+#
+###########################################################################
 #
 #       libcurl compilation script for the OS/400.
 #
-# $Id: make-lib.sh,v 1.4 2008-03-31 12:09:43 mmarek Exp $
 
 SCRIPTDIR=`dirname "${0}"`
 . "${SCRIPTDIR}/initscript.sh"
 cd "${TOPDIR}/lib"
 
+#       Need to have IFS access to the mih/cipher header file.
+
+if action_needed cipher.mih '/QSYS.LIB/QSYSINC.LIB/MIH.FILE/CIPHER.MBR'
+then    rm -f cipher.mih
+        ln -s '/QSYS.LIB/QSYSINC.LIB/MIH.FILE/CIPHER.MBR' cipher.mih
+fi
+
 
 #      Create and compile the identification source file.
 
 echo '#pragma comment(user, "libcurl version '"${LIBCURL_VERSION}"'")' > os400.c
-echo '#pragma comment(date)' >> os400.c
-echo '#pragma comment(copyright, "Copyright (C) 1998-2008 Daniel Stenberg et al. OS/400 version by P. Monnerat")' >> os400.c
+echo '#pragma comment(user, __DATE__)' >> os400.c
+echo '#pragma comment(user, __TIME__)' >> os400.c
+echo '#pragma comment(copyright, "Copyright (C) 1998-2016 Daniel Stenberg et al. OS/400 version by P. Monnerat")' >> os400.c
 make_module     OS400           os400.c
 LINK=                           # No need to rebuild service program yet.
 MODULES=
@@ -21,34 +51,49 @@ MODULES=
 
 #       Get source list.
 
-CSOURCES()
-
-{
-        shift                   # Drop the equal sign.
-        CSOURCES="$*"           # Get the file names.
-}
-
-HHEADERS()
-
-{
-        shift                   # Drop the equal sign.
-        HHEADERS="$*"           # Get the file names.
-}
-
-. Makefile.inc
+sed -e ':begin'                                                         \
+    -e '/\\$/{'                                                         \
+    -e 's/\\$/ /'                                                       \
+    -e 'N'                                                              \
+    -e 'bbegin'                                                         \
+    -e '}'                                                              \
+    -e 's/\n//g'                                                        \
+    -e 's/[[:space:]]*$//'                                              \
+    -e 's/^\([A-Za-z][A-Za-z0-9_]*\)[[:space:]]*=[[:space:]]*\(.*\)/\1="\2"/' \
+    -e 's/\$(\([A-Za-z][A-Za-z0-9_]*\))/${\1}/g'                        \
+        < Makefile.inc > tmpscript.sh
+. ./tmpscript.sh
 
 
 #       Compile the sources into modules.
 
 INCLUDES="'`pwd`'"
 
+# Create a small C program to check ccsidcurl.c is up to date
+if action_needed "${LIBIFSNAME}/CHKSTRINGS.PGM"
+then
+  CMD="CRTBNDC PGM(${TARGETLIB}/CHKSTRINGS) SRCSTMF('${SCRIPTDIR}/chkstrings.c')"
+  CMD="${CMD} INCDIR('${TOPDIR}/include/curl' '${TOPDIR}/include' '${SRCDIR}' ${INCLUDES})"
+  system -i "${CMD}"
+  if [ $? -ne 0 ]
+  then
+    echo "ERROR: Failed to build CHKSTRINGS *PGM object!"
+    exit 2
+  else
+    ${LIBIFSNAME}/CHKSTRINGS.PGM
+    if [ $? -ne 0 ]
+    then
+      echo "ERROR: CHKSTRINGS failed!"
+      exit 2
+    fi
+  fi
+fi
+
 make_module     OS400SYS        "${SCRIPTDIR}/os400sys.c"
 make_module     CCSIDCURL       "${SCRIPTDIR}/ccsidcurl.c"
 
 for SRC in ${CSOURCES}
-do      MODULE=`basename "${SRC}" .c |
-                tr '[a-z]' '[A-Z]'   |
-                sed -e 's/^\(..........\).*/\1/'`
+do      MODULE=`db2_name "${SRC}"`
         make_module "${MODULE}" "${SRC}"
 done
 
@@ -85,12 +130,12 @@ fi
 
 #       Gather the list of symbols to export.
 
-EXPORTS=`grep '^CURL_EXTERN[ 	]'                                      \
+EXPORTS=`grep '^CURL_EXTERN[[:space:]]'                                 \
               "${TOPDIR}"/include/curl/*.h                              \
               "${SCRIPTDIR}/ccsidcurl.h"                                |
-         sed -e 's/^.*CURL_EXTERN[ 	]\(.*\)(.*$/\1/'                \
-             -e 's/[ 	]*$//'                                          \
-             -e 's/^.*[ 	][ 	]*//'                           \
+         sed -e 's/^.*CURL_EXTERN[[:space:]]\(.*\)(.*$/\1/'             \
+             -e 's/[[:space:]]*$//'                                     \
+             -e 's/^.*[[:space:]][[:space:]]*//'                        \
              -e 's/^\*//'                                               \
              -e 's/(\(.*\))/\1/'`
 
@@ -123,7 +168,16 @@ if [ "${LINK}" ]
 then    CMD="CRTSRVPGM SRVPGM(${TARGETLIB}/${SRVPGM})"
         CMD="${CMD} SRCFILE(${TARGETLIB}/TOOLS) SRCMBR(BNDSRC)"
         CMD="${CMD} MODULE(${TARGETLIB}/OS400)"
-        CMD="${CMD} BNDDIR(${TARGETLIB}/${STATBNDDIR})"
+        CMD="${CMD} BNDDIR(${TARGETLIB}/${STATBNDDIR}"
+        if [ "${WITH_ZLIB}" != 0 ]
+        then    CMD="${CMD} ${ZLIB_LIB}/${ZLIB_BNDDIR}"
+                liblist -a "${ZLIB_LIB}"
+        fi
+        if [ "${WITH_LIBSSH2}" != 0 ]
+        then    CMD="${CMD} ${LIBSSH2_LIB}/${LIBSSH2_BNDDIR}"
+                liblist -a "${LIBSSH2_LIB}"
+        fi
+        CMD="${CMD})"
         CMD="${CMD} BNDSRVPGM(QADRTTS QGLDCLNT QGLDBRDR)"
         CMD="${CMD} TEXT('curl API library')"
         CMD="${CMD} TGTRLS(${TGTRLS})"
@@ -162,7 +216,7 @@ then    MODULES=
         #               formdata.c. However, there are some unsatisfied
         #               external references leading in the following
         #               modules to be (recursively) needed.
-        MODULES="${MODULES} EASY STRDUP SSLGEN QSSL HOSTIP HOSTIP4 HOSTIP6"
+        MODULES="${MODULES} EASY STRDUP SSLGEN GSKIT HOSTIP HOSTIP4 HOSTIP6"
         MODULES="${MODULES} URL HASH TRANSFER GETINFO COOKIE SENDF SELECT"
         MODULES="${MODULES} INET_NTOP SHARE HOSTTHRE MULTI LLIST FTP HTTP"
         MODULES="${MODULES} HTTP_DIGES HTTP_CHUNK HTTP_NEGOT TIMEVAL HOSTSYN"

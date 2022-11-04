@@ -1,13 +1,21 @@
 <testcase>
+<info>
+<keywords>
+FTP
+</keywords>
+</info>
+
 #
 # Server-side
 <reply>
-<data mode="text">
+<data>
 file contents
 </data>
 
 <datacheck>
 file contents
+</datacheck>
+<datacheck1 mode="text">
 total 20
 drwxr-xr-x   8 98       98           512 Oct 22 13:06 .
 drwxr-xr-x   8 98       98           512 Oct 22 13:06 ..
@@ -19,7 +27,7 @@ drwxrwxrwx   2 98       98           512 May 29 16:04 download.html
 dr-xr-xr-x   2 0        1            512 Nov 30  1995 etc
 drwxrwxrwx   2 98       1            512 Oct 30 14:33 pub
 dr-xr-xr-x   5 0        1            512 Oct  1  1997 usr
-</datacheck>
+</datacheck1>
 </reply>
 
 # Client-side
@@ -29,14 +37,14 @@ ftp
 </server>
 # tool is what to use instead of 'curl'
 <tool>
-lib539
+lib%TESTNUMBER
 </tool>
 
  <name>
 Two FTP fetches using different CURLOPT_FTP_FILEMETHOD
  </name>
  <command>
-ftp://%HOSTIP:%FTPPORT/path/to/the/file/539
+ftp://%HOSTIP:%FTPPORT/path/to/the/file/%TESTNUMBER
 </command>
 </client>
 
@@ -50,13 +58,13 @@ PWD
 CWD path/to/the/file
 EPSV
 TYPE I
-SIZE 539
-RETR 539
+SIZE %TESTNUMBER
+RETR %TESTNUMBER
 SYST
-CWD /nowhere/anywhere
+CWD /
 EPSV
 TYPE A
-LIST path/to/the/file/539./
+LIST path/to/the/file/%TESTNUMBER.
 QUIT
 </protocol>
 </verify>

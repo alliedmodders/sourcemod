@@ -9,7 +9,7 @@ multi
 </info>
 # Server-side
 <reply>
-<data nocheck="1">
+<data nocheck="yes">
 data
     to
       see
@@ -19,7 +19,9 @@ works
 </data>
 
 <servercmd>
-REPLY SIZE 550 Can't check for file existence
+REPLY RETR 550 the file doesn't exist
+COUNT RETR 1
+REPLY SIZE 500 Can't check for file existence
 COUNT SIZE 1
 </servercmd>
 </reply>
@@ -36,7 +38,7 @@ lib533
 FTP RETR a non-existing file then a found one using the multi interface
  </name>
  <command>
-ftp://%HOSTIP:%FTPPORT/path/546 ftp://%HOSTIP:%FTPPORT/path/546
+ftp://%HOSTIP:%FTPPORT/path/%TESTNUMBER ftp://%HOSTIP:%FTPPORT/path/%TESTNUMBER
 </command>
 </client>
 
@@ -49,10 +51,11 @@ PWD
 CWD path
 EPSV
 TYPE I
-SIZE 546
+SIZE %TESTNUMBER
+RETR %TESTNUMBER
 EPSV
-SIZE 546
-RETR 546
+SIZE %TESTNUMBER
+RETR %TESTNUMBER
 QUIT
 </protocol>
 <stdout>

@@ -16,9 +16,9 @@ tftp
 TFTP send
  </name>
  <command>
--T log/test285.txt tftp://%HOSTIP:%TFTPPORT// --trace-ascii log/traceit
+-T log/test%TESTNUMBER.txt tftp://%HOSTIP:%TFTPPORT//
 </command>
-<file name="log/test285.txt">
+<file name="log/test%TESTNUMBER.txt">
 a chunk of
 data
 sent
@@ -36,9 +36,12 @@ sent
  to server
 </upload>
 <protocol>
-opcode: 2
-filename: /test285.txt
-mode: octet
+opcode = 2
+mode = octet
+tsize = 32
+blksize = 512
+timeout = 6
+filename = /test%TESTNUMBER.txt
 </protocol>
 </verify>
 </testcase>

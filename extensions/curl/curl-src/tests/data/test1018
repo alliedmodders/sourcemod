@@ -22,10 +22,10 @@ file
  <name>
 X-X range on a file:// URL to stdout
  </name>
- <command>
--r 4-4 file://localhost/%PWD/log/test1018.txt 
+<command option="no-include">
+-r 4-4 file://localhost%FILE_PWD/log/test%TESTNUMBER.txt 
 </command>
-<file name="log/test1018.txt">
+<file name="log/test%TESTNUMBER.txt">
 1234567890
 </file>
 </client>

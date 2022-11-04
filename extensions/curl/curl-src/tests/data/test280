@@ -12,7 +12,7 @@ LIST
 <reply>
 # When doing LIST, we get the default list output hard-coded in the test
 # FTP server
-<datacheck>
+<datacheck mode="text">
 total 20
 drwxr-xr-x   8 98       98           512 Oct 22 13:06 .
 drwxr-xr-x   8 98       98           512 Oct 22 13:06 ..
@@ -41,7 +41,7 @@ ftp
 FTP --ftp-alternative-to-user on USER failure
  </name>
  <command>
-ftp://%HOSTIP:%FTPPORT/280/ --ftp-alternative-to-user "USER replacement"
+ftp://%HOSTIP:%FTPPORT/%TESTNUMBER/ --ftp-alternative-to-user "USER replacement"
 </command>
 </client>
 
@@ -53,7 +53,7 @@ USER anonymous
 USER replacement
 PASS ftp@example.com
 PWD
-CWD 280
+CWD %TESTNUMBER
 EPSV
 TYPE A
 LIST

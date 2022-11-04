@@ -1,4 +1,10 @@
 <testcase>
+<info>
+<keywords>
+FILE
+</keywords>
+</info>
+
 # Server-side
 <reply>
 <data>
@@ -22,12 +28,12 @@ file
 file:// with (unsupported) proxy, authentication and range
  </name>
 <setenv>
-all_proxy=http://fake:user@%HOSTIP:%HTTPPORT/
+all_proxy=http://fake:user@%HOSTIP:%NOLISTENPORT/
 </setenv>
- <command>
-file://localhost/%PWD/log/test288.txt
+<command option="no-include">
+file://localhost%FILE_PWD/log/test%TESTNUMBER.txt
 </command>
-<file name="log/test288.txt">
+<file name="log/test%TESTNUMBER.txt">
 foo
    bar
 bar

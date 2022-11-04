@@ -1,13 +1,30 @@
-/*****************************************************************************
+/***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
  *                             / __| | | | |_) | |
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * $Id: getinfo.c,v 1.2 2004/11/22 16:24:46 bagder Exp $
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ *
+ * This software is licensed as described in the file COPYING, which
+ * you should have received as part of this distribution. The terms
+ * are also available at https://curl.se/docs/copyright.html.
+ *
+ * You may opt to use, copy, modify, merge, publish, distribute and/or sell
+ * copies of the Software, and permit persons to whom the Software is
+ * furnished to do so, under the terms of the COPYING file.
+ *
+ * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+ * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
+ *
+ ***************************************************************************/
+/* <DESC>
+ * Use getinfo to get content-type after completed transfer.
+ * </DESC>
  */
-
 #include <stdio.h>
 #include <curl/curl.h>
 
@@ -16,18 +33,14 @@ int main(void)
   CURL *curl;
   CURLcode res;
 
-  /* http://curl.haxx.se/libcurl/c/curl_easy_init.html */
   curl = curl_easy_init();
   if(curl) {
-    /* http://curl.haxx.se/libcurl/c/curl_easy_setopt.html#CURLOPTURL */
-    curl_easy_setopt(curl, CURLOPT_URL, "curl.haxx.se");
-    /* http://curl.haxx.se/libcurl/c/curl_easy_perform.html */
+    curl_easy_setopt(curl, CURLOPT_URL, "https://www.example.com/");
     res = curl_easy_perform(curl);
 
     if(CURLE_OK == res) {
       char *ct;
       /* ask for the content-type */
-      /* http://curl.haxx.se/libcurl/c/curl_easy_getinfo.html */
       res = curl_easy_getinfo(curl, CURLINFO_CONTENT_TYPE, &ct);
 
       if((CURLE_OK == res) && ct)
@@ -35,7 +48,6 @@ int main(void)
     }
 
     /* always cleanup */
-    /* http://curl.haxx.se/libcurl/c/curl_easy_cleanup.html */
     curl_easy_cleanup(curl);
   }
   return 0;

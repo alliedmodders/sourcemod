@@ -13,7 +13,7 @@ ACCT
 <reply>
 # When doing LIST, we get the default list output hard-coded in the test
 # FTP server
-<datacheck>
+<datacheck mode="text">
 total 20
 drwxr-xr-x   8 98       98           512 Oct 22 13:06 .
 drwxr-xr-x   8 98       98           512 Oct 22 13:06 ..
@@ -42,7 +42,7 @@ ftp
 FTP --ftp-account on ACCT request
  </name>
  <command>
-ftp://%HOSTIP:%FTPPORT/294/ --ftp-account "data for acct"
+ftp://%HOSTIP:%FTPPORT/%TESTNUMBER/ --ftp-account "data for acct"
 </command>
 </client>
 
@@ -54,7 +54,7 @@ USER anonymous
 PASS ftp@example.com
 ACCT data for acct
 PWD
-CWD 294
+CWD %TESTNUMBER
 EPSV
 TYPE A
 LIST

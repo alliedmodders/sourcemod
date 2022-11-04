@@ -13,9 +13,15 @@ proxytunnel
 #
 # Server-side
 <reply>
-<data nocheck="1">
+<connect>
+HTTP/1.1 200 Mighty fine indeed
+Server: test tunnel 2000
+
+</connect>
+
+<data nocheck="yes">
 HTTP/1.0 200 OK
-Date: Thu, 09 Nov 2010 14:49:00 GMT
+Date: Tue, 09 Nov 2010 14:49:00 GMT
 Server: test-server/fake
 Content-Type: text/html
 Funny-head: yesyes
@@ -31,40 +37,47 @@ contents
 <client>
 <server>
 http
+http-proxy
 </server>
  <name>
-HTTP CONNECT with proxytunnel and downgrade to HTTP/1.0
+HTTP 1.0 CONNECT with proxytunnel and downgrade GET to HTTP/1.0
  </name>
  <command>
--x %HOSTIP:%HTTPPORT -p http://%HOSTIP:%HTTPPORT/we/want/that/page/1078 http://%HOSTIP:%HTTPPORT/we/want/that/page/1078
+--proxy1.0 %HOSTIP:%PROXYPORT -p http://%HOSTIP.%TESTNUMBER:%HTTPPORT/we/want/that/page/%TESTNUMBER http://%HOSTIP.%TESTNUMBER:%HTTPPORT/we/want/that/page/%TESTNUMBER
 </command>
+<features>
+proxy
+</features>
 </client>
 
 #
 # Verify data after the test has been "shot"
 <verify>
-<strip>
-^User-Agent:.*
-</strip>
-<protocol>
-CONNECT %HOSTIP:%HTTPPORT HTTP/1.0
-Host: %HOSTIP:%HTTPPORT
+<proxy>
+CONNECT %HOSTIP.%TESTNUMBER:%HTTPPORT HTTP/1.0
+Host: %HOSTIP.%TESTNUMBER:%HTTPPORT
+User-Agent: curl/%VERSION
 Proxy-Connection: Keep-Alive
 
-GET /we/want/that/page/1078 HTTP/1.1
-Host: %HOSTIP:%HTTPPORT
+</proxy>
+<protocol>
+GET /we/want/that/page/%TESTNUMBER HTTP/1.1
+Host: %HOSTIP.%TESTNUMBER:%HTTPPORT
+User-Agent: curl/%VERSION
 Accept: */*
 
-GET /we/want/that/page/1078 HTTP/1.0
-Host: %HOSTIP:%HTTPPORT
+GET /we/want/that/page/%TESTNUMBER HTTP/1.0
+Host: %HOSTIP.%TESTNUMBER:%HTTPPORT
+User-Agent: curl/%VERSION
 Accept: */*
 
 </protocol>
 <stdout>
 HTTP/1.1 200 Mighty fine indeed
+Server: test tunnel 2000
 
 HTTP/1.0 200 OK
-Date: Thu, 09 Nov 2010 14:49:00 GMT
+Date: Tue, 09 Nov 2010 14:49:00 GMT
 Server: test-server/fake
 Content-Type: text/html
 Funny-head: yesyes
@@ -73,7 +86,7 @@ Connection: keep-alive
 
 contents
 HTTP/1.0 200 OK
-Date: Thu, 09 Nov 2010 14:49:00 GMT
+Date: Tue, 09 Nov 2010 14:49:00 GMT
 Server: test-server/fake
 Content-Type: text/html
 Funny-head: yesyes

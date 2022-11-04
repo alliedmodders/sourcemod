@@ -1,4 +1,10 @@
 <testcase>
+<info>
+<keywords>
+FTP
+</keywords>
+</info>
+
 # Server-side
 <reply>
 <data sendzero="yes">
@@ -17,7 +23,7 @@ ftp
 FTP download an empty file
 </name>
 <command>
-ftp://%HOSTIP:%FTPPORT/182
+ftp://%HOSTIP:%FTPPORT/%TESTNUMBER
 </command>
 </client>
 
@@ -29,8 +35,8 @@ PASS ftp@example.com
 PWD
 EPSV
 TYPE I
-SIZE 182
-RETR 182
+SIZE %TESTNUMBER
+RETR %TESTNUMBER
 QUIT
 </protocol>
 </verify>

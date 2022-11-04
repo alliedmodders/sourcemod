@@ -1,4 +1,10 @@
 <testcase>
+<info>
+<keywords>
+FILE
+</keywords>
+</info>
+
 # Server-side
 <reply>
 <data>
@@ -18,10 +24,14 @@ file
  <name>
 file:/path URL with a single slash
  </name>
- <command>
-file:%PWD/log/test203.txt
+<setenv>
+# Needed for MSYS2 to not convert
+MSYS2_ARG_CONV_EXCL=file:
+</setenv>
+<command option="no-include">
+file:%FILE_PWD/log/test%TESTNUMBER.txt
 </command>
-<file name="log/test203.txt">
+<file name="log/test%TESTNUMBER.txt">
 foo
    bar
 bar

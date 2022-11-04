@@ -1,5 +1,5 @@
-#ifndef __CURL_MPRINTF_H
-#define __CURL_MPRINTF_H
+#ifndef CURLINC_MPRINTF_H
+#define CURLINC_MPRINTF_H
 /***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
@@ -7,11 +7,11 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2006, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at http://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -20,13 +20,13 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
- * $Id: mprintf.h,v 1.16 2008-05-20 10:21:50 patrickm Exp $
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 
 #include <stdarg.h>
 #include <stdio.h> /* needed for FILE */
-
-#include "curl.h"
+#include "curl.h"  /* for CURL_EXTERN */
 
 #ifdef  __cplusplus
 extern "C" {
@@ -45,38 +45,8 @@ CURL_EXTERN int curl_mvsnprintf(char *buffer, size_t maxlength,
 CURL_EXTERN char *curl_maprintf(const char *format, ...);
 CURL_EXTERN char *curl_mvaprintf(const char *format, va_list args);
 
-#ifdef _MPRINTF_REPLACE
-# undef printf
-# undef fprintf
-# undef sprintf
-# undef vsprintf
-# undef snprintf
-# undef vprintf
-# undef vfprintf
-# undef vsnprintf
-# undef aprintf
-# undef vaprintf
-# define printf curl_mprintf
-# define fprintf curl_mfprintf
-#ifdef CURLDEBUG
-/* When built with CURLDEBUG we define away the sprintf() functions since we
-   don't want internal code to be using them */
-# define sprintf sprintf_was_used
-# define vsprintf vsprintf_was_used
-#else
-# define sprintf curl_msprintf
-# define vsprintf curl_mvsprintf
-#endif
-# define snprintf curl_msnprintf
-# define vprintf curl_mvprintf
-# define vfprintf curl_mvfprintf
-# define vsnprintf curl_mvsnprintf
-# define aprintf curl_maprintf
-# define vaprintf curl_mvaprintf
-#endif
-
 #ifdef  __cplusplus
 }
 #endif
 
-#endif /* __CURL_MPRINTF_H */
+#endif /* CURLINC_MPRINTF_H */

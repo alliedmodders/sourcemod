@@ -13,9 +13,9 @@ multiprotocol
 #
 # Server-side
 <reply>
-<data1 nocheck="1">
+<data1 nocheck="yes">
 HTTP/1.1 200 OK
-Date: Thu, 09 Nov 2010 14:49:00 GMT
+Date: Tue, 09 Nov 2010 14:49:00 GMT
 Server: test-server/fake
 Last-Modified: Tue, 13 Jun 2000 12:10:00 GMT
 ETag: "21025-dc7-39462498"
@@ -27,7 +27,7 @@ Funny-head: yesyes
 
 -foo-
 </data1>
-<data2 nocheck="1">
+<data2 nocheck="yes">
 data
     to
       see
@@ -48,10 +48,10 @@ file
  <name>
 HTTP GET followed by FTP RETR followed by FILE
  </name>
- <command>
-http://%HOSTIP:%HTTPPORT/20010001 ftp://%HOSTIP:%FTPPORT/20010002 file://localhost/%PWD/log/test2001.txt
+<command option="no-include">
+http://%HOSTIP:%HTTPPORT/%TESTNUMBER0001 ftp://%HOSTIP:%FTPPORT/%TESTNUMBER0002 file://localhost%FILE_PWD/log/test%TESTNUMBER.txt
 </command>
-<file name="log/test2001.txt">
+<file name="log/test%TESTNUMBER.txt">
 foo
    bar
 bar
@@ -63,12 +63,10 @@ moo
 #
 # Verify data after the test has been "shot"
 <verify>
-<strip>
-^User-Agent:.*
-</strip>
 <protocol>
-GET /20010001 HTTP/1.1
+GET /%TESTNUMBER0001 HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
+User-Agent: curl/%VERSION
 Accept: */*
 
 USER anonymous
@@ -76,22 +74,11 @@ PASS ftp@example.com
 PWD
 EPSV
 TYPE I
-SIZE 20010002
-RETR 20010002
+SIZE %TESTNUMBER0002
+RETR %TESTNUMBER0002
 QUIT
 </protocol>
 <stdout>
-HTTP/1.1 200 OK
-Date: Thu, 09 Nov 2010 14:49:00 GMT
-Server: test-server/fake
-Last-Modified: Tue, 13 Jun 2000 12:10:00 GMT
-ETag: "21025-dc7-39462498"
-Accept-Ranges: bytes
-Content-Length: 6
-Connection: close
-Content-Type: text/html
-Funny-head: yesyes
-
 -foo-
 data
     to

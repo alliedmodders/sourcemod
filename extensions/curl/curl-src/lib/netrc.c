@@ -5,11 +5,11 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2008, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at http://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -18,228 +18,332 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
- * $Id: netrc.c,v 1.43 2008-10-23 11:49:19 bagder Exp $
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 
-#include "setup.h"
+#include "curl_setup.h"
+#ifndef CURL_DISABLE_NETRC
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
 #ifdef HAVE_PWD_H
 #include <pwd.h>
-#endif
-#ifdef VMS
-#include <unixlib.h>
 #endif
 
 #include <curl/curl.h>
 #include "netrc.h"
-
-#include "strequal.h"
 #include "strtok.h"
-#include "memory.h"
-#include "rawstr.h"
+#include "strcase.h"
+#include "curl_get_line.h"
 
-#define _MPRINTF_REPLACE /* use our functions only */
-#include <curl/mprintf.h>
-
-/* The last #include file should be: */
+/* The last 3 #include files should be in this order */
+#include "curl_printf.h"
+#include "curl_memory.h"
 #include "memdebug.h"
-
-/* Debug this single source file with:
-   'make netrc' then run './netrc'!
-
-   Oh, make sure you have a .netrc file too ;-)
- */
 
 /* Get user and password from .netrc when given a machine name */
 
-enum {
+enum host_lookup_state {
   NOTHING,
   HOSTFOUND,    /* the 'machine' keyword was found */
-  HOSTCOMPLETE, /* the machine name following the keyword was found too */
   HOSTVALID,    /* this is "our" machine! */
-
-  HOSTEND /* LAST enum */
+  MACDEF
 };
 
-/* make sure we have room for at least this size: */
-#define LOGINSIZE 64
-#define PASSWORDSIZE 64
+#define NETRC_FILE_MISSING 1
+#define NETRC_FAILED -1
+#define NETRC_SUCCESS 0
 
-/* returns -1 on failure, 0 if the host is found, 1 is the host isn't found */
-int Curl_parsenetrc(const char *host,
-                    char *login,
-                    char *password,
-                    char *netrcfile)
+/*
+ * Returns zero on success.
+ */
+static int parsenetrc(const char *host,
+                      char **loginp,
+                      char **passwordp,
+                      char *netrcfile)
 {
   FILE *file;
-  int retcode=1;
-  int specific_login = (login[0] != 0);
-  char *home = NULL;
-  bool home_alloc = FALSE;
-  bool netrc_alloc = FALSE;
-  int state=NOTHING;
+  int retcode = NETRC_FILE_MISSING;
+  char *login = *loginp;
+  char *password = *passwordp;
+  bool specific_login = (login && *login != 0);
+  bool login_alloc = FALSE;
+  bool password_alloc = FALSE;
+  enum host_lookup_state state = NOTHING;
 
-  char state_login=0;      /* Found a login keyword */
-  char state_password=0;   /* Found a password keyword */
-  int state_our_login=FALSE;  /* With specific_login, found *our* login name */
+  char state_login = 0;      /* Found a login keyword */
+  char state_password = 0;   /* Found a password keyword */
+  int state_our_login = TRUE;  /* With specific_login, found *our* login
+                                  name (or login-less line) */
 
-#define NETRC DOT_CHAR "netrc"
+  DEBUGASSERT(netrcfile);
 
-#ifdef CURLDEBUG
-  {
-    /* This is a hack to allow testing.
-     * If compiled with --enable-debug and CURL_DEBUG_NETRC is defined,
-     * then it's the path to a substitute .netrc for testing purposes *only* */
-
-    char *override = curl_getenv("CURL_DEBUG_NETRC");
-
-    if(override) {
-      fprintf(stderr, "NETRC: overridden " NETRC " file: %s\n", override);
-      netrcfile = override;
-      netrc_alloc = TRUE;
-    }
-  }
-#endif /* CURLDEBUG */
-  if(!netrcfile) {
-    home = curl_getenv("HOME"); /* portable environment reader */
-    if(home) {
-      home_alloc = TRUE;
-#if defined(HAVE_GETPWUID) && defined(HAVE_GETEUID)
-    }
-    else {
-      struct passwd *pw;
-      pw= getpwuid(geteuid());
-      if(pw) {
-#ifdef  VMS
-        home = decc_translate_vms(pw->pw_dir);
-#else
-        home = pw->pw_dir;
-#endif
-      }
-#endif
-    }
-
-    if(!home)
-      return -1;
-
-    netrcfile = curl_maprintf("%s%s%s", home, DIR_CHAR, NETRC);
-    if(!netrcfile) {
-      if(home_alloc)
-        free(home);
-      return -1;
-    }
-    netrc_alloc = TRUE;
-  }
-
-  file = fopen(netrcfile, "r");
+  file = fopen(netrcfile, FOPEN_READTEXT);
   if(file) {
-    char *tok;
-    char *tok_buf;
-    bool done=FALSE;
-    char netrcbuffer[256];
+    bool done = FALSE;
+    char netrcbuffer[4096];
+    int  netrcbuffsize = (int)sizeof(netrcbuffer);
 
-    while(!done && fgets(netrcbuffer, sizeof(netrcbuffer), file)) {
-      tok=strtok_r(netrcbuffer, " \t\n", &tok_buf);
-      while(!done && tok) {
+    while(!done && Curl_get_line(netrcbuffer, netrcbuffsize, file)) {
+      char *tok;
+      char *tok_end;
+      bool quoted;
+      if(state == MACDEF) {
+        if((netrcbuffer[0] == '\n') || (netrcbuffer[0] == '\r'))
+          state = NOTHING;
+        else
+          continue;
+      }
+      tok = netrcbuffer;
+      while(tok) {
+        while(ISBLANK(*tok))
+          tok++;
+        /* tok is first non-space letter */
+        if(!*tok || (*tok == '#'))
+          /* end of line or the rest is a comment */
+          break;
 
-        if(login[0] && password[0]) {
-          done=TRUE;
+        /* leading double-quote means quoted string */
+        quoted = (*tok == '\"');
+
+        tok_end = tok;
+        if(!quoted) {
+          while(!ISSPACE(*tok_end))
+            tok_end++;
+          *tok_end = 0;
+        }
+        else {
+          bool escape = FALSE;
+          bool endquote = FALSE;
+          char *store = tok;
+          tok_end++; /* pass the leading quote */
+          while(*tok_end) {
+            char s = *tok_end;
+            if(escape) {
+              escape = FALSE;
+              switch(s) {
+              case 'n':
+                s = '\n';
+                break;
+              case 'r':
+                s = '\r';
+                break;
+              case 't':
+                s = '\t';
+                break;
+              }
+            }
+            else if(s == '\\') {
+              escape = TRUE;
+              tok_end++;
+              continue;
+            }
+            else if(s == '\"') {
+              tok_end++; /* pass the ending quote */
+              endquote = TRUE;
+              break;
+            }
+            *store++ = s;
+            tok_end++;
+          }
+          *store = 0;
+          if(escape || !endquote) {
+            /* bad syntax, get out */
+            retcode = NETRC_FAILED;
+            goto out;
+          }
+        }
+
+        if((login && *login) && (password && *password)) {
+          done = TRUE;
           break;
         }
 
         switch(state) {
         case NOTHING:
-          if(Curl_raw_equal("machine", tok)) {
+          if(strcasecompare("macdef", tok)) {
+            /* Define a macro. A macro is defined with the specified name; its
+               contents begin with the next .netrc line and continue until a
+               null line (consecutive new-line characters) is encountered. */
+            state = MACDEF;
+          }
+          else if(strcasecompare("machine", tok)) {
             /* the next tok is the machine name, this is in itself the
                delimiter that starts the stuff entered for this machine,
                after this we need to search for 'login' and
                'password'. */
-            state=HOSTFOUND;
+            state = HOSTFOUND;
+          }
+          else if(strcasecompare("default", tok)) {
+            state = HOSTVALID;
+            retcode = NETRC_SUCCESS; /* we did find our host */
+          }
+          break;
+        case MACDEF:
+          if(!strlen(tok)) {
+            state = NOTHING;
           }
           break;
         case HOSTFOUND:
-          if(Curl_raw_equal(host, tok)) {
+          if(strcasecompare(host, tok)) {
             /* and yes, this is our host! */
-            state=HOSTVALID;
-#ifdef _NETRC_DEBUG
-            fprintf(stderr, "HOST: %s\n", tok);
-#endif
-            retcode=0; /* we did find our host */
+            state = HOSTVALID;
+            retcode = NETRC_SUCCESS; /* we did find our host */
           }
           else
             /* not our host */
-            state=NOTHING;
+            state = NOTHING;
           break;
         case HOSTVALID:
           /* we are now parsing sub-keywords concerning "our" host */
           if(state_login) {
             if(specific_login) {
-              state_our_login = Curl_raw_equal(login, tok);
+              state_our_login = !Curl_timestrcmp(login, tok);
             }
-            else {
-              strncpy(login, tok, LOGINSIZE-1);
-#ifdef _NETRC_DEBUG
-              fprintf(stderr, "LOGIN: %s\n", login);
-#endif
+            else if(!login || Curl_timestrcmp(login, tok)) {
+              if(login_alloc) {
+                free(login);
+                login_alloc = FALSE;
+              }
+              login = strdup(tok);
+              if(!login) {
+                retcode = NETRC_FAILED; /* allocation failed */
+                goto out;
+              }
+              login_alloc = TRUE;
             }
-            state_login=0;
+            state_login = 0;
           }
           else if(state_password) {
-            if(state_our_login || !specific_login) {
-              strncpy(password, tok, PASSWORDSIZE-1);
-#ifdef _NETRC_DEBUG
-              fprintf(stderr, "PASSWORD: %s\n", password);
-#endif
+            if((state_our_login || !specific_login)
+               && (!password || Curl_timestrcmp(password, tok))) {
+              if(password_alloc) {
+                free(password);
+                password_alloc = FALSE;
+              }
+              password = strdup(tok);
+              if(!password) {
+                retcode = NETRC_FAILED; /* allocation failed */
+                goto out;
+              }
+              password_alloc = TRUE;
             }
-            state_password=0;
+            state_password = 0;
           }
-          else if(Curl_raw_equal("login", tok))
-            state_login=1;
-          else if(Curl_raw_equal("password", tok))
-            state_password=1;
-          else if(Curl_raw_equal("machine", tok)) {
+          else if(strcasecompare("login", tok))
+            state_login = 1;
+          else if(strcasecompare("password", tok))
+            state_password = 1;
+          else if(strcasecompare("machine", tok)) {
             /* ok, there's machine here go => */
             state = HOSTFOUND;
             state_our_login = FALSE;
           }
           break;
         } /* switch (state) */
+        tok = ++tok_end;
+      }
+    } /* while Curl_get_line() */
 
-        tok = strtok_r(NULL, " \t\n", &tok_buf);
-      } /* while(tok) */
-    } /* while fgets() */
-
+    out:
+    if(!retcode) {
+      /* success */
+      if(login_alloc) {
+        if(*loginp)
+          free(*loginp);
+        *loginp = login;
+      }
+      if(password_alloc) {
+        if(*passwordp)
+          free(*passwordp);
+        *passwordp = password;
+      }
+    }
+    else {
+      if(login_alloc)
+        free(login);
+      if(password_alloc)
+        free(password);
+    }
     fclose(file);
   }
-
-  if(home_alloc)
-    free(home);
-  if(netrc_alloc)
-    free(netrcfile);
 
   return retcode;
 }
 
-#ifdef _NETRC_DEBUG
-int main(int argc, argv_item_t argv[])
+/*
+ * @unittest: 1304
+ *
+ * *loginp and *passwordp MUST be allocated if they aren't NULL when passed
+ * in.
+ */
+int Curl_parsenetrc(const char *host, char **loginp, char **passwordp,
+                    char *netrcfile)
 {
-  char login[64]="";
-  char password[64]="";
+  int retcode = 1;
+  char *filealloc = NULL;
 
-  if(argc<2)
-    return -1;
+  if(!netrcfile) {
+#if defined(HAVE_GETPWUID_R) && defined(HAVE_GETEUID)
+    char pwbuf[1024];
+#endif
+    char *home = NULL;
+    char *homea = curl_getenv("HOME"); /* portable environment reader */
+    if(homea) {
+      home = homea;
+#if defined(HAVE_GETPWUID_R) && defined(HAVE_GETEUID)
+    }
+    else {
+      struct passwd pw, *pw_res;
+      if(!getpwuid_r(geteuid(), &pw, pwbuf, sizeof(pwbuf), &pw_res)
+         && pw_res) {
+        home = pw.pw_dir;
+      }
+#elif defined(HAVE_GETPWUID) && defined(HAVE_GETEUID)
+    }
+    else {
+      struct passwd *pw;
+      pw = getpwuid(geteuid());
+      if(pw) {
+        home = pw->pw_dir;
+      }
+#elif defined(_WIN32)
+    }
+    else {
+      homea = curl_getenv("USERPROFILE");
+      if(homea) {
+        home = homea;
+      }
+#endif
+    }
 
-  if(0 == ParseNetrc(argv[1], login, password)) {
-    printf("HOST: %s LOGIN: %s PASSWORD: %s\n",
-           argv[1], login, password);
+    if(!home)
+      return retcode; /* no home directory found (or possibly out of
+                         memory) */
+
+    filealloc = curl_maprintf("%s%s.netrc", home, DIR_CHAR);
+    if(!filealloc) {
+      free(homea);
+      return -1;
+    }
+    retcode = parsenetrc(host, loginp, passwordp, filealloc);
+    free(filealloc);
+#ifdef WIN32
+    if(retcode == NETRC_FILE_MISSING) {
+      /* fallback to the old-style "_netrc" file */
+      filealloc = curl_maprintf("%s%s_netrc", home, DIR_CHAR);
+      if(!filealloc) {
+        free(homea);
+        return -1;
+      }
+      retcode = parsenetrc(host, loginp, passwordp, filealloc);
+      free(filealloc);
+    }
+#endif
+    free(homea);
   }
+  else
+    retcode = parsenetrc(host, loginp, passwordp, netrcfile);
+  return retcode;
 }
 
 #endif

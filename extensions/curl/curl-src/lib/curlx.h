@@ -1,5 +1,5 @@
-#ifndef __CURLX_H
-#define __CURLX_H
+#ifndef HEADER_CURL_CURLX_H
+#define HEADER_CURL_CURLX_H
 /***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
@@ -7,11 +7,11 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2008, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
- * are also available at http://curl.haxx.se/docs/copyright.html.
+ * are also available at https://curl.se/docs/copyright.html.
  *
  * You may opt to use, copy, modify, merge, publish, distribute and/or sell
  * copies of the Software, and permit persons to whom the Software is
@@ -20,7 +20,8 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
- * $Id: curlx.h,v 1.6 2008-10-16 08:23:48 bagder Exp $
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 
 /*
@@ -35,37 +36,48 @@
    functions while they still are offered publicly. They will be made library-
    private one day */
 
-#include "strequal.h"
-/* "strequal.h" provides the strequal protos */
+#include "strcase.h"
+/* "strcase.h" provides the strcasecompare protos */
 
 #include "strtoofft.h"
 /* "strtoofft.h" provides this function: curlx_strtoofft(), returns a
    curl_off_t number from a given string.
 */
 
-#include "timeval.h"
-/*
-  "timeval.h" sets up a 'struct timeval' even for platforms that otherwise
-  don't have one and has protos for these functions:
+#include "nonblock.h"
+/* "nonblock.h" provides curlx_nonblock() */
 
-  curlx_tvnow()
-  curlx_tvdiff()
-  curlx_tvdiff_secs()
+#include "warnless.h"
+/* "warnless.h" provides functions:
+
+  curlx_ultous()
+  curlx_ultouc()
+  curlx_uztosi()
 */
+
+#include "curl_multibyte.h"
+/* "curl_multibyte.h" provides these functions and macros:
+
+  curlx_convert_UTF8_to_wchar()
+  curlx_convert_wchar_to_UTF8()
+  curlx_convert_UTF8_to_tchar()
+  curlx_convert_tchar_to_UTF8()
+  curlx_unicodefree()
+*/
+
+#include "version_win32.h"
+/* "version_win32.h" provides curlx_verify_windows_version() */
 
 /* Now setup curlx_ * names for the functions that are to become curlx_ and
    be removed from a future libcurl official API:
    curlx_getenv
    curlx_mprintf (and its variations)
-   curlx_strequal
-   curlx_strnequal
+   curlx_strcasecompare
+   curlx_strncasecompare
 
 */
 
 #define curlx_getenv curl_getenv
-#define curlx_strequal curl_strequal
-#define curlx_strnequal curl_strnequal
-#define curlx_raw_equal Curl_raw_equal
 #define curlx_mvsnprintf curl_mvsnprintf
 #define curlx_msnprintf curl_msnprintf
 #define curlx_maprintf curl_maprintf
@@ -79,30 +91,28 @@
 
 #ifdef ENABLE_CURLX_PRINTF
 /* If this define is set, we define all "standard" printf() functions to use
-   the curlx_* version instead. It makes the source code transparant and
-   easier to understand/patch. Undefine them first in case _MPRINTF_REPLACE
-   is set. */
+   the curlx_* version instead. It makes the source code transparent and
+   easier to understand/patch. Undefine them first. */
 # undef printf
 # undef fprintf
 # undef sprintf
-# undef snprintf
+# undef msnprintf
 # undef vprintf
 # undef vfprintf
 # undef vsprintf
-# undef vsnprintf
+# undef mvsnprintf
 # undef aprintf
 # undef vaprintf
 
 # define printf curlx_mprintf
 # define fprintf curlx_mfprintf
 # define sprintf curlx_msprintf
-# define snprintf curlx_msnprintf
+# define msnprintf curlx_msnprintf
 # define vprintf curlx_mvprintf
 # define vfprintf curlx_mvfprintf
-# define vsprintf curlx_mvsprintf
-# define vsnprintf curlx_mvsnprintf
+# define mvsnprintf curlx_mvsnprintf
 # define aprintf curlx_maprintf
 # define vaprintf curlx_mvaprintf
 #endif /* ENABLE_CURLX_PRINTF */
 
-#endif /* __CURLX_H */
+#endif /* HEADER_CURL_CURLX_H */

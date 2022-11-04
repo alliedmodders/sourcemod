@@ -16,18 +16,18 @@ sftp
 SFTP retrieval of nonexistent file
  </name>
  <command>
---key curl_client_key --pubkey curl_client_key.pub -u %USER: sftp://%HOSTIP:%SSHPORT%PWD/not-a-valid-file-moooo
+--key curl_client_key --pubkey curl_client_key.pub -u %USER: sftp://%HOSTIP:%SSHPORT%SSH_PWD/not-a-valid-file-moooo --insecure
 </command>
 </client>
 
 #
 # Verify data after the test has been "shot"
 <verify>
-<errorcode>
-78
-</errorcode>
 <valgrind>
 disable
 </valgrind>
+<errorcode>
+78
+</errorcode>
 </verify>
 </testcase>

@@ -1,4 +1,13 @@
 <testcase>
+<info>
+<keywords>
+HTTP
+multi
+FAILURE
+non-existing host
+</keywords>
+</info>
+
 # Server-side
 <reply>
 </reply>
@@ -12,10 +21,10 @@ http
 multi interface get with non-existing host name
 </name>
 <tool>
-lib507
+lib%TESTNUMBER
 </tool>
 <command>
-http://doesnotexist.foo./
+http://non-existing-host.haxx.se/
 </command>
 </client>
 
