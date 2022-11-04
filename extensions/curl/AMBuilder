@@ -1,7 +1,9 @@
-# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python : 
+# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
 libcurl = builder.Build('curl-src/lib/AMBuilder')
+mbedtls = builder.Build('mbedtls-src/library/AMBuilder')
+
 for cxx in builder.targets:
   binary = SM.ExtLibrary(builder, cxx, 'webternet.ext')
   binary.compiler.includes += [
@@ -13,6 +15,7 @@ for cxx in builder.targets:
   elif binary.compiler.family == 'msvc':
     binary.compiler.cxxflags += ['/GR-']
   binary.compiler.postlink += [libcurl[binary.compiler.target.arch].binary]
+  binary.compiler.postlink += [mbedtls[binary.compiler.target.arch].binary]
   if binary.compiler.target.platform == 'linux':
     binary.compiler.postlink += ['-lrt']
   elif binary.compiler.target.platform == 'windows':
@@ -25,4 +28,3 @@ for cxx in builder.targets:
   ]
 
   SM.extensions += [builder.Add(binary)]
-
