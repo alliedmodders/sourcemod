@@ -9,3 +9,6 @@
 [submodule "extensions/curl/curl-src"]
 	path = extensions/curl/curl-src
 	url = https://github.com/curl/curl
+[submodule "extensions/curl/mbedtls-src"]
+	path = extensions/curl/mbedtls-src
+	url = https://github.com/Mbed-TLS/mbedtls
