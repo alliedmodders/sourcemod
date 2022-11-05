@@ -6,3 +6,6 @@
 	path = sourcepawn
 	url = https://github.com/alliedmodders/sourcepawn
 	shallow = true
+[submodule "extensions/curl/curl-src"]
+	path = extensions/curl/curl-src
+	url = https://github.com/curl/curl
