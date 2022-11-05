@@ -39,7 +39,7 @@
 
 #include "smsdk_ext.h"
 
-#define SM_CA_BUNDLE_PATH "configs/crts/ca-bundle.crt"
+#define SM_CA_BUNDLE_PATH "configs/ca-bundle.crt"
 extern char CABundlePath[PLATFORM_MAX_PATH];
 
 
