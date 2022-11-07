@@ -472,6 +472,12 @@
 		}
 		"Offsets"
 		{
+			"EntityListeners"
+			{
+				"windows"	"131108"
+				"linux"		"131108"
+				"mac"		"131108"
+			}
 			"CanBeAutobalanced"
 			{
 				"windows"	"473"
