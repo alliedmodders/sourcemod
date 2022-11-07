@@ -466,8 +466,8 @@
 		{
 			"server"
 			{
-				"linux"		"0448F204"
-				"windows"	"BFA098CF"
+				"windows"	"0448F204"
+				"linux"		"BFA098CF"
 			}
 		}
 		"Offsets"
