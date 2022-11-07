@@ -153,8 +153,8 @@
 		{
 			"server"
 			{
-				"windows"	"0448F204"
-				"linux"		"BFA098CF"
+				"windows"	"A801CADC"
+				"linux"		"DCB7584C"
 			}
 		}
 		"Signatures"
