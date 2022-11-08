@@ -23,31 +23,4 @@
 			}
 		}
 	}
-	
-	/**
-	 * Special handling for TF2's vscript_test branch.
-	 * There appears to be an issue where the #default value in this file
-	 * takes priority over the CRC-specific match in the engine-specific
-	 * one.
-	 */
-	"#default"
-	{
-		"CRC"
-		{
-			"server"
-			{
-				"windows"	"A801CADC"
-				"linux"		"DCB7584C"
-			}
-		}
-		"Offsets"
-		{
-			"EntityListeners"
-			{
-				"windows"	"131108"
-				"linux"		"131108"
-				"mac"		"131108"
-			}
-		}
-	}
 }
