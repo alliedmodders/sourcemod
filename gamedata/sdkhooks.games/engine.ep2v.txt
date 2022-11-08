@@ -474,6 +474,11 @@
 		{
 			"EntityListeners"
 			{
+				/**
+				 * FIXME: This is currently not being read from here, but from common.games.txt.
+				 * Other overrides below are read correctly, presumably because they aren't
+				 * being overridden via #default.
+				 */
 				"windows"	"131108"
 				"linux"		"131108"
 				"mac"		"131108"
