@@ -153,8 +153,8 @@
 		{
 			"server"
 			{
-				"windows"	"FBCCF607"
-				"linux"		"B0EC9249"
+				"windows"	"961CE6F5"
+				"linux"		"76F8E7F1"
 			}
 		}
 		"Signatures"
