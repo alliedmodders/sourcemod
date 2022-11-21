@@ -974,19 +974,12 @@ void ClientConsolePrint(edict_t *e, const char *fmt, ...)
 void ListExtensionsToClient(CPlayer *player, const CCommand &args)
 {
 	char buffer[256];
-	unsigned int id = 0;
-	unsigned int start = 0;
 
 	AutoExtensionList extensions(extsys);
 	if (!extensions->size())
 	{
 		ClientConsolePrint(player->GetEdict(), "[SM] No extensions found.");
 		return;
-	}
-
-	if (args.ArgC() > 2)
-	{
-		start = atoi(args.Arg(2));
 	}
 
 	size_t i = 0;
@@ -996,12 +989,6 @@ void ListExtensionsToClient(CPlayer *player, const CCommand &args)
 
 		char error[255];
 		if (!ext->IsRunning(error, sizeof(error)))
-		{
-			continue;
-		}
-
-		id++;
-		if (id < start)
 		{
 			continue;
 		}
@@ -1037,20 +1024,13 @@ void ListExtensionsToClient(CPlayer *player, const CCommand &args)
 void ListPluginsToClient(CPlayer *player, const CCommand &args)
 {
 	char buffer[256];
-	unsigned int id = 0;
 	edict_t *e = player->GetEdict();
-	unsigned int start = 0;
 
 	AutoPluginList plugins(scripts);
 	if (!plugins->size())
 	{
 		ClientConsolePrint(e, "[SM] No plugins found.");
 		return;
-	}
-
-	if (args.ArgC() > 2)
-	{
-		start = atoi(args.Arg(2));
 	}
 
 	SourceHook::List<SMPlugin *> m_FailList;
@@ -1061,13 +1041,6 @@ void ListPluginsToClient(CPlayer *player, const CCommand &args)
 		SMPlugin *pl = plugins->at(i);
 
 		if (pl->GetStatus() != Plugin_Running)
-		{
-			continue;
-		}
-
-		/* Count valid plugins */
-		id++;
-		if (id < start)
 		{
 			continue;
 		}
