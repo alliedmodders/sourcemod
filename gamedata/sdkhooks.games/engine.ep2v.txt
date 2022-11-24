@@ -466,8 +466,8 @@
 		{
 			"server"
 			{
-				"windows"	"961CE6F5"
-				"linux"		"76F8E7F1"
+				"windows"	"E0DB134E"
+				"linux"		"260B79CB"
 			}
 		}
 		"Offsets"
