@@ -810,7 +810,10 @@ public:
 				(!had_game && matched_engine) ||
 				(matched_engine && matched_game))
 			{
-				fileList->push_back(cur_file);
+				if (fileList->find(cur_file) == fileList->end())
+				{
+					fileList->push_back(cur_file);
+				}
 			}
 			state = MSTATE_MAIN;
 		}
