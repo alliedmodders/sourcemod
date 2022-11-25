@@ -974,19 +974,12 @@ void ClientConsolePrint(edict_t *e, const char *fmt, ...)
 void ListExtensionsToClient(CPlayer *player, const CCommand &args)
 {
 	char buffer[256];
-	unsigned int id = 0;
-	unsigned int start = 0;
 
 	AutoExtensionList extensions(extsys);
 	if (!extensions->size())
 	{
 		ClientConsolePrint(player->GetEdict(), "[SM] No extensions found.");
 		return;
-	}
-
-	if (args.ArgC() > 2)
-	{
-		start = atoi(args.Arg(2));
 	}
 
 	size_t i = 0;
@@ -998,17 +991,6 @@ void ListExtensionsToClient(CPlayer *player, const CCommand &args)
 		if (!ext->IsRunning(error, sizeof(error)))
 		{
 			continue;
-		}
-
-		id++;
-		if (id < start)
-		{
-			continue;
-		}
-
-		if (id - start > 10)
-		{
-			break;
 		}
 
 		IExtensionInterface *api = ext->GetAPI();
@@ -1035,42 +1017,20 @@ void ListExtensionsToClient(CPlayer *player, const CCommand &args)
 			len += ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, ": %s", description);
 		}
 
-
 		ClientConsolePrint(player->GetEdict(), "%s", buffer);
-	}
-
-	for (; i < extensions->size(); i++)
-	{
-		char error[255];
-		if (extensions->at(i)->IsRunning(error, sizeof(error)))
-		{
-			break;
-		}
-	}
-
-	if (i < extensions->size())
-	{
-		ClientConsolePrint(player->GetEdict(), "To see more, type \"sm exts %d\"", id);
 	}
 }
 
 void ListPluginsToClient(CPlayer *player, const CCommand &args)
 {
 	char buffer[256];
-	unsigned int id = 0;
 	edict_t *e = player->GetEdict();
-	unsigned int start = 0;
 
 	AutoPluginList plugins(scripts);
 	if (!plugins->size())
 	{
 		ClientConsolePrint(e, "[SM] No plugins found.");
 		return;
-	}
-
-	if (args.ArgC() > 2)
-	{
-		start = atoi(args.Arg(2));
 	}
 
 	SourceHook::List<SMPlugin *> m_FailList;
@@ -1083,18 +1043,6 @@ void ListPluginsToClient(CPlayer *player, const CCommand &args)
 		if (pl->GetStatus() != Plugin_Running)
 		{
 			continue;
-		}
-
-		/* Count valid plugins */
-		id++;
-		if (id < start)
-		{
-			continue;
-		}
-
-		if (id - start > 10)
-		{
-			break;
 		}
 
 		size_t len;
@@ -1113,21 +1061,6 @@ void ListPluginsToClient(CPlayer *player, const CCommand &args)
 			ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " %s", pl->GetFilename());
 		}
 		ClientConsolePrint(e, "%s", buffer);
-	}
-
-	/* See if we can get more plugins */
-	for (; i < plugins->size(); i++)
-	{
-		if (plugins->at(i)->GetStatus() == Plugin_Running)
-		{
-			break;
-		}
-	}
-
-	/* Do we actually have more plugins? */
-	if (i < plugins->size())
-	{
-		ClientConsolePrint(e, "To see more, type \"sm plugins %d\"", id);
 	}
 }
 
