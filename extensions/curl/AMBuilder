@@ -3,12 +3,21 @@ import os
 
 curl_ext_path = os.path.join(builder.sourcePath, 'extensions', 'curl')
 
-os.rename(os.path.join(curl_ext_path, 'AMBuild', 'AMBuilder.curl'), os.path.join(curl_ext_path, 'curl-src' , 'lib', 'AMBuilder'))
-os.rename(os.path.join(curl_ext_path, 'AMBuild', 'AMBuilder.mbedtls'), os.path.join(curl_ext_path, 'mbedtls-src' , 'library', 'AMBuilder'))
-os.rename(os.path.join(curl_ext_path, 'AMBuild', 'config-sm-linux.h'), os.path.join(curl_ext_path, 'curl-src' , 'lib', 'config-sm-linux.h'))
-os.rename(os.path.join(curl_ext_path, 'AMBuild', 'config-sm-mac.h'), os.path.join(curl_ext_path, 'curl-src' , 'lib', 'config-sm-mac.h'))
-os.rename(os.path.join(curl_ext_path, 'AMBuild', 'config-sm-win.h'), os.path.join(curl_ext_path, 'curl-src' , 'lib', 'config-sm-win.h'))
-os.replace(os.path.join(curl_ext_path, 'AMBuild', 'curl_setup.h'), os.path.join(curl_ext_path, 'curl-src' , 'lib', 'curl_setup.h'))
+if not os.path.islink(os.path.join(curl_ext_path, 'curl-src' , 'lib', 'curl_setup.h')):
+  os.remove(os.path.join(curl_ext_path, 'curl-src' , 'lib', 'curl_setup.h'))
+
+files = [
+  [os.path.join(curl_ext_path, 'AMBuild', 'AMBuilder.curl'), os.path.join(curl_ext_path, 'curl-src' , 'lib', 'AMBuilder')],
+  [os.path.join(curl_ext_path, 'AMBuild', 'AMBuilder.mbedtls'), os.path.join(curl_ext_path, 'mbedtls-src' , 'library', 'AMBuilder')],
+  [os.path.join(curl_ext_path, 'AMBuild', 'config-sm-linux.h'), os.path.join(curl_ext_path, 'curl-src' , 'lib', 'config-sm-linux.h')],
+  [os.path.join(curl_ext_path, 'AMBuild', 'config-sm-mac.h'), os.path.join(curl_ext_path, 'curl-src' , 'lib', 'config-sm-mac.h')],
+  [os.path.join(curl_ext_path, 'AMBuild', 'config-sm-win.h'), os.path.join(curl_ext_path, 'curl-src' , 'lib', 'config-sm-win.h')],
+  [os.path.join(curl_ext_path, 'AMBuild', 'curl_setup.h'), os.path.join(curl_ext_path, 'curl-src' , 'lib', 'curl_setup.h')],
+]
+
+for file in files:
+  if not os.path.exists(file[1]):
+    os.symlink(file[0], file[1])
 
 libcurl = builder.Build('curl-src/lib/AMBuilder')
 mbedtls = builder.Build('mbedtls-src/library/AMBuilder')
