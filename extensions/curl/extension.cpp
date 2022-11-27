@@ -70,6 +70,8 @@ bool CurlExt::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		return false;
 	}
 
+	sharesys->AddCapabilityProvider(myself, this, "Webternet");
+
 	smutils->BuildPath(Path_SM, CABundlePath, sizeof(CABundlePath), SM_CA_BUNDLE_PATH);
 
 	return true;
@@ -78,6 +80,7 @@ bool CurlExt::SDK_OnLoad(char *error, size_t maxlength, bool late)
 void CurlExt::SDK_OnUnload()
 {
 	curl_global_cleanup();
+	sharesys->DropCapabilityProvider(myself, this, "Webternet");
 }
 
 const char *CurlExt::GetExtensionVerString()
@@ -90,3 +93,7 @@ const char *CurlExt::GetExtensionDateString()
 	return SOURCEMOD_BUILD_TIME;
 }
 
+FeatureStatus CurlExt::GetFeatureStatus(FeatureType type, const char *name)
+{
+	return FeatureStatus_Available;
+}
