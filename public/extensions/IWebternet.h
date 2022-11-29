@@ -41,6 +41,7 @@
 
 #define SMINTERFACE_WEBTERNET_NAME		"IWebternet"
 #define SMINTERFACE_WEBTERNET_VERSION	3
+#define FEATURECAP_WEBTERNET_TLS		"Webternet TLS"
 
 namespace SourceMod
 {

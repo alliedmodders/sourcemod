@@ -70,7 +70,7 @@ bool CurlExt::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		return false;
 	}
 
-	sharesys->AddCapabilityProvider(myself, this, "Webternet");
+	sharesys->AddCapabilityProvider(myself, this, FEATURECAP_WEBTERNET_TLS);
 
 	smutils->BuildPath(Path_SM, CABundlePath, sizeof(CABundlePath), SM_CA_BUNDLE_PATH);
 
@@ -80,7 +80,7 @@ bool CurlExt::SDK_OnLoad(char *error, size_t maxlength, bool late)
 void CurlExt::SDK_OnUnload()
 {
 	curl_global_cleanup();
-	sharesys->DropCapabilityProvider(myself, this, "Webternet");
+	sharesys->DropCapabilityProvider(myself, this, FEATURECAP_WEBTERNET_TLS);
 }
 
 const char *CurlExt::GetExtensionVerString()
