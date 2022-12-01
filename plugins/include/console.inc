@@ -537,10 +537,17 @@ methodmap CommandIterator < Handle {
 		public native get();
 	}
 
-	// Retrieves the command's default flags
+	// Retrieves the command's effective admin flags.
 	//
 	// @error                Invalid iterator position.
 	property int Flags {
+		public native get();
+	}
+
+	// Retrieves the command's convar flags.
+	//
+	// @error                Invalid iterator position.
+	property int ConVarFlags {
 		public native get();
 	}
 }
