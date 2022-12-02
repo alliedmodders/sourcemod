@@ -1574,6 +1574,7 @@ REGISTER_NATIVES(consoleNatives)
 	{"CommandIterator.GetDescription",	sm_CommandIteratorGetDesc},
 	{"CommandIterator.GetName",		sm_CommandIteratorGetName},
 	{"CommandIterator.Flags.get",		sm_CommandIteratorAdminFlags},
+	{"CommandIterator.AdminFlags.get",		sm_CommandIteratorAdminFlags},
 	{"CommandIterator.ConVarFlags.get",		sm_CommandIteratorConVarFlags},
 	{"CommandIterator.Plugin.get",		sm_CommandIteratorPlugin},
 
