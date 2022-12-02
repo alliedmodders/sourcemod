@@ -18,7 +18,7 @@
 			"Burn"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x56\x8B\xF1\x8B\x8E\x90\x01\x00\x00\x8B\x01"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x56\x8B\xF1\x8B\x8E\x8C\x01\x00\x00\x8B\x01"
 				"linux"		"@_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef"
 				"mac"		"@_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef"
 			}
@@ -32,7 +32,7 @@
 			"Disguise"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x24\x56\x57\x8B\xF9\x8B\x8F\x90\x01\x00\x00"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x24\x56\x57\x8B\xF9\x8B\x8F\x8C\x01\x00\x00"
 				"linux"		"@_ZN15CTFPlayerShared8DisguiseEiiP9CTFPlayerb"
 				"mac"		"@_ZN15CTFPlayerShared8DisguiseEiiP9CTFPlayerb"
 			}
@@ -74,7 +74,7 @@
 			"StunPlayer"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x20\x57\x8B\xF9\x8B\x87\x58\x04\x00\x00"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x20\x57\x8B\xF9\x8B\x87\x54\x04\x00\x00"
 				"linux"		"@_ZN15CTFPlayerShared10StunPlayerEffiP9CTFPlayer"
 				"mac"		"@_ZN15CTFPlayerShared10StunPlayerEffiP9CTFPlayer"
 			}
@@ -113,21 +113,21 @@
 		{
 			"ForceRespawn"
 			{
-				"windows"	"333"
-				"linux"		"334"
-				"mac"		"334"
+				"windows"	"336"
+				"linux"		"337"
+				"mac"		"337"
 			}
 			"CalcIsAttackCriticalHelper"
 			{
-				"windows"	"394"
-				"linux"		"401"
-				"mac"		"401"
+				"windows"	"397"
+				"linux"		"404"
+				"mac"		"404"
 			}
 			"CalcIsAttackCriticalHelperNoCrits"
 			{
-				"windows"	"395"
-				"linux"		"402"
-				"mac"		"402"
+				"windows"	"398"
+				"linux"		"405"
+				"mac"		"405"
 			}
 			
 			// CTFGameRules::IsHolidayActive
@@ -140,9 +140,9 @@
 
 			"RemoveWearable"
 			{
-				"windows"	"436"
-				"linux"		"437"
-				"mac"		"437"
+				"windows"	"439"
+				"linux"		"440"
+				"mac"		"440"
 			}
 		}
 	}
