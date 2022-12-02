@@ -51,7 +51,7 @@ private:
 	cell_t m_EntRef = INVALID_EHANDLE_INDEX;
 };
 
-class CSMTraceFilter : public CTraceFilter
+class CSMTraceFilter : public ITraceFilter
 {
 public:
 	bool ShouldHitEntity(IHandleEntity *pEntity, int contentsMask)
@@ -74,10 +74,19 @@ public:
 		m_pFunc = pFunc;
 		m_Data = data;
 	}
+	virtual TraceType_t GetTraceType() const
+	{
+		return m_TraceType;
+	}
+	void SetTraceType(TraceType_t traceType)
+	{
+		m_TraceType = traceType;
+	}
 private:
 	ExceptionHandler *m_pEh;
 	IPluginFunction *m_pFunc;
 	cell_t m_Data;
+	TraceType_t m_TraceType;
 };
 
 class CSMTraceEnumerator : public IPartitionEnumerator
@@ -458,6 +467,7 @@ static cell_t smn_TRTraceRayFilter(IPluginContext *pContext, const cell_t *param
 	cell_t *startaddr, *endaddr;
 	IPluginFunction *pFunc;
 	cell_t data;
+	TraceType_t traceType;
 
 	pFunc = pContext->GetFunctionById(params[5]);
 	if (!pFunc)
@@ -476,6 +486,17 @@ static cell_t smn_TRTraceRayFilter(IPluginContext *pContext, const cell_t *param
 
 	DetectExceptions eh(pContext);
 	g_SMTraceFilter.SetFunctionPtr(&eh, pFunc, data);
+
+	if (params[0] >= 7)
+	{
+		traceType = (TraceType_t)params[7];
+	}
+	else
+	{
+		traceType = TRACE_EVERYTHING;
+	}
+
+	g_SMTraceFilter.SetTraceType(traceType);
 
 	pContext->LocalToPhysAddr(params[1], &startaddr);
 	pContext->LocalToPhysAddr(params[2], &endaddr);
@@ -513,6 +534,7 @@ static cell_t smn_TRTraceHullFilter(IPluginContext *pContext, const cell_t *para
 	cell_t data;
 	IPluginFunction *pFunc;
 	cell_t *startaddr, *endaddr, *mins, *maxs;
+	TraceType_t traceType;
 
 	pFunc = pContext->GetFunctionById(params[6]);
 	if (!pFunc)
@@ -524,6 +546,17 @@ static cell_t smn_TRTraceHullFilter(IPluginContext *pContext, const cell_t *para
 
 	DetectExceptions eh(pContext);
 	g_SMTraceFilter.SetFunctionPtr(&eh, pFunc, data);
+
+	if (params[0] >= 8)
+	{
+		traceType = (TraceType_t)params[8];
+	}
+	else
+	{
+		traceType = TRACE_EVERYTHING;
+	}
+
+	g_SMTraceFilter.SetTraceType(traceType);
 
 	pContext->LocalToPhysAddr(params[1], &startaddr);
 	pContext->LocalToPhysAddr(params[2], &endaddr);
@@ -750,6 +783,7 @@ static cell_t smn_TRTraceRayFilterEx(IPluginContext *pContext, const cell_t *par
 	IPluginFunction *pFunc;
 	cell_t *startaddr, *endaddr;
 	cell_t data;
+	TraceType_t traceType;
 
 	pFunc = pContext->GetFunctionById(params[5]);
 	if (!pFunc)
@@ -774,6 +808,17 @@ static cell_t smn_TRTraceRayFilterEx(IPluginContext *pContext, const cell_t *par
 
 	DetectExceptions eh(pContext);
 	smfilter.SetFunctionPtr(&eh, pFunc, data);
+	
+	if (params[0] >= 7)
+	{
+		traceType = (TraceType_t)params[7];
+	}
+	else
+	{
+		traceType = TRACE_EVERYTHING;
+	}
+
+	smfilter.SetTraceType(traceType);
 
 	StartVec.Init(sp_ctof(startaddr[0]), sp_ctof(startaddr[1]), sp_ctof(startaddr[2]));
 
@@ -818,6 +863,7 @@ static cell_t smn_TRTraceHullFilterEx(IPluginContext *pContext, const cell_t *pa
 	IPluginFunction *pFunc;
 	cell_t *startaddr, *endaddr, *mins, *maxs;
 	cell_t data;
+	TraceType_t traceType;
 
 	pFunc = pContext->GetFunctionById(params[6]);
 	if (!pFunc)
@@ -837,6 +883,17 @@ static cell_t smn_TRTraceHullFilterEx(IPluginContext *pContext, const cell_t *pa
 
 	DetectExceptions eh(pContext);
 	smfilter.SetFunctionPtr(&eh, pFunc, data);
+	
+	if (params[0] >= 8)
+	{
+		traceType = (TraceType_t)params[8];
+	}
+	else
+	{
+		traceType = TRACE_EVERYTHING;
+	}
+
+	smfilter.SetTraceType(traceType);
 
 	StartVec.Init(sp_ctof(startaddr[0]), sp_ctof(startaddr[1]), sp_ctof(startaddr[2]));
 	vmins.Init(sp_ctof(mins[0]), sp_ctof(mins[1]), sp_ctof(mins[2]));
