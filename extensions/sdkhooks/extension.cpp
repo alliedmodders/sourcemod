@@ -1383,7 +1383,7 @@ void SDKHooks::Hook_Spawn()
 		}
 
 		int entity = gamehelpers->EntityToBCompatRef(pEntity);
-		cell_t res = Pl_Continue;
+		cell_t ret = Pl_Continue;
 
 		std::vector<IPluginFunction *> callbackList;
 		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
@@ -1391,10 +1391,17 @@ void SDKHooks::Hook_Spawn()
 		{
 			IPluginFunction *callback = callbackList[entry];
 			callback->PushCell(entity);
+
+			cell_t res;
 			callback->Execute(&res);
+
+			if (res > ret)
+			{
+				ret = res;
+			}
 		}
 
-		if (res >= Pl_Handled)
+		if (ret >= Pl_Handled)
 			RETURN_META(MRES_SUPERCEDE);
 
 		break;
