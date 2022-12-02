@@ -18,105 +18,105 @@
 		{
 			"SetOwnerEntity"
 			{
-				"windows"	"17"
-				"linux"		"18"
-				"mac"		"18"
+				"windows"	"18"
+				"linux"		"19"
+				"mac"		"19"
 			}
 			"GiveNamedItem"
 			{
-				"windows"	"409"
-				"linux"		"410"
-				"mac"		"410"
+				"windows"	"412"
+				"linux"		"413"
+				"mac"		"413"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"277"
-				"linux"		"278"
-				"mac"		"278"
+				"windows"	"280"
+				"linux"		"281"
+				"mac"		"281"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"275"
-				"linux"		"276"
-				"mac"		"276"
+				"windows"	"278"
+				"linux"		"279"
+				"mac"		"279"
 			}
 			"Ignite"
 			{
-				"windows"	"216"
-				"linux"		"217"
-				"mac"		"217"
+				"windows"	"219"
+				"linux"		"220"
+				"mac"		"220"
 			}
 			"Extinguish"
 			{
-				"windows"	"220"
-				"linux"		"221"
-				"mac"		"221"
+				"windows"	"223"
+				"linux"		"224"
+				"mac"		"224"
 			}
 			"Teleport"
 			{
-				"windows"	"111"
-				"linux"		"112"
-				"mac"		"112"
+				"windows"	"113"
+				"linux"		"114"
+				"mac"		"114"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"450"
-				"linux"		"450"
-				"mac"		"450"
+				"windows"	"453"
+				"linux"		"453"
+				"mac"		"453"
 			}
 			"GetVelocity"
 			{
-				"windows"	"143"
-				"linux"		"144"
-				"mac"		"144"
+				"windows"	"146"
+				"linux"		"147"
+				"mac"		"147"
 			}
 			"EyeAngles"
 			{
-				"windows"	"134"
-				"linux"		"135"
-				"mac"		"135"
+				"windows"	"137"
+				"linux"		"138"
+				"mac"		"138"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"24"
-				"linux"		"25"
-				"mac"		"25"
+				"windows"	"26"
+				"linux"		"27"
+				"mac"		"27"
 			}
 			"AcceptInput"
 			{
-				"windows"	"36"
-				"linux"		"37"
-				"mac"		"37"
+				"windows"	"38"
+				"linux"		"39"
+				"mac"		"39"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"268"
-				"linux"		"269"
-				"mac"		"269"
+				"windows"	"271"
+				"linux"		"272"
+				"mac"		"272"
 			}
 			"Activate"
 			{
-				"windows"	"33"
-				"linux"		"34"
-				"mac"		"34"
+				"windows"	"35"
+				"linux"		"36"
+				"mac"		"36"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"427"
-				"linux"		"428"
-				"mac"		"428"
+				"windows"	"430"
+				"linux"		"431"
+				"mac"		"431"
 			}
 			"GiveAmmo"
 			{
-				"windows"	"259"
-				"linux"		"260"
-				"mac"		"260"
+				"windows"	"262"
+				"linux"		"263"
+				"mac"		"263"
 			}
 			"GetAttachment"
 			{
-				"windows"	"212"
-				"linux"		"213"
-				"mac"		"213"
+				"windows"	"215"
+				"linux"		"216"
+				"mac"		"216"
 			}
 		}
 		
@@ -150,7 +150,7 @@
 			"LookupAttachment"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x80\xBE\x41\x03\x00\x00\x00\x75\x2A\x83\xBE\x6C\x04\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x86\x6C\x04\x00\x00\x85\xC0\x74\x2A\x83\x38\x00\x74\x2A\xFF\x75\x08\x50\xE8\x2A\x2A\x2A\x2A\x83\xC4\x08\x40"
+				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x80\xBE\x2A\x03\x00\x00\x00\x75\x2A\x83\xBE\x2A\x04\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x86\x2A\x04\x00\x00\x85\xC0\x74\x2A\x83\x38\x00\x74\x2A\xFF\x75\x08\x50\xE8\x2A\x2A\x2A\x2A\x83\xC4\x08\x40"
 				"linux"		"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
 				"mac"		"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
 			}
