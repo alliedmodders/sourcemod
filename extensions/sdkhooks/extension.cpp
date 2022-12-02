@@ -1605,7 +1605,14 @@ void SDKHooks::Hook_Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 			callback->PushCell(caller);
 			callback->PushCell(useType);
 			callback->PushFloat(value);
-			callback->Execute(&ret);
+
+			cell_t res;
+			callback->Execute(&res);
+
+			if (res > ret)
+			{
+				ret = res;
+			}
 		}
 
 		if (ret >= Pl_Handled)
