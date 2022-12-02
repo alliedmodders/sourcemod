@@ -33,6 +33,8 @@
 #include "util_cstrike.h"
 #include "RegNatives.h"
 #include <iplayerinfo.h>
+#include <sm_argbuffer.h>
+
 #if SOURCE_ENGINE == SE_CSGO
 #include "itemdef-hash.h"
 
@@ -134,16 +136,9 @@ CEconItemView *GetEconItemView(CBaseEntity *pEntity, int iSlot)
 	if (team != 2 && team != 3)
 		return NULL;
 
-	CEconItemView *ret;
-	unsigned char vstk[sizeof(void *) + sizeof(int) * 2];
-	unsigned char *vptr = vstk;
+	ArgBuffer<void*, int, int> vstk(reinterpret_cast<void*>(((intptr_t)pEntity + thisPtrOffset)), team, iSlot);
 
-	*(void **)vptr = (void *)((intptr_t)pEntity + thisPtrOffset);
-	vptr += sizeof(void *);
-	*(int *)vptr = team;
-	vptr += sizeof(int);
-	*(int *)vptr = iSlot;
-
+	CEconItemView *ret = nullptr;
 	pWrapper->Execute(vstk, &ret);
 
 	return ret;
@@ -163,13 +158,9 @@ CCSWeaponData *GetCCSWeaponData(CEconItemView *view)
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_ThisCall, &retpass, NULL, 0))
 	}
 
-	unsigned char vstk[sizeof(CEconItemView *)];
-	unsigned char *vptr = vstk;
+	ArgBuffer<CEconItemView*> vstk(view);
 
-	*(CEconItemView **)vptr = view;
-
-	CCSWeaponData *pWpnData = NULL;
-
+	CCSWeaponData *pWpnData = nullptr;
 	pWrapper->Execute(vstk, &pWpnData);
 
 	return pWpnData;
@@ -234,14 +225,9 @@ CEconItemDefinition *GetItemDefintionByName(const char *classname)
 		g_RegNatives.Register(pWrapper);
 	}
 
-	unsigned char vstk[sizeof(void *) + sizeof(const char *)];
-	unsigned char *vptr = vstk;
+	ArgBuffer<void*, const char *> vstk(pSchema, classname);
 
-	*(void **)vptr = pSchema;
-	vptr += sizeof(void *);
-	*(const char **)vptr = classname;
-
-	CEconItemDefinition *pItemDef = NULL;
+	CEconItemDefinition *pItemDef = nullptr;
 	pWrapper->Execute(vstk, &pItemDef);
 
 	return pItemDef;
@@ -305,7 +291,7 @@ void CreateHashMaps()
 				int iLoadoutslot = node.pDef->GetDefaultLoadoutSlot();
 
 				ClassnameMap::Insert i = g_mapClassToDefIdx.findForAdd(classname);
-				g_mapClassToDefIdx.add(i, ke::AString(classname), ItemDefHashValue(iLoadoutslot, price, iWeaponID, iItemDefIdx, classname));
+				g_mapClassToDefIdx.add(i, std::string(classname), ItemDefHashValue(iLoadoutslot, price, iWeaponID, iItemDefIdx, classname));
 
 				ItemIndexMap::Insert x = g_mapDefIdxToClass.findForAdd(iItemDefIdx);
 				g_mapDefIdxToClass.add(x, iItemDefIdx, ItemDefHashValue(iLoadoutslot, price, iWeaponID, iItemDefIdx, classname));
@@ -336,11 +322,11 @@ SMCSWeapon GetWeaponIdFromDefIdx(uint16_t iDefIdx)
 		SMCSWeapon_AUG, SMCSWeapon_AWP, SMCSWeapon_FAMAS, SMCSWeapon_G3SG1,
 		SMCSWeapon_NONE, SMCSWeapon_GALILAR, SMCSWeapon_M249, SMCSWeapon_NONE,
 		SMCSWeapon_M4A1, SMCSWeapon_MAC10, SMCSWeapon_NONE, SMCSWeapon_P90,
-		SMCSWeapon_NONE, SMCSWeapon_NONE, SMCSWeapon_NONE, SMCSWeapon_NONE,
+		SMCSWeapon_NONE, SMCSWeapon_NONE, SMCSWeapon_NONE, SMCSWeapon_MP5NAVY,
 		SMCSWeapon_UMP45, SMCSWeapon_XM1014, SMCSWeapon_BIZON, SMCSWeapon_MAG7,
 		SMCSWeapon_NEGEV, SMCSWeapon_SAWEDOFF, SMCSWeapon_TEC9, SMCSWeapon_TASER,
 		SMCSWeapon_HKP2000, SMCSWeapon_MP7, SMCSWeapon_MP9, SMCSWeapon_NOVA,
-		SMCSWeapon_P250, SMCSWeapon_NONE, SMCSWeapon_SCAR20, SMCSWeapon_SG556,
+		SMCSWeapon_P250, SMCSWeapon_SHIELD, SMCSWeapon_SCAR20, SMCSWeapon_SG556,
 		SMCSWeapon_SSG08, SMCSWeapon_KNIFE_GG, SMCSWeapon_KNIFE, SMCSWeapon_FLASHBANG,
 		SMCSWeapon_HEGRENADE, SMCSWeapon_SMOKEGRENADE, SMCSWeapon_MOLOTOV, SMCSWeapon_DECOY,
 		SMCSWeapon_INCGRENADE, SMCSWeapon_C4, SMCSWeapon_KEVLAR, SMCSWeapon_ASSAULTSUIT,
@@ -357,7 +343,7 @@ ItemDefHashValue *GetHashValueFromWeapon(const char *szWeapon)
 {
 	char tempWeapon[MAX_WEAPON_NAME_LENGTH];
 
-	Q_strncpy(tempWeapon, szWeapon, sizeof(tempWeapon));
+	ke::SafeStrcpy(tempWeapon, sizeof(tempWeapon), szWeapon);
 	Q_strlower(tempWeapon);
 
 	if (strstr(tempWeapon, "weapon_") == NULL && strstr(tempWeapon, "item_") == NULL)
@@ -367,7 +353,7 @@ ItemDefHashValue *GetHashValueFromWeapon(const char *szWeapon)
 		for (unsigned int i = 0; i < SM_ARRAYSIZE(szClassPrefixs); i++)
 		{
 			char classname[MAX_WEAPON_NAME_LENGTH];
-			Q_snprintf(classname, sizeof(classname), "%s%s", szClassPrefixs[i], tempWeapon);
+			ke::SafeSprintf(classname, sizeof(classname), "%s%s", szClassPrefixs[i], tempWeapon);
 
 			ClassnameMap::Result res = g_mapClassToDefIdx.find(classname);
 
@@ -390,8 +376,6 @@ ItemDefHashValue *GetHashValueFromWeapon(const char *szWeapon)
 #if SOURCE_ENGINE != SE_CSGO
 void *GetWeaponInfo(int weaponID)
 {
-	void *info;
-
 	static ICallWrapper *pWrapper = NULL;
 	if (!pWrapper)
 	{
@@ -407,11 +391,9 @@ void *GetWeaponInfo(int weaponID)
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass, pass, 1))
 	}
 
-	unsigned char vstk[sizeof(int)];
-	unsigned char *vptr = vstk;
+	ArgBuffer<int> vstk(weaponID);
 
-	*(int *)vptr = weaponID;
-
+	void *info = nullptr;
 	pWrapper->Execute(vstk, &info);
 
 	return info;
@@ -435,7 +417,6 @@ const char *GetWeaponNameFromClassname(const char *weapon)
 const char *GetTranslatedWeaponAlias(const char *weapon)
 {
 #if SOURCE_ENGINE != SE_CSGO
-	const char *alias = NULL;
 
 	static ICallWrapper *pWrapper = NULL;
 
@@ -453,12 +434,11 @@ const char *GetTranslatedWeaponAlias(const char *weapon)
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass, pass, 1))
 	}
 
-	unsigned char vstk[sizeof(const char *)];
-	unsigned char *vptr = vstk;
+	ArgBuffer<const char *> vstk(GetWeaponNameFromClassname(weapon));
 
-	*(const char **)vptr = GetWeaponNameFromClassname(weapon);
-
+	const char *alias = nullptr;
 	pWrapper->Execute(vstk, &alias);
+
 	return alias;
 #else //this should work for both games maybe replace both?
 	static const char *szAliases[] =
@@ -492,8 +472,6 @@ const char *GetTranslatedWeaponAlias(const char *weapon)
 int AliasToWeaponID(const char *weapon)
 {
 #if SOURCE_ENGINE != SE_CSGO
-	int weaponID = 0;
-
 	static ICallWrapper *pWrapper = NULL;
 
 	if (!pWrapper)
@@ -510,11 +488,9 @@ int AliasToWeaponID(const char *weapon)
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass, pass, 1))
 	}
 
-	unsigned char vstk[sizeof(const char *)];
-	unsigned char *vptr = vstk;
+	ArgBuffer<const char *> vstk(GetWeaponNameFromClassname(weapon));
 
-	*(const char **)vptr = GetWeaponNameFromClassname(weapon);
-
+	int weaponID = 0;
 	pWrapper->Execute(vstk, &weaponID);
 
 	return weaponID;
@@ -531,10 +507,8 @@ int AliasToWeaponID(const char *weapon)
 const char *WeaponIDToAlias(int weaponID)
 {
 #if SOURCE_ENGINE != SE_CSGO
-	const char *alias = NULL;
 
 	static ICallWrapper *pWrapper = NULL;
-
 	if (!pWrapper)
 	{
 		REGISTER_ADDR("WeaponIDToAlias", 0,
@@ -549,11 +523,9 @@ const char *WeaponIDToAlias(int weaponID)
 			pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retpass, pass, 1))
 	}
 
-	unsigned char vstk[sizeof(int)];
-	unsigned char *vptr = vstk;
+	ArgBuffer<int> vstk(weaponID);
 
-	*(int *)vptr = weaponID;
-
+	const char *alias = nullptr;
 	pWrapper->Execute(vstk, &alias);
 
 	return alias;

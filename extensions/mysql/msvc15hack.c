@@ -1,12 +1,43 @@
+
+#include <Windows.h>
+#include <stdlib.h>
+#include <corecrt_wstdio.h>
+#include <intrin.h>
+
+// Fix from from https://stackoverflow.com/a/34655235.
+//
+// __iob_func required by the MySQL we use,
+// but no longer exists in the VS 14.0+ crt.
+
+#pragma intrinsic(_ReturnAddress)
+
+FILE * __cdecl __iob_func(void)
+{
+	unsigned char const * assembly = (unsigned char const *)_ReturnAddress();
+	if (!assembly)
+	{
+		return NULL;
+	}
+	
+	if (*assembly == 0x83 && *(assembly + 1) == 0xC0 && (*(assembly + 2) == 0x20 || *(assembly + 2) == 0x40))
+	{
+		if (*(assembly + 2) == 32)
+		{
+			return (FILE*)((unsigned char *)stdout - 32);
+		}
+		if (*(assembly + 2) == 64)
+		{
+			return (FILE*)((unsigned char *)stderr - 64);
+		}
+	}
+	
+	return stdin;
+}
+
 // Adapted from dosmap.c in Visual Studio 12.0 CRT sources.
 //
 // The _dosmaperr function is required by the MySQL lib we use,
 // but no longer exists in the VS 14.0+ crt.
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
-#include <stdlib.h>
 
 static struct errentry
 {

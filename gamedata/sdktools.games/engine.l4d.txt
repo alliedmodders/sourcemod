@@ -167,6 +167,25 @@
 			}
 		}
 	}
+
+	/* CBaseAnimating::LookupAttachment */
+	"#default"
+	{
+		"#supported"
+		{
+			"game"		"left4dead"
+		}
+		"Signatures"
+		{
+			"LookupAttachment"
+			{
+				"library"	"server"
+				"windows"	"\x56\x8B\xF1\x83\xBE\x68\x04\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x86\x68\x04\x00\x00\x85\xC0\x5E\x74\x2A\x83\x38\x00\x75\x2A\x33\xC0\xC2\x04\x00\x8B\x4C\x24\x04"
+				"linux"		"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
+				"mac"		"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
+			}
+		}
+	}
 	
 	/* SetUserInfo data */
 	"#default"
@@ -216,6 +235,12 @@
 	{
 		"Offsets"
 		{
+			"SetOwnerEntity"
+			{
+				"windows"	"16"
+				"linux"		"17"
+				"mac"		"17"
+			}
 			"GiveNamedItem"
 			{
 				"windows"	"482"
@@ -299,6 +324,12 @@
 				"windows"	"427"
 				"linux"		"428"
 				"mac"           "428"
+			}
+			"GetAttachment"
+			{
+				"windows"	"202"
+				"linux"		"203"
+				"mac"		"203"
 			}
 		}
 	}

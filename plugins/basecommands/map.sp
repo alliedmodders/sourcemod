@@ -62,6 +62,8 @@ public int MenuHandler_ChangeMap(Menu menu, MenuAction action, int param1, int p
 		Panel panel = view_as<Panel>(param2);
 		panel.SetTitle(title);
 	}
+
+	return 0;
 }
 
 public void AdminMenu_Map(TopMenu topmenu, 
@@ -85,7 +87,15 @@ public Action Command_Map(int client, int args)
 {
 	if (args < 1)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_map <map>");
+		if ((GetCmdReplySource() == SM_REPLY_TO_CHAT) && (client != 0))
+		{
+			g_MapList.SetTitle("%T", "Choose Map", client);
+			g_MapList.Display(client, MENU_TIME_FOREVER);
+		}
+		else 
+		{
+			ReplyToCommand(client, "[SM] Usage: sm_map <map>");
+		}
 		return Plugin_Handled;
 	}
 
@@ -133,7 +143,7 @@ int LoadMapList(Menu menu)
 	if ((map_array = ReadMapList(g_map_array,
 			g_map_serial,
 			"sm_map menu",
-			MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_NO_DEFAULT|MAPLIST_FLAG_MAPSFOLDER))
+			MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER))
 		!= null)
 	{
 		g_map_array = map_array;
@@ -151,8 +161,10 @@ int LoadMapList(Menu menu)
 	
 	for (int i = 0; i < map_count; i++)
 	{
+		char displayName[PLATFORM_MAX_PATH];
 		GetArrayString(g_map_array, i, map_name, sizeof(map_name));
-		menu.AddItem(map_name, map_name);
+		GetMapDisplayName(map_name, displayName, sizeof(displayName));
+		menu.AddItem(map_name, displayName);
 	}
 	
 	return map_count;

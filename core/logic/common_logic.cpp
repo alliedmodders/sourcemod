@@ -55,8 +55,8 @@
 #include "sprintf.h"
 #include "LibrarySys.h"
 #include "RootConsoleMenu.h"
-#include "CDataPack.h"
 #include "CellArray.h"
+#include "smn_entitylump.h"
 #include <bridge/include/BridgeAPI.h>
 #include <bridge/include/IProviderCallbacks.h>
 
@@ -89,6 +89,8 @@ CNativeOwner g_CoreNatives;
 #ifdef PLATFORM_X64
 PseudoAddressManager pseudoAddr;
 #endif
+
+EntityLumpParseResult lastParseResult;
 
 static void AddCorePhraseFile(const char *filename)
 {
@@ -136,6 +138,35 @@ static uint32_t ToPseudoAddress(void *addr)
 #endif
 }
 
+static void SetEntityLumpWritable(bool writable)
+{
+	g_bLumpAvailableForWriting = writable;
+	
+	// write-lock causes the map entities to be serialized out to string
+	if (!writable)
+	{
+		g_strMapEntities = lumpmanager->Dump();
+	}
+}
+
+static bool ParseEntityLumpString(const char *pMapEntities, int &status, size_t &position)
+{
+	lastParseResult = lumpmanager->Parse(pMapEntities);
+	status = static_cast<int>(lastParseResult.m_Status);
+	position = static_cast<size_t>(lastParseResult.m_Position);
+	return lastParseResult;
+}
+
+// returns nullptr if the original lump failed to parse
+static const char* GetEntityLumpString()
+{
+	if (!lastParseResult)
+	{
+		return nullptr;
+	}
+	return g_strMapEntities.c_str();
+}
+
 // Defined in smn_filesystem.cpp.
 extern bool OnLogPrint(const char *msg);
 
@@ -167,12 +198,13 @@ static sm_logic_t logic =
 	GenerateError,
 	AddNatives,
 	RegisterProfiler,
-	CDataPack::New,
-	CDataPack::Free,
 	CellArray::New,
 	CellArray::Free,
 	FromPseudoAddress,
 	ToPseudoAddress,
+	SetEntityLumpWritable,
+	ParseEntityLumpString,
+	GetEntityLumpString,
 	&g_PluginSys,
 	&g_ShareSys,
 	&g_Extensions,

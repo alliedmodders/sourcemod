@@ -1171,18 +1171,12 @@ reswitch:
 					int userid;
 					if (!bridge->DescribePlayer(*value, &name, &auth, &userid))
 						return pCtx->ThrowNativeError("Client index %d is invalid (arg %d)", *value, arg);
-					ke::SafeSprintf(buffer, 
-						sizeof(buffer), 
-						"%s<%d><%s><>", 
-						name,
-						userid,
-						auth);
+					
+					ke::SafeSprintf(buffer, sizeof(buffer), "%s<%d><%s><>", name, userid, auth);
 				}
 				else
 				{
-					ke::SafeSprintf(buffer,
-						sizeof(buffer),
-						"Console<0><Console><Console>");
+					ke::SafeStrcpy(buffer, sizeof(buffer), "Console<0><Console><Console>");
 				}
 				if (!AddString(&buf_p, llen, buffer, width, prec, flags))
 					return pCtx->ThrowNativeError("Escaped string would be truncated (arg %d)", arg);
@@ -1224,7 +1218,7 @@ reswitch:
 				cell_t *target;
 				pCtx->LocalToString(params[arg++], &key);
 				pCtx->LocalToPhysAddr(params[arg++], &target);
-				res = Translate(buf_p, llen, pCtx, key, *target, params, &arg, &error);
+				res = Translate(buf_p, llen + 1, pCtx, key, *target, params, &arg, &error);
 				if (error)
 				{
 					return 0;
@@ -1241,7 +1235,7 @@ reswitch:
 				size_t res;
 				cell_t target = bridge->GetGlobalTarget();
 				pCtx->LocalToString(params[arg++], &key);
-				res = Translate(buf_p, llen, pCtx, key, target, params, &arg, &error);
+				res = Translate(buf_p, llen + 1, pCtx, key, target, params, &arg, &error);
 				if (error)
 				{
 					return 0;

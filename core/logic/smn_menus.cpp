@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2008 AlliedModders LLC.  All rights reserved.
@@ -141,10 +141,6 @@ public:
 	void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);
 	unsigned int OnMenuDisplayItem(IBaseMenu *menu, int client, IMenuPanel *panel, unsigned int item, const ItemDrawInfo &dr);
 	bool OnSetHandlerOption(const char *option, const void *data);
-#if 0
-	void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style);
-	void OnMenuDisplayItem(IBaseMenu *menu, int client, unsigned int item, const char **display);
-#endif
 private:
 	cell_t DoAction(IBaseMenu *menu, MenuAction action, cell_t param1, cell_t param2, cell_t def_res=0);
 private:
@@ -485,7 +481,6 @@ void CMenuHandler::OnMenuVoteResults(IBaseMenu *menu, const menu_vote_result_t *
 		if (num_items > 1)
 		{
 			/* Yes, we do. */
-			srand(time(NULL));
 			winning_item = rand() % num_items;
 			winning_item = results->item_list[winning_item].item;
 		} else {
@@ -497,99 +492,51 @@ void CMenuHandler::OnMenuVoteResults(IBaseMenu *menu, const menu_vote_result_t *
 		unsigned int winning_votes = results->item_list[0].count;
 
 		DoAction(menu, MenuAction_VoteEnd, winning_item, (total_votes << 16) | (winning_votes & 0xFFFF));
-	} else {
-		IPluginContext *pContext = m_pVoteResults->GetParentContext();
-		bool no_call = false;
-		int err;
+		return;
+	}
 
-		/* First array */
-		cell_t client_array_address = -1;
-		cell_t *client_array_base = NULL;
-		cell_t client_array_size = results->num_clients + (results->num_clients * 2);
-		if (client_array_size)
-		{
-			if ((err = pContext->HeapAlloc(client_array_size, &client_array_address, &client_array_base))
-				!= SP_ERROR_NONE)
-			{
-				g_DbgReporter.GenerateError(pContext, m_fnVoteResult, err, "Menu callback could not allocate %d bytes for client list.", client_array_size * sizeof(cell_t));
-				no_call = true;
-			} else {
-				cell_t target_offs = sizeof(cell_t) * results->num_clients;
-				cell_t *cur_index = client_array_base;
-				cell_t *cur_array;
-				for (unsigned int i=0; i<results->num_clients; i++)
-				{
-					/* Copy the array index */
-					*cur_index = target_offs;
-					/* Get the current array address */
-					cur_array = (cell_t *)((char *)cur_index + target_offs);
-					/* Store information */
-					cur_array[0] = results->client_list[i].client;
-					cur_array[1] = results->client_list[i].item;
-					/* Adjust for the new target by subtracting one indirection
-					 * and adding one array.
-					 */
-					target_offs += (sizeof(cell_t) * 2) - sizeof(cell_t);
-					cur_index++;
-				}
-			}
+	IPluginContext *pContext = m_pVoteResults->GetParentContext();
+	AutoEnterHeapScope heap_scope(pContext);
+
+	/* First array */
+	cell_t client_array_address = -1;
+	if (cell_t client_array_size = results->num_clients * 2) {
+		auto init = std::make_unique<cell_t[]>(client_array_size);
+		for (unsigned int i = 0; i < results->num_clients; i++) {
+			init[i * 2] = results->client_list[i].client;
+			init[i * 2 + 1] = results->client_list[i].item;
 		}
 
-		/* Second array */
-		cell_t item_array_address = -1;
-		cell_t *item_array_base = NULL;
-		cell_t item_array_size = results->num_items + (results->num_items * 2);
-		if (item_array_size)
-		{
-			if ((err = pContext->HeapAlloc(item_array_size, &item_array_address, &item_array_base))
-				!= SP_ERROR_NONE)
-			{
-				g_DbgReporter.GenerateError(pContext, m_fnVoteResult, err, "Menu callback could not allocate %d bytes for item list.", item_array_size);
-				no_call = true;
-			} else {
-				cell_t target_offs = sizeof(cell_t) * results->num_items;
-				cell_t *cur_index = item_array_base;
-				cell_t *cur_array;
-				for (unsigned int i=0; i<results->num_items; i++)
-				{
-					/* Copy the array index */
-					*cur_index = target_offs;
-					/* Get the current array address */
-					cur_array = (cell_t *)((char *)cur_index + target_offs);
-					/* Store information */
-					cur_array[0] = results->item_list[i].item;
-					cur_array[1] = results->item_list[i].count;
-					/* Adjust for the new target by subtracting one indirection
-					 * and adding one array.
-					 */
-					target_offs += (sizeof(cell_t) * 2) - sizeof(cell_t);
-					cur_index++;
-				}
-			}
-		}
-
-		/* Finally, push everything */
-		if (!no_call)
-		{
-			m_pVoteResults->PushCell(menu->GetHandle());
-			m_pVoteResults->PushCell(results->num_votes);
-			m_pVoteResults->PushCell(results->num_clients);
-			m_pVoteResults->PushCell(client_array_address);
-			m_pVoteResults->PushCell(results->num_items);
-			m_pVoteResults->PushCell(item_array_address);
-			m_pVoteResults->Execute(NULL);
-		}
-
-		/* Free what we allocated, in reverse order as required */
-		if (item_array_address != -1)
-		{
-			pContext->HeapPop(item_array_address);
-		}
-		if (client_array_address != -1)
-		{
-			pContext->HeapPop(client_array_address);
+		if (!pContext->HeapAlloc2dArray(results->num_clients, 2, &client_array_address, init.get())) {
+			g_DbgReporter.GenerateError(pContext, m_fnVoteResult, -1,
+										"Menu callback could not allocate cells for client list.");
+			return;
 		}
 	}
+
+	/* Second array */
+	cell_t item_array_address = -1;
+	if (cell_t item_array_size = results->num_items * 2) {
+		auto init = std::make_unique<cell_t[]>(item_array_size);
+		for (unsigned int i = 0; i < results->num_items; i++) {
+			init[i * 2] = results->item_list[i].item;
+			init[i * 2 + 1] = results->item_list[i].count;
+		}
+		if (!pContext->HeapAlloc2dArray(results->num_items, 2, &item_array_address, init.get())) {
+			g_DbgReporter.GenerateError(pContext, m_fnVoteResult, -1,
+										"Menu callback could not allocate %d cells for item list.",
+										item_array_size);
+			return;
+		}
+	}
+
+	m_pVoteResults->PushCell(menu->GetHandle());
+	m_pVoteResults->PushCell(results->num_votes);
+	m_pVoteResults->PushCell(results->num_clients);
+	m_pVoteResults->PushCell(client_array_address);
+	m_pVoteResults->PushCell(results->num_items);
+	m_pVoteResults->PushCell(item_array_address);
+	m_pVoteResults->Execute(NULL);
 }
 
 bool CMenuHandler::OnSetHandlerOption(const char *option, const void *data)
@@ -816,8 +763,14 @@ static cell_t GetMenuItem(IPluginContext *pContext, const cell_t *params)
 
 	ItemDrawInfo dr;
 	const char *info;
+	cell_t client = (params[0] >= 8) ? params[8] : 0;
+	if(!client && menu->IsPerClientShuffled())
+	{
+		return pContext->ThrowNativeError("This menu has been per-client random shuffled. "
+										  "You have to call GetMenuItem with a client index!");
+	}
 
-	if ((info=menu->GetItemInfo(params[2], &dr)) == NULL)
+	if ((info=menu->GetItemInfo(params[2], &dr, client)) == NULL)
 	{
 		return 0;
 	}
@@ -828,6 +781,57 @@ static cell_t GetMenuItem(IPluginContext *pContext, const cell_t *params)
 	cell_t *addr;
 	pContext->LocalToPhysAddr(params[5], &addr);
 	*addr = dr.style;
+
+	return 1;
+}
+
+static cell_t MenuShufflePerClient(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IBaseMenu *menu;
+
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
+	}
+
+	int start = params[2];
+	int stop = params[3];
+
+	if (stop > 0 && !(stop >= start))
+	{
+		return pContext->ThrowNativeError("Stop must be -1 or >= start!");
+	}
+
+	menu->ShufflePerClient(start, stop);
+
+	return 1;
+}
+
+static cell_t MenuSetClientMapping(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IBaseMenu *menu;
+
+	if ((err = ReadMenuHandle(params[1], &menu)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
+	}
+
+	int client = params[2];
+	if (client < 1 || client > SM_MAXPLAYERS)
+	{
+		return pContext->ThrowNativeError("Invalid client index!");
+	}
+
+	cell_t *array;
+	pContext->LocalToPhysAddr(params[3], &array);
+
+	int length = params[4];
+
+	menu->SetClientMapping(client, array, length);
 
 	return 1;
 }
@@ -958,7 +962,7 @@ static cell_t GetMenuExitBackButton(IPluginContext *pContext, const cell_t *para
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
 
-	return ((menu->GetMenuOptionFlags() & MENUFLAG_BUTTON_EXITBACK) == MENUFLAG_BUTTON_EXIT) ? 1 : 0;
+	return ((menu->GetMenuOptionFlags() & MENUFLAG_BUTTON_EXITBACK) == MENUFLAG_BUTTON_EXITBACK) ? 1 : 0;
 }
 
 static cell_t SetMenuExitButton(IPluginContext *pContext, const cell_t *params)
@@ -1645,6 +1649,8 @@ REGISTER_NATIVES(menuNatives)
 	{"SetPanelKeys",			SetPanelKeys},
 	{"SetVoteResultCallback",	SetVoteResultCallback},
 	{"VoteMenu",				VoteMenu},
+	{"MenuShufflePerClient",	MenuShufflePerClient},
+	{"MenuSetClientMapping",	MenuSetClientMapping},
 	{"SetMenuNoVoteButton",		SetMenuNoVoteButton},
 
 	// Transitional syntax support.
@@ -1673,6 +1679,8 @@ REGISTER_NATIVES(menuNatives)
 	{"Menu.ToPanel",			CreatePanelFromMenu},
 	{"Menu.Cancel",				CancelMenu},
 	{"Menu.DisplayVote",		VoteMenu},
+	{"Menu.ShufflePerClient",	MenuShufflePerClient},
+	{"Menu.SetClientMapping",	MenuSetClientMapping},
 	{"Menu.Pagination.get",		GetMenuPagination},
 	{"Menu.Pagination.set",		SetMenuPagination},
 	{"Menu.OptionFlags.get",	GetMenuOptionFlags},

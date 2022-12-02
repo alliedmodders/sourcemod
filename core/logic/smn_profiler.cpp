@@ -223,6 +223,11 @@ REGISTER_NATIVES(profilerNatives)
 	{"EnterProfilingEvent",     EnterProfilingEvent},
 	{"LeaveProfilingEvent",     LeaveProfilingEvent},
 	{"IsProfilingActive",       IsProfilingActive},
+	
+	{"Profiler.Profiler",       CreateProfiler},
+	{"Profiler.Time.get",       GetProfilerTime},
+	{"Profiler.Start",          StartProfiling},
+	{"Profiler.Stop",           StopProfiling},
 	{NULL,						NULL},
 };
 

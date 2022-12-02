@@ -70,7 +70,7 @@ bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen
 	PLUGIN_SAVEVARS();
 
 	GET_V_IFACE_ANY(GetServerFactory, gamedll, IServerGameDLL, INTERFACEVERSION_SERVERGAMEDLL);
-#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_SDK2013
+#if SOURCE_ENGINE == SE_SDK2013
 	// Shim to avoid hooking shims
 	engine = (IVEngineServer *)ismm->GetEngineFactory()("VEngineServer023", nullptr);
 	if (!engine)
@@ -110,7 +110,7 @@ bool SourceMod_Core::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen
 	{
 		if (error)
 		{
-			snprintf(error, maxlen, "Unable to find interface %s", MMIFACE_PLMANAGER);
+			ke::SafeSprintf(error, maxlen, "Unable to find interface %s", MMIFACE_PLMANAGER);
 		}
 		return false;
 	}

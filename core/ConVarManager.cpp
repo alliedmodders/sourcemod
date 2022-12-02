@@ -41,7 +41,11 @@ ConVarManager g_ConVarManager;
 
 const ParamType CONVARCHANGE_PARAMS[] = {Param_Cell, Param_String, Param_String};
 typedef List<const ConVar *> ConVarList;
-NameHashSet<ConVarInfo *> convar_cache;
+NameHashSet<ConVarInfo *, ConVarInfo::ConVarPolicy> convar_cache;
+
+enum {
+	eQueryCvarValueStatus_Cancelled = -1,
+};
 
 class ConVarReentrancyGuard
 {
@@ -206,18 +210,27 @@ void ConVarManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *na
 void ConVarManager::OnPluginUnloaded(IPlugin *plugin)
 {
 	ConVarList *pConVarList;
-	List<ConVarQuery>::iterator iter;
-
 	/* If plugin has a convar list, free its memory */
 	if (plugin->GetProperty("ConVarList", (void **)&pConVarList, true))
 	{
 		delete pConVarList;
 	}
 
+	/* Clear any references to this plugin as the convar creator */
+	for (List<ConVarInfo *>::iterator iter = m_ConVars.begin(); iter != m_ConVars.end(); ++iter)
+	{
+		ConVarInfo *pInfo = (*iter);
+
+		if (pInfo->pPlugin == plugin)
+		{
+			pInfo->pPlugin = nullptr;
+		}
+	}
+
 	const IPluginRuntime * pRuntime = plugin->GetRuntime();
 
 	/* Remove convar queries for this plugin that haven't returned results yet */
-	for (iter = m_ConVarQueries.begin(); iter != m_ConVarQueries.end();)
+	for (List<ConVarQuery>::iterator iter = m_ConVarQueries.begin(); iter != m_ConVarQueries.end();)
 	{
 		ConVarQuery &query = (*iter);
 		if (query.pCallback->GetParentRuntime() == pRuntime)
@@ -238,6 +251,19 @@ void ConVarManager::OnClientDisconnected(int client)
 		ConVarQuery &query = (*iter);
 		if (query.client == client)
 		{
+			IPluginFunction *pCallback = query.pCallback;
+			if (pCallback)
+			{
+				cell_t ret;
+
+				pCallback->PushCell(query.cookie);
+				pCallback->PushCell(client);
+				pCallback->PushCell(eQueryCvarValueStatus_Cancelled);
+				pCallback->PushString("");
+				pCallback->PushString("");
+				pCallback->PushCell(query.value);
+				pCallback->Execute(&ret);
+			}
 			iter = m_ConVarQueries.erase(iter);
 			continue;
 		}
@@ -330,6 +356,8 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 	ConVarInfo *pInfo = NULL;
 	Handle_t hndl = 0;
 
+	IPlugin *plugin = scripts->FindPluginByContext(pContext->GetContext());
+
 	/* Find out if the convar exists already */
 	pConVar = icvar->FindVar(name);
 
@@ -337,11 +365,16 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 	if (pConVar)
 	{
 		/* Add convar to plugin's list */
-		AddConVarToPluginList(pContext, pConVar);
+		AddConVarToPluginList(plugin, pConVar);
 
 		/* First find out if we already have a handle to it */
 		if (convar_cache_lookup(name, &pInfo))
 		{
+			/* If the convar doesn't have an owning plugin, but SM created it, adopt it */
+			if (pInfo->sourceMod && pInfo->pPlugin == nullptr) {
+				pInfo->pPlugin = plugin;
+			}
+
 			return pInfo->handle;
 		}
 		else
@@ -382,6 +415,7 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 	pInfo->handle = hndl;
 	pInfo->sourceMod = true;
 	pInfo->pChangeForward = NULL;
+	pInfo->pPlugin = plugin;
 
 	/* Create a handle from the new convar */
 	hndl = handlesys->CreateHandle(m_ConVarType, pInfo, NULL, g_pCoreIdent, NULL);
@@ -398,7 +432,7 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 	pInfo->pVar = pConVar;
 
 	/* Add convar to plugin's list */
-	AddConVarToPluginList(pContext, pConVar);
+	AddConVarToPluginList(plugin, pConVar);
 
 	/* Insert struct into caches */
 	m_ConVars.push_back(pInfo);
@@ -552,14 +586,12 @@ QueryCvarCookie_t ConVarManager::QueryClientConVar(edict_t *pPlayer, const char 
 	return cookie;
 }
 
-void ConVarManager::AddConVarToPluginList(IPluginContext *pContext, const ConVar *pConVar)
+void ConVarManager::AddConVarToPluginList(IPlugin *plugin, const ConVar *pConVar)
 {
 	ConVarList *pConVarList;
 	ConVarList::iterator iter;
 	bool inserted = false;
 	const char *orig = pConVar->GetName();
-
-	IPlugin *plugin = scripts->FindPluginByContext(pContext->GetContext());
 
 	/* Check plugin for an existing convar list */
 	if (!plugin->GetProperty("ConVarList", (void **)&pConVarList))
@@ -679,7 +711,7 @@ void ConVarManager::OnClientQueryFinished(QueryCvarCookie_t cookie,
 }
 #endif
 
-HandleError ConVarManager::ReadConVarHandle(Handle_t hndl, ConVar **pVar)
+HandleError ConVarManager::ReadConVarHandle(Handle_t hndl, ConVar **pVar, IPlugin **ppPlugin)
 {
 	ConVarInfo *pInfo;
 	HandleError error;
@@ -692,6 +724,11 @@ HandleError ConVarManager::ReadConVarHandle(Handle_t hndl, ConVar **pVar)
 	if (pVar)
 	{
 		*pVar = pInfo->pVar;
+	}
+
+	if (ppPlugin)
+	{
+		*ppPlugin = pInfo->pPlugin;
 	}
 
 	return error;

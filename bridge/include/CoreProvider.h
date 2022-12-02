@@ -67,7 +67,7 @@ struct DatabaseInfo;
 class IPlayerInfoBridge;
 class ICommandArgs;
 
-typedef ke::Lambda<bool(int client, const ICommandArgs*)> CommandFunc;
+typedef ke::Function<bool(int client, const ICommandArgs*)> CommandFunc;
 
 class CoreProvider
 {
@@ -89,6 +89,8 @@ public:
 	void *          serverFactory;
 	void *          engineFactory;
 	void *          matchmakingDSFactory;
+	void *          soundemittersystemFactory;
+	void *          vscriptFactory;
 	SMGlobalClass *	listeners;
 
 	// ConVar functions.
@@ -114,6 +116,8 @@ public:
 	virtual void ConPrint(const char *message) = 0;
 	virtual void ConsolePrint(const char *fmt, ...) = 0;
 	virtual void ConsolePrintVa(const char *fmt, va_list ap) = 0;
+
+	virtual void FormatSourceBinaryName(const char *basename, char *buffer, size_t maxlength) = 0;
 
 	// Game engine helper functions.
 	virtual bool IsClientConVarQueryingSupported() = 0;

@@ -32,39 +32,27 @@
 #ifndef _INCLUDE_DATABASE_MANAGER_H_
 #define _INCLUDE_DATABASE_MANAGER_H_
 
-#include <IDBDriver.h>
 #include "common_logic.h"
 #include <sh_vector.h>
-#include <sh_string.h>
+#include <am-string.h>
 #include <sh_list.h>
-#include <ITextParsers.h>
 #include <IThreader.h>
 #include <IPluginSys.h>
-#include <am-thread-utils.h>
+#include <condition_variable>
+#include <memory>
+#include <mutex>
+#include <thread>
 #include "sm_simple_prioqueue.h"
+#include <am-refcounting.h>
+#include "DatabaseConfBuilder.h"
 
 using namespace SourceHook;
 
-struct ConfDbInfo
-{
-	ConfDbInfo() : realDriver(NULL)
-	{
-	}
-	String name;
-	String driver;
-	String host;
-	String user;
-	String pass;
-	String database;
-	IDBDriver *realDriver;
-	DatabaseInfo info;
-};
 
 class DBManager : 
 	public IDBManager,
 	public SMGlobalClass,
 	public IHandleTypeDispatch,
-	public ITextListener_SMC,
 	public IPluginsListener
 {
 public:
@@ -83,6 +71,7 @@ public: //IDBManager
 	void AddDriver(IDBDriver *pDrivera);
 	void RemoveDriver(IDBDriver *pDriver);
 	const DatabaseInfo *FindDatabaseConf(const char *name);
+	ke::RefPtr<ConfDbInfo> GetDatabaseConf(const char *name);
 	bool Connect(const char *name, IDBDriver **pdr, IDatabase **pdb, bool persistent, char *error, size_t maxlength);
 	unsigned int GetDriverCount();
 	IDBDriver *GetDriver(unsigned int index);
@@ -90,25 +79,16 @@ public: //IDBManager
 	HandleError ReadHandle(Handle_t hndl, DBHandleType type, void **ptr);
 	HandleError ReleaseHandle(Handle_t hndl, DBHandleType type, IdentityToken_t *token);
 	void AddDependency(IExtension *myself, IDBDriver *driver);
-public: //ITextListener_SMC
-	void ReadSMC_ParseStart();
-	SMCResult ReadSMC_NewSection(const SMCStates *states, const char *name);
-	SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value);
-	SMCResult ReadSMC_LeavingSection(const SMCStates *states);
-	void ReadSMC_ParseEnd(bool halted, bool failed);
 public: //ke::IRunnable
 	void Run();
 	void ThreadMain();
 public: //IPluginsListener
 	void OnPluginWillUnload(IPlugin *plugin);
 public:
-	ConfDbInfo *GetDatabaseConf(const char *name);
 	IDBDriver *FindOrLoadDriver(const char *name);
 	IDBDriver *GetDefaultDriver();
-	const char *GetDefaultDriverName();
+	std::string GetDefaultDriverName();
 	bool AddToThreadQueue(IDBThreadOperation *op, PrioQueueLevel prio);
-	void LockConfig();
-	void UnlockConfig();
 	void RunFrame();
 	inline HandleType_t GetDatabaseType()
 	{
@@ -124,19 +104,16 @@ private:
 	PrioQueue<IDBThreadOperation *> m_OpQueue;
 	Queue<IDBThreadOperation *> m_ThinkQueue;
 	CVector<bool> m_drSafety;			/* which drivers are safe? */
-	ke::AutoPtr<ke::Thread> m_Worker;
-	ke::ConditionVariable m_QueueEvent;
-	ke::Mutex m_ConfigLock;
-	ke::Mutex m_ThinkLock;
+	std::unique_ptr<std::thread> m_Worker;
+	std::condition_variable m_QueueEvent;
+	std::mutex m_ThinkLock;
+	std::mutex m_Lock;
 	bool m_Terminate;
 
-	List<ConfDbInfo *> m_confs;
+	DatabaseConfBuilder m_Builder;
 	HandleType_t m_DriverType;
 	HandleType_t m_DatabaseType;
-	String m_DefDriver;
 	char m_Filename[PLATFORM_MAX_PATH];
-	unsigned int m_ParseLevel;
-	unsigned int m_ParseState;
 	IDBDriver *m_pDefault;
 };
 

@@ -9,7 +9,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -31,20 +31,20 @@
  */
 
 #if defined _sdktools_entoutput_included
-  #endinput
+ #endinput
 #endif
 #define _sdktools_entoutput_included
 
 /**
  * Called when an entity output is fired.
  *
- * @param output		Name of the output that fired.
- * @param caller		Entity index of the caller.
- * @param activator		Entity index of the activator.
- * @param delay			Delay in seconds? before the event gets fired.
- * @return					Anything other than Plugin_Continue will supress this event,
- *								returning Plugin_Continue will allow it to propagate the results
- *								of this output to any entity inputs.
+ * @param output        Name of the output that fired.
+ * @param caller        Entity index of the caller.
+ * @param activator     Entity index of the activator.
+ * @param delay         Delay in seconds? before the event gets fired.
+ * @return              Anything other than Plugin_Continue will supress this event,
+ *                      returning Plugin_Continue will allow it to propagate the results
+ *                      of this output to any entity inputs.
  */
 typeset EntityOutput
 {
@@ -55,54 +55,54 @@ typeset EntityOutput
 /**
  * Add an entity output hook on a entity classname
  *
- * @param classname		The classname to hook.
- * @param output		The output name to hook.
- * @param callback		An EntityOutput function pointer.
- * @error				Entity Outputs disabled.
+ * @param classname     The classname to hook.
+ * @param output        The output name to hook.
+ * @param callback      An EntityOutput function pointer.
+ * @error               Entity Outputs disabled.
  */
 native void HookEntityOutput(const char[] classname, const char[] output, EntityOutput callback);
 
 /**
  * Remove an entity output hook.
- * @param classname		The classname to hook.
- * @param output		The output name to hook.
- * @param callback		An EntityOutput function pointer.
- * @return				True on success, false if no valid hook was found.
- * @error				Entity Outputs disabled.
+ * @param classname     The classname to hook.
+ * @param output        The output name to hook.
+ * @param callback      An EntityOutput function pointer.
+ * @return              True on success, false if no valid hook was found.
+ * @error               Entity Outputs disabled.
  */
 native bool UnhookEntityOutput(const char[] classname, const char[] output, EntityOutput callback);
 
 /**
- * Add an entity output hook on a single entity instance	
+ * Add an entity output hook on a single entity instance
  *
- * @param entity		The entity on which to add a hook.
- * @param output		The output name to hook.
- * @param callback		An EntityOutput function pointer.
- * @param once			Only fire this hook once and then remove itself.
- * @error				Entity Outputs disabled	or Invalid Entity index.
+ * @param entity        The entity on which to add a hook.
+ * @param output        The output name to hook.
+ * @param callback      An EntityOutput function pointer.
+ * @param once          Only fire this hook once and then remove itself.
+ * @error               Entity Outputs disabled or Invalid Entity index.
  */
 native void HookSingleEntityOutput(int entity, const char[] output, EntityOutput callback, bool once=false);
 
 /**
- * Remove a single entity output hook.	
+ * Remove a single entity output hook.
  *
- * @param entity		The entity on which to remove the hook.
- * @param output		The output name to hook.
- * @param callback		An EntityOutput function pointer.
- * @return				True on success, false if no valid hook was found.
- * @error				Entity Outputs disabled	or Invalid Entity index.	
+ * @param entity        The entity on which to remove the hook.
+ * @param output        The output name to hook.
+ * @param callback      An EntityOutput function pointer.
+ * @return              True on success, false if no valid hook was found.
+ * @error               Entity Outputs disabled or Invalid Entity index.
  */
 native bool UnhookSingleEntityOutput(int entity, const char[] output, EntityOutput callback);
 
 /**
- * Fire a named output on an entity.  
+ * Fire a named output on an entity.
  *
  * After completion (successful or not), the current global variant is re-initialized.
  *
- * @param caller	Entity index from where the output is fired.
- * @param output	Output name.
- * @param activator	Entity index which initiated the sequence of actions (-1 for a NULL entity).
- * @param delay		Delay before firing the output.
- * @error		Invalid entity index or no mod support.
+ * @param caller        Entity index from where the output is fired.
+ * @param output        Output name.
+ * @param activator     Entity index which initiated the sequence of actions (-1 for a NULL entity).
+ * @param delay         Delay before firing the output.
+ * @error               Invalid entity index or no mod support.
  */
 native void FireEntityOutput(int caller, const char[] output, int activator=-1, float delay=0.0);

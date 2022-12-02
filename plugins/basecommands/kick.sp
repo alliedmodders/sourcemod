@@ -52,7 +52,7 @@ void DisplayKickMenu(int client)
 	char title[100];
 	Format(title, sizeof(title), "%T:", "Kick player", client);
 	menu.SetTitle(title);
-	menu.ExitBackButton = true;
+	menu.ExitBackButton = CheckCommandAccess(client, "sm_admin", ADMFLAG_GENERIC, false);
 	
 	AddTargetsToMenu(menu, client, false, false);
 	
@@ -119,13 +119,23 @@ public int MenuHandler_Kick(Menu menu, MenuAction action, int param1, int param2
 			DisplayKickMenu(param1);
 		}
 	}
+
+	return 0;
 }
 
 public Action Command_Kick(int client, int args)
 {
 	if (args < 1)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_kick <#userid|name> [reason]");
+		if ((GetCmdReplySource() == SM_REPLY_TO_CHAT) && (client != 0))
+		{
+			DisplayKickMenu(client);
+		}
+		else
+		{
+			ReplyToCommand(client, "[SM] Usage: sm_kick <#userid|name> [reason]");
+		}
+		
 		return Plugin_Handled;
 	}
 

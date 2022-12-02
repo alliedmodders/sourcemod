@@ -66,7 +66,7 @@ CDirectory::CDirectory(const char *path)
 {
 #if defined PLATFORM_WINDOWS
 	char newpath[PLATFORM_MAX_PATH];
-	snprintf(newpath, sizeof(newpath), "%s\\*.*", path);
+	ke::SafeSprintf(newpath, sizeof(newpath), "%s\\*.*", path);
 	m_dir = FindFirstFileA(newpath, &m_fd);
 	if (!IsValid())
 	{
@@ -78,7 +78,7 @@ CDirectory::CDirectory(const char *path)
 	{
 		/* :TODO: we need to read past "." and ".."! */
 		ep = readdir(m_dir);
-		snprintf(m_origpath, PLATFORM_MAX_PATH, "%s", path);
+		ke::SafeStrcpy(m_origpath, PLATFORM_MAX_PATH, path);
 	} else {
 		ep = NULL;
 	}
@@ -125,7 +125,7 @@ bool CDirectory::IsEntryDirectory()
 	return ((m_fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY);
 #elif defined PLATFORM_POSIX
 	char temppath[PLATFORM_MAX_PATH];
-	int ret = snprintf(temppath, sizeof(temppath), "%s/%s", m_origpath, GetEntryName());
+	int ret = ke::SafeSprintf(temppath, sizeof(temppath), "%s/%s", m_origpath, GetEntryName());
 	if (static_cast<size_t>(ret) >= sizeof(temppath))
 		return false;
 	return ke::file::IsDirectory(temppath);
@@ -138,7 +138,7 @@ bool CDirectory::IsEntryFile()
 	return !(m_fd.dwFileAttributes & (FILE_ATTRIBUTE_DIRECTORY|FILE_ATTRIBUTE_DEVICE));
 #elif defined PLATFORM_POSIX
 	char temppath[PLATFORM_MAX_PATH];
-	int ret = snprintf(temppath, sizeof(temppath), "%s/%s", m_origpath, GetEntryName());
+	int ret = ke::SafeSprintf(temppath, sizeof(temppath), "%s/%s", m_origpath, GetEntryName());
 	if (static_cast<size_t>(ret) >= sizeof(temppath))
 		return false;
 	return ke::file::IsFile(temppath);
@@ -230,7 +230,7 @@ void LibrarySystem::GetPlatformErrorEx(int code, char *error, size_t maxlength)
 		const char *ae = strerror_r(code, error, maxlength);
 		if (ae != error)
 		{
-			ke::SafeSprintf(error, maxlength, "%s", ae);
+			ke::SafeStrcpy(error, maxlength, ae);
 		}
 #elif defined PLATFORM_POSIX
 		strerror_r(code, error, maxlength);
@@ -309,12 +309,12 @@ size_t LibrarySystem::GetFileFromPath(char *buffer, size_t maxlength, const char
 #endif
 			)
 		{
-			return ke::SafeSprintf(buffer, maxlength, "%s", &path[i+1]);
+			return ke::SafeStrcpy(buffer, maxlength, &path[i+1]);
 		}
 	}
 
 	/* We scanned and found no path separator */
-	return ke::SafeSprintf(buffer, maxlength, "%s", path);
+	return ke::SafeStrcpy(buffer, maxlength, path);
 }
 
 bool LibrarySystem::FileTime(const char *path, FileTimeType type, time_t *pTime)

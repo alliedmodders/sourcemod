@@ -58,6 +58,10 @@ struct maplist_info_t
 	{
 		return strcmp(value->name, key) == 0;
 	}
+	static inline uint32_t hash(const detail::CharsAndLength &key)
+	{
+		return key.hash();
+	}
 };
 
 #define MAPLIST_FLAG_MAPSFOLDER		(1<<0)		/**< On failure, use all maps in the maps folder. */
@@ -317,9 +321,109 @@ public:
 		delete m_pCurMapList;
 		m_pCurMapList = NULL;
 	}
+	static bool alphanum_isdigit(const char c)
+	{
+		return c >= '0' && c <= '9';
+	}
+	static int alphanum_impl(const char *l, const char *r)
+	{
+		/**
+		 * http://www.davekoelle.com/files/alphanum.hpp
+		 *
+		 * compare l and r with strcmp() semantics, but using
+		 * the "Alphanum Algorithm". This function is designed to read
+		 * through the l and r strings only one time, for
+		 * maximum performance. It does not allocate memory for
+		 * substrings.
+		 *
+		 * Released under the MIT License - https://opensource.org/licenses/MIT
+		 *
+		 * Permission is hereby granted, free of charge, to any person obtaining
+		 * a copy of this software and associated documentation files (the "Software"),
+		 * to deal in the Software without restriction, including without limitation
+		 * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+		 * and/or sell copies of the Software, and to permit persons to whom the
+		 * Software is furnished to do so, subject to the following conditions:
+		 *
+		 * The above copyright notice and this permission notice shall be included
+		 * in all copies or substantial portions of the Software.
+		 *
+		 * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+		 * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+		 * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+		 * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+		 * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+		 * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+		 * USE OR OTHER DEALINGS IN THE SOFTWARE.
+		 */
+
+		enum mode_t { STRING, NUMBER } mode = STRING;
+
+		while (*l && *r)
+		{
+			if (mode == STRING)
+			{
+				char l_char, r_char;
+				while ((l_char = *l) && (r_char = *r))
+				{
+					// check if this are digit characters
+					const bool l_digit = alphanum_isdigit(l_char), r_digit = alphanum_isdigit(r_char);
+					// if both characters are digits, we continue in NUMBER mode
+					if (l_digit && r_digit)
+					{
+						mode = NUMBER;
+						break;
+					}
+					// if only the left character is a digit, we have a result
+					if (l_digit) return -1;
+					// if only the right character is a digit, we have a result
+					if (r_digit) return +1;
+					// compute the difference of both characters
+					const int diff = l_char - r_char;
+					// if they differ we have a result
+					if (diff != 0) return diff;
+					// otherwise process the next characters
+					++l;
+					++r;
+				}
+			}
+			else // mode == NUMBER
+			{
+				// get the left number
+				unsigned long l_int = 0;
+				while (*l && alphanum_isdigit(*l))
+				{
+					// TODO: this can overflow
+					l_int = l_int * 10 + *l - '0';
+					++l;
+				}
+
+				// get the right number
+				unsigned long r_int = 0;
+				while (*r && alphanum_isdigit(*r))
+				{
+					// TODO: this can overflow
+					r_int = r_int * 10 + *r - '0';
+					++r;
+				}
+
+				// if the difference is not equal to zero, we have a comparison result
+				const long diff = l_int - r_int;
+				if (diff != 0)
+					return diff;
+
+				// otherwise we process the next substring in STRING mode
+				mode = STRING;
+			}
+		}
+
+		if (*r) return -1;
+		if (*l) return +1;
+		return 0;
+	}
 	static int sort_maps_in_adt_array(const void *str1, const void *str2)
 	{
-		return strcmp((char *)str1, (char *)str2);
+		return alphanum_impl(static_cast<const char *>(str1), static_cast<const char *>(str2));
 	}
 	ICellArray *UpdateMapList(ICellArray *pUseArray, const char *name, int *pSerial, unsigned int flags)
 	{
@@ -337,7 +441,7 @@ public:
 				 */
 				if (strcmp(name, "default") != 0)
 				{
-					success = GetMapList(&pNewArray, name, &change_serial);
+					success = GetMapList(&pNewArray, "default", &change_serial);
 				}
 				/* If either of the last two conditions failed, try again if we can. */
 				if (!success && strcmp(name, "mapcyclefile") != 0)

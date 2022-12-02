@@ -61,8 +61,10 @@
 /** Enable interfaces you want to use here by uncommenting lines */
 //#define SMEXT_ENABLE_FORWARDSYS
 //#define SMEXT_ENABLE_HANDLESYS
-//#define SMEXT_ENABLE_PLAYERHELPERS
+#define SMEXT_ENABLE_PLAYERHELPERS
 //#define SMEXT_ENABLE_DBMANAGER
 //#define SMEXT_ENABLE_GAMECONF
+#define SMEXT_ENABLE_LIBSYS
+#define SMEXT_ENABLE_TRANSLATOR
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_CONFIG_H_

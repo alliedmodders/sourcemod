@@ -122,6 +122,8 @@ public int MenuHandler_NoClip(Menu menu, MenuAction action, int param1, int para
 			DisplayNoClipMenu(param1);
 		}
 	}
+
+	return 0;
 }
 
 public Action Command_NoClip(int client, int args)

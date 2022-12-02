@@ -32,21 +32,27 @@
 #ifndef _INCLUDE_SOURCEMOD_HANDLESYSTEM_H_
 #define _INCLUDE_SOURCEMOD_HANDLESYSTEM_H_
 
-#include <IHandleSys.h>
 #include <stdio.h>
-#include <sm_namehashset.h>
+
+#include <memory>
+
 #include <amtl/am-string.h>
 #include <amtl/am-function.h>
+#include <IHandleSys.h>
+#include <sm_namehashset.h>
 #include "common_logic.h"
 
-#define HANDLESYS_MAX_HANDLES		(1<<15)
+#define HANDLESYS_HANDLE_BITS   20
+#define HANDLESYS_MAX_HANDLES		((1 << HANDLESYS_HANDLE_BITS) - 1)
 #define HANDLESYS_MAX_TYPES			(1<<9)
 #define HANDLESYS_MAX_SUBTYPES		0xF
 #define HANDLESYS_SUBTYPE_MASK		0xF
 #define HANDLESYS_TYPEARRAY_SIZE	(HANDLESYS_MAX_TYPES * (HANDLESYS_MAX_SUBTYPES + 1))
-#define HANDLESYS_MAX_SERIALS		0xFFFF
-#define HANDLESYS_SERIAL_MASK		0xFFFF0000
-#define HANDLESYS_HANDLE_MASK		0x0000FFFF
+#define HANDLESYS_SERIAL_BITS		(32 - HANDLESYS_HANDLE_BITS)
+#define HANDLESYS_MAX_SERIALS		(1 << HANDLESYS_SERIAL_BITS)
+#define HANDLESYS_SERIAL_MASK		(((1 << HANDLESYS_SERIAL_BITS) - 1) << HANDLESYS_HANDLE_BITS)
+#define HANDLESYS_HANDLE_MASK		((1 << HANDLESYS_HANDLE_BITS) - 1)
+#define HANDLESYS_WARN_USAGE		100000
 
 #define HANDLESYS_MEMUSAGE_MIN_VERSION		3
 
@@ -87,6 +93,7 @@ struct QHandle
 	bool access_special;		/* Whether or not access rules are special or type-derived */
 	bool is_destroying;			/* Whether or not the handle is being destroyed */
 	HandleAccess sec;			/* Security rules */
+	time_t timestamp;			/* Creation timestamp */
 	/* The following variables are unrelated to the Handle array, and used 
 	 * as an inlined chain of information */
 	unsigned int freeID;		/* ID of a free handle in the free handle chain */
@@ -104,15 +111,19 @@ struct QHandleType
 	TypeAccess typeSec;
 	HandleAccess hndlSec;
 	unsigned int opened;
-	ke::AutoPtr<ke::AString> name;
+	std::unique_ptr<std::string> name;
 
 	static inline bool matches(const char *key, const QHandleType *type)
 	{
 		return type->name && type->name->compare(key) == 0;
 	}
+	static inline uint32_t hash(const detail::CharsAndLength &key)
+	{
+		return key.hash();
+	}
 };
 
-typedef ke::Lambda<void(const char *)> HandleReporter;
+typedef ke::Function<void(const char *)> HandleReporter;
 
 class HandleSystem : 
 	public IHandleSys

@@ -36,6 +36,9 @@
 #include "iplayerinfo.h"
 #include "ISDKTools.h"
 #include "forwards.h"
+#if SOURCE_ENGINE == SE_CSGO
+#include "rulesfix.h"
+#endif
 #include "util_cstrike.h"
 
 /**
@@ -51,6 +54,7 @@ IGameConfig *g_pGameConf = NULL;
 IGameEventManager2 *gameevents = NULL;
 bool hooked_everything = false;
 int g_msgHintText = -1;
+CGlobalVars *gpGlobals;
 
 SMEXT_LINK(&g_CStrike);
 
@@ -63,7 +67,7 @@ bool CStrike::SDK_OnLoad(char *error, size_t maxlength, bool late)
 #if SOURCE_ENGINE != SE_CSGO
 	if (strcmp(g_pSM->GetGameFolderName(), "cstrike") != 0)
 	{
-		snprintf(error, maxlength, "Cannot Load Cstrike Extension on mods other than CS:S and CS:GO");
+		ke::SafeStrcpy(error, maxlength, "Cannot Load Cstrike Extension on mods other than CS:S and CS:GO");
 		return false;
 	}
 #endif
@@ -76,7 +80,7 @@ bool CStrike::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	{
 		if (error)
 		{
-			snprintf(error, maxlength, "Could not read sm-cstrike.games: %s", conf_error);
+			ke::SafeSprintf(error, maxlength, "Could not read sm-cstrike.games: %s", conf_error);
 		}
 		return false;
 	}
@@ -87,12 +91,16 @@ bool CStrike::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	playerhelpers->RegisterCommandTargetProcessor(this);
 
+#if SOURCE_ENGINE == SE_CSGO
+	rulesfix.OnLoad();
+#endif
+
 	CDetourManager::Init(g_pSM->GetScriptingEngine(), g_pGameConf);
 
 	g_pHandleBuyForward = forwards->CreateForward("CS_OnBuyCommand", ET_Event, 2, NULL, Param_Cell, Param_String);
 	g_pPriceForward = forwards->CreateForward("CS_OnGetWeaponPrice", ET_Event, 3, NULL, Param_Cell, Param_String, Param_CellByRef);
 	g_pTerminateRoundForward = forwards->CreateForward("CS_OnTerminateRound", ET_Event, 2, NULL, Param_FloatByRef, Param_CellByRef);
-	g_pCSWeaponDropForward = forwards->CreateForward("CS_OnCSWeaponDrop", ET_Event, 2, NULL, Param_Cell, Param_Cell);
+	g_pCSWeaponDropForward = forwards->CreateForward("CS_OnCSWeaponDrop", ET_Event, 3, NULL, Param_Cell, Param_Cell, Param_Cell);
 
 
 	m_TerminateRoundDetourEnabled = false;
@@ -107,6 +115,13 @@ bool CStrike::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool 
 {
 	GET_V_IFACE_CURRENT(GetEngineFactory, gameevents, IGameEventManager2, INTERFACEVERSION_GAMEEVENTSMANAGER2);
 	GET_V_IFACE_CURRENT(GetEngineFactory, engine, IVEngineServer, INTERFACEVERSION_VENGINESERVER);
+	gpGlobals = ismm->GetCGlobals();
+
+#if SOURCE_ENGINE == SE_CSGO
+	ICvar *icvar;
+	GET_V_IFACE_CURRENT(GetEngineFactory, icvar, ICvar, CVAR_INTERFACE_VERSION);
+	g_pCVar = icvar;
+#endif
 
 	return true;
 }
@@ -119,6 +134,28 @@ void CStrike::SDK_OnUnload()
 		SH_REMOVE_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(&g_TimeLeftEvents, &TimeLeftEvents::LevelInit), true);
 		hooked_everything = false;
 	}
+
+	if (m_TerminateRoundDetourEnabled)
+	{
+		RemoveTerminateRoundDetour();
+		m_TerminateRoundDetourEnabled = false;
+	}
+	if (m_WeaponPriceDetourEnabled)
+	{
+		RemoveWeaponPriceDetour();
+		m_WeaponPriceDetourEnabled = false;
+	}
+	if (m_HandleBuyDetourEnabled)
+	{
+		RemoveHandleBuyDetour();
+		m_HandleBuyDetourEnabled = false;
+	}
+	if (m_CSWeaponDetourEnabled)
+	{
+		RemoveCSWeaponDropDetour();
+		m_CSWeaponDetourEnabled = false;
+	}
+
 	g_RegNatives.UnregisterAll();
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 	plsys->RemovePluginsListener(this);
@@ -129,6 +166,7 @@ void CStrike::SDK_OnUnload()
 	forwards->ReleaseForward(g_pCSWeaponDropForward);
 
 #if SOURCE_ENGINE == SE_CSGO
+	rulesfix.OnUnload();
 	ClearHashMaps();
 #endif
 }

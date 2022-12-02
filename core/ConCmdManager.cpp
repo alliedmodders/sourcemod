@@ -30,21 +30,22 @@
  */
 
 #include "ConCmdManager.h"
-#include "sm_stringutil.h"
-#include "PlayerManager.h"
-#include "HalfLife2.h"
-#include "ChatTriggers.h"
-#include "logic_bridge.h"
-#include "sourcemod.h"
-#include "provider.h"
-#include "command_args.h"
+
 #include <bridge/include/IScriptManager.h>
+#include "ChatTriggers.h"
+#include "HalfLife2.h"
+#include "PlayerManager.h"
+#include "command_args.h"
+#include "logic_bridge.h"
+#include "provider.h"
+#include "sm_stringutil.h"
+#include "sourcemod.h"
 
 using namespace ke;
 
 ConCmdManager g_ConCmds;
 
-typedef ke::LinkedList<CmdHook *> PluginHookList;
+typedef std::list<CmdHook *> PluginHookList;
 void RegisterInPlugin(CmdHook *hook);
 
 ConCmdManager::ConCmdManager()
@@ -120,8 +121,13 @@ void ConCmdManager::OnPluginDestroyed(IPlugin *plugin)
 		if (hook->admin)
 			hook->admin->group->hooks.remove(hook);
 
-		if (hook->info->hooks.empty())
+		if (hook->info->hooks.empty()) {
 			RemoveConCmd(hook->info, hook->info->pCmd->GetName(), true);
+		}
+		else { // update plugin reference to next hook in line
+			auto next = *hook->info->hooks.begin();
+			next->info->pPlugin = next->plugin;
+		}
 
 		iter = pList->erase(iter);
 		delete hook;
@@ -147,30 +153,13 @@ ConCmdInfo *ConCmdManager::FindInTrie(const char *name)
 	return pInfo;
 }
 
-ConCmdList::iterator ConCmdManager::FindInList(const char *cmd)
-{
-	List<ConCmdInfo *>::iterator iter = m_CmdList.begin();
-
-	while (iter != m_CmdList.end())
-	{
-		if (strcasecmp((*iter)->pCmd->GetName(), cmd) == 0)
-			break;
-		iter++;
-	}
-
-	return iter;
-}
-
 ResultType ConCmdManager::DispatchClientCommand(int client, const char *cmd, int args, ResultType type)
 {
-	ConCmdInfo *pInfo;
+	ConCmdInfo *pInfo = FindInTrie(cmd);
 
-	if ((pInfo = FindInTrie(cmd)) == NULL)
+	if (pInfo == NULL)
 	{
-		ConCmdList::iterator item = FindInList(cmd);
-		if (item == m_CmdList.end())
-			return type;
-		pInfo = *item;
+		return type;
 	}
 
 	cell_t result = type;
@@ -181,7 +170,7 @@ ResultType ConCmdManager::DispatchClientCommand(int client, const char *cmd, int
 		if (hook->type == CmdHook::Server || !hook->pf->IsRunnable())
 			continue;
 
-		if (hook->admin && !CheckAccess(client, cmd, hook->admin))
+		if (hook->admin && !CheckAccess(client, cmd, hook->admin.get()))
 		{
 			if (result < Pl_Handled)
 				result = Pl_Handled;
@@ -225,17 +214,7 @@ bool ConCmdManager::InternalDispatch(int client, const ICommandArgs *args)
 	ConCmdInfo *pInfo = FindInTrie(cmd);
 	if (pInfo == NULL)
 	{
-        /* Unfortunately, we now have to do a slow lookup because Valve made client commands 
-         * case-insensitive.  We can't even use our sortedness.
-         */
-        if (client == 0 && !engine->IsDedicatedServer())
-            return false;
-
-		ConCmdList::iterator item = FindInList(cmd);
-		if (item == m_CmdList.end())
-			return false;
-
-		pInfo = *item;
+		return false;
 	}
 
 	/* This is a hack to prevent say triggers from firing on messages that were 
@@ -271,7 +250,7 @@ bool ConCmdManager::InternalDispatch(int client, const ICommandArgs *args)
 		} else {
 			// Check admin rights if needed. realClient isn't needed since we
 			// should bypass admin checks if client == 0 anyway.
-			if (client && hook->admin && !CheckAccess(client, cmd, hook->admin))
+			if (client && hook->admin && !CheckAccess(client, cmd, hook->admin.get()))
 			{
 				if (result < Pl_Handled)
 					result = Pl_Handled;
@@ -317,7 +296,7 @@ bool ConCmdManager::CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmi
 	char buffer[128];
 	if (!logicore.CoreTranslate(buffer, sizeof(buffer), "%T", 2, NULL, "No Access", &client))
 	{
-		ke::SafeSprintf(buffer, sizeof(buffer), "You do not have access to this command");
+		ke::SafeStrcpy(buffer, sizeof(buffer), "You do not have access to this command");
 	}
 
 	unsigned int replyto = g_ChatTriggers.GetReplyTo();
@@ -342,9 +321,10 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 									 const char *group,
 									 int adminflags,
 									 const char *description, 
-									 int flags)
+									 int flags,
+									 IPlugin *pPlugin)
 {
-	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags);
+	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags, pPlugin);
 
 	if (!pInfo)
 		return false;
@@ -358,8 +338,8 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 	}
 	RefPtr<CommandGroup> cmdgroup = i->value;
 
-	CmdHook *pHook = new CmdHook(CmdHook::Client, pInfo, pFunction, description);
-	pHook->admin = new AdminCmdInfo(cmdgroup, adminflags);
+	CmdHook *pHook = new CmdHook(CmdHook::Client, pInfo, pFunction, description, pPlugin);
+	pHook->admin = std::make_unique<AdminCmdInfo>(cmdgroup, adminflags);
 
 	/* First get the command group override, if any */
 	bool override = adminsys->GetCommandOverride(group, 
@@ -379,7 +359,7 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 		pHook->admin->eflags = pHook->admin->flags;
 	pInfo->eflags = pHook->admin->eflags;
 
-	cmdgroup->hooks.append(pHook);
+	cmdgroup->hooks.push_back(pHook);
 	pInfo->hooks.append(pHook);
 	RegisterInPlugin(pHook);
 	return true;
@@ -388,15 +368,16 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 bool ConCmdManager::AddServerCommand(IPluginFunction *pFunction, 
 									  const char *name, 
 									  const char *description, 
-									  int flags)
+									  int flags,
+									  IPlugin *pPlugin)
 
 {
-	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags);
+	ConCmdInfo *pInfo = AddOrFindCommand(name, description, flags, pPlugin);
 
 	if (!pInfo)
 		return false;
 
-	CmdHook *pHook = new CmdHook(CmdHook::Server, pInfo, pFunction, description);
+	CmdHook *pHook = new CmdHook(CmdHook::Server, pInfo, pFunction, description, pPlugin);
 
 	pInfo->hooks.append(pHook);
 	RegisterInPlugin(pHook);
@@ -423,13 +404,13 @@ void RegisterInPlugin(CmdHook *hook)
 		const char *cmd = (*iter)->info->pCmd->GetName();
 		if (strcmp(orig, cmd) < 0)
 		{
-			pList->insertBefore(iter, hook);
+			pList->emplace(iter, hook);
 			return;
 		}
 		iter++;
 	}
 
-	pList->append(hook);
+	pList->emplace_back(hook);
 }
 
 void ConCmdManager::AddToCmdList(ConCmdInfo *info)
@@ -493,7 +474,7 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 		for (PluginHookList::iterator iter = group->hooks.begin(); iter != group->hooks.end(); iter++)
 		{
 			CmdHook *hook = *iter;
-			if (remove)
+			if (!remove)
 				hook->admin->eflags = bits;
 			else
 				hook->admin->eflags = hook->admin->flags;
@@ -555,15 +536,11 @@ bool ConCmdManager::LookForCommandAdminFlags(const char *cmd, FlagBits *pFlags)
 	return true;
 }
 
-ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *description, int flags)
+ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *description, int flags, IPlugin *pPlugin)
 {
 	ConCmdInfo *pInfo;
 	if (!m_Cmds.retrieve(name, &pInfo))
 	{
-		ConCmdList::iterator item = FindInList(name);
-		if (item != m_CmdList.end())
-			return *item;
-
 		pInfo = new ConCmdInfo();
 		/* Find the commandopan */
 		ConCommand *pCmd = FindCommand(name);
@@ -580,6 +557,7 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 			char *new_name = sm_strdup(name);
 			char *new_help = sm_strdup(description);
 			pCmd = new ConCommand(new_name, CommandCallback, new_help, flags);
+			pInfo->pPlugin = pPlugin;
 			pInfo->sourceMod = true;
 		}
 		else
@@ -645,7 +623,7 @@ void ConCmdManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs
 
 			name = hook->info->pCmd->GetName();
 			if (hook->helptext.length())
-				help = hook->helptext.chars();
+				help = hook->helptext.c_str();
 			else
 				help = hook->info->pCmd->GetHelpText();
 			UTIL_ConsolePrint("  %-17.16s %-12.11s %s", name, type, help);		

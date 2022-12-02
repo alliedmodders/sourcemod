@@ -60,6 +60,33 @@ using namespace SourceMod;
 #define HUD_PRINTTALK		3
 #define HUD_PRINTCENTER		4
 
+#if defined _WIN32
+#define SOURCE_BIN_PREFIX ""
+#define SOURCE_BIN_SUFFIX ""
+#define SOURCE_BIN_EXT ".dll"
+#elif defined __APPLE__
+#define SOURCE_BIN_PREFIX ""
+#define SOURCE_BIN_SUFFIX ""
+#define SOURCE_BIN_EXT ".dylib"
+#elif defined __linux__
+#if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
+	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_LEFT4DEAD2 || SOURCE_ENGINE == SE_NUCLEARDAWN \
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_INSURGENCY || SOURCE_ENGINE == SE_DOI
+#define SOURCE_BIN_PREFIX "lib"
+#define SOURCE_BIN_SUFFIX "_srv"
+#elif SOURCE_ENGINE >= SE_LEFT4DEAD || SOURCE_ENGINE == SE_PVKII
+#define SOURCE_BIN_PREFIX "lib"
+#define SOURCE_BIN_SUFFIX ""
+#else
+#define SOURCE_BIN_PREFIX ""
+#define SOURCE_BIN_SUFFIX "_i486"
+#endif
+#define SOURCE_BIN_EXT ".so"
+#endif
+
+#define FORMAT_SOURCE_BIN_NAME(basename) \
+	(SOURCE_BIN_PREFIX basename SOURCE_BIN_SUFFIX SOURCE_BIN_EXT)
+
 struct DataTableInfo
 {
 	struct SendPropPolicy
@@ -68,13 +95,21 @@ struct DataTableInfo
 		{
 			return strcmp(name, info.prop->GetName()) == 0;
 		}
+		static inline uint32_t hash(const detail::CharsAndLength &key)
+		{
+			return key.hash();
+		}
 	};
 
 	static inline bool matches(const char *name, const DataTableInfo *info)
 	{
 		return strcmp(name, info->sc->GetName()) == 0;
 	}
-
+	static inline uint32_t hash(const detail::CharsAndLength &key)
+	{
+		return key.hash();
+	}
+	
 	DataTableInfo(ServerClass *sc)
 		: sc(sc)
 	{
@@ -89,6 +124,10 @@ struct DataMapCachePolicy
 	static inline bool matches(const char *name, const sm_datatable_info_t &info)
 	{
 		return strcmp(name, info.prop->fieldName) == 0;
+	}
+	static inline uint32_t hash(const detail::CharsAndLength &key)
+	{
+		return key.hash();
 	}
 };
 
@@ -140,6 +179,12 @@ enum class SMFindMapResult : cell_t {
 	PossiblyAvailable
 };
 
+#if SOURCE_ENGINE >= SE_LEFT4DEAD && defined PLATFORM_WINDOWS
+template< class T, class I = int >
+class CUtlMemoryGlobalMalloc;
+class CUtlString;
+#endif
+
 class CHalfLife2 : 
 	public SMGlobalClass,
 	public IGameHelpers
@@ -190,10 +235,11 @@ public: //IGameHelpers
 	bool IsMapValid(const char *map);
 	SMFindMapResult FindMap(char *pMapName, size_t nMapNameMax);
 	SMFindMapResult FindMap(const char *pMapName, char *pFoundMap = NULL, size_t nMapNameMax = 0);
-	bool GetMapDisplayName(const char *pMapName, char *pDisplayname, size_t nMapNameMax);
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-	string_t AllocPooledString(const char *pszValue);
+#if SOURCE_ENGINE >= SE_LEFT4DEAD && defined PLATFORM_WINDOWS && SOURCE_ENGINE != SE_MOCK
+	void FreeUtlVectorUtlString(CUtlVector<CUtlString, CUtlMemoryGlobalMalloc<CUtlString>> &vec);
 #endif
+	bool GetMapDisplayName(const char *pMapName, char *pDisplayname, size_t nMapNameMax);
+	string_t AllocPooledString(const char *pszValue);
 	bool GetServerSteam3Id(char *pszOut, size_t len) const override;
 	uint64_t GetServerSteamId64() const override;
 public:
@@ -232,7 +278,7 @@ public:
 		return !m_bFollowCSGOServerGuidelines || !m_CSGOBadList.has(pszPropName);
 	}
 private:
-	ke::HashSet<ke::AString, detail::StringHashMapPolicy> m_CSGOBadList;
+	ke::HashSet<std::string, detail::StringHashMapPolicy> m_CSGOBadList;
 	bool m_bFollowCSGOServerGuidelines = true;
 #endif
 };

@@ -1,5 +1,5 @@
 /**
- * vim: set ts=4 :
+ * vim: set ts=4 sts=8 sw=4 tw=99 noet :
  * =============================================================================
  * SourceMod
  * Copyright (C) 2004-2015 AlliedModders LLC.  All rights reserved.
@@ -43,6 +43,7 @@
 #include <sh_list.h>
 #include <sh_vector.h>
 #include <am-string.h>
+#include <am-deque.h>
 #include "ConVarManager.h"
 
 #include <steam/steamclientpublic.h>
@@ -95,6 +96,7 @@ public:
 	bool IsInKickQueue();
 	IPlayerInfo *GetPlayerInfo();
 	unsigned int GetLanguageId();
+	unsigned int GetOriginalLanguageId();
 	void SetLanguageId(unsigned int id);
 	int GetUserId();
 	bool RunAdminCacheChecks();
@@ -123,6 +125,7 @@ private:
 	bool IsAuthStringValidated();
 	bool SetEngineString();
 	bool SetCSteamID();
+	void ClearNetchannelQueue(void);
 private:
 	bool m_IsConnected = false;
 	bool m_IsInGame = false;
@@ -131,9 +134,9 @@ private:
 	String m_Name;
 	String m_Ip;
 	String m_IpNoPort;
-	ke::AString m_AuthID;
-	ke::AString m_Steam2Id;
-	ke::AString m_Steam3Id;
+	std::string m_AuthID;
+	std::string m_Steam2Id;
+	std::string m_Steam3Id;
 	AdminId m_Admin = INVALID_ADMIN_ID;
 	bool m_TempAdmin = false;
 	edict_t *m_pEdict = nullptr;
@@ -143,15 +146,17 @@ private:
 	bool m_bAdminCheckSignalled = false;
 	int m_iIndex;
 	unsigned int m_LangId = SOURCEMOD_LANGUAGE_ENGLISH;
+	unsigned int m_OriginalLangId = SOURCEMOD_LANGUAGE_ENGLISH;
 	int m_UserId = -1;
 	bool m_bFakeClient = false;
 	bool m_bIsSourceTV = false;
 	bool m_bIsReplay = false;
 	serial_t m_Serial;
 	CSteamID m_SteamId;
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	QueryCvarCookie_t m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
+	std::deque<std::string> m_PrintfBuffer;
 };
 
 class PlayerManager : 
@@ -189,7 +194,10 @@ public:
 #endif
 	void OnClientSettingsChanged(edict_t *pEntity);
 	//void OnClientSettingsChanged_Pre(edict_t *pEntity);
+	void OnClientLanguageChanged(int client, unsigned int language);
 	void OnServerHibernationUpdate(bool bHibernating);
+	void OnClientPrintf(edict_t *pEdict, const char *szMsg);
+	void OnPrintfFrameAction(unsigned int serial);
 public: //IPlayerManager
 	void AddClientListener(IClientListener *listener);
 	void RemoveClientListener(IClientListener *listener);
@@ -230,7 +238,7 @@ public:
 	{
 		return m_bInCCKVHook;
 	}
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
 	bool HandleConVarQuery(QueryCvarCookie_t cookie, int client, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue);
 #endif
 private:
@@ -248,6 +256,7 @@ private:
 	IForward *m_clcommandkv_post;
 	IForward *m_clinfochanged;
 	IForward *m_clauth;
+	IForward *m_cllang;
 	IForward *m_onActivate;
 	IForward *m_onActivate2;
 	CPlayer *m_Players;
@@ -267,6 +276,9 @@ private:
 	int m_SourceTVUserId;
 	int m_ReplayUserId;
 	bool m_bInCCKVHook;
+private:
+	static const int NETMSG_TYPE_BITS = 5; // SVC_Print overhead for netmsg type
+	static const int SVC_Print_BufferSize = 2048 - 1; // -1 for terminating \0
 };
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX

@@ -15,6 +15,13 @@
 			"SoundFinal"	"weapons/cguard/charging.wav"
 			"SoundBoom"		"weapons/explode3.wav"
 			"SoundFreeze"	"physics/glass/glass_impact_bullet4.wav"
+			
+			"ExternalBeaconColor"		"128,128,128,255"
+			"Team1BeaconColor"			"75,255,75,255"
+			"Team2BeaconColor"			"255,75,75,255"
+			"Team3BeaconColor"			"75,75,255,255"
+			"Team4BeaconColor"			"255,128,0,255"
+			"TeamUnknownBeaconColor"	"255,255,255,255"
 		}
 	}
 	
@@ -57,6 +64,17 @@
 		}
 	}
 	
+	"pvkii"
+	{
+		"Keys"
+		{
+			"Team1BeaconColor"		"255,255,75,255"
+			"Team2BeaconColor"		"255,75,75,255"
+			"Team3BeaconColor"		"75,255,75,255"
+			"Team4BeaconColor"		"75,75,255,255"
+		}
+	}
+	
 	"#default"
 	{
 		"#supported"
@@ -72,6 +90,9 @@
 			"SpriteExplosion"	"sprites/floorfire4_.vmt"
 			"SpriteGlow"		"sprites/blueflare1.vmt"
 			"SpriteHalo"		"sprites/glow01.vmt"
+			
+			"Team2BeaconColor"		"75,75,255,255"
+			"Team3BeaconColor"		"255,75,75,255"
 		}
 	}
 }

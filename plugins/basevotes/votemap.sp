@@ -31,6 +31,8 @@
  * Version: $Id$
  */
 
+#define MAPS_COUNT 5
+
 Menu g_MapList;
 int g_mapCount;
 
@@ -39,10 +41,17 @@ bool g_VoteMapInUse;
 
 void DisplayVoteMapMenu(int client, int mapCount, char[][] maps)
 {
-	LogAction(client, -1, "\"%L\" initiated a map vote.", client);
+	char maps_list[MAPS_COUNT * (PLATFORM_MAX_PATH + 1)];
+	
+	for (int i = 0; i < mapCount; i++)
+	{
+		Format(maps_list, sizeof(maps_list), "%s %s", maps_list, maps[i]);
+	}
+	
+	LogAction(client, -1, "\"%L\" initiated a map vote for%s.", client, maps_list);
 	ShowActivity2(client, "[SM] ", "%t", "Initiated Vote Map");
 	
-	g_voteType = map;
+	g_voteType = VoteType_Map;
 	
 	g_hVoteMenu = new Menu(Handler_VoteCallback, MENU_ACTIONS_ALL);
 	
@@ -111,7 +120,7 @@ public int MenuHandler_Confirm(Menu menu, MenuAction action, int param1, int par
 	}
 	else if (action == MenuAction_Select)
 	{
-		char maps[5][PLATFORM_MAX_PATH];
+		char maps[MAPS_COUNT][PLATFORM_MAX_PATH];
 		int selectedmaps = g_SelectedMaps.Length;
 		
 		for (int i = 0; i < selectedmaps; i++)
@@ -123,6 +132,8 @@ public int MenuHandler_Confirm(Menu menu, MenuAction action, int param1, int par
 		
 		ResetMenu();
 	}
+
+	return 0;
 }
 
 public int MenuHandler_Map(Menu menu, MenuAction action, int param1, int param2)
@@ -141,7 +152,7 @@ public int MenuHandler_Map(Menu menu, MenuAction action, int param1, int param2)
 	}
 	else if (action == MenuAction_DrawItem)
 	{
-		char info[32], name[32];
+		char info[PLATFORM_MAX_PATH], name[32];
 		
 		menu.GetItem(param2, info, sizeof(info), _, name, sizeof(name));
 		
@@ -156,14 +167,14 @@ public int MenuHandler_Map(Menu menu, MenuAction action, int param1, int param2)
 	}
 	else if (action == MenuAction_Select)
 	{
-		char info[32], name[32];
+		char info[PLATFORM_MAX_PATH], name[32];
 		
 		menu.GetItem(param2, info, sizeof(info), _, name, sizeof(name));
 		
 		g_SelectedMaps.PushString(info);
 		
 		/* Redisplay the list */
-		if (g_SelectedMaps.Length < 5)
+		if (g_SelectedMaps.Length < MAPS_COUNT)
 		{
 			g_MapList.Display(param1, MENU_TIME_FOREVER);
 		}
@@ -237,11 +248,11 @@ public Action Command_Votemap(int client, int args)
 	char text[256];
 	GetCmdArgString(text, sizeof(text));
 
-	char maps[5][PLATFORM_MAX_PATH];
+	char maps[MAPS_COUNT][PLATFORM_MAX_PATH];
 	int mapCount;	
 	int len, pos;
 	
-	while (pos != -1 && mapCount < 5)
+	while (pos != -1 && mapCount < MAPS_COUNT)
 	{	
 		pos = BreakString(text[len], maps[mapCount], sizeof(maps[]));
 		
@@ -274,7 +285,7 @@ int LoadMapList(Menu menu)
 	if ((map_array = ReadMapList(g_map_array,
 			g_map_serial,
 			"sm_votemap menu",
-			MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_NO_DEFAULT|MAPLIST_FLAG_MAPSFOLDER))
+			MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER))
 		!= null)
 	{
 		g_map_array = map_array;

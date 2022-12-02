@@ -30,6 +30,9 @@
  */
 
 #include <stdlib.h>
+
+#include <memory>
+
 #include "ExtensionSys.h"
 #include <ILibrarySys.h>
 #include <ISourceMod.h>
@@ -73,73 +76,68 @@ CLocalExtension::CLocalExtension(const char *filename, bool bRequired)
 	/* Special case for new bintools binary */
 	if (strcmp(filename, "bintools.ext") == 0)
 	{
-		goto normal;
-	}
-
-	/* Zeroth, see if there is an engine specific build in the new place. */
-	g_pSM->BuildPath(Path_SM,
-		path,
-		PLATFORM_MAX_PATH,
-		"extensions/" PLATFORM_ARCH_FOLDER "%s.%s." PLATFORM_LIB_EXT,
-		filename,
-		bridge->gamesuffix);
-
-	if (libsys->IsPathFile(path))
-	{
-		goto found;
-	}
-
-	/* COMPAT HACK: One-halfth, if ep2v, see if there is an engine specific build in the new place with old naming */
-	if (strcmp(bridge->gamesuffix, "2.tf2") == 0
-		|| strcmp(bridge->gamesuffix, "2.dods") == 0
-		|| strcmp(bridge->gamesuffix, "2.hl2dm") == 0
-		)
-	{
-		g_pSM->BuildPath(Path_SM,
-			path,
-			PLATFORM_MAX_PATH,
-			"extensions/" PLATFORM_ARCH_FOLDER "%s.2.ep2v." PLATFORM_LIB_EXT,
-			filename);
-
-		if (libsys->IsPathFile(path))
-		{
-			goto found;
-		}
-	}
-	else if (strcmp(bridge->gamesuffix, "2.nd") == 0)
-	{
-		g_pSM->BuildPath(Path_SM,
-			path,
-			PLATFORM_MAX_PATH,
-			"extensions/" PLATFORM_ARCH_FOLDER "%s.2.l4d2." PLATFORM_LIB_EXT,
-			filename);
-
-		if (libsys->IsPathFile(path))
-		{
-			goto found;
-		}
-	}
-
-	/* First see if there is an engine specific build! */
-	g_pSM->BuildPath(Path_SM, 
-		path, 
-		PLATFORM_MAX_PATH,
-		"extensions/" PLATFORM_ARCH_FOLDER "auto.%s/%s." PLATFORM_LIB_EXT,
-		filename,
-		bridge->gamesuffix);
-
-	/* Try the "normal" version */
-	if (!libsys->IsPathFile(path))
-	{
-		normal:
 		g_pSM->BuildPath(Path_SM,
 			path,
 			PLATFORM_MAX_PATH,
 			"extensions/" PLATFORM_ARCH_FOLDER "%s." PLATFORM_LIB_EXT,
 			filename);
 	}
+	else
+	{
+		/* Zeroth, see if there is an engine specific build in the new place. */
+		g_pSM->BuildPath(Path_SM,
+			path,
+			PLATFORM_MAX_PATH,
+			"extensions/" PLATFORM_ARCH_FOLDER "%s.%s." PLATFORM_LIB_EXT,
+			filename,
+			bridge->gamesuffix);
 
-found:
+		if (!libsys->IsPathFile(path))
+		{
+			/* COMPAT HACK: One-halfth, if ep2v, see if there is an engine specific build in the new place with old naming */
+			if (strcmp(bridge->gamesuffix, "2.tf2") == 0
+				|| strcmp(bridge->gamesuffix, "2.dods") == 0
+				|| strcmp(bridge->gamesuffix, "2.hl2dm") == 0
+				)
+			{
+				g_pSM->BuildPath(Path_SM,
+					path,
+					PLATFORM_MAX_PATH,
+					"extensions/" PLATFORM_ARCH_FOLDER "%s.2.ep2v." PLATFORM_LIB_EXT,
+					filename);
+			}
+			else if (strcmp(bridge->gamesuffix, "2.nd") == 0)
+			{
+				g_pSM->BuildPath(Path_SM,
+					path,
+					PLATFORM_MAX_PATH,
+					"extensions/" PLATFORM_ARCH_FOLDER "%s.2.l4d2." PLATFORM_LIB_EXT,
+					filename);
+			}
+
+			//Try further
+			if (!libsys->IsPathFile(path))
+			{
+				/* First see if there is an engine specific build! */
+				g_pSM->BuildPath(Path_SM,
+					path,
+					PLATFORM_MAX_PATH,
+					"extensions/" PLATFORM_ARCH_FOLDER "auto.%s/%s." PLATFORM_LIB_EXT,
+					filename,
+					bridge->gamesuffix);
+
+				/* Try the "normal" version */
+				if (!libsys->IsPathFile(path))
+				{
+					g_pSM->BuildPath(Path_SM,
+						path,
+						PLATFORM_MAX_PATH,
+						"extensions/" PLATFORM_ARCH_FOLDER "%s." PLATFORM_LIB_EXT,
+						filename);
+				}
+			}
+		}
+	}
 	Initialize(filename, path, bRequired);
 }
 
@@ -176,7 +174,7 @@ bool CLocalExtension::Load(char *error, size_t maxlength)
 	{
 		m_pLib->CloseLibrary();
 		m_pLib = NULL;
-		snprintf(error, maxlength, "Unable to find extension entry point");
+		ke::SafeStrcpy(error, maxlength, "Unable to find extension entry point");
 		return false;
 	}
 
@@ -242,11 +240,13 @@ void CLocalExtension::Unload()
 		m_pLib->CloseLibrary();
 		m_pLib = NULL;
 	}
+
+	m_bFullyLoaded = false;
 }
 
 bool CRemoteExtension::Reload(char *error, size_t maxlength)
 {
-	snprintf(error, maxlength, "Remote extensions do not support reloading");
+	ke::SafeStrcpy(error, maxlength, "Remote extensions do not support reloading");
 	return false;
 }
 
@@ -280,13 +280,13 @@ bool CExtension::PerformAPICheck(char *error, size_t maxlength)
 {
 	if (!m_pAPI)
 	{
-		snprintf(error, maxlength, "No IExtensionInterface instance provided");
+		ke::SafeStrcpy(error, maxlength, "No IExtensionInterface instance provided");
 		return false;
 	}
 	
 	if (m_pAPI->GetExtensionVersion() > SMINTERFACE_EXTENSIONAPI_VERSION)
 	{
-		snprintf(error, maxlength, "Extension version is too new to load (%d, max is %d)", m_pAPI->GetExtensionVersion(), SMINTERFACE_EXTENSIONAPI_VERSION);
+		ke::SafeSprintf(error, maxlength, "Extension version is too new to load (%d, max is %d)", m_pAPI->GetExtensionVersion(), SMINTERFACE_EXTENSIONAPI_VERSION);
 		return false;
 	}
 
@@ -306,7 +306,7 @@ bool CExtension::Load(char *error, size_t maxlength)
 	/* Check if we're past load time */
 	if (!bridge->IsMapLoading())
 	{
-		m_pAPI->OnExtensionsAllLoaded();
+		MarkAllLoaded();
 	}
 
 	return true;
@@ -421,65 +421,20 @@ void CExtension::AddChildDependent(CExtension *pOther, SMInterface *iface)
 	m_ChildDeps.push_back(info);
 }
 
+// note: dependency iteration deprecated since 1.10
 ITERATOR *CExtension::FindFirstDependency(IExtension **pOwner, SMInterface **pInterface)
 {
-	List<IfaceInfo>::iterator iter = m_Deps.begin();
-
-	if (iter == m_Deps.end())
-	{
-		return NULL;
-	}
-
-	if (pOwner)
-	{
-		*pOwner = (*iter).owner;
-	}
-	if (pInterface)
-	{
-		*pInterface = (*iter).iface;
-	}
-
-	List<IfaceInfo>::iterator *pIter = new List<IfaceInfo>::iterator(iter);
-
-	return (ITERATOR *)pIter;
+	return nullptr;
 }
 
 bool CExtension::FindNextDependency(ITERATOR *iter, IExtension **pOwner, SMInterface **pInterface)
 {
-	List<IfaceInfo>::iterator *pIter = (List<IfaceInfo>::iterator *)iter;
-	List<IfaceInfo>::iterator _iter;
-
-	if (_iter == m_Deps.end())
-	{
-		return false;
-	}
-
-	_iter++;
-
-	if (pOwner)
-	{
-		*pOwner = (*_iter).owner;
-	}
-	if (pInterface)
-	{
-		*pInterface = (*_iter).iface;
-	}
-
-	*pIter = _iter;
-
-	if (_iter == m_Deps.end())
-	{
-		return false;
-	}
-
-	return true;
+	return false;
 }
 
 void CExtension::FreeDependencyIterator(ITERATOR *iter)
 {
-	List<IfaceInfo>::iterator *pIter = (List<IfaceInfo>::iterator *)iter;
 
-	delete pIter;
 }
 
 void CExtension::AddInterface(SMInterface *pInterface)
@@ -493,7 +448,7 @@ bool CExtension::IsRunning(char *error, size_t maxlength)
 	{
 		if (error)
 		{
-			snprintf(error, maxlength, "%s", m_Error.c_str());
+			ke::SafeStrcpy(error, maxlength, m_Error.c_str());
 		}
 		return false;
 	}
@@ -546,7 +501,7 @@ void CExtensionManager::TryAutoload()
 
 	g_pSM->BuildPath(Path_SM, path, sizeof(path), "extensions");
 
-	ke::AutoPtr<IDirectory> pDir(libsys->OpenDirectory(path));
+	std::unique_ptr<IDirectory> pDir(libsys->OpenDirectory(path));
 	if (!pDir)
 		return;
 
@@ -575,7 +530,7 @@ void CExtensionManager::TryAutoload()
 		}
 
 		char file[PLATFORM_MAX_PATH];
-		len = ke::SafeSprintf(file, sizeof(file), "%s", lfile);
+		len = ke::SafeStrcpy(file, sizeof(file), lfile);
 		strcpy(&file[len - 9], ".ext");
 
 		LoadAutoExtension(file);
@@ -591,7 +546,7 @@ IExtension *CExtensionManager::LoadAutoExtension(const char *path, bool bErrorOn
 	if (strcmp(ext, PLATFORM_LIB_EXT) == 0)
 	{
 		char path2[PLATFORM_MAX_PATH];
-		ke::SafeSprintf(path2, sizeof(path2), "%s", path);
+		ke::SafeStrcpy(path2, sizeof(path2), path);
 		path2[strlen(path) - strlen(PLATFORM_LIB_EXT) - 1] = '\0';
 		return LoadAutoExtension(path2, bErrorOnMissing);
 	}
@@ -678,12 +633,18 @@ IExtension *CExtensionManager::FindExtensionByName(const char *ext)
 
 IExtension *CExtensionManager::LoadExtension(const char *file, char *error, size_t maxlength)
 {
+	if (strstr(file, "..") != NULL)
+	{
+		ke::SafeStrcpy(error, maxlength, "Cannot load extensions outside the \"extensions\" folder.");
+		return NULL;
+	}
+
 	/* Remove platform extension if it's there. Compat hack. */
 	const char *ext = libsys->GetFileExtension(file);
-	if (strcmp(ext, PLATFORM_LIB_EXT) == 0)
+	if (ext && strcmp(ext, PLATFORM_LIB_EXT) == 0)
 	{
 		char path2[PLATFORM_MAX_PATH];
-		ke::SafeSprintf(path2, sizeof(path2), "%s", file);
+		ke::SafeStrcpy(path2, sizeof(path2), file);
 		path2[strlen(file) - strlen(PLATFORM_LIB_EXT) - 1] = '\0';
 		return LoadExtension(path2, error, maxlength);
 	}
@@ -1136,7 +1097,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 				if (pExt->unload_code == (unsigned)atoi(unload))
 				{
 					char filename[PLATFORM_MAX_PATH];
-					snprintf(filename, PLATFORM_MAX_PATH, "%s", pExt->GetFilename());
+					ke::SafeStrcpy(filename, PLATFORM_MAX_PATH, pExt->GetFilename());
 					UnloadExtension(pExt);
 					rootmenu->ConsolePrint("[SM] Extension %s is now unloaded.", filename);
 				}
@@ -1151,7 +1112,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 				|| (!pExt->m_ChildDeps.size() && !pExt->m_Dependents.size()))
 			{
 				char filename[PLATFORM_MAX_PATH];
-				snprintf(filename, PLATFORM_MAX_PATH, "%s", pExt->GetFilename());
+				ke::SafeStrcpy(filename, PLATFORM_MAX_PATH, pExt->GetFilename());
 				UnloadExtension(pExt);
 				rootmenu->ConsolePrint("[SM] Extension %s is now unloaded.", filename);
 				return;
@@ -1221,7 +1182,6 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 						rootmenu->ConsolePrint(" -> %s", pPlugin->GetFilename());
 					}
 				}
-				srand(static_cast<int>(time(NULL)));
 				pExt->unload_code = (rand() % 877) + 123;	//123 to 999
 				rootmenu->ConsolePrint("[SM] To verify unloading %s, please use the following: ", pExt->GetFilename());
 				rootmenu->ConsolePrint("[SM] sm exts unload %d %d", num, pExt->unload_code);
@@ -1252,7 +1212,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 				char filename[PLATFORM_MAX_PATH];
 				char error[255];
 				
-				snprintf(filename, PLATFORM_MAX_PATH, "%s", pExt->GetFilename());
+				ke::SafeStrcpy(filename, PLATFORM_MAX_PATH, pExt->GetFilename());
 				
 				if (pExt->Reload(error, sizeof(error)))
 				{
@@ -1414,7 +1374,7 @@ bool CLocalExtension::IsSameFile(const char *file)
 
 bool CRemoteExtension::IsSameFile(const char *file)
 {
-	/* :TODO: this could be better, but no one uses this API anyway. */
-	return strcmp(file, m_Path.c_str()) == 0;
+	/* Check full path and name passed in from LoadExternal */
+	return strcmp(file, m_Path.c_str()) == 0 || strcmp(file, m_File.c_str()) == 0;
 }
 

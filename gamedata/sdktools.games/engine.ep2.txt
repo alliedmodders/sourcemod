@@ -91,7 +91,6 @@
 		"#supported"
 		{
 			"game"		"ageofchivalry"
-			"game"		"zps"
 			"game"		"bg2"
 			"game"		"gesource"
 			"game"		"RnLBeta"

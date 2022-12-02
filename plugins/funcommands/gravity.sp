@@ -121,7 +121,7 @@ public int MenuHandler_Gravity(Menu menu, MenuAction action, int param1, int par
 		{
 			g_GravityTarget[param1] = userid;
 			DisplayGravityAmountMenu(param1);
-			return;	// Return, because we went to a new menu and don't want the re-draw to occur.
+			return 0;	// Return, because we went to a new menu and don't want the re-draw to occur.
 		}
 		
 		/* Re-draw the menu if they're still valid */
@@ -130,8 +130,8 @@ public int MenuHandler_Gravity(Menu menu, MenuAction action, int param1, int par
 			DisplayGravityMenu(param1);
 		}
 	}
-	
-	return;
+
+	return 0;
 }
 
 public int MenuHandler_GravityAmount(Menu menu, MenuAction action, int param1, int param2)
@@ -179,6 +179,8 @@ public int MenuHandler_GravityAmount(Menu menu, MenuAction action, int param1, i
 			DisplayGravityMenu(param1);
 		}
 	}
+
+	return 0;
 }
 
 public Action Command_Gravity(int client, int args)
@@ -195,9 +197,7 @@ public Action Command_Gravity(int client, int args)
 	float amount = 1.0;
 	if (args > 1)
 	{
-		char arg2[20];
-		GetCmdArg(2, arg2, sizeof(arg2));
-		if (StringToFloatEx(arg2, amount) == 0)
+		if (!GetCmdArgFloatEx(2, amount))
 		{
 			ReplyToCommand(client, "[SM] %t", "Invalid Amount");
 			return Plugin_Handled;

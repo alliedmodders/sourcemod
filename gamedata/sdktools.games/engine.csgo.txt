@@ -184,6 +184,21 @@
 		}
 	}
 	
+	/* CBaseAnimating::LookupAttachment */
+	"#default"
+	{
+		"Signatures"
+		{
+			"LookupAttachment"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x57\x8B\xF9\x83\xBF\xC0\x04\x00\x00\x00\x75\x2A\xA1\x2A\x2A\x2A\x2A\x56\x8B\x30\x8B\x07\xFF\x50\x18\x8B\x0D\x2A\x2A\x2A\x2A\x50\xFF\x56\x04\x5E\x85\xC0\x74\x2A\x8B\xCF\xE8\x2A\x2A\x2A\x2A\x8B\x8F\xC0\x04\x00\x00\x5F\x85\xC9\x74\x2A\x83\x39\x00\x74\x2A\x8B\x55\x08\xE8\x2A\x2A\x2A\x2A"
+				"linux"		"\x55\x89\xE5\x53\x83\xEC\x14\x8B\x5D\x08\x8B\x8B\xD8\x04\x00\x00\x85\xC9\x74\x2A\x8B\x83\xD8\x04\x00\x00\x85\xC0\x74\x2A\x8B\x10\x85\xD2\x74\x2A\x8B\x55\x0C\x89\x04\x24"
+				"linux64"	"\x55\x48\x89\xE5\x53\x48\x89\xFB\x48\x83\xEC\x18\x48\x8B\xBF\x28\x06\x00\x00\x48\x85\xFF\x74\x2A\x48\x83\x3F\x00\x74\x2A\xE8\x2A\x2A\x2A\x2A"
+			}
+		}
+	}
+	
 	/* SetUserInfo data */
 	"#default"
 	{
@@ -225,10 +240,10 @@
 			 */
 			"InfoChanged"
 			{
-				"windows"	"484"
-				"linux"		"464"
-				"linux64"	"592"
-				"mac64"		"608"
+				"windows"	"488"
+				"linux"		"468"
+				"linux64"	"600"
+				"mac64"		"616"
 			}
 		}
 	}
@@ -242,110 +257,137 @@
 		}
 		"Offsets"
 		{
+			"SetOwnerEntity"
+			{
+				"windows"	"19"
+				"linux"		"20"
+				"linux64"	"20"
+				"mac64"		"20"
+			}
 			"GiveNamedItem"
 			{
-				"windows"	"450"
-				"linux"		"451"
-				"linux64"	"451"
-				"mac64"		"451"
+				"windows"	"458"
+				"linux"		"459"
+				"linux64"	"459"
+				"mac64"		"459"
 			}
 			"RemovePlayerItem"
+			{
+				"windows"	"297"
+				"linux"		"298"
+				"linux64"	"298"
+				"mac64"		"298"
+			}
+			"Weapon_GetSlot"
 			{
 				"windows"	"293"
 				"linux"		"294"
 				"linux64"	"294"
 				"mac64"		"294"
 			}
-			"Weapon_GetSlot"
-			{
-				"windows"	"289"
-				"linux"		"290"
-				"linux64"	"290"
-				"mac64"		"290"
-			}
 			"Ignite"
 			{
-				"windows"	"223"
-				"linux"		"224"
-				"linux64"	"224"
-				"mac64"		"224"
+				"windows"	"227"
+				"linux"		"228"
+				"linux64"	"228"
+				"mac64"		"228"
 			}
 			"Extinguish"
 			{
-				"windows"	"226"
-				"linux"		"227"
-				"linux64"	"227"
-				"mac64"		"227"
+				"windows"	"230"
+				"linux"		"231"
+				"linux64"	"231"
+				"mac64"		"231"
 			}
 			"Teleport"
 			{
-				"windows"	"113"
-				"linux"		"114"
-				"linux64"	"114"
-				"mac64"		"114"
+				"windows"	"114"
+				"linux"		"115"
+				"linux64"	"115"
+				"mac64"		"115"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"500"
-				"linux"		"500"
-				"linux64"	"500"
-				"mac64"		"500"
+				"windows"	"508"
+				"linux"		"508"
+				"linux64"	"508"
+				"mac64"		"508"
 			}
 			"GetVelocity"
 			{
-				"windows"	"138"
-				"linux"		"139"
-				"linux64"	"139"
-				"mac64"		"139"
+				"windows"	"140"
+				"linux"		"141"
+				"linux64"	"141"
+				"mac64"		"141"
 			}
 			"EyeAngles"
 			{
-				"windows"	"129"
-				"linux"		"130"
-				"linux64"	"130"
-				"mac64"		"130"
+				"windows"	"131"
+				"linux"		"132"
+				"linux64"	"132"
+				"mac64"		"132"
 			}
 			"AcceptInput"
 			{
-				"windows"	"40"
-				"linux"		"41"
-				"linux64"	"41"
-				"mac64"		"41"
+				"windows"	"41"
+				"linux"		"42"
+				"linux64"	"42"
+				"mac64"		"42"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"26"
-				"linux"		"27"
-				"linux64"	"27"
-				"mac64"		"27"
+				"windows"	"27"
+				"linux"		"28"
+				"linux64"	"28"
+				"mac64"		"28"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"282"
-				"linux"		"283"
-				"linux64"	"283"
-				"mac64"		"283"
+				"windows"	"286"
+				"linux"		"287"
+				"linux64"	"287"
+				"mac64"		"287"
 			}
 			"Activate"
 			{
-				"windows"	"37"
-				"linux"		"38"
-				"linux64"	"38"
-				"mac64"		"38"
+				"windows"	"38"
+				"linux"		"39"
+				"linux64"	"39"
+				"mac64"		"39"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"470"
-				"linux"		"471"
-				"linux64"	"471"
-				"mac64"		"471"
+				"windows"	"478"
+				"linux"		"479"
+				"linux64"	"479"
+				"mac64"		"479"
 			}
 			"GiveAmmo"
 			{
-				"windows"	"275"
-				"linux"		"276"
-				"linux64"	"276"
-				"mac64"		"276"
+				"windows"	"279"
+				"linux"		"280"
+				"linux64"	"280"
+				"mac64"		"280"
+			}
+			"GetAttachment"
+			{
+				"windows"	"222"
+				"linux"		"223"
+				"linux64"	"223"
+				"mac64"		"223"
+			}
+		}
+		"Signatures"
+		{
+			/**
+			 *	CNetworkStringTableContainer::WriteBaselines
+			 *	"Index error writing string table baseline %s\n"
+			 */
+			"WriteBaselines"
+			{
+				"library"	"engine"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x60\x53\x8B\xD9\x8B\x0D\x2A\x2A\x2A\x2A\x56\x57\x89\x5D\xF8\x8B\x81\x2A\x2A\x2A\x2A\x89\x45\xF4\x85\xC0"
+				"linux"		"\x55\x89\xE5\x57\x56\x53\x81\xEC\x8C\x00\x00\x00\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x7D\x08\x8B\x5D\x0C\x8B\x75\x10\x85\xC9\x0F\x95\xC0\x84\xC0\x88\x45\xE6\x74"
 			}
 		}
 	}

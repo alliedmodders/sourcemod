@@ -32,6 +32,7 @@
 #include "extension.h"
 #include "variant-t.h"
 #include "output.h"
+#include <sm_argbuffer.h>
 
 ICallWrapper *g_pFireOutput = NULL;
 
@@ -336,7 +337,7 @@ static cell_t FireEntityOutput(IPluginContext *pContext, const cell_t *params)
 		pass[6].type = PassType_Basic;
 		pass[6].size = sizeof(CBaseEntity *);
 		pass[7].flags = PASSFLAG_BYVAL;
-		pass[7].type = PassType_Basic;
+		pass[7].type = PassType_Float;
 		pass[7].size = sizeof(float);
 #else
 		int iMaxParam = 4;
@@ -352,7 +353,7 @@ static cell_t FireEntityOutput(IPluginContext *pContext, const cell_t *params)
 		pass[2].type = PassType_Basic;
 		pass[2].size = sizeof(CBaseEntity *);
 		pass[3].flags = PASSFLAG_BYVAL;
-		pass[3].type = PassType_Basic;
+		pass[3].type = PassType_Float;
 		pass[3].size = sizeof(float);
 #endif
 		if (!(g_pFireOutput = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, iMaxParam)))
@@ -365,9 +366,6 @@ static cell_t FireEntityOutput(IPluginContext *pContext, const cell_t *params)
 	void *pOutput = NULL;
 	
 	char *outputname;
-	unsigned char vstk[sizeof(void *) + sizeof(CBaseEntity *)*2 + SIZEOF_VARIANT_T + sizeof(float)];
-	unsigned char *vptr = vstk;
-
 	ENTINDEX_TO_CBASEENTITY(params[1], pCaller);
 	pContext->LocalToString(params[2], &outputname);
 	
@@ -382,17 +380,9 @@ static cell_t FireEntityOutput(IPluginContext *pContext, const cell_t *params)
 			ENTINDEX_TO_CBASEENTITY(params[3], pActivator);
 		}
 
-		*(void **)vptr = pOutput;
-		vptr += sizeof(void *);
-		memcpy(vptr, g_Variant_t, SIZEOF_VARIANT_T);
-		vptr += SIZEOF_VARIANT_T;
-		*(CBaseEntity **)vptr = pActivator;
-		vptr += sizeof(CBaseEntity *);
-		*(CBaseEntity **)vptr = pCaller;
-		vptr += sizeof(CBaseEntity *);
-		*(float *)vptr = sp_ctof(params[4]);
+		ArgBuffer<void*, decltype(g_Variant_t), CBaseEntity*, CBaseEntity*, float> vstk(pOutput, g_Variant_t, pActivator, pCaller, sp_ctof(params[4]));
 
-		g_pFireOutput->Execute(vstk, NULL);
+		g_pFireOutput->Execute(vstk, nullptr);
 
 		_init_variant_t();
 		return 1;

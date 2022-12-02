@@ -34,6 +34,8 @@
 
 #include "sp_vm_api.h"
 #include "common_logic.h"
+#include <am-vector.h>
+#include <am-string.h>
 
 class DebugReport : 
 	public SMGlobalClass, 
@@ -45,9 +47,12 @@ public: // IDebugListener
 	void ReportError(const IErrorReport &report, IFrameIterator &iter);
 	void OnDebugSpew(const char *msg, ...);
 public:
+	// If err is -1, caller assumes the automatic reporting by SourcePawn is
+	// good enough, and only wants the supplemental logging provided here.
 	void GenerateError(IPluginContext *ctx, cell_t func_idx, int err, const char *message, ...);
 	void GenerateErrorVA(IPluginContext *ctx, cell_t func_idx, int err, const char *message, va_list ap); 
 	void GenerateCodeError(IPluginContext *ctx, uint32_t code_addr, int err, const char *message, ...);
+	std::vector<std::string> GetStackTrace(IFrameIterator *iter);
 private:
 	int _GetPluginIndex(IPluginContext *ctx);
 };

@@ -16,89 +16,97 @@
 	{
 		"Offsets"
 		{
+			"Blocked"
+			{
+				"windows"	"118"
+			}
 			"EndTouch"
 			{
-				"windows"	"108"
+				"windows"	"116"
 			}
 			"FireBullets"
 			{
-				"windows"	"121"
+				"windows"	"129"
 			}
 			"GetMaxHealth"
 			{
-				"windows"	"125"
+				"windows"	"133"
+			}
+			"GroundEntChanged"
+			{
+				"windows"	"194"
 			}
 			"OnTakeDamage"
 			{
-				"windows"	"71"
+				"windows"	"77"
+			}
+			"OnTakeDamage_Alive"
+			{
+				"windows"	"305"
 			}
 			"PreThink"
 			{
-				"windows"	"354"
+				"windows"	"367"
 			}
 			"PostThink"
 			{
-				"windows"	"355"
-			}
-			"Reload"
-			{
-				"windows"	"281"
+				"windows"	"368"
 			}
 			"SetTransmit"
 			{
-				"windows"	"21"
+				"windows"	"27"
 			}
 			"ShouldCollide"
 			{
-				"windows"	"17"
+				"windows"	"19"
 			}
 			"Spawn"
 			{
-				"windows"	"23"
+				"windows"	"29"
 			}
 			"StartTouch"
 			{
-				"windows"	"106"
+				"windows"	"114"
 			}
 			"Think"
 			{
-				"windows"	"55"
+				"windows"	"61"
 			}
 			"Touch"
 			{
-				"windows"	"107"
+				"windows"	"115"
 			}
 			"TraceAttack"
 			{
-				"windows"	"69"
+				"windows"	"76"
 			}
 			"Use"
 			{
-				"windows"	"105"
+				"windows"	"113"
 			}
 			"VPhysicsUpdate"
 			{
-				"windows"	"165"
+				"windows"	"173"
 			}
 			"Weapon_CanSwitchTo"
 			{
-				"windows"	"286"
+				"windows"	"310"
 			}
 			"Weapon_CanUse"
 			{
-				"windows"	"280"
+				"windows"	"304"
 			}
 			"Weapon_Drop"
 			{
-				"windows"	"283"
+				"windows"	"307"
 			}
 			"Weapon_Equip"
 			{
-				"windows"	"281"
+				"windows"	"305"
 			}
 			"Weapon_Switch"
 			{
-				"windows"	"284"
+				"windows"	"308"
 			}
 		}
 	}

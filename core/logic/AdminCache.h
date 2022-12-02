@@ -82,6 +82,10 @@ struct AuthMethod
 	{
 		return strcmp(name, method->name.c_str()) == 0;
 	}
+	static inline uint32_t hash(const detail::CharsAndLength &key)
+	{
+		return key.hash();
+	}
 };
 
 struct UserAuth

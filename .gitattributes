@@ -1,0 +1,12 @@
+# GitHub views all .h files as C, let's assume it's C++
+*.h linguist-language=c++
+
+# Internal tools overriding
+tools/* linguist-vendored
+editor/* linguist-vendored
+
+# Third-party overriding 
+extensions/curl/curl-src/* linguist-vendored
+extensions/geoip/GeoIP.c linguist-vendored
+extensions/geoip/GeoIP.h linguist-vendored
+extensions/sqlite/sqlite-source/* linguist-vendored

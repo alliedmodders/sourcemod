@@ -64,10 +64,13 @@ static const int kActivityAdmins = 4;			// Show admin activity to admins anonymo
 static const int kActivityAdminsNames = 8;		// If 4 is specified, admin names will be shown.
 static const int kActivityRootNames = 16;		// Always show admin names to root users.
 
+#define FEATURECAP_MULTITARGETFILTER_CLIENTPARAM    "SourceMod MultiTargetFilter ClientParam"
+
 class PlayerLogicHelpers : 
 	public SMGlobalClass,
 	public IPluginsListener,
-	public ICommandTargetProcessor
+	public ICommandTargetProcessor,
+	public IFeatureProvider
 {
 	struct SimpleMultiTargetFilter
 	{
@@ -141,6 +144,7 @@ public: //ICommandTargetProcessor
 
 				smtf->fun->PushString(info->pattern);
 				smtf->fun->PushCell(ahc.getClone());
+				smtf->fun->PushCell(info->admin);
 				cell_t result = 0;
 				if (smtf->fun->Execute(&result) != SP_ERROR_NONE || !result)
 					return false;
@@ -185,6 +189,7 @@ public: //SMGlobalClass
 	void OnSourceModAllInitialized()
 	{
 		pluginsys->AddPluginsListener(this);
+		sharesys->AddCapabilityProvider(NULL, this, FEATURECAP_MULTITARGETFILTER_CLIENTPARAM);
 	}
 
 	void OnSourceModShutdown()
@@ -194,6 +199,7 @@ public: //SMGlobalClass
 			playerhelpers->UnregisterCommandTargetProcessor(this);
 			filterEnabled = false;
 		}
+		sharesys->DropCapabilityProvider(NULL, this, FEATURECAP_MULTITARGETFILTER_CLIENTPARAM);
 	}
 
 public: //IPluginsListener
@@ -210,6 +216,13 @@ public: //IPluginsListener
 				iter = simpleMultis.erase(iter);
 			}
 		}
+	}
+
+public: //IFeatureProvider
+
+	FeatureStatus GetFeatureStatus(FeatureType type, const char *name)
+	{
+		return FeatureStatus_Available;
 	}
 } s_PlayerLogicHelpers;
 
@@ -397,7 +410,7 @@ static cell_t SteamIdToLocal(IPluginContext *pCtx, int index, AuthIdType authTyp
 			}
 			
 			char szAuth[64];
-			snprintf(szAuth, sizeof(szAuth), "%" PRIu64, steamId);
+			ke::SafeSprintf(szAuth, sizeof(szAuth), "%" PRIu64, steamId);
 			
 			pCtx->StringToLocal(local_addr, bytes, szAuth);
 		}
@@ -1123,7 +1136,6 @@ static cell_t _ShowActivity(IPluginContext *pContext,
 	{
 		IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(i);
 		if (!pPlayer->IsInGame()
-			|| pPlayer->IsFakeClient()
 			|| (display_in_chat && i == client))
 		{
 			continue;
@@ -1250,7 +1262,6 @@ static cell_t _ShowActivity2(IPluginContext *pContext,
 	{
 		IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(i);
 		if (!pPlayer->IsInGame()
-			|| pPlayer->IsFakeClient()
 			|| i == client)
 		{
 			continue;

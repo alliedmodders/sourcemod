@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "smsdk_ext.h"
+#include "am-string.h"
 
 /**
  * @file smsdk_ext.cpp
@@ -128,7 +129,7 @@ bool SDKExtension::OnExtensionLoad(IExtension *me, IShareSys *sys, char *error, 
 	{
 		if (error)
 		{
-			snprintf(error, maxlength, "Metamod attach failed");
+			ke::SafeStrcpy(error, maxlength, "Metamod attach failed");
 		}
 		return false;
 	}
@@ -340,7 +341,7 @@ bool SDKExtension::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, 
 	GET_V_IFACE_CURRENT(engineFactory, engine, IVEngineServer, INTERFACEVERSION_VENGINESERVER);
 #else
 	GET_V_IFACE_ANY(GetServerFactory, gamedll, IServerGameDLL, INTERFACEVERSION_SERVERGAMEDLL);
-#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_SDK2013
+#if SOURCE_ENGINE == SE_SDK2013
 	// Shim to avoid hooking shims
 	engine = (IVEngineServer *) ismm->GetEngineFactory()("VEngineServer023", nullptr);
 	if (!engine)
@@ -376,7 +377,7 @@ bool SDKExtension::Unload(char *error, size_t maxlen)
 	{
 		if (error)
 		{
-			snprintf(error, maxlen, "This extension must be unloaded by SourceMod.");
+			ke::SafeStrcpy(error, maxlen, "This extension must be unloaded by SourceMod.");
 		}
 		return false;
 	}
@@ -390,7 +391,7 @@ bool SDKExtension::Pause(char *error, size_t maxlen)
 	{
 		if (error)
 		{
-			snprintf(error, maxlen, "This extension must be paused by SourceMod.");
+			ke::SafeStrcpy(error, maxlen, "This extension must be paused by SourceMod.");
 		}
 		return false;
 	}
@@ -406,7 +407,7 @@ bool SDKExtension::Unpause(char *error, size_t maxlen)
 	{
 		if (error)
 		{
-			snprintf(error, maxlen, "This extension must be unpaused by SourceMod.");
+			ke::SafeStrcpy(error, maxlen, "This extension must be unpaused by SourceMod.");
 		}
 		return false;
 	}

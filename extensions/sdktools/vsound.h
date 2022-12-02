@@ -53,7 +53,16 @@ public:
 
 	void OnEmitAmbientSound(int entindex, const Vector &pos, const char *samp, float vol, soundlevel_t soundlevel, int fFlags, int pitch, float delay);
 
-#if SOURCE_ENGINE >= SE_PORTAL2
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+	int OnEmitSound(IRecipientFilter& filter, int iEntIndex, int iChannel, const char *, unsigned int, const char *pSample, float flVolume, 
+		soundlevel_t iSoundlevel, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
+		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
+		float soundtime, int speakerentity, void *pUnknown);
+	int OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChannel, const char *pSoundEntry, unsigned int nSoundEntryHash, const char *pSample, 
+		float flVolume, float flAttenuation, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
+		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
+		float soundtime, int speakerentity, void *pUnknown);
+#elif SOURCE_ENGINE >= SE_PORTAL2
 	int OnEmitSound(IRecipientFilter& filter, int iEntIndex, int iChannel, const char *, unsigned int, const char *pSample, float flVolume, 
 		soundlevel_t iSoundlevel, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
 		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
@@ -64,7 +73,7 @@ public:
 		float soundtime, int speakerentity);
 #else
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 	
 	void OnEmitSound(IRecipientFilter& filter, int iEntIndex, int iChannel, const char *pSample, float flVolume, 
 		soundlevel_t iSoundlevel, int iFlags, int iPitch, int iSpecialDSP, const Vector *pOrigin, 
@@ -83,7 +92,7 @@ public:
 		float flAttenuation, int iFlags, int iPitch, const Vector *pOrigin, 
 		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 		float soundtime, int speakerentity);
-#endif // SOURCE_ENGINE == SE_CSS, SE_HL2DM, SE_DODS, SE_SDK2013, SE_BMS, SE_TF2
+#endif // SOURCE_ENGINE == SE_CSS, SE_HL2DM, SE_DODS, SE_SDK2013, SE_BMS, SE_TF2, SE_PVKII
 #endif // SOURCE_ENGINE >= SE_PORTAL2
 private:
 	size_t _FillInPlayers(int *pl_array, IRecipientFilter *pFilter);

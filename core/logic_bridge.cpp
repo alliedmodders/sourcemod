@@ -45,35 +45,12 @@
 #include "ConCmdManager.h"
 #include "IDBDriver.h"
 #include "provider.h"
-#if SOURCE_ENGINE >= SE_ALIENSWARM
-# include "convar_sm_swarm.h"
-#elif SOURCE_ENGINE >= SE_LEFT4DEAD
-# include "convar_sm_l4d.h"
-#elif SOURCE_ENGINE >= SE_ORANGEBOX
-# include "convar_sm_ob.h"
-#else
-# include "convar_sm.h"
-#endif
+#include "sm_convar.h"
 #include <amtl/os/am-shared-library.h>
 #include <amtl/os/am-path.h>
 #include <bridge/include/IVEngineServerBridge.h>
 #include <bridge/include/IPlayerInfoBridge.h>
 #include <bridge/include/IFileSystemBridge.h>
-
-#if defined _WIN32
-# define MATCHMAKINGDS_SUFFIX	""
-# define MATCHMAKINGDS_EXT	"dll"
-#elif defined __APPLE__
-# define MATCHMAKINGDS_SUFFIX	""
-# define MATCHMAKINGDS_EXT	"dylib"
-#elif defined __linux__
-#if SOURCE_ENGINE < SE_LEFT4DEAD2
-# define MATCHMAKINGDS_SUFFIX	"_i486"
-#else
-# define MATCHMAKINGDS_SUFFIX	""
-#endif
-# define MATCHMAKINGDS_EXT	"so"
-#endif
 
 sm_logic_t logicore;
 
@@ -394,6 +371,8 @@ void UTIL_ConsolePrint(const char *fmt, ...)
 #define GAMEFIX "2.csgo"
 #elif SOURCE_ENGINE == SE_CONTAGION
 #define GAMEFIX "2.contagion"
+#elif SOURCE_ENGINE == SE_PVKII
+#define GAMEFIX "2.pvkii"
 #else
 #define GAMEFIX "2.ep1"
 #endif
@@ -516,6 +495,10 @@ const char *CoreProviderImpl::GetSourceEngineName()
 	return "doi";
 #elif SOURCE_ENGINE == SE_CSGO
 	return "csgo";
+#elif SOURCE_ENGINE == SE_MOCK
+	return "mock";
+#elif SOURCE_ENGINE == SE_PVKII
+	return "pvkii";
 #endif
 }
 
@@ -533,7 +516,8 @@ bool CoreProviderImpl::SymbolsAreHidden()
 	|| (SOURCE_ENGINE == SE_INSURGENCY)  \
 	|| (SOURCE_ENGINE == SE_DOI)  \
 	|| (SOURCE_ENGINE == SE_BLADE)       \
-	|| (SOURCE_ENGINE == SE_CSGO)
+	|| (SOURCE_ENGINE == SE_CSGO) \
+	|| (SOURCE_ENGINE == SE_PVKII)
 	return true;
 #else
 	return false;
@@ -650,19 +634,18 @@ void CoreProviderImpl::InitializeBridge()
 	this->serverFactory = (void *)g_SMAPI->GetServerFactory(false);
 	this->listeners = SMGlobalClass::head;
 
-	char path[PLATFORM_MAX_PATH];
-
-	ke::path::Format(path, sizeof(path),
-	                 "%s/bin/" PLATFORM_FOLDER "matchmaking_ds%s.%s",
-                     g_SMAPI->GetBaseDir(),
-                     MATCHMAKINGDS_SUFFIX,
-                     MATCHMAKINGDS_EXT);
-
-	if (ke::RefPtr<ke::SharedLib> mmlib = ke::SharedLib::Open(path, NULL, 0)) {
-		this->matchmakingDSFactory =
-		  mmlib->get<decltype(sCoreProviderImpl.matchmakingDSFactory)>("CreateInterface");
+	if (auto mmlib = ::filesystem->LoadModule("matchmaking_ds" SOURCE_BIN_SUFFIX, "GAMEBIN")) {
+		this->matchmakingDSFactory = (void*)Sys_GetFactory(mmlib);
 	}
-	
+
+	if (auto mmlib = ::filesystem->LoadModule("soundemittersystem" SOURCE_BIN_SUFFIX)) {
+		this->soundemittersystemFactory = (void*)Sys_GetFactory(mmlib);
+	}
+
+	if (auto mmlib = ::filesystem->LoadModule("vscript" SOURCE_BIN_SUFFIX)) {
+		this->vscriptFactory = (void*)Sys_GetFactory(mmlib);
+	}
+
 	logic_init_(this, &logicore);
 
 	// Join logic's SMGlobalClass instances.
@@ -704,7 +687,7 @@ bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)
 	LogicLoadFunction llf = logic_->get<decltype(llf)>("logic_load");
 	if (!llf) {
 		logic_ = nullptr;
-		ke::SafeSprintf(error, maxlength, "could not find logic_load function");
+		ke::SafeStrcpy(error, maxlength, "could not find logic_load function");
 		return false;
 	}
 
@@ -713,7 +696,7 @@ bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)
 
 	logic_init_ = llf(SM_LOGIC_MAGIC);
 	if (!logic_init_) {
-		ke::SafeSprintf(error, maxlength, "component version mismatch");
+		ke::SafeStrcpy(error, maxlength, "component version mismatch");
 		return false;
 	}
 	return true;
@@ -761,7 +744,13 @@ CoreProviderImpl::DefineCommand(const char *name, const char *help, const Comman
 	ke::RefPtr<CommandHook> hook = AddCommandHook(cmd, callback);
 
 	ke::RefPtr<CommandImpl> impl = new CommandImpl(cmd, hook);
-	commands_.append(impl);
+	commands_.push_back(impl);
+}
+
+void CoreProviderImpl::FormatSourceBinaryName(const char *basename, char *buffer, size_t maxlength)
+{
+	bool use_prefix = (!strcasecmp(basename, "tier0") || !strcasecmp(basename, "vstdlib"));
+	ke::SafeSprintf(buffer, maxlength, "%s%s%s%s", use_prefix ? SOURCE_BIN_PREFIX : "", basename, SOURCE_BIN_SUFFIX, SOURCE_BIN_EXT);
 }
 
 void CoreProviderImpl::InitializeHooks()

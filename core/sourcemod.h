@@ -113,8 +113,8 @@ public: // ISourceMod
 	void LogMessage(IExtension *pExt, const char *format, ...);
 	void LogError(IExtension *pExt, const char *format, ...);
 	size_t FormatString(char *buffer, size_t maxlength, IPluginContext *pContext, const cell_t *params, unsigned int param);
-	IDataPack *CreateDataPack();
-	void FreeDataPack(IDataPack *pack);
+	void *CreateDataPack();
+	void FreeDataPack(void *pack);
 	HandleType_t GetDataPackHandleType(bool readonly=false);
 	KeyValues *ReadKeyValuesHandle(Handle_t hndl, HandleError *err=NULL, bool root=false);
 	const char *GetGameFolderName() const;
@@ -140,6 +140,7 @@ public: // ISourceMod
 private:
 	void ShutdownServices();
 private:
+	const char* GetMapEntitiesString();
 	char m_SMBaseDir[PLATFORM_MAX_PATH];
 	char m_SMRelDir[PLATFORM_MAX_PATH];
 	char m_ModDir[32];

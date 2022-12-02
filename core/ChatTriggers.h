@@ -63,6 +63,8 @@ public:
 	unsigned int SetReplyTo(unsigned int reply);
 	bool IsChatTrigger();
 	bool WasFloodedMessage();
+	const char *GetPublicChatTrigger();
+	const char *GetPrivateChatTrigger();
 private:
 	enum ChatTriggerType {
 		ChatTrigger_Public,
@@ -73,9 +75,9 @@ private:
 	bool ClientIsFlooding(int client);
 	cell_t CallOnClientSayCommand(int client);
 private:
-	ke::Vector<ke::RefPtr<CommandHook>> hooks_;
-	ke::AString m_PubTrigger;
-	ke::AString m_PrivTrigger;
+	std::vector<ke::RefPtr<CommandHook>> hooks_;
+	std::string m_PubTrigger;
+	std::string m_PrivTrigger;
 	bool m_bWillProcessInPost;
 	bool m_bIsChatTrigger;
 	bool m_bWasFloodedMessage;

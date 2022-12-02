@@ -73,8 +73,13 @@ Database hDatabase = null;						/** Database connection */
 int g_sequence = 0;								/** Global unique sequence number */
 int ConnectLock = 0;							/** Connect sequence number */
 int RebuildCachePart[3] = {0};					/** Cache part sequence numbers */
-int PlayerSeq[MAXPLAYERS+1];					/** Player-specific sequence numbers */
-bool PlayerAuth[MAXPLAYERS+1];				/** Whether a player has been "pre-authed" */
+
+enum struct PlayerInfo {
+	int sequencenum; /** Player-specific sequence numbers */
+	bool authed; /** Whether a player has been "pre-authed" */
+}
+
+PlayerInfo playerinfo[MAXPLAYERS+1];
 
 //#define _DEBUG
 
@@ -88,15 +93,15 @@ public void OnMapEnd()
 
 public bool OnClientConnect(int client, char[] rejectmsg, int maxlen)
 {
-	PlayerSeq[client] = 0;
-	PlayerAuth[client] = false;
+	playerinfo[client].sequencenum = 0;
+	playerinfo[client].authed = false;
 	return true;
 }
 
 public void OnClientDisconnect(int client)
 {
-	PlayerSeq[client] = 0;
-	PlayerAuth[client] = false;
+	playerinfo[client].sequencenum = 0;
+	playerinfo[client].authed = false;
 }
 
 public void OnDatabaseConnect(Database db, const char[] error, any data)
@@ -193,7 +198,7 @@ public void OnRebuildAdminCache(AdminCachePart part)
 
 public Action OnClientPreAdminCheck(int client)
 {
-	PlayerAuth[client] = true;
+	playerinfo[client].authed = true;
 	
 	/**
 	 * Play nice with other plugins.  If there's no database, don't delay the 
@@ -241,7 +246,7 @@ public void OnReceiveUserGroups(Database db, DBResultSet rs, const char[] error,
 	/**
 	 * Make sure it's the same client.
 	 */
-	if (PlayerSeq[client] != sequence)
+	if (playerinfo[client].sequencenum != sequence)
 	{
 		delete pk;
 		return;
@@ -310,7 +315,7 @@ public void OnReceiveUser(Database db, DBResultSet rs, const char[] error, any d
 	 * Check if this is the latest result request.
 	 */
 	int sequence = pk.ReadCell();
-	if (PlayerSeq[client] != sequence)
+	if (playerinfo[client].sequencenum != sequence)
 	{
 		/* Discard everything, since we're out of sequence. */
 		delete pk;
@@ -461,8 +466,10 @@ void FetchUser(Database db, int client)
 {
 	char name[MAX_NAME_LENGTH];
 	char safe_name[(MAX_NAME_LENGTH * 2) - 1];
-	char steamid[32];
-	char steamidalt[32];
+	char steamid2[32];
+	char steamid2alt[32];
+	char steamid3[32];
+	char steamid64[32];
 	char ipaddr[24];
 	
 	/**
@@ -471,12 +478,30 @@ void FetchUser(Database db, int client)
 	GetClientName(client, name, sizeof(name));
 	GetClientIP(client, ipaddr, sizeof(ipaddr));
 	
-	steamid[0] = '\0';
-	if (GetClientAuthId(client, AuthId_Steam2, steamid, sizeof(steamid)))
+	steamid2[0] = '\0';
+	if (GetClientAuthId(client, AuthId_Steam2, steamid2, sizeof(steamid2)))
 	{
-		if (StrEqual(steamid, "STEAM_ID_LAN"))
+		if (StrEqual(steamid2, "STEAM_ID_LAN"))
 		{
-			steamid[0] = '\0';
+			steamid2[0] = '\0';
+		}
+	}
+
+	steamid3[0] = '\0';
+	if (GetClientAuthId(client, AuthId_Steam3, steamid3, sizeof(steamid3)))
+	{
+		if (StrEqual(steamid3, "STEAM_ID_LAN"))
+		{
+			steamid3[0] = '\0';
+		}
+	}
+
+	steamid64[0] = '\0';
+	if (GetClientAuthId(client, AuthId_SteamID64, steamid64, sizeof(steamid64)))
+	{
+		if (StrEqual(steamid64, "0"))
+		{
+			steamid64[0] = '\0';
 		}
 	}
 	
@@ -492,23 +517,25 @@ void FetchUser(Database db, int client)
 	len += Format(query[len], sizeof(query)-len, " FROM sm_admins a LEFT JOIN sm_admins_groups ag ON a.id = ag.admin_id WHERE ");
 	len += Format(query[len], sizeof(query)-len, " (a.authtype = 'ip' AND a.identity = '%s')", ipaddr);
 	len += Format(query[len], sizeof(query)-len, " OR (a.authtype = 'name' AND a.identity = '%s')", safe_name);
-	if (steamid[0] != '\0')
+	if (steamid2[0] != '\0' && steamid3[0] != '\0' && steamid64[0] != '\0')
 	{
-		strcopy(steamidalt, sizeof(steamidalt), steamid);
-		steamidalt[6] = (steamid[6] == '0') ? '1' : '0';
+		strcopy(steamid2alt, sizeof(steamid2alt), steamid2);
+		steamid2alt[6] = (steamid2[6] == '0') ? '1' : '0';
 
-		len += Format(query[len], sizeof(query)-len, " OR (a.authtype = 'steam' AND (a.identity = '%s' OR a.identity = '%s'))", steamid, steamidalt);
+		len += Format(query[len], sizeof(query)-len,
+			" OR (a.authtype = 'steam' AND (a.identity = '%s' OR a.identity = '%s' OR a.identity = '%s' OR a.identity = '%s'))",
+			steamid2, steamid2alt, steamid3, steamid64);
 	}
 	len += Format(query[len], sizeof(query)-len, " GROUP BY a.id");
 	
 	/**
 	 * Send the actual query.
 	 */	
-	PlayerSeq[client] = ++g_sequence;
+	playerinfo[client].sequencenum = ++g_sequence;
 	
 	DataPack pk = new DataPack();
 	pk.WriteCell(client);
-	pk.WriteCell(PlayerSeq[client]);
+	pk.WriteCell(playerinfo[client].sequencenum);
 	pk.WriteString(query);
 	
 #if defined _DEBUG
@@ -522,7 +549,7 @@ void FetchUsersWeCan(Database db)
 {
 	for (int i=1; i<=MaxClients; i++)
 	{
-		if (PlayerAuth[i] && GetUserAdmin(i) == INVALID_ADMIN_ID)
+		if (playerinfo[i].authed && GetUserAdmin(i) == INVALID_ADMIN_ID)
 		{
 			FetchUser(db, i);
 		}

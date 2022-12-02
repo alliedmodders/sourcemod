@@ -33,6 +33,7 @@
 #include "extension.h"
 #include <sh_string.h>
 #include "pcre.h"
+#include "posix_map.h"
 #include "CRegEx.h"
 using namespace SourceHook;
 
@@ -82,10 +83,11 @@ static cell_t CompileRegex(IPluginContext *pCtx, const cell_t *params)
 	
 	if (x->Compile(regex, params[2]) == 0)
 	{
-		cell_t *eOff;
-		pCtx->LocalToPhysAddr(params[5], &eOff);
+		cell_t *eError;
+		pCtx->LocalToPhysAddr(params[5], &eError);
 		const char *err = x->mError;
-		*eOff = x->mErrorOffset;
+		// Convert error code to posix error code but use pcre's error string since it is more detailed.
+		*eError = pcre_posix_compile_error_map[x->mErrorCode];
 		pCtx->StringToLocal(params[3], params[4], err ? err:"unknown");
 		delete x;
 		return 0;
@@ -113,30 +115,32 @@ static cell_t MatchRegex(IPluginContext *pCtx, const cell_t *params)
 	sec.pIdentity = myself->GetIdentity();
 
 	RegEx *x;
-
 	if ((err=g_pHandleSys->ReadHandle(hndl, g_RegexHandle, &sec, (void **)&x)) != HandleError_None)
 	{
 		return pCtx->ThrowNativeError("Invalid regex handle %x (error %d)", hndl, err);
 	}
-
 	if (!x)
 	{
 		pCtx->ThrowNativeError("Regex data not found\n");
-
 		return 0;
+	}
+
+	size_t offset = 0;
+	if (params[0] >= 4)
+	{
+		offset = static_cast<size_t>(params[4]);
 	}
 
 	char *str;
 	pCtx->LocalToString(params[2], &str);
 
-	int e = x->Match(str);
-
+	int e = x->Match(str, offset);
 	if (e == -1)
 	{
 		/* there was a match error.  move on. */
 		cell_t *res;
 		pCtx->LocalToPhysAddr(params[3], &res);
-		*res = x->mErrorOffset;
+		*res = x->mErrorCode;
 		/* only clear the match results, since the regex object
 		   may still be referenced later */
 		x->ClearMatch();
@@ -153,7 +157,60 @@ static cell_t MatchRegex(IPluginContext *pCtx, const cell_t *params)
 	} 
 	else 
 	{
-		return x->mSubStrings;
+		return x->mMatches[0].mSubStringCount;
+	}
+}
+
+static cell_t MatchRegexAll(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError err;
+	HandleSecurity sec;
+	sec.pOwner = NULL;
+	sec.pIdentity = myself->GetIdentity();
+
+	RegEx *x;
+
+	if ((err = g_pHandleSys->ReadHandle(hndl, g_RegexHandle, &sec, (void **)&x)) != HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid regex handle %x (error %d)", hndl, err);
+	}
+
+	if (!x)
+	{
+		pCtx->ThrowNativeError("Regex data not found\n");
+
+		return 0;
+	}
+
+	char *str;
+	pCtx->LocalToString(params[2], &str);
+
+	int e = x->MatchAll(str);
+
+	if (e == -1)
+	{
+		/* there was a match error.  move on. */
+		cell_t *res;
+		pCtx->LocalToPhysAddr(params[3], &res);
+		*res = x->mErrorCode;
+		/* only clear the match results, since the regex object
+		may still be referenced later */
+		x->ClearMatch();
+
+		return -1;
+	}
+	else if (e == 0)
+	{
+		/* only clear the match results, since the regex object
+		may still be referenced later */
+		x->ClearMatch();
+
+		return 0;
+	}
+	else
+	{
+		return x->mMatchCount;
 	}
 }
 
@@ -164,6 +221,8 @@ static cell_t GetRegexSubString(IPluginContext *pCtx, const cell_t *params)
 	HandleSecurity sec;
 	sec.pOwner=NULL;
 	sec.pIdentity=myself->GetIdentity();
+
+	int match = 0;
 
 	RegEx *x;
 
@@ -178,17 +237,93 @@ static cell_t GetRegexSubString(IPluginContext *pCtx, const cell_t *params)
 		return 0;
 	}
 
-	static char buffer[4096];
-	const char *ret=x->GetSubstring(params[2], buffer, sizeof(buffer));
-
-	if(!ret)
+	if (params[0] >= 5)
 	{
-		return 0;
+		match = params[5];
 	}
 
-	pCtx->StringToLocalUTF8(params[3], params[4], ret, NULL);
+	if(match >= x->mMatchCount || match < 0)
+		return pCtx->ThrowNativeError("Invalid match index passed.\n");
 
-	return 1;
+	char *buffer;
+	pCtx->LocalToString(params[3], &buffer);
+	
+	return x->GetSubstring(params[2], buffer, params[4], match);
+}
+
+static cell_t GetRegexMatchCount(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError err;
+	HandleSecurity sec;
+	sec.pOwner = NULL;
+	sec.pIdentity = myself->GetIdentity();
+
+	RegEx *x;
+
+	if ((err = g_pHandleSys->ReadHandle(hndl, g_RegexHandle, &sec, (void **)&x)) != HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid regex handle %x (error %d)", hndl, err);
+	}
+
+	if (!x)
+	{
+		return pCtx->ThrowNativeError("Regex data not found\n");
+	}
+
+	return x->mMatchCount;
+}
+
+static cell_t GetRegexCaptureCount(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError err;
+	HandleSecurity sec;
+	sec.pOwner = NULL;
+	sec.pIdentity = myself->GetIdentity();
+
+	RegEx *x;
+
+	if ((err = g_pHandleSys->ReadHandle(hndl, g_RegexHandle, &sec, (void **)&x)) != HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid regex handle %x (error %d)", hndl, err);
+	}
+
+	if (!x)
+	{
+		return pCtx->ThrowNativeError("Regex data not found\n");
+	}
+
+	if (params[2] >= x->mMatchCount || params[2] < 0)
+		return pCtx->ThrowNativeError("Invalid match index passed.\n");
+
+	return x->mMatches[params[2]].mSubStringCount;
+}
+
+static cell_t GetRegexOffset(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError err;
+	HandleSecurity sec;
+	sec.pOwner = NULL;
+	sec.pIdentity = myself->GetIdentity();
+
+	RegEx *x;
+
+	if ((err = g_pHandleSys->ReadHandle(hndl, g_RegexHandle, &sec, (void **)&x)) != HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid regex handle %x (error %d)", hndl, err);
+	}
+
+	if (!x)
+	{
+		return pCtx->ThrowNativeError("Regex data not found\n");
+	}
+
+	if (params[2] >= x->mMatchCount || params[2] < 0)
+		return pCtx->ThrowNativeError("Invalid match index passed.\n");
+
+	return x->mMatches[params[2]].mVector[1];
 }
 
 void RegexHandler::OnHandleDestroy(HandleType_t type, void *object)
@@ -209,5 +344,9 @@ const sp_nativeinfo_t regex_natives[] =
 	{"Regex.GetSubString",		GetRegexSubString},
 	{"Regex.Match",				MatchRegex},
 	{"Regex.Regex",				CompileRegex},
+	{"Regex.MatchAll",			MatchRegexAll},
+	{"Regex.MatchCount",		GetRegexMatchCount},
+	{"Regex.CaptureCount",		GetRegexCaptureCount},
+	{"Regex.MatchOffset",			GetRegexOffset},
 	{NULL,							NULL},
 };

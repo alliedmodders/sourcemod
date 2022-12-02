@@ -127,6 +127,8 @@ static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
 		}
 	}
 
+	g_pSM->SetGlobalTarget(index);
+
 	char buffer[1024];
 	char *fmt;
 	int arg = 3;
@@ -267,8 +269,7 @@ static cell_t ReplyToCommand(IPluginContext *pContext, const cell_t *params)
 	size_t len;
 	{
 		DetectExceptions eh(pContext);
-		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 2);
-		len = g_pSM->FormatString(buffer, sizeof(buffer) - 2, pContext, params, 2);
+		len = g_pSM->FormatString(buffer, sizeof(buffer) - 1, pContext, params, 2);
 		if (eh.HasException())
 			return 0;
 	}

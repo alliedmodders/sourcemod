@@ -69,18 +69,13 @@ enum_field_types GetTheirType(DBType type)
 	return MYSQL_TYPE_STRING;
 }
 
-MyBoundResults::MyBoundResults(MYSQL_STMT *stmt, MYSQL_RES *res)
-: m_stmt(stmt), m_pRes(res), m_Initialized(false), m_RowCount(0), m_CurRow(0)
+MyBoundResults::MyBoundResults(MYSQL_STMT *stmt, MYSQL_RES *res, unsigned int num_fields)
+: m_stmt(stmt), m_pRes(res), m_ColCount(num_fields), m_Initialized(false), m_RowCount(0), m_CurRow(0)
 {
 	/**
-	 * Important things to note here: 
-	 * 1) We're guaranteed at least one field.
-	 * 2) The field information should never change, and thus we
-	 *    never rebuild it.  If someone ALTERs the table during
-	 *    a prepared query's lifetime, it's their own death.
+	 * Important thing to note here: 
+	 * We're guaranteed at least one field.
 	 */
-
-	m_ColCount = (unsigned int)mysql_num_fields(m_pRes);
 
 	/* Allocate buffers */
 	m_bind = (MYSQL_BIND *)malloc(sizeof(MYSQL_BIND) * m_ColCount);

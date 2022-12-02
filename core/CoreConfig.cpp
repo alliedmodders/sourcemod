@@ -290,18 +290,18 @@ ConfigResult CoreConfig::SetConfigOption(const char *option, const char *value, 
 		pBase = pBase->m_pGlobalClassNext;
 	}
 
-	ke::AString vstr(value);
-	m_KeyValues.replace(option, ke::Move(vstr));
+	std::string vstr(value);
+	m_KeyValues.replace(option, std::move(vstr));
 
 	return result;
 }
 
 const char *CoreConfig::GetCoreConfigValue(const char *key)
 {
-	StringHashMap<ke::AString>::Result r = m_KeyValues.find(key);
+	StringHashMap<std::string>::Result r = m_KeyValues.find(key);
 	if (!r.found())
 		return NULL;
-	return r->value.chars();
+	return r->value.c_str();
 }
 
 bool SM_AreConfigsExecuted()
@@ -412,8 +412,11 @@ bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 				for (iter = convars->begin(); iter != convars->end(); iter++)
 				{
 					const ConVar *cvar = (*iter);
-
-					if ((cvar->GetFlags() & FCVAR_DONTRECORD) == FCVAR_DONTRECORD)
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+					if (cvar->IsFlagSet(FCVAR_DONTRECORD))
+#else
+					if (cvar->IsBitSet(FCVAR_DONTRECORD))
+#endif
 					{
 						continue;
 					}

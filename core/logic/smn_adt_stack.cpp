@@ -83,6 +83,48 @@ static cell_t CreateStack(IPluginContext *pContext, const cell_t *params)
 	return hndl;
 }
 
+static cell_t ClearStack(IPluginContext *pContext, const cell_t *params)
+{
+	CellArray *array;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = handlesys->ReadHandle(params[1], htCellStack, &sec, (void **)&array)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
+	}
+
+	array->clear();
+
+	return 1;
+}
+
+static cell_t CloneStack(IPluginContext *pContext, const cell_t *params)
+{
+	CellArray *oldArray;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = handlesys->ReadHandle(params[1], htCellStack, &sec, (void **)&oldArray)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
+	}
+
+	ICellArray *array = oldArray->clone();
+	if (!array)
+	{
+		return pContext->ThrowNativeError("Failed to clone stack. Out of memory.");
+	}
+
+	Handle_t hndl = handlesys->CreateHandle(htCellStack, array, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	if (!hndl)
+	{
+		delete array;
+	}
+
+	return hndl;
+}
+
 static cell_t PushStackCell(IPluginContext *pContext, const cell_t *params)
 {
 	CellArray *array;
@@ -387,6 +429,7 @@ static cell_t GetStackBlockSize(IPluginContext *pContext, const cell_t *params)
 REGISTER_NATIVES(cellStackNatives)
 {
 	{"CreateStack",					CreateStack},
+	{"CloneStack",					CloneStack},
 	{"IsStackEmpty",				IsStackEmpty},
 	{"PopStackArray",				PopStackArray},
 	{"PopStackCell",				PopStackCell},
@@ -398,6 +441,8 @@ REGISTER_NATIVES(cellStackNatives)
 
 	// Transitional syntax support.
 	{"ArrayStack.ArrayStack",		CreateStack},
+	{"ArrayStack.Clear",			ClearStack},
+	{"ArrayStack.Clone",			CloneStack},
 	{"ArrayStack.Pop",				ArrayStack_Pop},
 	{"ArrayStack.PopString",		ArrayStack_PopString},
 	{"ArrayStack.PopArray",			ArrayStack_PopArray},

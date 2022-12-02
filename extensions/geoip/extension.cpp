@@ -29,43 +29,114 @@
  * Version: $Id$
  */
 
+#define _USE_MATH_DEFINES
+
 #include <sourcemod_version.h>
+#include <cmath>
 #include "extension.h"
-#include "GeoIP.h"
+#include "geoip_util.h"
+
+// Log a message if the database is older than the set amount of days.
+#define DATABASE_MAX_AGE 90
 
 /**
  * @file extension.cpp
  * @brief Implement extension code here.
  */
 GeoIP_Extension g_GeoIP;
-GeoIP *gi = NULL;
+MMDB_s mmdb;
 
 SMEXT_LINK(&g_GeoIP);
 
 bool GeoIP_Extension::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
-	char path[PLATFORM_MAX_PATH];
-
-	g_pSM->BuildPath(Path_SM, path, sizeof(path), "configs/geoip/GeoIP.dat");
-	gi = GeoIP_open(path, GEOIP_MEMORY_CACHE);
-
-	if (!gi)
+	if (mmdb.filename) // Already loaded.
 	{
-		snprintf(error, maxlength, "Could not load configs/geoip/GeoIP.dat");
+		return true;
+	}
+
+	char m_GeoipDir[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_SM, m_GeoipDir, sizeof(m_GeoipDir), "configs/geoip");
+
+	bool hasEntry = false;
+
+	IDirectory *dir = libsys->OpenDirectory(m_GeoipDir);
+	if (dir) 
+	{
+		while (dir->MoreFiles())
+		{
+			if (dir->IsEntryFile())
+			{
+				const char *name = dir->GetEntryName();
+				size_t len = strlen(name);
+				if (len >= 5 && strcmp(&name[len-5], ".mmdb") == 0)
+				{
+					char database[PLATFORM_MAX_PATH];
+					libsys->PathFormat(database, sizeof(database), "%s/%s", m_GeoipDir, name);
+
+					int status = MMDB_open(database, MMDB_MODE_MMAP, &mmdb);
+
+					if (status != MMDB_SUCCESS)
+					{
+						ke::SafeSprintf(error, maxlength, "Failed to open GeoIP2 database %s: %s", database, MMDB_strerror(status));
+						libsys->CloseDirectory(dir);
+						return false;
+					}
+
+					hasEntry = true;
+					break;
+				}
+			}
+			dir->NextEntry();
+		}
+		libsys->CloseDirectory(dir);
+	}
+
+	if (!hasEntry)
+	{
+		ke::SafeStrcpy(error, maxlength, "Could not find GeoIP2 database.");
 		return false;
 	}
 
 	g_pShareSys->AddNatives(myself, geoip_natives);
 	g_pShareSys->RegisterLibrary(myself, "GeoIP");
-	g_pSM->LogMessage(myself, "GeoIP database info: %s", GeoIP_database_info(gi));
+
+	char date[40];
+	const time_t epoch = (const time_t)mmdb.metadata.build_epoch;
+	strftime(date, 40, "%F %T UTC", gmtime(&epoch));
+
+	g_pSM->LogMessage(myself, "GeoIP2 database loaded: %s (%s) (%s)", mmdb.metadata.database_type, date, mmdb.filename);
+
+	if (mmdb.metadata.languages.count > 0)
+	{
+		char buf[64];
+		for (size_t i = 0; i < mmdb.metadata.languages.count; i++)
+		{
+			if (i == 0)
+			{
+				strcpy(buf, mmdb.metadata.languages.names[i]);
+			}
+			else
+			{
+				strcat(buf, " ");
+				strcat(buf, mmdb.metadata.languages.names[i]);
+			}
+		}
+
+		g_pSM->LogMessage(myself, "GeoIP2 supported languages: %s", buf);
+	}
+
+	time_t now = time(NULL);
+	double days_since_update = difftime(now, epoch) / (60 * 60 * 24);
+	if (days_since_update > DATABASE_MAX_AGE)
+		smutils->LogMessage(myself, "Your database is older than %u days. You should consider downloading a newer version from e.g. https://dev.maxmind.com/geoip/geolite2-free-geolocation-data", DATABASE_MAX_AGE);
 
 	return true;
 }
 
 void GeoIP_Extension::SDK_OnUnload()
 {
-	GeoIP_delete(gi);
-	gi = NULL;
+	MMDB_close(&mmdb);
 }
 
 const char *GeoIP_Extension::GetExtensionVerString()
@@ -95,51 +166,264 @@ inline void StripPort(char *ip)
 static cell_t sm_Geoip_Code2(IPluginContext *pCtx, const cell_t *params)
 {
 	char *ip;
-	const char *ccode;
-
 	pCtx->LocalToString(params[1], &ip);
 	StripPort(ip);
 
-	ccode = GeoIP_country_code_by_addr(gi, ip);
+	const char *path[] = {"country", "iso_code", NULL};
+	std::string str = lookupString(ip, path);
+	const char *ccode = str.c_str();
 
-	pCtx->StringToLocal(params[2], 3, ccode ? ccode : "");
+	pCtx->StringToLocalUTF8(params[2], 3, ccode, NULL);
 
-	return ccode ? 1 : 0;
+	return (str.length() != 0) ? 1 : 0;
 }
 
 static cell_t sm_Geoip_Code3(IPluginContext *pCtx, const cell_t *params)
 {
 	char *ip;
-	const char *ccode;
-
 	pCtx->LocalToString(params[1], &ip);
 	StripPort(ip);
 
-	ccode = GeoIP_country_code3_by_addr(gi, ip);
-	pCtx->StringToLocal(params[2], 4, ccode ? ccode : "");
+	const char *path[] = {"country", "iso_code", NULL};
+	std::string str = lookupString(ip, path);
+	const char *ccode = str.c_str();
 
-	return ccode ? 1 : 0;
+	for (size_t i = 0; i < SM_ARRAYSIZE(GeoIPCountryCode); i++)
+	{
+		if (!strncmp(ccode, GeoIPCountryCode[i], 2))
+		{
+			ccode = GeoIPCountryCode3[i];
+			break;
+		}
+	}
+
+	pCtx->StringToLocalUTF8(params[2], 4, ccode, NULL);
+
+	return (str.length() != 0) ? 1 : 0;
+}
+
+static cell_t sm_Geoip_RegionCode(IPluginContext *pCtx, const cell_t *params)
+{
+	char *ip;
+	pCtx->LocalToString(params[1], &ip);
+	StripPort(ip);
+
+	size_t length = 0;
+	char ccode[12] = { 0 };
+
+	const char *pathCountry[] = {"country", "iso_code", NULL};
+	std::string countryCode = lookupString(ip, pathCountry);
+
+	if (countryCode.length() != 0)
+	{
+		const char *pathRegion[] = {"subdivisions", "0", "iso_code", NULL};
+		std::string regionCode = lookupString(ip, pathRegion);
+
+		length = regionCode.length();
+
+		if (length != 0)
+		{
+			ke::SafeSprintf(ccode, sizeof(ccode), "%s-%s", countryCode.c_str(), regionCode.c_str());
+		}
+	}
+
+	pCtx->StringToLocalUTF8(params[2], sizeof(ccode), ccode, NULL);
+
+	return (length != 0) ? 1 : 0;
+}
+
+static cell_t sm_Geoip_ContinentCode(IPluginContext *pCtx, const cell_t *params)
+{
+	char *ip;
+	pCtx->LocalToString(params[1], &ip);
+	StripPort(ip);
+
+	const char *path[] = {"continent", "code", NULL};
+	std::string str = lookupString(ip, path);
+	const char *ccode = str.c_str();
+
+	pCtx->StringToLocalUTF8(params[2], 3, ccode, NULL);
+
+	return getContinentId(ccode);
 }
 
 static cell_t sm_Geoip_Country(IPluginContext *pCtx, const cell_t *params)
 {
 	char *ip;
-	const char *ccode;
-
 	pCtx->LocalToString(params[1], &ip);
 	StripPort(ip);
 
-	ccode = GeoIP_country_name_by_addr(gi, ip);
-	pCtx->StringToLocal(params[2], params[3], (ccode) ? ccode : "");
+	const char *path[] = {"country", "names", "en", NULL};
+	std::string str = lookupString(ip, path);
+	const char *ccode = str.c_str();
 
-	return ccode ? 1 : 0;
+	pCtx->StringToLocalUTF8(params[2], params[3], ccode, NULL);
+
+	return (str.length() != 0) ? 1 : 0;
+}
+
+static cell_t sm_Geoip_CountryEx(IPluginContext *pCtx, const cell_t *params)
+{
+	char *ip;
+	pCtx->LocalToString(params[1], &ip);
+	StripPort(ip);
+
+	if (params[4] > 0)
+	{
+		IGamePlayer *player = playerhelpers->GetGamePlayer(params[4]);
+		if (!player || !player->IsConnected())
+		{
+			return pCtx->ThrowNativeError("Invalid client index %d", params[4]);
+		}
+	}
+
+	const char *path[] = {"country", "names", getLang(params[4]), NULL};
+	std::string str = lookupString(ip, path);
+	const char *ccode = str.c_str();
+
+	pCtx->StringToLocalUTF8(params[2], params[3], ccode, NULL);
+
+	return (str.length() != 0) ? 1 : 0;
+}
+
+static cell_t sm_Geoip_Continent(IPluginContext *pCtx, const cell_t *params)
+{
+	char *ip;
+	pCtx->LocalToString(params[1], &ip);
+	StripPort(ip);
+
+	if (params[4] > 0)
+	{
+		IGamePlayer *player = playerhelpers->GetGamePlayer(params[4]);
+		if (!player || !player->IsConnected())
+		{
+			return pCtx->ThrowNativeError("Invalid client index %d", params[4]);
+		}
+	}
+
+	const char *path[] = {"continent", "names", getLang(params[4]), NULL};
+	std::string str = lookupString(ip, path);
+	const char *ccode = str.c_str();
+
+	pCtx->StringToLocalUTF8(params[2], params[3], ccode, NULL);
+
+	return (str.length() != 0) ? 1 : 0;
+}
+
+static cell_t sm_Geoip_Region(IPluginContext *pCtx, const cell_t *params)
+{
+	char *ip;
+	pCtx->LocalToString(params[1], &ip);
+	StripPort(ip);
+
+	if (params[4] > 0)
+	{
+		IGamePlayer *player = playerhelpers->GetGamePlayer(params[4]);
+		if (!player || !player->IsConnected())
+		{
+			return pCtx->ThrowNativeError("Invalid client index %d", params[4]);
+		}
+	}
+
+	const char *path[] = {"subdivisions", "0", "names", getLang(params[4]), NULL};
+	std::string str = lookupString(ip, path);
+	const char *ccode = str.c_str();
+
+	pCtx->StringToLocalUTF8(params[2], params[3], ccode, NULL);
+
+	return (str.length() != 0) ? 1 : 0;
+}
+
+static cell_t sm_Geoip_City(IPluginContext *pCtx, const cell_t *params)
+{
+	char *ip;
+	pCtx->LocalToString(params[1], &ip);
+	StripPort(ip);
+
+	if (params[4] > 0)
+	{
+		IGamePlayer *player = playerhelpers->GetGamePlayer(params[4]);
+		if (!player || !player->IsConnected())
+		{
+			return pCtx->ThrowNativeError("Invalid client index %d", params[4]);
+		}
+	}
+
+	const char *path[] = {"city", "names", getLang(params[4]), NULL};
+	std::string str = lookupString(ip, path);
+	const char *ccode = str.c_str();
+
+	pCtx->StringToLocalUTF8(params[2], params[3], ccode, NULL);
+
+	return (str.length() != 0) ? 1 : 0;
+}
+
+static cell_t sm_Geoip_Timezone(IPluginContext *pCtx, const cell_t *params)
+{
+	char *ip;
+	pCtx->LocalToString(params[1], &ip);
+	StripPort(ip);
+
+	const char *path[] = {"location", "time_zone", NULL};
+	std::string str = lookupString(ip, path);
+	const char *ccode = str.c_str();
+
+	pCtx->StringToLocalUTF8(params[2], params[3], ccode, NULL);
+
+	return (str.length() != 0) ? 1 : 0;
+}
+
+static cell_t sm_Geoip_Latitude(IPluginContext *pCtx, const cell_t *params)
+{
+	char *ip;
+	pCtx->LocalToString(params[1], &ip);
+	StripPort(ip);
+
+	const char *path[] = {"location", "latitude", NULL};
+	double latitude = lookupDouble(ip, path);
+
+	return sp_ftoc(latitude);
+}
+
+static cell_t sm_Geoip_Longitude(IPluginContext *pCtx, const cell_t *params)
+{
+	char *ip;
+	pCtx->LocalToString(params[1], &ip);
+	StripPort(ip);
+
+	const char *path[] = {"location", "longitude", NULL};
+	double longitude = lookupDouble(ip, path);
+
+	return sp_ftoc(longitude);
+}
+
+static cell_t sm_Geoip_Distance(IPluginContext *pCtx, const cell_t *params)
+{
+	float earthRadius = params[5] ? 3958.0 : 6370.997; // miles / km
+
+	float lat1 = sp_ctof(params[1]) * (M_PI / 180);
+	float lon1 = sp_ctof(params[2]) * (M_PI / 180);
+	float lat2 = sp_ctof(params[3]) * (M_PI / 180);
+	float lon2 = sp_ctof(params[4]) * (M_PI / 180);
+
+	return sp_ftoc(earthRadius * acos(sin(lat1) * sin(lat2) + cos(lat1) * cos(lat2) * cos(lon2 - lon1)));
 }
 
 const sp_nativeinfo_t geoip_natives[] = 
 {
 	{"GeoipCode2",			sm_Geoip_Code2},
 	{"GeoipCode3",			sm_Geoip_Code3},
+	{"GeoipRegionCode",		sm_Geoip_RegionCode},
+	{"GeoipContinentCode",	sm_Geoip_ContinentCode},
 	{"GeoipCountry",		sm_Geoip_Country},
+	{"GeoipCountryEx",		sm_Geoip_CountryEx},
+	{"GeoipContinent",		sm_Geoip_Continent},
+	{"GeoipRegion",			sm_Geoip_Region},
+	{"GeoipCity",			sm_Geoip_City},
+	{"GeoipTimezone",		sm_Geoip_Timezone},
+	{"GeoipLatitude",		sm_Geoip_Latitude},
+	{"GeoipLongitude",		sm_Geoip_Longitude},
+	{"GeoipDistance",		sm_Geoip_Distance},
 	{NULL,					NULL},
 };
 

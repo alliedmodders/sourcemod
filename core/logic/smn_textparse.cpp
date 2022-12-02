@@ -29,6 +29,8 @@
  * Version: $Id$
  */
 
+#include <string.h>
+
 #include "common_logic.h"
 #include <ITextParsers.h>
 #include <ISourceMod.h>
@@ -264,6 +266,32 @@ static cell_t SMC_ParseFile(IPluginContext *pContext, const cell_t *params)
 	return (cell_t)p_err;
 }
 
+static cell_t SMC_ParseString(IPluginContext *pContext, const cell_t *params)
+{
+	OpenHandle<ParseInfo> parse(pContext, params[1], g_TypeSMC);
+	if (!parse.Ok())
+		return 0;
+
+	char *str;
+	pContext->LocalToString(params[2], &str);
+
+	SMCStates states;
+	SMCError p_err = textparsers->ParseSMCStream(str,
+												strlen(str),
+												parse,
+												&states,
+												NULL,
+												0);
+
+	cell_t *c_line, *c_col;
+	pContext->LocalToPhysAddr(params[3], &c_line);
+	pContext->LocalToPhysAddr(params[4], &c_col);
+
+	*c_line = states.line;
+	*c_col = states.col;
+	return (cell_t)p_err;
+}
+
 static cell_t SMC_GetErrorString(IPluginContext *pContext, const cell_t *params)
 {
 	const char *str = textparsers->GetSMCErrorString((SMCError)params[1]);
@@ -334,6 +362,7 @@ REGISTER_NATIVES(textNatives)
 	// Transitional syntax support.
 	{"SMCParser.SMCParser",				SMC_CreateParser},
 	{"SMCParser.ParseFile",				SMC_ParseFile},
+	{"SMCParser.ParseString",			SMC_ParseString},
 	{"SMCParser.OnStart.set",			SMC_SetParseStart},
 	{"SMCParser.OnEnd.set",				SMC_SetParseEnd},
 	{"SMCParser.OnEnterSection.set",	SMCParser_OnEnterSection_set},

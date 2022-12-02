@@ -308,7 +308,7 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 	{
 		ItemDrawInfo &dr = drawItems[foundItems].draw;
 		/* Is the item valid? */
-		if (menu->GetItemInfo(i, &dr) != NULL)
+		if (menu->GetItemInfo(i, &dr, client) != NULL)
 		{
 			/* Ask the user to change the style, if necessary */
 			mh->OnMenuDrawItem(menu, client, i, dr.style);
@@ -398,7 +398,7 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 			}
 			while (++lastItem < totalItems)
 			{
-				if (menu->GetItemInfo(lastItem, &dr) != NULL)
+				if (menu->GetItemInfo(lastItem, &dr, client) != NULL)
 				{
 					mh->OnMenuDrawItem(menu, client, lastItem, dr.style);
 					if (IsSlotItem(panel, dr.style))
@@ -420,7 +420,7 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 			lastItem--;
 			while (lastItem != 0)
 			{
-				if (menu->GetItemInfo(lastItem, &dr) != NULL)
+				if (menu->GetItemInfo(lastItem, &dr, client) != NULL)
 				{
 					mh->OnMenuDrawItem(menu, client, lastItem, dr.style);
 					if (IsSlotItem(panel, dr.style))

@@ -42,6 +42,7 @@
 #include <IPlayerHelpers.h>
 #include <IGameHelpers.h>
 #include <IEngineTrace.h>
+#include <ispatialpartition.h>
 #include <IEngineSound.h>
 #include <ivoiceserver.h>
 #include <iplayerinfo.h>
@@ -60,6 +61,12 @@
 #include <itoolentity.h>
 #endif
 
+#if SOURCE_ENGINE == SE_ALIENSWARM || SOURCE_ENGINE == SE_PORTAL2 || SOURCE_ENGINE == SE_INSURGENCY || SOURCE_ENGINE == SE_DOI || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_CSGO
+#define CLIENTVOICE_HOOK_SUPPORT
+#else
+#include <inetmsghandler.h>
+#endif
+
 /**
  * @brief Implementation of the SDK Tools extension.
  * Note: Uncomment one of the pre-defined virtual functions in order to use it.
@@ -69,6 +76,7 @@ class SDKTools :
 	public IHandleTypeDispatch,
 	public IConCommandBaseAccessor,
 	public IClientListener,
+	public ITimedEvent,
 	public ICommandTargetProcessor
 {
 public: //public IHandleTypeDispatch
@@ -94,11 +102,19 @@ public: //IConCommandBaseAccessor
 	bool RegisterConCommandBase(ConCommandBase *pVar);
 public: //IClientListner
 	bool InterceptClientConnect(int client, char *error, size_t maxlength);
+#if !defined CLIENTVOICE_HOOK_SUPPORT
+	void OnClientConnected(int client);
+#endif
 	void OnClientPutInServer(int client);
 	void OnClientDisconnecting(int client);
+public:
+#if defined CLIENTVOICE_HOOK_SUPPORT
+	void OnClientVoice(edict_t *pPlayer);
+#endif
 public: // IVoiceServer
 	bool OnSetClientListening(int iReceiver, int iSender, bool bListen);
 	void VoiceInit();
+	void VoiceShutdown();
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	void OnClientCommand(edict_t *pEntity, const CCommand &args);
 #else
@@ -107,11 +123,15 @@ public: // IVoiceServer
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
 	void OnSendClientCommand(edict_t *pPlayer, const char *szFormat);
 #endif
+public: //ITimedEvent
+	ResultType OnTimer(ITimer *pTimer, void *pData);
+	void OnTimerEnd(ITimer *pTimer, void *pData);
 
 public: //ICommandTargetProcessor
 	bool ProcessCommandTarget(cmd_target_info_t *info);
 public:
 	bool LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
+	void LevelShutdown();
 	void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
 public:
 	bool HasAnyLevelInited() { return m_bAnyLevelInited; }
@@ -120,7 +140,7 @@ public:
 	bool ShouldFollowCSGOServerGuidelines() const { return m_bFollowCSGOServerGuidelines; }
 	bool CanSetCSGOEntProp(const char *pszPropName) { return !ShouldFollowCSGOServerGuidelines() || !m_CSGOBadList.has(pszPropName); }
 private:
-	ke::HashSet<ke::AString, detail::StringHashMapPolicy> m_CSGOBadList;
+	ke::HashSet<std::string, detail::StringHashMapPolicy> m_CSGOBadList;
 	bool m_bFollowCSGOServerGuidelines = false;
 #endif
 private:
@@ -131,6 +151,7 @@ extern SDKTools g_SdkTools;
 /* Interfaces from engine or gamedll */
 extern IServerGameEnts *gameents;
 extern IEngineTrace *enginetrace;
+extern ISpatialPartition *partition;
 extern IEngineSound *engsound;
 extern INetworkStringTableContainer *netstringtables;
 extern IServerPluginHelpers *pluginhelpers;
@@ -154,6 +175,11 @@ extern HandleType_t g_CallHandle;
 extern HandleType_t g_TraceHandle;
 /* Call Wrappers */
 extern ICallWrapper *g_pAcceptInput;
+/* Timers */
+extern ITimer *g_hTimerSpeaking[SM_MAXPLAYERS+1];
+/* Forwards */
+extern IForward *m_OnClientSpeaking;
+extern IForward *m_OnClientSpeakingEnd;
 /* Call classes */
 extern SourceHook::CallClass<IVEngineServer> *enginePatch;
 extern SourceHook::CallClass<IEngineSound> *enginesoundPatch;

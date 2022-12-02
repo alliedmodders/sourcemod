@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ICellArray.h>
+#include <amtl/am-bits.h>
 
 extern HandleType_t htCellArray;
 
@@ -214,24 +215,34 @@ private:
 		{
 			return true;
 		}
+		size_t newAllocSize = m_AllocSize;
 		/* Set a base allocation size of 8 items */
-		if (!m_AllocSize)
+		if (!newAllocSize)
 		{
-			m_AllocSize = 8;
+			newAllocSize = 8;
+		}
+		if (!ke::IsUintPtrAddSafe(m_Size, count))
+		{
+			return false;
 		}
 		/* If it's not enough, keep doubling */
-		while (m_Size + count > m_AllocSize)
+		while (m_Size + count > newAllocSize)
 		{
-			m_AllocSize *= 2;
+			if (!ke::IsUintPtrMultiplySafe(newAllocSize, 2))
+			{
+				return false;
+			}
+			newAllocSize *= 2;
 		}
 		/* finally, allocate the new block */
-		if (m_Data)
+		cell_t *data = static_cast<cell_t*>(realloc(m_Data, sizeof(cell_t) * m_BlockSize * newAllocSize));
+		/* Update state if allocation was successful */
+		if (data)
 		{
-			m_Data = (cell_t *)realloc(m_Data, sizeof(cell_t) * m_BlockSize * m_AllocSize);
-		} else {
-			m_Data = (cell_t *)malloc(sizeof(cell_t) * m_BlockSize * m_AllocSize);
+			m_AllocSize = newAllocSize;
+			m_Data = data;
 		}
-		return (m_Data != NULL);
+		return (data != nullptr);
 	}
 private:
 	cell_t *m_Data;

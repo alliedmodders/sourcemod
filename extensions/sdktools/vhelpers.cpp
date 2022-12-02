@@ -34,6 +34,11 @@
 #include "vhelpers.h"
 #include "vglobals.h"
 
+#include "sm_platform.h"
+#ifdef PLATFORM_WINDOWS
+#include "sm_invalidparamhandler.h"
+#endif
+
 CallHelper s_Teleport;
 CallHelper s_GetVelocity;
 CallHelper s_EyeAngles;
@@ -305,6 +310,99 @@ bool FindNestedDataTable(SendTable *pTable, const char *name)
 	return false;
 }
 
+// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/baseentity.cpp#L3396L3404
+// CBaseEntity::SetOwnerEntity offers a more or less direct access to CBaseEntity::CollisionRulesChanged
+// The function will return false if something went wrong during call setup/game is unsupported
+class VEmptyClass {};
+bool CollisionRulesChanged(CBaseEntity *pEntity)
+{
+	// CBaseEntity::SetOwnerEntity is a virtual function, and while not many classes override it
+	// Only CNodeEnt, as confirmed by a valve comment
+	// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/mp/src/game/server/baseentity.h#L493
+	// In order to keep consitent behaviour across all entities, including CNodeEnt and potential source games that have entity classes overriding this function.
+	// We are going to fetch the world entity, which doesn't have this function overriden (on all source games hopefully), and obtain the function address
+	static void *func = nullptr;
+	static int offsethOwnerEntity = -1;
+	if (func == nullptr)
+	{
+		int offset = -1;
+		if (!g_pGameConf->GetOffset("SetOwnerEntity", &offset))
+		{
+			return false;
+		}
+
+#if SOURCE_ENGINE < SE_ORANGEBOX
+		CBaseEntity *pWorldEntity = nullptr;
+		for (int i = 0; i < gpGlobals->maxEntities && pWorldEntity == nullptr; ++i)
+		{
+			pWorldEntity = gamehelpers->ReferenceToEntity(i);
+		}
+#else
+		CBaseEntity *pWorldEntity = ((IServerUnknown *)servertools->FirstEntity())->GetBaseEntity();
+#endif
+		// Couldn't find the world (what)
+		if (pWorldEntity == nullptr)
+		{
+			return false;
+		}
+
+		// Retrieve m_hOwnerEntity offset
+		sm_datatable_info_t offset_data_info;
+		datamap_t *offsetMap = gamehelpers->GetDataMap(pWorldEntity);
+		if (gamehelpers->FindDataMapInfo(offsetMap, "m_hOwnerEntity", &offset_data_info))
+		{
+			offsethOwnerEntity = offset_data_info.actual_offset;
+		}
+
+		if (offsethOwnerEntity == -1)
+		{
+			// Well...
+			return false;
+		}
+
+		// Hopefully the world vtable...
+		void **world_vtable = *reinterpret_cast<void***>(pWorldEntity);
+		// Hopefully CBaseEntity::SetOwnerEntity and not an overriden function...
+		func = world_vtable[offset];
+	}
+
+	// Build our member function ptr
+	union
+	{
+		void (VEmptyClass::*mfpnew)(CBaseEntity *pOwner);
+#ifndef PLATFORM_POSIX
+		void *addr;
+	} u;
+	u.addr = func;
+#else
+		struct  
+		{
+			void *addr;
+			intptr_t adjustor;
+		} s;
+	} u;
+	u.s.addr = func;
+	u.s.adjustor = 0;
+#endif
+	// Retrieve m_hOwnerEntity
+	CBaseHandle *hndl = (CBaseHandle *)((uint8_t *)pEntity + offsethOwnerEntity);
+	CBaseEntity *oldOwner = gamehelpers->ReferenceToEntity(hndl->GetEntryIndex());
+
+	// Now change the owner to something else, so we fall through the if statement
+	// when calling CBaseEntity::SetOwnerEntity and only end up calling CBaseEntity::CollisionRulesChanged
+	if (oldOwner)
+	{
+		hndl->Set(nullptr);
+	}
+	else
+	{
+		hndl->Set((IHandleEntity *)pEntity);
+	}
+
+	(reinterpret_cast<VEmptyClass*>(pEntity)->*u.mfpnew)(oldOwner);
+	return true;
+}
+
 char *UTIL_SendFlagsToString(int flags, int type)
 {
 	static char str[1024];
@@ -407,12 +505,12 @@ void UTIL_DrawSendTable_XML(FILE *fp, SendTable *pTable, int space_count)
 	SendTable *pOtherTable;
 	SendProp *pProp;
 
-	fprintf(fp, " %s<sendtable name=\"%s\">\n", spaces, pTable->GetName());
+	fprintf(fp, " %s<sendtable name='%s'>\n", spaces, pTable->GetName());
 	for (int i = 0; i < pTable->GetNumProps(); i++)
 	{
 		pProp = pTable->GetProp(i);
 
-		fprintf(fp, "  %s<property name=\"%s\">\n", spaces, pProp->GetName());
+		fprintf(fp, "  %s<property name='%s'>\n", spaces, pProp->GetName());
 
 		if ((type_name = GetDTTypeName(pProp->GetType())) != NULL)
 		{
@@ -439,9 +537,9 @@ void UTIL_DrawSendTable_XML(FILE *fp, SendTable *pTable, int space_count)
 
 void UTIL_DrawServerClass_XML(FILE *fp, ServerClass *sc)
 {
-	fprintf(fp, "<serverclass name=\"%s\">\n", sc->GetName());
-	UTIL_DrawSendTable_XML(fp, sc->m_pTable, 0);
-	fprintf(fp, "</serverclass>\n");
+	fprintf(fp, " <serverclass name='%s'>\n", sc->GetName());
+	UTIL_DrawSendTable_XML(fp, sc->m_pTable, 1);
+	fprintf(fp, " </serverclass>\n");
 }
 
 void UTIL_DrawSendTable(FILE *fp, SendTable *pTable, int level = 1)
@@ -492,19 +590,6 @@ void UTIL_DrawSendTable(FILE *fp, SendTable *pTable, int level = 1)
 	}
 }
 
-#if defined SUBPLATFORM_SECURECRT
-void _ignore_invalid_parameter(
-	const wchar_t * expression,
-	const wchar_t * function, 
-	const wchar_t * file,
-	unsigned int line,
-	uintptr_t pReserved
-	)
-{
-	/* Wow we don't care, thanks Microsoft. */
-}
-#endif
-
 CON_COMMAND(sm_dump_netprops_xml, "Dumps the networkable property table as an XML file")
 {
 #if SOURCE_ENGINE <= SE_DARKMESSIAH
@@ -537,19 +622,18 @@ CON_COMMAND(sm_dump_netprops_xml, "Dumps the networkable property table as an XM
 	char buffer[80];
 	buffer[0] = 0;
 
-#if defined SUBPLATFORM_SECURECRT
-	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
-#endif
-
 	time_t t = g_pSM->GetAdjustedTime();
-	size_t written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
-
-#if defined SUBPLATFORM_SECURECRT
-	_set_invalid_parameter_handler(handler);
+	size_t written = 0;
+	{
+#ifdef PLATFORM_WINDOWS
+		InvalidParameterHandler p;
 #endif
+		written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
+	}
 
 	fprintf(fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n");
 	fprintf(fp, "<!-- Dump of all network properties for \"%s\" as at %s -->\n\n", g_pSM->GetGameFolderName(), buffer);
+	fprintf(fp, "<netprops>\n");
 
 	ServerClass *pBase = gamedll->GetAllServerClasses();
 	while (pBase != NULL)
@@ -558,6 +642,7 @@ CON_COMMAND(sm_dump_netprops_xml, "Dumps the networkable property table as an XM
 		pBase = pBase->m_pNext;
 	}
 
+	fprintf(fp, "</netprops>\n");
 	fclose(fp);
 }
 
@@ -593,16 +678,14 @@ CON_COMMAND(sm_dump_netprops, "Dumps the networkable property table as a text fi
 	char buffer[80];
 	buffer[0] = 0;
 
-#if defined SUBPLATFORM_SECURECRT
-	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
-#endif
-
 	time_t t = g_pSM->GetAdjustedTime();
-	size_t written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
-
-#if defined SUBPLATFORM_SECURECRT
-	_set_invalid_parameter_handler(handler);
+	size_t written = 0;
+	{
+#ifdef PLATFORM_WINDOWS
+		InvalidParameterHandler p;
 #endif
+		written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
+	}
 
 	fprintf(fp, "// Dump of all network properties for \"%s\" as at %s\n//\n\n", g_pSM->GetGameFolderName(), buffer);
 
@@ -627,7 +710,9 @@ CEntityFactoryDictionary *GetEntityFactoryDictionary()
 	|| SOURCE_ENGINE == SE_HL2DM   \
 	|| SOURCE_ENGINE == SE_SDK2013 \
 	|| SOURCE_ENGINE == SE_BMS     \
-	|| SOURCE_ENGINE == SE_NUCLEARDAWN
+	|| SOURCE_ENGINE == SE_BLADE   \
+	|| SOURCE_ENGINE == SE_NUCLEARDAWN \
+	|| SOURCE_ENGINE == SE_PVKII
 	dict = (CEntityFactoryDictionary *) servertools->GetEntityFactoryDictionary();
 #else
 	if (dict == NULL)
@@ -734,16 +819,14 @@ CON_COMMAND(sm_dump_classes, "Dumps the class list as a text file")
 	char buffer[80];
 	buffer[0] = 0;
 
-#if defined SUBPLATFORM_SECURECRT
-	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
-#endif
-
 	time_t t = g_pSM->GetAdjustedTime();
-	size_t written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
-
-#if defined SUBPLATFORM_SECURECRT
-	_set_invalid_parameter_handler(handler);
+	size_t written = 0;
+	{
+#ifdef PLATFORM_WINDOWS
+		InvalidParameterHandler p;
 #endif
+		written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
+	}
 
 	fprintf(fp, "// Dump of all classes for \"%s\" as at %s\n//\n\n", g_pSM->GetGameFolderName(), buffer);
 
@@ -898,16 +981,14 @@ CON_COMMAND(sm_dump_datamaps, "Dumps the data map list as a text file")
 	char buffer[80];
 	buffer[0] = 0;
 
-#if defined SUBPLATFORM_SECURECRT
-	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
-#endif
-
 	time_t t = g_pSM->GetAdjustedTime();
-	size_t written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
-
-#if defined SUBPLATFORM_SECURECRT
-	_set_invalid_parameter_handler(handler);
+	size_t written = 0;
+	{
+#ifdef PLATFORM_WINDOWS
+		InvalidParameterHandler p;
 #endif
+		written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
+	}
 
 	fprintf(fp, "// Dump of all datamaps for \"%s\" as at %s\n//\n//\n", g_pSM->GetGameFolderName(), buffer);
 
@@ -953,4 +1034,155 @@ CON_COMMAND(sm_dump_datamaps, "Dumps the data map list as a text file")
 
 	fclose(fp);
 
+}
+
+void UTIL_DrawDataTable_XML(FILE *fp, datamap_t *pMap, int level)
+{
+	char spaces[255];
+
+	for (int i = 0; i < level; i++)
+	{
+		spaces[i] = ' ';
+	}
+
+	spaces[level] = '\0';
+
+	const char *externalname;
+	char *flags;
+
+	while (pMap)
+	{
+		for (int i = 0; i < pMap->dataNumFields; i++)
+		{
+			if (pMap->dataDesc[i].fieldName == NULL)
+			{
+				continue;
+			}
+
+			if (pMap->dataDesc[i].td)
+			{
+				fprintf(fp, " %s<subtable name='%s' offset='%d' classname='%s' deep='%d'>\n", spaces, pMap->dataDesc[i].fieldName, GetTypeDescOffs(&pMap->dataDesc[i]), pMap->dataDesc[i].td->dataClassName, level + 1);
+				UTIL_DrawDataTable_XML(fp, pMap->dataDesc[i].td, level + 1);
+				fprintf(fp, " %s</subtable>\n", spaces);
+			}
+			else
+			{
+				externalname = pMap->dataDesc[i].externalName;
+				flags = UTIL_DataFlagsToString(pMap->dataDesc[i].flags);
+
+				fprintf(fp, " %s<datamap name='%s'>\n", spaces, pMap->dataDesc[i].fieldName);
+				fprintf(fp, "  %s<offset>%d</offset>\n", spaces, GetTypeDescOffs(&pMap->dataDesc[i]));
+				fprintf(fp, "  %s<flags>%s</flags>\n", spaces, flags);
+				fprintf(fp, "  %s<bytes>%d</bytes>\n", spaces, pMap->dataDesc[i].fieldSizeInBytes);
+				if (externalname != NULL)
+				{
+					fprintf(fp, "  %s<external>%s</external>\n", spaces, externalname);
+				}
+
+				fprintf(fp, " %s</datamap>\n", spaces);
+			}
+		}
+		pMap = pMap->baseMap;
+	}
+}
+
+CON_COMMAND(sm_dump_datamaps_xml, "Dumps the data map list as an XML file")
+{
+#if SOURCE_ENGINE <= SE_DARKMESSIAH
+	CCommand args;
+#endif
+
+	if (args.ArgC() < 2)
+	{
+		META_CONPRINT("Usage: sm_dump_datamaps_xml <file>\n");
+		return;
+	}
+
+	const char *file = args.Arg(1);
+	if (!file || file[0] == '\0')
+	{
+		META_CONPRINT("Usage: sm_dump_datamaps_xml <file>\n");
+		return;
+	}
+
+	CEntityFactoryDictionary *dict = GetEntityFactoryDictionary();
+	if (dict == NULL)
+	{
+		META_CONPRINT("Failed to locate function\n");
+		return;
+	}
+
+	char path[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, path, sizeof(path), "%s", file);
+
+	FILE *fp = NULL;
+	if ((fp = fopen(path, "wt")) == NULL)
+	{
+		META_CONPRINTF("Could not open file \"%s\"\n", path);
+		return;
+	}
+
+	char buffer[80];
+	buffer[0] = 0;
+
+	time_t t = g_pSM->GetAdjustedTime();
+	size_t written = 0;
+	{
+#ifdef PLATFORM_WINDOWS
+		InvalidParameterHandler p;
+#endif
+		written = strftime(buffer, sizeof(buffer), "%Y/%m/%d", localtime(&t));
+	}
+
+	fprintf(fp, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\n");
+
+	fprintf(fp, "<!-- Dump of all datamaps for \"%s\" as at %s -->\n\n\n", g_pSM->GetGameFolderName(), buffer);
+
+
+	fprintf(fp, "<!-- Flag Details: -->\n\n");
+
+	fprintf(fp, "<!-- Global: This field is masked for global entity save/restore -->\n");
+	fprintf(fp, "<!-- Save: This field is saved to disk -->\n");
+	fprintf(fp, "<!-- Key: This field can be requested and written to by string name at load time -->\n");
+	fprintf(fp, "<!-- Input: This field can be written to by string name at run time, and a function called -->\n");
+	fprintf(fp, "<!-- Output: This field propogates it's value to all targets whenever it changes -->\n");
+	fprintf(fp, "<!-- FunctionTable: This is a table entry for a member function pointer -->\n");
+	fprintf(fp, "<!-- Ptr: This field is a pointer, not an embedded object -->\n");
+	fprintf(fp, "<!-- Override: The field is an override for one in a base class (only used by prediction system for now) -->\n");
+
+	fprintf(fp, "\n\n");
+
+	fprintf(fp, "<datamaps>\n");
+
+	static int offsEFlags = -1;
+	for (int i = dict->m_Factories.First(); i != dict->m_Factories.InvalidIndex(); i = dict->m_Factories.Next(i))
+	{
+		IServerNetworkable *entity = dict->Create(dict->m_Factories.GetElementName(i));
+		ServerClass *sclass = entity->GetServerClass();
+		datamap_t *pMap = gamehelpers->GetDataMap(entity->GetBaseEntity());
+
+		fprintf(fp, " <serverclass name='%s' element='%s'>\n", sclass->GetName(), dict->m_Factories.GetElementName(i));
+
+		UTIL_DrawDataTable_XML(fp, pMap, 1);
+
+		fprintf(fp, " </serverclass>\n");
+
+		if (offsEFlags == -1)
+		{
+			sm_datatable_info_t info;
+			if (!gamehelpers->FindDataMapInfo(pMap, "m_iEFlags", &info))
+			{
+				continue;
+			}
+
+			offsEFlags = info.actual_offset;
+		}
+
+		int *eflags = (int *)((char *)entity->GetBaseEntity() + offsEFlags);
+		*eflags |= (1 << 0); // EFL_KILLME
+	}
+
+	fprintf(fp, "</datamaps>\n");
+
+	fclose(fp);
 }

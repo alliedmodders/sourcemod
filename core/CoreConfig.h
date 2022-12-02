@@ -68,7 +68,7 @@ private:
 	 */
 	ConfigResult SetConfigOption(const char *option, const char *value, ConfigSource, char *Error, size_t maxlength);
 private:
-	StringHashMap<ke::AString> m_KeyValues;
+	StringHashMap<std::string> m_KeyValues;
 };
 
 extern bool SM_AreConfigsExecuted();
