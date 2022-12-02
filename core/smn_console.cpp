@@ -1091,6 +1091,26 @@ static cell_t IsChatTrigger(IPluginContext *pContext, const cell_t *params)
 	return g_ChatTriggers.IsChatTrigger() ? 1 : 0;
 }
 
+static cell_t GetPublicChatTriggers(IPluginContext *pContext, const cell_t *params)
+{
+	size_t length;
+
+	const char *triggers = g_ChatTriggers.GetPublicChatTrigger();
+	pContext->StringToLocalUTF8(params[1], params[2], triggers ? triggers : "", &length);
+
+	return static_cast<cell_t>(length);
+}
+
+static cell_t GetSilentChatTriggers(IPluginContext *pContext, const cell_t *params)
+{
+	size_t length;
+
+	const char *triggers = g_ChatTriggers.GetPrivateChatTrigger();
+	pContext->StringToLocalUTF8(params[1], params[2], triggers ? triggers : "", &length);
+
+	return static_cast<cell_t>(length);
+}
+
 static cell_t SetCommandFlags(IPluginContext *pContext, const cell_t *params)
 {
 	char *name;
@@ -1514,6 +1534,8 @@ REGISTER_NATIVES(consoleNatives)
 	{"ReadCommandIterator",	ReadCommandIterator},
 	{"FakeClientCommandEx",	FakeClientCommandEx},
 	{"IsChatTrigger",		IsChatTrigger},
+	{"GetPublicChatTriggers", GetPublicChatTriggers},
+	{"GetSilentChatTriggers", GetSilentChatTriggers},
 	{"SetCommandFlags",		SetCommandFlags},
 	{"GetCommandFlags",		GetCommandFlags},
 	{"FindFirstConCommand",	FindFirstConCommand},
