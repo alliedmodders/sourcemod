@@ -1046,7 +1046,7 @@ int SDKHooks::Hook_GetMaxHealth()
 
 		int new_max = original_max;
 
-		cell_t res = Pl_Continue;
+		cell_t ret = Pl_Continue;
 
 		std::vector<IPluginFunction *> callbackList;
 		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
@@ -1055,10 +1055,20 @@ int SDKHooks::Hook_GetMaxHealth()
 			IPluginFunction *callback = callbackList[entry];
 			callback->PushCell(entity);
 			callback->PushCellByRef(&new_max);
+
+			cell_t res;
 			callback->Execute(&res);
+
+			if (res > ret)
+			{
+				ret = res;
+			}
 		}
 
-		if (res >= Pl_Changed)
+		if (ret >= Pl_Handled)
+			RETURN_META_VALUE(MRES_SUPERCEDE, original_max);
+
+		if (ret >= Pl_Changed)
 			RETURN_META_VALUE(MRES_SUPERCEDE, new_max);
 
 		break;
@@ -1383,7 +1393,7 @@ void SDKHooks::Hook_Spawn()
 		}
 
 		int entity = gamehelpers->EntityToBCompatRef(pEntity);
-		cell_t res = Pl_Continue;
+		cell_t ret = Pl_Continue;
 
 		std::vector<IPluginFunction *> callbackList;
 		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
@@ -1391,10 +1401,17 @@ void SDKHooks::Hook_Spawn()
 		{
 			IPluginFunction *callback = callbackList[entry];
 			callback->PushCell(entity);
+
+			cell_t res;
 			callback->Execute(&res);
+
+			if (res > ret)
+			{
+				ret = res;
+			}
 		}
 
-		if (res >= Pl_Handled)
+		if (ret >= Pl_Handled)
 			RETURN_META(MRES_SUPERCEDE);
 
 		break;
@@ -1605,7 +1622,14 @@ void SDKHooks::Hook_Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 			callback->PushCell(caller);
 			callback->PushCell(useType);
 			callback->PushFloat(value);
-			callback->Execute(&ret);
+
+			cell_t res;
+			callback->Execute(&res);
+
+			if (res > ret)
+			{
+				ret = res;
+			}
 		}
 
 		if (ret >= Pl_Handled)
