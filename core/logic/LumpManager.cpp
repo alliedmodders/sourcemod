@@ -102,7 +102,7 @@ std::string EntityLumpManager::Dump() {
 		}
 		stream << "{\n";
 		for (const auto& pair : *entry) {
-			stream << '"' << pair.first << "\"	\"" << pair.second << '"' << '\n';
+			stream << '"' << pair.first << "\" \"" << pair.second << '"' << '\n';
 		}
 		stream << "}\n";
 	}
