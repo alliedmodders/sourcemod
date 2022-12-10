@@ -124,9 +124,11 @@ SMCResult SignatureGameConfig::ReadSMC_NewSection(const SMCStates *states, const
 	{
 		auto sig = signatures_.find(name);
 		if (sig.found())
-			g_CurrentSignature = sig->value;
-		else
-			g_CurrentSignature = new SignatureWrapper();
+		{
+			delete sig->value;
+			signatures_.remove(sig);
+		}
+		g_CurrentSignature = new SignatureWrapper();
 		g_CurrentFunctionName = name;
 		g_ParseState = PState_Function;
 		break;
