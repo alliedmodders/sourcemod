@@ -115,7 +115,7 @@ checkout ()
   fi
 }
 
-name=mmsource-1.10
+name=mmsource-1.12
 branch=master
 repo="https://github.com/alliedmodders/metamod-source"
 origin=
