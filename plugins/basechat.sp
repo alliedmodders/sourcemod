@@ -228,7 +228,8 @@ public Action Command_SmDsay(int client, int args)
 	GetCmdArgString(text, sizeof(text));
  
 	char nameBuf[MAX_NAME_LENGTH];
-	
+	SetHudTextParams(-1.0, 0.25, 3.0, 0, 255, 127, 255, 1);
+
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (!IsClientInGame(i) || IsFakeClient(i))
