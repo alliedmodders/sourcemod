@@ -152,7 +152,8 @@ static cell_t PrepSDKCall_SetSignature(IPluginContext *pContext, const cell_t *p
 	|| SOURCE_ENGINE == SE_INSURGENCY  \
 	|| SOURCE_ENGINE == SE_DOI         \
 	|| SOURCE_ENGINE == SE_CSGO        \
-	|| SOURCE_ENGINE == SE_PVKII
+	|| SOURCE_ENGINE == SE_PVKII       \
+	|| SOURCE_ENGINE == SE_MCV
 		s_call_addr = memutils->ResolveSymbol(handle, &sig[1]);
 #else
 		s_call_addr = dlsym(handle, &sig[1]);

@@ -37,12 +37,14 @@
 #include <cstrike15_usermessage_helpers.h>
 #elif SOURCE_ENGINE == SE_BLADE
 #include <berimbau_usermessage_helpers.h>
+#elif SOURCE_ENGINE == SE_MCV
+#include <vietnam_usermessage_helpers.h>
 #endif
 #include <amtl/am-string.h>
 
 UserMessages g_UserMsgs;
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 SH_DECL_HOOK3_void(IVEngineServer, SendUserMessage, SH_NOATTRIB, 0, IRecipientFilter &, int, const protobuf::Message &);
 #else
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
@@ -51,7 +53,7 @@ SH_DECL_HOOK3(IVEngineServer, UserMessageBegin, SH_NOATTRIB, 0, bf_write *, IRec
 SH_DECL_HOOK2(IVEngineServer, UserMessageBegin, SH_NOATTRIB, 0, bf_write *, IRecipientFilter *, int);
 #endif
 SH_DECL_HOOK0_void(IVEngineServer, MessageEnd, SH_NOATTRIB, 0);
-#endif // ==SE_CSGO || ==SE_BLADE
+#endif // ==SE_CSGO || ==SE_BLADE || ==SE_MCV
 
 UserMessages::UserMessages()
 #ifndef USE_PROTOBUF_USERMESSAGES
@@ -95,7 +97,7 @@ void UserMessages::OnSourceModAllShutdown()
 {
 	if (m_HookCount)
 	{
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 		SH_REMOVE_HOOK(IVEngineServer, SendUserMessage, engine, SH_MEMBER(this, &UserMessages::OnSendUserMessage_Pre), false);
 		SH_REMOVE_HOOK(IVEngineServer, SendUserMessage, engine, SH_MEMBER(this, &UserMessages::OnSendUserMessage_Post), true);
 #else
@@ -115,6 +117,8 @@ int UserMessages::GetMessageIndex(const char *msg)
 	return g_Cstrike15UsermessageHelpers.GetIndex(msg);
 #elif SOURCE_ENGINE == SE_BLADE
 	return g_BerimbauUsermessageHelpers.GetIndex(msg);
+#elif SOURCE_ENGINE == SE_MCV
+	return g_VietnamUsermessageHelpers.GetIndex(msg);
 #else
 
 	int msgid;
@@ -154,6 +158,8 @@ bool UserMessages::GetMessageName(int msgid, char *buffer, size_t maxlength) con
 	const char *pszName = g_Cstrike15UsermessageHelpers.GetName(msgid);
 #elif SOURCE_ENGINE == SE_BLADE
 	const char *pszName = g_BerimbauUsermessageHelpers.GetName(msgid);
+#elif SOURCE_ENGINE == SE_MCV
+	const char *pszName = g_VietnamUsermessageHelpers.GetName(msgid);
 #endif
 	if (!pszName)
 		return false;
@@ -303,7 +309,7 @@ bool UserMessages::EndMessage()
 		return false;
 	}
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	if (m_CurFlags & USERMSG_BLOCKHOOKS)
 	{
 		ENGINE_CALL(SendUserMessage)(static_cast<IRecipientFilter &>(m_CellRecFilter), m_CurId, *m_FakeEngineBuffer);
@@ -333,7 +339,7 @@ bool UserMessages::EndMessage()
 	} else {
 		engine->MessageEnd();
 	}
-#endif // SE_CSGO || SE_BLADE
+#endif // SE_CSGO || SE_BLADE || SE_MCV
 
 	m_InExec = false;
 	m_CurFlags = 0;
@@ -418,7 +424,7 @@ bool UserMessages::InternalHook(int msg_id, IBitBufUserMessageListener *pListene
 
 	if (!m_HookCount++)
 	{
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 		SH_ADD_HOOK(IVEngineServer, SendUserMessage, engine, SH_MEMBER(this, &UserMessages::OnSendUserMessage_Pre), false);
 		SH_ADD_HOOK(IVEngineServer, SendUserMessage, engine, SH_MEMBER(this, &UserMessages::OnSendUserMessage_Post), true);
 #else
@@ -446,6 +452,8 @@ const protobuf::Message *UserMessages::GetMessagePrototype(int msg_type)
 	return g_Cstrike15UsermessageHelpers.GetPrototype(msg_type);
 #elif SOURCE_ENGINE == SE_BLADE
 	return g_BerimbauUsermessageHelpers.GetPrototype(msg_type);
+#elif SOURCE_ENGINE == SE_MCV
+	return g_VietnamUsermessageHelpers.GetPrototype(msg_type);
 #endif
 }
 #endif
@@ -495,7 +503,7 @@ void UserMessages::_DecRefCounter()
 {
 	if (--m_HookCount == 0)
 	{
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 		SH_REMOVE_HOOK(IVEngineServer, SendUserMessage, engine, SH_MEMBER(this, &UserMessages::OnSendUserMessage_Pre), false);
 		SH_REMOVE_HOOK(IVEngineServer, SendUserMessage, engine, SH_MEMBER(this, &UserMessages::OnSendUserMessage_Post), true);
 #else
@@ -507,13 +515,15 @@ void UserMessages::_DecRefCounter()
 	}
 }
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 void UserMessages::OnSendUserMessage_Pre(IRecipientFilter &filter, int msg_type, const protobuf::Message &msg)
 {
 #if SOURCE_ENGINE == SE_CSGO
 	const char *pszName = g_Cstrike15UsermessageHelpers.GetName(msg_type);
 #elif SOURCE_ENGINE == SE_BLADE
 	const char *pszName = g_BerimbauUsermessageHelpers.GetName(msg_type);
+#elif SOURCE_ENGINE == SE_MCV
+	const char *pszName = g_VietnamUsermessageHelpers.GetName(msg_type);
 #endif
 
 	OnStartMessage_Pre(&filter, msg_type, pszName);
@@ -562,7 +572,7 @@ void UserMessages::OnSendUserMessage_Post(IRecipientFilter &filter, int msg_type
 	RETURN_META(res)
 #endif
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 protobuf::Message *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name)
 #elif SOURCE_ENGINE >= SE_LEFT4DEAD
 bf_write *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name)
@@ -602,7 +612,7 @@ bf_write *UserMessages::OnStartMessage_Pre(IRecipientFilter *filter, int msg_typ
 	UM_RETURN_META_VALUE(MRES_IGNORED, NULL);
 }
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 protobuf::Message *UserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name)
 #elif SOURCE_ENGINE >= SE_LEFT4DEAD
 bf_write *UserMessages::OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name)
@@ -767,7 +777,7 @@ void UserMessages::OnMessageEnd_Pre()
 
 	if (!handled && intercepted)
 	{
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 		ENGINE_CALL(SendUserMessage)(static_cast<IRecipientFilter &>(*m_CurRecFilter), m_CurId, *m_InterceptBuffer);
 #else
 		bf_write *engine_bfw;
@@ -779,11 +789,11 @@ void UserMessages::OnMessageEnd_Pre()
 		m_ReadBuffer.StartReading(m_InterceptBuffer.GetBasePointer(), m_InterceptBuffer.GetNumBytesWritten());
 		engine_bfw->WriteBitsFromBuffer(&m_ReadBuffer, m_InterceptBuffer.GetNumBitsWritten());
 		ENGINE_CALL(MessageEnd)();
-#endif // SE_CSGO || SE_BLADE
+#endif // SE_CSGO || SE_BLADE || SE_MCV
 	}
 
 	{
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 		int size = m_OrigBuffer->ByteSize();
 		uint8 *data = (uint8 *)stackalloc(size);
 		m_OrigBuffer->SerializePartialToArray(data, size);
@@ -813,7 +823,7 @@ void UserMessages::OnMessageEnd_Pre()
 			iter++;
 		}
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 		delete pTempMsg;
 #endif
 	}

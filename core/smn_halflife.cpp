@@ -519,6 +519,7 @@ static cell_t GuessSDKVersion(IPluginContext *pContext, const cell_t *params)
 		return 70;
 	case SOURCE_ENGINE_CSGO:
 		return 80;
+	// Deprecated, and not very useful. Don't bother adding new games
 	}
 
 	return 0;

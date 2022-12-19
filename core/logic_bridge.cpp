@@ -373,6 +373,8 @@ void UTIL_ConsolePrint(const char *fmt, ...)
 #define GAMEFIX "2.contagion"
 #elif SOURCE_ENGINE == SE_PVKII
 #define GAMEFIX "2.pvkii"
+#elif SOURCE_ENGINE == SE_MCV
+#define GAMEFIX "2.mcv"
 #else
 #define GAMEFIX "2.ep1"
 #endif
@@ -499,6 +501,8 @@ const char *CoreProviderImpl::GetSourceEngineName()
 	return "mock";
 #elif SOURCE_ENGINE == SE_PVKII
 	return "pvkii";
+#elif SOURCE_ENGINE == SE_MCV
+	return "mcv";
 #endif
 }
 
@@ -517,7 +521,8 @@ bool CoreProviderImpl::SymbolsAreHidden()
 	|| (SOURCE_ENGINE == SE_DOI)  \
 	|| (SOURCE_ENGINE == SE_BLADE)       \
 	|| (SOURCE_ENGINE == SE_CSGO) \
-	|| (SOURCE_ENGINE == SE_PVKII)
+	|| (SOURCE_ENGINE == SE_PVKII) \
+	|| (SOURCE_ENGINE == SE_MCV)
 	return true;
 #else
 	return false;
