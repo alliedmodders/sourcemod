@@ -331,6 +331,10 @@ native bool IsSoundPrecached(const char[] sound);
 /**
  * Creates different types of ingame messages.
  *
+ * Note: On many newer games (Left 4 Dead/2008+), the display of this to clients is broken.
+ *     Additionally, as of 2018, some games also require the client to have cl_showpluginmessages
+ *     set to 1, a non-default value, for this to function.
+ * 
  * @param client        Index of the client.
  * @param kv            KeyValues handle to set the menu keys and options. (Check iserverplugin.h for more information).
  * @param type          Message type to display ingame.
@@ -587,7 +591,7 @@ native void ClearSyncHud(int client, Handle sync);
 /**
  * Shows a HUD message to a client on the given channel.
  *
- * As of this writing, only TF, HL2MP, and SourceForts support HUD Text.
+ * Note: while many games support HUD Text, not all do.
  *
  * @param client        Client index to send the message to.
  * @param channel       A channel number.
@@ -629,6 +633,10 @@ stock void ShowMOTDPanel(int client, const char[] title, const char[] msg, int t
 
 /**
  * Displays a panel asking the client to connect to a specified IP.
+ * 
+ * Note: On many newer games (Left 4 Dead/2008+), the display of this to clients is broken.
+ *     Additionally, as of 2018, some games also require the client to have cl_showpluginmessages
+ *     set to 1, a non-default value, for this to function.
  *
  * @param client        Client index.
  * @param time          Duration to hold the panel on the client's screen.
