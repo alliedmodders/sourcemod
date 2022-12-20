@@ -90,7 +90,8 @@ enum EngineVersion
 	Engine_Contagion,           /**< Contagion */
 	Engine_BlackMesa,           /**< Black Mesa Multiplayer */
 	Engine_DOI,                 /**< Day of Infamy */
-	ENGINE_PVKII                /**< Pirates, Vikings, and Knights II */
+	Engine_PVKII = 26,          /**< Pirates, Vikings, and Knights II */
+	Engine_MCV,                 /**< Military Conflict: Vietnam */
 };
 
 enum FindMapResult

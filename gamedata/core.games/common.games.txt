@@ -106,6 +106,7 @@
 			"engine"			"sdk2013"
 			"engine"			"contagion"
 			"engine"			"pvkii"
+			"engine"			"mcv"
 		}
 		
 		"Offsets"
@@ -190,6 +191,7 @@
 			"game"					"doi"
 			"game"					"bms"
 			"game"					"iosoccer"
+			"game"					"vietnam"
 		}
 
 		"Keys"
@@ -240,6 +242,7 @@
 			"game"					"doi"
 			"game"					"bms"
 			"game"					"iosoccer"
+			"game"					"vietnam"
 		}
 		
 		"Keys"
@@ -300,6 +303,7 @@
 			"game"					"csgo"
 			"game"					"reactivedrop"
 			"game"					"FortressForever"
+			"game"					"vietnam"
 		}
 		
 		"Keys"
@@ -352,6 +356,7 @@
 			"engine"	"csgo"
 			"engine"	"blade"
 			"engine"	"insurgency"
+			"engine"	"mcv"
 		}
 		
 		"Keys"

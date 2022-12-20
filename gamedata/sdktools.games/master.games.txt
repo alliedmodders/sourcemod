@@ -95,6 +95,11 @@
 	{
 		"engine"	"pvkii"
 	}
+
+	"engine.mcv.txt"
+	{
+		"engine"	"mcv"
+	}
 	
 	"game.tf.txt"
 	{

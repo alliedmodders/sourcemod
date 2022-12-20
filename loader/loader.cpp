@@ -87,6 +87,7 @@
 #define FILENAME_1_6_BMS			PLATFORM_ARCH_FOLDER "sourcemod.2.bms" PLATFORM_EXT
 #define FILENAME_1_6_MOCK           PLATFORM_ARCH_FOLDER "sourcemod.2.mock" PLATFORM_EXT
 #define FILENAME_1_6_PVKII			PLATFORM_ARCH_FOLDER "sourcemod.2.pvkii" PLATFORM_EXT
+#define FILENAME_1_6_MCV			PLATFORM_ARCH_FOLDER "sourcemod.2.mcv" PLATFORM_EXT
 
 HINSTANCE g_hCore = NULL;
 bool load_attempted = false;
@@ -345,6 +346,11 @@ DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, co
 	case SOURCE_ENGINE_PVKII:
 		{
 			filename = FILENAME_1_6_PVKII;
+			break;
+		}
+	case SOURCE_ENGINE_MCV:
+		{
+			filename = FILENAME_1_6_MCV;
 			break;
 		}
 	default:

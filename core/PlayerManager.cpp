@@ -514,7 +514,7 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 	/* Get the client's language */
 	if (m_QueryLang)
 	{
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 		pPlayer->m_LangId = translator->GetServerLanguage();
 #else
 		const char *name;
@@ -669,7 +669,8 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 			&& ((!m_bIsReplayActive && newCount == 1)
 				|| (m_bIsReplayActive && newCount == 2))
 			&& (m_SourceTVUserId == userId
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_MCV
+				// It seems likely that MCV will change this at some point, but it's GOTV at the moment.
 				|| strcmp(playername, "GOTV") == 0
 #elif SOURCE_ENGINE == SE_BLADE
 				|| strcmp(playername, "BBTV") == 0
@@ -728,7 +729,7 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		}
 		pPlayer->Authorize_Post();
 	}
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	else if(m_QueryLang)
 	{
 		// Not a bot
@@ -788,7 +789,7 @@ void PlayerManager::OnServerHibernationUpdate(bool bHibernating)
 			CPlayer *pPlayer = &m_Players[i];
 			if (pPlayer->IsConnected() && pPlayer->IsFakeClient())
 			{
-#if SOURCE_ENGINE < SE_LEFT4DEAD || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_NUCLEARDAWN
+#if SOURCE_ENGINE < SE_LEFT4DEAD || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_NUCLEARDAWN || SOURCE_ENGINE == SE_MCV
 				// These games have the bug fixed where hltv/replay was getting kicked on hibernation
 				if (pPlayer->IsSourceTV() || pPlayer->IsReplay())
 					continue;
@@ -1959,7 +1960,7 @@ void CmdMaxplayersCallback()
 	g_Players.MaxPlayersChanged();
 }
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 bool PlayerManager::HandleConVarQuery(QueryCvarCookie_t cookie, int client, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue)
 {
 	for (int i = 1; i <= m_maxClients; i++)
@@ -2197,7 +2198,7 @@ void CPlayer::Disconnect()
 	m_bIsSourceTV = false;
 	m_bIsReplay = false;
 	m_Serial.value = -1;
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
 	ClearNetchannelQueue();
@@ -2419,7 +2420,7 @@ void CPlayer::Kick(const char *str)
 	}
 	else
 	{
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 		pClient->Disconnect(str);
 #else
 		pClient->Disconnect("%s", str);
