@@ -70,6 +70,7 @@ struct hud_text_parms
 	float       holdTime;
 	float       fxTime;
 	int         channel;
+	bool        isSet = false;
 };
 
 class HudMsgHelpers : 
@@ -282,6 +283,7 @@ static cell_t SetHudTextParams(IPluginContext *pContext, const cell_t *params)
 	g_hud_params.g2 = 255;
 	g_hud_params.b2 = 250;
 	g_hud_params.a2 = 0;
+	g_hud_params.isSet = true;
 
 	return 1;
 }
@@ -308,6 +310,7 @@ static cell_t SetHudTextParamsEx(IPluginContext *pContext, const cell_t *params)
 	g_hud_params.g2 = static_cast<byte>(color2[1]);
 	g_hud_params.b2 = static_cast<byte>(color2[2]);
 	g_hud_params.a2 = static_cast<byte>(color2[3]);
+	g_hud_params.isSet = true;
 
 	return 1;
 }
@@ -382,6 +385,11 @@ static cell_t ShowSyncHudText(IPluginContext *pContext, const cell_t *params)
 	if (!s_HudMsgHelpers.IsSupported())
 	{
 		return -1;
+	}
+
+	if (!g_hud_params.isSet)
+	{
+		return pContext->ThrowNativeError("ShowSyncHudText first requires a call to SetHudTextParams or SetHudTextParamsEx");
 	}
 
 	if ((err = s_HudMsgHelpers.ReadHudSyncObj(params[2], pContext->GetIdentity(), &obj)) != HandleError_None)
@@ -466,6 +474,11 @@ static cell_t ShowHudText(IPluginContext *pContext, const cell_t *params)
 	if (!s_HudMsgHelpers.IsSupported())
 	{
 		return -1;
+	}
+
+	if (!g_hud_params.isSet)
+	{
+		return pContext->ThrowNativeError("ShowHudText first requires a call to SetHudTextParams or SetHudTextParamsEx");
 	}
 
 	client = params[1];
