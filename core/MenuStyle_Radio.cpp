@@ -505,6 +505,10 @@ void CRadioMenuPlayer::Radio_Refresh()
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	// TODO: find what happens past 240 on CS:GO
 	CCSUsrMsg_ShowMenu *msg = (CCSUsrMsg_ShowMenu *)g_UserMsgs.StartProtobufMessage(g_ShowMenuId, players, 1, USERMSG_BLOCKHOOKS);
+	if (!msg)
+	{
+		return;
+	}
 	msg->set_bits_valid_slots(display_keys);
 	msg->set_display_time(time);
 	msg->set_menu_string(ptr);

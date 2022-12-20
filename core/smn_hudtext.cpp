@@ -325,6 +325,10 @@ void UTIL_SendHudText(int client, const hud_text_parms &textparms, const char *p
 
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	CCSUsrMsg_HudMsg *msg = (CCSUsrMsg_HudMsg *)g_UserMsgs.StartProtobufMessage(g_HudMsgNum, players, 1, 0);
+	if (!msg)
+	{
+		return;
+	}
 	msg->set_channel(textparms.channel & 0xFF);
 
 	CMsgVector2D *pos = msg->mutable_pos();
