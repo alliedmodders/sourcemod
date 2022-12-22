@@ -230,10 +230,15 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	if (!entListeners)
 	{
 		g_pSM->Format(error, maxlength, "Failed to setup entity listeners");
+#if SOURCE_ENGINE != SE_MOCK
 		return false;
+#endif
+	}
+	else
+	{
+		entListeners->AddToTail(this);
 	}
 
-	entListeners->AddToTail(this);
 
 	sharesys->AddDependency(myself, "bintools.ext", true, true);
 	sharesys->AddNatives(myself, g_Natives);
@@ -367,7 +372,10 @@ void SDKHooks::SDK_OnUnload()
 	sharesys->DropCapabilityProvider(myself, this, "SDKHook_LogicalEntSupport");
 
 	CUtlVector<IEntityListener *> *entListeners = EntListeners();
-	entListeners->FindAndRemove(this);
+	if (entListeners)
+	{
+		entListeners->FindAndRemove(this);
+	}
 
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 }
