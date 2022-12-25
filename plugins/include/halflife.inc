@@ -662,7 +662,6 @@ stock void DisplayAskConnectBox(int client, float time, const char[] ip, const c
  *
  * @param entity        Entity index.
  * @return              Entity reference or -1 on invalid entity.
- * @error               Entity index >= GetMaxEntities() or < 0
  */
 native int EntIndexToEntRef(int entity);
 

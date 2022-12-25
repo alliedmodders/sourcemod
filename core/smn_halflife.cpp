@@ -546,11 +546,6 @@ static cell_t GetEngineVersion(IPluginContext *pContext, const cell_t *params)
 
 static cell_t IndexToReference(IPluginContext *pContext, const cell_t *params)
 {
-	if (params[1] >= NUM_ENT_ENTRIES || params[1] < 0)
-	{
-		return pContext->ThrowNativeError("Invalid entity index %i", params[1]);
-	}
-
 	return g_HL2.IndexToReference(params[1]);
 }
 
