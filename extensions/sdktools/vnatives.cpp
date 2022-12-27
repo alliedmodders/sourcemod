@@ -476,11 +476,19 @@ static cell_t TeleportEntity(IPluginContext *pContext, const cell_t *params)
 	static ValveCall *pCall = NULL;
 	if (!pCall)
 	{
-		ValvePassInfo pass[3];
+#if SOURCE_ENGINE >= SE_PORTAL2
+		constexpr size_t paramCount = 4;
+#else
+		constexpr size_t paramCount = 3;
+#endif
+		ValvePassInfo pass[paramCount];
 		InitPass(pass[0], Valve_Vector, PassType_Basic, PASSFLAG_BYVAL, VDECODE_FLAG_ALLOWNULL);
 		InitPass(pass[1], Valve_QAngle, PassType_Basic, PASSFLAG_BYVAL, VDECODE_FLAG_ALLOWNULL);
 		InitPass(pass[2], Valve_Vector, PassType_Basic, PASSFLAG_BYVAL, VDECODE_FLAG_ALLOWNULL);
-		if (!CreateBaseCall("Teleport", ValveCall_Entity, NULL, pass, 3, &pCall))
+#if SOURCE_ENGINE >= SE_PORTAL2
+		InitPass(pass[3], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+#endif
+		if (!CreateBaseCall("Teleport", ValveCall_Entity, NULL, pass, paramCount, &pCall))
 		{
 			return pContext->ThrowNativeError("\"Teleport\" not supported by this mod");
 		} else if (!pCall) {
@@ -493,6 +501,11 @@ static cell_t TeleportEntity(IPluginContext *pContext, const cell_t *params)
 	DECODE_VALVE_PARAM(2, vparams, 0);
 	DECODE_VALVE_PARAM(3, vparams, 1);
 	DECODE_VALVE_PARAM(4, vparams, 2);
+
+#if SOURCE_ENGINE >= SE_PORTAL2
+	*(bool *)(vptr + pCall->vparams[3].offset) = true;
+#endif
+
 	FINISH_CALL_SIMPLE(NULL);
 
 	return 1;
