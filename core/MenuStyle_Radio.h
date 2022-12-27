@@ -40,6 +40,7 @@
 #include "UserMessages.h"
 #include "sm_fastlink.h"
 #include <sh_stack.h>
+#include <sh_string.h>
 #include <compat_wrappers.h>
 #include "logic/common_logic.h"
 #include "AutoHandleRooter.h"
