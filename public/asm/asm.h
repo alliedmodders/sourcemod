@@ -1,5 +1,4 @@
-#ifndef __ASM_H__
-#define __ASM_H__
+#pragma once
 
 #define OP_JMP				0xE9
 #define OP_JMP_SIZE			5
@@ -23,7 +22,7 @@ void check_thunks(unsigned char *dest, unsigned char *pc);
 //if dest is NULL, returns minimum number of bytes needed to be copied
 //if dest is not NULL, it will copy the bytes to dest as well as fix CALLs and JMPs
 //http://www.devmaster.net/forums/showthread.php?t=2311
-int copy_bytes(unsigned char *func, unsigned char* dest, int required_len);
+int copy_bytes(unsigned char *func, unsigned char* dest, unsigned int required_len);
 
 //insert a specific JMP instruction at the given location
 void inject_jmp(void* src, void* dest);
@@ -37,5 +36,3 @@ void* eval_jump(void* src);
 #ifdef __cplusplus
 }
 #endif
-
-#endif //__ASM_H__
