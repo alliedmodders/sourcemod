@@ -38,6 +38,7 @@
 #include <am-refcounting.h>
 #include <sm_stringhashmap.h>
 #include <sm_namehashset.h>
+#include <set>
 
 using namespace SourceMod;
 
@@ -91,6 +92,8 @@ private:
 	std::string m_offset;
 	std::string m_Game;
 	std::string m_Key;
+	unsigned int bCurrentBinCRC;
+	bool bCurrentBinCRC_Ok = false;
 	bool bShouldBeReadingDefault;
 	bool had_game;
 	bool matched_game;
@@ -126,6 +129,13 @@ private:
 	time_t m_ModTime;
 };
 
+struct GameBinaryInfo
+{
+	void *m_pAddr = nullptr;
+	uint32_t m_crc = 0;
+	bool m_crcOK = false;
+};
+
 class GameConfigManager : 
 	public IGameConfigManager,
 	public SMGlobalClass
@@ -148,9 +158,14 @@ public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModAllShutdown();
 public:
+	bool TryGetGameBinaryInfo(const char* pszName, GameBinaryInfo* pDest);
 	void RemoveCachedConfig(CGameConfig *config);
 private:
+	void CacheGameBinaryInfo(const char* pszName);
+private:
 	NameHashSet<CGameConfig *> m_Lookup;
+	StringHashMap<GameBinaryInfo> m_gameBinInfos;
+	std::set<std::string> m_gameBinDirectories;
 public:
 	StringHashMap<ITextListener_SMC *> m_customHandlers;
 };
