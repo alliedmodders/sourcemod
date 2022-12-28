@@ -1253,10 +1253,22 @@ void GameConfigManager::CacheGameBinaryInfo(const char* pszName)
 	{
 		ke::SafeSprintf(binary_path, sizeof(binary_path), "%s%s%s", it->c_str(), it->back() == PLATFORM_SEP_CHAR ? "" : PLATFORM_SEP, name);
 #if defined PLATFORM_WINDOWS
-		if ((info.m_pAddr = LoadLibraryA(binary_path)))
+		HMODULE hModule = LoadLibraryA(binary_path);
+		if (hModule)
+		{
+			info.m_pAddr = GetProcAddress(hModule, "CreateInterface");
+			FreeLibrary(hModule);
+		}
 #else
-		if ((info.m_pAddr = dlopen(binary_path, RTLD_NOW)))
+		void *pHandle = dlopen(binary_path, RTLD_NOW);
+		if (pHandle)
+		{
+			info.m_pAddr = dlsym(pHandle, "CreateInterface");
+			dlclose(pHandle);
+		}
 #endif
+		
+		if (info.m_pAddr)
 			break;
 	}
 
