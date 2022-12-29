@@ -36,8 +36,8 @@
 #include <sh_vector.h>
 #include <sh_stack.h>
 #include <sh_list.h>
-#include <sh_string.h>
 #include "sm_globals.h"
+#include <string>
 
 using namespace SourceMod;
 using namespace SourceHook;
@@ -55,12 +55,8 @@ public:
 	MenuManager();
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
+	void OnSourceModAllInitialized_Post();
 	void OnSourceModAllShutdown();
-	ConfigResult OnSourceModConfigChanged(const char *key,
-		const char *value,
-		ConfigSource source,
-		char *error,
-		size_t maxlength);
 	void OnSourceModLevelChange(const char *mapName);
 public: //IMenuManager
 	virtual const char *GetInterfaceName()
@@ -99,7 +95,7 @@ public:
 	HandleError ReadStyleHandle(Handle_t handle, IMenuStyle **style);
 public:
 	bool MenuSoundsEnabled();
-	const char *GetMenuSound(ItemSelection sel);
+	std::string *GetMenuSound(ItemSelection sel);
 protected:
 	Handle_t CreateMenuHandle(IBaseMenu *menu, IdentityToken_t *pOwner);
 	Handle_t CreateStyleHandle(IMenuStyle *style);
@@ -109,9 +105,9 @@ private:
 	CVector<IMenuStyle *> m_Styles;
 	HandleType_t m_StyleType;
 	HandleType_t m_MenuType;
-	String m_SelectSound;
-	String m_ExitBackSound;
-	String m_ExitSound;
+	std::string m_SelectSound = "";
+	std::string m_ExitBackSound = "";
+	std::string m_ExitSound = "";
 };
 
 extern MenuManager g_Menus;
