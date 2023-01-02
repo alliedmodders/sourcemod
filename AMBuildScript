@@ -679,7 +679,7 @@ class SMConfig(object):
           os.path.join(lib_folder, 'mathlib_i486.a')
         ]
 
-      if sdk.name in ['blade', 'insurgency', 'doi', 'mcv' 'csgo']:
+      if sdk.name in ['blade', 'insurgency', 'doi', 'mcv', 'csgo']:
         if compiler.target.arch == 'x86_64':
           compiler.postlink += [os.path.join(lib_folder, 'interfaces.a')]
         else:
