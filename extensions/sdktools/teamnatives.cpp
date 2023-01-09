@@ -50,19 +50,16 @@ void InitTeamNatives()
 
 	int edictCount = gpGlobals->maxEntities;
 
-	for (int i=0; i<edictCount; i++)
+	for (int i = 0; i < edictCount; i++)
 	{
-		edict_t *pEdict = PEntityOfEntIndex(i);
-		if (!pEdict || pEdict->IsFree())
-		{
-			continue;
-		}
-		if (!pEdict->GetNetworkable())
+		IServerUnknown *pUnknown = (IServerUnknown *)gamehelpers->ReferenceToEntity(i);
+		if (pUnknown == nullptr)
 		{
 			continue;
 		}
 
-		ServerClass *pClass = pEdict->GetNetworkable()->GetServerClass();
+		IServerNetworkable *pNetworkable = pUnknown->GetNetworkable();
+		ServerClass *pClass = pNetworkable->GetServerClass();
 		if (FindNestedDataTable(pClass->m_pTable, "DT_Team"))
 		{
 			SendProp *pTeamNumProp = g_pGameHelpers->FindInSendTable(pClass->GetName(), "m_iTeamNum");
@@ -70,7 +67,7 @@ void InitTeamNatives()
 			if (pTeamNumProp != NULL)
 			{
 				int offset = pTeamNumProp->GetOffset();
-				CBaseEntity *pEnt = pEdict->GetUnknown()->GetBaseEntity();
+				CBaseEntity *pEnt = pUnknown->GetBaseEntity();
 				int TeamIndex = *(int *)((unsigned char *)pEnt + offset);
 
 				if (TeamIndex >= (int)g_Teams.size())

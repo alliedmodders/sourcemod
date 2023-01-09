@@ -134,10 +134,11 @@ inline edict_t *BaseEntityToEdict(CBaseEntity *pEntity)
 {
 	IServerUnknown *pUnk = (IServerUnknown *)pEntity;
 	IServerNetworkable *pNet = pUnk->GetNetworkable();
+	edict_t *edict = pNet->GetEdict();
 
-	if (!pNet)
+	if (edict->IsFree())
 	{
-		return NULL;
+		return nullptr;
 	}
 
 	return pNet->GetEdict();
@@ -353,14 +354,15 @@ static cell_t IsValidEntity(IPluginContext *pContext, const cell_t *params)
 
 static cell_t IsEntNetworkable(IPluginContext *pContext, const cell_t *params)
 {
-	edict_t *pEdict = GetEdict(params[1]);
+	IServerUnknown *pUnknown = (IServerUnknown *)g_HL2.ReferenceToEntity(params[1]);
 
-	if (!pEdict)
+	if (!pUnknown)
 	{
 		return 0;
 	}
 
-	return (pEdict->GetNetworkable() != NULL) ? 1 : 0;
+	edict_t* edict = pUnknown->GetNetworkable()->GetEdict();
+	return (edict && !edict->IsFree()) ? 1 : 0;
 }
 
 static cell_t GetEntityCount(IPluginContext *pContext, const cell_t *params)
@@ -427,11 +429,6 @@ static cell_t GetEntityNetClass(IPluginContext *pContext, const cell_t *params)
 	}
 
 	IServerNetworkable *pNet = pUnk->GetNetworkable();
-	if (!pNet)
-	{
-		return 0;
-	}
-
 	ServerClass *pClass = pNet->GetServerClass();
 
 	pContext->StringToLocal(params[2], params[3], pClass->GetName());
@@ -1262,9 +1259,9 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 	SendProp *pProp; \
 	IServerUnknown *pUnk = (IServerUnknown *)pEntity; \
 	IServerNetworkable *pNet = pUnk->GetNetworkable(); \
-	if (!pNet) \
+	if (!pNet->GetEdict() || pNet->GetEdict()->IsFree()) \
 	{ \
-		return pContext->ThrowNativeError("Edict %d (%d) is not networkable", g_HL2.ReferenceToIndex(params[1]), params[1]); \
+		return pContext->ThrowNativeError("Entity %d (%d) is not networkable", g_HL2.ReferenceToIndex(params[1]), params[1]); \
 	} \
 	if (!g_HL2.FindSendPropInfo(pNet->GetServerClass()->GetName(), prop, &info)) \
 	{ \
@@ -1426,9 +1423,9 @@ static cell_t GetEntPropArraySize(IPluginContext *pContext, const cell_t *params
 			
 			IServerUnknown *pUnk = (IServerUnknown *)pEntity;
 			IServerNetworkable *pNet = pUnk->GetNetworkable();
-			if (!pNet)
+			if (!pNet->GetEdict() || pNet->GetEdict()->IsFree())
 			{
-				return pContext->ThrowNativeError("Edict %d (%d) is not networkable", g_HL2.ReferenceToIndex(params[1]), params[1]);
+				return pContext->ThrowNativeError("Entity %d (%d) is not networkable", g_HL2.ReferenceToIndex(params[1]), params[1]);
 			}
 			if (!g_HL2.FindSendPropInfo(pNet->GetServerClass()->GetName(), prop, &info))
 			{
@@ -2070,11 +2067,6 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 			if (pOther)
 			{
 				IServerNetworkable *pNetworkable = ((IServerUnknown *) pOther)->GetNetworkable();
-				if (!pNetworkable)
-				{
-					return pContext->ThrowNativeError("Entity %d (%d) does not have a valid edict", g_HL2.ReferenceToIndex(params[4]), params[4]);
-				}
-
 				pOtherEdict = pNetworkable->GetEdict();
 				if (!pOtherEdict || pOtherEdict->IsFree())
 				{

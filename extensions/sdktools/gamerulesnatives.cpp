@@ -45,23 +45,18 @@ static CBaseEntity *FindEntityByNetClass(int start, const char *classname)
 	int maxEntities = gpGlobals->maxEntities;
 	for (int i = start; i < maxEntities; i++)
 	{
-		edict_t *current = gamehelpers->EdictOfIndex(i);
-		if (current == NULL || current->IsFree())
+		IServerUnknown *pUnknown = (IServerUnknown *)gamehelpers->ReferenceToEntity(i);
+		if (pUnknown == nullptr)
+		{
 			continue;
+		}
 
-		IServerNetworkable *network = current->GetNetworkable();
-		if (network == NULL)
-			continue;
-
-		IHandleEntity *pHandleEnt = network->GetEntityHandle();
-		if (pHandleEnt == NULL)
-			continue;
-
+		IServerNetworkable *network = pUnknown->GetNetworkable();
 		ServerClass *sClass = network->GetServerClass();
 		const char *name = sClass->GetName();
 
 		if (!strcmp(name, classname))
-			return gamehelpers->ReferenceToEntity(gamehelpers->IndexOfEdict(current));		
+			return pUnknown->GetBaseEntity();		
 	}
 
 	return NULL;

@@ -81,9 +81,6 @@ bool CritManager::TryEnable()
 
 		IServerUnknown *pUnknown = (IServerUnknown *)pEntity;
 		IServerNetworkable *pNetworkable = pUnknown->GetNetworkable();
-		if (!pNetworkable)
-			continue;
-
 		if (!UTIL_ContainsDataTable(pNetworkable->GetServerClass()->m_pTable, TF_WEAPON_DATATABLE))
 			continue;
 
@@ -120,9 +117,6 @@ void CritManager::OnEntityCreated(CBaseEntity *pEntity, const char *classname)
 
 	IServerUnknown *pUnknown = (IServerUnknown *)pEntity;
 	IServerNetworkable *pNetworkable = pUnknown->GetNetworkable();
-	if (!pNetworkable)
-		return;
-
 	if (!UTIL_ContainsDataTable(pNetworkable->GetServerClass()->m_pTable, TF_WEAPON_DATATABLE))
 		return;
 

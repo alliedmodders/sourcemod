@@ -435,23 +435,16 @@ int FindEntityByNetClass(int start, const char *classname)
 
 	for (int i = ((start != -1) ? start : 0); i < gpGlobals->maxEntities; i++)
 	{
-		current = engine->PEntityOfEntIndex(i);
-		if (current == NULL || current->IsFree())
+		IServerUnknown *pUnknown = (IServerUnknown *)gamehelpers->ReferenceToEntity(i);
+		if (pUnknown == nullptr)
 		{
 			continue;
 		}
 
-		IServerNetworkable *network = current->GetNetworkable();
-
-		if (network == NULL)
-		{
-			continue;
-		}
-
+		IServerNetworkable *network = pUnknown->GetNetworkable();
 		ServerClass *sClass = network->GetServerClass();
 		const char *name = sClass->GetName();
 		
-
 		if (strcmp(name, classname) == 0)
 		{
 			return i;
