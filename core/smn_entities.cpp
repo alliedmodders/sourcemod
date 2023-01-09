@@ -1252,10 +1252,6 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 	SendProp *pProp; \
 	IServerUnknown *pUnk = (IServerUnknown *)pEntity; \
 	IServerNetworkable *pNet = pUnk->GetNetworkable(); \
-	if (!pNet->GetEdict() || pNet->GetEdict()->IsFree()) \
-	{ \
-		return pContext->ThrowNativeError("Entity %d (%d) is not networkable", g_HL2.ReferenceToIndex(params[1]), params[1]); \
-	} \
 	if (!g_HL2.FindSendPropInfo(pNet->GetServerClass()->GetName(), prop, &info)) \
 	{ \
 		const char *class_name = g_HL2.GetEntityClassname(pEntity); \
@@ -1416,10 +1412,6 @@ static cell_t GetEntPropArraySize(IPluginContext *pContext, const cell_t *params
 			
 			IServerUnknown *pUnk = (IServerUnknown *)pEntity;
 			IServerNetworkable *pNet = pUnk->GetNetworkable();
-			if (!pNet->GetEdict() || pNet->GetEdict()->IsFree())
-			{
-				return pContext->ThrowNativeError("Entity %d (%d) is not networkable", g_HL2.ReferenceToIndex(params[1]), params[1]);
-			}
 			if (!g_HL2.FindSendPropInfo(pNet->GetServerClass()->GetName(), prop, &info))
 			{
 				const char *class_name = g_HL2.GetEntityClassname(pEntity);
