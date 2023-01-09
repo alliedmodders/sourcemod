@@ -134,13 +134,6 @@ inline edict_t *BaseEntityToEdict(CBaseEntity *pEntity)
 {
 	IServerUnknown *pUnk = (IServerUnknown *)pEntity;
 	IServerNetworkable *pNet = pUnk->GetNetworkable();
-	edict_t *edict = pNet->GetEdict();
-
-	if (edict->IsFree())
-	{
-		return nullptr;
-	}
-
 	return pNet->GetEdict();
 }
 
