@@ -134,6 +134,10 @@ inline edict_t *BaseEntityToEdict(CBaseEntity *pEntity)
 {
 	IServerUnknown *pUnk = (IServerUnknown *)pEntity;
 	IServerNetworkable *pNet = pUnk->GetNetworkable();
+	if (pNet == nullptr)
+	{
+		return nullptr;
+	}
 	return pNet->GetEdict();
 }
 
@@ -348,13 +352,18 @@ static cell_t IsValidEntity(IPluginContext *pContext, const cell_t *params)
 static cell_t IsEntNetworkable(IPluginContext *pContext, const cell_t *params)
 {
 	IServerUnknown *pUnknown = (IServerUnknown *)g_HL2.ReferenceToEntity(params[1]);
-
 	if (!pUnknown)
 	{
 		return 0;
 	}
 
-	edict_t* edict = pUnknown->GetNetworkable()->GetEdict();
+	IServerNetworkable *pNet = pUnknown->GetNetworkable();
+	if (!pNet)
+	{
+		return 0;
+	}
+
+	edict_t* edict = pNet->GetEdict();
 	return (edict && !edict->IsFree()) ? 1 : 0;
 }
 
@@ -422,7 +431,16 @@ static cell_t GetEntityNetClass(IPluginContext *pContext, const cell_t *params)
 	}
 
 	IServerNetworkable *pNet = pUnk->GetNetworkable();
+	if (!pNet)
+	{
+		return pContext->ThrowNativeError("Entity (%d - %d) is missing a networkable interface. No mod support.", g_HL2.ReferenceToIndex(params[1]), params[1]);
+	}
+
 	ServerClass *pClass = pNet->GetServerClass();
+	if (!pClass)
+	{
+		return pContext->ThrowNativeError("Entity (%d - %d) has no server class!", g_HL2.ReferenceToIndex(params[1]), params[1]);
+	}
 
 	pContext->StringToLocal(params[2], params[3], pClass->GetName());
 
@@ -1252,7 +1270,14 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 	SendProp *pProp; \
 	IServerUnknown *pUnk = (IServerUnknown *)pEntity; \
 	IServerNetworkable *pNet = pUnk->GetNetworkable(); \
-	if (!g_HL2.FindSendPropInfo(pNet->GetServerClass()->GetName(), prop, &info)) \
+	if (pNet == nullptr) { \
+		pContext->ThrowNativeError("Enity (%d - %d) is missing a networkable interface. No mod support.", g_HL2.ReferenceToIndex(params[1]), params[1]); \
+	} \
+	ServerClass *pServerClass = pNet->GetServerClass(); \
+	if (pServerClass == nullptr) { \
+		pContext->ThrowNativeError("Enity (%d - %d) has no server class!", g_HL2.ReferenceToIndex(params[1]), params[1]); \
+	} \
+	if (!g_HL2.FindSendPropInfo(pServerClass->GetName(), prop, &info)) \
 	{ \
 		const char *class_name = g_HL2.GetEntityClassname(pEntity); \
 		return pContext->ThrowNativeError("Property \"%s\" not found (entity %d/%s)", \
@@ -1412,7 +1437,18 @@ static cell_t GetEntPropArraySize(IPluginContext *pContext, const cell_t *params
 			
 			IServerUnknown *pUnk = (IServerUnknown *)pEntity;
 			IServerNetworkable *pNet = pUnk->GetNetworkable();
-			if (!g_HL2.FindSendPropInfo(pNet->GetServerClass()->GetName(), prop, &info))
+			if (pNet == nullptr)
+			{
+				return pContext->ThrowNativeError("Enity (%d - %d) is missing a networkable interface. No mod support.", g_HL2.ReferenceToIndex(params[1]), params[1]);
+			}
+
+			ServerClass *pServerClass = pNet->GetServerClass();
+			if (pServerClass == nullptr)
+			{
+				return pContext->ThrowNativeError("Enity (%d - %d) has no server class!", g_HL2.ReferenceToIndex(params[1]), params[1]);
+			}
+
+			if (!g_HL2.FindSendPropInfo(pServerClass->GetName(), prop, &info))
 			{
 				const char *class_name = g_HL2.GetEntityClassname(pEntity);
 				return pContext->ThrowNativeError("Property \"%s\" not found (entity %d/%s)",
@@ -2051,8 +2087,7 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 			edict_t *pOtherEdict = NULL;
 			if (pOther)
 			{
-				IServerNetworkable *pNetworkable = ((IServerUnknown *) pOther)->GetNetworkable();
-				pOtherEdict = pNetworkable->GetEdict();
+				pOtherEdict = BaseEntityToEdict(pOther);
 				if (!pOtherEdict || pOtherEdict->IsFree())
 				{
 					return pContext->ThrowNativeError("Entity %d (%d) does not have a valid edict", g_HL2.ReferenceToIndex(params[4]), params[4]);

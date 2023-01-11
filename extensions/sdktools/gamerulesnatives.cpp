@@ -51,15 +51,27 @@ static CBaseEntity *FindEntityByNetClass(int start, const char *classname)
 			continue;
 		}
 
-		IServerNetworkable *network = pUnknown->GetNetworkable();
-		ServerClass *sClass = network->GetServerClass();
-		const char *name = sClass->GetName();
+		IServerNetworkable *pNetwork = pUnknown->GetNetworkable();
+		if (pNetwork == nullptr)
+		{
+			continue;
+		}
 
+		ServerClass *pServerClass = pNetwork->GetServerClass();
+		if (pServerClass == nullptr)
+		{
+			continue;
+		}
+		
+
+		const char *name = pServerClass->GetName();
 		if (!strcmp(name, classname))
-			return pUnknown->GetBaseEntity();		
+		{
+			return (CBaseEntity*)pUnknown;
+		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 static CBaseEntity* GetGameRulesProxyEnt()

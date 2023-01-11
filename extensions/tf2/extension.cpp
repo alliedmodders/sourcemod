@@ -441,10 +441,19 @@ int FindEntityByNetClass(int start, const char *classname)
 			continue;
 		}
 
-		IServerNetworkable *network = pUnknown->GetNetworkable();
-		ServerClass *sClass = network->GetServerClass();
-		const char *name = sClass->GetName();
+		IServerNetworkable *pNetwork = pUnknown->GetNetworkable();
+		if (pNetwork == nullptr)
+		{
+			continue;
+		}
+
+		ServerClass *pServerClass = pNetwork->GetServerClass();
+		if (pServerClass == nullptr)
+		{
+			continue;
+		}
 		
+		const char *name = pServerClass->GetName();
 		if (strcmp(name, classname) == 0)
 		{
 			return i;

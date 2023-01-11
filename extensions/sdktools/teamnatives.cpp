@@ -59,7 +59,17 @@ void InitTeamNatives()
 		}
 
 		IServerNetworkable *pNetworkable = pUnknown->GetNetworkable();
+		if (pNetworkable == nullptr)
+		{
+			continue;
+		}
+
 		ServerClass *pClass = pNetworkable->GetServerClass();
+		if (pClass == nullptr)
+		{
+			continue;
+		}
+		
 		if (FindNestedDataTable(pClass->m_pTable, "DT_Team"))
 		{
 			SendProp *pTeamNumProp = g_pGameHelpers->FindInSendTable(pClass->GetName(), "m_iTeamNum");

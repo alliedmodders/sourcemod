@@ -76,13 +76,28 @@ bool CritManager::TryEnable()
 	for (size_t i = playerhelpers->GetMaxClients() + 1; i < MAX_EDICTS; ++i)
 	{
 		CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(i);
-		if (pEntity == NULL)
+		if (pEntity == nullptr)
+		{
 			continue;
+		}
 
 		IServerUnknown *pUnknown = (IServerUnknown *)pEntity;
 		IServerNetworkable *pNetworkable = pUnknown->GetNetworkable();
-		if (!UTIL_ContainsDataTable(pNetworkable->GetServerClass()->m_pTable, TF_WEAPON_DATATABLE))
+		if (pNetworkable == nullptr)
+		{
 			continue;
+		}
+
+		ServerClass *pServerClass = pNetworkable->GetServerClass();
+		if (pServerClass == nullptr)
+		{
+			continue;
+		}
+
+		if (!UTIL_ContainsDataTable(pServerClass->m_pTable, TF_WEAPON_DATATABLE))
+		{
+			continue;
+		}
 
 		SH_ADD_MANUALHOOK(CalcIsAttackCriticalHelper, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelper), false);
 		SH_ADD_MANUALHOOK(CalcIsAttackCriticalHelperNoCrits, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelperNoCrits), false);
@@ -113,12 +128,27 @@ void CritManager::Disable()
 void CritManager::OnEntityCreated(CBaseEntity *pEntity, const char *classname)
 {
 	if (!m_enabled)
+	{
 		return;
+	}
 
 	IServerUnknown *pUnknown = (IServerUnknown *)pEntity;
 	IServerNetworkable *pNetworkable = pUnknown->GetNetworkable();
-	if (!UTIL_ContainsDataTable(pNetworkable->GetServerClass()->m_pTable, TF_WEAPON_DATATABLE))
+	if (pNetworkable == nullptr)
+	{
 		return;
+	}
+
+	ServerClass *pServerClass = pNetworkable->GetServerClass();
+	if (pServerClass == nullptr)
+	{
+		return;
+	}
+
+	if (!UTIL_ContainsDataTable(pServerClass->m_pTable, TF_WEAPON_DATATABLE))
+	{
+		return;
+	}
 
 	SH_ADD_MANUALHOOK(CalcIsAttackCriticalHelper, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelper), false);
 	SH_ADD_MANUALHOOK(CalcIsAttackCriticalHelperNoCrits, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelperNoCrits), false);
@@ -161,8 +191,13 @@ bool CritManager::Hook_CalcIsAttackCriticalHelpers(bool noCrits)
 	// If there's an invalid ent or invalid networkable here, we've got issues elsewhere.
 
 	IServerNetworkable *pNetWeapon = ((IServerUnknown *)pWeapon)->GetNetworkable();
+	if (pNetWeapon == nullptr)
+	{
+		RETURN_META_VALUE(MRES_IGNORED, false);
+	}
+
 	ServerClass *pServerClass = pNetWeapon->GetServerClass();
-	if (!pServerClass)
+	if (pServerClass == nullptr)
 	{
 		g_pSM->LogError(myself, "Invalid server class on weapon.");
 		RETURN_META_VALUE(MRES_IGNORED, false);

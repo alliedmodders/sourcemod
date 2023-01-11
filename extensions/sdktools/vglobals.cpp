@@ -330,7 +330,17 @@ void GetResourceEntity()
 			}
 
 			IServerNetworkable *pNetworkable = pUnknown->GetNetworkable();
+			if (pNetworkable == nullptr)
+			{
+				continue;
+			}
+
 			ServerClass *pClass = pNetworkable->GetServerClass();
+			if (pClass == nullptr)
+			{
+				continue;
+			}
+			
 			if (FindNestedDataTable(pClass->m_pTable, "DT_PlayerResource"))
 			{
 				g_ResourceEntity = pNetworkable->GetEntityHandle()->GetRefEHandle();

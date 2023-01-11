@@ -232,8 +232,18 @@ cell_t Native_DropWeapon(IPluginContext *pContext, const cell_t *params)
 
 	IServerUnknown *pUnk = (IServerUnknown *)pWeapon;
 	IServerNetworkable *pNet = pUnk->GetNetworkable();
+	if (pNet == nullptr)
+	{
+		return pContext->ThrowNativeError("Entity index %d has no networkable interface. No mod support.", params[2]);
+	}
 
-	if (!UTIL_ContainsDataTable(pNet->GetServerClass()->m_pTable, "DT_BaseCombatWeapon"))
+	ServerClass *pClass = pNet->GetServerClass();
+	if (pClass == nullptr)
+	{
+		return pContext->ThrowNativeError("Entity index %d has no server class!", params[2]);
+	}
+
+	if (!UTIL_ContainsDataTable(pClass->m_pTable, "DT_BaseCombatWeapon"))
 		return pContext->ThrowNativeError("Entity index %d is not a weapon", params[2]);
 
 	sm_sendprop_info_t spi;

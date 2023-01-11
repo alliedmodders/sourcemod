@@ -256,8 +256,18 @@ static cell_t CS_DropWeapon(IPluginContext *pContext, const cell_t *params)
 	sm_sendprop_info_t spi;
 	IServerUnknown *pUnk = (IServerUnknown *)pWeapon;
 	IServerNetworkable *pNet = pUnk->GetNetworkable();
+	if (pNet == nullptr)
+	{
+		return pContext->ThrowNativeError("Entity %d has no networkable interface. No mod support.", params[2]);
+	}
 
-	if (!UTIL_FindDataTable(pNet->GetServerClass()->m_pTable, "DT_WeaponCSBase", &spi, 0))
+	ServerClass *pServerClass = pNet->GetServerClass();
+	if (pServerClass == nullptr)
+	{
+		return pContext->ThrowNativeError("Entity %d has no server class!", params[2]);
+	}
+
+	if (!UTIL_FindDataTable(pServerClass->m_pTable, "DT_WeaponCSBase", &spi, 0))
 		return pContext->ThrowNativeError("Entity index %d is not a weapon", params[2]);
 
 	if (!gamehelpers->FindSendPropInfo("CBaseCombatWeapon", "m_hOwnerEntity", &spi))

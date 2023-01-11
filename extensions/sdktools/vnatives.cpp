@@ -1672,7 +1672,18 @@ static cell_t LookupEntityAttachment(IPluginContext* pContext, const cell_t* par
 	CBaseEntity* pEntity;
 	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
 
-	ServerClass* pClass = ((IServerUnknown*)pEntity)->GetNetworkable()->GetServerClass();
+	IServerNetworkable *pNetwork = ((IServerUnknown*)pEntity)->GetNetworkable();
+	if (pNetwork == nullptr)
+	{
+		return pContext->ThrowNativeError("Entity %d (%d) has no networkable interface. No mod support.", gamehelpers->ReferenceToIndex(params[1]), params[1]);
+	}
+
+	ServerClass* pClass = pNetwork->GetServerClass();
+	if (pClass == nullptr)
+	{
+		return pContext->ThrowNativeError("Entity %d (%d) has no server class!", gamehelpers->ReferenceToIndex(params[1]), params[1]);
+	}
+
 	if (!FindNestedDataTable(pClass->m_pTable, "DT_BaseAnimating"))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is not a CBaseAnimating", gamehelpers->ReferenceToIndex(params[1]), params[1]);
@@ -1718,7 +1729,18 @@ static cell_t GetEntityAttachment(IPluginContext* pContext, const cell_t* params
 	CBaseEntity* pEntity;
 	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
 
-	ServerClass* pClass = ((IServerUnknown*)pEntity)->GetNetworkable()->GetServerClass();
+	IServerNetworkable *pNetwork = ((IServerUnknown*)pEntity)->GetNetworkable();
+	if (pNetwork == nullptr)
+	{
+		return pContext->ThrowNativeError("Entity %d (%d) has no networkable interface. No mod support.", gamehelpers->ReferenceToIndex(params[1]), params[1]);
+	}
+
+	ServerClass* pClass = pNetwork->GetServerClass();
+	if (pClass == nullptr)
+	{
+		return pContext->ThrowNativeError("Entity %d (%d) has no server class!", gamehelpers->ReferenceToIndex(params[1]), params[1]);
+	}
+	
 	if (!FindNestedDataTable(pClass->m_pTable, "DT_BaseAnimating"))
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is not a CBaseAnimating", gamehelpers->ReferenceToIndex(params[1]), params[1]);
