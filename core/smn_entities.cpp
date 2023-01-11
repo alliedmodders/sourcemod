@@ -433,13 +433,13 @@ static cell_t GetEntityNetClass(IPluginContext *pContext, const cell_t *params)
 	IServerNetworkable *pNet = pUnk->GetNetworkable();
 	if (!pNet)
 	{
-		return pContext->ThrowNativeError("Entity (%d - %d) is missing a networkable interface. No mod support.", g_HL2.ReferenceToIndex(params[1]), params[1]);
+		return 0;
 	}
 
 	ServerClass *pClass = pNet->GetServerClass();
 	if (!pClass)
 	{
-		return pContext->ThrowNativeError("Entity (%d - %d) has no server class!", g_HL2.ReferenceToIndex(params[1]), params[1]);
+		return 0;
 	}
 
 	pContext->StringToLocal(params[2], params[3], pClass->GetName());
