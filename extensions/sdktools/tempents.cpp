@@ -30,6 +30,7 @@
  */
 
 #include "tempents.h"
+#include <basehandle.h>
 
 TempEntityManager g_TEManager;
 ICallWrapper *g_GetServerClass = NULL;
@@ -179,6 +180,43 @@ bool TempEntityInfo::TE_GetEntData(const char *name, int *value)
 	} else {
 		return false;
 	}
+
+	return true;
+}
+
+bool TempEntityInfo::TE_SetEntDataEnt(const char *name, IHandleEntity *value)
+{
+	/* Search for our offset */
+	int offset = _FindOffset(name);
+
+	if (offset < 0)
+	{
+		return false;
+	}
+
+	auto *pHndl = (CBaseHandle *)((uint8_t *)m_Me + offset);
+	pHndl->Set(value);
+
+	return true;
+}
+
+
+bool TempEntityInfo::TE_GetEntDataEnt(const char *name, IHandleEntity **value)
+{
+	/* Search for our offset */
+	int offset = _FindOffset(name);
+
+	if (offset < 0)
+	{
+		return false;
+	}
+
+	auto *pHndl = (CBaseHandle *)((uint8_t *)m_Me + offset);
+	auto *pEnt = reinterpret_cast<IHandleEntity *>(gamehelpers->ReferenceToEntity(pHndl->GetEntryIndex()));
+	if (!pEnt || *pHndl != pEnt->GetRefEHandle())
+		return false;
+
+	*value = pEnt;
 
 	return true;
 }
