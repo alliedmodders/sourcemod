@@ -323,19 +323,13 @@ void GetResourceEntity()
 
 		for (int i = 0; i < edictCount; i++)
 		{
-			IServerUnknown *pUnknown = (IServerUnknown *)gamehelpers->ReferenceToEntity(i);
-			if (pUnknown == nullptr)
+			CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(i);
+			if (pEntity == nullptr)
 			{
 				continue;
 			}
 
-			IServerNetworkable *pNetworkable = pUnknown->GetNetworkable();
-			if (pNetworkable == nullptr)
-			{
-				continue;
-			}
-
-			ServerClass *pClass = pNetworkable->GetServerClass();
+			ServerClass *pClass = gamehelpers->FindServerClass(pEntity);
 			if (pClass == nullptr)
 			{
 				continue;
@@ -343,7 +337,7 @@ void GetResourceEntity()
 			
 			if (FindNestedDataTable(pClass->m_pTable, "DT_PlayerResource"))
 			{
-				g_ResourceEntity = pNetworkable->GetEntityHandle()->GetRefEHandle();
+				g_ResourceEntity = ((IHandleEntity *)pEntity)->GetRefEHandle();
 				break;
 			}
 		}

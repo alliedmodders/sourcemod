@@ -81,14 +81,7 @@ bool CritManager::TryEnable()
 			continue;
 		}
 
-		IServerUnknown *pUnknown = (IServerUnknown *)pEntity;
-		IServerNetworkable *pNetworkable = pUnknown->GetNetworkable();
-		if (pNetworkable == nullptr)
-		{
-			continue;
-		}
-
-		ServerClass *pServerClass = pNetworkable->GetServerClass();
+		ServerClass *pServerClass = gamehelpers->FindServerClass(pEntity);
 		if (pServerClass == nullptr)
 		{
 			continue;
@@ -132,14 +125,7 @@ void CritManager::OnEntityCreated(CBaseEntity *pEntity, const char *classname)
 		return;
 	}
 
-	IServerUnknown *pUnknown = (IServerUnknown *)pEntity;
-	IServerNetworkable *pNetworkable = pUnknown->GetNetworkable();
-	if (pNetworkable == nullptr)
-	{
-		return;
-	}
-
-	ServerClass *pServerClass = pNetworkable->GetServerClass();
+	ServerClass *pServerClass = gamehelpers->FindServerClass(pEntity);
 	if (pServerClass == nullptr)
 	{
 		return;
@@ -189,14 +175,7 @@ bool CritManager::Hook_CalcIsAttackCriticalHelpers(bool noCrits)
 	CBaseEntity *pWeapon = META_IFACEPTR(CBaseEntity);
 	
 	// If there's an invalid ent or invalid networkable here, we've got issues elsewhere.
-
-	IServerNetworkable *pNetWeapon = ((IServerUnknown *)pWeapon)->GetNetworkable();
-	if (pNetWeapon == nullptr)
-	{
-		RETURN_META_VALUE(MRES_IGNORED, false);
-	}
-
-	ServerClass *pServerClass = pNetWeapon->GetServerClass();
+	ServerClass *pServerClass = gamehelpers->FindServerClass(pWeapon);
 	if (pServerClass == nullptr)
 	{
 		g_pSM->LogError(myself, "Invalid server class on weapon.");

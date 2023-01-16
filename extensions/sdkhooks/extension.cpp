@@ -591,15 +591,7 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 
 	if (!!strcmp(g_HookTypes[type].dtReq, ""))
 	{
-		IServerUnknown *pUnk = (IServerUnknown *)pEnt;
-
-		IServerNetworkable *pNet = pUnk->GetNetworkable();
-		if (pNet == nullptr)
-		{
-			return HookRet_BadEntForHookType;
-		}
-
-		ServerClass *pServerClass = pNet->GetServerClass();
+		ServerClass *pServerClass = gamehelpers->FindServerClass(pEnt);
 		if (pServerClass == nullptr)
 		{
 			return HookRet_BadEntForHookType;

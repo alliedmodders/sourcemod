@@ -254,14 +254,7 @@ static cell_t CS_DropWeapon(IPluginContext *pContext, const cell_t *params)
 
 	//Psychonic is awesome for this
 	sm_sendprop_info_t spi;
-	IServerUnknown *pUnk = (IServerUnknown *)pWeapon;
-	IServerNetworkable *pNet = pUnk->GetNetworkable();
-	if (pNet == nullptr)
-	{
-		return pContext->ThrowNativeError("Entity %d has no networkable interface. No mod support.", params[2]);
-	}
-
-	ServerClass *pServerClass = pNet->GetServerClass();
+	ServerClass *pServerClass = gamehelpers->FindServerClass(pWeapon);
 	if (pServerClass == nullptr)
 	{
 		return pContext->ThrowNativeError("Entity %d has no server class!", params[2]);

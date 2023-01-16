@@ -45,19 +45,13 @@ static CBaseEntity *FindEntityByNetClass(int start, const char *classname)
 	int maxEntities = gpGlobals->maxEntities;
 	for (int i = start; i < maxEntities; i++)
 	{
-		IServerUnknown *pUnknown = (IServerUnknown *)gamehelpers->ReferenceToEntity(i);
-		if (pUnknown == nullptr)
+		CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(i);
+		if (pEntity == nullptr)
 		{
 			continue;
 		}
 
-		IServerNetworkable *pNetwork = pUnknown->GetNetworkable();
-		if (pNetwork == nullptr)
-		{
-			continue;
-		}
-
-		ServerClass *pServerClass = pNetwork->GetServerClass();
+		ServerClass *pServerClass = gamehelpers->FindServerClass(pEntity);
 		if (pServerClass == nullptr)
 		{
 			continue;
@@ -67,7 +61,7 @@ static CBaseEntity *FindEntityByNetClass(int start, const char *classname)
 		const char *name = pServerClass->GetName();
 		if (!strcmp(name, classname))
 		{
-			return (CBaseEntity*)pUnknown;
+			return pEntity;
 		}
 	}
 

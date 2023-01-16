@@ -230,14 +230,7 @@ cell_t Native_DropWeapon(IPluginContext *pContext, const cell_t *params)
 	if (!pWeapon)
 		return pContext->ThrowNativeError("Invalid entity index %d for weapon", params[2]);
 
-	IServerUnknown *pUnk = (IServerUnknown *)pWeapon;
-	IServerNetworkable *pNet = pUnk->GetNetworkable();
-	if (pNet == nullptr)
-	{
-		return pContext->ThrowNativeError("Entity index %d has no networkable interface. No mod support.", params[2]);
-	}
-
-	ServerClass *pClass = pNet->GetServerClass();
+	ServerClass *pClass = gamehelpers->FindServerClass(pWeapon);
 	if (pClass == nullptr)
 	{
 		return pContext->ThrowNativeError("Entity index %d has no server class!", params[2]);

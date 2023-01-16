@@ -430,13 +430,7 @@ static cell_t GetEntityNetClass(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid entity (%d - %d)", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
-	IServerNetworkable *pNet = pUnk->GetNetworkable();
-	if (!pNet)
-	{
-		return 0;
-	}
-
-	ServerClass *pClass = pNet->GetServerClass();
+	ServerClass *pClass = g_HL2.FindServerClass(pEntity);
 	if (!pClass)
 	{
 		return 0;
@@ -1268,12 +1262,7 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 #define FIND_PROP_SEND(type, type_name) \
 	sm_sendprop_info_t info;\
 	SendProp *pProp; \
-	IServerUnknown *pUnk = (IServerUnknown *)pEntity; \
-	IServerNetworkable *pNet = pUnk->GetNetworkable(); \
-	if (pNet == nullptr) { \
-		pContext->ThrowNativeError("Enity (%d - %d) is missing a networkable interface. No mod support.", g_HL2.ReferenceToIndex(params[1]), params[1]); \
-	} \
-	ServerClass *pServerClass = pNet->GetServerClass(); \
+	ServerClass *pServerClass = g_HL2.FindServerClass(pEntity); \
 	if (pServerClass == nullptr) { \
 		pContext->ThrowNativeError("Enity (%d - %d) has no server class!", g_HL2.ReferenceToIndex(params[1]), params[1]); \
 	} \
@@ -1435,14 +1424,7 @@ static cell_t GetEntPropArraySize(IPluginContext *pContext, const cell_t *params
 		{
 			sm_sendprop_info_t info;
 			
-			IServerUnknown *pUnk = (IServerUnknown *)pEntity;
-			IServerNetworkable *pNet = pUnk->GetNetworkable();
-			if (pNet == nullptr)
-			{
-				return pContext->ThrowNativeError("Enity (%d - %d) is missing a networkable interface. No mod support.", g_HL2.ReferenceToIndex(params[1]), params[1]);
-			}
-
-			ServerClass *pServerClass = pNet->GetServerClass();
+			ServerClass *pServerClass = g_HL2.FindServerClass(pEntity);
 			if (pServerClass == nullptr)
 			{
 				return pContext->ThrowNativeError("Enity (%d - %d) has no server class!", g_HL2.ReferenceToIndex(params[1]), params[1]);

@@ -413,6 +413,17 @@ ServerClass *CHalfLife2::FindServerClass(const char *classname)
 	return pInfo->sc;
 }
 
+ServerClass *CHalfLife2::FindServerClass(CBaseEntity *pEntity)
+{
+	IServerNetworkable* pNetwork = ((IServerUnknown *)pEntity)->GetNetworkable();
+	if (pNetwork == nullptr)
+	{
+		return nullptr;
+	}
+
+	return pNetwork->GetServerClass();
+}
+
 DataTableInfo *CHalfLife2::_FindServerClass(const char *classname)
 {
 	DataTableInfo *pInfo = NULL;

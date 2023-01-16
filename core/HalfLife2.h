@@ -205,6 +205,7 @@ public: //IGameHelpers
 	bool FindSendPropInfo(const char *classname, const char *offset, sm_sendprop_info_t *info);
 	datamap_t *GetDataMap(CBaseEntity *pEntity);
 	ServerClass *FindServerClass(const char *classname);
+	ServerClass *FindServerClass(CBaseEntity *pEntity);
 	typedescription_t *FindInDataMap(datamap_t *pMap, const char *offset);
 	bool FindDataMapInfo(datamap_t *pMap, const char *offset, sm_datatable_info_t *pDataTable);
 	void SetEdictStateChanged(edict_t *pEdict, unsigned short offset);
