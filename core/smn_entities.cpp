@@ -1264,7 +1264,7 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 	SendProp *pProp; \
 	ServerClass *pServerClass = g_HL2.FindServerClass(pEntity); \
 	if (pServerClass == nullptr) { \
-		pContext->ThrowNativeError("Enity (%d - %d) has no server class!", g_HL2.ReferenceToIndex(params[1]), params[1]); \
+		pContext->ThrowNativeError("Failed to retrieve entity %d (%d) server class!", g_HL2.ReferenceToIndex(params[1]), params[1]); \
 	} \
 	if (!g_HL2.FindSendPropInfo(pServerClass->GetName(), prop, &info)) \
 	{ \
@@ -1427,7 +1427,7 @@ static cell_t GetEntPropArraySize(IPluginContext *pContext, const cell_t *params
 			ServerClass *pServerClass = g_HL2.FindServerClass(pEntity);
 			if (pServerClass == nullptr)
 			{
-				return pContext->ThrowNativeError("Enity (%d - %d) has no server class!", g_HL2.ReferenceToIndex(params[1]), params[1]);
+				return pContext->ThrowNativeError("Failed to retrieve entity %d (%d) server class!", g_HL2.ReferenceToIndex(params[1]), params[1]);
 			}
 
 			if (!g_HL2.FindSendPropInfo(pServerClass->GetName(), prop, &info))

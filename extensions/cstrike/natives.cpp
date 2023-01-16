@@ -257,7 +257,7 @@ static cell_t CS_DropWeapon(IPluginContext *pContext, const cell_t *params)
 	ServerClass *pServerClass = gamehelpers->FindServerClass(pWeapon);
 	if (pServerClass == nullptr)
 	{
-		return pContext->ThrowNativeError("Entity %d has no server class!", params[2]);
+		return pContext->ThrowNativeError("Failed to retrieve entity %d server class!", params[2]);
 	}
 
 	if (!UTIL_FindDataTable(pServerClass->m_pTable, "DT_WeaponCSBase", &spi, 0))

@@ -1675,7 +1675,7 @@ static cell_t LookupEntityAttachment(IPluginContext* pContext, const cell_t* par
 	ServerClass* pClass = gamehelpers->FindServerClass(pEntity);
 	if (pClass == nullptr)
 	{
-		return pContext->ThrowNativeError("Entity %d (%d) has no server class!", gamehelpers->ReferenceToIndex(params[1]), params[1]);
+		return pContext->ThrowNativeError("Failed to retrieve entity %d (%d) server class!", gamehelpers->ReferenceToIndex(params[1]), params[1]);
 	}
 
 	if (!FindNestedDataTable(pClass->m_pTable, "DT_BaseAnimating"))
@@ -1726,7 +1726,7 @@ static cell_t GetEntityAttachment(IPluginContext* pContext, const cell_t* params
 	ServerClass* pClass = gamehelpers->FindServerClass(pEntity);
 	if (pClass == nullptr)
 	{
-		return pContext->ThrowNativeError("Entity %d (%d) has no server class!", gamehelpers->ReferenceToIndex(params[1]), params[1]);
+		return pContext->ThrowNativeError("Failed to retrieve entity %d (%d) server class!", gamehelpers->ReferenceToIndex(params[1]), params[1]);
 	}
 	
 	if (!FindNestedDataTable(pClass->m_pTable, "DT_BaseAnimating"))
