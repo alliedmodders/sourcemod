@@ -174,7 +174,7 @@ bool CritManager::Hook_CalcIsAttackCriticalHelpers(bool noCrits)
 {
 	CBaseEntity *pWeapon = META_IFACEPTR(CBaseEntity);
 	
-	// If there's an invalid ent or invalid networkable here, we've got issues elsewhere.
+	// If there's an invalid ent or invalid server class here, we've got issues elsewhere.
 	ServerClass *pServerClass = gamehelpers->FindServerClass(pWeapon);
 	if (pServerClass == nullptr)
 	{
