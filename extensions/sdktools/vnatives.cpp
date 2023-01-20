@@ -1033,7 +1033,7 @@ static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 
 	char *classname;
 	pContext->LocalToString(params[1], &classname);
-#if SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_BLADE || SOURCE_ENGINE != SE_MCV
+#if SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_BLADE && SOURCE_ENGINE != SE_MCV
 	CBaseEntity *pEntity = (CBaseEntity *)servertools->CreateEntityByName(classname);
 #else
 	CBaseEntity *pEntity = (CBaseEntity *)servertools->CreateItemEntityByName(classname);
