@@ -38,7 +38,7 @@
 #include <am-refcounting.h>
 #include <sm_stringhashmap.h>
 #include <sm_namehashset.h>
-#include <set>
+#include <unordered_set>
 
 using namespace SourceMod;
 
@@ -136,6 +136,23 @@ struct GameBinaryInfo
 	bool m_crcOK = false;
 };
 
+class GameBinPathManager
+{
+public:
+	GameBinPathManager() {}
+	~GameBinPathManager() {}
+public:
+	void Init();
+
+	inline const std::vector<std::string>& Paths() const
+	{
+		return m_ordered;
+	}
+private:
+	std::unordered_set<std::string> m_lookup;
+	std::vector<std::string> m_ordered;
+};
+
 class GameConfigManager : 
 	public IGameConfigManager,
 	public SMGlobalClass
@@ -165,9 +182,9 @@ private:
 private:
 	NameHashSet<CGameConfig *> m_Lookup;
 	StringHashMap<GameBinaryInfo> m_gameBinInfos;
-	std::set<std::string> m_gameBinDirectories;
 public:
 	StringHashMap<ITextListener_SMC *> m_customHandlers;
+	GameBinPathManager m_gameBinPathManager;
 };
 
 extern GameConfigManager g_GameConfigs;
