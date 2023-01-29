@@ -1083,15 +1083,7 @@ bool CGameConfig::GetMemSig(const char *key, void **addr)
 	return m_Sigs.retrieve(key, addr);
 }
 
-GameConfigManager::GameConfigManager()
-{
-}
-
-GameConfigManager::~GameConfigManager()
-{
-}
-
-void GameConfigManager::OnSourceModStartup(bool late)
+void GameBinPathManager::Init()
 {
 	char search_path[PLATFORM_MAX_PATH * 8];
 	bridge->filesystem->GetSearchPath("GAMEBIN", false, search_path, sizeof(search_path));
@@ -1104,19 +1096,41 @@ void GameConfigManager::OnSourceModStartup(bool late)
 	{
 		if (path.length() > 0
 			&& path.find(addons_folder) == std::string::npos
-			&& m_gameBinDirectories.find(path.c_str()) == m_gameBinDirectories.cend()
+			&& m_lookup.find(path) == m_lookup.cend()
 			)
-			m_gameBinDirectories.insert(path);
+		{
+			m_lookup.insert(path);
+			m_ordered.push_back(path);
+		}
 	}
 
+	iss.clear();
+	
 	bridge->filesystem->GetSearchPath("EXECUTABLE_PATH", false, search_path, sizeof(search_path));
-	std::istringstream iss2(search_path);
-	for (std::string path; std::getline(iss2, path, ';');)
+	iss.str(search_path);
+	
+	for (std::string path; std::getline(iss, path, ';');)
 	{
-		if (m_gameBinDirectories.find(path.c_str()) == m_gameBinDirectories.cend())
-			m_gameBinDirectories.insert(path);
+		if (m_lookup.find(path) == m_lookup.cend())
+		{
+			m_lookup.insert(path);
+			m_ordered.push_back(path);
+		}
 	}
+}
 
+GameConfigManager::GameConfigManager()
+{
+}
+
+GameConfigManager::~GameConfigManager()
+{
+}
+
+void GameConfigManager::OnSourceModStartup(bool late)
+{
+	m_gameBinPathManager.Init();
+	
 	LoadGameConfigFile("core.games", &g_pGameConf, NULL, 0);
 
 	strncopy(g_Game, g_pSM->GetGameFolderName(), sizeof(g_Game));
@@ -1249,7 +1263,7 @@ void GameConfigManager::CacheGameBinaryInfo(const char* pszName)
 
 	bool binary_found = false;
 	char binary_path[PLATFORM_MAX_PATH];
-	for (auto it = m_gameBinDirectories.begin(); it != m_gameBinDirectories.end(); ++it)
+	for (auto it = m_gameBinPathManager.Paths().begin(); it != m_gameBinPathManager.Paths().end(); ++it)
 	{
 		ke::SafeSprintf(binary_path, sizeof(binary_path), "%s%s%s", it->c_str(), it->back() == PLATFORM_SEP_CHAR ? "" : PLATFORM_SEP, name);
 #if defined PLATFORM_WINDOWS
