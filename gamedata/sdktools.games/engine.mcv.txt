@@ -229,7 +229,7 @@
 			}
 			"CommitSuicide"
 			{
-				"windows"	"510"
+				"windows"	"511"
 			}
 			"GetVelocity"
 			{
