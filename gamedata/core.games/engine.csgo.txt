@@ -39,8 +39,8 @@
 			"gEntList"
 			{
 				"linux"		"14"
-				"linux64"	"14"
-				"mac64"		"14"
+				"linux64"	"13"
+				"mac64"		"13"
 			}
 		}
 		
