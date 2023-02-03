@@ -56,7 +56,7 @@
 			"CCSPlayerInventoryOffset"
 			{
 				"windows"	"57"
-				"linux"		"97"
+				"linux"		"90"
 				"linux64"	"107"
 				"mac64"		"73"
 			}
