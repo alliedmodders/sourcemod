@@ -380,6 +380,22 @@ static cell_t IgniteEntity(IPluginContext *pContext, const cell_t *params)
 		else
 #endif // SDK2013
 		{
+#if SOURCE_ENGINE == SE_MCV
+			ValvePassInfo pass[6];
+			InitPass(pass[0], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
+			InitPass(pass[1], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+			InitPass(pass[2], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
+			InitPass(pass[3], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+			InitPass(pass[4], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
+			InitPass(pass[5], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+			if (!CreateBaseCall("Ignite", ValveCall_Entity, NULL, pass, 6, &pCall))
+			{
+				return pContext->ThrowNativeError("\"Ignite\" not supported by this mod");
+			}
+			else if (!pCall) {
+				return pContext->ThrowNativeError("\"Ignite\" wrapper failed to initialize");
+			}
+#else
 			ValvePassInfo pass[4];
 			InitPass(pass[0], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
 			InitPass(pass[1], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
@@ -389,9 +405,11 @@ static cell_t IgniteEntity(IPluginContext *pContext, const cell_t *params)
 			{
 				return pContext->ThrowNativeError("\"Ignite\" not supported by this mod");
 			}
-			else if (!pCall) {
+			else if (!pCall)
+			{
 				return pContext->ThrowNativeError("\"Ignite\" wrapper failed to initialize");
 			}
+#endif // MCV
 		}
 	}
 
@@ -408,6 +426,9 @@ static cell_t IgniteEntity(IPluginContext *pContext, const cell_t *params)
 		*(int *) (vptr + pCall->vparams[4].offset) = 0;
 		*(int *) (vptr + pCall->vparams[5].offset) = 0;
 	}
+#elif SOURCE_ENGINE == SE_MCV
+		*(CBaseEntity **) (vptr + pCall->vparams[4].offset) = nullptr; // pAttacker
+		*(string_t *) (vptr + pCall->vparams[5].offset) = NULL_STRING; // sRootWeaponClassname
 #endif // SDK2013
 
 	FINISH_CALL_SIMPLE(NULL);
