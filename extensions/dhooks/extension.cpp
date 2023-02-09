@@ -119,7 +119,10 @@ void DHooks::SDK_OnAllLoaded()
 	SM_GET_LATE_IFACE(BINTOOLS, g_pBinTools);
 	SM_GET_LATE_IFACE(SDKHOOKS, g_pSDKHooks);
 
-	g_pSDKHooks->AddEntityListener(g_pEntityListener);
+	if (g_pSDKHooks)
+	{
+		g_pSDKHooks->AddEntityListener(g_pEntityListener);
+	}
 	gameconfs->AddUserConfigHook("Functions", g_pSignatures);
 }
 
@@ -131,7 +134,10 @@ void DHooks::SDK_OnUnload()
 	{
 		g_pEntityListener->CleanupListeners();
 		g_pEntityListener->CleanupRemoveList();
-		g_pSDKHooks->RemoveEntityListener(g_pEntityListener);
+		if (g_pSDKHooks)
+		{
+			g_pSDKHooks->RemoveEntityListener(g_pEntityListener);
+		}
 		delete g_pEntityListener;
 	}
 	plsys->RemovePluginsListener(this);
