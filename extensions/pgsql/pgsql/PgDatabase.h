@@ -33,6 +33,8 @@
 #define _INCLUDE_SM_PGSQL_DATABASE_H_
 
 #include <amtl/am-refcounting-threadsafe.h>
+#include <atomic>
+#include <thread>
 #include <mutex>
 #include "PgDriver.h"
 
@@ -72,6 +74,7 @@ public:
 private:
 	PGconn *m_pgsql;
 	std::mutex m_FullLock;
+	std::atomic<std::thread::id> m_LockHolder;
 
 	unsigned int m_lastInsertID;
 	unsigned int m_lastAffectedRows;
