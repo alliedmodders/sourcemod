@@ -27,6 +27,12 @@
 
 		"Offsets"
 		{
+			"SetOwnerEntity"
+			{
+				"windows"	"17"
+				"linux"		"18"
+				"mac"		"18"
+			}
 			"GiveNamedItem"
 			{
 				"windows"	"401"
@@ -116,6 +122,12 @@
 				"windows"	"252"
 				"linux"		"253"
 				"mac"		"253"
+			}
+			"GetAttachment"
+			{
+				"windows"	"205"
+				"linux"		"206"
+				"mac"		"206"
 			}
 		}
 	}

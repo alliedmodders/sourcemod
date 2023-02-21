@@ -64,6 +64,17 @@
 		}
 	}
 	
+	"pvkii"
+	{
+		"Keys"
+		{
+			"Team1BeaconColor"		"255,255,75,255"
+			"Team2BeaconColor"		"255,75,75,255"
+			"Team3BeaconColor"		"75,255,75,255"
+			"Team4BeaconColor"		"75,75,255,255"
+		}
+	}
+	
 	"#default"
 	{
 		"#supported"

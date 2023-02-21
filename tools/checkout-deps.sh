@@ -3,11 +3,17 @@
 
 trap "exit" INT
 
+download_mysql=1
+
 # List of HL2SDK branch names to download.
 # ./checkout-deps.sh -s tf2,css
-while getopts ":s:" opt; do
+# Disable downloading of mysql libraries.
+# ./checkout-deps.sh -m
+while getopts ":s:m" opt; do
   case $opt in
     s) IFS=', ' read -r -a sdks <<< "$OPTARG"
+    ;;
+    m) download_mysql=0
     ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
@@ -66,7 +72,9 @@ else
   mysqlver=mysql-5.6.15-linux-glibc2.5-i686
   mysqlurl=https://cdn.mysql.com/archives/mysql-5.6/$mysqlver.$archive_ext
 fi
-getmysql
+if [ $download_mysql -eq 1 ]; then
+  getmysql
+fi
 
 # 64-bit MySQL
 mysqlfolder=mysql-5.5-x86_64
@@ -80,7 +88,9 @@ else
   mysqlver=mysql-5.6.15-linux-glibc2.5-x86_64
   mysqlurl=https://cdn.mysql.com/archives/mysql-5.6/$mysqlver.$archive_ext
 fi
-getmysql
+if [ $download_mysql -eq 1 ]; then
+  getmysql
+fi
 
 checkout ()
 {
@@ -105,7 +115,7 @@ checkout ()
   fi
 }
 
-name=mmsource-1.10
+name=mmsource-1.12
 branch=master
 repo="https://github.com/alliedmodders/metamod-source"
 origin=
@@ -116,7 +126,7 @@ if [ -z ${sdks+x} ]; then
 
   if [ $ismac -eq 0 ]; then
     # Add these SDKs for Windows or Linux
-    sdks+=( orangebox blade episode1 bms )
+    sdks+=( orangebox blade episode1 bms pvkii )
 
     # Add more SDKs for Windows only
     if [ $iswin -eq 1 ]; then

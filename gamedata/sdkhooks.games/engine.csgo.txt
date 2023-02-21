@@ -30,7 +30,7 @@
 				"windows"	"122"
 				"linux"		"123"
 				"linux64"	"123"
-				"mac64"		"123"			
+				"mac64"		"123"
 			}
 			"GroundEntChanged"
 			{

@@ -158,7 +158,6 @@ namespace SourceMod
 		 *
 		 * @param sectionname	Section name to hook.
 		 * @param listener		Listener callback.
-		 * @noreturn
 		 */
 		virtual void AddUserConfigHook(const char *sectionname, ITextListener_SMC *listener) =0;
 
@@ -167,7 +166,6 @@ namespace SourceMod
 		 *
 		 * @param sectionname	Section name to unhook.
 		 * @param listener		Listener callback.
-		 * @noreturn
 		 */
 		virtual void RemoveUserConfigHook(const char *sectionname, ITextListener_SMC *listener) =0;
 

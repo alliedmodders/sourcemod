@@ -1,20 +1,25 @@
 "Games"
 {
+	/*
+	 * Alien Swarm: Reactive Drop
+	 * Symbol Server: https://symsrv.reactivedrop.com
+	 */
+	
 	"#default"
 	{
 		"Offsets"
 		{
 			"EndTouch"
 			{
-				"windows"	"102"
+				"windows"	"104"
 			}
 			"FireBullets"
 			{
-				"windows"	"115"
+				"windows"	"117"
 			}
 			"GetMaxHealth"
 			{
-				"windows"	"119"
+				"windows"	"121"
 			}
 			"OnTakeDamage"
 			{
@@ -22,11 +27,11 @@
 			}
 			"PreThink"
 			{
-				"windows"	"347"
+				"windows"	"349"
 			}
 			"PostThink"
 			{
-				"windows"	"348"
+				"windows"	"350"
 			}
 			"SetTransmit"
 			{
@@ -42,7 +47,7 @@
 			}
 			"StartTouch"
 			{
-				"windows"	"100"
+				"windows"	"102"
 			}
 			"Think"
 			{
@@ -50,7 +55,7 @@
 			}
 			"Touch"
 			{
-				"windows"	"101"
+				"windows"	"103"
 			}
 			"TraceAttack"
 			{
@@ -58,31 +63,31 @@
 			}
 			"Use"
 			{
-				"windows"	"99"
+				"windows"	"101"
 			}
 			"VPhysicsUpdate"
 			{
-				"windows"	"160"
+				"windows"	"162"
 			}
 			"Weapon_CanSwitchTo"
 			{
-				"windows"	"283"
+				"windows"	"285"
 			}
 			"Weapon_CanUse"
 			{
-				"windows"	"277"
+				"windows"	"279"
 			}
 			"Weapon_Drop"
 			{
-				"windows"	"280"
+				"windows"	"282"
 			}
 			"Weapon_Equip"
 			{
-				"windows"	"278"
+				"windows"	"280"
 			}
 			"Weapon_Switch"
 			{
-				"windows"	"281"
+				"windows"	"283"
 			}
 		}
 	}

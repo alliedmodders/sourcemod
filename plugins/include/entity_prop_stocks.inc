@@ -534,19 +534,10 @@ stock void SetEntityHealth(int entity, int amount)
 		gotconfig = true;
 	}
 
-	char cls[64];
 	PropFieldType type;
 	int offset;
 
-	if (!GetEntityNetClass(entity, cls, sizeof(cls)))
-	{
-		ThrowError("SetEntityHealth not supported by this mod: Could not get serverclass name");
-		return;
-	}
-
-	offset = FindSendPropInfo(cls, prop, type);
-
-	if (offset <= 0)
+	if ((offset = FindDataMapInfo(entity, prop, type)) == -1)
 	{
 		ThrowError("SetEntityHealth not supported by this mod");
 		return;
@@ -559,7 +550,12 @@ stock void SetEntityHealth(int entity, int amount)
 	}
 	else
 	{
-		SetEntProp(entity, Prop_Send, prop, amount);
+		SetEntData(entity, offset, amount);
+	}
+
+	if (IsValidEdict(entity))
+	{
+		ChangeEdictState(entity);
 	}
 }
 

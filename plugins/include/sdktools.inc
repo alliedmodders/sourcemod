@@ -61,7 +61,8 @@ enum SDKCallType
 	SDKCall_GameRules,      /**< CGameRules call */
 	SDKCall_EntityList,     /**< CGlobalEntityList call */
 	SDKCall_Raw,            /**< |this| pointer with an arbitrary address */
-	SDKCall_Server          /**< CBaseServer call */
+	SDKCall_Server,         /**< CBaseServer call */
+	SDKCall_Engine          /**< CVEngineServer call */
 };
 
 enum SDKLibrary

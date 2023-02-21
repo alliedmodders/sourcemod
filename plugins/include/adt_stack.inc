@@ -54,6 +54,9 @@ methodmap ArrayStack < Handle
 	//                     new Array[X][32]
 	public native ArrayStack(int blocksize=1);
 
+	// Clears a stack of all entries.
+	public native void Clear();
+
 	// Clones an stack, returning a new handle with the same size and data.
 	// This should NOT be confused with CloneHandle. This is a completely new
 	// handle with the same data but no relation to the original. It should

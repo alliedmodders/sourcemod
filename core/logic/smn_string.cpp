@@ -170,7 +170,7 @@ static cell_t Int64ToString(IPluginContext *pCtx, const cell_t *params)
 	char *str;
 	pCtx->LocalToPhysAddr(params[1], &num);
 	pCtx->LocalToString(params[2], &str);
-	size_t res = ke::SafeSprintf(str, params[3], "%" KE_FMT_I64, (int64_t)num[1] << 32ll | (int64_t)num[0]);
+	size_t res = ke::SafeSprintf(str, params[3], "%" KE_FMT_I64, (uint64_t)num[1] << 32ll | (uint32_t)num[0]);
 
 	return static_cast<cell_t>(res);
 }

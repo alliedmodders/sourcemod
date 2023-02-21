@@ -63,6 +63,8 @@ public:
 	unsigned int SetReplyTo(unsigned int reply);
 	bool IsChatTrigger();
 	bool WasFloodedMessage();
+	const char *GetPublicChatTrigger();
+	const char *GetPrivateChatTrigger();
 private:
 	enum ChatTriggerType {
 		ChatTrigger_Public,

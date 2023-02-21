@@ -67,14 +67,16 @@ for cxx_task in SM.spvm:
                              'sourcepawn.jit.x86' + os.path.splitext(cxx_task.binary.path)[1])
     builder.AddCopy(cxx_task.binary, dest_path)
   elif cxx_task.target.arch == 'x86_64':
-    builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/bin/x64'])
+    dest_path = os.path.join('addons/sourcemod/bin/x64',
+                             'sourcepawn.vm' + os.path.splitext(cxx_task.binary.path)[1])
+    builder.AddCopy(cxx_task.binary, dest_path)
 
 helpers.CopySpcomp('addons/sourcemod/scripting')
 
 # Export PDB files. We write to a file in the build folder which is pretty
 # verboten, but it's okay if it's in the root since AMBuild will never try
 # to rmdir the root.
-full_binary_list = SM.binaries + SM.extensions + SM.spcomp_bins
+full_binary_list = SM.binaries + SM.extensions + SM.spvm + SM.spcomp_bins
 with open(os.path.join(builder.buildPath, 'pdblog.txt'), 'w') as fp:
   for task in full_binary_list:
     fp.write(task.debug.path + '\n')

@@ -53,6 +53,11 @@ SourceHook::List<ICallWrapper *> g_CallWraps;
 		return pContext->ThrowNativeError("Entity %d (%d) is not a CBaseEntity", gamehelpers->ReferenceToIndex(ref), ref); \
 	}
 
+#define SET_VECTOR(addr, vec) \
+	addr[0] = sp_ftoc(vec.x); \
+	addr[1] = sp_ftoc(vec.y); \
+	addr[2] = sp_ftoc(vec.z); 
+
 inline void InitPass(ValvePassInfo &info, ValveType vtype, PassType type, unsigned int flags, unsigned int decflags=0)
 {
 	info.decflags = decflags;
@@ -158,10 +163,10 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 		char *pWeaponName;
 		pContext->LocalToString(params[2], &pWeaponName);
 
-		// Don't allow knives other than weapon_knife,  weapon_knifegg, and weapon_knife_t.
+		// Don't allow knives other than weapon_knife, weapon_knifegg, and weapon_knife_t.
 		// Others follow pattern weapon_knife_*
 		size_t len = strlen(pWeaponName);
-		if (len >= 14 && strnicmp(pWeaponName, "weapon_knife_", 13) == 0 && !(pWeaponName[13] == 't' && pWeaponName[14] == '\0'))
+		if ((len >= 14 && strnicmp(pWeaponName, "weapon_knife_", 13) == 0 && !(pWeaponName[13] == 't' && pWeaponName[14] == '\0')) || (len == 14 && stricmp(pWeaponName, "weapon_bayonet") == 0))
 		{
 			return pContext->ThrowNativeError("Blocked giving of %s due to core.cfg option FollowCSGOServerGuidelines", pWeaponName);
 		}
@@ -197,7 +202,7 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 
 	return gamehelpers->EntityToBCompatRef(pEntity);
 }
-#elif SOURCE_ENGINE == SE_BLADE
+#elif SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 class CEconItemView;
 static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 {
@@ -368,25 +373,39 @@ static cell_t IgniteEntity(IPluginContext *pContext, const cell_t *params)
 			{
 				return pContext->ThrowNativeError("\"Ignite\" not supported by this mod");
 			}
-			else if (!pCall) {
+			else if (!pCall)
+			{
 				return pContext->ThrowNativeError("\"Ignite\" wrapper failed to initialize");
 			}
 		}
 		else
 #endif // SDK2013
 		{
+#if SOURCE_ENGINE == SE_MCV
+			ValvePassInfo pass[6];
+			InitPass(pass[0], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
+			InitPass(pass[1], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+			InitPass(pass[2], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
+			InitPass(pass[3], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+			InitPass(pass[4], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
+			InitPass(pass[5], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+			if (!CreateBaseCall("Ignite", ValveCall_Entity, NULL, pass, 6, &pCall)) {
+				return pContext->ThrowNativeError("\"Ignite\" not supported by this mod");
+			} else if (!pCall) {
+				return pContext->ThrowNativeError("\"Ignite\" wrapper failed to initialize");
+			}
+#else
 			ValvePassInfo pass[4];
 			InitPass(pass[0], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
 			InitPass(pass[1], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
 			InitPass(pass[2], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
 			InitPass(pass[3], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
-			if (!CreateBaseCall("Ignite", ValveCall_Entity, NULL, pass, 4, &pCall))
-			{
+			if (!CreateBaseCall("Ignite", ValveCall_Entity, NULL, pass, 4, &pCall)) {
 				return pContext->ThrowNativeError("\"Ignite\" not supported by this mod");
-			}
-			else if (!pCall) {
+			} else if (!pCall) {
 				return pContext->ThrowNativeError("\"Ignite\" wrapper failed to initialize");
 			}
+#endif // MCV
 		}
 	}
 
@@ -403,6 +422,9 @@ static cell_t IgniteEntity(IPluginContext *pContext, const cell_t *params)
 		*(int *) (vptr + pCall->vparams[4].offset) = 0;
 		*(int *) (vptr + pCall->vparams[5].offset) = 0;
 	}
+#elif SOURCE_ENGINE == SE_MCV
+	*(CBaseEntity **) (vptr + pCall->vparams[4].offset) = nullptr; // pAttacker
+	*(string_t *) (vptr + pCall->vparams[5].offset) = NULL_STRING; // sRootWeaponClassname
 #endif // SDK2013
 
 	FINISH_CALL_SIMPLE(NULL);
@@ -471,11 +493,19 @@ static cell_t TeleportEntity(IPluginContext *pContext, const cell_t *params)
 	static ValveCall *pCall = NULL;
 	if (!pCall)
 	{
-		ValvePassInfo pass[3];
+#if SOURCE_ENGINE >= SE_PORTAL2
+		constexpr size_t paramCount = 4;
+#else
+		constexpr size_t paramCount = 3;
+#endif
+		ValvePassInfo pass[paramCount];
 		InitPass(pass[0], Valve_Vector, PassType_Basic, PASSFLAG_BYVAL, VDECODE_FLAG_ALLOWNULL);
 		InitPass(pass[1], Valve_QAngle, PassType_Basic, PASSFLAG_BYVAL, VDECODE_FLAG_ALLOWNULL);
 		InitPass(pass[2], Valve_Vector, PassType_Basic, PASSFLAG_BYVAL, VDECODE_FLAG_ALLOWNULL);
-		if (!CreateBaseCall("Teleport", ValveCall_Entity, NULL, pass, 3, &pCall))
+#if SOURCE_ENGINE >= SE_PORTAL2
+		InitPass(pass[3], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+#endif
+		if (!CreateBaseCall("Teleport", ValveCall_Entity, NULL, pass, paramCount, &pCall))
 		{
 			return pContext->ThrowNativeError("\"Teleport\" not supported by this mod");
 		} else if (!pCall) {
@@ -488,6 +518,11 @@ static cell_t TeleportEntity(IPluginContext *pContext, const cell_t *params)
 	DECODE_VALVE_PARAM(2, vparams, 0);
 	DECODE_VALVE_PARAM(3, vparams, 1);
 	DECODE_VALVE_PARAM(4, vparams, 2);
+
+#if SOURCE_ENGINE >= SE_PORTAL2
+	*(bool *)(vptr + pCall->vparams[3].offset) = true;
+#endif
+
 	FINISH_CALL_SIMPLE(NULL);
 
 	return 1;
@@ -514,8 +549,18 @@ static cell_t ForcePlayerSuicide(IPluginContext *pContext, const cell_t *params)
 
 	START_CALL();
 	DECODE_VALVE_PARAM(1, thisinfo, 0);
-	*(bool *)(vptr + pCall->vparams[0].offset) = false;
-	*(bool *)(vptr + pCall->vparams[1].offset) = false;
+
+	if (params[0] >= 2)
+	{
+		DECODE_VALVE_PARAM(2, vparams, 0);
+	}
+	else
+	{
+		*(bool *)(vptr + pCall->vparams[0].offset) = false;
+	}
+	
+	*(bool *)(vptr + pCall->vparams[1].offset) = true;
+
 	FINISH_CALL_SIMPLE(NULL);
 
 	return 1;
@@ -716,7 +761,7 @@ static cell_t SlapPlayer(IPluginContext *pContext, const cell_t *params)
 			rf.SetToReliable(true);
 			rf.Initialize(player_list, total_players);
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 			engsound->EmitSound(rf, params[1], CHAN_AUTO, sound_name, VOL_NORM, ATTN_NORM, 0, PITCH_NORM, 0, &pos);
 #elif SOURCE_ENGINE < SE_PORTAL2
 			engsound->EmitSound(rf, params[1], CHAN_AUTO, sound_name, VOL_NORM, ATTN_NORM, 0, PITCH_NORM, &pos);
@@ -910,7 +955,8 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 	|| SOURCE_ENGINE == SE_BMS     \
 	|| SOURCE_ENGINE == SE_SDK2013 \
 	|| SOURCE_ENGINE == SE_BLADE   \
-	|| SOURCE_ENGINE == SE_NUCLEARDAWN
+	|| SOURCE_ENGINE == SE_NUCLEARDAWN \
+	|| SOURCE_ENGINE == SE_PVKII
 
 	static bool bHasServerTools3 = !!g_SMAPI->GetServerFactory(false)("VSERVERTOOLS003", nullptr);
 	if (bHasServerTools3)
@@ -1004,7 +1050,7 @@ static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 
 	char *classname;
 	pContext->LocalToString(params[1], &classname);
-#if SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_BLADE
+#if SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_BLADE && SOURCE_ENGINE != SE_MCV
 	CBaseEntity *pEntity = (CBaseEntity *)servertools->CreateEntityByName(classname);
 #else
 	CBaseEntity *pEntity = (CBaseEntity *)servertools->CreateItemEntityByName(classname);
@@ -1566,40 +1612,183 @@ static cell_t GivePlayerAmmo(IPluginContext *pContext, const cell_t *params)
 // SetEntityCollisionGroup(int entity, int collisionGroup)
 static cell_t SetEntityCollisionGroup(IPluginContext *pContext, const cell_t *params)
 {
-	static ICallWrapper *pSetCollisionGroup = NULL;
-	if (!pSetCollisionGroup)
+	CBaseEntity *pEntity;
+	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
+
+	int offsetCollisionGroup = -1;
+	// Retrieve m_hOwnerEntity offset
+	sm_datatable_info_t offset_data_info;
+	datamap_t *offsetMap = gamehelpers->GetDataMap(pEntity);
+	if (!offsetMap || !gamehelpers->FindDataMapInfo(offsetMap, "m_CollisionGroup", &offset_data_info))
 	{
-		void *addr;
-		if (!g_pGameConf->GetMemSig("SetCollisionGroup", &addr) || !addr)
+		return pContext->ThrowNativeError("\"SetEntityCollisionGroup\" Failed to retrieve m_CollisionGroup datamap on entity");
+	}
+	offsetCollisionGroup = offset_data_info.actual_offset;
+
+	// Reimplementation of CBaseEntity::SetCollisionGroup
+	// https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/sp/src/game/shared/baseentity_shared.cpp#L2477L2484
+	int *collisionGroup = (int *)((uint8_t *)pEntity + offsetCollisionGroup);
+	if ((*collisionGroup) != params[2])
+	{
+		*collisionGroup = params[2];
+		// Returns false if CollisionRulesChanged hack isn't supported for this mod
+		if (!CollisionRulesChanged(pEntity))
 		{
-			return pContext->ThrowNativeError("\"SetEntityCollisionGroup\" not supported by this mod");
+			return pContext->ThrowNativeError("\"SetEntityCollisionGroup\" unsupported mod");
 		}
-		PassInfo pass[2];
-		// Entity
+	}
+	return 1;
+}
+
+static cell_t EntityCollisionRulesChanged(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
+	// Returns false if CollisionRulesChanged hack isn't supported for this mod
+	if (!CollisionRulesChanged(pEntity))
+	{
+		return pContext->ThrowNativeError("\"EntityCollisionRulesChanged\" unsupported mod");
+	}
+	return 1;
+}
+
+static cell_t SetEntityOwner(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity *pEntity;
+	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
+
+	static ICallWrapper *pSetOwnerEntity = NULL;
+	if (!pSetOwnerEntity)
+	{
+		int offset = -1;
+		if (!g_pGameConf->GetOffset("SetOwnerEntity", &offset))
+		{
+			return pContext->ThrowNativeError("\"SetOwnerEntity\" not supported by this mod");
+		}
+
+		PassInfo pass[1];
 		pass[0].type = PassType_Basic;
 		pass[0].flags = PASSFLAG_BYVAL;
 		pass[0].size = sizeof(CBaseEntity *);
 
-		// Collision Group
-		pass[1].type = PassType_Basic;
-		pass[1].flags = PASSFLAG_BYVAL;
-		pass[1].size = sizeof(int);
-
-		if (!(pSetCollisionGroup = g_pBinTools->CreateCall(addr, CallConv_ThisCall, NULL, pass, 2)))
+		if (!(pSetOwnerEntity = g_pBinTools->CreateVCall(offset, 0, 0, nullptr, pass, 1)))
 		{
-			return pContext->ThrowNativeError("\"SetEntityCollisionGroup\" wrapper failed to initialize");
+			return pContext->ThrowNativeError("\"SetOwnerEntity\" wrapper failed to initialize");
 		}
 	}
 
-	CBaseEntity *pEntity;
-	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
-
-	ArgBuffer<CBaseEntity *, int> vstk(pEntity, params[2]);
-
-	pSetCollisionGroup->Execute(vstk, nullptr);
+	CBaseEntity *pNewOwner = gamehelpers->ReferenceToEntity(params[2]);
+	ArgBuffer<CBaseEntity *, CBaseEntity *> vstk(pEntity, pNewOwner);
+	pSetOwnerEntity->Execute(vstk, nullptr);
 
 	return 1;
+}
 
+static cell_t LookupEntityAttachment(IPluginContext* pContext, const cell_t* params)
+{
+	CBaseEntity* pEntity;
+	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
+
+	ServerClass* pClass = ((IServerUnknown*)pEntity)->GetNetworkable()->GetServerClass();
+	if (!FindNestedDataTable(pClass->m_pTable, "DT_BaseAnimating"))
+	{
+		return pContext->ThrowNativeError("Entity %d (%d) is not a CBaseAnimating", gamehelpers->ReferenceToIndex(params[1]), params[1]);
+	}
+
+	static ICallWrapper* pLookupAttachment = NULL;
+	if (!pLookupAttachment)
+	{
+		void* addr;
+		if (!g_pGameConf->GetMemSig("LookupAttachment", &addr))
+		{
+			return pContext->ThrowNativeError("\"LookupAttachment\" not supported by this mod");
+		}
+
+		PassInfo retpass;
+		retpass.type = PassType_Basic;
+		retpass.flags = PASSFLAG_BYVAL;
+		retpass.size = sizeof(int);
+
+		PassInfo pass[1];
+		pass[0].type = PassType_Basic;
+		pass[0].flags = PASSFLAG_BYVAL;
+		pass[0].size = sizeof(char*);
+
+		if (!(pLookupAttachment = g_pBinTools->CreateCall(addr, CallConv_ThisCall, &retpass, pass, 1)))
+		{
+			return pContext->ThrowNativeError("\"LookupAttachment\" wrapper failed to initialize");
+		}
+	}
+
+	char* buffer;
+	pContext->LocalToString(params[2], &buffer);
+	ArgBuffer<CBaseEntity*, char*> vstk(pEntity, buffer);
+
+	int ret;
+	pLookupAttachment->Execute(vstk, &ret);
+
+	return ret;
+}
+
+static cell_t GetEntityAttachment(IPluginContext* pContext, const cell_t* params)
+{
+	CBaseEntity* pEntity;
+	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
+
+	ServerClass* pClass = ((IServerUnknown*)pEntity)->GetNetworkable()->GetServerClass();
+	if (!FindNestedDataTable(pClass->m_pTable, "DT_BaseAnimating"))
+	{
+		return pContext->ThrowNativeError("Entity %d (%d) is not a CBaseAnimating", gamehelpers->ReferenceToIndex(params[1]), params[1]);
+	}
+
+	static ICallWrapper* pGetAttachment = NULL;
+	if (!pGetAttachment)
+	{
+		int offset = -1;
+		if (!g_pGameConf->GetOffset("GetAttachment", &offset))
+		{
+			return pContext->ThrowNativeError("\"GetAttachment\" not supported by this mod");
+		}
+
+		PassInfo retpass;
+		retpass.type = PassType_Basic;
+		retpass.flags = PASSFLAG_BYVAL;
+		retpass.size = sizeof(bool);
+
+		PassInfo pass[2];
+		pass[0].type = PassType_Basic;
+		pass[0].flags = PASSFLAG_BYVAL;
+		pass[0].size = sizeof(int);
+		pass[1].type = PassType_Basic;
+		pass[1].flags = PASSFLAG_BYVAL;
+		pass[1].size = sizeof(matrix3x4_t*);
+
+		if (!(pGetAttachment = g_pBinTools->CreateVCall(offset, 0, 0, &retpass, pass, 2)))
+		{
+			return pContext->ThrowNativeError("\"GetAttachment\" wrapper failed to initialize");
+		}
+	}
+
+	matrix3x4_t attachmentToWorld;
+	ArgBuffer<CBaseEntity*, int, matrix3x4_t*> vstk(pEntity, params[2], &attachmentToWorld);
+
+	bool ret;
+	pGetAttachment->Execute(vstk, &ret);
+
+	// GetAttachment returns a matrix3x4_t but plugins can't do anything with this.
+	// Convert it to world origin and world angles.
+	QAngle absAngles;
+	Vector absOrigin;
+	MatrixAngles(attachmentToWorld, absAngles, absOrigin);
+
+	cell_t* pOrigin, * pAngles;
+	pContext->LocalToPhysAddr(params[3], &pOrigin);
+	pContext->LocalToPhysAddr(params[4], &pAngles);
+
+	SET_VECTOR(pOrigin, absOrigin);
+	SET_VECTOR(pAngles, absAngles);
+
+	return ret;
 }
 
 sp_nativeinfo_t g_Natives[] = 
@@ -1634,5 +1823,9 @@ sp_nativeinfo_t g_Natives[] =
 	{"GetPlayerResourceEntity", GetPlayerResourceEntity},
 	{"GivePlayerAmmo",		GivePlayerAmmo},
 	{"SetEntityCollisionGroup",	SetEntityCollisionGroup},
+	{"EntityCollisionRulesChanged",	EntityCollisionRulesChanged},
+	{"SetEntityOwner", 				SetEntityOwner},
+	{"LookupEntityAttachment", 		LookupEntityAttachment},
+	{"GetEntityAttachment", 		GetEntityAttachment},
 	{NULL,						NULL},
 };

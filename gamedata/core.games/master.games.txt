@@ -95,6 +95,16 @@
 		"engine"	"insurgency"
 		"engine"	"doi" // #cheating #yolo
 	}
+
+	"engine.pvkii.txt"
+	{
+		"engine"	"pvkii"
+	}
+
+	"engine.mcv.txt"
+	{
+		"engine"	"mcv"
+	}
 	
 	"game.dinodday.txt"
 	{

@@ -1,14 +1,14 @@
 /**
- * vim: set ts=4 sw=4 tw=99 noet :
+ * vim: set ts=4 :
  * =============================================================================
- * SourceMod
- * Copyright (C) 2020 AlliedModders LLC.  All rights reserved.
+ * SourceMod Dynamic Hooks Extension
+ * Copyright (C) 2012-2021 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -28,8 +28,18 @@
  *
  * Version: $Id$
  */
-#include "pb_handle.h"
 
-#if defined PROTOBUF_PROXY_ENABLE
-IProtobufProxy* gProtobufProxy = nullptr;
+#ifndef _INCLUDE_NATIVES_H_
+#define _INCLUDE_NATIVES_H_
+
+#include "extension.h"
+#include "vhook.h"
+#include "listeners.h"
+
+extern DHooksEntityListener *g_pEntityListener;
+extern ISDKTools *g_pSDKTools;
+extern HandleType_t g_HookSetupHandle;
+extern HandleType_t g_HookParamsHandle;
+extern HandleType_t g_HookReturnHandle;
+extern std::vector<DHooksManager *> g_pHooks;
 #endif
