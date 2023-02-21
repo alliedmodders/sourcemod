@@ -130,12 +130,14 @@ helpers.CopyFiles('plugins/playercommands', 'addons/sourcemod/scripting/playerco
 
 with open(os.path.join(builder.sourcePath, 'configs/languages.cfg'), 'r') as f:
   language_re = re.compile(r'^\s*"([^"]+)"\s+"[^"]+"')
+  added_languages = set(["en"])
   for line in f.read().splitlines():
     match = language_re.match(line)
     if match:
       lang_code = match.group(1)
-      if lang_code == "en":
+      if lang_code in added_languages:
         continue
       output_path = os.path.join('addons/sourcemod/translations', lang_code)
       helpers.CreateFolders([output_path])
       helpers.CopyFiles(os.path.join('translations', lang_code), output_path)
+      added_languages.add(lang_code)
