@@ -1,5 +1,6 @@
 # vim: set ts=8 sts=2 sw=2 tw=99 et ft=python:
 import os
+import re
 
 builder.SetBuildFolder('package')
 
@@ -126,3 +127,13 @@ helpers.CopyFiles('plugins/basevotes', 'addons/sourcemod/scripting/basevotes')
 helpers.CopyFiles('plugins/basebans', 'addons/sourcemod/scripting/basebans')
 helpers.CopyFiles('plugins/funcommands', 'addons/sourcemod/scripting/funcommands')
 helpers.CopyFiles('plugins/playercommands', 'addons/sourcemod/scripting/playercommands')
+
+with open(os.path.join(builder.sourcePath, 'configs/languages.cfg'), 'r') as f:
+  language_re = re.compile(r'^\s*"([^"]+)"\s+"[^"]+"')
+  for line in f.read().splitlines():
+    match = language_re.match(line)
+    if match:
+      lang_code = match.group(1)
+      output_path = os.path.join('addons/sourcemod/translations', lang_code)
+      helpers.CreateFolders([output_path])
+      helpers.CopyFiles(os.path.join('translations', lang_code), output_path)
