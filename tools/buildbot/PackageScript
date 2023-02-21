@@ -134,6 +134,8 @@ with open(os.path.join(builder.sourcePath, 'configs/languages.cfg'), 'r') as f:
     match = language_re.match(line)
     if match:
       lang_code = match.group(1)
+      if lang_code == "en":
+        continue
       output_path = os.path.join('addons/sourcemod/translations', lang_code)
       helpers.CreateFolders([output_path])
       helpers.CopyFiles(os.path.join('translations', lang_code), output_path)
