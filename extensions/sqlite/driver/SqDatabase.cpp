@@ -64,27 +64,13 @@ const char *SqDatabase::GetError(int *errorCode/* =NULL */)
 
 bool SqDatabase::LockForFullAtomicOperation()
 {
-	std::thread::id myId = std::this_thread::get_id();
-	if (m_LockHolder == myId)
-	{
-		return true;
-	}
-
 	m_FullLock.lock();
-	m_LockHolder = myId;
 	return true;
 }
 
 void SqDatabase::UnlockFromFullAtomicOperation()
 {
-	std::thread::id defaultId;
-	if (m_LockHolder == defaultId)
-	{
-		return;
-	}
-
 	m_FullLock.unlock();
-	m_LockHolder = defaultId;
 }
 
 IDBDriver *SqDatabase::GetDriver()

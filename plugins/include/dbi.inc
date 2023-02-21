@@ -959,6 +959,10 @@ native bool SQL_Execute(Handle statement);
  * If the lock cannot be acquired, the main thread will pause until the 
  * threaded operation has concluded.
  *
+ * Care should be taken to not lock an already-locked database. Internally,
+ * lock calls are nested recursively and must be paired with an equal amount
+ * of unlocks to be undone. This behaviour should not be relied on.
+ *
  * @param database      A database Handle.
  * @error               Invalid database Handle.
  */

@@ -33,8 +33,6 @@
 #define _INCLUDE_SQLITE_SOURCEMOD_DATABASE_H_
 
 #include <am-refcounting-threadsafe.h>
-#include <atomic>
-#include <thread>
 #include <mutex>
 #include "SqDriver.h"
 
@@ -72,8 +70,7 @@ public:
 	}
 private:
 	sqlite3 *m_sq3;
-	std::mutex m_FullLock;
-	std::atomic<std::thread::id> m_LockHolder;
+	std::recursive_mutex m_FullLock;
 	bool m_Persistent;
 	String m_LastError;
 	int m_LastErrorCode;

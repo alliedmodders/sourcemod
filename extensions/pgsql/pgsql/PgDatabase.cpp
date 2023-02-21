@@ -322,27 +322,13 @@ IPreparedQuery *PgDatabase::PrepareQuery(const char *query, char *error, size_t 
 
 bool PgDatabase::LockForFullAtomicOperation()
 {
-	std::thread::id myId = std::this_thread::get_id();
-	if (m_LockHolder == myId)
-	{
-		return true;
-	}
-
 	m_FullLock.lock();
-	m_LockHolder = myId;
 	return true;
 }
 
 void PgDatabase::UnlockFromFullAtomicOperation()
 {
-	std::thread::id defaultId;
-	if (m_LockHolder == defaultId)
-	{
-		return;
-	}
-
 	m_FullLock.unlock();
-	m_LockHolder = defaultId;
 }
 
 IDBDriver *PgDatabase::GetDriver()

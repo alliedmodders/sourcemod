@@ -33,8 +33,6 @@
 #define _INCLUDE_SM_MYSQL_DATABASE_H_
 
 #include <am-refcounting-threadsafe.h>
-#include <atomic>
-#include <thread>
 #include <mutex>
 #include "MyDriver.h"
 
@@ -72,8 +70,7 @@ public:
 	const DatabaseInfo &GetInfo();
 private:
 	MYSQL *m_mysql;
-	std::mutex m_FullLock;
-	std::atomic<std::thread::id> m_LockHolder;
+	std::recursive_mutex m_FullLock;
 
 	/* ---------- */
 	DatabaseInfo m_Info;
