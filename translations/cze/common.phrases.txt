@@ -250,4 +250,24 @@
 		"cze"		"Vypnout"
 	}
 
+	"Say all"
+	{
+		"cze"		"(VSEM) {1}"
+	}
+
+	"Chat admins"
+	{
+		"cze"		"(ADMINOVE) {1}"
+	}
+
+	"Chat to admins"
+	{
+		"cze"		"(ADMINUM) {1}"
+	}
+
+	"Private say to"
+	{
+		"cze"		"(Privatne {1}) {2}"
+	}
+
 }

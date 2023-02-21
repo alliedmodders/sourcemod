@@ -2,7 +2,7 @@
 {
 	"No Access"
 	{
-		"sk"		"Nemáš prístup k tejto funkcii"
+		"sk"		"Nemáš prístup k tomuto príkazu"
 	}
 
 	"Back"
@@ -12,7 +12,7 @@
 
 	"Next"
 	{
-		"sk"		"Ďalší/a"
+		"sk"		"Ďalší"
 	}
 
 	"Exit"

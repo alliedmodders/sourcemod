@@ -2,7 +2,7 @@
 {
 	"Invalid authtype"
 	{
-		"sk"		"Overovacie metódy musia byt 'steam', 'name', alebo 'ip'. "
+		"sk"		"Overovacia metóda musí byť 'steam', 'name', alebo 'ip'."
 	}
 
 	"Invalid immunity"
@@ -27,7 +27,7 @@
 
 	"SQL Admin not found"
 	{
-		"sk"		"Podľa zadaných kritérií nebol najdený admin."
+		"sk"		"Podľa zadaných kritérií nebol nájdený žiaden admin."
 	}
 
 	"SQL Group already exists"

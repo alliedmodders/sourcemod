@@ -7,22 +7,22 @@
 
 	"FireBomb player"
 	{
-		"sk"		"Ohňivá bomba"
+		"sk"		"Ohnivá bomba na hráča"
 	}
 
 	"Freeze player"
 	{
-		"sk"		"Zamraziť hráča"
+		"sk"		"Zmraziť hráča"
 	}
 
 	"FreezeBomb player"
 	{
-		"sk"		"Zmrazovacia bomba"
+		"sk"		"Zmrazovacia bomba na hráča"
 	}
 
 	"TimeBomb player"
 	{
-		"sk"		"Časovaná bomba"
+		"sk"		"Časovaná bomba na hráča"
 	}
 
 	"Beacon player"
@@ -57,12 +57,12 @@
 
 	"Fully blind"
 	{
-		"sk"		"Oslepiť úplne"
+		"sk"		"Úplne slepý"
 	}
 
 	"Half blind"
 	{
-		"sk"		"Oslepiť na 50%"
+		"sk"		"Poloslepý"
 	}
 
 	"No blind"
@@ -102,7 +102,7 @@
 
 	"Set target on fire"
 	{
-		"sk"		"{1} podpálený."
+		"sk"		"{1} bol podpálený."
 	}
 
 	"Toggled FireBomb on target"
@@ -112,7 +112,7 @@
 
 	"Froze target"
 	{
-		"sk"		"zamrazil {1}. "
+		"sk"		"{1} bol zmrazený."
 	}
 
 	"Toggled FreezeBomb on target"
@@ -142,7 +142,7 @@
 
 	"Set blind on target"
 	{
-		"sk"		"oslepil {1}. "
+		"sk"		"{1} bol oslepený."
 	}
 
 	"Set gravity on target"

@@ -2,7 +2,7 @@
 {
 	"Played sound to target"
 	{
-		"sk"		"Pustený zvuk pre {1}"
+		"sk"		"Prehratý zvuk pre {1}"
 	}
 
 }

@@ -72,7 +72,7 @@
 
 	"See console for output"
 	{
-		"sk"		"Pozri konzolu."
+		"sk"		"Pozri konzolu pre výstup."
 	}
 
 	"Cannot target bot"
@@ -162,12 +162,12 @@
 
 	"Vote Delay Minutes"
 	{
-		"sk"		"Musíš počkať {1} minút pred ďalším hlasovaním. "
+		"sk"		"Musíš počkať {1} minút pred začatím ďalšieho hlasovania."
 	}
 
 	"Vote Delay Seconds"
 	{
-		"sk"		"Musíš počkať {1} sekúnd pred ďalším hlasovaním. "
+		"sk"		"Musíš počkať {1} sekúnd pred začatím ďalšieho hlasovania."
 	}
 
 	"Could not connect to database"
@@ -197,7 +197,7 @@
 
 	"Target must be dead"
 	{
-		"sk"		"Táto akcia musí byť vykonaná na mŕtvom hráčovi."
+		"sk"		"Táto akcia môže byť vykonaná iba na mŕtvych hráčoch."
 	}
 
 	"Target must be alive"
@@ -207,7 +207,7 @@
 
 	"Target is not in game"
 	{
-		"sk"		"Tento hráč ešte nieje úplne v hre."
+		"sk"		"Tento hráč ešte nie je úplne v hre."
 	}
 
 	"Played Sound"
@@ -248,6 +248,26 @@
 	"Off"
 	{
 		"sk"		"Vypnúť"
+	}
+
+	"Say all"
+	{
+		"sk"		"(VŠETCI) {1}"
+	}
+
+	"Chat admins"
+	{
+		"sk"		"(ADMINI) {1}"
+	}
+
+	"Chat to admins"
+	{
+		"sk"		"(PRE ADMINOV) {1}"
+	}
+
+	"Private say to"
+	{
+		"sk"		"(Súkromné pre {1}) {2}"
 	}
 
 }

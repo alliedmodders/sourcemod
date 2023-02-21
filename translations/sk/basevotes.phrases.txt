@@ -2,7 +2,7 @@
 {
 	"Initiate Vote"
 	{
-		"sk"		"Spustené hlasovanie : {1} "
+		"sk"		"Spustené hlasovanie: {1}"
 	}
 
 	"Initiated Vote Map"
@@ -57,12 +57,12 @@
 
 	"Kick vote"
 	{
-		"sk"		"Hlasovanie vyhodenia"
+		"sk"		"Hlasovanie pre vykopnutie hráča"
 	}
 
 	"Ban vote"
 	{
-		"sk"		"Hlasovať o zabanovanie"
+		"sk"		"Hlasovanie o zabanovanie hráča"
 	}
 
 	"Map vote"

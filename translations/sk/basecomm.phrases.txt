@@ -2,7 +2,7 @@
 {
 	"Gag/Mute player"
 	{
-		"sk"		"Zakázať chat/mikrofón hráčovi"
+		"sk"		"Zakázať hráčovi chat/mikrofón"
 	}
 
 	"Choose Type"

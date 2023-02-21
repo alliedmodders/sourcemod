@@ -22,7 +22,7 @@
 
 	"Entries n - m in page k"
 	{
-		"sk"		"Položiek {1} - {2} na strane {3}  "
+		"sk"		"Položky {1} - {2} na strane {3}"
 	}
 
 	"No matching results found"

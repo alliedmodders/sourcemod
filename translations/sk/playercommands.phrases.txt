@@ -17,12 +17,12 @@
 
 	"Slapped target"
 	{
-		"sk"		"Slapnutý {1}. "
+		"sk"		"{1} bol slapnutý."
 	}
 
 	"Slayed target"
 	{
-		"sk"		"Zabitý {1}"
+		"sk"		"{1} bol zabitý."
 	}
 
 	"Name changed"
@@ -32,7 +32,7 @@
 
 	"Renamed target"
 	{
-		"sk"		"Hráč {1} premenovaný."
+		"sk"		"Hráč {1} bol premenovaný."
 	}
 
 	"Rename player"

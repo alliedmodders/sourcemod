@@ -32,22 +32,22 @@
 
 	"Permabanned player"
 	{
-		"sk"		"Permanentne zabanovaný hráč \"{1}\". "
+		"sk"		"Hráč \"{1}\" bol permanentne zabanovaný."
 	}
 
 	"Permabanned player reason"
 	{
-		"sk"		"Permanentne zabanovaný hráč \"{1}\" (dôvod: {2}).  "
+		"sk"		"Hráč \"{1}\" bol permanentne zabanovaný (dôvod: {2})."
 	}
 
 	"Banned player"
 	{
-		"sk"		"Zabanovaný hráč \"{1}\" na {2} minút.  "
+		"sk"		"Hráč \"{1}\" bol zabanovaný na {2} minút/y."
 	}
 
 	"Banned player reason"
 	{
-		"sk"		"Zabanovaný hráč \"{1}\" na {2} minút (dôvod: {3}).  "
+		"sk"		"Hráč \"{1}\" bol zabanovaný na {2} minút/y (dôvod: {3})."
 	}
 
 	"Removed bans matching"
@@ -107,7 +107,7 @@
 
 	"Kicked target"
 	{
-		"sk"		"Vyhodený {1}"
+		"sk"		"{1} bol vykopnutý"
 	}
 
 	"Admin access"
@@ -122,7 +122,17 @@
 
 	"Kicked target reason"
 	{
-		"sk"		"Vyhodený {1} (Dôvod: {2})  "
+		"sk"		"{1} bol vykopnutý (Dôvod: {2})"
+	}
+
+	"Please select a map"
+	{
+		"sk"		"Prosím vyberte mapu"
+	}
+
+	"Choose Config"
+	{
+		"sk"		"Vyberte Config"
 	}
 
 }
