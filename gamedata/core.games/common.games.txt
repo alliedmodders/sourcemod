@@ -243,6 +243,7 @@
 			"game"					"bms"
 			"game"					"iosoccer"
 			"game"					"vietnam"
+			"game"					"reactivedrop"
 		}
 		
 		"Keys"
