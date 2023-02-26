@@ -239,6 +239,7 @@
 			"game"					"doi"
 			"game"					"bms"
 			"game"					"iosoccer"
+			"game"					"reactivedrop"
 		}
 		
 		"Keys"
