@@ -13,17 +13,15 @@ jobs:
         include:
           - game: csgo
             game_fancy: 'Counter-Strike: Global Offensive'
-            game_script: csgo.ps1 ${{ env.COMMON_ARGS }}
+            game_script: csgo.ps1 -SUPPRESS_BUILD:$True -BASE_PATH:"${{ vars.GITHUB_WORKSPACE }}"
           - game: tf2
             game_fancy: Team Fortress 2
-            game_script: tf2.ps1 ${{ env.COMMON_ARGS }}
+            game_script: tf2.ps1 -SUPPRESS_BUILD:$True -BASE_PATH:"${{ vars.GITHUB_WORKSPACE }}"
           - game: l4d2
             game_fancy: Left 4 Dead 2
-            game_script: l4d2.ps1 ${{ env.COMMON_ARGS }}
+            game_script: l4d2.ps1 -SUPPRESS_BUILD:$True -BASE_PATH:"${{ vars.GITHUB_WORKSPACE }}"
       fail-fast: false
     runs-on: ubuntu-latest
-    env:
-      COMMON_ARGS: -SUPPRESS_BUILD:$True -BASE_PATH:"${{ vars.GITHUB_WORKSPACE }}"
     name: Check ${{ matrix.game_fancy }}
     steps:
       - name: Checkout Repository
