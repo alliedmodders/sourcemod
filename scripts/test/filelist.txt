@@ -1,0 +1,2 @@
+regex:(\.so)$
+regex:(\.dll)$

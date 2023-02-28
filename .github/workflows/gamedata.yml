@@ -1,0 +1,46 @@
+name: Verify Gamedata
+on:
+  pull_request:
+  push:
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  verify:
+    strategy:
+      matrix:
+        game: [csgo, tf2, l4d2]
+        include:
+          - game: csgo
+            game_fancy: 'Counter-Strike: Global Offensive'
+            game_script: csgo.ps1 ${{ env.COMMON_ARGS }}
+          - game: tf2
+            game_fancy: Team Fortress 2
+            game_script: tf2.ps1 ${{ env.COMMON_ARGS }}
+          - game: l4d2
+            game_fancy: Left 4 Dead 2
+            game_script: l4d2.ps1 ${{ env.COMMON_ARGS }}
+      fail-fast: false
+    runs-on: ubuntu-latest
+    env:
+      COMMON_ARGS: -SUPPRESS_BUILD:$True -BASE_PATH:"${{ env.GITHUB_WORKSPACE }}"
+    name: Check ${{ matrix.game_fancy }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          path: sourcemod
+      - name: Install Lua 5.1
+        uses: leafo/gh-actions-lua@v10
+        with:
+          luaVersion: "5.1.5"
+      - name: Verify Gamedata
+        shell: pwsh
+        run: ${{ env.GITHUB_WORKSPACE }}/scripting/test${{ matrix.game_script }}
+      - name: Upload Logs
+        if: success() || failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: gdc-logs-${{ matrix.game }}
+          path: |
+            scripting/test/logs

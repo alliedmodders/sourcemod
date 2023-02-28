@@ -40,3 +40,18 @@ objdir
 
 .vs/*
 .vscode/*
+
+# Temporary files used by scripts
+# ===============================
+
+# Binary exports
+scripts/test/bin/*.dll
+scripts/test/bin/*.so
+
+# Test logs
+output.temp
+exporter.temp
+
+# Test outputs
+scripts/test/cache
+scripts/test/logs
