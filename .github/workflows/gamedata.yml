@@ -34,7 +34,7 @@ jobs:
           luaVersion: "5.1.5"
       - name: Verify Gamedata
         shell: pwsh
-        run: ${{ vars.GITHUB_WORKSPACE }}/scripting/test/${{ matrix.game_script }} -BASE_PATH:"${{ vars.GITHUB_WORKSPACE }}" -SUPPRESS_BUILD:$True
+        run: ${{ github.workspace }}/scripting/test/${{ matrix.game_script }} -BASE_PATH:"${{ github.workspace }}" -SUPPRESS_BUILD:$True
       - name: Upload Logs
         if: success() || failure()
         uses: actions/upload-artifact@v3
