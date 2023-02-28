@@ -13,13 +13,13 @@ jobs:
         include:
           - game: csgo
             game_fancy: 'Counter-Strike: Global Offensive'
-            game_script: scripts/test/csgo.ps1
+            game_script: ./scripts/test/csgo.ps1
           - game: tf2
             game_fancy: Team Fortress 2
-            game_script: scripts/test/tf2.ps1  
+            game_script: ./scripts/test/tf2.ps1  
           - game: l4d2
             game_fancy: Left 4 Dead 2
-            game_script: scripts/test/l4d2.ps1
+            game_script: ./scripts/test/l4d2.ps1
       fail-fast: false
     runs-on: ubuntu-latest
     name: Check ${{ matrix.game_fancy }}
