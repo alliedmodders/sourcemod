@@ -10,6 +10,14 @@ Requires Lua 5.1 to parse results.
 - Some temporary files used for parsing: `CURRENT_DIRECTORY/output.temp` and `CURRENT_DIRECTORY/exporter.temp`
 
 ### Game Script Usage
+
+> **Warning**: Remember to set `BASE_PATH` or be in the correct directory!
+> 
+> If you do not wish to set `$BASE_PATH` as an argument, make sure your current directory is `sourcemod`, and it will be selected as a default. For example:
+` C:\Repo\Sourcemod> scripts/test/csgo.ps1`
+>
+> If sourcemod is not your current directory, you will need to set it as an argument: `scripts/test/csgo.ps1 -BASE_PATH:"C:/Repo/Sourcemod"`
+
 - (flag) `SUPPRESS_BUILD`:
   Whether to enable `--quiet` on the docker build
 - (flag) `EXPORT_BINARIES`:
