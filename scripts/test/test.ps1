@@ -19,6 +19,7 @@ param(
     $BINARY_APPEND
     ) 
 Write-Host "SUPPRESS_BUILD: $SUPPRESS_BUILD"
+Write-Host "EXPORT_BINARIES: $EXPORT_BINARIES"
 Write-Host "APP_ID_ROOT: $APP_ID_ROOT"
 Write-Host "APP_ID: $APP_ID"
 Write-Host "APP_ENGINE: $APP_ENGINE"
@@ -124,12 +125,12 @@ if ($EXPORT_BINARIES -eq $True)
     Write-Host "EXPORTING DEPOT BINARIES"
     Write-Host "========================"
 
-    $export_binaries = "bin/engine${BINARY_APPEND}.so", "bin/engine.dll", "$APP_ENGINE/bin/server${BINARY_APPEND}.so", "$APP_ENGINE/bin/server.dll"
+    $todo_export = "bin/engine${BINARY_APPEND}.so", "bin/engine.dll", "$APP_ENGINE/bin/server${BINARY_APPEND}.so", "$APP_ENGINE/bin/server.dll"
 
     Write-Host "* Starting Export Container"
     docker run --name sourceforks-exporter-dummy sourcemod-gdc:latest > exporter.temp
 
-    foreach ($binary in $export_binaries)
+    foreach ($binary in $todo_export)
     {
         Write-Host "* Exporting $binary"
         docker cp sourceforks-exporter-dummy:test/server/$binary $LOCAL_PATH/bin

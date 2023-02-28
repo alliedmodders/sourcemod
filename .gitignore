@@ -44,14 +44,13 @@ objdir
 # Temporary files used by scripts
 # ===============================
 
-# Binary exports
+# Test binary exports
 scripts/test/bin/*.dll
 scripts/test/bin/*.so
 
-# Test logs
+# Test temporaries
 output.temp
 exporter.temp
 
-# Test outputs
-scripts/test/cache
+# Test logs
 scripts/test/logs
