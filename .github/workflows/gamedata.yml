@@ -26,8 +26,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
-        with:
-          path: sourcemod
       - name: Install Lua 5.1
         uses: leafo/gh-actions-lua@v10
         with:
