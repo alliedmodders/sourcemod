@@ -13,13 +13,13 @@ jobs:
         include:
           - game: csgo
             game_fancy: 'Counter-Strike: Global Offensive'
-            game_script: csgo.ps1 -SUPPRESS_BUILD:$True -BASE_PATH:"${{ vars.GITHUB_WORKSPACE }}"
+            game_script: csgo.ps1
           - game: tf2
             game_fancy: Team Fortress 2
-            game_script: tf2.ps1 -SUPPRESS_BUILD:$True -BASE_PATH:"${{ vars.GITHUB_WORKSPACE }}"
+            game_script: tf2.ps1  
           - game: l4d2
             game_fancy: Left 4 Dead 2
-            game_script: l4d2.ps1 -SUPPRESS_BUILD:$True -BASE_PATH:"${{ vars.GITHUB_WORKSPACE }}"
+            game_script: l4d2.ps1
       fail-fast: false
     runs-on: ubuntu-latest
     name: Check ${{ matrix.game_fancy }}
@@ -34,7 +34,7 @@ jobs:
           luaVersion: "5.1.5"
       - name: Verify Gamedata
         shell: pwsh
-        run: ${{ vars.GITHUB_WORKSPACE }}/scripting/test${{ matrix.game_script }}
+        run: ${{ vars.GITHUB_WORKSPACE }}/scripting/test/${{ matrix.game_script }} -BASE_PATH:"${{ vars.GITHUB_WORKSPACE }}" -SUPPRESS_BUILD:$True
       - name: Upload Logs
         if: success() || failure()
         uses: actions/upload-artifact@v3
