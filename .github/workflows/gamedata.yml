@@ -14,12 +14,27 @@ jobs:
           - game: csgo
             game_fancy: 'Counter-Strike: Global Offensive'
             game_script: ./scripts/test/csgo.ps1
+          - game: cstrike
+            game_fancy: 'Counter-Strike: Source'
+            game_script ./scripts/test/css.ps1
+          - game: dods
+            game_fancy: 'Day of Defeat: Source'
+            game_script ./scripts/test/dods.ps1
+          - game: iosoccer
+            game_fancy: 'IOSoccer'
+            game_script ./scripts/test/iosoccer.ps1
           - game: tf2
             game_fancy: Team Fortress 2
             game_script: ./scripts/test/tf2.ps1  
           - game: l4d2
             game_fancy: Left 4 Dead 2
             game_script: ./scripts/test/l4d2.ps1
+          - game: l4d
+            game_fancy: Left 4 Dead
+            game_script ./scripts/test/l4d.ps1
+          - game: nmrih
+            game_fancy: No More Room In Hell
+            game_script ./scripts/test/nmrih.ps1
       fail-fast: false
     runs-on: ubuntu-latest
     name: Check ${{ matrix.game_fancy }}

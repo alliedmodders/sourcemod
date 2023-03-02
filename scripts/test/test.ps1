@@ -61,7 +61,7 @@ if ($SUPPRESS_BUILD -eq $True)
 }
 
 Write-Host "* Using Vanilla Docker"
-iex "docker build $docker_args --build-arg DEPOT_VERSION=$depot_version --build-arg APP_ID=$APP_ID --build-arg DEPOT_ID=$APP_ID --file `"$LOCAL_PATH/Dockerfile`" -t sourcemod-gdc:latest `"$BASE_PATH`""
+iex "docker build $docker_args --build-arg DEPOT_VERSION=$depot_version --build-arg APP_ID=$APP_ID --build-arg DEPOT_ID=$APP_ID --file `"$LOCAL_PATH/Dockerfile`" -t sourcemod-gdc-${APP_ENGINE}:latest `"$BASE_PATH`""
 
 Write-Host "* Done!"
 
@@ -112,7 +112,7 @@ $result_sum = 0
 
 foreach ($gamedata in $gamedatafiles)
 {
-    docker run --rm sourcemod-gdc:latest -f /test/gamedata/$gamedata -g $APP_ENGINE -e $APP_SM_ENGINE -b /test/server/$APP_ENGINE/bin/server${BINARY_APPEND}.so -w /test/server/$APP_ENGINE/bin/server.dll -x /test/server/bin/engine${BINARY_APPEND}.so -y /test/server/bin/engine.dll -s /test/tools/gdc/symbols.txt > output.temp
+    docker run --rm sourcemod-gdc-${APP_ENGINE}:latest -f /test/gamedata/$gamedata -g $APP_ENGINE -e $APP_SM_ENGINE -b /test/server/$APP_ENGINE/bin/server${BINARY_APPEND}.so -w /test/server/$APP_ENGINE/bin/server.dll -x /test/server/bin/engine${BINARY_APPEND}.so -y /test/server/bin/engine.dll -s /test/tools/gdc/symbols.txt > output.temp
 
     $result_process = Start-Process lua -ArgumentList "${LOCAL_PATH}/parse_results.lua $gamedata" -NoNewWindow -PassThru -Wait
     Copy-Item output.temp $LOCAL_PATH/logs/$gamedata.log
@@ -128,7 +128,7 @@ if ($EXPORT_BINARIES -eq $True)
     $todo_export = "bin/engine${BINARY_APPEND}.so", "bin/engine.dll", "$APP_ENGINE/bin/server${BINARY_APPEND}.so", "$APP_ENGINE/bin/server.dll"
 
     Write-Host "* Starting Export Container"
-    docker run --name sourceforks-exporter-dummy sourcemod-gdc:latest > exporter.temp
+    docker run --name sourceforks-exporter-dummy sourcemod-gdc-${APP_ENGINE}:latest > exporter.temp
 
     foreach ($binary in $todo_export)
     {

@@ -40,15 +40,17 @@ local sig_status = {
 local function DoSigStatus(fancyosname, signame, binary, status)
     local statustype = sig_status[status]
 
+    local bincolor = ((binary == "server") and "magenta") or "blue"
+
     if statustype.IsError then
-        cprint("{red}[ERROR] {blue}%s{reset} (%s):\t%s -> %s", binary, fancyosname, signame, statustype.Note)
+        cprint("{red}[ERROR] {%s}%s{reset} (%s): \t%20s -> %s", bincolor, binary, fancyosname, signame, statustype.Note)
         good = false
         count_error = count_error + 1
         return;
     end
 
     if statustype.IsWarn then
-        cprint("{yellow}[WARN]  {blue}%s{reset} (%s):\t%s -> %s", binary, fancyosname, signame, statustype.Note)
+        cprint("{yellow}[WARN]  {%s}%s{reset} (%s): \t%20s -> %s", bincolor, binary, fancyosname, signame, statustype.Note)
         count_warn = count_warn + 1
         return;
     end
@@ -76,14 +78,16 @@ for line in io.lines("output.temp") do
             details == "can't find, skipping" then
             count_skipped = count_skipped + 1
         elseif details ~= nil then
-            local status, offsetinfo = details:match("(%w+)(.*)")
+            local status, offsetinfo = details:match("([%w]+)(.*)")
             if status == "GOOD" then
                 count_good = count_good + 1
             else
 
-                count_error = count_error + 1
-                good = false
-                cprint("{red}[ERROR] {blue}Offset{reset}:\t%s -> %s", name, status)
+                -- For some reason gdc struggles with offsets falsely registering as changed.
+                -- So we have to have them be warnings for now :(
+                -- FIXME!
+                count_warn = count_warn + 1
+                cprint("{yellow}[WARN]  {blue}offset{reset}:          \t%20s -> %s: {yellow}%s", name, status, offsetinfo:gsub("%.",""))
             end
         end
     
