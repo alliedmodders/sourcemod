@@ -56,7 +56,7 @@ void RegEx::Clear ()
 	re = nullptr;
 	mFree = true;
 	if (subject)
-		delete [] subject;
+		delete subject;
 	subject = nullptr;
 	mMatchCount = 0;
 }
