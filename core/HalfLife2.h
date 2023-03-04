@@ -257,6 +257,11 @@ private:
 private:
 	void InitLogicalEntData();
 	void InitCommandLine();
+public:
+	void CHalfLife2::ClearDataTableCache();
+	void CHalfLife2::ClearDataTableCache(datamap_t *pMap);
+	void CHalfLife2::ClearSendPropCache();
+	bool CHalfLife2::ClearSendPropCache(const char *classname);
 private:
 	typedef ke::HashMap<datamap_t *, DataMapCache *, ke::PointerPolicy<datamap_t> > DataTableMap;
 

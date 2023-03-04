@@ -503,6 +503,26 @@ bool CHalfLife2::FindDataMapInfo(datamap_t *pMap, const char *offset, sm_datatab
 	return true;
 }
 
+void CHalfLife2::ClearDataTableCache()
+{
+	m_Maps.clear();
+}
+
+void CHalfLife2::ClearDataTableCache(datamap_t *pMap)
+{
+	m_Maps.removeIfExists(pMap);
+}
+
+void CHalfLife2::ClearSendPropCache()
+{
+	m_Classes.clear();
+}
+
+bool CHalfLife2::ClearSendPropCache(const char *classname)
+{
+	return m_Classes.remove(classname);
+}
+
 void CHalfLife2::SetEdictStateChanged(edict_t *pEdict, unsigned short offset)
 {
 #if SOURCE_ENGINE != SE_DARKMESSIAH
