@@ -514,7 +514,7 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 	/* Get the client's language */
 	if (m_QueryLang)
 	{
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 		pPlayer->m_LangId = translator->GetServerLanguage();
 #else
 		const char *name;
@@ -646,7 +646,7 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 
 		int userId = engine->GetPlayerUserId(pEntity);
 #if (SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_NUCLEARDAWN  || SOURCE_ENGINE == SE_LEFT4DEAD2)
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_NUCLEARDAWN  || SOURCE_ENGINE == SE_LEFT4DEAD2 || SOURCE_ENGINE == SE_PVKII)
 		static ConVar *tv_name = icvar->FindVar("tv_name");
 #endif
 #if SOURCE_ENGINE == SE_TF2
@@ -669,12 +669,13 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 			&& ((!m_bIsReplayActive && newCount == 1)
 				|| (m_bIsReplayActive && newCount == 2))
 			&& (m_SourceTVUserId == userId
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_MCV
+				// It seems likely that MCV will change this at some point, but it's GOTV at the moment.
 				|| strcmp(playername, "GOTV") == 0
 #elif SOURCE_ENGINE == SE_BLADE
 				|| strcmp(playername, "BBTV") == 0
 #elif (SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_NUCLEARDAWN  || SOURCE_ENGINE == SE_LEFT4DEAD2)
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_NUCLEARDAWN  || SOURCE_ENGINE == SE_LEFT4DEAD2 || SOURCE_ENGINE == SE_PVKII)
 				|| (tv_name && strcmp(playername, tv_name->GetString()) == 0) || (tv_name && tv_name->GetString()[0] == 0 && strcmp(playername, "unnamed") == 0)
 #else
 				|| strcmp(playername, "SourceTV") == 0
@@ -728,7 +729,7 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		}
 		pPlayer->Authorize_Post();
 	}
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	else if(m_QueryLang)
 	{
 		// Not a bot
@@ -788,7 +789,7 @@ void PlayerManager::OnServerHibernationUpdate(bool bHibernating)
 			CPlayer *pPlayer = &m_Players[i];
 			if (pPlayer->IsConnected() && pPlayer->IsFakeClient())
 			{
-#if SOURCE_ENGINE < SE_LEFT4DEAD || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_NUCLEARDAWN
+#if SOURCE_ENGINE < SE_LEFT4DEAD || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_NUCLEARDAWN || SOURCE_ENGINE == SE_MCV
 				// These games have the bug fixed where hltv/replay was getting kicked on hibernation
 				if (pPlayer->IsSourceTV() || pPlayer->IsReplay())
 					continue;
@@ -974,19 +975,12 @@ void ClientConsolePrint(edict_t *e, const char *fmt, ...)
 void ListExtensionsToClient(CPlayer *player, const CCommand &args)
 {
 	char buffer[256];
-	unsigned int id = 0;
-	unsigned int start = 0;
 
 	AutoExtensionList extensions(extsys);
 	if (!extensions->size())
 	{
 		ClientConsolePrint(player->GetEdict(), "[SM] No extensions found.");
 		return;
-	}
-
-	if (args.ArgC() > 2)
-	{
-		start = atoi(args.Arg(2));
 	}
 
 	size_t i = 0;
@@ -998,17 +992,6 @@ void ListExtensionsToClient(CPlayer *player, const CCommand &args)
 		if (!ext->IsRunning(error, sizeof(error)))
 		{
 			continue;
-		}
-
-		id++;
-		if (id < start)
-		{
-			continue;
-		}
-
-		if (id - start > 10)
-		{
-			break;
 		}
 
 		IExtensionInterface *api = ext->GetAPI();
@@ -1035,42 +1018,20 @@ void ListExtensionsToClient(CPlayer *player, const CCommand &args)
 			len += ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, ": %s", description);
 		}
 
-
 		ClientConsolePrint(player->GetEdict(), "%s", buffer);
-	}
-
-	for (; i < extensions->size(); i++)
-	{
-		char error[255];
-		if (extensions->at(i)->IsRunning(error, sizeof(error)))
-		{
-			break;
-		}
-	}
-
-	if (i < extensions->size())
-	{
-		ClientConsolePrint(player->GetEdict(), "To see more, type \"sm exts %d\"", id);
 	}
 }
 
 void ListPluginsToClient(CPlayer *player, const CCommand &args)
 {
 	char buffer[256];
-	unsigned int id = 0;
 	edict_t *e = player->GetEdict();
-	unsigned int start = 0;
 
 	AutoPluginList plugins(scripts);
 	if (!plugins->size())
 	{
 		ClientConsolePrint(e, "[SM] No plugins found.");
 		return;
-	}
-
-	if (args.ArgC() > 2)
-	{
-		start = atoi(args.Arg(2));
 	}
 
 	SourceHook::List<SMPlugin *> m_FailList;
@@ -1083,18 +1044,6 @@ void ListPluginsToClient(CPlayer *player, const CCommand &args)
 		if (pl->GetStatus() != Plugin_Running)
 		{
 			continue;
-		}
-
-		/* Count valid plugins */
-		id++;
-		if (id < start)
-		{
-			continue;
-		}
-
-		if (id - start > 10)
-		{
-			break;
 		}
 
 		size_t len;
@@ -1113,21 +1062,6 @@ void ListPluginsToClient(CPlayer *player, const CCommand &args)
 			ke::SafeSprintf(&buffer[len], sizeof(buffer)-len, " %s", pl->GetFilename());
 		}
 		ClientConsolePrint(e, "%s", buffer);
-	}
-
-	/* See if we can get more plugins */
-	for (; i < plugins->size(); i++)
-	{
-		if (plugins->at(i)->GetStatus() == Plugin_Running)
-		{
-			break;
-		}
-	}
-
-	/* Do we actually have more plugins? */
-	if (i < plugins->size())
-	{
-		ClientConsolePrint(e, "To see more, type \"sm plugins %d\"", id);
 	}
 }
 
@@ -2026,7 +1960,7 @@ void CmdMaxplayersCallback()
 	g_Players.MaxPlayersChanged();
 }
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 bool PlayerManager::HandleConVarQuery(QueryCvarCookie_t cookie, int client, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue)
 {
 	for (int i = 1; i <= m_maxClients; i++)
@@ -2087,7 +2021,8 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	|| SOURCE_ENGINE == SE_BMS   \
 	|| SOURCE_ENGINE == SE_INSURGENCY \
 	|| SOURCE_ENGINE == SE_DOI   \
-	|| SOURCE_ENGINE == SE_BLADE
+	|| SOURCE_ENGINE == SE_BLADE \
+	|| SOURCE_ENGINE == SE_PVKII
 	m_pIClient = engine->GetIServer()->GetClient(m_iIndex - 1);
 #else
   #if SOURCE_ENGINE == SE_SDK2013
@@ -2263,7 +2198,7 @@ void CPlayer::Disconnect()
 	m_bIsSourceTV = false;
 	m_bIsReplay = false;
 	m_Serial.value = -1;
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
 	ClearNetchannelQueue();
@@ -2485,7 +2420,7 @@ void CPlayer::Kick(const char *str)
 	}
 	else
 	{
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 		pClient->Disconnect(str);
 #else
 		pClient->Disconnect("%s", str);

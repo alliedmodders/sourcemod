@@ -68,14 +68,28 @@ bool mapchooser;
 
 int g_TotalRounds;
 
+
+EngineVersion g_GameEngine = Engine_Unknown;
+
+
 public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	LoadTranslations("basetriggers.phrases");
-	
+
+	g_GameEngine = GetEngineVersion();
+
 	g_Cvar_TriggerShow = CreateConVar("sm_trigger_show", "0", "Display triggers message to all players? (0 off, 1 on, def. 0)", 0, true, 0.0, true, 1.0);	
 	g_Cvar_TimeleftInterval = CreateConVar("sm_timeleft_interval", "0.0", "Display timeleft every x seconds. Default 0.", 0, true, 0.0, true, 1800.0);
-	g_Cvar_FriendlyFire = FindConVar("mp_friendlyfire");
+
+	if (g_GameEngine == Engine_Left4Dead || g_GameEngine == Engine_Left4Dead2)
+	{
+		g_Cvar_FriendlyFire = FindConVar("z_difficulty");
+	}
+	else
+	{
+		g_Cvar_FriendlyFire = FindConVar("mp_friendlyfire");
+	}
 	
 	RegConsoleCmd("timeleft", Command_Timeleft);
 	RegConsoleCmd("nextmap", Command_Nextmap);
@@ -504,6 +518,52 @@ void ShowFriendlyFire(int client, int who)
 {
 	if (g_Cvar_FriendlyFire)
 	{
+		if (g_GameEngine == Engine_Left4Dead || g_GameEngine == Engine_Left4Dead2)
+		{
+			char buffer[50];
+			g_Cvar_FriendlyFire.GetString(buffer, sizeof(buffer)); // z_difficulty
+			
+			// Easy, Normal, Hard, Impossible
+			if (StrEqual(buffer, "easy", false)
+				|| StrEqual(buffer, "normal", false)
+				|| StrEqual(buffer, "hard", false))
+			{
+				Format(buffer, sizeof(buffer), "survivor_friendly_fire_factor_%s", buffer);
+			}
+			else if (StrEqual(buffer, "impossible", false))
+			{
+				Format(buffer, sizeof(buffer), "survivor_friendly_fire_factor_expert");
+			}
+			else // L4D2 game not fix cvar value to one of difficult levels, like L4D
+			{
+				Format(buffer, sizeof(buffer), "survivor_friendly_fire_factor_normal");
+			}
+
+			ConVar ff_factor = FindConVar(buffer);
+			
+			if(ff_factor)
+			{
+				float percent = ff_factor.FloatValue * 100.0;
+
+				if (who == PRINT_TO_ALL_ALWAYS
+					|| (who == PRINT_TO_ALL_MAYBE && g_Cvar_TriggerShow.IntValue))
+				{
+					PrintToChatAll("[SM] %t", "Friendly Fire Percent", percent);
+				}
+				else if (client != 0 && IsClientInGame(client))
+				{
+					PrintToChat(client,"[SM] %t", "Friendly Fire Percent", percent);
+				}
+
+				if (client == 0)
+				{
+					PrintToServer("[SM] %T", "Friendly Fire Percent", client, percent);
+				}
+			}
+
+			return;
+		}
+
 		char phrase[24];
 		if (g_Cvar_FriendlyFire.BoolValue)
 		{

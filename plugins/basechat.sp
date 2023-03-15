@@ -72,6 +72,7 @@ public void OnPluginStart()
 		RegAdminCmd("sm_hsay", Command_SmHsay, ADMFLAG_CHAT, "sm_hsay <message> - sends hint message to all players");	
 	}
 	
+	RegAdminCmd("sm_dsay", Command_SmDsay, ADMFLAG_CHAT, "sm_dsay <message> - sends hud message to all players");
 	RegAdminCmd("sm_tsay", Command_SmTsay, ADMFLAG_CHAT, "sm_tsay [color] <message> - sends top-left message to all players");
 	RegAdminCmd("sm_chat", Command_SmChat, ADMFLAG_CHAT, "sm_chat <message> - sends message to admins");
 	RegAdminCmd("sm_psay", Command_SmPsay, ADMFLAG_CHAT, "sm_psay <name or #userid> <message> - sends private message");
@@ -211,6 +212,35 @@ public Action Command_SmHsay(int client, int args)
 	}
 	
 	LogAction(client, -1, "\"%L\" triggered sm_hsay (text %s)", client, text);
+	
+	return Plugin_Handled;	
+}
+
+public Action Command_SmDsay(int client, int args)
+{
+	if (args < 1)
+	{
+		ReplyToCommand(client, "[SM] Usage: sm_dsay <message>");
+		return Plugin_Handled;  
+	}
+	
+	char text[192];
+	GetCmdArgString(text, sizeof(text));
+ 
+	char nameBuf[MAX_NAME_LENGTH];
+	SetHudTextParams(-1.0, 0.25, 3.0, 0, 255, 127, 255, 1);
+
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!IsClientInGame(i) || IsFakeClient(i))
+		{
+			continue;
+		}
+		FormatActivitySource(client, i, nameBuf, sizeof(nameBuf));
+		ShowHudText(i, -1, "%s: %s", nameBuf, text);
+	}
+	
+	LogAction(client, -1, "\"%L\" triggered sm_dsay (text %s)", client, text);
 	
 	return Plugin_Handled;	
 }

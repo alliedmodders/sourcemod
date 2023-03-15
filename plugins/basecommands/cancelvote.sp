@@ -40,6 +40,8 @@ void PerformCancelVote(int client)
 	}
 
 	ShowActivity2(client, "[SM] ", "%t", "Cancelled Vote");
+
+	LogAction(client, -1, "\"%L\" Cancelled the vote.", client);
 	
 	CancelVote();
 }

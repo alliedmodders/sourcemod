@@ -42,6 +42,20 @@ project.sources += [
   'GameHooks.cpp',
 ]
 
+# SDK name to shipping gamedir
+pb_gamedir_map = {
+  'csgo': 'csgo',
+  'blade': 'berimbau',
+  'mcv': 'vietnam',
+}
+
+# SDK name to source code gamedir
+pb_gamesrcdir_map = {
+  'csgo': 'cstrike15',
+  'blade': 'berimbau',
+  'mcv': 'vietnam',
+}
+
 for sdk_name in SM.sdks:
   sdk = SM.sdks[sdk_name]
   for cxx in builder.targets:
@@ -58,25 +72,19 @@ for sdk_name in SM.sdks:
       builder.sourcePath
     ]
 
-    if sdk.name == 'csgo':
+    if sdk.name in ['csgo', 'blade', 'mcv']:
       compiler.cxxincludes += [
         os.path.join(sdk.path, 'common', 'protobuf-2.5.0', 'src'),
         os.path.join(sdk.path, 'public', 'engine', 'protobuf'),
-        os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf')
+        os.path.join(sdk.path, 'public', 'game', 'shared', pb_gamedir_map[sdk.name], 'protobuf')
       ]
-    elif sdk.name == 'blade':
-      compiler.cxxincludes += [
-        os.path.join(sdk.path, 'common', 'protobuf-2.5.0', 'src'),
-        os.path.join(sdk.path, 'public', 'engine', 'protobuf'),
-        os.path.join(sdk.path, 'public', 'game', 'shared', 'berimbau', 'protobuf')
-      ]
-
+    
     if compiler.like('msvc'):
       compiler.defines += ['_ALLOW_KEYWORD_MACROS']
     if cxx.target.platform == 'linux':
       compiler.postlink += ['-lpthread', '-lrt']
 
-    if sdk.name in ['csgo', 'blade']:
+    if sdk.name in ['csgo', 'blade', 'mcv']:
       if compiler.target.platform == 'linux':
         if compiler.target.arch == 'x86':
           lib_path = os.path.join(sdk.path, 'lib', 'linux32', 'release', 'libprotobuf.a')
@@ -108,7 +116,7 @@ for sdk_name in SM.sdks:
           lib_path = os.path.join(sdk.path, 'lib', platform, 'release', 'vs' + vs_year, 'libprotobuf.lib')
       compiler.linkflags.insert(0, lib_path)
   
-    if sdk.name in ['csgo', 'blade']:
+    if sdk.name in ['csgo', 'blade', 'mcv']:
       binary.sources += ['smn_protobuf.cpp']
     else:
       binary.sources += ['smn_bitbuffer.cpp']
@@ -118,18 +126,17 @@ for sdk_name in SM.sdks:
         'vprof_tool.cpp',
       ]
 
-    if sdk.name == 'csgo':
+    if sdk.name in ['csgo', 'blade', 'mcv']:
       binary.sources += [
         os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'netmessages.pb.cc'),
-        os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessages.pb.cc'),
-        os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessage_helpers.cpp'),
+        os.path.join(sdk.path, 'public', 'game', 'shared', pb_gamedir_map[sdk.name], 'protobuf', pb_gamesrcdir_map[sdk.name] + '_usermessages.pb.cc'),
+        os.path.join(sdk.path, 'public', 'game', 'shared', pb_gamedir_map[sdk.name], 'protobuf', pb_gamesrcdir_map[sdk.name] + '_usermessage_helpers.cpp'),
       ]
-    elif sdk.name == 'blade':
-      binary.sources += [
-        os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'netmessages.pb.cc'),
-        os.path.join(sdk.path, 'public', 'game', 'shared', 'berimbau', 'protobuf', 'berimbau_usermessages.pb.cc'),
-        os.path.join(sdk.path, 'public', 'game', 'shared', 'berimbau', 'protobuf', 'berimbau_usermessage_helpers.cpp'),
-      ]
+      if sdk.name == 'mcv':
+        binary.sources += [
+          os.path.join(sdk.path, 'public', 'game', 'shared', pb_gamedir_map[sdk.name], 'protobuf', pb_gamesrcdir_map[sdk.name] + '_gcmessages.pb.cc'),
+          os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'engine_gcmessages.pb.cc'),
+        ]
 
 SM.binaries += builder.Add(project)
 

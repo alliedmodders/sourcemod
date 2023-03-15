@@ -3,9 +3,11 @@ on:
   push:
     branches:
      - master
+     - '[0-9]+.[0-9]+-dev'
   pull_request:
     branches:
      - master
+     - '[0-9]+.[0-9]+-dev'
 jobs:
   test:
     strategy:
@@ -32,15 +34,15 @@ jobs:
       DEPENDENCIES_FOLDER: dependencies
       DEPENDENCIES_ROOT: ${{ github.workspace }}/dependencies
       MYSQL_VERSION: '5.5'
-      MMSOURCE_VERSION: '1.10'
+      MMSOURCE_VERSION: '1.12'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
           path: sourcemod
 
       - name: Cache dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: hl2sdk-mysql-mmsource
         with:
@@ -51,7 +53,7 @@ jobs:
             ${{ runner.os }}-build-${{ env.cache-name }}-mysql${{ env.MYSQL_VERSION }}-
 
       # Setup Python for AMBuild
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         name: Setup Python 3.8
         with:
           python-version: 3.8

@@ -298,11 +298,12 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 		{
 			/* :TODO: g_voteTarget should be used here and set to -1 if not applicable.
 			 */
-			LogAction(-1, -1, "Vote failed.");
+			LogAction(-1, -1, "Vote failed. %d%% vote required. (Received \"%d\"% of %d votes)", RoundToNearest(100.0*limit), RoundToNearest(100.0*percent), totalVotes);
 			PrintToChatAll("[SM] %t", "Vote Failed", RoundToNearest(100.0*limit), RoundToNearest(100.0*percent), totalVotes);
 		}
 		else
 		{
+			LogAction(-1, -1, "Vote successful. (Received \"%d\"% of %d votes)", RoundToNearest(100.0*percent), totalVotes);
 			PrintToChatAll("[SM] %t", "Vote Successful", RoundToNearest(100.0*percent), totalVotes);
 			
 			switch (g_voteType)
@@ -313,7 +314,8 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 					{
 						strcopy(item, sizeof(item), display);
 					}
-					
+
+					LogAction(-1, -1, "The answer to %s is: %s.", g_voteArg, item);
 					PrintToChatAll("[SM] %t", "Vote End", g_voteArg, item);
 				}
 				

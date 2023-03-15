@@ -102,7 +102,7 @@ std::string EntityLumpManager::Dump() {
 		}
 		stream << "{\n";
 		for (const auto& pair : *entry) {
-			stream << '"' << pair.first << "\"	\"" << pair.second << '"' << '\n';
+			stream << '"' << pair.first << "\" \"" << pair.second << '"' << '\n';
 		}
 		stream << "}\n";
 	}
@@ -122,10 +122,8 @@ void EntityLumpManager::Insert(size_t index) {
 }
 
 size_t EntityLumpManager::Append() {
-	return std::distance(
-			m_Entities.begin(),
-			m_Entities.emplace(m_Entities.end(), std::make_shared<EntityLumpEntry>())
-	);
+	auto it = m_Entities.emplace(m_Entities.end(), std::make_shared<EntityLumpEntry>());
+	return std::distance(m_Entities.begin(), it);
 }
 
 size_t EntityLumpManager::Length() {

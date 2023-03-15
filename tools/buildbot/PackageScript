@@ -67,7 +67,9 @@ for cxx_task in SM.spvm:
                              'sourcepawn.jit.x86' + os.path.splitext(cxx_task.binary.path)[1])
     builder.AddCopy(cxx_task.binary, dest_path)
   elif cxx_task.target.arch == 'x86_64':
-    builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/bin/x64'])
+    dest_path = os.path.join('addons/sourcemod/bin/x64',
+                             'sourcepawn.vm' + os.path.splitext(cxx_task.binary.path)[1])
+    builder.AddCopy(cxx_task.binary, dest_path)
 
 helpers.CopySpcomp('addons/sourcemod/scripting')
 

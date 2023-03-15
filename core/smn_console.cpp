@@ -51,7 +51,7 @@
 #include <bridge/include/ILogger.h>
 #include <ITranslator.h>
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 #include <netmessages.pb.h>
 #endif
 
@@ -1091,6 +1091,26 @@ static cell_t IsChatTrigger(IPluginContext *pContext, const cell_t *params)
 	return g_ChatTriggers.IsChatTrigger() ? 1 : 0;
 }
 
+static cell_t GetPublicChatTriggers(IPluginContext *pContext, const cell_t *params)
+{
+	size_t length;
+
+	const char *triggers = g_ChatTriggers.GetPublicChatTrigger();
+	pContext->StringToLocalUTF8(params[1], params[2], triggers ? triggers : "", &length);
+
+	return static_cast<cell_t>(length);
+}
+
+static cell_t GetSilentChatTriggers(IPluginContext *pContext, const cell_t *params)
+{
+	size_t length;
+
+	const char *triggers = g_ChatTriggers.GetPrivateChatTrigger();
+	pContext->StringToLocalUTF8(params[1], params[2], triggers ? triggers : "", &length);
+
+	return static_cast<cell_t>(length);
+}
+
 static cell_t SetCommandFlags(IPluginContext *pContext, const cell_t *params)
 {
 	char *name;
@@ -1209,7 +1229,7 @@ static cell_t SendConVarValue(IPluginContext *pContext, const cell_t *params)
 	char data[256];
 	bf_write buffer(data, sizeof(data));
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	CNETMsg_SetConVar msg;
 	CMsg_CVars_CVar *cvar = msg.mutable_convars()->add_cvars();
 
@@ -1393,7 +1413,7 @@ static cell_t sm_CommandIteratorNext(IPluginContext *pContext, const cell_t *par
 	return iter->iter != cmds.end();
 }
 
-static cell_t sm_CommandIteratorFlags(IPluginContext *pContext, const cell_t *params)
+static cell_t sm_CommandIteratorAdminFlags(IPluginContext *pContext, const cell_t *params)
 {
 	GlobCmdIter *iter;
 	HandleError err;
@@ -1412,6 +1432,27 @@ static cell_t sm_CommandIteratorFlags(IPluginContext *pContext, const cell_t *pa
 	
 	ConCmdInfo *pInfo = (*(iter->iter));
 	return pInfo->eflags;
+}
+
+static cell_t sm_CommandIteratorConVarFlags(IPluginContext *pContext, const cell_t *params)
+{
+	GlobCmdIter *iter;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = handlesys->ReadHandle(params[1], hCmdIterType, &sec, (void **)&iter))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid CommandIterator Handle %x", params[1]);
+	}
+	const List<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
+	if (!iter->started || iter->iter == cmds.end())
+	{
+		return pContext->ThrowNativeError("Invalid CommandIterator position");
+	}
+	
+	ConCmdInfo *pInfo = (*(iter->iter));
+	return pInfo->pCmd->m_nFlags;
 }
 
 static cell_t sm_CommandIteratorGetDesc(IPluginContext *pContext, const cell_t *params)
@@ -1514,6 +1555,8 @@ REGISTER_NATIVES(consoleNatives)
 	{"ReadCommandIterator",	ReadCommandIterator},
 	{"FakeClientCommandEx",	FakeClientCommandEx},
 	{"IsChatTrigger",		IsChatTrigger},
+	{"GetPublicChatTriggers", GetPublicChatTriggers},
+	{"GetSilentChatTriggers", GetSilentChatTriggers},
 	{"SetCommandFlags",		SetCommandFlags},
 	{"GetCommandFlags",		GetCommandFlags},
 	{"FindFirstConCommand",	FindFirstConCommand},
@@ -1552,7 +1595,9 @@ REGISTER_NATIVES(consoleNatives)
 	{"CommandIterator.Next",		sm_CommandIteratorNext},
 	{"CommandIterator.GetDescription",	sm_CommandIteratorGetDesc},
 	{"CommandIterator.GetName",		sm_CommandIteratorGetName},
-	{"CommandIterator.Flags.get",		sm_CommandIteratorFlags},
+	{"CommandIterator.Flags.get",		sm_CommandIteratorAdminFlags},
+	{"CommandIterator.AdminFlags.get",		sm_CommandIteratorAdminFlags},
+	{"CommandIterator.ConVarFlags.get",		sm_CommandIteratorConVarFlags},
 	{"CommandIterator.Plugin.get",		sm_CommandIteratorPlugin},
 
 	{NULL,					NULL}

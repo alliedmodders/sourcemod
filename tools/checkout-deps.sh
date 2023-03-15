@@ -115,7 +115,7 @@ checkout ()
   fi
 }
 
-name=mmsource-1.10
+name=mmsource-1.12
 branch=master
 repo="https://github.com/alliedmodders/metamod-source"
 origin=
@@ -126,7 +126,7 @@ if [ -z ${sdks+x} ]; then
 
   if [ $ismac -eq 0 ]; then
     # Add these SDKs for Windows or Linux
-    sdks+=( orangebox blade episode1 bms )
+    sdks+=( orangebox blade episode1 bms pvkii )
 
     # Add more SDKs for Windows only
     if [ $iswin -eq 1 ]; then

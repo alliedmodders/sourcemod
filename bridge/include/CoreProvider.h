@@ -86,10 +86,6 @@ public:
 	const char		*gamesuffix;
 	/* Data */
 	ServerGlobals   *serverGlobals;
-	void *          serverFactory;
-	void *          engineFactory;
-	void *          matchmakingDSFactory;
-	void *          soundemittersystemFactory;
 	SMGlobalClass *	listeners;
 
 	// ConVar functions.

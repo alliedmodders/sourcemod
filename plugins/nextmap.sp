@@ -67,7 +67,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 			|| StrEqual(game, "swarm", false)
 			|| StrEqual(game, "reactivedrop", false)
 			|| engine == Engine_Insurgency
-			|| engine == Engine_DOI)
+			|| engine == Engine_DOI
+			|| engine == Engine_MCV)
 	{
 		strcopy(error, err_max, "Nextmap is incompatible with this game");
 		return APLRes_SilentFailure;

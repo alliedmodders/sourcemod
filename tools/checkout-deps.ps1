@@ -28,7 +28,8 @@ param(
         'bgt',
         'eye',
         'contagion',
-        'doi'
+        'doi',
+        'pvkii'
         )
 )
 
@@ -74,7 +75,7 @@ if (-not (Test-Path "sourcemod" -PathType Container))
     Exit 1
 }
 
-Get-Repository -Name "mmsource-1.10" -Branch "master" -Repo "https://github.com/alliedmodders/metamod-source.git"
+Get-Repository -Name "mmsource-1.12" -Branch "master" -Repo "https://github.com/alliedmodders/metamod-source.git"
 
 if (-not (Test-Path "hl2sdk-proxy-repo" -PathType Container))
 {
