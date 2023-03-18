@@ -38,21 +38,25 @@
 #include "conventions/x86MsThiscall.h"
 #include "conventions/x86MsStdcall.h"
 #include "conventions/x86MsFastcall.h"
+#include "conventions/x86Instruction.h"
 typedef x86MsCdecl x86DetourCdecl;
 typedef x86MsThiscall x86DetourThisCall;
 typedef x86MsStdcall x86DetourStdCall;
 typedef x86MsFastcall x86DetourFastCall;
+typedef x86Instruction x86DetourInstruction;
 #elif defined KE_LINUX
 #include "conventions/x86GccCdecl.h"
 #include "conventions/x86GccThiscall.h"
 #include "conventions/x86MsStdcall.h"
 #include "conventions/x86MsFastcall.h"
+#include <conventions/x86Instruction.h>
 typedef x86GccCdecl x86DetourCdecl;
 typedef x86GccThiscall x86DetourThisCall;
 // Uhm, stdcall on linux?
 typedef x86MsStdcall x86DetourStdCall;
 // Uhumm, fastcall on linux?
 typedef x86MsFastcall x86DetourFastCall;
+typedef x86Instruction x86DetourInstruction;
 #else
 #error "Unsupported platform."
 #endif
@@ -242,6 +246,10 @@ ICallingConvention *ConstructCallingConvention(HookSetup *setup)
 	case CallConv_FASTCALL:
 		pCallConv = new x86DetourFastCall(vecArgTypes, returnType);
 		break;
+	case CallConv_INSTRUCTION:
+		pCallConv = new x86DetourInstruction(vecArgTypes, returnType);
+
+		break;
 	default:
 		smutils->LogError(myself, "Unknown calling convention %d.", setup->callConv);
 		break;
@@ -422,6 +430,14 @@ ReturnAction_t HandleDetour(HookType_t hookType, CHook* pDetour)
 				{
 					tempRetBuf = (uint8_t *)returnStruct->newResult;
 				}
+			}
+
+			// It doesn't make sense to supercede instruction detours when they're detouring individual instructions
+			if (pWrapper->callConv == CallConv_INSTRUCTION && result == MRES_Supercede)
+			{
+				tempRet = ReturnAction_Ignored;
+				pCallback->GetParentRuntime()->GetDefaultContext()->BlamePluginError(pCallback, "Tried to supercede an instruction detour which is not possible");
+				break;
 			}
 
 			// Store if the plugin wants the original function to be called.

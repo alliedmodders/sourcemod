@@ -45,6 +45,7 @@ enum CallingConvention
 	CallConv_THISCALL,
 	CallConv_STDCALL,
 	CallConv_FASTCALL,
+	CallConv_INSTRUCTION,
 };
 
 enum MRESReturn
