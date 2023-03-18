@@ -85,8 +85,8 @@ CHook::CHook(void* pFunc, ICallingConvention* pConvention)
 	// Save the trampoline
 	m_pTrampoline = (void *) pCopiedBytes;
 
-	// Create the bridge function
-	m_pBridge = CreateBridge();
+	// Create the bridge function. A post hook can't be created if it isn't a function call and won't have a stack argument pointer.
+	m_pBridge = CreateBridge(pConvention->GetStackArgumentPtr(m_pRegisters) != NULL);
 
 	// Write a jump to the bridge
 	DoGatePatch((unsigned char *) pFunc, m_pBridge);
@@ -102,7 +102,8 @@ CHook::~CHook()
 
 	// Free the asm bridge and new return address
 	smutils->GetScriptingEngine()->FreePageMemory(m_pBridge);
-	smutils->GetScriptingEngine()->FreePageMemory(m_pNewRetAddr);
+	if (m_pNewRetAddr)
+		smutils->GetScriptingEngine()->FreePageMemory(m_pNewRetAddr);
 
 	delete m_pRegisters;
 	delete m_pCallingConvention;
@@ -229,13 +230,14 @@ void __cdecl CHook::SetReturnAddress(void* pRetAddr, void* pESP)
 	i->value.push_back(pRetAddr);
 }
 
-void* CHook::CreateBridge()
+void* CHook::CreateBridge(bool createPostHook)
 {
 	sp::MacroAssembler masm;
 	Label label_supercede;
 
 	// Write a redirect to the post-hook code
-	Write_ModifyReturnAddress(masm);
+	if (createPostHook)
+		Write_ModifyReturnAddress(masm);
 
 	// Call the pre-hook handler and jump to label_supercede if ReturnAction_Supercede was returned
 	Write_CallHandler(masm, HOOKTYPE_PRE);
@@ -244,7 +246,8 @@ void* CHook::CreateBridge()
 	// Restore the previously saved registers, so any changes will be applied
 	Write_RestoreRegisters(masm, HOOKTYPE_PRE);
 
-	masm.j(equal, &label_supercede);
+	if (createPostHook)
+		masm.j(equal, &label_supercede);
 
 	// Jump to the trampoline
 	masm.jmp(ExternalAddress(m_pTrampoline));
