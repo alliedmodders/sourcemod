@@ -191,7 +191,7 @@ ReturnAction_t CHook::HookHandler(HookType_t eHookType)
 	if (eHookType == HOOKTYPE_PRE)
 	{
 		m_LastPreReturnAction.push_back(returnAction);
-		if (returnAction == ReturnAction_Override)
+		if (returnAction >= ReturnAction_Override)
 			m_pCallingConvention->SaveReturnValue(m_pRegisters);
 		if (returnAction < ReturnAction_Supercede)
 			m_pCallingConvention->SaveCallArguments(m_pRegisters);
