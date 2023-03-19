@@ -160,7 +160,7 @@ ReturnAction_t CHook::HookHandler(HookType_t eHookType)
 	{
 		ReturnAction_t lastPreReturnAction = m_LastPreReturnAction.back();
 		m_LastPreReturnAction.pop_back();
-		if (lastPreReturnAction == ReturnAction_Override)
+		if (lastPreReturnAction >= ReturnAction_Override)
 			m_pCallingConvention->RestoreReturnValue(m_pRegisters);
 		if (lastPreReturnAction < ReturnAction_Supercede)
 			m_pCallingConvention->RestoreCallArguments(m_pRegisters);
