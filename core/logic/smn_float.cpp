@@ -231,6 +231,13 @@ static cell_t sm_FloatFraction(IPluginContext *pCtx, const cell_t *params)
 	return sp_ftoc(val);
 }
 
+static cell_t sm_FloatMod(IPluginContext* pCtx, const cell_t* params)
+{
+	float val = fmodf(sp_ctof(params[1]), sp_ctof(params[2]));
+
+	return sp_ftoc(val);
+}
+
 static cell_t sm_Sine(IPluginContext *pCtx, const cell_t *params)
 {
 	float val = sp_ctof(params[1]);
@@ -358,6 +365,7 @@ REGISTER_NATIVES(floatnatives)
 	{"FloatAdd",		sm_FloatAdd},
 	{"FloatSub",		sm_FloatSub},
 	{"FloatFraction",	sm_FloatFraction},
+	{"FloatMod",		sm_FloatMod},
 	{"RoundToZero",		sm_RoundToZero},
 	{"RoundToCeil",		sm_RoundToCeil},
 	{"RoundToFloor",	sm_RoundToFloor},
