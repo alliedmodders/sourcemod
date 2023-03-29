@@ -210,26 +210,6 @@
 		"sk"		"Tento hráč ešte nie je úplne v hre."
 	}
 
-	"Played Sound"
-	{
-		"sk"		"Pustil zvuk hráčovi '{1}'  "
-	}
-
-	"Slapped player"
-	{
-		"sk"		"Slapnutý hráč '{1}' "
-	}
-
-	"Slayed player"
-	{
-		"sk"		"Zabitý hráč '{1}' "
-	}
-
-	"Kicked player"
-	{
-		"sk"		"Hráč '{1}' bol vyhodený"
-	}
-
 	"Cannot participate in vote"
 	{
 		"sk"		"Nemôžeš sa zúčastniť tohto hlasovania."

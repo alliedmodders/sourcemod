@@ -210,26 +210,6 @@
 		"nl"		"De opgegeven speler is nog niet helemaal in het spel aanwezig."
 	}
 
-	"Played Sound"
-	{
-		"nl"		"Geluid afgespeeld voor speler '{1}'"
-	}
-
-	"Slapped player"
-	{
-		"nl"		"Speler '{1}' geslagen"
-	}
-
-	"Slayed player"
-	{
-		"nl"		"Speler '{1}' geslayed"
-	}
-
-	"Kicked player"
-	{
-		"nl"		"Speler '{1}' verwijderd"
-	}
-
 	"Cannot participate in vote"
 	{
 		"nl"		"Je kunt niet meedoen in deze vote."

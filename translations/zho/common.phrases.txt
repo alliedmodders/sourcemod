@@ -210,26 +210,6 @@
 		"zho"		"所指定的玩家尚未完全進入遊戲."
 	}
 
-	"Played Sound"
-	{
-		"zho"		"已给玩家 '{1}' 播放聲音"
-	}
-
-	"Slapped player"
-	{
-		"zho"		"已掌摑玩家 '{1}'"
-	}
-
-	"Slayed player"
-	{
-		"zho"		"已處死玩家 '{1}' "
-	}
-
-	"Kicked player"
-	{
-		"zho"		"已踢出玩家 '{1}'"
-	}
-
 	"Cannot participate in vote"
 	{
 		"zho"		"你不能參與此次投票"

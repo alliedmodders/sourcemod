@@ -210,26 +210,6 @@
 		"da"		"Den givne spiller er ikke inde i spillet endnu."
 	}
 
-	"Played Sound"
-	{
-		"da"		"Afspillede lyd til spiller '{1}'"
-	}
-
-	"Slapped player"
-	{
-		"da"		"Slog spiller '{1}'"
-	}
-
-	"Slayed player"
-	{
-		"da"		"Dræbte spiller '{1}'"
-	}
-
-	"Kicked player"
-	{
-		"da"		"Fjernet spiller '{1}'"
-	}
-
 	"Cannot participate in vote"
 	{
 		"da"		"Du kan ikke deltage i denne afstemning"

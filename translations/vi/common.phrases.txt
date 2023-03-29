@@ -210,26 +210,6 @@
 		"vi"		"Người chơi này hiện không ở trong trò chơi."
 	}
 
-	"Played Sound"
-	{
-		"vi"		"Đã bật âm thanh cho người chơi '{1}'"
-	}
-
-	"Slapped player"
-	{
-		"vi"		"Đã tát người chơi '{1}'"
-	}
-
-	"Slayed player"
-	{
-		"vi"		"Đã giết người chơi '{1}'"
-	}
-
-	"Kicked player"
-	{
-		"vi"		"Đã đuổi người chơi '{1}'"
-	}
-
 	"Cannot participate in vote"
 	{
 		"vi"		"Bạn không thể tham gia vào cuộc bầu chọn này.."

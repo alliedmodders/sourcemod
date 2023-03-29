@@ -210,26 +210,6 @@
 		"pl"		"Dany gracz łączy się jeszcze z serwerem."
 	}
 
-	"Played Sound"
-	{
-		"pl"		"Odtworzono dźwięk u gracza '{1}'"
-	}
-
-	"Slapped player"
-	{
-		"pl"		"Uderzono gracza '{1}'"
-	}
-
-	"Slayed player"
-	{
-		"pl"		"Zgładzono gracza '{1}'"
-	}
-
-	"Kicked player"
-	{
-		"pl"		"Wykopano gracza '{1}'"
-	}
-
 	"Cannot participate in vote"
 	{
 		"pl"		"Nie możesz brać udziału w tym głosowaniu."

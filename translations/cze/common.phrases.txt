@@ -210,26 +210,6 @@
 		"cze"		"Zvoleny hrac jeste neni plne pripojen do hry."
 	}
 
-	"Played Sound"
-	{
-		"cze"		" Byl prehran zvuk hraci '{1}'"
-	}
-
-	"Slapped player"
-	{
-		"cze"		"Vyliskal hrace '{1}'"
-	}
-
-	"Slayed player"
-	{
-		"cze"		"Zabil hrace '{1}'"
-	}
-
-	"Kicked player"
-	{
-		"cze"		"Vyhodil hrace '{1}'"
-	}
-
 	"Cannot participate in vote"
 	{
 		"cze"		"Nemuzete se zucastnit tohoto hlasovani."

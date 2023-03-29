@@ -210,26 +210,6 @@
 		"es"		"El jugador elegido aún no está completamente en el juego."
 	}
 
-	"Played Sound"
-	{
-		"es"		"Sonido reproducido a '{1}'"
-	}
-
-	"Slapped player"
-	{
-		"es"		"'{1}' abofeteado"
-	}
-
-	"Slayed player"
-	{
-		"es"		"'{1}' asesinado"
-	}
-
-	"Kicked player"
-	{
-		"es"		"'{1}' expulsado"
-	}
-
 	"Cannot participate in vote"
 	{
 		"es"		"No puedes participar en esta votación."

@@ -210,26 +210,6 @@
 		"lv"		"Konkrētais spēlētājs vēl nav pilnībā pievienojies spēlei."
 	}
 
-	"Played Sound"
-	{
-		"lv"		"Atskaņoja skaņu spēlētājam '{1}'"
-	}
-
-	"Slapped player"
-	{
-		"lv"		"Iepēra spēlētāju '{1}'"
-	}
-
-	"Slayed player"
-	{
-		"lv"		"Nogalēja spēlētāju '{1}'"
-	}
-
-	"Kicked player"
-	{
-		"lv"		"Izmeta spēlētāju '{1}'"
-	}
-
 	"Cannot participate in vote"
 	{
 		"lv"		"Tu nevari piedalīties šinī aptaujā."

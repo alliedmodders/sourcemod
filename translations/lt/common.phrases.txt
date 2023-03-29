@@ -210,26 +210,6 @@
 		"lt"		"Nurodytas žaidėjas dar nėra pilnai prisijungęs į žaidimą."
 	}
 
-	"Played Sound"
-	{
-		"lt"		"Paleistas garsas žaidėjui '{1}'"
-	}
-
-	"Slapped player"
-	{
-		"lt"		"Stuktelėjo žaidėją '{1}'"
-	}
-
-	"Slayed player"
-	{
-		"lt"		"Patiesė žaidėją '{1}'"
-	}
-
-	"Kicked player"
-	{
-		"lt"		"Pašalintas žaidėjas '{1}'"
-	}
-
 	"Cannot participate in vote"
 	{
 		"lt"		"Jūs negalite dalyvauti šiame balsavime."

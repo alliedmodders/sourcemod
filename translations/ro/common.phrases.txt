@@ -210,26 +210,6 @@
 		"ro"		"Jucătorul indicat nu este incă complet în joc."
 	}
 
-	"Played Sound"
-	{
-		"ro"		"Sunet executat pe jucătorul '{1}'"
-	}
-
-	"Slapped player"
-	{
-		"ro"		"Jucătorul '{1}' a primit slap"
-	}
-
-	"Slayed player"
-	{
-		"ro"		"Jucătorul '{1}' a primit slay"
-	}
-
-	"Kicked player"
-	{
-		"ro"		"Jucătorul '{1}' a primit kick"
-	}
-
 	"Cannot participate in vote"
 	{
 		"ro"		"Nu poti participa la aceasta votare"
