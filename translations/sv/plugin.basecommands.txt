@@ -125,4 +125,9 @@
 		"sv"		"Kastade ut {1} (Anledning: {2})"
 	}
 
+	"Please select a map"
+	{
+		"sv"		"Vänligen välj en karta"
+	}
+
 }

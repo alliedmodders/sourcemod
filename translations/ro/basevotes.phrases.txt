@@ -80,11 +80,6 @@
 		"ro"		"Un alt admin foloseste acum meniul de vot pentru harta."
 	}
 
-	"Please select a map"
-	{
-		"ro"		"Selecteaza o harta"
-	}
-
 	"Start the Vote"
 	{
 		"ro"		"Porneste votul"

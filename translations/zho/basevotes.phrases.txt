@@ -80,11 +80,6 @@
 		"zho"		"有其他管理員正在使用投票功能"
 	}
 
-	"Please select a map"
-	{
-		"zho"		"請選擇地圖"
-	}
-
 	"Start the Vote"
 	{
 		"zho"		"發起投票"

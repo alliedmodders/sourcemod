@@ -80,11 +80,6 @@
 		"it"		"Il menu di votazione delle mappe è attualmente in uso da un altro amministratore."
 	}
 
-	"Please select a map"
-	{
-		"it"		"Seleziona una mappa"
-	}
-
 	"Start the Vote"
 	{
 		"it"		"Inizia la votazione"

@@ -125,4 +125,9 @@
 		"hu"		"{1} kirúgva (Oka: {2})"
 	}
 
+	"Please select a map"
+	{
+		"hu"		"Válassz egy pályát"
+	}
+
 }

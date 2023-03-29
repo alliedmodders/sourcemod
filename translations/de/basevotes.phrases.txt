@@ -80,11 +80,6 @@
 		"de"		"Ein anderer Admin benutzt derzeit das Map-Abstimmungs-Menü."
 	}
 
-	"Please select a map"
-	{
-		"de"		"Bitte wähle eine Map "
-	}
-
 	"Start the Vote"
 	{
 		"de"		"Starte die Abstimmung"

@@ -80,11 +80,6 @@
 		"cze"		"Jiny admin prave pouziva hlasovaci menu."
 	}
 
-	"Please select a map"
-	{
-		"cze"		"Prosim, zvol mapu"
-	}
-
 	"Start the Vote"
 	{
 		"cze"		"Zacit hlasovani"

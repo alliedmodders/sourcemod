@@ -80,11 +80,6 @@
 		"hu"		"Egy másik admin jelenleg is használja a szavazás menüt!"
 	}
 
-	"Please select a map"
-	{
-		"hu"		"Válassz egy pályát"
-	}
-
 	"Start the Vote"
 	{
 		"hu"		"Szavazás elindítása"

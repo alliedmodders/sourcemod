@@ -80,11 +80,6 @@
 		"lt"		"Šiuo metu kitas administratorius naudoja balsavimo už žemėlapį meniu."
 	}
 
-	"Please select a map"
-	{
-		"lt"		"Pasirinkti žemėlapį"
-	}
-
 	"Start the Vote"
 	{
 		"lt"		"Pradėti balsavimą"

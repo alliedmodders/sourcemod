@@ -80,11 +80,6 @@
 		"chi"		"地图投票正被调用"
 	}
 
-	"Please select a map"
-	{
-		"chi"		"请选择地图"
-	}
-
 	"Start the Vote"
 	{
 		"chi"		"开始投票"

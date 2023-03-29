@@ -80,11 +80,6 @@
 		"las"		"Otro administrador está utilizando el menú de votación de mapas."
 	}
 
-	"Please select a map"
-	{
-		"las"		"Selecciona un mapa"
-	}
-
 	"Start the Vote"
 	{
 		"las"		"Empezar la votación"
