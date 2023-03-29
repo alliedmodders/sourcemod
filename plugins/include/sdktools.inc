@@ -194,6 +194,7 @@ native Handle EndPrepSDKCall();
  *  rules will result in crashes or wildly unexpected behavior!
  *
  * If the return value is a float or integer, the return value will be this value.
+ * If the return value is a string, then the number of bytes written will be this value.
  * If the return value is a CBaseEntity, CBasePlayer, or edict, the return value will
  *  always be the entity index, or -1 for NULL.
  *
