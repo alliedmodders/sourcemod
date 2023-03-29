@@ -5,6 +5,7 @@ on:
       - master
     paths:
       - 'translations/**'
+  workflow_dispatch:
 jobs:
   update_translations:
     runs-on: ubuntu-latest
@@ -35,4 +36,3 @@ jobs:
         run: |
           python ./compare_translation_phrases.py 
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
