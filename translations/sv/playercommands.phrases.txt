@@ -40,9 +40,4 @@
 		"sv"		"Byta alias"
 	}
 
-	"Dead Player Rename"
-	{
-		"sv"		"{1} kommer att ändra namn i nästa runda."
-	}
-
 }

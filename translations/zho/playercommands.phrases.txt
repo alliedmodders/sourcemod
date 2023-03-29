@@ -40,9 +40,4 @@
 		"zho"		"玩家改名"
 	}
 
-	"Dead Player Rename"
-	{
-		"zho"		"{1} 將會在下一局被改名."
-	}
-
 }

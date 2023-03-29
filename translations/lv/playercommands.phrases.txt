@@ -40,9 +40,4 @@
 		"lv"		"Pārsaukt spēlētāju"
 	}
 
-	"Dead Player Rename"
-	{
-		"lv"		"{1} tiks pārdēvēts nākamajā raundā.  "
-	}
-
 }

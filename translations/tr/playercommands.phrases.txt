@@ -40,9 +40,4 @@
 		"tr"		"Oyuncunun adını değiştir"
 	}
 
-	"Dead Player Rename"
-	{
-		"tr"		"{1} adlı oyuncunun adı sonraki turda değişecek."
-	}
-
 }

@@ -40,9 +40,4 @@
 		"pt"		"Renomear jogador"
 	}
 
-	"Dead Player Rename"
-	{
-		"pt"		"{1} será renomeado na próxima rodada."
-	}
-
 }

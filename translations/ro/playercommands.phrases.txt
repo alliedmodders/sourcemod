@@ -40,9 +40,4 @@
 		"ro"		"Schimba numele jucatorului"
 	}
 
-	"Dead Player Rename"
-	{
-		"ro"		"{1} va fi redenumit runda următoare."
-	}
-
 }

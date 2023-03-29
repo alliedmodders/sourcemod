@@ -40,9 +40,4 @@
 		"chi"		"玩家更名"
 	}
 
-	"Dead Player Rename"
-	{
-		"chi"		"{1} 将会在下局被改名"
-	}
-
 }
