@@ -1,10 +1,5 @@
 "Phrases"
 {
-	"Next Map"
-	{
-		"de"		"Nächste Karte: {1}"
-	}
-
 	"Map History"
 	{
 		"de"		"Zuletzt gespielte Karten"

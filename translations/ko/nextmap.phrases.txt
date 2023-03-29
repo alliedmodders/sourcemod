@@ -1,10 +1,5 @@
 "Phrases"
 {
-	"Next Map"
-	{
-		"ko"		"다음 맵은 {1} 입니다"
-	}
-
 	"Map History"
 	{
 		"ko"		"맵 기록"

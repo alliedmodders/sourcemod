@@ -1,10 +1,5 @@
 "Phrases"
 {
-	"Next Map"
-	{
-		"tr"		"Sonraki Harita: {1}"
-	}
-
 	"Map History"
 	{
 		"tr"		"Harita Geçmişi"

@@ -1,10 +1,5 @@
 "Phrases"
 {
-	"Next Map"
-	{
-		"zho"		"下一幅地圖: {1}"
-	}
-
 	"Map History"
 	{
 		"zho"		"地圖紀錄"

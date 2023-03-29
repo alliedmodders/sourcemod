@@ -1,10 +1,5 @@
 "Phrases"
 {
-	"Next Map"
-	{
-		"vi"		"Bản đồ tiếp theo: {1}"
-	}
-
 	"Map History"
 	{
 		"vi"		"Lịch sử bản đồ"

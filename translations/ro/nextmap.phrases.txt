@@ -1,10 +1,5 @@
 "Phrases"
 {
-	"Next Map"
-	{
-		"ro"		"Harta următoare: {1}"
-	}
-
 	"Map History"
 	{
 		"ro"		"Harti anterioare"
