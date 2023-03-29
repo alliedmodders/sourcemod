@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Cookie List"
+	{
+		"zho"		"Sourcemod 快取設定列表"
+	}
+
+	"Printing Cookie List"
+	{
+		"zho"		"在控制台中顯示快取設定列表"
+	}
+
+	"Cookie not Found"
+	{
+		"zho"		"未發現快取設定 \"{1}\""
+	}
+
+	"Cookie Value"
+	{
+		"zho"		"{1} 的值為 {2} "
+	}
+
+	"Protected Cookie"
+	{
+		"zho"		"無法更改受保護快取設定 \"{1}\" 的值"
+	}
+
+	"Cookie Changed Value"
+	{
+		"zho"		"快取設定值已由 \"{1}\" 改為 \"{2}\""
+	}
+
+	"No Console"
+	{
+		"zho"		"無法於控制台中顯示設定目錄"
+	}
+
+	"Choose Option"
+	{
+		"zho"		"選擇條目"
+	}
+
+	"Client Settings"
+	{
+		"zho"		"客戶端設定"
+	}
+
+}

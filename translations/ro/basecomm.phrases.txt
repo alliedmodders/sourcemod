@@ -1,0 +1,73 @@
+"Phrases"
+{
+	"Gag/Mute player"
+	{
+		"ro"		"Gag/Mute jucător"
+	}
+
+	"Choose Type"
+	{
+		"ro"		"Alege Tipul"
+	}
+
+	"Gagged target"
+	{
+		"ro"		"{1} a primit Gag."
+	}
+
+	"Ungagged target"
+	{
+		"ro"		"{1} nu mai are Gag."
+	}
+
+	"Muted target"
+	{
+		"ro"		"{1} a primit Mute."
+	}
+
+	"Unmuted target"
+	{
+		"ro"		"{1} nu mai are Mute."
+	}
+
+	"Silenced target"
+	{
+		"ro"		"{1} a primit Silence."
+	}
+
+	"Unsilenced target"
+	{
+		"ro"		"{1} nu mai are Silence."
+	}
+
+	"Mute Player"
+	{
+		"ro"		"Mute jucator"
+	}
+
+	"UnMute Player"
+	{
+		"ro"		"UnMute jucator"
+	}
+
+	"Gag Player"
+	{
+		"ro"		"Gag jucator"
+	}
+
+	"UnGag Player"
+	{
+		"ro"		"UnGag jucator"
+	}
+
+	"Silence Player"
+	{
+		"ro"		"Silence jucator"
+	}
+
+	"UnSilence Player"
+	{
+		"ro"		"UnSilence jucator"
+	}
+
+}

@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Vote Nextmap"
+	{
+		"ko"		"다음 맵을 결정하기 위한 투표!"
+	}
+
+	"Nextmap Voting Started"
+	{
+		"ko"		"다음 맵을 결정하기 위한 투표가 시작되었습니다."
+	}
+
+	"Nextmap Voting Finished"
+	{
+		"ko"		"맵 투표가 끝났습니다. 다음 맵은 {1} 이 될 것입니다. ({3}표의 {2}%%를 받았습니다)"
+	}
+
+	"Current Map Extended"
+	{
+		"ko"		"현재 맵을 연장합니다. ({2}표의 {1}%%를 받았습니다)"
+	}
+
+	"Extend Map"
+	{
+		"ko"		"지금 맵을 더 하자"
+	}
+
+	"Dont Change"
+	{
+		"ko"		"바꾸지 말자"
+	}
+
+	"Current Map Stays"
+	{
+		"ko"		"현재 맵을 계속 합니다! 투표로 결정되었습니다! ({2}표의 {1}%%를 받았습니다)"
+	}
+
+	"Changed Next Map"
+	{
+		"ko"		"다음 맵을 \"{1}\" 로 바꾸었습니다."
+	}
+
+	"Starting Runoff"
+	{
+		"ko"		"{1}%% 이상의 표를 받은 맵이 없으므로({2} [{3}%%] & {4} [{5}%%]), 결승 투표를 시작합니다"
+	}
+
+}

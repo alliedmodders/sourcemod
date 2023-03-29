@@ -1,0 +1,33 @@
+"Phrases"
+{
+	"SM help commands"
+	{
+		"el"		"Bοήθεια SourceMod: Πληροφορίες Εντολών"
+	}
+
+	"No description available"
+	{
+		"el"		"Δεν υπάρχει διαθέσιμη περιγραφή"
+	}
+
+	"No commands available"
+	{
+		"el"		"Δεν υπάρχουν διαθέσιμες εντολές"
+	}
+
+	"Type sm_help to see more"
+	{
+		"el"		"Γράψτε sm_help {1} για να δείτε περισσότερες εντολές"
+	}
+
+	"Entries n - m in page k"
+	{
+		"el"		"{1} - {2} Καταχωρήσεις στη σελίδα {3}"
+	}
+
+	"No matching results found"
+	{
+		"el"		"Δεν βρέθηκαν αποτελέσματα που να αντιστοιχούν"
+	}
+
+}

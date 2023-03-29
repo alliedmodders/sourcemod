@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Slap player"
+	{
+		"lt"		"Stuktelti žaidėją"
+	}
+
+	"Slap damage"
+	{
+		"lt"		"Stuktelėjimo žala"
+	}
+
+	"Slay player"
+	{
+		"lt"		"Patiesti žaidėją"
+	}
+
+	"Slapped target"
+	{
+		"lt"		"Stukteltas {1}."
+	}
+
+	"Slayed target"
+	{
+		"lt"		"Patiesė {1}."
+	}
+
+	"Name changed"
+	{
+		"lt"		"Administratorius pakeitė Jūsų pseudonimą"
+	}
+
+	"Renamed target"
+	{
+		"lt"		"Pakeistas {1} pseudonimas."
+	}
+
+	"Rename player"
+	{
+		"lt"		"Pakeisti žaidėjo pseudonimą"
+	}
+
+	"Dead Player Rename"
+	{
+		"lt"		"{1} bus pakeistas pseudonimas sekantį raundą."
+	}
+
+}

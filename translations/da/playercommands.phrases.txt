@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Slap player"
+	{
+		"da"		"Klask spiller"
+	}
+
+	"Slap damage"
+	{
+		"da"		"Klask-skade"
+	}
+
+	"Slay player"
+	{
+		"da"		"Dræb spiller"
+	}
+
+	"Slapped target"
+	{
+		"da"		"Klaskede {1}."
+	}
+
+	"Slayed target"
+	{
+		"da"		"Henrettede {1}."
+	}
+
+	"Name changed"
+	{
+		"da"		"En administrator har ændret dit navn"
+	}
+
+	"Renamed target"
+	{
+		"da"		"Omdøbte {1}."
+	}
+
+	"Rename player"
+	{
+		"da"		"Omdøb spiller"
+	}
+
+	"Dead Player Rename"
+	{
+		"da"		"{1} bliver omdøbt i næste runde."
+	}
+
+}

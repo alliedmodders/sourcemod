@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Slot reserved"
+	{
+		"da"		"Fjernet på grund af pladsreservation."
+	}
+
+}

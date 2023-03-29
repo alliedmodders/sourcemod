@@ -1,0 +1,43 @@
+"Phrases"
+{
+	"Next Map"
+	{
+		"fi"		"Seuraava kartta: {1}"
+	}
+
+	"Map History"
+	{
+		"fi"		"Karttahistoria"
+	}
+
+	"Map"
+	{
+		"fi"		"[Kartta]"
+	}
+
+	"Started"
+	{
+		"fi"		"[Aloitettu]"
+	}
+
+	"Played Time"
+	{
+		"fi"		"[Pelattu aika]"
+	}
+
+	"Reason"
+	{
+		"fi"		"[Syy lopettamiselle]"
+	}
+
+	"Current Map"
+	{
+		"fi"		"Tämänhetkinen kartta"
+	}
+
+	"ago"
+	{
+		"fi"		"sitten"
+	}
+
+}

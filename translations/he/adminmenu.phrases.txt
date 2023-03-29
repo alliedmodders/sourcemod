@@ -1,0 +1,23 @@
+"Phrases"
+{
+	"Admin Menu"
+	{
+		"he"		"תפריט המנהל"
+	}
+
+	"Player Commands"
+	{
+		"he"		"פקודות שחקן"
+	}
+
+	"Server Commands"
+	{
+		"he"		"פקודות שרת"
+	}
+
+	"Voting Commands"
+	{
+		"he"		"פקודות הצבעה"
+	}
+
+}

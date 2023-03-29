@@ -1,0 +1,63 @@
+"Phrases"
+{
+	"Ban player"
+	{
+		"pt"		"Banir jogador"
+	}
+
+	"Ban reason"
+	{
+		"pt"		"Motivo do banimento"
+	}
+
+	"Permabanned player"
+	{
+		"pt"		"\"{1}\" banido(a) permanentemente. "
+	}
+
+	"Permabanned player reason"
+	{
+		"pt"		"\"{1}\" banido(a) permanentemente (motivo: {2}). "
+	}
+
+	"Banned player"
+	{
+		"pt"		"\"{1}\" foi banido(a) por {2} minutos."
+	}
+
+	"Banned player reason"
+	{
+		"pt"		"\"{1}\" foi banido(a) por {2} minutos (motivo: {3}). "
+	}
+
+	"Removed bans matching"
+	{
+		"pt"		"Banimentos correspondentes ao filtro \"{1}\" foram removidos "
+	}
+
+	"Ban added"
+	{
+		"pt"		"O banimento foi adicionado."
+	}
+
+	"Cannot ban that IP"
+	{
+		"pt"		"Você não pode banir esse endereço IP."
+	}
+
+	"Custom ban reason explanation"
+	{
+		"pt"		"Digite o motivo do banimento no chat. Use {1} para cancelar."
+	}
+
+	"AbortBan applied successfully"
+	{
+		"pt"		"Banimento cancelado."
+	}
+
+	"AbortBan not waiting for custom reason"
+	{
+		"pt"		"Não há banimento em progresso para ser cancelado."
+	}
+
+}

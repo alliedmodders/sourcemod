@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"el"		"Κάψιμο παίκτη"
+	}
+
+	"FireBomb player"
+	{
+		"el"		"Βόμβα Φωτιάς σε παίκτη"
+	}
+
+	"Freeze player"
+	{
+		"el"		"Πάγωμα παίκτη"
+	}
+
+	"FreezeBomb player"
+	{
+		"el"		"Βόμβα Πάγου σε παίκτη"
+	}
+
+	"TimeBomb player"
+	{
+		"el"		"Βόμβα σε παίκτη"
+	}
+
+	"Beacon player"
+	{
+		"el"		"Φάρος σε παίκτη"
+	}
+
+	"NoClip player"
+	{
+		"el"		"Εξαΰλωση παίκτη"
+	}
+
+	"Blind player"
+	{
+		"el"		"Τύφλωση παίκτη"
+	}
+
+	"Drug player"
+	{
+		"el"		"Μέθη σε παίκτη"
+	}
+
+	"Gravity player"
+	{
+		"el"		"Αλλαγή Βαρύτητας σε παίκτη"
+	}
+
+	"Blind amount"
+	{
+		"el"		"Πόσο τύφλα;"
+	}
+
+	"Fully blind"
+	{
+		"el"		"100%"
+	}
+
+	"Half blind"
+	{
+		"el"		"50%"
+	}
+
+	"No blind"
+	{
+		"el"		"0%"
+	}
+
+	"Gravity amount"
+	{
+		"el"		"Βαρύτητα;"
+	}
+
+	"Gravity Very High"
+	{
+		"el"		"Πολύ Μεγάλη"
+	}
+
+	"Gravity High"
+	{
+		"el"		"Μεγάλη"
+	}
+
+	"Gravity Normal"
+	{
+		"el"		"Κανονική"
+	}
+
+	"Gravity Low"
+	{
+		"el"		"Μικρή"
+	}
+
+	"Gravity Very Low"
+	{
+		"el"		"Πολύ Μικρή"
+	}
+
+	"Set target on fire"
+	{
+		"el"		"O/H {1} καίγεται."
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"el"		"O/H {1} είναι βόμβα φωτιάς."
+	}
+
+	"Froze target"
+	{
+		"el"		"O/H {1} πάγωσε."
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"el"		"O/H {1} είναι βόμβα πάγου."
+	}
+
+	"Toggled beacon on target"
+	{
+		"el"		"O/H {1} εκπέμπει κύκλους."
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"el"		"O/H {1} είναι κινητή βόμβα."
+	}
+
+	"Toggled noclip on target"
+	{
+		"el"		"O/H {1} εξαϋλώθηκε."
+	}
+
+	"Toggled drug on target"
+	{
+		"el"		"O/H {1} μέθυσε."
+	}
+
+	"Set blind on target"
+	{
+		"el"		"O/H {1} τυφλώθηκε."
+	}
+
+	"Set gravity on target"
+	{
+		"el"		"O/H {1} έχει άλλη βαρύτητα."
+	}
+
+	"Till Explodes"
+	{
+		"el"		"{2} δευτερόλεπτα μέχρι ο/η {1} να εκραγεί."
+	}
+
+	"Unfrozen"
+	{
+		"el"		"Μόλις ξεπαγώσατε."
+	}
+
+	"You will be unfrozen"
+	{
+		"el"		"Θα ξεπαγώσετε σε {1} δευτερόλεπτα."
+	}
+
+}

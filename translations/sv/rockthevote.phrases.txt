@@ -1,0 +1,103 @@
+"Phrases"
+{
+	"Rock The Vote"
+	{
+		"sv"		"Rock The Vote:"
+	}
+
+	"RTV Not Allowed"
+	{
+		"sv"		"Rock the Vote är inte tillåtet ännu."
+	}
+
+	"RTV Started"
+	{
+		"sv"		"Rock the Vote har redan börjat."
+	}
+
+	"RTV Ended"
+	{
+		"sv"		"RTV är redan över, du kan inte starta det igen eller nominera kartor. "
+	}
+
+	"Already Voted"
+	{
+		"sv"		"Du har redan röstat för Rock the Vote."
+	}
+
+	"Minimal Players Not Met"
+	{
+		"sv"		"Antalet spelare som behövs har inte uppnåtts."
+	}
+
+	"Map Already In Vote"
+	{
+		"sv"		"Karta '{1}' är redan med i Rock the Vote listan. "
+	}
+
+	"Map Inserted"
+	{
+		"sv"		"Karta '{1}' tillagd till Rock the Vote. "
+	}
+
+	"RTV Requested"
+	{
+		"sv"		"{1} Vill rock the vote. ({2} röster, {3} krävs) "
+	}
+
+	"RTV Vote Ready"
+	{
+		"sv"		"Rocking the Vote!"
+	}
+
+	"Don't Change"
+	{
+		"sv"		"Behåll nuvarande karta."
+	}
+
+	"Already Nominated"
+	{
+		"sv"		"Du har redan nominerat en karta."
+	}
+
+	"Max Nominations"
+	{
+		"sv"		"Max antal nomineringar har blivit nåt."
+	}
+
+	"Selected Map"
+	{
+		"sv"		"{1} har valt {2} "
+	}
+
+	"No Votes"
+	{
+		"sv"		"Inga röstningar för Rock the Vote, behåller nuvarande karta."
+	}
+
+	"Current Map Stays"
+	{
+		"sv"		"Den nuvarande kartan behålls! Rock the Vote har talat! "
+	}
+
+	"Changing Maps"
+	{
+		"sv"		"Byter karta till {1}! Rock the vote har talat!"
+	}
+
+	"Map Already Nominated"
+	{
+		"sv"		"Kartan du valt är redan nominerad. "
+	}
+
+	"Map Nominated"
+	{
+		"sv"		"{1} har nominerat {2} till Rock the Vote. "
+	}
+
+	"Nominate Title"
+	{
+		"sv"		"Nominera karta: "
+	}
+
+}

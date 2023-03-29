@@ -1,0 +1,93 @@
+"Phrases"
+{
+	"Initiate Vote"
+	{
+		"tr"		"Bir oylama başlatıldı: {1}"
+	}
+
+	"Initiated Vote Map"
+	{
+		"tr"		"Harita oylaması başlatıldı."
+	}
+
+	"Initiated Vote Kick"
+	{
+		"tr"		"{1} adlı oyuncuya karşı atma oylaması başlatıldı."
+	}
+
+	"Initiated Vote Ban"
+	{
+		"tr"		"{1} adlı oyuncuya karşı yasaklama oylaması başlatıldı."
+	}
+
+	"Map Vote"
+	{
+		"tr"		"Harita Oylaması: {1}"
+	}
+
+	"Change Map To"
+	{
+		"tr"		"Harita {1} olarak değiştirilsin mi?"
+	}
+
+	"Votekick Player"
+	{
+		"tr"		"{1} atılsın mı?"
+	}
+
+	"Voteban Player"
+	{
+		"tr"		"{1} yasaklansın mı?"
+	}
+
+	"Vote Successful"
+	{
+		"tr"		"Oylama başarılı. ({2} oyun %%{1} kadarı alındı.) "
+	}
+
+	"Vote Failed"
+	{
+		"tr"		"Oylama başarısız. %%{1} oy gerekliydi. ({3} oyun %%{2} kadarı alındı.)"
+	}
+
+	"Vote End"
+	{
+		"tr"		"{1} sorusuna cevap: {2}."
+	}
+
+	"Kick vote"
+	{
+		"tr"		"Atma oylaması"
+	}
+
+	"Ban vote"
+	{
+		"tr"		"Yasaklama oylaması"
+	}
+
+	"Map vote"
+	{
+		"tr"		"Harita oylaması"
+	}
+
+	"Confirm Vote"
+	{
+		"tr"		"Oylamayı Onayla"
+	}
+
+	"Map Vote In Use"
+	{
+		"tr"		"Başka bir yönetici şu anda harita oylaması menüsünü kullanmakta."
+	}
+
+	"Please select a map"
+	{
+		"tr"		"Lütfen bir harita seçin"
+	}
+
+	"Start the Vote"
+	{
+		"tr"		"Oylamayı Başlatın"
+	}
+
+}

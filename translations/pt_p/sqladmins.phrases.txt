@@ -1,0 +1,78 @@
+"Phrases"
+{
+	"Invalid authtype"
+	{
+		"pt_p"		"O tipo de autenticação deve ser 'steam', 'name' ou 'ip'."
+	}
+
+	"Invalid immunity"
+	{
+		"pt_p"		"A imunidade deve ser um número inteiro positivo."
+	}
+
+	"SQL Admin already exists"
+	{
+		"pt_p"		"Já existe um administrador com as credenciais especificadas."
+	}
+
+	"SQL Admin added"
+	{
+		"pt_p"		"Administrador adicionado com sucesso à base de dados."
+	}
+
+	"SQL Admin deleted"
+	{
+		"pt_p"		"Administrador eliminado com sucesso da base de dados."
+	}
+
+	"SQL Admin not found"
+	{
+		"pt_p"		"Nenhum administrador com as credenciais especificadas foi encontrado."
+	}
+
+	"SQL Group already exists"
+	{
+		"pt_p"		"Um grupo com esse nome já existe."
+	}
+
+	"SQL Group added"
+	{
+		"pt_p"		"Grupo adicionado com sucesso à base de dados."
+	}
+
+	"SQL Group deleted"
+	{
+		"pt_p"		"Grupo eliminado com sucesso da base de dados."
+	}
+
+	"SQL Group not found"
+	{
+		"pt_p"		"Nenhum grupo com o nome especificado foi encontrado."
+	}
+
+	"SQL Admin groups reset"
+	{
+		"pt_p"		"Os grupos dos administradores foram reiniciados com sucesso."
+	}
+
+	"SQL Group X not found"
+	{
+		"pt_p"		"Grupo \"{1}\" não encontrado."
+	}
+
+	"SQL Group X failed to bind"
+	{
+		"pt_p"		"Falha ao atribuir grupo \"{1}\"."
+	}
+
+	"Added group to user"
+	{
+		"pt_p"		"Grupo adicionado com sucesso ao administrador especificado."
+	}
+
+	"Added groups to user"
+	{
+		"pt_p"		"{1} grupos adicionados com sucesso ao administrador especificado."
+	}
+
+}

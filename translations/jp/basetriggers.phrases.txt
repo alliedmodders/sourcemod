@@ -1,0 +1,108 @@
+"Phrases"
+{
+	"Timeleft"
+	{
+		"jp"		"このマップの残り時間:"
+	}
+
+	"Thetime"
+	{
+		"jp"		"現在のサーバ時刻は{1}です。"
+	}
+
+	"Friendly Fire On"
+	{
+		"jp"		"Friendly Fireを有効にしました。"
+	}
+
+	"Friendly Fire Off"
+	{
+		"jp"		"Friendly Fireを無効にしました。"
+	}
+
+	"Current Map"
+	{
+		"jp"		"現在のマップは{1}です。"
+	}
+
+	"LastRound"
+	{
+		"jp"		"最後のラウンドです！"
+	}
+
+	"NoTimelimit"
+	{
+		"jp"		"このマップは時間制限がありません。"
+	}
+
+	"Next Map"
+	{
+		"jp"		"次のマップ: {1}"
+	}
+
+	"Pending Vote"
+	{
+		"jp"		"ペンディング投票"
+	}
+
+	"WinLimitAppend"
+	{
+		"jp"		"、またはあと1回チームが勝利した時にマップを変更します。"
+	}
+
+	"WinLimit"
+	{
+		"jp"		"あと1回チームが勝利した時にマップを変更します。"
+	}
+
+	"MaxRoundsAppend"
+	{
+		"jp"		"、またはあと1回のラウンドでマップを変更します。"
+	}
+
+	"MaxRounds"
+	{
+		"jp"		"あと1回のラウンドでマップを変更します。"
+	}
+
+	"FragLimitAppend"
+	{
+		"jp"		"、またはプレイヤーが1フラッグ取得した時にマップを変更します。"
+	}
+
+	"FragLimit"
+	{
+		"jp"		"プレイヤーが1フラッグ取得した時にマップを変更します。"
+	}
+
+	"WinLimitAppendPlural"
+	{
+		"jp"		"、またはあと{1}回チームが勝利した時にマップを変更します。"
+	}
+
+	"WinLimitPlural"
+	{
+		"jp"		"あと{1}回チームが勝利した時にマップを変更します。"
+	}
+
+	"MaxRoundsAppendPlural"
+	{
+		"jp"		"、またはあと{1}回のラウンドでマップを変更します。"
+	}
+
+	"MaxRoundsPlural"
+	{
+		"jp"		"あと{1}回のラウンドでマップを変更します。"
+	}
+
+	"FragLimitAppendPlural"
+	{
+		"jp"		"、またはプレイヤーが{1}フラッグ取得した時にマップを変更します。"
+	}
+
+	"FragLimitPlural"
+	{
+		"jp"		"プレイヤーが{1}フラッグ取得した時にマップを変更します。"
+	}
+
+}

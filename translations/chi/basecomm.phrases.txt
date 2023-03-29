@@ -1,0 +1,73 @@
+"Phrases"
+{
+	"Gag/Mute player"
+	{
+		"chi"		"将玩家禁言/禁声"
+	}
+
+	"Choose Type"
+	{
+		"chi"		"选择类别"
+	}
+
+	"Gagged target"
+	{
+		"chi"		"{1} 已被禁言."
+	}
+
+	"Ungagged target"
+	{
+		"chi"		"{1} 已被解除禁言."
+	}
+
+	"Muted target"
+	{
+		"chi"		"{1} 已被禁声."
+	}
+
+	"Unmuted target"
+	{
+		"chi"		"{1} 已被解除禁声."
+	}
+
+	"Silenced target"
+	{
+		"chi"		"{1} 已被静音."
+	}
+
+	"Unsilenced target"
+	{
+		"chi"		"{1} 已被解除静音."
+	}
+
+	"Mute Player"
+	{
+		"chi"		"将玩家禁声"
+	}
+
+	"UnMute Player"
+	{
+		"chi"		"解除玩家禁声"
+	}
+
+	"Gag Player"
+	{
+		"chi"		"将玩家禁言"
+	}
+
+	"UnGag Player"
+	{
+		"chi"		"解除玩家禁言"
+	}
+
+	"Silence Player"
+	{
+		"chi"		"将玩家禁音"
+	}
+
+	"UnSilence Player"
+	{
+		"chi"		"解除玩家禁音"
+	}
+
+}

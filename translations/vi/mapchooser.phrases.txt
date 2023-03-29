@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Vote Nextmap"
+	{
+		"vi"		"Hãy bầu cho bản đồ tiếp theo!"
+	}
+
+	"Nextmap Voting Started"
+	{
+		"vi"		"Cuộc bầu chọn bản đồ tiếp theo đã bắt đầu."
+	}
+
+	"Nextmap Voting Finished"
+	{
+		"vi"		"Cuộc bầu chọn bản đồ tiếp theo đã kết thúc. Bản đồ tiếp theo sẽ là {1}. (Nhận được {2}%% trên tổng số {3} lượt bầu)"
+	}
+
+	"Current Map Extended"
+	{
+		"vi"		"Bản đồ hiện tại đã được gia hạn. (Nhận được {1}%% trên tổng số {2} lượt bầu)"
+	}
+
+	"Extend Map"
+	{
+		"vi"		"Gia hạn bản đồ hiện tại"
+	}
+
+	"Dont Change"
+	{
+		"vi"		"Không thay đổi"
+	}
+
+	"Current Map Stays"
+	{
+		"vi"		"Bản đồ hiện tại vẫn tiếp tục thông qua bầu chọn! (Nhận được {1}%% trên {2} lượt bầu)"
+	}
+
+	"Changed Next Map"
+	{
+		"vi"		"Đã thay đổi bản đồ tiếp theo thành \"{1}\"."
+	}
+
+	"Starting Runoff"
+	{
+		"vi"		"Không có bản đồ nào giành được {1}%% lượt bầu ({2} [{3}%%] & {4} [{5}%%]), bắt đầu dồn phiếu"
+	}
+
+}

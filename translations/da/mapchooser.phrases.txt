@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Vote Nextmap"
+	{
+		"da"		"Stem om næste bane!"
+	}
+
+	"Nextmap Voting Started"
+	{
+		"da"		"Afstemning for næste bane er begyndt."
+	}
+
+	"Nextmap Voting Finished"
+	{
+		"da"		"Bane afstemning er fuldført. Den næste bane bliver {1}. (Modtog {2}%% af {3} stemmer) "
+	}
+
+	"Current Map Extended"
+	{
+		"da"		"Den nuværende bane er blevet forlænget. (Modtog {1}%% af {2} stemmer)  "
+	}
+
+	"Extend Map"
+	{
+		"da"		"Forlæng bane"
+	}
+
+	"Dont Change"
+	{
+		"da"		"Skift ikke!"
+	}
+
+	"Current Map Stays"
+	{
+		"da"		"Den aktuelle bane fortsætter! Afstemningen har talt! (Modtog {1}%% af {2} stemmer)"
+	}
+
+	"Changed Next Map"
+	{
+		"da"		"Skiftede næste bane til \"{1}'."
+	}
+
+	"Starting Runoff"
+	{
+		"da"		"Intet map fik over {1}%% stemmer ({2} [{3}%%] & {4} [{5}%%]), starter afstemning om omvalg "
+	}
+
+}

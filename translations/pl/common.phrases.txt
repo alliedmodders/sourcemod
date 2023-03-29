@@ -1,0 +1,273 @@
+"Phrases"
+{
+	"Yes"
+	{
+		"pl"		"Tak"
+	}
+
+	"No"
+	{
+		"pl"		"Nie"
+	}
+
+	"No matching client"
+	{
+		"pl"		"Nie znaleziono pasującego klienta."
+	}
+
+	"No matching clients"
+	{
+		"pl"		"Nie znaleziono pasujących klientów."
+	}
+
+	"More than one client matches"
+	{
+		"pl"		"Więcej niż jeden klient pasuje do wzorca \"{1}\" "
+	}
+
+	"More than one client matched"
+	{
+		"pl"		"Więcej niż jeden klient pasuje do podanego wzorca. "
+	}
+
+	"Player no longer available"
+	{
+		"pl"		"Wskazany gracz nie jest już dostępny."
+	}
+
+	"Kick player"
+	{
+		"pl"		"Wykop gracza"
+	}
+
+	"Kicked by admin"
+	{
+		"pl"		"Wykopany przez administratora"
+	}
+
+	"Changing map"
+	{
+		"pl"		"Zmiana mapy na {1}..."
+	}
+
+	"Map was not found"
+	{
+		"pl"		"Mapa {1} nie została odnaleziona."
+	}
+
+	"Unable to target"
+	{
+		"pl"		"Nie możesz wskazać tego gracza."
+	}
+
+	"Name"
+	{
+		"pl"		"Nazwa"
+	}
+
+	"Access"
+	{
+		"pl"		"Dostęp"
+	}
+
+	"See console for output"
+	{
+		"pl"		"Zobacz wynik w konsoli."
+	}
+
+	"Cannot target bot"
+	{
+		"pl"		"Nie można wykonywać tej komendy na bocie."
+	}
+
+	"Unable to find cvar"
+	{
+		"pl"		"Nie można znaleźć zmiennej: {1}"
+	}
+
+	"No access to cvar"
+	{
+		"pl"		"Nie masz dostępu do tej zmiennej."
+	}
+
+	"Value of cvar"
+	{
+		"pl"		"Wartość zmiennej \"{1}\": \"{2}\""
+	}
+
+	"Cvar changed"
+	{
+		"pl"		"Ustawiono wartość zmiennej \"{1}\" na \"{2}\". "
+	}
+
+	"Config not found"
+	{
+		"pl"		"Plik konfiguracyjny \"{1}\" nie został odnaleziony."
+	}
+
+	"Executed config"
+	{
+		"pl"		"Wykonano konfig \"{1}\"."
+	}
+
+	"Admin cache refreshed"
+	{
+		"pl"		"Przeładowano bufor administratorów."
+	}
+
+	"Invalid Amount"
+	{
+		"pl"		"Określono niepoprawną ilość"
+	}
+
+	"Cannot be performed on dead"
+	{
+		"pl"		"Tej akcji nie można wykonać na martwym graczu \"{1}\" "
+	}
+
+	"Player has since died"
+	{
+		"pl"		" Akcja nie możne być wykonana, ponieważ gracz nie żyje."
+	}
+
+	"Vote in Progress"
+	{
+		"pl"		"Głosowanie już trwa."
+	}
+
+	"Vote Not In Progress"
+	{
+		"pl"		"Brak głosowań w toku."
+	}
+
+	"Cancelled Vote"
+	{
+		"pl"		"Anulowano głosowanie."
+	}
+
+	"Cancel vote"
+	{
+		"pl"		"Anuluj głosowanie"
+	}
+
+	"Vote Select"
+	{
+		"pl"		"Gracz {1} wybrał {2}"
+	}
+
+	"No Votes Cast"
+	{
+		"pl"		"Nie oddano głosów."
+	}
+
+	"Vote Delay Minutes"
+	{
+		"pl"		"Musisz poczekać {1} min. przed rozpoczęciem kolejnego głosowania."
+	}
+
+	"Vote Delay Seconds"
+	{
+		"pl"		"Musisz poczekać {1} sek. przed rozpoczęciem kolejnego głosowania."
+	}
+
+	"Could not connect to database"
+	{
+		"pl"		"Nie można połączyć się z bazą danych."
+	}
+
+	"Failed to query database"
+	{
+		"pl"		"Błąd zapytania bazy danych."
+	}
+
+	"Invalid SteamID specified"
+	{
+		"pl"		"Podano niepoprawny Steam ID (musi zaczynać się od 'STEAM_')."
+	}
+
+	"Reload admins"
+	{
+		"pl"		"Przeładuj konta administracyjne"
+	}
+
+	"Command is in-game only"
+	{
+		"pl"		"Ta komenda może być używana tylko w grze."
+	}
+
+	"Target must be dead"
+	{
+		"pl"		" Ta komenda może być używana tylko na martwych graczach. "
+	}
+
+	"Target must be alive"
+	{
+		"pl"		"Ta komenda może być używana tylko na żywych graczach. "
+	}
+
+	"Target is not in game"
+	{
+		"pl"		"Dany gracz łączy się jeszcze z serwerem."
+	}
+
+	"Played Sound"
+	{
+		"pl"		"Odtworzono dźwięk u gracza '{1}'"
+	}
+
+	"Slapped player"
+	{
+		"pl"		"Uderzono gracza '{1}'"
+	}
+
+	"Slayed player"
+	{
+		"pl"		"Zgładzono gracza '{1}'"
+	}
+
+	"Kicked player"
+	{
+		"pl"		"Wykopano gracza '{1}'"
+	}
+
+	"Cannot participate in vote"
+	{
+		"pl"		"Nie możesz brać udziału w tym głosowaniu."
+	}
+
+	"Cannot change vote"
+	{
+		"pl"		"Nie możesz zmienić swojego wyboru w tym głosowaniu."
+	}
+
+	"On"
+	{
+		"pl"		"Włączone"
+	}
+
+	"Off"
+	{
+		"pl"		"Wyłączone"
+	}
+
+	"Say all"
+	{
+		"pl"		"(Wszyscy) {1}"
+	}
+
+	"Chat admins"
+	{
+		"pl"		"(Administratorzy) {1}"
+	}
+
+	"Chat to admins"
+	{
+		"pl"		"(Do administratorów) {1}"
+	}
+
+	"Private say to"
+	{
+		"pl"		"(Prywatnie do {1}) {2}"
+	}
+
+}

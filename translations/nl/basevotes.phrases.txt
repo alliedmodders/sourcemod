@@ -1,0 +1,93 @@
+"Phrases"
+{
+	"Initiate Vote"
+	{
+		"nl"		"Stem gestart: {1}"
+	}
+
+	"Initiated Vote Map"
+	{
+		"nl"		"Map stem gestart."
+	}
+
+	"Initiated Vote Kick"
+	{
+		"nl"		"Kick stem gestart voor {1}."
+	}
+
+	"Initiated Vote Ban"
+	{
+		"nl"		"Ban stem gestart voor {1}."
+	}
+
+	"Map Vote"
+	{
+		"nl"		"Map Stem: {1}"
+	}
+
+	"Change Map To"
+	{
+		"nl"		"Verander map naar {1}?"
+	}
+
+	"Votekick Player"
+	{
+		"nl"		"Kick {1}?"
+	}
+
+	"Voteban Player"
+	{
+		"nl"		"Ban {1}?"
+	}
+
+	"Vote Successful"
+	{
+		"nl"		"Stemmen gelukt. (Ontvangen: {1}%% van {2} stemmen)"
+	}
+
+	"Vote Failed"
+	{
+		"nl"		"Stemmen mislukt. {1}%% stemmen nodig. ({2}%% van de {3} stemmen ontvangen)"
+	}
+
+	"Vote End"
+	{
+		"nl"		"Het antwoord op {1} is: {2}."
+	}
+
+	"Kick vote"
+	{
+		"nl"		"Kick stem"
+	}
+
+	"Ban vote"
+	{
+		"nl"		"Ban stem"
+	}
+
+	"Map vote"
+	{
+		"nl"		"Map stem"
+	}
+
+	"Confirm Vote"
+	{
+		"nl"		"Bevestig Stem"
+	}
+
+	"Map Vote In Use"
+	{
+		"nl"		"Een andere admin is bezig met het map vote menu."
+	}
+
+	"Please select a map"
+	{
+		"nl"		"Selecteer aub een map"
+	}
+
+	"Start the Vote"
+	{
+		"nl"		"Start de Stemming"
+	}
+
+}

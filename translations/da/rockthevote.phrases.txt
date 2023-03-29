@@ -1,0 +1,103 @@
+"Phrases"
+{
+	"Rock The Vote"
+	{
+		"da"		"Stem om bane:"
+	}
+
+	"RTV Not Allowed"
+	{
+		"da"		"Rock the Vote er ikke tilladt endnu."
+	}
+
+	"RTV Started"
+	{
+		"da"		"Rock the Vote er allerede startet."
+	}
+
+	"RTV Ended"
+	{
+		"da"		"RTV er allerede afsluttet, du kan ikke starte det igen, eller nominere baner."
+	}
+
+	"Already Voted"
+	{
+		"da"		"Du har allerede stemt på Rock The Vote."
+	}
+
+	"Minimal Players Not Met"
+	{
+		"da"		"Det minimalt krævede antal spillere er ikke nået."
+	}
+
+	"Map Already In Vote"
+	{
+		"da"		"Banen '{1}' er allerede i Rock the Vote listen."
+	}
+
+	"Map Inserted"
+	{
+		"da"		"Banen '{1}' blev tilføjet til Rock the Vote."
+	}
+
+	"RTV Requested"
+	{
+		"da"		"{1} vil stemme om ny bane. ({2} stemmer, {3} påkrævet)"
+	}
+
+	"RTV Vote Ready"
+	{
+		"da"		"RTV afstemning er igang!"
+	}
+
+	"Don't Change"
+	{
+		"da"		"Behold aktuelle bane"
+	}
+
+	"Already Nominated"
+	{
+		"da"		"Du har allerede nomineret en bane."
+	}
+
+	"Max Nominations"
+	{
+		"da"		"Det maximalt tilladte antal nomineringer er nået."
+	}
+
+	"Selected Map"
+	{
+		"da"		"{1} har valgt {2}"
+	}
+
+	"No Votes"
+	{
+		"da"		"Ingen stemmer modtaget for Rock the Vote, beholder aktuelle bane."
+	}
+
+	"Current Map Stays"
+	{
+		"da"		"Aktuelle bane fortsætter! Rock the Vote har talt!"
+	}
+
+	"Changing Maps"
+	{
+		"da"		"Skifter bane til {1}! Rock the Vote har talt!"
+	}
+
+	"Map Already Nominated"
+	{
+		"da"		"Banen som du valgte er allerede blevet nomineret."
+	}
+
+	"Map Nominated"
+	{
+		"da"		"{1} har nomineret {2} til Rock the Vote."
+	}
+
+	"Nominate Title"
+	{
+		"da"		"Nominer bane:"
+	}
+
+}

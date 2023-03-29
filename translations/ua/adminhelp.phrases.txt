@@ -1,0 +1,33 @@
+"Phrases"
+{
+	"SM help commands"
+	{
+		"ua"		"Довідка SourceMod: Опис Команд"
+	}
+
+	"No description available"
+	{
+		"ua"		"Опис відсутній"
+	}
+
+	"No commands available"
+	{
+		"ua"		"Немає доступних команд"
+	}
+
+	"Type sm_help to see more"
+	{
+		"ua"		"Введіть sm_help {1} щоб побачити більше команд"
+	}
+
+	"Entries n - m in page k"
+	{
+		"ua"		"Записи {1} - {2} на {3} сторінці"
+	}
+
+	"No matching results found"
+	{
+		"ua"		"Збігів не знайдено"
+	}
+
+}

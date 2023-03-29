@@ -1,0 +1,98 @@
+"Phrases"
+{
+	"Initiated Vote Gravity"
+	{
+		"nl"		"Zwaartekracht stem gestart."
+	}
+
+	"Initiated Vote Burn"
+	{
+		"nl"		"Vuur stem gestart voor {1}."
+	}
+
+	"Initiated Vote Slay"
+	{
+		"nl"		"Slay stem gestart voor {1}."
+	}
+
+	"Initiated Vote Alltalk"
+	{
+		"nl"		"Alltalk stem gestart."
+	}
+
+	"Initiated Vote FF"
+	{
+		"nl"		"Friendly fire stem gestart."
+	}
+
+	"Gravity Vote"
+	{
+		"nl"		"Zwaartekracht stem: {1}"
+	}
+
+	"Change Gravity To"
+	{
+		"nl"		"Verander zwaartekracht naar {1}?"
+	}
+
+	"Voteburn player"
+	{
+		"nl"		"Zet speler {1} in vuur?"
+	}
+
+	"Voteslay Player"
+	{
+		"nl"		"Slay {1}?"
+	}
+
+	"Votealltalk Off"
+	{
+		"nl"		"Zet alltalk uit? {1}"
+	}
+
+	"Votealltalk On"
+	{
+		"nl"		"Zet alltalk aan? {1}"
+	}
+
+	"Voteff Off"
+	{
+		"nl"		"Zet friendly fire uit? {1}"
+	}
+
+	"Voteff On"
+	{
+		"nl"		"Zet friendly fire aan? {1}"
+	}
+
+	"Gravity vote"
+	{
+		"nl"		"Zwaartekracht stem"
+	}
+
+	"Vote FF"
+	{
+		"nl"		"Stem FF"
+	}
+
+	"Burn vote"
+	{
+		"nl"		"Vuur stem"
+	}
+
+	"Alltalk vote"
+	{
+		"nl"		"Alltalk stem"
+	}
+
+	"Slay vote"
+	{
+		"nl"		"Slay stem"
+	}
+
+	"Slayed player"
+	{
+		"nl"		"Player \"{1}\" geslayed"
+	}
+
+}

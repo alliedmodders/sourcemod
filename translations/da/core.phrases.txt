@@ -1,0 +1,88 @@
+"Phrases"
+{
+	"No Access"
+	{
+		"da"		"Du har ikke adgang til denne kommando"
+	}
+
+	"Back"
+	{
+		"da"		"Tilbage"
+	}
+
+	"Next"
+	{
+		"da"		"Næste"
+	}
+
+	"Exit"
+	{
+		"da"		"Afslut"
+	}
+
+	"Previous"
+	{
+		"da"		"Tilbage"
+	}
+
+	"all players"
+	{
+		"da"		"alle spillere"
+	}
+
+	"all humans"
+	{
+		"da"		"alle mennesker"
+	}
+
+	"all bots"
+	{
+		"da"		"alle robotter"
+	}
+
+	"all dead players"
+	{
+		"da"		"alle døde spillere"
+	}
+
+	"all alive players"
+	{
+		"da"		"alle levende spillere"
+	}
+
+	"_s"
+	{
+		"da"		"{1}"
+	}
+
+	"all spectators"
+	{
+		"da"		"alle tilskuere"
+	}
+
+	"Vote Count"
+	{
+		"da"		"Stemmer: {1}/{2}, {3} sekunder tilbage "
+	}
+
+	"Voted For"
+	{
+		"da"		"{1} stemte på {2} "
+	}
+
+	"Changed Vote"
+	{
+		"da"		"{1} skiftede deres stemme til {2}"
+	}
+
+	"No Vote"
+	{
+		"da"		"Jeg ønsker ikke at stemme"
+	}
+
+	"Name Reserved"
+	{
+		"da"		"Dit navn er reserveret af SourceMod; sæt dit password for at benytte det."
+	}
+
+}

@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Vote Nextmap"
+	{
+		"chi"		"下一幅地图投票了!"
+	}
+
+	"Nextmap Voting Started"
+	{
+		"chi"		"下一幅地图投选已开始."
+	}
+
+	"Nextmap Voting Finished"
+	{
+		"chi"		" 地图投票已结束. 下一幅地图将为 {1}. ( 得票{2}%% , {3}票)"
+	}
+
+	"Current Map Extended"
+	{
+		"chi"		"当前地图已被延长."
+	}
+
+	"Extend Map"
+	{
+		"chi"		"延长当前地图"
+	}
+
+	"Dont Change"
+	{
+		"chi"		"请勿更换"
+	}
+
+	"Current Map Stays"
+	{
+		"chi"		"当前地图已被延长! 投票显示! (得票 {1}%% 共 {2} 票)"
+	}
+
+	"Changed Next Map"
+	{
+		"chi"		"更换下一幅地图为 \"{1}\"."
+	}
+
+	"Starting Runoff"
+	{
+		"chi"		"无地图获得 {1}%% 以上票数 ({2} [{3}%%] & {4} [{5}%%]), 开始决胜轮投票"
+	}
+
+}

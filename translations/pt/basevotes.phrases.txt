@@ -1,0 +1,93 @@
+"Phrases"
+{
+	"Initiate Vote"
+	{
+		"pt"		"Votação iniciada: {1}"
+	}
+
+	"Initiated Vote Map"
+	{
+		"pt"		"Votação de mapa iniciada."
+	}
+
+	"Initiated Vote Kick"
+	{
+		"pt"		"Votação para expulsar {1} iniciada. "
+	}
+
+	"Initiated Vote Ban"
+	{
+		"pt"		"Votacão para banir {1} iniciada. "
+	}
+
+	"Map Vote"
+	{
+		"pt"		"Votação para o mapa: {1} "
+	}
+
+	"Change Map To"
+	{
+		"pt"		"Alterar mapa para {1}?"
+	}
+
+	"Votekick Player"
+	{
+		"pt"		"Expulsar {1}?"
+	}
+
+	"Voteban Player"
+	{
+		"pt"		"Banir {1}?"
+	}
+
+	"Vote Successful"
+	{
+		"pt"		"Votação aprovada. ({1}%% de {2}) "
+	}
+
+	"Vote Failed"
+	{
+		"pt"		"Votação falhou. {1}%% votos necessários. ({2}%% de {3}) "
+	}
+
+	"Vote End"
+	{
+		"pt"		"A resposta para {1} é: {2}"
+	}
+
+	"Kick vote"
+	{
+		"pt"		"Votação de expulsão "
+	}
+
+	"Ban vote"
+	{
+		"pt"		"Votação para banir"
+	}
+
+	"Map vote"
+	{
+		"pt"		"Votação de mapa"
+	}
+
+	"Confirm Vote"
+	{
+		"pt"		"Confirmar voto"
+	}
+
+	"Map Vote In Use"
+	{
+		"pt"		"Outro administrador está usando o menu de votação de mapa no momento."
+	}
+
+	"Please select a map"
+	{
+		"pt"		"Por favor escolha um mapa"
+	}
+
+	"Start the Vote"
+	{
+		"pt"		"Iniciar a votação"
+	}
+
+}

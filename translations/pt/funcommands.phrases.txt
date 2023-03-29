@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"pt"		"Queimar jogador"
+	}
+
+	"FireBomb player"
+	{
+		"pt"		"Bomba de fogo no jogador"
+	}
+
+	"Freeze player"
+	{
+		"pt"		"Congelar jogador"
+	}
+
+	"FreezeBomb player"
+	{
+		"pt"		"Bomba de gelo no jogador"
+	}
+
+	"TimeBomb player"
+	{
+		"pt"		"Bomba relógio no jogador"
+	}
+
+	"Beacon player"
+	{
+		"pt"		"Sinalizar jogador"
+	}
+
+	"NoClip player"
+	{
+		"pt"		"Alterar NoClip em jogador"
+	}
+
+	"Blind player"
+	{
+		"pt"		"Cegar jogador"
+	}
+
+	"Drug player"
+	{
+		"pt"		"Drogar jogador"
+	}
+
+	"Gravity player"
+	{
+		"pt"		"Gravidade do jogador"
+	}
+
+	"Blind amount"
+	{
+		"pt"		"Quanto?"
+	}
+
+	"Fully blind"
+	{
+		"pt"		"Completamente cego"
+	}
+
+	"Half blind"
+	{
+		"pt"		"Parcialmente cego"
+	}
+
+	"No blind"
+	{
+		"pt"		"Visão normal"
+	}
+
+	"Gravity amount"
+	{
+		"pt"		"Gravidade?"
+	}
+
+	"Gravity Very High"
+	{
+		"pt"		"Gravidade muito alta"
+	}
+
+	"Gravity High"
+	{
+		"pt"		"Gravidade alta "
+	}
+
+	"Gravity Normal"
+	{
+		"pt"		"Gravidade normal "
+	}
+
+	"Gravity Low"
+	{
+		"pt"		"Gravidade baixa "
+	}
+
+	"Gravity Very Low"
+	{
+		"pt"		"Gravidade muito baixa"
+	}
+
+	"Set target on fire"
+	{
+		"pt"		"Ateou fogo em {1}."
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"pt"		"alterou bomba de fogo em {1}."
+	}
+
+	"Froze target"
+	{
+		"pt"		"{1} foi congelado(a)."
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"pt"		"alterou bomba de gelo em {1}."
+	}
+
+	"Toggled beacon on target"
+	{
+		"pt"		"alterou sinalizador em {1}."
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"pt"		"alterou bomba relógio em {1}."
+	}
+
+	"Toggled noclip on target"
+	{
+		"pt"		"alterou noclip em {1}."
+	}
+
+	"Toggled drug on target"
+	{
+		"pt"		"alterou drogas em {1}."
+	}
+
+	"Set blind on target"
+	{
+		"pt"		"cegou {1}."
+	}
+
+	"Set gravity on target"
+	{
+		"pt"		"alterou a gravidade de {1}. "
+	}
+
+	"Till Explodes"
+	{
+		"pt"		"{2} segundos até que {1} exploda."
+	}
+
+	"Unfrozen"
+	{
+		"pt"		"Você foi descongelado."
+	}
+
+	"You will be unfrozen"
+	{
+		"pt"		"Você será descongelado em {1} segundos."
+	}
+
+}

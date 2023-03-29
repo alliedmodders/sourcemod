@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"it"		"Incendia un giocatore"
+	}
+
+	"FireBomb player"
+	{
+		"it"		"Bomba incendiaria su un giocatore"
+	}
+
+	"Freeze player"
+	{
+		"it"		"Congela un giocatore"
+	}
+
+	"FreezeBomb player"
+	{
+		"it"		"Bomba congelante su un giocatore"
+	}
+
+	"TimeBomb player"
+	{
+		"it"		"Bomba a tempo su un giocatore"
+	}
+
+	"Beacon player"
+	{
+		"it"		"Tracciante su un giocatore"
+	}
+
+	"NoClip player"
+	{
+		"it"		"Noclip su un giocatore"
+	}
+
+	"Blind player"
+	{
+		"it"		"Acceca un giocatore"
+	}
+
+	"Drug player"
+	{
+		"it"		"Droga un giocatore"
+	}
+
+	"Gravity player"
+	{
+		"it"		"Gravità su un giocatore"
+	}
+
+	"Blind amount"
+	{
+		"it"		"Quanto accecato?"
+	}
+
+	"Fully blind"
+	{
+		"it"		"Completamente accecato"
+	}
+
+	"Half blind"
+	{
+		"it"		"Parzialmente accecato"
+	}
+
+	"No blind"
+	{
+		"it"		"Nessun accecamento"
+	}
+
+	"Gravity amount"
+	{
+		"it"		"Gravità?"
+	}
+
+	"Gravity Very High"
+	{
+		"it"		"Gravità molto alta"
+	}
+
+	"Gravity High"
+	{
+		"it"		"Alta gravità"
+	}
+
+	"Gravity Normal"
+	{
+		"it"		"Gravità normale"
+	}
+
+	"Gravity Low"
+	{
+		"it"		"Bassa gravità"
+	}
+
+	"Gravity Very Low"
+	{
+		"it"		"Gravità molto bassa"
+	}
+
+	"Set target on fire"
+	{
+		"it"		"{1} è stato incendiato."
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"it"		"Attivata/disattivata la bomba incendiaria su {1}."
+	}
+
+	"Froze target"
+	{
+		"it"		"{1} è stato congelato."
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"it"		"Attivata/disattivata la bomba congelante su {1}."
+	}
+
+	"Toggled beacon on target"
+	{
+		"it"		"Attivato/disattivato il tracciante su {1}."
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"it"		"Attivata/disattivata la bomba a tempo su {1}."
+	}
+
+	"Toggled noclip on target"
+	{
+		"it"		"Attivato/disattivato il noclip su {1}."
+	}
+
+	"Toggled drug on target"
+	{
+		"it"		"Attivata/disattivata la droga su {1}."
+	}
+
+	"Set blind on target"
+	{
+		"it"		"{1} è stato accecato."
+	}
+
+	"Set gravity on target"
+	{
+		"it"		"La gravità di {1} è stata modificata."
+	}
+
+	"Till Explodes"
+	{
+		"it"		"{2} secondo/i prima che {1} esploda."
+	}
+
+	"Unfrozen"
+	{
+		"it"		"Sei stato scongelato."
+	}
+
+	"You will be unfrozen"
+	{
+		"it"		"Verrai scongelato tra {1} secondo/i."
+	}
+
+}

@@ -1,0 +1,103 @@
+"Phrases"
+{
+	"Rock The Vote"
+	{
+		"fi"		"Rock the Vote: "
+	}
+
+	"RTV Not Allowed"
+	{
+		"fi"		"Rock the Vote ei ole vielä sallittu."
+	}
+
+	"RTV Started"
+	{
+		"fi"		"Rock the Vote on jo alkanut."
+	}
+
+	"RTV Ended"
+	{
+		"fi"		"Rock the Vote on jo loppunut, et voi aloittaa sitä uudelleen tai ehdottaa karttoja."
+	}
+
+	"Already Voted"
+	{
+		"fi"		"Olet jo äänestänyt Rock the Votessa."
+	}
+
+	"Minimal Players Not Met"
+	{
+		"fi"		"Pelaajien minimimäärää ei ole saavutettu."
+	}
+
+	"Map Already In Vote"
+	{
+		"fi"		"Kartta '{1}' on jo äänestyslistassa."
+	}
+
+	"Map Inserted"
+	{
+		"fi"		"Kartta '{1}' lisättiin Rock the Voteen."
+	}
+
+	"RTV Requested"
+	{
+		"fi"		"{1} haluaa Rock the Voten. ({2} ääntä, {3} vaaditaan)"
+	}
+
+	"RTV Vote Ready"
+	{
+		"fi"		"Aloitetaan Rock the Vote!"
+	}
+
+	"Don't Change"
+	{
+		"fi"		"Pidä nykyinen kartta"
+	}
+
+	"Already Nominated"
+	{
+		"fi"		"Olet jo ehdottanut karttaa."
+	}
+
+	"Max Nominations"
+	{
+		"fi"		"Ehdotuksien maksimimäärä saavutettu."
+	}
+
+	"Selected Map"
+	{
+		"fi"		"{1} valitsi {2}"
+	}
+
+	"No Votes"
+	{
+		"fi"		"Ei vastaanotettuja ääniä Rock the Voteen, nykyinen kartta jatkuu."
+	}
+
+	"Current Map Stays"
+	{
+		"fi"		"Nykyinen kartta jatkuu! Rock the Vote on puhunut!"
+	}
+
+	"Changing Maps"
+	{
+		"fi"		"Vaihdetaan kartaksi {1}! Rock the Vote on puhunut!"
+	}
+
+	"Map Already Nominated"
+	{
+		"fi"		"Kartta jonka valitsit on jo ehdotettuna."
+	}
+
+	"Map Nominated"
+	{
+		"fi"		"{1} ehdotti karttaa {2} Rock the Voteen."
+	}
+
+	"Nominate Title"
+	{
+		"fi"		"Ehdota karttaa: "
+	}
+
+}

@@ -1,0 +1,253 @@
+"Phrases"
+{
+	"Yes"
+	{
+		"lt"		"Taip"
+	}
+
+	"No"
+	{
+		"lt"		"Ne"
+	}
+
+	"No matching client"
+	{
+		"lt"		"Nepavyko rasti atitinkančio kliento."
+	}
+
+	"No matching clients"
+	{
+		"lt"		"Nepavyko rasti atitinkančių klientų."
+	}
+
+	"More than one client matches"
+	{
+		"lt"		"Daugiau nei vienas klientas atitiko kriterijų \"{1}\""
+	}
+
+	"More than one client matched"
+	{
+		"lt"		"Daugiau nei vienas klientas atitiko jūsų kriterijų."
+	}
+
+	"Player no longer available"
+	{
+		"lt"		"Žaidėjo, kurį pažymėjote nebėra"
+	}
+
+	"Kick player"
+	{
+		"lt"		"Pašalinti žaidėją"
+	}
+
+	"Kicked by admin"
+	{
+		"lt"		"Pašalintas administracinio personalo"
+	}
+
+	"Changing map"
+	{
+		"lt"		"Keičiamas žemėlapis į {1}..."
+	}
+
+	"Map was not found"
+	{
+		"lt"		"Žemėlapio {1} nepavyko rasti."
+	}
+
+	"Unable to target"
+	{
+		"lt"		"Jūs negalite nurodyti šio žaidėjo."
+	}
+
+	"Name"
+	{
+		"lt"		"Vardas"
+	}
+
+	"Access"
+	{
+		"lt"		"Prieiga"
+	}
+
+	"See console for output"
+	{
+		"lt"		"Patikrinkite konsolę dėl papildomos informacijos."
+	}
+
+	"Cannot target bot"
+	{
+		"lt"		"Neįmanoma atlikti šios komandos bot'ui."
+	}
+
+	"Unable to find cvar"
+	{
+		"lt"		"Nepavyko rasti tokios komandos: {1}"
+	}
+
+	"No access to cvar"
+	{
+		"lt"		"Jūs neturite leidimo šiai komandai."
+	}
+
+	"Value of cvar"
+	{
+		"lt"		"Nustatymo \"{1}\" reikšmė: \"{2}\""
+	}
+
+	"Cvar changed"
+	{
+		"lt"		"Pakeistas nustatymas \"{1}\" į \"{2}\"."
+	}
+
+	"Config not found"
+	{
+		"lt"		"Nustatymų failas \"{1}\" nerastas."
+	}
+
+	"Executed config"
+	{
+		"lt"		"Įvykdytas nustatymas \"{1}\"."
+	}
+
+	"Admin cache refreshed"
+	{
+		"lt"		"Administracinio personalo sąrašas atnaujintas."
+	}
+
+	"Invalid Amount"
+	{
+		"lt"		"Neteisinga suma nurodyta"
+	}
+
+	"Cannot be performed on dead"
+	{
+		"lt"		"Šis veiksmas negali būti atliekamas su neaktyviu klientu \"{1}\""
+	}
+
+	"Player has since died"
+	{
+		"lt"		"Veiksmas negali būti atliktas, kadangi žaidėjas nuo to laiko nebeaktyvus."
+	}
+
+	"Vote in Progress"
+	{
+		"lt"		"Šiuo metu vyksta balsavimas."
+	}
+
+	"Vote Not In Progress"
+	{
+		"lt"		"Šiuo metu nevyksta balsavimas."
+	}
+
+	"Cancelled Vote"
+	{
+		"lt"		"Balsavimas atšauktas"
+	}
+
+	"Cancel vote"
+	{
+		"lt"		"Atšaukti balsavimą"
+	}
+
+	"Vote Select"
+	{
+		"lt"		"{1} pasirinko {2}."
+	}
+
+	"No Votes Cast"
+	{
+		"lt"		"Balsavimų nebuvo iškviesta."
+	}
+
+	"Vote Delay Minutes"
+	{
+		"lt"		"Jūs privalote palaukti {1} minutes prieš pradėdami naują balsavimą."
+	}
+
+	"Vote Delay Seconds"
+	{
+		"lt"		"Jūs privalote palaukti {1} sekundes prieš pradėdami naują balsavimą."
+	}
+
+	"Could not connect to database"
+	{
+		"lt"		"Nepavyko prisijungti prie duomenų bazės."
+	}
+
+	"Failed to query database"
+	{
+		"lt"		"Nepavyko duomenų bazės užklausa."
+	}
+
+	"Invalid SteamID specified"
+	{
+		"lt"		"Jūs nurodėte neteisingą SteamID (jis turi prasidėti 'STEAM_0:')."
+	}
+
+	"Reload admins"
+	{
+		"lt"		"Pakartotinai įkrauti administracinį personalą"
+	}
+
+	"Command is in-game only"
+	{
+		"lt"		"Ši komanda galima tik žaidimo metu."
+	}
+
+	"Target must be dead"
+	{
+		"lt"		"Komanda gali būti naudojama tik negyviems žaidėjams."
+	}
+
+	"Target must be alive"
+	{
+		"lt"		"Komanda gali būti naudojama tik gyviems žaidėjams."
+	}
+
+	"Target is not in game"
+	{
+		"lt"		"Nurodytas žaidėjas dar nėra pilnai prisijungęs į žaidimą."
+	}
+
+	"Played Sound"
+	{
+		"lt"		"Paleistas garsas žaidėjui '{1}'"
+	}
+
+	"Slapped player"
+	{
+		"lt"		"Stuktelėjo žaidėją '{1}'"
+	}
+
+	"Slayed player"
+	{
+		"lt"		"Patiesė žaidėją '{1}'"
+	}
+
+	"Kicked player"
+	{
+		"lt"		"Pašalintas žaidėjas '{1}'"
+	}
+
+	"Cannot participate in vote"
+	{
+		"lt"		"Jūs negalite dalyvauti šiame balsavime."
+	}
+
+	"Cannot change vote"
+	{
+		"lt"		"Jūs negalite pakeisti savo pasirinkimo šiam balsavimui."
+	}
+
+	"On"
+	{
+		"lt"		"Ijungta"
+	}
+
+	"Off"
+	{
+		"lt"		"Išjungta"
+	}
+
+}

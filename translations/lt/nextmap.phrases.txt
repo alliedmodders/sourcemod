@@ -1,0 +1,43 @@
+"Phrases"
+{
+	"Next Map"
+	{
+		"lt"		"Sekantis žemėlapis: {1}"
+	}
+
+	"Map History"
+	{
+		"lt"		"Žemėlapių Istorija"
+	}
+
+	"Map"
+	{
+		"lt"		"[Žemėlapis]"
+	}
+
+	"Started"
+	{
+		"lt"		"[Prasidėjo]"
+	}
+
+	"Played Time"
+	{
+		"lt"		"[Žaista Laiko]"
+	}
+
+	"Reason"
+	{
+		"lt"		"[Pasibaigimo priežastis]"
+	}
+
+	"Current Map"
+	{
+		"lt"		"Dabartinis Žemėlapis"
+	}
+
+	"ago"
+	{
+		"lt"		"prieš"
+	}
+
+}

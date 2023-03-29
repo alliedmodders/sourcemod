@@ -1,0 +1,93 @@
+"Phrases"
+{
+	"Initiate Vote"
+	{
+		"fr"		"Propose un vote: {1}"
+	}
+
+	"Initiated Vote Map"
+	{
+		"fr"		" a commencé un vote pour changer la map "
+	}
+
+	"Initiated Vote Kick"
+	{
+		"fr"		"a commencé un vote pour kicker {1} ."
+	}
+
+	"Initiated Vote Ban"
+	{
+		"fr"		"a commencé un vote pour bannir {1} ."
+	}
+
+	"Map Vote"
+	{
+		"fr"		"Vote pour la map: {1} "
+	}
+
+	"Change Map To"
+	{
+		"fr"		"Changer la Map pour {1}?"
+	}
+
+	"Votekick Player"
+	{
+		"fr"		"Kicker {1}?"
+	}
+
+	"Voteban Player"
+	{
+		"fr"		"Bannir {1}?"
+	}
+
+	"Vote Successful"
+	{
+		"fr"		"le vote a réussi. (Reçu {1}%% d'un total de {2} votes) "
+	}
+
+	"Vote Failed"
+	{
+		"fr"		"Le vote a échoué. {1}%% de votes nécessaires. (Reçu {2}%% d'un total de {3} votes) "
+	}
+
+	"Vote End"
+	{
+		"fr"		"La réponse à {1} est: {2}."
+	}
+
+	"Kick vote"
+	{
+		"fr"		"Vote pour kicker"
+	}
+
+	"Ban vote"
+	{
+		"fr"		"Vote pour bannir"
+	}
+
+	"Map vote"
+	{
+		"fr"		"Vote pour une map"
+	}
+
+	"Confirm Vote"
+	{
+		"fr"		"Confirmer le Vote"
+	}
+
+	"Map Vote In Use"
+	{
+		"fr"		"Un Vote Map est déjà en préparation"
+	}
+
+	"Please select a map"
+	{
+		"fr"		"Veuillez selectionner une map"
+	}
+
+	"Start the Vote"
+	{
+		"fr"		"Lancer le vote"
+	}
+
+}

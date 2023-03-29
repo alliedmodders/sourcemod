@@ -1,0 +1,93 @@
+"Phrases"
+{
+	"Initiate Vote"
+	{
+		"zho"		"已啟動投票: {1} "
+	}
+
+	"Initiated Vote Map"
+	{
+		"zho"		"已啟動地圖投票. "
+	}
+
+	"Initiated Vote Kick"
+	{
+		"zho"		"已啟動踢出 {1} 的投票. "
+	}
+
+	"Initiated Vote Ban"
+	{
+		"zho"		"已啟動封鎖 {1} 的投票"
+	}
+
+	"Map Vote"
+	{
+		"zho"		"地圖投票: {1} "
+	}
+
+	"Change Map To"
+	{
+		"zho"		"更换地圖為 {1}? "
+	}
+
+	"Votekick Player"
+	{
+		"zho"		"踢出 {1}?"
+	}
+
+	"Voteban Player"
+	{
+		"zho"		"封鎖 {1}?"
+	}
+
+	"Vote Successful"
+	{
+		"zho"		"投票通過. (同意 {1}%% 總共 {2} 票) "
+	}
+
+	"Vote Failed"
+	{
+		"zho"		"投票失敗. 至少需要 {1}%% 支持. (同意 {2}%% 總共 {3} 票)"
+	}
+
+	"Vote End"
+	{
+		"zho"		"投票 {1} 的结果為: {2}. "
+	}
+
+	"Kick vote"
+	{
+		"zho"		"投票踢出玩家"
+	}
+
+	"Ban vote"
+	{
+		"zho"		"投票封鎖玩家"
+	}
+
+	"Map vote"
+	{
+		"zho"		"地圖投票"
+	}
+
+	"Confirm Vote"
+	{
+		"zho"		"確認投票 "
+	}
+
+	"Map Vote In Use"
+	{
+		"zho"		"有其他管理員正在使用投票功能"
+	}
+
+	"Please select a map"
+	{
+		"zho"		"請選擇地圖"
+	}
+
+	"Start the Vote"
+	{
+		"zho"		"發起投票"
+	}
+
+}

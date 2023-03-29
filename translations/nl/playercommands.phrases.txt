@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Slap player"
+	{
+		"nl"		"Slap speler"
+	}
+
+	"Slap damage"
+	{
+		"nl"		"Slap schade"
+	}
+
+	"Slay player"
+	{
+		"nl"		"Slay speler"
+	}
+
+	"Slapped target"
+	{
+		"nl"		"Speler {1} geslagen."
+	}
+
+	"Slayed target"
+	{
+		"nl"		"Speler {1} gedood."
+	}
+
+	"Name changed"
+	{
+		"nl"		"Een admin heeft je naam veranderd"
+	}
+
+	"Renamed target"
+	{
+		"nl"		"Hernoemd {1}."
+	}
+
+	"Rename player"
+	{
+		"nl"		"Hernoem speler"
+	}
+
+	"Dead Player Rename"
+	{
+		"nl"		"{1} krijgt een nieuwe naam de volgende ronde."
+	}
+
+}

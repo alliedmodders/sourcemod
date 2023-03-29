@@ -1,0 +1,103 @@
+"Phrases"
+{
+	"Rock The Vote"
+	{
+		"zho"		"Rock The Vote:"
+	}
+
+	"RTV Not Allowed"
+	{
+		"zho"		"並未可以 Rock the Vote."
+	}
+
+	"RTV Started"
+	{
+		"zho"		"Rock the Vote 已開始."
+	}
+
+	"RTV Ended"
+	{
+		"zho"		"RTV 已結束, 你不可再開始 RTV 或提名地圖."
+	}
+
+	"Already Voted"
+	{
+		"zho"		"你已在 Rock the Vote 投過票了. (現有{1}票,仍需{2}票)"
+	}
+
+	"Minimal Players Not Met"
+	{
+		"zho"		"並未得到所需玩家人數."
+	}
+
+	"Map Already In Vote"
+	{
+		"zho"		"地圖 '{1}' 已在 Rock the Vote 列表之中."
+	}
+
+	"Map Inserted"
+	{
+		"zho"		"地圖 '{1}' 加進了 Rock the Vote."
+	}
+
+	"RTV Requested"
+	{
+		"zho"		"{1} 想要 Rock the Vote. (現有 {2} 票, 至少需要 {3} 票) "
+	}
+
+	"RTV Vote Ready"
+	{
+		"zho"		"Rock the Vote 準備好了!"
+	}
+
+	"Don't Change"
+	{
+		"zho"		"保留現在的地圖"
+	}
+
+	"Already Nominated"
+	{
+		"zho"		"你已提名了一幅地圖"
+	}
+
+	"Max Nominations"
+	{
+		"zho"		"提名數目已達至上限."
+	}
+
+	"Selected Map"
+	{
+		"zho"		"{1} 揀選了 {2} "
+	}
+
+	"No Votes"
+	{
+		"zho"		"Rock the Vote 未得到任何投票, 繼續現在的地圖."
+	}
+
+	"Current Map Stays"
+	{
+		"zho"		"繼續現在的地圖! Rock the Vote 已有結果!"
+	}
+
+	"Changing Maps"
+	{
+		"zho"		"正更變地圖為 {1}! Rock the Vote 已有結果!"
+	}
+
+	"Map Already Nominated"
+	{
+		"zho"		"你所揀選的地圖已被提名."
+	}
+
+	"Map Nominated"
+	{
+		"zho"		"{1} 已將 {2} 提名至 Rock the Vote."
+	}
+
+	"Nominate Title"
+	{
+		"zho"		"提名地圖:"
+	}
+
+}

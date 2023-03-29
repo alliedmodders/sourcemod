@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Cookie List"
+	{
+		"de"		"SourceMod-Cookie-Liste"
+	}
+
+	"Printing Cookie List"
+	{
+		"de"		"Ausgabe der Cookie-Liste in der Konsole "
+	}
+
+	"Cookie not Found"
+	{
+		"de"		"Cookie \"{1}\" konnte nicht gefunden werden"
+	}
+
+	"Cookie Value"
+	{
+		"de"		"Der Wert von {1} ist {2}"
+	}
+
+	"Protected Cookie"
+	{
+		"de"		"Der Wert des geschützten Cookie \"{1}\" kann nicht geändert werden "
+	}
+
+	"Cookie Changed Value"
+	{
+		"de"		"Wert des Cookies wurde von \"{1}\" zu \"{2}\" geändert "
+	}
+
+	"No Console"
+	{
+		"de"		"Einstellungsmenü kann nicht in der Konsole angezeigt werden "
+	}
+
+	"Choose Option"
+	{
+		"de"		"Wähle Option"
+	}
+
+	"Client Settings"
+	{
+		"de"		"Client-Einstellungen"
+	}
+
+}

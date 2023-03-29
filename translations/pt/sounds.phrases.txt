@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Played sound to target"
+	{
+		"pt"		"Som tocado para {1}"
+	}
+
+}

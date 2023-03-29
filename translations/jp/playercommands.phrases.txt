@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Slap player"
+	{
+		"jp"		"プレイヤーを叩く"
+	}
+
+	"Slap damage"
+	{
+		"jp"		"叩くダメージ"
+	}
+
+	"Slay player"
+	{
+		"jp"		"プレイヤーを殺害"
+	}
+
+	"Slapped target"
+	{
+		"jp"		"{1}を叩きました。"
+	}
+
+	"Slayed target"
+	{
+		"jp"		"{1}を殺害しました。"
+	}
+
+	"Name changed"
+	{
+		"jp"		"管理者があなたの名前を変更しました。"
+	}
+
+	"Renamed target"
+	{
+		"jp"		"リネーム対象"
+	}
+
+	"Rename player"
+	{
+		"jp"		"プレイヤーをリネーム"
+	}
+
+	"Dead Player Rename"
+	{
+		"jp"		"{1} は次のラウンドで名前が変更されます。"
+	}
+
+}

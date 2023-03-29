@@ -1,0 +1,43 @@
+"Phrases"
+{
+	"Next Map"
+	{
+		"hu"		"A következő pálya: {1}"
+	}
+
+	"Map History"
+	{
+		"hu"		"Palya tortenelem"
+	}
+
+	"Map"
+	{
+		"hu"		"[Palya]"
+	}
+
+	"Started"
+	{
+		"hu"		"[Indult]"
+	}
+
+	"Played Time"
+	{
+		"hu"		"[Jatszott ido]"
+	}
+
+	"Reason"
+	{
+		"hu"		"[Valtas oka]"
+	}
+
+	"Current Map"
+	{
+		"hu"		"Jelenlegi palya"
+	}
+
+	"ago"
+	{
+		"hu"		"ezelott"
+	}
+
+}

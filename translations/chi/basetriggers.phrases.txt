@@ -1,0 +1,108 @@
+"Phrases"
+{
+	"Timeleft"
+	{
+		"chi"		"当前地图剩余时间: "
+	}
+
+	"Thetime"
+	{
+		"chi"		"当前服务器时间为 {1}"
+	}
+
+	"Friendly Fire On"
+	{
+		"chi"		"友军伤害已开启"
+	}
+
+	"Friendly Fire Off"
+	{
+		"chi"		"友军伤害已关闭"
+	}
+
+	"Current Map"
+	{
+		"chi"		"当前地图为 {1}."
+	}
+
+	"LastRound"
+	{
+		"chi"		"最后一局了!!"
+	}
+
+	"NoTimelimit"
+	{
+		"chi"		"当前地图无时间限制"
+	}
+
+	"Next Map"
+	{
+		"chi"		"下一幅地图: {1}"
+	}
+
+	"Pending Vote"
+	{
+		"chi"		"投票正在进行中"
+	}
+
+	"WinLimitAppend"
+	{
+		"chi"		", 或当某方赢得一局后更换地图"
+	}
+
+	"WinLimit"
+	{
+		"chi"		"地图将于某方赢得一局后更换"
+	}
+
+	"MaxRoundsAppend"
+	{
+		"chi"		", 或再过一局后更换地图"
+	}
+
+	"MaxRounds"
+	{
+		"chi"		"地图将再过一局后更换"
+	}
+
+	"FragLimitAppend"
+	{
+		"chi"		", 或当某玩家杀满一人后更换地图"
+	}
+
+	"FragLimit"
+	{
+		"chi"		"地图将于某玩家杀满一人后更换"
+	}
+
+	"WinLimitAppendPlural"
+	{
+		"chi"		", 或当某方赢得 {1} 局后更换地图"
+	}
+
+	"WinLimitPlural"
+	{
+		"chi"		"地图将于某方赢得 {1} 局后更换"
+	}
+
+	"MaxRoundsAppendPlural"
+	{
+		"chi"		", 或再过 {1} 局后更换地图"
+	}
+
+	"MaxRoundsPlural"
+	{
+		"chi"		"地图将再过 {1} 局后更换"
+	}
+
+	"FragLimitAppendPlural"
+	{
+		"chi"		", 或当某玩家杀满 {1} 人后更换地图"
+	}
+
+	"FragLimitPlural"
+	{
+		"chi"		"地图将于某玩家杀满 {1} 人后更换"
+	}
+
+}

@@ -1,0 +1,33 @@
+"Phrases"
+{
+	"SM help commands"
+	{
+		"sv"		"SourceMod hjälp: Information om kommandon"
+	}
+
+	"No description available"
+	{
+		"sv"		" Ingen beskrivning tillgänglig "
+	}
+
+	"No commands available"
+	{
+		"sv"		"Inga kommandon tillgängliga "
+	}
+
+	"Type sm_help to see more"
+	{
+		"sv"		"Skriv sm_help {1} för att se mer kommandon"
+	}
+
+	"Entries n - m in page k"
+	{
+		"sv"		"Post {1} - {2} på sidan {3}"
+	}
+
+	"No matching results found"
+	{
+		"sv"		" Hittade inga matchande resultat "
+	}
+
+}

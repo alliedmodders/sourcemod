@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Vote Nextmap"
+	{
+		"fi"		"Äänestä seuraavaa karttaa!"
+	}
+
+	"Nextmap Voting Started"
+	{
+		"fi"		"Seuraavan kartan äänestys alkoi."
+	}
+
+	"Nextmap Voting Finished"
+	{
+		"fi"		"Karttaäänestys päättyi. Seuraavaksi kartaksi valittiin {1}. (Saatiin {2}%% {3} äänestä)"
+	}
+
+	"Current Map Extended"
+	{
+		"fi"		"Tämänhetkistä karttaa jatketaan. (Saatiin {1}%% {2} äänestä)"
+	}
+
+	"Extend Map"
+	{
+		"fi"		"Jatka tämänhetkistä karttaa"
+	}
+
+	"Dont Change"
+	{
+		"fi"		"Älä vaihda"
+	}
+
+	"Current Map Stays"
+	{
+		"fi"		"Tämänhetkinen kartta jatkuu! Äänestys on puhunut! (Saatiin {1}%% {2} äänestä)"
+	}
+
+	"Changed Next Map"
+	{
+		"fi"		"Vaihdettiin seuraavaksi kartaksi \"{1}\"."
+	}
+
+	"Starting Runoff"
+	{
+		"fi"		"Yksikään kartoista ei saanut yli {1}%% äänistä ({2} [{3}%%] & {4} [{5}%%]), aloitetaan lisä-äänestys"
+	}
+
+}

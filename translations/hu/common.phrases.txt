@@ -1,0 +1,253 @@
+"Phrases"
+{
+	"Yes"
+	{
+		"hu"		"Igen"
+	}
+
+	"No"
+	{
+		"hu"		"Nem"
+	}
+
+	"No matching client"
+	{
+		"hu"		"Nem találom a célpontot"
+	}
+
+	"No matching clients"
+	{
+		"hu"		"Nem találom a célpontokat"
+	}
+
+	"More than one client matches"
+	{
+		"hu"		"Több mint 1 kliens felelt meg a  \"{1}\" kritériumoknak"
+	}
+
+	"More than one client matched"
+	{
+		"hu"		"Több mint 1 kliens felelt meg a kritériumoknak"
+	}
+
+	"Player no longer available"
+	{
+		"hu"		"A játékos nem elérhető"
+	}
+
+	"Kick player"
+	{
+		"hu"		"Játékos kirúgása"
+	}
+
+	"Kicked by admin"
+	{
+		"hu"		"Az admin kirugott téged"
+	}
+
+	"Changing map"
+	{
+		"hu"		"Pályaváltás a {1} -ra..."
+	}
+
+	"Map was not found"
+	{
+		"hu"		"{1} pálya nem található"
+	}
+
+	"Unable to target"
+	{
+		"hu"		"Nem tudod befogni ezt a játékost!"
+	}
+
+	"Name"
+	{
+		"hu"		"Név"
+	}
+
+	"Access"
+	{
+		"hu"		"Hozzáférés"
+	}
+
+	"See console for output"
+	{
+		"hu"		"Nézd meg a konzolt az infókért"
+	}
+
+	"Cannot target bot"
+	{
+		"hu"		"Nem lehet végrehajtani egy Bot-on!"
+	}
+
+	"Unable to find cvar"
+	{
+		"hu"		"{1} parancs nem található"
+	}
+
+	"No access to cvar"
+	{
+		"hu"		"Parancs használatához nincs jogod!"
+	}
+
+	"Value of cvar"
+	{
+		"hu"		"\"{1}\" parancs értéke: \"{2}\""
+	}
+
+	"Cvar changed"
+	{
+		"hu"		"\"{1}\" parancs megváltoztatva \"{2}\" -re"
+	}
+
+	"Config not found"
+	{
+		"hu"		"\"{1}\" konfig file nem található"
+	}
+
+	"Executed config"
+	{
+		"hu"		"\"{1}\" konfig végrehajtva"
+	}
+
+	"Admin cache refreshed"
+	{
+		"hu"		"Admin adatbázis frissitve!"
+	}
+
+	"Invalid Amount"
+	{
+		"hu"		"Nem valós érték"
+	}
+
+	"Cannot be performed on dead"
+	{
+		"hu"		"{1} halott. A parancsot nem lehet végrehajtani"
+	}
+
+	"Player has since died"
+	{
+		"hu"		"Amig halott nem lehet végrehajtani a parancsot"
+	}
+
+	"Vote in Progress"
+	{
+		"hu"		"Már fut egy szavazás!"
+	}
+
+	"Vote Not In Progress"
+	{
+		"hu"		"Nincs futó szavazás!"
+	}
+
+	"Cancelled Vote"
+	{
+		"hu"		"Szavazás visszavonva"
+	}
+
+	"Cancel vote"
+	{
+		"hu"		"Szavazás visszavonása"
+	}
+
+	"Vote Select"
+	{
+		"hu"		"{1} - {2} -t választotta"
+	}
+
+	"No Votes Cast"
+	{
+		"hu"		"Nincs érvényes szavazat"
+	}
+
+	"Vote Delay Minutes"
+	{
+		"hu"		"Várnod kell még {1} percig, hogy szavazást indits!"
+	}
+
+	"Vote Delay Seconds"
+	{
+		"hu"		"Várnod kell még {1} másodpercet, hogy szavazást indits!"
+	}
+
+	"Could not connect to database"
+	{
+		"hu"		"Nincs kapcsolat az adatbázissal!"
+	}
+
+	"Failed to query database"
+	{
+		"hu"		"Hibás lekérdezés!"
+	}
+
+	"Invalid SteamID specified"
+	{
+		"hu"		"Nem valós Steam azonositót adtál meg ( 'STEAM_0:' val kell kezdeni!)"
+	}
+
+	"Reload admins"
+	{
+		"hu"		"Adminok újraolvasása"
+	}
+
+	"Command is in-game only"
+	{
+		"hu"		"Csak játékban használható parancs!"
+	}
+
+	"Target must be dead"
+	{
+		"hu"		"Csak halottakon használható parancs"
+	}
+
+	"Target must be alive"
+	{
+		"hu"		"Csak élőkön használható parancs!"
+	}
+
+	"Target is not in game"
+	{
+		"hu"		"A megadott játékos még nem lépett be a játékba teljesen!"
+	}
+
+	"Played Sound"
+	{
+		"hu"		"Hang lejátszva {1}-nak"
+	}
+
+	"Slapped player"
+	{
+		"hu"		"{1} megütve"
+	}
+
+	"Slayed player"
+	{
+		"hu"		"{1} kivégezve"
+	}
+
+	"Kicked player"
+	{
+		"hu"		"{1} kirúgva"
+	}
+
+	"Cannot participate in vote"
+	{
+		"hu"		"Nem vehetsz részt a szavazásban"
+	}
+
+	"Cannot change vote"
+	{
+		"hu"		"Nem változtathatod meg a szavazatod!"
+	}
+
+	"On"
+	{
+		"hu"		"Be"
+	}
+
+	"Off"
+	{
+		"hu"		"Ki"
+	}
+
+}

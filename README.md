@@ -16,6 +16,7 @@ Development
 - [SourcePawn scripting](https://wiki.alliedmods.net/Category:SourceMod_Scripting): SourcePawn examples and introduction to the language
 - [SourceMod plugin API](https://sm.alliedmods.net/new-api): Online SourceMod plugin API reference generated from the include files
 - [SourceMod extension development](https://wiki.alliedmods.net/Category:SourceMod_Development): C++ examples and introduction to various extension interfaces
+- [Translation project](https://github.com/orgs/alliedmodders/projects/1): Help [translate SourceMod](https://wiki.alliedmods.net/Translations_(SourceMod_Scripting)) into your language
 
 Contact
 -------

@@ -1,0 +1,28 @@
+"Phrases"
+{
+	"Slap player"
+	{
+		"pl"		"Uderz gracza"
+	}
+
+	"Slap damage"
+	{
+		"pl"		"Siła uderzenia"
+	}
+
+	"Slay player"
+	{
+		"pl"		"Zgładź gracza"
+	}
+
+	"Slapped target"
+	{
+		"pl"		"Uderzono {1}."
+	}
+
+	"Slayed target"
+	{
+		"pl"		"Zgładzono {1}."
+	}
+
+}

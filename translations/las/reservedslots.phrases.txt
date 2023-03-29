@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Slot reserved"
+	{
+		"las"		"Desconectado por reserva de slot"
+	}
+
+}

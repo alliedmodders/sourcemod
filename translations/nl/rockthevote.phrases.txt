@@ -1,0 +1,103 @@
+"Phrases"
+{
+	"Rock The Vote"
+	{
+		"nl"		"Rock The Vote:"
+	}
+
+	"RTV Not Allowed"
+	{
+		"nl"		"Rock the Vote is nog niet beschikbaar."
+	}
+
+	"RTV Started"
+	{
+		"nl"		"Rock the Vote is al gestart."
+	}
+
+	"RTV Ended"
+	{
+		"nl"		"RTV is al beeindigd, je kunt dit niet nogmaals starten."
+	}
+
+	"Already Voted"
+	{
+		"nl"		"Je hebt al gestemd voor Rock the Vote."
+	}
+
+	"Minimal Players Not Met"
+	{
+		"nl"		"Het minimum aantal spelers is nog niet bereikt."
+	}
+
+	"Map Already In Vote"
+	{
+		"nl"		"Map '{1}' staat al in de Rock the Vote lijst."
+	}
+
+	"Map Inserted"
+	{
+		"nl"		"Map '{1}' toegevoegd aan Rock the Vote."
+	}
+
+	"RTV Requested"
+	{
+		"nl"		"{1} wil een rock the vote starten, ({2} stemmen, {3} nodig) "
+	}
+
+	"RTV Vote Ready"
+	{
+		"nl"		"Rocking the Vote!"
+	}
+
+	"Don't Change"
+	{
+		"nl"		"Behoud de huidige Map"
+	}
+
+	"Already Nominated"
+	{
+		"nl"		"Je hebt al een map benoemd."
+	}
+
+	"Max Nominations"
+	{
+		"nl"		"Maximale nominaties bereikt."
+	}
+
+	"Selected Map"
+	{
+		"nl"		"{1} heeft {2} geselecteerd"
+	}
+
+	"No Votes"
+	{
+		"nl"		"Geen stemmen ontvangen voor Rock the Vote, huidige map blijft."
+	}
+
+	"Current Map Stays"
+	{
+		"nl"		"Huidige map gaat verder! Rock the Vote heeft gesproken!"
+	}
+
+	"Changing Maps"
+	{
+		"nl"		"Map wordt veranderd naar {1}! Rock The Vote heeft gesproken!"
+	}
+
+	"Map Already Nominated"
+	{
+		"nl"		"De map die je hebt gekozen is al benoemd."
+	}
+
+	"Map Nominated"
+	{
+		"nl"		"{1} heeft {2} benoemd voor Rock the Vote."
+	}
+
+	"Nominate Title"
+	{
+		"nl"		"Map Nominatie:"
+	}
+
+}

@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Slap player"
+	{
+		"vi"		"Tát người chơi"
+	}
+
+	"Slap damage"
+	{
+		"vi"		"Sát thương tát"
+	}
+
+	"Slay player"
+	{
+		"vi"		"Giết người chơi"
+	}
+
+	"Slapped target"
+	{
+		"vi"		"Đã tát {1}."
+	}
+
+	"Slayed target"
+	{
+		"vi"		"Đã giết {1}."
+	}
+
+	"Name changed"
+	{
+		"vi"		"Một quản trị viên đã thay đổi tên bạn."
+	}
+
+	"Renamed target"
+	{
+		"vi"		"Đã đổi tên {1}."
+	}
+
+	"Rename player"
+	{
+		"vi"		"Đổi tên người chơi"
+	}
+
+	"Dead Player Rename"
+	{
+		"vi"		"{1} sẽ được đổi tên vào ván tiếp theo."
+	}
+
+}

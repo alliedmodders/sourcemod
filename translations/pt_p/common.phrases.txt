@@ -1,0 +1,253 @@
+"Phrases"
+{
+	"Yes"
+	{
+		"pt_p"		"Sim"
+	}
+
+	"No"
+	{
+		"pt_p"		"Não"
+	}
+
+	"No matching client"
+	{
+		"pt_p"		"Nenhum jogador encontrado."
+	}
+
+	"No matching clients"
+	{
+		"pt_p"		"Nenhum jogador encontrado."
+	}
+
+	"More than one client matches"
+	{
+		"pt_p"		"Mais de um jogador corresponde ao padrão \"{1}\""
+	}
+
+	"More than one client matched"
+	{
+		"pt_p"		"Mais de um jogador corresponde ao padrão especificado."
+	}
+
+	"Player no longer available"
+	{
+		"pt_p"		"O jogador selecionado não está mais disponível."
+	}
+
+	"Kick player"
+	{
+		"pt_p"		"Expulsar jogador"
+	}
+
+	"Kicked by admin"
+	{
+		"pt_p"		"Expulso por administrador"
+	}
+
+	"Changing map"
+	{
+		"pt_p"		"A mudar mapa para {1}..."
+	}
+
+	"Map was not found"
+	{
+		"pt_p"		"O mapa {1} não foi encontrado."
+	}
+
+	"Unable to target"
+	{
+		"pt_p"		"Não podes ter esse jogador como alvo."
+	}
+
+	"Name"
+	{
+		"pt_p"		"Nome"
+	}
+
+	"Access"
+	{
+		"pt_p"		"Acesso"
+	}
+
+	"See console for output"
+	{
+		"pt_p"		"Verifica a consola para veres a resposta."
+	}
+
+	"Cannot target bot"
+	{
+		"pt_p"		"Este comando não pode ser aplicado num bot."
+	}
+
+	"Unable to find cvar"
+	{
+		"pt_p"		"Cvar {1} não encontrada"
+	}
+
+	"No access to cvar"
+	{
+		"pt_p"		"Não tens acesso a esta cvar."
+	}
+
+	"Value of cvar"
+	{
+		"pt_p"		"Valor da cvar \"{1}\": \"{2}\""
+	}
+
+	"Cvar changed"
+	{
+		"pt_p"		"Cvar \"{1}\" alterada para \"{2}\"."
+	}
+
+	"Config not found"
+	{
+		"pt_p"		"Ficheiro de configurações \"{1}\" não encontrado."
+	}
+
+	"Executed config"
+	{
+		"pt_p"		"Configuração \"{1}\" executada."
+	}
+
+	"Admin cache refreshed"
+	{
+		"pt_p"		"A cache de administradores foi atualizada."
+	}
+
+	"Invalid Amount"
+	{
+		"pt_p"		"Quantidade inválida especificada."
+	}
+
+	"Cannot be performed on dead"
+	{
+		"pt_p"		"Esta ação não pode ser aplicada no jogador morto \"{1}\""
+	}
+
+	"Player has since died"
+	{
+		"pt_p"		"A ação não pode ser aplicada pois o jogador morreu desde então."
+	}
+
+	"Vote in Progress"
+	{
+		"pt_p"		"Uma votação já está a decorrer."
+	}
+
+	"Vote Not In Progress"
+	{
+		"pt_p"		"Não há nenhuma votação a decorrer de momento."
+	}
+
+	"Cancelled Vote"
+	{
+		"pt_p"		"Votação cancelada."
+	}
+
+	"Cancel vote"
+	{
+		"pt_p"		"Cancelar votação"
+	}
+
+	"Vote Select"
+	{
+		"pt_p"		"{1} escolheu {2}."
+	}
+
+	"No Votes Cast"
+	{
+		"pt_p"		"Nenhum voto foi computado."
+	}
+
+	"Vote Delay Minutes"
+	{
+		"pt_p"		"Precisas de esperar {1} minutos antes de iniciares outra votação."
+	}
+
+	"Vote Delay Seconds"
+	{
+		"pt_p"		"Precisas de esperar {1} segundos antes de iniciares outra votação."
+	}
+
+	"Could not connect to database"
+	{
+		"pt_p"		"Não foi possível estabelecer ligação à base de dados."
+	}
+
+	"Failed to query database"
+	{
+		"pt_p"		"Falha ao consultar a base de dados."
+	}
+
+	"Invalid SteamID specified"
+	{
+		"pt_p"		"Especificaste um SteamID inválido (precisa de começar com 'STEAM_')."
+	}
+
+	"Reload admins"
+	{
+		"pt_p"		"Recarregar administradores"
+	}
+
+	"Command is in-game only"
+	{
+		"pt_p"		"Este comando só pode ser usado dentro do jogo."
+	}
+
+	"Target must be dead"
+	{
+		"pt_p"		"Este comando só pode ser usado em jogadores mortos."
+	}
+
+	"Target must be alive"
+	{
+		"pt_p"		"Este comando só pode ser usado em jogadores vivos."
+	}
+
+	"Target is not in game"
+	{
+		"pt_p"		"O jogador selecionado ainda não está totalmente conectado."
+	}
+
+	"Played Sound"
+	{
+		"pt_p"		"Som tocado para '{1}'"
+	}
+
+	"Slapped player"
+	{
+		"pt_p"		"'{1}' foi esbofeteado(a)."
+	}
+
+	"Slayed player"
+	{
+		"pt_p"		"'{1}' foi chacinado(a)."
+	}
+
+	"Kicked player"
+	{
+		"pt_p"		"'{1}' foi expulso(a)"
+	}
+
+	"Cannot participate in vote"
+	{
+		"pt_p"		"Não podes participar nesta votação."
+	}
+
+	"Cannot change vote"
+	{
+		"pt_p"		"Não podes alterar a tua escolha nesta votação."
+	}
+
+	"On"
+	{
+		"pt_p"		"Ligado"
+	}
+
+	"Off"
+	{
+		"pt_p"		"Desligado"
+	}
+
+}

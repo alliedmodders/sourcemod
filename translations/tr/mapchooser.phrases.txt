@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Vote Nextmap"
+	{
+		"tr"		"Sonraki harita için oy ver!"
+	}
+
+	"Nextmap Voting Started"
+	{
+		"tr"		"Sonraki harita için oylama başladı."
+	}
+
+	"Nextmap Voting Finished"
+	{
+		"tr"		"Harita oylaması sona erdi. Sıradaki harita {1} olacak. ({3} oyun %%{2}'i alındı) "
+	}
+
+	"Current Map Extended"
+	{
+		"tr"		"Geçerli harita uzatıldı. ({2} oyun %%{1}'i alındı) "
+	}
+
+	"Extend Map"
+	{
+		"tr"		"Geçerli Haritayı Uzat"
+	}
+
+	"Dont Change"
+	{
+		"tr"		"Değiştirme"
+	}
+
+	"Current Map Stays"
+	{
+		"tr"		"Geçerli harita devam ediyor! Oylama konuştu! ({2} oyun %%{1}'i alındı)  "
+	}
+
+	"Changed Next Map"
+	{
+		"tr"		"Sıradaki harita \"{1}\" olarak değiştirildi."
+	}
+
+	"Starting Runoff"
+	{
+		"tr"		"Hiçbir harita %%{1} oyun üzerine çıkamadı ({2} [%%{3}] & {4} [%%{5}]), balotaj oylaması başlatılıyor"
+	}
+
+}

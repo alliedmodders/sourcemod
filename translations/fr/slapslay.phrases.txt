@@ -1,0 +1,73 @@
+"Phrases"
+{
+	"Slayed target"
+	{
+		"fr"		"{1} a été tué."
+	}
+
+	"Slay player"
+	{
+		"fr"		"Tuer le joueur"
+	}
+
+	"Slap damage"
+	{
+		"fr"		"Dégâts de la gifle"
+	}
+
+	"Slap player"
+	{
+		"fr"		"Gifler un joueur"
+	}
+
+	"Slapped target"
+	{
+		"fr"		"{1} a été giflé."
+	}
+
+	"Slap damage"
+	{
+		"fr"		"Dégâts du Slap"
+	}
+
+	"Slap player"
+	{
+		"fr"		"Slaper un joueur "
+	}
+
+	"Slapped target"
+	{
+		"fr"		"{1} a été Slapé"
+	}
+
+	"Slay player"
+	{
+		"fr"		"Tuer un joueur"
+	}
+
+	"Slap player"
+	{
+		"fr"		"Gifler un Joueur"
+	}
+
+	"Slap damage"
+	{
+		"fr"		"Dommages infligés par la gifle"
+	}
+
+	"Slay player"
+	{
+		"fr"		"Massacrer un Joueur"
+	}
+
+	"Slapped target"
+	{
+		"fr"		"a giflé {1}."
+	}
+
+	"Slayed target"
+	{
+		"fr"		"a massacré {1}."
+	}
+
+}

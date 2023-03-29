@@ -1,0 +1,98 @@
+"Phrases"
+{
+	"Initiated Vote Gravity"
+	{
+		"da"		"Tyngde afstemning er startet."
+	}
+
+	"Initiated Vote Burn"
+	{
+		"da"		"Brænd spiller afstemning startet mod {1}."
+	}
+
+	"Initiated Vote Slay"
+	{
+		"da"		"Afstemning om henrettelse mod {1} er startet."
+	}
+
+	"Initiated Vote Alltalk"
+	{
+		"da"		"Alltalk afstemning startet."
+	}
+
+	"Initiated Vote FF"
+	{
+		"da"		"Friendly Fire afstemning er startet."
+	}
+
+	"Gravity Vote"
+	{
+		"da"		"Tyngde afstemning: {1}"
+	}
+
+	"Change Gravity To"
+	{
+		"da"		"Ændre tyngdekraften til {1}?"
+	}
+
+	"Voteburn player"
+	{
+		"da"		"Brænd spiller {1}?"
+	}
+
+	"Voteslay Player"
+	{
+		"da"		"Dræb {1}?"
+	}
+
+	"Votealltalk Off"
+	{
+		"da"		"Slå alltalk fra? {1}"
+	}
+
+	"Votealltalk On"
+	{
+		"da"		"Slå alltalk til? {1}"
+	}
+
+	"Voteff Off"
+	{
+		"da"		"Slå Friendly Fire fra? {1}"
+	}
+
+	"Voteff On"
+	{
+		"da"		"Slå Friendly Fire til? {1}"
+	}
+
+	"Gravity vote"
+	{
+		"da"		"Stem om tyngdekraft"
+	}
+
+	"Vote FF"
+	{
+		"da"		"Stem om Friendly Fire"
+	}
+
+	"Burn vote"
+	{
+		"da"		"Stem om at brænde en spiller"
+	}
+
+	"Alltalk vote"
+	{
+		"da"		"Stem om alltalk"
+	}
+
+	"Slay vote"
+	{
+		"da"		"Stem om henrettelse mod spiller"
+	}
+
+	"Slayed player"
+	{
+		"da"		"Henrettede spiller '{1}'"
+	}
+
+}

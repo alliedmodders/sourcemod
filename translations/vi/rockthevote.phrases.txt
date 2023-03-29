@@ -1,0 +1,103 @@
+"Phrases"
+{
+	"Rock The Vote"
+	{
+		"vi"		"Rock The Vote:"
+	}
+
+	"RTV Not Allowed"
+	{
+		"vi"		"Chưa được phép Rock the Vote."
+	}
+
+	"RTV Started"
+	{
+		"vi"		"Rock the Vote đã bắt đầu rồi."
+	}
+
+	"RTV Ended"
+	{
+		"vi"		"RTV đã kết thúc, bạn không thể bắt đầu lại hay đề cử bản đồ."
+	}
+
+	"Already Voted"
+	{
+		"vi"		"Bạn đã bầu Rock the Vote rồi. ({1} lượt bầu, cần {2})"
+	}
+
+	"Minimal Players Not Met"
+	{
+		"vi"		"Không đạt đủ số lượng người chơi tối thiểu."
+	}
+
+	"Map Already In Vote"
+	{
+		"vi"		"Bản đồ '{1}' đã nằm trong danh sách Rock the Vote."
+	}
+
+	"Map Inserted"
+	{
+		"vi"		"Bản đồ '{1}' đã được thêm vào Rock the Vote."
+	}
+
+	"RTV Requested"
+	{
+		"vi"		"{1} muốn Rock the Vote. ({2} lượt bầu, cần {3})"
+	}
+
+	"RTV Vote Ready"
+	{
+		"vi"		"Bắt đầu Rock the Vote!"
+	}
+
+	"Don't Change"
+	{
+		"vi"		"Giữ bản đồ hiện tại"
+	}
+
+	"Already Nominated"
+	{
+		"vi"		"Bạn đã đề cử một bản đồ rồi."
+	}
+
+	"Max Nominations"
+	{
+		"vi"		"Số lượng đề cử đã đạt mức tối đa rồi."
+	}
+
+	"Selected Map"
+	{
+		"vi"		"{1} đã chọn {2}."
+	}
+
+	"No Votes"
+	{
+		"vi"		"Không nhận được lượt bầu nào cho Rock the Vote, bản đồ hiện tại tiếp tục."
+	}
+
+	"Current Map Stays"
+	{
+		"vi"		"Bản đồ hiện tại vẫn tiếp tục thông qua Rock the Vote! "
+	}
+
+	"Changing Maps"
+	{
+		"vi"		"Đang đổi bản đồ qua {1} theo Rock the Vote!"
+	}
+
+	"Map Already Nominated"
+	{
+		"vi"		"Bản đồ mà bạn chọn đã được đề cử rồi."
+	}
+
+	"Map Nominated"
+	{
+		"vi"		"{1} đã đề cử {2} cho Rock the Vote."
+	}
+
+	"Nominate Title"
+	{
+		"vi"		"Đề cử bản đồ:"
+	}
+
+}

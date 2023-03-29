@@ -1,0 +1,253 @@
+"Phrases"
+{
+	"Yes"
+	{
+		"tr"		"Evet"
+	}
+
+	"No"
+	{
+		"tr"		"Hayır"
+	}
+
+	"No matching client"
+	{
+		"tr"		"Eşleşen alıcı bulunamadı."
+	}
+
+	"No matching clients"
+	{
+		"tr"		"Eşleşen alıcı bulunamadı."
+	}
+
+	"More than one client matches"
+	{
+		"tr"		"Biçim düzeniyle birden fazla alıcı eşleşiyor \"{1}\""
+	}
+
+	"More than one client matched"
+	{
+		"tr"		"Verilen biçim düzeniyle birden fazla alıcı eşleşti."
+	}
+
+	"Player no longer available"
+	{
+		"tr"		"Seçtiğiniz uyuncu artık mevcut değil."
+	}
+
+	"Kick player"
+	{
+		"tr"		"Oyuncuyu at."
+	}
+
+	"Kicked by admin"
+	{
+		"tr"		"Yönetici tarafından atıldı"
+	}
+
+	"Changing map"
+	{
+		"tr"		"Harita {1} olarak değiştiriliyor..."
+	}
+
+	"Map was not found"
+	{
+		"tr"		"{1} adlı harita bulunamadı."
+	}
+
+	"Unable to target"
+	{
+		"tr"		"Bu oyuncuyu hedefleyemezsiniz."
+	}
+
+	"Name"
+	{
+		"tr"		"Ad"
+	}
+
+	"Access"
+	{
+		"tr"		"Erişim"
+	}
+
+	"See console for output"
+	{
+		"tr"		"Konsol çıktısına bakın."
+	}
+
+	"Cannot target bot"
+	{
+		"tr"		"Bu komutu bir bot üzerinde kullanmak olanaksız."
+	}
+
+	"Unable to find cvar"
+	{
+		"tr"		"Aranan cvar bulunamadı: {1}"
+	}
+
+	"No access to cvar"
+	{
+		"tr"		"Bu cvar'a erişiminiz yok."
+	}
+
+	"Value of cvar"
+	{
+		"tr"		"\"{1}\" adlı cvar'ın değeri: {2}"
+	}
+
+	"Cvar changed"
+	{
+		"tr"		"\"{1}\" adlı cvar \"{2}\" olarak değiştirildi."
+	}
+
+	"Config not found"
+	{
+		"tr"		"Ayar dosyası \"{1}\" bulunamadı."
+	}
+
+	"Executed config"
+	{
+		"tr"		"Ayar dosyası \"{1}\" çalıştırıldı."
+	}
+
+	"Admin cache refreshed"
+	{
+		"tr"		"Yönetici önbelleği yenilendi."
+	}
+
+	"Invalid Amount"
+	{
+		"tr"		"Geçersiz miktar belirlendi"
+	}
+
+	"Cannot be performed on dead"
+	{
+		"tr"		"Bu eylem ölü alıcı \"{1}\" üzerinde uygulanamaz"
+	}
+
+	"Player has since died"
+	{
+		"tr"		"Eylem gerçekleştirilemedi, oyuncu öldü."
+	}
+
+	"Vote in Progress"
+	{
+		"tr"		"Bir oylama zaten yürürlükte."
+	}
+
+	"Vote Not In Progress"
+	{
+		"tr"		"Şu anda bir oylama yürürlükte değil."
+	}
+
+	"Cancelled Vote"
+	{
+		"tr"		"Oylama iptal edildi."
+	}
+
+	"Cancel vote"
+	{
+		"tr"		"Oylamayı iptal et."
+	}
+
+	"Vote Select"
+	{
+		"tr"		"{1}, {2} şıkkını seçti."
+	}
+
+	"No Votes Cast"
+	{
+		"tr"		"Hiç oy atılmadı."
+	}
+
+	"Vote Delay Minutes"
+	{
+		"tr"		"Başka bir oylama başlatmadan önce {1} dakika beklemelisiniz."
+	}
+
+	"Vote Delay Seconds"
+	{
+		"tr"		"Başka bir oylama başlatmadan önce {1} saniye beklemelisiniz."
+	}
+
+	"Could not connect to database"
+	{
+		"tr"		"Veritabanına bağlanılamadı."
+	}
+
+	"Failed to query database"
+	{
+		"tr"		"Veritabanı sorgulanamadı."
+	}
+
+	"Invalid SteamID specified"
+	{
+		"tr"		"Geçersiz bir Steam ID belirttiniz ('STEAM_:' ile başlamalı). "
+	}
+
+	"Reload admins"
+	{
+		"tr"		"Yöneticileri yeniden yükle"
+	}
+
+	"Command is in-game only"
+	{
+		"tr"		"Bu komut sadece oyun içine kullanılabilir."
+	}
+
+	"Target must be dead"
+	{
+		"tr"		"Bu komut sadece ölü oyuncular üzerinde kullanılabilir."
+	}
+
+	"Target must be alive"
+	{
+		"tr"		"Bu komut sadece canlı oyuncular üzerinde kullanılabilir."
+	}
+
+	"Target is not in game"
+	{
+		"tr"		"Verilen oyuncu tamamen oyunda değil."
+	}
+
+	"Played Sound"
+	{
+		"tr"		"'{1}' adlı oyuncuyua ses çalındı"
+	}
+
+	"Slapped player"
+	{
+		"tr"		"'{1}' adlı oyuncu tokatlandı"
+	}
+
+	"Slayed player"
+	{
+		"tr"		"'{1}' adlı oyuncu katledildi"
+	}
+
+	"Kicked player"
+	{
+		"tr"		"'{1}' adlı oyuncu atıldı"
+	}
+
+	"Cannot participate in vote"
+	{
+		"tr"		"Bu oylamaya katılamazsınız."
+	}
+
+	"Cannot change vote"
+	{
+		"tr"		"Bu oylama için seçiminizi değiştiremezsiniz."
+	}
+
+	"On"
+	{
+		"tr"		"Açık"
+	}
+
+	"Off"
+	{
+		"tr"		"Kapalı"
+	}
+
+}

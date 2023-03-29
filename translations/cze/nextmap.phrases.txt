@@ -1,0 +1,43 @@
+"Phrases"
+{
+	"Next Map"
+	{
+		"cze"		"Pristi mapa: {1}"
+	}
+
+	"Map History"
+	{
+		"cze"		"Historie map"
+	}
+
+	"Map"
+	{
+		"cze"		"[Mapa]"
+	}
+
+	"Started"
+	{
+		"cze"		"[Zacala]"
+	}
+
+	"Played Time"
+	{
+		"cze"		"[Odehrany cas]"
+	}
+
+	"Reason"
+	{
+		"cze"		" [Duvod k ukonceni]"
+	}
+
+	"Current Map"
+	{
+		"cze"		"Soucasna mapa"
+	}
+
+	"ago"
+	{
+		"cze"		"pred"
+	}
+
+}

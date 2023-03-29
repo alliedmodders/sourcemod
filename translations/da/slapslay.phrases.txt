@@ -1,0 +1,28 @@
+"Phrases"
+{
+	"Slap damage"
+	{
+		"da"		"Klask-skade"
+	}
+
+	"Slap player"
+	{
+		"da"		"Klask spiller"
+	}
+
+	"Slapped target"
+	{
+		"da"		"Klaskede {1}."
+	}
+
+	"Slay player"
+	{
+		"da"		"Dræb spiller"
+	}
+
+	"Slayed target"
+	{
+		"da"		"Henrettede {1}."
+	}
+
+}

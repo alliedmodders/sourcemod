@@ -1,0 +1,33 @@
+"Phrases"
+{
+	"SM help commands"
+	{
+		"fi"		"SourceMod-ohje: Tietoa komennosta"
+	}
+
+	"No description available"
+	{
+		"fi"		"Ei kuvausta saatavilla"
+	}
+
+	"No commands available"
+	{
+		"fi"		"Ei käytettävissä olevia komentoja"
+	}
+
+	"Type sm_help to see more"
+	{
+		"fi"		"Kirjoita sm_help {1} nähdäksesi lisää komentoja"
+	}
+
+	"Entries n - m in page k"
+	{
+		"fi"		"Tulokset {1} - {2} sivulla {3}"
+	}
+
+	"No matching results found"
+	{
+		"fi"		"Tuloksia ei löytynyt"
+	}
+
+}

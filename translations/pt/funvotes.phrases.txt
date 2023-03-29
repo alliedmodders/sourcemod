@@ -1,0 +1,98 @@
+"Phrases"
+{
+	"Initiated Vote Gravity"
+	{
+		"pt"		"Iniciou uma votação para alterar a gravidade."
+	}
+
+	"Initiated Vote Burn"
+	{
+		"pt"		"Iniciou uma votação para atear fogo em {1}."
+	}
+
+	"Initiated Vote Slay"
+	{
+		"pt"		"Iniciou uma votação para assassinar {1}."
+	}
+
+	"Initiated Vote Alltalk"
+	{
+		"pt"		"Iniciou uma votação para alterar a fala aberta (AllTalk)."
+	}
+
+	"Initiated Vote FF"
+	{
+		"pt"		"Iniciou uma votação para alterar o fogo amigo."
+	}
+
+	"Gravity Vote"
+	{
+		"pt"		"Votação para alterar a gravidade: {1}"
+	}
+
+	"Change Gravity To"
+	{
+		"pt"		"Alterar a gravidade para {1}?"
+	}
+
+	"Voteburn player"
+	{
+		"pt"		"Atear fogo em {1}?"
+	}
+
+	"Voteslay Player"
+	{
+		"pt"		"Assassinar {1}?"
+	}
+
+	"Votealltalk Off"
+	{
+		"pt"		"Desativar fala aberta (AllTalk)? {1}"
+	}
+
+	"Votealltalk On"
+	{
+		"pt"		"Ativar fala aberta (AllTalk)? {1}"
+	}
+
+	"Voteff Off"
+	{
+		"pt"		"Desativar fogo amigo? {1}"
+	}
+
+	"Voteff On"
+	{
+		"pt"		"Ativar fogo amigo? {1}"
+	}
+
+	"Gravity vote"
+	{
+		"pt"		"Votação para alterar a gravidade"
+	}
+
+	"Vote FF"
+	{
+		"pt"		"Votação para fogo amigo"
+	}
+
+	"Burn vote"
+	{
+		"pt"		"Votação para atear fogo"
+	}
+
+	"Alltalk vote"
+	{
+		"pt"		"Votação para alterar a fala aberta (AllTalk)"
+	}
+
+	"Slay vote"
+	{
+		"pt"		"Votação para assassinato"
+	}
+
+	"Slayed player"
+	{
+		"pt"		"Assassinou '{1}'"
+	}
+
+}

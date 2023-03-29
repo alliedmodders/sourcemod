@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Ban player"
+	{
+		"pt_p"		"Banir jogador"
+	}
+
+	"Ban reason"
+	{
+		"pt_p"		"Motivo do banimento"
+	}
+
+	"Permabanned player"
+	{
+		"pt_p"		"\"{1}\" foi banido permanentemente."
+	}
+
+	"Permabanned player reason"
+	{
+		"pt_p"		"\"{1}\" foi banido permanentemente (motivo: {2})."
+	}
+
+	"Banned player"
+	{
+		"pt_p"		"\"{1}\" foi banido(a) por {2} minutos."
+	}
+
+	"Banned player reason"
+	{
+		"pt_p"		"\"{1}\" foi banido(a) por {2} minutos (motivo: {3})."
+	}
+
+	"Removed bans matching"
+	{
+		"pt_p"		"Banimentos correspondentes ao filtro \"{1}\" foram removidos."
+	}
+
+	"Ban added"
+	{
+		"pt_p"		"O banimento foi adicionado."
+	}
+
+	"Cannot ban that IP"
+	{
+		"pt_p"		"Não podes banir esse endereço IP."
+	}
+
+}

@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Slap player"
+	{
+		"ro"		"Slap jucător"
+	}
+
+	"Slap damage"
+	{
+		"ro"		"Damage pentru slap"
+	}
+
+	"Slay player"
+	{
+		"ro"		"Slay jucător"
+	}
+
+	"Slapped target"
+	{
+		"ro"		"{1} a primit slap."
+	}
+
+	"Slayed target"
+	{
+		"ro"		"{1} a primit slay."
+	}
+
+	"Name changed"
+	{
+		"ro"		"Un admin ti-a schimbat numele"
+	}
+
+	"Renamed target"
+	{
+		"ro"		"Nume schimbat {1}."
+	}
+
+	"Rename player"
+	{
+		"ro"		"Schimba numele jucatorului"
+	}
+
+	"Dead Player Rename"
+	{
+		"ro"		"{1} va fi redenumit runda următoare."
+	}
+
+}

@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Played sound to target"
+	{
+		"ua"		"Зіграно звук для {1}"
+	}
+
+}

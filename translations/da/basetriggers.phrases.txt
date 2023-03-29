@@ -1,0 +1,108 @@
+"Phrases"
+{
+	"Timeleft"
+	{
+		"da"		"Resterende tid for denne bane:"
+	}
+
+	"Thetime"
+	{
+		"da"		"Den nuværende server tid er {1}"
+	}
+
+	"Friendly Fire On"
+	{
+		"da"		"Friendly Fire er slået til."
+	}
+
+	"Friendly Fire Off"
+	{
+		"da"		"Friendly Fire er slået fra."
+	}
+
+	"Current Map"
+	{
+		"da"		"Den nuværende bane er {1}."
+	}
+
+	"LastRound"
+	{
+		"da"		"Dette er den sidste runde!!"
+	}
+
+	"NoTimelimit"
+	{
+		"da"		"Ingen tidsbegrænsninger for banen"
+	}
+
+	"Next Map"
+	{
+		"da"		"Næste bane: {1} "
+	}
+
+	"Pending Vote"
+	{
+		"da"		"Afventende Afstemning"
+	}
+
+	"WinLimitAppend"
+	{
+		"da"		", eller skifte bane efter et hold vinder en runde"
+	}
+
+	"WinLimit"
+	{
+		"da"		"Banen vil skifte efter et hold vinder en runde"
+	}
+
+	"MaxRoundsAppend"
+	{
+		"da"		", eller skifte bane efter en runde mere"
+	}
+
+	"MaxRounds"
+	{
+		"da"		"Banen vil skifte efter en runde mere"
+	}
+
+	"FragLimitAppend"
+	{
+		"da"		", eller skifte map efter en spiller når et frag"
+	}
+
+	"FragLimit"
+	{
+		"da"		"Banen vil skifte efter en spiller når et frag"
+	}
+
+	"WinLimitAppendPlural"
+	{
+		"da"		", eller skifte bane efter et hold vinder {1} runder"
+	}
+
+	"WinLimitPlural"
+	{
+		"da"		"Banen vil skifte efter et hold vinder {1} runder"
+	}
+
+	"MaxRoundsAppendPlural"
+	{
+		"da"		", eller skifte bane efter {1} runder mere"
+	}
+
+	"MaxRoundsPlural"
+	{
+		"da"		"Bane vil skifte efter {1} runder mere."
+	}
+
+	"FragLimitAppendPlural"
+	{
+		"da"		", eller skifte bane efter en spiller når {1} frags"
+	}
+
+	"FragLimitPlural"
+	{
+		"da"		"Banen vil skifte, efter en spiller når {1} frags"
+	}
+
+}

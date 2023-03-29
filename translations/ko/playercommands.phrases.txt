@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Slap player"
+	{
+		"ko"		"플레이어에게 피해 주기"
+	}
+
+	"Slap damage"
+	{
+		"ko"		"입힐 피해"
+	}
+
+	"Slay player"
+	{
+		"ko"		"플레이어 죽이기"
+	}
+
+	"Slapped target"
+	{
+		"ko"		"{1} 님에게 피해를 주었습니다."
+	}
+
+	"Slayed target"
+	{
+		"ko"		"{1} 님을 죽였습니다."
+	}
+
+	"Name changed"
+	{
+		"ko"		"관리자가 당신의 이름을 바꾸었습니다"
+	}
+
+	"Renamed target"
+	{
+		"ko"		"{1} 님의 이름을 바꾸었습니다."
+	}
+
+	"Rename player"
+	{
+		"ko"		"플레이어 이름 바꾸기 "
+	}
+
+	"Dead Player Rename"
+	{
+		"ko"		"{1} 님의 이름은 다음 라운드에 바뀔 것입니다."
+	}
+
+}
