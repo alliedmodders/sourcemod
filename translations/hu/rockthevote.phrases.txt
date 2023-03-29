@@ -30,16 +30,6 @@
 		"hu"		"Nincs elegendő játékos"
 	}
 
-	"Map Already In Vote"
-	{
-		"hu"		"{1} már a listában van"
-	}
-
-	"Map Inserted"
-	{
-		"hu"		"{1} hozzáadva a listához"
-	}
-
 	"RTV Requested"
 	{
 		"hu"		"{1} pályaváltást szeretne. ({3} szükséges szavazatból {2} van eddig)"
@@ -53,16 +43,6 @@
 	"Don't Change"
 	{
 		"hu"		"Maradjon"
-	}
-
-	"Already Nominated"
-	{
-		"hu"		"Már neveztél pályát"
-	}
-
-	"Max Nominations"
-	{
-		"hu"		"Nem lehet több pályát nevezni"
 	}
 
 	"Selected Map"
@@ -83,21 +63,6 @@
 	"Changing Maps"
 	{
 		"hu"		"Pálya váltása {1}-ra! "
-	}
-
-	"Map Already Nominated"
-	{
-		"hu"		"A pályát már nevezték"
-	}
-
-	"Map Nominated"
-	{
-		"hu"		"{1} a {2}-t nevezte pályaváltásra"
-	}
-
-	"Nominate Title"
-	{
-		"hu"		"Pálya nevezése:"
 	}
 
 }

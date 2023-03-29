@@ -30,16 +30,6 @@
 		"zho"		"並未得到所需玩家人數."
 	}
 
-	"Map Already In Vote"
-	{
-		"zho"		"地圖 '{1}' 已在 Rock the Vote 列表之中."
-	}
-
-	"Map Inserted"
-	{
-		"zho"		"地圖 '{1}' 加進了 Rock the Vote."
-	}
-
 	"RTV Requested"
 	{
 		"zho"		"{1} 想要 Rock the Vote. (現有 {2} 票, 至少需要 {3} 票) "
@@ -53,16 +43,6 @@
 	"Don't Change"
 	{
 		"zho"		"保留現在的地圖"
-	}
-
-	"Already Nominated"
-	{
-		"zho"		"你已提名了一幅地圖"
-	}
-
-	"Max Nominations"
-	{
-		"zho"		"提名數目已達至上限."
 	}
 
 	"Selected Map"
@@ -83,21 +63,6 @@
 	"Changing Maps"
 	{
 		"zho"		"正更變地圖為 {1}! Rock the Vote 已有結果!"
-	}
-
-	"Map Already Nominated"
-	{
-		"zho"		"你所揀選的地圖已被提名."
-	}
-
-	"Map Nominated"
-	{
-		"zho"		"{1} 已將 {2} 提名至 Rock the Vote."
-	}
-
-	"Nominate Title"
-	{
-		"zho"		"提名地圖:"
 	}
 
 }

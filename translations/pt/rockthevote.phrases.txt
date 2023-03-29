@@ -30,16 +30,6 @@
 		"pt"		"O número mínimo de jogadores não foi atingido."
 	}
 
-	"Map Already In Vote"
-	{
-		"pt"		"O mapa '{1}' já está na lista do Rock the Vote"
-	}
-
-	"Map Inserted"
-	{
-		"pt"		"Mapa '{1}' adicionado para o Rock the Vote."
-	}
-
 	"RTV Requested"
 	{
 		"pt"		"{1} quer mudar de mapa (Rock the Vote). ({2} voto(s), {3} necessário(s)) "
@@ -53,16 +43,6 @@
 	"Don't Change"
 	{
 		"pt"		"Manter mapa atual"
-	}
-
-	"Already Nominated"
-	{
-		"pt"		"Você já sugeriu um mapa."
-	}
-
-	"Max Nominations"
-	{
-		"pt"		"O número máximo de sugestões já foi atingidido."
 	}
 
 	"Selected Map"
@@ -83,21 +63,6 @@
 	"Changing Maps"
 	{
 		"pt"		"Mudando mapa para {1}! O Rock the Vote assim decidiu!"
-	}
-
-	"Map Already Nominated"
-	{
-		"pt"		"O mapa que você escolheu já foi sugerido"
-	}
-
-	"Map Nominated"
-	{
-		"pt"		"{1} sugeriu {2} para o Rock the Vote."
-	}
-
-	"Nominate Title"
-	{
-		"pt"		"Sugerir Mapa:"
 	}
 
 }

@@ -30,16 +30,6 @@
 		"sk"		"Potrebný minimálny počet hráčov nebol dosiahnutý."
 	}
 
-	"Map Already In Vote"
-	{
-		"sk"		"Mapa '{1}' už je v Rock the Vote zozname. "
-	}
-
-	"Map Inserted"
-	{
-		"sk"		"Mapa '{1}' pridaná do Rock the Vote. "
-	}
-
 	"RTV Requested"
 	{
 		"sk"		"{1} chce spustiť Rock the Vote. ({2} hlasov, {3} vyžadovaných) "
@@ -53,16 +43,6 @@
 	"Don't Change"
 	{
 		"sk"		"Ponechať aktuálnu mapu"
-	}
-
-	"Already Nominated"
-	{
-		"sk"		"Už si nominoval mapu."
-	}
-
-	"Max Nominations"
-	{
-		"sk"		"Maximum povolených nominácii bol dosiahnutý."
 	}
 
 	"Selected Map"
@@ -83,21 +63,6 @@
 	"Changing Maps"
 	{
 		"sk"		"Mapa sa mení na {1}! Rock the Vote prehovoril! "
-	}
-
-	"Map Already Nominated"
-	{
-		"sk"		"Mapa ktorú si zvolil už bola nominovaná. "
-	}
-
-	"Map Nominated"
-	{
-		"sk"		"{1} nominoval {2} pre Rock the Vote. "
-	}
-
-	"Nominate Title"
-	{
-		"sk"		"Nominovať mapu:"
 	}
 
 }

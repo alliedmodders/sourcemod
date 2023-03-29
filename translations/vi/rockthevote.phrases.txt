@@ -30,16 +30,6 @@
 		"vi"		"Không đạt đủ số lượng người chơi tối thiểu."
 	}
 
-	"Map Already In Vote"
-	{
-		"vi"		"Bản đồ '{1}' đã nằm trong danh sách Rock the Vote."
-	}
-
-	"Map Inserted"
-	{
-		"vi"		"Bản đồ '{1}' đã được thêm vào Rock the Vote."
-	}
-
 	"RTV Requested"
 	{
 		"vi"		"{1} muốn Rock the Vote. ({2} lượt bầu, cần {3})"
@@ -53,16 +43,6 @@
 	"Don't Change"
 	{
 		"vi"		"Giữ bản đồ hiện tại"
-	}
-
-	"Already Nominated"
-	{
-		"vi"		"Bạn đã đề cử một bản đồ rồi."
-	}
-
-	"Max Nominations"
-	{
-		"vi"		"Số lượng đề cử đã đạt mức tối đa rồi."
 	}
 
 	"Selected Map"
@@ -83,21 +63,6 @@
 	"Changing Maps"
 	{
 		"vi"		"Đang đổi bản đồ qua {1} theo Rock the Vote!"
-	}
-
-	"Map Already Nominated"
-	{
-		"vi"		"Bản đồ mà bạn chọn đã được đề cử rồi."
-	}
-
-	"Map Nominated"
-	{
-		"vi"		"{1} đã đề cử {2} cho Rock the Vote."
-	}
-
-	"Nominate Title"
-	{
-		"vi"		"Đề cử bản đồ:"
 	}
 
 }

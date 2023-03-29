@@ -30,16 +30,6 @@
 		"tr"		"Gereken asgari oyuncu sayısına ulaşılamadı."
 	}
 
-	"Map Already In Vote"
-	{
-		"tr"		"'{1}' adlı harita zaten Rock the Vote listesinde."
-	}
-
-	"Map Inserted"
-	{
-		"tr"		"'{1}' adlı harita Rock the Vote a eklendi."
-	}
-
 	"RTV Requested"
 	{
 		"tr"		"{1} rock the vote istiyor. ({2} oy, {3} gerekli) "
@@ -53,16 +43,6 @@
 	"Don't Change"
 	{
 		"tr"		"Geçerli Haritayı Devam Ettir"
-	}
-
-	"Already Nominated"
-	{
-		"tr"		"Bir haritayı zaten aday olarak gösterdiniz."
-	}
-
-	"Max Nominations"
-	{
-		"tr"		"İzin verilen azami adaylara ulaşıldı."
 	}
 
 	"Selected Map"
@@ -83,21 +63,6 @@
 	"Changing Maps"
 	{
 		"tr"		"Harita {1} olarak değiştiriliyor! Rock the Vote konuştu!"
-	}
-
-	"Map Already Nominated"
-	{
-		"tr"		"Seçtiğiniz harita zaten aday olarak gösterildi."
-	}
-
-	"Map Nominated"
-	{
-		"tr"		"{1}, Rock the Vote için {2} adlı haritayı aday olarak gösterdi."
-	}
-
-	"Nominate Title"
-	{
-		"tr"		"Haritayı Aday Olarak Göster:"
 	}
 
 }
