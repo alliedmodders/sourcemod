@@ -6,6 +6,9 @@ on:
     paths:
       - 'translations/**'
   workflow_dispatch:
+  pull_request:
+    branches:
+      - master
 jobs:
   update_translations:
     runs-on: ubuntu-latest
