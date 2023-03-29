@@ -80,11 +80,6 @@
 		"da"		"Map afstemningen er allerede i brug."
 	}
 
-	"Please select a map"
-	{
-		"da"		"Vælg venligst en bane"
-	}
-
 	"Start the Vote"
 	{
 		"da"		"Start afstemningen"

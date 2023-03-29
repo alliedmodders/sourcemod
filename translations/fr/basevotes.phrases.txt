@@ -80,11 +80,6 @@
 		"fr"		"Un Vote Map est déjà en préparation"
 	}
 
-	"Please select a map"
-	{
-		"fr"		"Veuillez selectionner une map"
-	}
-
 	"Start the Vote"
 	{
 		"fr"		"Lancer le vote"

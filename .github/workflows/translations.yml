@@ -5,6 +5,7 @@ on:
       - master
     paths:
       - 'translations/**'
+  workflow_dispatch:
 jobs:
   update_translations:
     runs-on: ubuntu-latest
@@ -12,7 +13,7 @@ jobs:
       - uses: actions/setup-python@v4
         name: Setup Python 3.10
         with:
-          python-version: 3.10
+          python-version: "3.10"
 
       - name: Install Python dependencies
         working-directory: tools/language_check
@@ -35,4 +36,3 @@ jobs:
         run: |
           python ./compare_translation_phrases.py 
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 

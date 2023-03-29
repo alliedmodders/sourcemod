@@ -1,10 +1,5 @@
 "Phrases"
 {
-	"Next Map"
-	{
-		"fi"		"Seuraava kartta: {1}"
-	}
-
 	"Map History"
 	{
 		"fi"		"Karttahistoria"

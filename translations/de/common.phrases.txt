@@ -210,26 +210,6 @@
 		"de"		"Der ausgewählte Spieler ist noch nicht im Spiel. "
 	}
 
-	"Played Sound"
-	{
-		"de"		" Ton wurde bei Spieler '{1}' abgespielt. "
-	}
-
-	"Slapped player"
-	{
-		"de"		"'{1}' wurde geschlagen"
-	}
-
-	"Slayed player"
-	{
-		"de"		"'{1}' wurde erschlagen"
-	}
-
-	"Kicked player"
-	{
-		"de"		"'{1}' wurde gekickt "
-	}
-
 	"Cannot participate in vote"
 	{
 		"de"		"Du kannst an dieser Abstimmung nicht teilnehmen."

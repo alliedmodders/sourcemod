@@ -1,10 +1,5 @@
 "Phrases"
 {
-	"Next Map"
-	{
-		"pt"		"Próximo mapa: {1}"
-	}
-
 	"Map History"
 	{
 		"pt"		"Histórico de mapas"

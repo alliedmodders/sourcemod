@@ -40,9 +40,4 @@
 		"vi"		"Đổi tên người chơi"
 	}
 
-	"Dead Player Rename"
-	{
-		"vi"		"{1} sẽ được đổi tên vào ván tiếp theo."
-	}
-
 }

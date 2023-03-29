@@ -80,11 +80,6 @@
 		"pl"		"Inny administrator aktualnie używa menu głosowań na mapę."
 	}
 
-	"Please select a map"
-	{
-		"pl"		"Proszę wybrać mapę"
-	}
-
 	"Start the Vote"
 	{
 		"pl"		"Rozpocznij głosowanie"

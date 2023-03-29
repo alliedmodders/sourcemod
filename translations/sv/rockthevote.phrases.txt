@@ -30,16 +30,6 @@
 		"sv"		"Antalet spelare som behövs har inte uppnåtts."
 	}
 
-	"Map Already In Vote"
-	{
-		"sv"		"Karta '{1}' är redan med i Rock the Vote listan. "
-	}
-
-	"Map Inserted"
-	{
-		"sv"		"Karta '{1}' tillagd till Rock the Vote. "
-	}
-
 	"RTV Requested"
 	{
 		"sv"		"{1} Vill rock the vote. ({2} röster, {3} krävs) "
@@ -53,16 +43,6 @@
 	"Don't Change"
 	{
 		"sv"		"Behåll nuvarande karta."
-	}
-
-	"Already Nominated"
-	{
-		"sv"		"Du har redan nominerat en karta."
-	}
-
-	"Max Nominations"
-	{
-		"sv"		"Max antal nomineringar har blivit nåt."
 	}
 
 	"Selected Map"
@@ -83,21 +63,6 @@
 	"Changing Maps"
 	{
 		"sv"		"Byter karta till {1}! Rock the vote har talat!"
-	}
-
-	"Map Already Nominated"
-	{
-		"sv"		"Kartan du valt är redan nominerad. "
-	}
-
-	"Map Nominated"
-	{
-		"sv"		"{1} har nominerat {2} till Rock the Vote. "
-	}
-
-	"Nominate Title"
-	{
-		"sv"		"Nominera karta: "
 	}
 
 }

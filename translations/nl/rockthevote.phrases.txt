@@ -30,16 +30,6 @@
 		"nl"		"Het minimum aantal spelers is nog niet bereikt."
 	}
 
-	"Map Already In Vote"
-	{
-		"nl"		"Map '{1}' staat al in de Rock the Vote lijst."
-	}
-
-	"Map Inserted"
-	{
-		"nl"		"Map '{1}' toegevoegd aan Rock the Vote."
-	}
-
 	"RTV Requested"
 	{
 		"nl"		"{1} wil een rock the vote starten, ({2} stemmen, {3} nodig) "
@@ -53,16 +43,6 @@
 	"Don't Change"
 	{
 		"nl"		"Behoud de huidige Map"
-	}
-
-	"Already Nominated"
-	{
-		"nl"		"Je hebt al een map benoemd."
-	}
-
-	"Max Nominations"
-	{
-		"nl"		"Maximale nominaties bereikt."
 	}
 
 	"Selected Map"
@@ -83,21 +63,6 @@
 	"Changing Maps"
 	{
 		"nl"		"Map wordt veranderd naar {1}! Rock The Vote heeft gesproken!"
-	}
-
-	"Map Already Nominated"
-	{
-		"nl"		"De map die je hebt gekozen is al benoemd."
-	}
-
-	"Map Nominated"
-	{
-		"nl"		"{1} heeft {2} benoemd voor Rock the Vote."
-	}
-
-	"Nominate Title"
-	{
-		"nl"		"Map Nominatie:"
 	}
 
 }

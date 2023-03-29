@@ -40,9 +40,4 @@
 		"pl"		"Zmień nick gracza"
 	}
 
-	"Dead Player Rename"
-	{
-		"pl"		"Nick gracza {1} zostanie zmieniony w następnej rundzie."
-	}
-
 }

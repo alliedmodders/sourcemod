@@ -80,11 +80,6 @@
 		"nl"		"Een andere admin is bezig met het map vote menu."
 	}
 
-	"Please select a map"
-	{
-		"nl"		"Selecteer aub een map"
-	}
-
 	"Start the Vote"
 	{
 		"nl"		"Start de Stemming"

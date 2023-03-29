@@ -30,16 +30,6 @@
 		"da"		"Det minimalt krævede antal spillere er ikke nået."
 	}
 
-	"Map Already In Vote"
-	{
-		"da"		"Banen '{1}' er allerede i Rock the Vote listen."
-	}
-
-	"Map Inserted"
-	{
-		"da"		"Banen '{1}' blev tilføjet til Rock the Vote."
-	}
-
 	"RTV Requested"
 	{
 		"da"		"{1} vil stemme om ny bane. ({2} stemmer, {3} påkrævet)"
@@ -53,16 +43,6 @@
 	"Don't Change"
 	{
 		"da"		"Behold aktuelle bane"
-	}
-
-	"Already Nominated"
-	{
-		"da"		"Du har allerede nomineret en bane."
-	}
-
-	"Max Nominations"
-	{
-		"da"		"Det maximalt tilladte antal nomineringer er nået."
 	}
 
 	"Selected Map"
@@ -83,21 +63,6 @@
 	"Changing Maps"
 	{
 		"da"		"Skifter bane til {1}! Rock the Vote har talt!"
-	}
-
-	"Map Already Nominated"
-	{
-		"da"		"Banen som du valgte er allerede blevet nomineret."
-	}
-
-	"Map Nominated"
-	{
-		"da"		"{1} har nomineret {2} til Rock the Vote."
-	}
-
-	"Nominate Title"
-	{
-		"da"		"Nominer bane:"
 	}
 
 }

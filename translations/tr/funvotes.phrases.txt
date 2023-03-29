@@ -92,7 +92,7 @@
 
 	"Slayed player"
 	{
-		"tr"		"'{1}'  adlı oyuncu katledildi"
+		"tr"		"'{1}' adlı oyuncu katledildi"
 	}
 
 }

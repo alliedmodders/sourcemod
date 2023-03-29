@@ -80,11 +80,6 @@
 		"vi"		"Một quản trị viên khác hiện đang chọn bản đồ."
 	}
 
-	"Please select a map"
-	{
-		"vi"		"Hãy chọn một bản đồ"
-	}
-
 	"Start the Vote"
 	{
 		"vi"		"Bắt đầu bầu chọn"

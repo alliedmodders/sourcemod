@@ -80,11 +80,6 @@
 		"tr"		"Başka bir yönetici şu anda harita oylaması menüsünü kullanmakta."
 	}
 
-	"Please select a map"
-	{
-		"tr"		"Lütfen bir harita seçin"
-	}
-
 	"Start the Vote"
 	{
 		"tr"		"Oylamayı Başlatın"

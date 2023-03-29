@@ -40,9 +40,4 @@
 		"de"		"Spieler umbenennen"
 	}
 
-	"Dead Player Rename"
-	{
-		"de"		"{1} wird nächste Runde umbenannt."
-	}
-
 }

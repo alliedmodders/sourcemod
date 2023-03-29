@@ -210,26 +210,6 @@
 		"hu"		"A megadott játékos még nem lépett be a játékba teljesen!"
 	}
 
-	"Played Sound"
-	{
-		"hu"		"Hang lejátszva {1}-nak"
-	}
-
-	"Slapped player"
-	{
-		"hu"		"{1} megütve"
-	}
-
-	"Slayed player"
-	{
-		"hu"		"{1} kivégezve"
-	}
-
-	"Kicked player"
-	{
-		"hu"		"{1} kirúgva"
-	}
-
 	"Cannot participate in vote"
 	{
 		"hu"		"Nem vehetsz részt a szavazásban"

@@ -40,9 +40,4 @@
 		"pt_p"		"Renomear jogador"
 	}
 
-	"Dead Player Rename"
-	{
-		"pt_p"		"{1} será renomeado na próxima ronda."
-	}
-
 }

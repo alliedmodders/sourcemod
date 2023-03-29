@@ -210,26 +210,6 @@
 		"pt"		"O jogador selecionado ainda não está totalmente conectado."
 	}
 
-	"Played Sound"
-	{
-		"pt"		"Som tocado para '{1}'"
-	}
-
-	"Slapped player"
-	{
-		"pt"		"'{1}' foi estapeado(a)"
-	}
-
-	"Slayed player"
-	{
-		"pt"		"'{1}' foi assassinado(a)"
-	}
-
-	"Kicked player"
-	{
-		"pt"		"'{1}' foi expulso(a)"
-	}
-
 	"Cannot participate in vote"
 	{
 		"pt"		"Você não pode participar desta votação."

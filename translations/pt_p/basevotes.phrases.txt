@@ -80,11 +80,6 @@
 		"pt_p"		"Outro administrador está de momento a usar o menu de votação de mapa."
 	}
 
-	"Please select a map"
-	{
-		"pt_p"		"Escolhe um mapa"
-	}
-
 	"Start the Vote"
 	{
 		"pt_p"		"Iniciar a votação"

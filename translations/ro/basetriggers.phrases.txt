@@ -37,7 +37,7 @@
 
 	"Next Map"
 	{
-		"ro"		"Harta Urmatoare:"
+		"ro"		"Harta următoare: {1}"
 	}
 
 	"Pending Vote"

@@ -30,16 +30,6 @@
 		"ro"		"Numărul minim necesar de jucători nu a fost întrunit."
 	}
 
-	"Map Already In Vote"
-	{
-		"ro"		"Harta '{1}' este deja în lista Rock the Vote."
-	}
-
-	"Map Inserted"
-	{
-		"ro"		"Harta '{1}' a fost adăugată în Rock the Vote."
-	}
-
 	"RTV Requested"
 	{
 		"ro"		"{1} vrea Rock the Vote. ({2} voturi, {3} necesare)"
@@ -53,16 +43,6 @@
 	"Don't Change"
 	{
 		"ro"		"Păstrează harta curentă"
-	}
-
-	"Already Nominated"
-	{
-		"ro"		"Ai nominalizat deja o hartă."
-	}
-
-	"Max Nominations"
-	{
-		"ro"		"Numărul maxim permis de nominalizări a fost atins."
 	}
 
 	"Selected Map"
@@ -83,21 +63,6 @@
 	"Changing Maps"
 	{
 		"ro"		"Schimbare hartă in {1}! Aşa a zis Rock the Vote!"
-	}
-
-	"Map Already Nominated"
-	{
-		"ro"		"Harta aleasă a fost deja nominalizată."
-	}
-
-	"Map Nominated"
-	{
-		"ro"		"{1} a nominalizat {2} pentru Rock the Vote."
-	}
-
-	"Nominate Title"
-	{
-		"ro"		"Nominalizează harta:"
 	}
 
 }

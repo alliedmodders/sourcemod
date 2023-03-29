@@ -1,10 +1,5 @@
 "Phrases"
 {
-	"Next Map"
-	{
-		"da"		"Næste bane: {1}"
-	}
-
 	"Map History"
 	{
 		"da"		"Bane historie"

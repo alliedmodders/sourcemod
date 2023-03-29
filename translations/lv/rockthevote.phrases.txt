@@ -30,16 +30,6 @@
 		"lv"		"Minimālais spēlētāju skaits nav sasniegts."
 	}
 
-	"Map Already In Vote"
-	{
-		"lv"		"Karte '{1}' jau ir aptaujas sarakstā."
-	}
-
-	"Map Inserted"
-	{
-		"lv"		"Karte '{1}' pievienota aptaujas sarakstam."
-	}
-
 	"RTV Requested"
 	{
 		"lv"		"{1} vēlas uzsākt aptauju. ({2} balsis, {3} nepieciešamas)"
@@ -53,16 +43,6 @@
 	"Don't Change"
 	{
 		"lv"		"Atstāt esošo karti"
-	}
-
-	"Already Nominated"
-	{
-		"lv"		"Tu jau esi nominējis karti."
-	}
-
-	"Max Nominations"
-	{
-		"lv"		"Maksimālais nomināciju skaits ir sasniegts."
 	}
 
 	"Selected Map"
@@ -83,21 +63,6 @@
 	"Changing Maps"
 	{
 		"lv"		"Maina karti uz {1}! Kas tika noteikta aptaujas rezultātā!"
-	}
-
-	"Map Already Nominated"
-	{
-		"lv"		"Karte ko esi izvēlējies jau ir nominētā."
-	}
-
-	"Map Nominated"
-	{
-		"lv"		"{1} nominēja {2} aptaujai."
-	}
-
-	"Nominate Title"
-	{
-		"lv"		"Nominēt karti:"
 	}
 
 }

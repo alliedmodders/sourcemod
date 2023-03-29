@@ -89,11 +89,6 @@
 		"en"			"Confirm Vote"
 	}
 	
-	"Please select a map"
-	{
-		"en"			"Please select a map"
-	}
-	
 	"Start the Vote"
 	{
 		"en"			"Start the Vote"

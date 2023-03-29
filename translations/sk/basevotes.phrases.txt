@@ -80,11 +80,6 @@
 		"sk"		"Iný admin práve používa menu hlasovania mapy."
 	}
 
-	"Please select a map"
-	{
-		"sk"		"Prosím vyberte mapu"
-	}
-
 	"Start the Vote"
 	{
 		"sk"		"Začiatok hlasovania"

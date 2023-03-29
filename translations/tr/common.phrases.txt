@@ -210,26 +210,6 @@
 		"tr"		"Verilen oyuncu tamamen oyunda değil."
 	}
 
-	"Played Sound"
-	{
-		"tr"		"'{1}' adlı oyuncuyua ses çalındı"
-	}
-
-	"Slapped player"
-	{
-		"tr"		"'{1}' adlı oyuncu tokatlandı"
-	}
-
-	"Slayed player"
-	{
-		"tr"		"'{1}' adlı oyuncu katledildi"
-	}
-
-	"Kicked player"
-	{
-		"tr"		"'{1}' adlı oyuncu atıldı"
-	}
-
 	"Cannot participate in vote"
 	{
 		"tr"		"Bu oylamaya katılamazsınız."

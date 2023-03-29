@@ -210,26 +210,6 @@
 		"chi"		"指定玩家尚未完全进入游戏."
 	}
 
-	"Played Sound"
-	{
-		"chi"		"已播放声音给玩家 '{1}'"
-	}
-
-	"Slapped player"
-	{
-		"chi"		"已拍打玩家 '{1}'"
-	}
-
-	"Slayed player"
-	{
-		"chi"		"已处死玩家 '{1}'"
-	}
-
-	"Kicked player"
-	{
-		"chi"		"已踢出玩家 '{1}'"
-	}
-
 	"Cannot participate in vote"
 	{
 		"chi"		"您无法参与该项投票."

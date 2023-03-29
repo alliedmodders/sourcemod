@@ -40,9 +40,4 @@
 		"fi"		"Uudelleennimeä pelaaja"
 	}
 
-	"Dead Player Rename"
-	{
-		"fi"		"Pelaajan {1} nimi vaihdetaan seuraavassa erässä."
-	}
-
 }

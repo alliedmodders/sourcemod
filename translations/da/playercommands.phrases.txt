@@ -40,9 +40,4 @@
 		"da"		"Omdøb spiller"
 	}
 
-	"Dead Player Rename"
-	{
-		"da"		"{1} bliver omdøbt i næste runde."
-	}
-
 }

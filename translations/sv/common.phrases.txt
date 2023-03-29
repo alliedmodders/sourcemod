@@ -210,26 +210,6 @@
 		"sv"		"Den valda spelaren är inte helt inne i spelet ännu."
 	}
 
-	"Played Sound"
-	{
-		"sv"		"Spelade ljud på spelaren '{1}'"
-	}
-
-	"Slapped player"
-	{
-		"sv"		"Smiskade spelare '{1}'"
-	}
-
-	"Slayed player"
-	{
-		"sv"		"Dräpte spelare '{1}'"
-	}
-
-	"Kicked player"
-	{
-		"sv"		"Kastade ut spelare '{1}' "
-	}
-
 	"Cannot participate in vote"
 	{
 		"sv"		"Du kan inte delta i denna röstning"

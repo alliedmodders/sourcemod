@@ -80,11 +80,6 @@
 		"sv"		"En annan admin använder just nu menyn för kartomröstningar."
 	}
 
-	"Please select a map"
-	{
-		"sv"		"Vänligen välj en karta"
-	}
-
 	"Start the Vote"
 	{
 		"sv"		"Starta omröstningen"

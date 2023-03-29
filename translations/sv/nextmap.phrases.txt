@@ -1,10 +1,5 @@
 "Phrases"
 {
-	"Next Map"
-	{
-		"sv"		"Nästa bana: {1}"
-	}
-
 	"Map History"
 	{
 		"sv"		"Banans historia"

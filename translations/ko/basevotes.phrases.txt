@@ -80,11 +80,6 @@
 		"ko"		"현재 다른 관리자가 맵 투표 메뉴를 사용하고 있습니다."
 	}
 
-	"Please select a map"
-	{
-		"ko"		"맵을 선택해주세요."
-	}
-
 	"Start the Vote"
 	{
 		"ko"		"투표 시작하기"

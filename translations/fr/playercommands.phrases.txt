@@ -40,9 +40,4 @@
 		"fr"		"Renommer le joueur"
 	}
 
-	"Dead Player Rename"
-	{
-		"fr"		"{1} sera renommé au prochain round."
-	}
-
 }

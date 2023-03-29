@@ -210,26 +210,6 @@
 		"fi"		"Kohde ei ole vielä täysin pelissä."
 	}
 
-	"Played Sound"
-	{
-		"fi"		"Soitettiin ääni pelaajalle '{1}'"
-	}
-
-	"Slapped player"
-	{
-		"fi"		"Läpsäistiin pelaajaa '{1}'"
-	}
-
-	"Slayed player"
-	{
-		"fi"		"Teloitettiin pelaaja '{1}'"
-	}
-
-	"Kicked player"
-	{
-		"fi"		"Potkaistiin pelaaja '{1}'"
-	}
-
 	"Cannot participate in vote"
 	{
 		"fi"		"Et voi osallistua tähän äänestykseen."
