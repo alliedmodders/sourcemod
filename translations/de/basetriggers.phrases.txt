@@ -20,6 +20,11 @@
 		"de"		"Friendly Fire ist deaktiviert."
 	}
 
+	"Friendly Fire Percent"
+	{
+		"de"		"Friendly Fire ist auf {1}%."
+	}
+
 	"Current Map"
 	{
 		"de"		"Die aktuelle Map ist {1}."
