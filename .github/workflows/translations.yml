@@ -34,7 +34,7 @@ jobs:
           app_id: ${{ secrets.APP_ID }}
           private_key: ${{ secrets.APP_PEM }}
 
-      - name: Get project data
+      - name: Update translation project
         working-directory: tools/language_check
         env:
           GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
