@@ -241,7 +241,8 @@ methodmap KeyValues < Handle
 	// have the previous key saved for backwards traversal.
 	//
 	// @param kv            KeyValues Handle.
-	public native void SavePosition();
+	// @return              True on success, false if there is no higher node.
+	public native bool SavePosition();
 
 	// Jumps back to the previous position.  Returns false if there are no
 	// previous positions (i.e., at the root node).  This should be called
@@ -523,9 +524,10 @@ native bool KvGotoNextKey(Handle kv, bool keyOnly=true);
  * have the previous key saved for backwards traversal.
  *
  * @param kv            KeyValues Handle.
+ * @return              True on success, false if there is no higher node.
  * @error               Invalid Handle.
  */
-native void KvSavePosition(Handle kv);
+native bool KvSavePosition(Handle kv);
 
 /**
  * Removes the given key from the current position.
