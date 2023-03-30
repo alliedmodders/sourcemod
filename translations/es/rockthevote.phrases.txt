@@ -1,4 +1,4 @@
-﻿"Phrases"
+"Phrases"
 {
 	"Rock The Vote"
 	{
@@ -22,7 +22,6 @@
 
 	"Already Voted"
 	{
-		"#format"	"{1:d},{2:d}"
 		"es"		"Ya has votado hacer un Rock the Vote. ({1} votos, {2} requeridos)"
 	}
 
