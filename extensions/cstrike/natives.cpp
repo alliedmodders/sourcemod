@@ -954,6 +954,21 @@ static cell_t CS_WeaponIDToItemDefIndex(IPluginContext *pContext, const cell_t *
 #endif
 }
 
+static cell_t CS_WeaponIDToLoadoutSlot(IPluginContext *pContext, const cell_t *params)
+{
+#if SOURCE_ENGINE == SE_CSGO
+	WeaponIDMap::Result res = g_mapWeaponIDToDefIdx.find((SMCSWeapon)params[1]);
+
+	if (!res.found())
+		return  pContext->ThrowNativeError("Invalid weapon id passed.");
+
+	return res->value.m_iLoadoutSlot;
+#else
+	return pContext->ThrowNativeError("CS_WeaponIDToLoadoutSlot is not supported on this game");
+#endif
+}
+
+
 sp_nativeinfo_t g_CSNatives[] = 
 {
 	{"CS_RespawnPlayer",			CS_RespawnPlayer}, 
@@ -978,6 +993,7 @@ sp_nativeinfo_t g_CSNatives[] =
 	{"CS_IsValidWeaponID",			CS_IsValidWeaponID},
 	{"CS_ItemDefIndexToID",			CS_ItemDefIndexToID},
 	{"CS_WeaponIDToItemDefIndex",	CS_WeaponIDToItemDefIndex},
+	{"CS_WeaponIDToLoadoutSlot",	CS_WeaponIDToLoadoutSlot},
 	{NULL,							NULL}
 };
 
