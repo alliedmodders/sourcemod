@@ -846,11 +846,7 @@ CPluginManager::~CPluginManager()
 
 void CPluginManager::Shutdown()
 {
-	List<CPlugin *>::iterator iter;
-
-	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
-		UnloadPlugin(*iter);
-	}
+	UnloadAll();
 }
 
 void CPluginManager::LoadAll(const char *config_path, const char *plugins_path)
@@ -978,6 +974,20 @@ IPlugin *CPluginManager::LoadPlugin(const char *path, bool debug, PluginType typ
 	LoadRes res;
 
 	*wasloaded = false;
+
+	if (strstr(path, "..") != NULL)
+	{
+		ke::SafeStrcpy(error, maxlength, "Cannot load plugins outside the \"plugins\" folder");
+		return NULL;
+	}
+
+	const char *ext = libsys->GetFileExtension(path);
+	if (!ext || strcmp(ext, "smx") != 0)
+	{
+		ke::SafeStrcpy(error, maxlength, "Plugin files must have the \".smx\" file extension");
+		return NULL;
+	}
+
 	if ((res=LoadPlugin(&pl, path, true, PluginType_MapUpdated)) == LoadRes_Failure)
 	{
 		ke::SafeStrcpy(error, maxlength, pl->GetErrorMsg());
@@ -1489,6 +1499,9 @@ void CPluginManager::Purge(CPlugin *plugin)
 	if (plugin->GetStatus() == Plugin_Running)
 		plugin->Call_OnPluginEnd();
 
+	m_pOnNotifyPluginUnloaded->PushCell(plugin->GetMyHandle());
+	m_pOnNotifyPluginUnloaded->Execute(NULL);
+
 	// Notify listeners of unloading.
 	if (plugin->EnteredSecondPass()) {
 		for (ListenerIter iter(m_listeners); !iter.done(); iter.next())
@@ -1577,6 +1590,7 @@ void CPluginManager::OnSourceModAllInitialized()
 
 	m_pOnLibraryAdded = forwardsys->CreateForward("OnLibraryAdded", ET_Ignore, 1, NULL, Param_String);
 	m_pOnLibraryRemoved = forwardsys->CreateForward("OnLibraryRemoved", ET_Ignore, 1, NULL, Param_String);
+	m_pOnNotifyPluginUnloaded = forwardsys->CreateForward("OnNotifyPluginUnloaded", ET_Ignore, 1, NULL, Param_Cell);
 }
 
 void CPluginManager::OnSourceModShutdown()
@@ -1591,6 +1605,7 @@ void CPluginManager::OnSourceModShutdown()
 
 	forwardsys->ReleaseForward(m_pOnLibraryAdded);
 	forwardsys->ReleaseForward(m_pOnLibraryRemoved);
+	forwardsys->ReleaseForward(m_pOnNotifyPluginUnloaded);
 }
 
 ConfigResult CPluginManager::OnSourceModConfigChanged(const char *key,
@@ -2208,7 +2223,6 @@ void CPluginManager::UnloadAll()
 int CPluginManager::GetOrderOfPlugin(IPlugin *pl)
 {
 	int id = 1;
-	List<CPlugin *>::iterator iter;
 
 	for (PluginIter iter(m_plugins); !iter.done(); iter.next()) {
 		if ((*iter) == pl)

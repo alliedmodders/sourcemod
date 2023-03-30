@@ -191,6 +191,7 @@ bool CritManager::Hook_CalcIsAttackCriticalHelpers(bool noCrits)
 		returnValue = SH_MCALL(pWeapon, CalcIsAttackCriticalHelper)() ? 1 : 0;
 	}
 
+	int origReturnValue = returnValue;
 	int ownerIndex = -1;
 	CBaseHandle &hndl = *(CBaseHandle *) ((intptr_t)pWeapon + info.actual_offset);
 	CBaseEntity *pHandleEntity = gamehelpers->ReferenceToEntity(hndl.GetEntryIndex());
@@ -214,5 +215,5 @@ bool CritManager::Hook_CalcIsAttackCriticalHelpers(bool noCrits)
 		RETURN_META_VALUE(MRES_SUPERCEDE, returnValue);
 	}
 	
-	RETURN_META_VALUE(MRES_IGNORED, false);
+	RETURN_META_VALUE(MRES_SUPERCEDE, origReturnValue);
 }

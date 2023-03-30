@@ -1,0 +1,23 @@
+"Phrases"
+{
+	"Admin Menu"
+	{
+		"zho"		"管理員菜單"
+	}
+
+	"Player Commands"
+	{
+		"zho"		"玩家指令"
+	}
+
+	"Server Commands"
+	{
+		"zho"		"伺服器指令"
+	}
+
+	"Voting Commands"
+	{
+		"zho"		"投票指令"
+	}
+
+}

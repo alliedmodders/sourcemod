@@ -1,0 +1,73 @@
+"Phrases"
+{
+	"Gag/Mute player"
+	{
+		"pt"		"Amordaçar/Emudecer jogador"
+	}
+
+	"Choose Type"
+	{
+		"pt"		"Escolha o tipo"
+	}
+
+	"Gagged target"
+	{
+		"pt"		"Amordaçou {1}."
+	}
+
+	"Ungagged target"
+	{
+		"pt"		"Desamordaçou {1}."
+	}
+
+	"Muted target"
+	{
+		"pt"		"Emudeceu {1}."
+	}
+
+	"Unmuted target"
+	{
+		"pt"		" Desemudeceu {1}"
+	}
+
+	"Silenced target"
+	{
+		"pt"		"Silenciou {1}."
+	}
+
+	"Unsilenced target"
+	{
+		"pt"		"Desilenciou {1}."
+	}
+
+	"Mute Player"
+	{
+		"pt"		"Emudecer jogador"
+	}
+
+	"UnMute Player"
+	{
+		"pt"		"Desemudecer jogador"
+	}
+
+	"Gag Player"
+	{
+		"pt"		"Amordaçar jogador"
+	}
+
+	"UnGag Player"
+	{
+		"pt"		"Desamordaçar jogador"
+	}
+
+	"Silence Player"
+	{
+		"pt"		"Silenciar jogador"
+	}
+
+	"UnSilence Player"
+	{
+		"pt"		"Desilenciar jogador"
+	}
+
+}

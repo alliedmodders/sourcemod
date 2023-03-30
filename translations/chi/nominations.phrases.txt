@@ -1,0 +1,68 @@
+"Phrases"
+{
+	"Already Nominated"
+	{
+		"chi"		"您已预订了一幅地图."
+	}
+
+	"Max Nominations"
+	{
+		"chi"		"已达最大预订数."
+	}
+
+	"Map Already In Vote"
+	{
+		"chi"		"地图 '{1}' 已在预订列表中."
+	}
+
+	"Map Inserted"
+	{
+		"chi"		"地图 '{1}' 加入了预订列表."
+	}
+
+	"Map Already Nominated"
+	{
+		"chi"		"您所选的地图已被预订."
+	}
+
+	"Map Nominated"
+	{
+		"chi"		"{1} 预订了 {2}."
+	}
+
+	"Map Nomination Changed"
+	{
+		"chi"		"{1} 将其所订改为了 {2}."
+	}
+
+	"Nominate Title"
+	{
+		"chi"		"预订地图:"
+	}
+
+	"Can't Nominate Current Map"
+	{
+		"chi"		"您所选的图正是当前地图, 无法预订"
+	}
+
+	"Map in Exclude List"
+	{
+		"chi"		"您所选的图是最近已玩过的地图, 无法预订"
+	}
+
+	"Current Map"
+	{
+		"chi"		"当前地图"
+	}
+
+	"Recently Played"
+	{
+		"chi"		"最近玩过的地图"
+	}
+
+	"Nominated"
+	{
+		"chi"		"已预订的地图"
+	}
+
+}

@@ -38,6 +38,7 @@
 #include <am-refcounting.h>
 #include <sm_stringhashmap.h>
 #include <sm_namehashset.h>
+#include <unordered_set>
 
 using namespace SourceMod;
 
@@ -86,11 +87,13 @@ private:
 	/* Parse states */
 	int m_ParseState;
 	unsigned int m_IgnoreLevel;
-	char m_Class[64];
-	char m_Prop[64];
-	char m_offset[64];
-	char m_Game[256];
-	char m_Key[64];
+	std::string m_Class;
+	std::string m_Prop;
+	std::string m_offset;
+	std::string m_Game;
+	std::string m_Key;
+	unsigned int bCurrentBinCRC;
+	bool bCurrentBinCRC_Ok = false;
 	bool bShouldBeReadingDefault;
 	bool had_game;
 	bool matched_game;
@@ -105,24 +108,49 @@ private:
 	/* Support for reading Addresses */
 	struct AddressConf
 	{
-		char signatureName[64];
+		std::string signatureName;
 		int readCount;
 		int read[8];
 		bool lastIsOffset;
 
-		AddressConf(char *sigName, unsigned sigLength, unsigned readCount, int *read, bool lastIsOffset);
+		AddressConf(std::string&& sigName, unsigned readCount, int *read, bool lastIsOffset);
 
 		AddressConf() {}
 	};
 
-	char m_Address[64];
-	char m_AddressSignature[64];
+	std::string m_Address;
+	std::string m_AddressSignature;
 	int m_AddressReadCount;
 	int m_AddressRead[8];
 	bool m_AddressLastIsOffset;
 	StringHashMap<AddressConf> m_Addresses;
 	const char *m_pEngine;
 	const char *m_pBaseEngine;
+	time_t m_ModTime;
+};
+
+struct GameBinaryInfo
+{
+	void *m_pAddr = nullptr;
+	uint32_t m_crc = 0;
+	bool m_crcOK = false;
+};
+
+class GameBinPathManager
+{
+public:
+	GameBinPathManager() {}
+	~GameBinPathManager() {}
+public:
+	void Init();
+
+	inline const std::vector<std::string>& Paths() const
+	{
+		return m_ordered;
+	}
+private:
+	std::unordered_set<std::string> m_lookup;
+	std::vector<std::string> m_ordered;
 };
 
 class GameConfigManager : 
@@ -147,11 +175,16 @@ public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModAllShutdown();
 public:
+	bool TryGetGameBinaryInfo(const char* pszName, GameBinaryInfo* pDest);
 	void RemoveCachedConfig(CGameConfig *config);
 private:
+	void CacheGameBinaryInfo(const char* pszName);
+private:
 	NameHashSet<CGameConfig *> m_Lookup;
+	StringHashMap<GameBinaryInfo> m_gameBinInfos;
 public:
 	StringHashMap<ITextListener_SMC *> m_customHandlers;
+	GameBinPathManager m_gameBinPathManager;
 };
 
 extern GameConfigManager g_GameConfigs;

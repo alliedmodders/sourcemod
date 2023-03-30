@@ -54,6 +54,7 @@ SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
 SH_DECL_HOOK1_void(IServerGameDLL, GameFrame, SH_NOATTRIB, false, bool);
 SH_DECL_HOOK1_void(IServerGameDLL, Think, SH_NOATTRIB, false, bool);
 SH_DECL_HOOK1_void(IVEngineServer, ServerCommand, SH_NOATTRIB, false, const char *);
+SH_DECL_HOOK0(IVEngineServer, GetMapEntitiesString, SH_NOATTRIB, 0, const char *);
 
 SourceModBase g_SourceMod;
 
@@ -63,11 +64,13 @@ ISourcePawnEngine *g_pSourcePawn = NULL;
 ISourcePawnEngine2 *g_pSourcePawn2 = NULL;
 ISourcePawnEnvironment *g_pPawnEnv = NULL;
 IdentityToken_t *g_pCoreIdent = NULL;
-IForward *g_pOnMapEnd = NULL;
+IForward *g_pOnMapInit = nullptr;
+IForward *g_pOnMapEnd = nullptr;
 IGameConfig *g_pGameConf = NULL;
 bool g_Loaded = false;
 bool sm_show_debug_spew = false;
 bool sm_disable_jit = false;
+int jit_metadata_flags = JIT_DEBUG_DELETE_ON_EXIT | JIT_DEBUG_PERF_BASIC;
 SMGlobalClass *SMGlobalClass::head = nullptr;
 
 #ifdef PLATFORM_WINDOWS
@@ -130,8 +133,36 @@ ConfigResult SourceModBase::OnSourceModConfigChanged(const char *key,
 	else if (strcasecmp(key, "DisableJIT") == 0)
 	{
 		sm_disable_jit = (strcasecmp(value, "yes") == 0) ? true : false;
-		if (g_pSourcePawn2)
+
+		if (g_pSourcePawn2) {
 			g_pSourcePawn2->SetJitEnabled(!sm_disable_jit);
+		}
+
+		return ConfigResult_Accept;
+	}
+	else if (strcasecmp(key, "JITMetadata") == 0)
+	{
+		/* TODO: Support a comma-separated list of the flags */
+		if (strcasecmp(value, "none") == 0) {
+			jit_metadata_flags = 0;
+		}
+		else if (strcasecmp(value, "default") == 0) {
+			jit_metadata_flags = JIT_DEBUG_DELETE_ON_EXIT | JIT_DEBUG_PERF_BASIC;
+		}
+		else if (strcasecmp(value, "perf") == 0) {
+			jit_metadata_flags = JIT_DEBUG_PERF_BASIC;
+		}
+		else if (strcasecmp(value, "jitdump") == 0) {
+			jit_metadata_flags = JIT_DEBUG_PERF_BASIC | JIT_DEBUG_PERF_JITDUMP;
+		}
+		else {
+			ke::SafeStrcpy(error, maxlength, "Invalid value: must be \"none\", \"default\", \"perf\", or \"jitdump\"");
+			return ConfigResult_Reject;
+		}
+
+		if (g_pPawnEnv) {
+			g_pPawnEnv->SetDebugMetadataFlags(jit_metadata_flags);
+		}
 
 		return ConfigResult_Accept;
 	}
@@ -182,10 +213,16 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	/* There will always be a path by this point, since it was force-set above. */
 	m_GotBasePath = true;
 
+#if defined PLATFORM_X86
+# define SOURCEPAWN_DLL "sourcepawn.jit.x86"
+#else
+# define SOURCEPAWN_DLL "sourcepawn.vm"
+#endif
+
 	/* Attempt to load the JIT! */
 	char file[PLATFORM_MAX_PATH];
 	char myerror[255];
-	g_SMAPI->PathFormat(file, sizeof(file), "%s/bin/" PLATFORM_ARCH_FOLDER "sourcepawn.jit.x86.%s",
+	g_SMAPI->PathFormat(file, sizeof(file), "%s/bin/" PLATFORM_ARCH_FOLDER SOURCEPAWN_DLL ".%s",
 		GetSourceModPath(),
 		PLATFORM_LIB_EXT
 		);
@@ -195,7 +232,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	{
 		if (error && maxlength)
 		{
-			ke::SafeSprintf(error, maxlength, "%s (failed to load bin/" PLATFORM_ARCH_FOLDER "sourcepawn.jit.x86.%s)", 
+			ke::SafeSprintf(error, maxlength, "%s (failed to load bin/" PLATFORM_ARCH_FOLDER SOURCEPAWN_DLL ".%s)", 
 				myerror,
 				PLATFORM_LIB_EXT);
 		}
@@ -236,10 +273,13 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	if (sm_disable_jit)
 		g_pSourcePawn2->SetJitEnabled(!sm_disable_jit);
 
+	g_pPawnEnv->SetDebugMetadataFlags(jit_metadata_flags);
+
 	sSourceModInitialized = true;
 
 	/* Hook this now so we can detect startup without calling StartSourceMod() */
 	SH_ADD_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(this, &SourceModBase::LevelInit), false);
+	SH_ADD_HOOK(IVEngineServer, GetMapEntitiesString, engine, SH_MEMBER(this, &SourceModBase::GetMapEntitiesString), false);
 
 	/* Only load if we're not late */
 	if (!late)
@@ -331,6 +371,9 @@ void SourceModBase::StartSourceMod(bool late)
 static bool g_LevelEndBarrier = false;
 bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
 {
+	/* Seed rand() globally per map */
+	srand(time(NULL));
+	
 	g_Players.MaxPlayersChanged();
 
 	/* If we're not loaded... */
@@ -363,6 +406,11 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 		pBase = pBase->m_pGlobalClassNext;
 	}
 
+	if (!g_pOnMapInit)
+	{
+		g_pOnMapInit = forwardsys->CreateForward("OnMapInit", ET_Ignore, 1, NULL, Param_String);
+	}
+
 	if (!g_pOnMapEnd)
 	{
 		g_pOnMapEnd = forwardsys->CreateForward("OnMapEnd", ET_Ignore, 0, NULL);
@@ -370,7 +418,32 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 
 	g_LevelEndBarrier = true;
 
-	RETURN_META_VALUE(MRES_IGNORED, true);
+	int parseError;
+	size_t position;
+	bool success = logicore.ParseEntityLumpString(pMapEntities, parseError, position);
+
+	logicore.SetEntityLumpWritable(true);
+	g_pOnMapInit->PushString(pMapName);
+	g_pOnMapInit->Execute();
+	logicore.SetEntityLumpWritable(false);
+
+	if (!success)
+	{
+		logger->LogError("Map entity lump parsing for %s failed with error code %d on position %d", pMapName, parseError, position);
+		RETURN_META_VALUE(MRES_IGNORED, true);
+	}
+
+	RETURN_META_VALUE_NEWPARAMS(MRES_HANDLED, true, &IServerGameDLL::LevelInit, (pMapName, logicore.GetEntityLumpString(), pOldLevel, pLandmarkName, loadGame, background));
+}
+
+const char *SourceModBase::GetMapEntitiesString()
+{
+	const char *pNewMapEntities = logicore.GetEntityLumpString();
+	if (pNewMapEntities != nullptr)
+	{
+		RETURN_META_VALUE(MRES_SUPERCEDE, pNewMapEntities);
+	}
+	RETURN_META_VALUE(MRES_IGNORED, NULL);
 }
 
 void SourceModBase::LevelShutdown()
@@ -384,10 +457,8 @@ void SourceModBase::LevelShutdown()
 			next = next->m_pGlobalClassNext;
 		}
 		
-		if (g_pOnMapEnd != NULL)
-		{
-			g_pOnMapEnd->Execute(NULL);
-		}
+		g_pOnMapEnd->Execute();
+
 		extsys->CallOnCoreMapEnd();
 
 		g_Timers.RemoveMapChangeTimers();
@@ -487,6 +558,7 @@ void SourceModBase::CloseSourceMod()
 		return;
 
 	SH_REMOVE_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(this, &SourceModBase::LevelInit), false);
+	SH_REMOVE_HOOK(IVEngineServer, GetMapEntitiesString, engine, SH_MEMBER(this, &SourceModBase::GetMapEntitiesString), false);
 
 	if (g_Loaded)
 	{
@@ -508,8 +580,17 @@ void SourceModBase::ShutdownServices()
 	/* Unload extensions */
 	extsys->Shutdown();
 
+	if (g_pOnMapInit)
+	{
+		forwardsys->ReleaseForward(g_pOnMapInit);
+		g_pOnMapInit = nullptr;
+	}
+
 	if (g_pOnMapEnd)
+	{
 		forwardsys->ReleaseForward(g_pOnMapEnd);
+		g_pOnMapEnd = nullptr;
+	}
 
 	/* Notify! */
 	SMGlobalClass *pBase = SMGlobalClass::head;

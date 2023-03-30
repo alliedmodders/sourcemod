@@ -102,9 +102,10 @@ native void TeleportEntity(int entity, const float origin[3] = NULL_VECTOR, cons
  * Forces a player to commit suicide.
  *
  * @param client        Client index.
+ * @param explode       If true, explode the player.
  * @error               Invalid client or client not in game, or lack of mod support.
  */
-native void ForcePlayerSuicide(int client);
+native void ForcePlayerSuicide(int client, bool explode = false);
 
 /**
  * Slaps a player in a random direction.
@@ -119,11 +120,11 @@ native void SlapPlayer(int client, int health=5, bool sound=true);
 /**
  * Searches for an entity by classname.
  *
- * @param startEnt      The entity index after which to begin searching from.
+ * @param startEnt      A valid entity's index after which to begin searching from.
  *                      Use -1 to start from the first entity.
  * @param classname     Classname of the entity to find.
  * @return              Entity index >= 0 if found, -1 otherwise.
- * @error               Lack of mod support.
+ * @error               Invalid start entity or lack of mod support.
  */
 native int FindEntityByClassname(int startEnt, const char[] classname);
 
@@ -133,7 +134,7 @@ native int FindEntityByClassname(int startEnt, const char[] classname);
  * @param client        Player's index.
  * @param ang           Destination vector to store the client's eye angles.
  * @return              True on success, false on failure.
- * @error               Invalid client index, client not in game, or no mod support.
+ * @error               Invalid client index, client not in game, or lack of mod support.
  */
 native bool GetClientEyeAngles(int client, float ang[3]);
 
@@ -145,7 +146,7 @@ native bool GetClientEyeAngles(int client, float ang[3]);
  * @param classname         Entity classname.
  * @param ForceEdictIndex   Edict index used by the created entity (ignored on Orangebox and above).
  * @return                  Entity index on success, or -1 on failure.
- * @error                   Invalid edict index, or no mod support.
+ * @error                   Invalid edict index, no map is running, or lack of mod support.
  */
 native int CreateEntityByName(const char[] classname, int ForceEdictIndex=-1);
 
@@ -154,7 +155,7 @@ native int CreateEntityByName(const char[] classname, int ForceEdictIndex=-1);
  *
  * @param entity        Entity index of the created entity.
  * @return              True on success, false otherwise.
- * @error               Invalid entity index, or no mod support.
+ * @error               Invalid entity index or lack of mod support.
  */
 native bool DispatchSpawn(int entity);
 
@@ -165,9 +166,26 @@ native bool DispatchSpawn(int entity);
  * @param keyName       Name of the key.
  * @param value         String value.
  * @return              True on success, false otherwise.
- * @error               Invalid entity index, or no mod support.
+ * @error               Invalid entity index or lack of mod support.
  */
 native bool DispatchKeyValue(int entity, const char[] keyName, const char[] value);
+
+/**
+ * Dispatches a KeyValue into given entity using an integer value.
+ *
+ * @param entity        Destination entity index.
+ * @param keyName       Name of the key.
+ * @param value         Integer value.
+ * @return              True on success, false otherwise.
+ * @error               Invalid entity index or lack of mod support.
+ */
+stock bool DispatchKeyValueInt(int entity, const char[] keyName, int value)
+{
+    char str[12];
+    FormatEx(str, sizeof(str), "%d", value);
+
+    return DispatchKeyValue(entity, keyName, str);
+}
 
 /**
  * Dispatches a KeyValue into given entity using a floating point value.
@@ -176,7 +194,7 @@ native bool DispatchKeyValue(int entity, const char[] keyName, const char[] valu
  * @param keyName       Name of the key.
  * @param value         Floating point value.
  * @return              True on success, false otherwise.
- * @error               Invalid entity index, or no mod support.
+ * @error               Invalid entity index or lack of mod support.
  */
 native bool DispatchKeyValueFloat(int entity, const char[] keyName, float value);
 
@@ -187,7 +205,7 @@ native bool DispatchKeyValueFloat(int entity, const char[] keyName, float value)
  * @param keyName       Name of the key.
  * @param vec           Vector value.
  * @return              True on success, false otherwise.
- * @error               Invalid entity index, or no mod support.
+ * @error               Invalid entity index or lack of mod support.
  */
 native bool DispatchKeyValueVector(int entity, const char[] keyName, const float vec[3]);
 
@@ -266,7 +284,7 @@ native int GetTeamEntity(int teamIndex);
  *
  * @param entity        Entity index.
  * @param model         Model name.
- * @error               Invalid entity index, or no mod support.
+ * @error               Invalid entity index or lack of mod support.
  */
 native void SetEntityModel(int entity, const char[] model);
 
@@ -297,6 +315,7 @@ native bool GetPlayerJingleFile(int client, char[] hex, int maxlength);
  *
  * @param in            Buffer to store the input traffic velocity.
  * @param out           Buffer to store the output traffic velocity.
+ * @error               Lack of mod support.
  */
 native void GetServerNetStats(float &inAmount, float &outAmout);
 
@@ -325,7 +344,7 @@ native void ActivateEntity(int entity);
  * @param client        Player's index.
  * @param key           Key string.
  * @param value         Value string.
- * @error               Invalid client index, or client not connected.
+ * @error               Invalid client index, client not connected, or lack of mod support.
  */
 native void SetClientInfo(int client, const char[] key, const char[] value);
 
@@ -334,7 +353,7 @@ native void SetClientInfo(int client, const char[] key, const char[] value);
  *
  * @param client        Player's index.
  * @param name          New name.
- * @error               Invalid client index, or client not connected.
+ * @error               Invalid client index, client not connected, or lack of mod support.
  */
 native void SetClientName(int client, const char[] name);
 
@@ -347,5 +366,54 @@ native void SetClientName(int client, const char[] name);
  * @param ammotype      Type of ammo to give to player.
  * @param suppressSound If true, don't play the ammo pickup sound.
  * @return              Amount of ammo actually given.
+ * @error               Lack of mod support.
  */
 native int GivePlayerAmmo(int client, int amount, int ammotype, bool suppressSound=false);
+
+/**
+ * Changes an entity's collision group (CBaseEntity::SetCollisionGroup).
+ * 
+ * @param entity            The entity index.
+ * @param collisionGroup    Collision group to use.
+ * @error                   Invalid entity or lack of mod support.
+ */
+native void SetEntityCollisionGroup(int entity, int collisionGroup);
+
+/**
+ * Recaculates entity collision rules (CBaseEntity::CollisionRulesChanged).
+ * 
+ * @param entity            The entity index.
+ * @error                   Invalid entity or lack of mod support.
+ */
+native void EntityCollisionRulesChanged(int entity);
+
+/**
+ * Sets an entity's owner (CBaseEntity::SetEntityOwner).
+ * 
+ * @param entity            The entity index.
+ * @param owner             The owner entity index, can be invalid.
+ * @error                   Invalid entity or lack of mod support.
+ */
+native void SetEntityOwner(int entity, int owner=INVALID_ENT_REFERENCE);
+
+/**
+ * Returns the index number of a given named attachment.
+ * 
+ * @param entity        The entity index.
+ * @param name          The attachment name.
+ * @return              An attachment index, or 0 if the attachment name is invalid or unused.
+ * @error               Invalid entity or lack of mod support.
+ */
+native int LookupEntityAttachment(int entity, const char[] name);
+
+/**
+ * Returns the world location and world angles of an attachment.
+ * 
+ * @param entity        The entity index.
+ * @param attachment    The attachment index.
+ * @param origin        Destination vector to store the attachment's origin vector.
+ * @param angles        Destination vector to store the attachment's position angle.
+ * @return              True on success, otherwise false.
+ * @error               Invalid entity or lack of mod support.
+ */
+native bool GetEntityAttachment(int entity, int attachment, float origin[3], float angles[3]);

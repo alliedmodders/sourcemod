@@ -121,8 +121,13 @@ void ConCmdManager::OnPluginDestroyed(IPlugin *plugin)
 		if (hook->admin)
 			hook->admin->group->hooks.remove(hook);
 
-		if (hook->info->hooks.empty())
+		if (hook->info->hooks.empty()) {
 			RemoveConCmd(hook->info, hook->info->pCmd->GetName(), true);
+		}
+		else { // update plugin reference to next hook in line
+			auto next = *hook->info->hooks.begin();
+			next->info->pPlugin = next->plugin;
+		}
 
 		iter = pList->erase(iter);
 		delete hook;
@@ -148,30 +153,13 @@ ConCmdInfo *ConCmdManager::FindInTrie(const char *name)
 	return pInfo;
 }
 
-ConCmdList::iterator ConCmdManager::FindInList(const char *cmd)
-{
-	List<ConCmdInfo *>::iterator iter = m_CmdList.begin();
-
-	while (iter != m_CmdList.end())
-	{
-		if (strcasecmp((*iter)->pCmd->GetName(), cmd) == 0)
-			break;
-		iter++;
-	}
-
-	return iter;
-}
-
 ResultType ConCmdManager::DispatchClientCommand(int client, const char *cmd, int args, ResultType type)
 {
-	ConCmdInfo *pInfo;
+	ConCmdInfo *pInfo = FindInTrie(cmd);
 
-	if ((pInfo = FindInTrie(cmd)) == NULL)
+	if (pInfo == NULL)
 	{
-		ConCmdList::iterator item = FindInList(cmd);
-		if (item == m_CmdList.end())
-			return type;
-		pInfo = *item;
+		return type;
 	}
 
 	cell_t result = type;
@@ -226,17 +214,7 @@ bool ConCmdManager::InternalDispatch(int client, const ICommandArgs *args)
 	ConCmdInfo *pInfo = FindInTrie(cmd);
 	if (pInfo == NULL)
 	{
-        /* Unfortunately, we now have to do a slow lookup because Valve made client commands 
-         * case-insensitive.  We can't even use our sortedness.
-         */
-        if (client == 0 && !engine->IsDedicatedServer())
-            return false;
-
-		ConCmdList::iterator item = FindInList(cmd);
-		if (item == m_CmdList.end())
-			return false;
-
-		pInfo = *item;
+		return false;
 	}
 
 	/* This is a hack to prevent say triggers from firing on messages that were 
@@ -360,7 +338,7 @@ bool ConCmdManager::AddAdminCommand(IPluginFunction *pFunction,
 	}
 	RefPtr<CommandGroup> cmdgroup = i->value;
 
-	CmdHook *pHook = new CmdHook(CmdHook::Client, pInfo, pFunction, description);
+	CmdHook *pHook = new CmdHook(CmdHook::Client, pInfo, pFunction, description, pPlugin);
 	pHook->admin = std::make_unique<AdminCmdInfo>(cmdgroup, adminflags);
 
 	/* First get the command group override, if any */
@@ -399,7 +377,7 @@ bool ConCmdManager::AddServerCommand(IPluginFunction *pFunction,
 	if (!pInfo)
 		return false;
 
-	CmdHook *pHook = new CmdHook(CmdHook::Server, pInfo, pFunction, description);
+	CmdHook *pHook = new CmdHook(CmdHook::Server, pInfo, pFunction, description, pPlugin);
 
 	pInfo->hooks.append(pHook);
 	RegisterInPlugin(pHook);
@@ -496,7 +474,7 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 		for (PluginHookList::iterator iter = group->hooks.begin(); iter != group->hooks.end(); iter++)
 		{
 			CmdHook *hook = *iter;
-			if (remove)
+			if (!remove)
 				hook->admin->eflags = bits;
 			else
 				hook->admin->eflags = hook->admin->flags;
@@ -563,10 +541,6 @@ ConCmdInfo *ConCmdManager::AddOrFindCommand(const char *name, const char *descri
 	ConCmdInfo *pInfo;
 	if (!m_Cmds.retrieve(name, &pInfo))
 	{
-		ConCmdList::iterator item = FindInList(name);
-		if (item != m_CmdList.end())
-			return *item;
-
 		pInfo = new ConCmdInfo();
 		/* Find the commandopan */
 		ConCommand *pCmd = FindCommand(name);

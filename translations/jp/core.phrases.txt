@@ -1,0 +1,88 @@
+"Phrases"
+{
+	"No Access"
+	{
+		"jp"		"このコマンドにアクセスする権限がありません。"
+	}
+
+	"Back"
+	{
+		"jp"		"戻る"
+	}
+
+	"Next"
+	{
+		"jp"		"次へ"
+	}
+
+	"Exit"
+	{
+		"jp"		"閉じる"
+	}
+
+	"Previous"
+	{
+		"jp"		"戻る"
+	}
+
+	"all players"
+	{
+		"jp"		"全てのプレイヤー"
+	}
+
+	"all humans"
+	{
+		"jp"		"全ての人間"
+	}
+
+	"all bots"
+	{
+		"jp"		"全てのボット"
+	}
+
+	"all dead players"
+	{
+		"jp"		"全ての死亡プレイヤー"
+	}
+
+	"all alive players"
+	{
+		"jp"		"全ての生存プレイヤー"
+	}
+
+	"_s"
+	{
+		"jp"		"{1}"
+	}
+
+	"all spectators"
+	{
+		"jp"		"全ての観戦者"
+	}
+
+	"Vote Count"
+	{
+		"jp"		"投票: {1}/{2}, 残り{3}"
+	}
+
+	"Voted For"
+	{
+		"jp"		"{1}は{2}に投票しました。"
+	}
+
+	"Changed Vote"
+	{
+		"jp"		"{1}は{2}に投票を変更しました。"
+	}
+
+	"No Vote"
+	{
+		"jp"		"投票しない"
+	}
+
+	"Name Reserved"
+	{
+		"jp"		"あなたの名前はSourceModによって予約されています。利用するならパスワードを設定してください。"
+	}
+
+}

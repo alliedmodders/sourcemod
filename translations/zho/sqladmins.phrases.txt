@@ -1,0 +1,78 @@
+"Phrases"
+{
+	"Invalid authtype"
+	{
+		"zho"		" 確認方式必須為 'steam ID', '玩家名字', 或 'ip'. "
+	}
+
+	"Invalid immunity"
+	{
+		"zho"		"免役級別必須為正整數"
+	}
+
+	"SQL Admin already exists"
+	{
+		"zho"		"具有該憑證的管理員已存在"
+	}
+
+	"SQL Admin added"
+	{
+		"zho"		"已在資料庫中成功加入管理員"
+	}
+
+	"SQL Admin deleted"
+	{
+		"zho"		"管理員已由資料庫中成功刪除"
+	}
+
+	"SQL Admin not found"
+	{
+		"zho"		"未找到具有該憑證的管理員"
+	}
+
+	"SQL Group already exists"
+	{
+		"zho"		"該名稱組別己存在"
+	}
+
+	"SQL Group added"
+	{
+		"zho"		"組別已成功加入數據庫中"
+	}
+
+	"SQL Group deleted"
+	{
+		"zho"		"組別已從數據庫中成功刪除"
+	}
+
+	"SQL Group not found"
+	{
+		"zho"		"未找到符合該名稱的組別"
+	}
+
+	"SQL Admin groups reset"
+	{
+		"zho"		"管理員組別改成功重置"
+	}
+
+	"SQL Group X not found"
+	{
+		"zho"		"未找到組別 \"{1}\""
+	}
+
+	"SQL Group X failed to bind"
+	{
+		"zho"		"綁定組別 \"{1}\" 失敗"
+	}
+
+	"Added group to user"
+	{
+		"zho"		"已成功添加一個组別至指定的管理員."
+	}
+
+	"Added groups to user"
+	{
+		"zho"		"已成功添加 {1} 個组別至指定的管理員."
+	}
+
+}

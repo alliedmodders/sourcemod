@@ -6,6 +6,8 @@ use File::Basename;
 my ($myself, $path) = fileparse($0);
 chdir($path);
 
+use FindBin;
+use lib $FindBin::Bin;
 require 'helpers.pm';
 
 chdir('../../../OUTPUT');
@@ -16,7 +18,11 @@ if ($argn > 0) {
 	$ENV{CXX} = $ARGV[1];
 }
 
-system("ambuild --no-color 2>&1");
+if ($^O !~ /MSWin/) {
+	system("ambuild --no-color 2>&1");
+} else {
+	system("C:\\Python38\\scripts\\ambuild --no-color 2>&1");
+}
 
 if ($? != 0)
 {

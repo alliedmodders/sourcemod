@@ -18,130 +18,109 @@
 		{
 			"GiveNamedItem"
 			{
-				"windows"	"552"
-				"linux"		"553"
+				"windows"	"417"
+				"linux"		"418"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"289"
-				"linux"		"290"
+				"windows"	"285"
+				"linux"		"286"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"284"
-				"linux"		"285"
+				"windows"	"280"
+				"linux"		"281"
 			}
 			"Ignite"
 			{
-				"windows"	"223"
-				"linux"		"224"
+				"windows"	"220"
+				"linux"		"221"
 			}
 			"Extinguish"
 			{
-				"windows"	"227"
-				"linux"		"228"
+				"windows"	"224"
+				"linux"		"225"
 			}
 			"Teleport"
 			{
-				"windows"	"121"
-				"linux"		"122"
+				"windows"	"115"
+				"linux"		"116"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"465"
-				"linux"		"465"
+				"windows"	"452"
+				"linux"		"452"
 			}
 			"GetVelocity"
 			{
-				"windows"	"153"
-				"linux"		"154"
+				"windows"	"151"
+				"linux"		"152"
 			}
 			"EyeAngles"
 			{
-				"windows"	"144"
-				"linux"		"145"
+				"windows"	"142"
+				"linux"		"143"
 			}
 			"AcceptInput"
 			{
-				"windows"	"42"
-				"linux"		"43"
+				"windows"	"44"
+				"linux"		"45"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"30"
-				"linux"		"31"
+				"windows"	"32"
+				"linux"		"33"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"275"
-				"linux"		"276"
+				"windows"	"273"
+				"linux"		"274"
 			}
 			"Activate"
 			{
-				"windows"	"39"
-				"linux"		"40"
+				"windows"	"41"
+				"linux"		"42"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"443"
-				"linux"		"444"
+				"windows"	"432"
+				"linux"		"433"
+			}
+			"GetAttachment"
+			{
+				"windows"	"216"
+				"linux"		"217"
+			}
+			"SetOwnerEntity"
+			{
+				"windows"	"25"
+				"linux"		"26"
+			}
+			"GiveAmmo"
+			{
+				"windows"	"264"
+				"linux"		"265"
 			}
 		}
 		"Signatures"
 		{
-			"FindEntityByClassname"
-			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x53\x56\x57\x8B\xF9\x8B\x4D\x2A\x85\xC9\x74\x2A\x8B\x01\xFF\x2A\x2A\x8B\x2A\x81\xE6\x2A\x2A\x2A\x2A\x46\x03\xF6\x8B\x34\x2A\xEB\x2A\x8B\x2A\x2A\x2A\x2A\x2A\x85\xF6\x74\x2A\x8B\x5D\x2A\x8B\x3E\x85\xFF\x75\x2A\x68\x2A\x2A\x2A\x2A\xFF\x2A\x2A\x2A\x2A\x83\xC4\x2A\xEB\x2A\x39"
-				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
-			}
 			"FireOutput"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x2A\x2A\x53\x8B\x5D\x2A\x8B\xC1\x8B\x2A\x2A\x56\x57"
+				"windows"	"\x55\x8B\xEC\x81\xEC\x30\x01\x00\x00\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\xFC\x53\x8B\x5D\x20"
 				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
-		}
-	}
-	
-	"zps"
-	{
-		"Offsets"
-		{
-			/* Offset into CBaseTempEntity constructor */
-			"s_pTempEntities"
-			{
-				"windows"	"19"
-			}
-			"GetTEName"
-			{
-				"windows"	"4"
-				"linux"		"4"
-			}
-			"GetTENext"
-			{
-				"windows"	"8"
-				"linux"		"8"
-			}
-			"TE_GetServerClass"
-			{
-				"windows"	"0"
-				"linux"		"0"
-			}
-		}
-
-		"Signatures"
-		{
-			"CBaseTempEntity"
+			"LookupAttachment"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\x45\x2A\xC7\x2A\x2A\x2A\x2A\x2A\x8B\x2A\x89"
+				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x80\xBE\x7D\x06\x00\x00\x00\x75\x2A\x83\xBE\x9C\x07\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x86\x9C\x07\x00\x00\x85\xC0\x74\x2A\x83\x38\x00\x74\x2A\xFF\x75\x08\x50\xE8\x2A\x2A\x2A\x2A\x83\xC4\x08\x40"
+				"linux"		"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
 			}
-			"s_pTempEntities"
-			{
-				"library"	"server"
-				"linux"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
-			}
+		}
+		"Keys"
+		{
+			"GameRulesProxy"	"CGameMode_Manager"
+			"GameRulesDataTable"	"zps_gamerules_data"
 		}
 	}
 }

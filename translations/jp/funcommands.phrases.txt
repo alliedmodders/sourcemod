@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"jp"		"プレイヤーを燃焼"
+	}
+
+	"FireBomb player"
+	{
+		"jp"		"プレイヤーをFireBomb"
+	}
+
+	"Freeze player"
+	{
+		"jp"		"プレイヤーを凍結"
+	}
+
+	"FreezeBomb player"
+	{
+		"jp"		"プレイヤーをFreezeBomb"
+	}
+
+	"TimeBomb player"
+	{
+		"jp"		"プレイヤーをTimeBomb"
+	}
+
+	"Beacon player"
+	{
+		"jp"		"プレイヤーにビーコン"
+	}
+
+	"NoClip player"
+	{
+		"jp"		"プレイヤーをNoClip"
+	}
+
+	"Blind player"
+	{
+		"jp"		"プレイヤーを暗闇"
+	}
+
+	"Drug player"
+	{
+		"jp"		"プレイヤーをDrug"
+	}
+
+	"Gravity player"
+	{
+		"jp"		"プレイヤーの重力"
+	}
+
+	"Blind amount"
+	{
+		"jp"		"暗闇の強さ"
+	}
+
+	"Fully blind"
+	{
+		"jp"		"完全な暗闇"
+	}
+
+	"Half blind"
+	{
+		"jp"		"暗闇"
+	}
+
+	"No blind"
+	{
+		"jp"		"暗闇なし"
+	}
+
+	"Gravity amount"
+	{
+		"jp"		"重力の数値?"
+	}
+
+	"Gravity Very High"
+	{
+		"jp"		"とても強い重力"
+	}
+
+	"Gravity High"
+	{
+		"jp"		"強い重力"
+	}
+
+	"Gravity Normal"
+	{
+		"jp"		"普通の重力"
+	}
+
+	"Gravity Low"
+	{
+		"jp"		"弱い重力"
+	}
+
+	"Gravity Very Low"
+	{
+		"jp"		"とても弱い重力"
+	}
+
+	"Set target on fire"
+	{
+		"jp"		"{1}を燃焼しました。"
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"jp"		"{1}のFireBombを切り換えました。"
+	}
+
+	"Froze target"
+	{
+		"jp"		"{1}を凍結"
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"jp"		"{1}のFreezeBombを切り換えました。"
+	}
+
+	"Toggled beacon on target"
+	{
+		"jp"		"{1}のビーコンを切り換えました。"
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"jp"		"{1}のTimeBombを切り換えました。"
+	}
+
+	"Toggled noclip on target"
+	{
+		"jp"		"{1}のNoClipを切り換えました。"
+	}
+
+	"Toggled drug on target"
+	{
+		"jp"		"{1}のDrugを切り換えました。"
+	}
+
+	"Set blind on target"
+	{
+		"jp"		"{1}に暗闇を使いました。"
+	}
+
+	"Set gravity on target"
+	{
+		"jp"		"{1}の重力をセットしました。"
+	}
+
+	"Till Explodes"
+	{
+		"jp"		"{1}が爆発するまで{2}秒"
+	}
+
+	"Unfrozen"
+	{
+		"jp"		"解凍されました。 "
+	}
+
+	"You will be unfrozen"
+	{
+		"jp"		"{1}秒後に解凍されます。 "
+	}
+
+}

@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Slot reserved"
+	{
+		"it"		"Disconnesso per l'uso di uno slot riservato"
+	}
+
+}

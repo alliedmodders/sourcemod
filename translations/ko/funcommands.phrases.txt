@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"ko"		"플레이어 태우기"
+	}
+
+	"FireBomb player"
+	{
+		"ko"		"플레이어를 불폭탄으로"
+	}
+
+	"Freeze player"
+	{
+		"ko"		"플레이어 얼리기"
+	}
+
+	"FreezeBomb player"
+	{
+		"ko"		"플레이어를 얼음폭탄으로"
+	}
+
+	"TimeBomb player"
+	{
+		"ko"		"플레이어를 시한폭탄으로"
+	}
+
+	"Beacon player"
+	{
+		"ko"		"플레이어를 비콘으로 지정"
+	}
+
+	"NoClip player"
+	{
+		"ko"		"플레이어 노클립 설정"
+	}
+
+	"Blind player"
+	{
+		"ko"		"플레이어 시야가리기"
+	}
+
+	"Drug player"
+	{
+		"ko"		"플레이어 어지럽게 하기"
+	}
+
+	"Gravity player"
+	{
+		"ko"		"플레이어 중력 설정"
+	}
+
+	"Blind amount"
+	{
+		"ko"		"얼마나 안보일 것인가?"
+	}
+
+	"Fully blind"
+	{
+		"ko"		"완전히 안보이는 수준"
+	}
+
+	"Half blind"
+	{
+		"ko"		"반쯤 안보이는 수준"
+	}
+
+	"No blind"
+	{
+		"ko"		"시야가리기 없음"
+	}
+
+	"Gravity amount"
+	{
+		"ko"		"중력 수준?"
+	}
+
+	"Gravity Very High"
+	{
+		"ko"		"아주 높은 중력"
+	}
+
+	"Gravity High"
+	{
+		"ko"		"높은 중력"
+	}
+
+	"Gravity Normal"
+	{
+		"ko"		"보통 중력"
+	}
+
+	"Gravity Low"
+	{
+		"ko"		"낮은 중력"
+	}
+
+	"Gravity Very Low"
+	{
+		"ko"		"아주 낮은 중력"
+	}
+
+	"Set target on fire"
+	{
+		"ko"		"{1} 님에게 불을 붙였습니다."
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"ko"		"{1} 님의 불폭탄 설정을 바꿨습니다."
+	}
+
+	"Froze target"
+	{
+		"ko"		"{1} 님을 얼렸습니다."
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"ko"		"{1} 님의 얼음폭탄 설정을 바꿨습니다. "
+	}
+
+	"Toggled beacon on target"
+	{
+		"ko"		"{1} 님의 비콘 설정을 바꿨습니다."
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"ko"		"{1} 님의 시한폭탄 설정을 바꿨습니다."
+	}
+
+	"Toggled noclip on target"
+	{
+		"ko"		"{1} 님의 노클립 설정을 바꿨습니다."
+	}
+
+	"Toggled drug on target"
+	{
+		"ko"		"{1} 님의 어지럼증 설정을 바꿨습니다."
+	}
+
+	"Set blind on target"
+	{
+		"ko"		"{1} 님에게 시야가리기를 사용했습니다."
+	}
+
+	"Set gravity on target"
+	{
+		"ko"		"{1} 님의 중력을 설정했습니다."
+	}
+
+	"Till Explodes"
+	{
+		"ko"		"{1} 님이 폭발하기까지 {2} 초."
+	}
+
+	"Unfrozen"
+	{
+		"ko"		"이제 해동되었습니다."
+	}
+
+	"You will be unfrozen"
+	{
+		"ko"		"{1} 초 후 해동될 것입니다."
+	}
+
+}

@@ -2,8 +2,9 @@
 import os
 
 if SM.mysql_root:
-  for arch in SM.archs:
-    binary = SM.ExtLibrary(builder, 'dbi.mysql.ext', arch)
+  for cxx in builder.targets:
+    arch = cxx.target.arch
+    binary = SM.ExtLibrary(builder, cxx, 'dbi.mysql.ext')
     binary.compiler.cxxincludes += [
       os.path.join(SM.mysql_root[arch], 'include'),
       os.path.join(SM.mms_root, 'core', 'sourcehook')
@@ -13,16 +14,16 @@ if SM.mysql_root:
     elif binary.compiler.family == 'msvc':
       binary.compiler.cxxflags += ['/GR-']
 
-    if builder.target.platform == 'linux' or builder.target.platform == 'mac':
+    if binary.compiler.target.platform == 'linux' or binary.compiler.target.platform == 'mac':
       binary.compiler.postlink += [
         os.path.join(SM.mysql_root[arch], 'lib', 'libmysqlclient_r.a'),
         '-lz',
         '-lpthread',
         '-lm',
       ]
-    if builder.target.platform == 'linux':
+    if binary.compiler.target.platform == 'linux':
       binary.compiler.postlink += ['-lrt']
-    elif builder.target.platform == 'windows':
+    elif binary.compiler.target.platform == 'windows':
       binary.compiler.defines += ['WIN32_LEAN_AND_MEAN']
       binary.compiler.postlink += [
         os.path.join(SM.mysql_root[arch], 'lib', 'mysqlclient.lib'),

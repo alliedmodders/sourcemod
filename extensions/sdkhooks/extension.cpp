@@ -37,7 +37,7 @@
 #include "natives.h"
 #include <sm_platform.h>
 #include <const.h>
-
+#include <IBinTools.h>
 
 //#define SDKHOOKSDEBUG
 
@@ -119,13 +119,10 @@ int g_hookOnGetGameDescription = 0;
 IForward *g_pOnGetGameNameDescription = NULL;
 #endif
 
-int g_hookOnGetMapEntitiesString = 0;
 int g_hookOnLevelInit = 0;
 IForward *g_pOnLevelInit = NULL;
 
 IGameConfig *g_pGameConf = NULL;
-
-char g_szMapEntities[2097152];
 
 CUtlVector<IEntityListener *> *EntListeners()
 {
@@ -158,8 +155,6 @@ SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, 0, bool, const char *, con
 #ifdef GAMEDESC_CAN_CHANGE
 SH_DECL_HOOK0(IServerGameDLL, GetGameDescription, SH_NOATTRIB, 0, const char *);
 #endif
-SH_DECL_HOOK0(IVEngineServer, GetMapEntitiesString, SH_NOATTRIB, 0, const char *);
-
 
 /**
  * CBaseEntity Hooks
@@ -182,7 +177,7 @@ SH_DECL_MANUALHOOK1_void(StartTouch, 0, 0, 0, CBaseEntity *);
 SH_DECL_MANUALHOOK0_void(Think, 0, 0, 0);
 SH_DECL_MANUALHOOK1_void(Touch, 0, 0, 0, CBaseEntity *);
 #if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_PVKII
 SH_DECL_MANUALHOOK4_void(TraceAttack, 0, 0, 0, CTakeDamageInfoHack &, const Vector &, CGameTrace *, CDmgAccumulator *);
 #else
 SH_DECL_MANUALHOOK3_void(TraceAttack, 0, 0, 0, CTakeDamageInfoHack &, const Vector &, CGameTrace *);
@@ -235,10 +230,15 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	if (!entListeners)
 	{
 		g_pSM->Format(error, maxlength, "Failed to setup entity listeners");
+#if SOURCE_ENGINE != SE_MOCK
 		return false;
+#endif
+	}
+	else
+	{
+		entListeners->AddToTail(this);
 	}
 
-	entListeners->AddToTail(this);
 
 	sharesys->AddDependency(myself, "bintools.ext", true, true);
 	sharesys->AddNatives(myself, g_Natives);
@@ -256,7 +256,7 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 #ifdef GAMEDESC_CAN_CHANGE
 	g_pOnGetGameNameDescription = forwards->CreateForward("OnGetGameDescription", ET_Hook, 2, NULL, Param_String);
 #endif
-	g_pOnLevelInit = forwards->CreateForward("OnLevelInit", ET_Hook, 2, NULL, Param_String, Param_String);
+	g_pOnLevelInit = forwards->CreateForward("OnLevelInit", ET_Ignore, 2, NULL, Param_String, Param_String);
 
 	SetupHooks();
 
@@ -294,8 +294,6 @@ inline void HookLevelInit()
 {
 	assert(g_hookOnLevelInit == 0);
 	g_hookOnLevelInit = SH_ADD_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(&g_Interface, &SDKHooks::Hook_LevelInit), false);
-	assert(g_hookOnGetMapEntitiesString == 0);
-	g_hookOnGetMapEntitiesString = SH_ADD_HOOK(IVEngineServer, GetMapEntitiesString, engine, SH_MEMBER(&g_Interface, &SDKHooks::Hook_GetMapEntitiesString), false);
 }
 
 #ifdef GAMEDESC_CAN_CHANGE
@@ -324,6 +322,23 @@ void SDKHooks::SDK_OnAllLoaded()
 #endif
 }
 
+bool SDKHooks::QueryRunning(char* error, size_t maxlength)
+{
+	SM_CHECK_IFACE(BINTOOLS, g_pBinTools);
+
+	return true;
+}
+
+bool SDKHooks::QueryInterfaceDrop(SMInterface* pInterface)
+{
+	if (pInterface == g_pBinTools)
+	{
+		return false;
+	}
+
+	return IExtensionInterface::QueryInterfaceDrop(pInterface);
+}
+
 #define KILL_HOOK_IF_ACTIVE(hook) \
 	if (hook != 0) \
 	{ \
@@ -337,7 +352,6 @@ void SDKHooks::SDK_OnUnload()
 	Unhook(reinterpret_cast<SourcePawn::IPluginContext *>(NULL));
 
 	KILL_HOOK_IF_ACTIVE(g_hookOnLevelInit);
-	KILL_HOOK_IF_ACTIVE(g_hookOnGetMapEntitiesString);
 
 #ifdef GAMEDESC_CAN_CHANGE
 	KILL_HOOK_IF_ACTIVE(g_hookOnGetGameDescription);
@@ -358,7 +372,10 @@ void SDKHooks::SDK_OnUnload()
 	sharesys->DropCapabilityProvider(myself, this, "SDKHook_LogicalEntSupport");
 
 	CUtlVector<IEntityListener *> *entListeners = EntListeners();
-	entListeners->FindAndRemove(this);
+	if (entListeners)
+	{
+		entListeners->FindAndRemove(this);
+	}
 
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 }
@@ -406,7 +423,6 @@ void SDKHooks::OnPluginUnloaded(IPlugin *plugin)
 	if (g_pOnLevelInit->GetFunctionCount() == 0)
 	{
 		KILL_HOOK_IF_ACTIVE(g_hookOnLevelInit);
-		KILL_HOOK_IF_ACTIVE(g_hookOnGetMapEntitiesString);
 	}
 
 #ifdef GAMEDESC_CAN_CHANGE
@@ -721,7 +737,7 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 				hookid = SH_ADD_MANUALVPHOOK(Weapon_Switch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponSwitchPost), true);
 				break;
 			case SDKHook_ShouldCollide:
-				hookid = SH_ADD_MANUALVPHOOK(ShouldCollide, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_ShouldCollide), false);
+				hookid = SH_ADD_MANUALVPHOOK(ShouldCollide, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_ShouldCollide), true);
 				break;
 			case SDKHook_Blocked:
 				hookid = SH_ADD_MANUALVPHOOK(Blocked, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Blocked), false);
@@ -905,26 +921,12 @@ const char *SDKHooks::Hook_GetGameDescription()
 }
 #endif
 
-const char *SDKHooks::Hook_GetMapEntitiesString()
-{
-	if(g_szMapEntities[0])
-		RETURN_META_VALUE(MRES_SUPERCEDE, g_szMapEntities);
-
-	RETURN_META_VALUE(MRES_IGNORED, NULL);
-}
-
 bool SDKHooks::Hook_LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
 {
-	strcpy(g_szMapEntities, pMapEntities);
-	cell_t result = Pl_Continue;
-
 	// Call OnLevelInit forward
 	g_pOnLevelInit->PushString(pMapName);
-	g_pOnLevelInit->PushStringEx(g_szMapEntities, sizeof(g_szMapEntities), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
-	g_pOnLevelInit->Execute(&result);
-
-	if(result == Pl_Changed)
-		RETURN_META_VALUE_NEWPARAMS(MRES_HANDLED, true, &IServerGameDLL::LevelInit, (pMapName, g_szMapEntities, pOldLevel, pLandmarkName, loadGame, background));
+	g_pOnLevelInit->PushString("");
+	g_pOnLevelInit->Execute();
 
 	RETURN_META_VALUE(MRES_IGNORED, true);
 }
@@ -1052,7 +1054,7 @@ int SDKHooks::Hook_GetMaxHealth()
 
 		int new_max = original_max;
 
-		cell_t res = Pl_Continue;
+		cell_t ret = Pl_Continue;
 
 		std::vector<IPluginFunction *> callbackList;
 		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
@@ -1061,10 +1063,20 @@ int SDKHooks::Hook_GetMaxHealth()
 			IPluginFunction *callback = callbackList[entry];
 			callback->PushCell(entity);
 			callback->PushCellByRef(&new_max);
+
+			cell_t res;
 			callback->Execute(&res);
+
+			if (res > ret)
+			{
+				ret = res;
+			}
 		}
 
-		if (res >= Pl_Changed)
+		if (ret >= Pl_Handled)
+			RETURN_META_VALUE(MRES_SUPERCEDE, original_max);
+
+		if (ret >= Pl_Changed)
 			RETURN_META_VALUE(MRES_SUPERCEDE, new_max);
 
 		break;
@@ -1389,7 +1401,7 @@ void SDKHooks::Hook_Spawn()
 		}
 
 		int entity = gamehelpers->EntityToBCompatRef(pEntity);
-		cell_t res = Pl_Continue;
+		cell_t ret = Pl_Continue;
 
 		std::vector<IPluginFunction *> callbackList;
 		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
@@ -1397,10 +1409,17 @@ void SDKHooks::Hook_Spawn()
 		{
 			IPluginFunction *callback = callbackList[entry];
 			callback->PushCell(entity);
+
+			cell_t res;
 			callback->Execute(&res);
+
+			if (res > ret)
+			{
+				ret = res;
+			}
 		}
 
-		if (res >= Pl_Handled)
+		if (ret >= Pl_Handled)
 			RETURN_META(MRES_SUPERCEDE);
 
 		break;
@@ -1431,7 +1450,11 @@ void SDKHooks::Hook_StartTouchPost(CBaseEntity *pOther)
 
 void SDKHooks::Hook_Think()
 {
-	Call(META_IFACEPTR(CBaseEntity), SDKHook_Think);
+	cell_t result = Call(META_IFACEPTR(CBaseEntity), SDKHook_Think);
+
+	if(result >= Pl_Handled)
+		RETURN_META(MRES_SUPERCEDE);
+
 	RETURN_META(MRES_IGNORED);
 }
 
@@ -1457,7 +1480,7 @@ void SDKHooks::Hook_TouchPost(CBaseEntity *pOther)
 }
 
 #if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_PVKII
 void SDKHooks::Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator)
 #else
 void SDKHooks::Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr)
@@ -1538,7 +1561,7 @@ void SDKHooks::Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir,
 }
 
 #if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_PVKII
 void SDKHooks::Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator)
 #else
 void SDKHooks::Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr)
@@ -1607,7 +1630,14 @@ void SDKHooks::Hook_Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 			callback->PushCell(caller);
 			callback->PushCell(useType);
 			callback->PushFloat(value);
-			callback->Execute(&ret);
+
+			cell_t res;
+			callback->Execute(&res);
+
+			if (res > ret)
+			{
+				ret = res;
+			}
 		}
 
 		if (ret >= Pl_Handled)

@@ -1,0 +1,68 @@
+"Phrases"
+{
+	"Rock The Vote"
+	{
+		"hu"		"Pályaváltás:"
+	}
+
+	"RTV Not Allowed"
+	{
+		"hu"		"Még nem lehet pályaszavazást indítani"
+	}
+
+	"RTV Started"
+	{
+		"hu"		"Pályaváltás elindítva"
+	}
+
+	"RTV Ended"
+	{
+		"hu"		"A pályaváltás véget ért, nem lehet újat indítani vagy pályát nevezni"
+	}
+
+	"Already Voted"
+	{
+		"hu"		"Már szavaztál pályaváltás indítására"
+	}
+
+	"Minimal Players Not Met"
+	{
+		"hu"		"Nincs elegendő játékos"
+	}
+
+	"RTV Requested"
+	{
+		"hu"		"{1} pályaváltást szeretne. ({3} szükséges szavazatból {2} van eddig)"
+	}
+
+	"RTV Vote Ready"
+	{
+		"hu"		"Pályaváltás véget ért"
+	}
+
+	"Don't Change"
+	{
+		"hu"		"Maradjon"
+	}
+
+	"Selected Map"
+	{
+		"hu"		"{1} szavazata: {2}"
+	}
+
+	"No Votes"
+	{
+		"hu"		"Senki se szavazott a pályaváltásra, marad a jelenlegi"
+	}
+
+	"Current Map Stays"
+	{
+		"hu"		"A pályaváltás szavazásának indítása sikertelen"
+	}
+
+	"Changing Maps"
+	{
+		"hu"		"Pálya váltása {1}-ra! "
+	}
+
+}

@@ -1,0 +1,68 @@
+"Phrases"
+{
+	"Already Nominated"
+	{
+		"lv"		"Tu jau esi nominējis karti."
+	}
+
+	"Max Nominations"
+	{
+		"lv"		"Maksimālais nomināciju skaits ir sasniegts."
+	}
+
+	"Map Already In Vote"
+	{
+		"lv"		"Karte '{1}' jau atrodas nomināciju sarakstā."
+	}
+
+	"Map Inserted"
+	{
+		"lv"		"Karte '{1}' ir pievienota nomināciju sarakstam."
+	}
+
+	"Map Already Nominated"
+	{
+		"lv"		"Tevis izvēlētā karte jau ir nominēta."
+	}
+
+	"Map Nominated"
+	{
+		"lv"		"{1} nominēja {2}."
+	}
+
+	"Map Nomination Changed"
+	{
+		"lv"		"{1} nomainīja savu nomināciju pret {2}."
+	}
+
+	"Nominate Title"
+	{
+		"lv"		"Nominē karti:"
+	}
+
+	"Can't Nominate Current Map"
+	{
+		"lv"		"Tevis izvēlētā karte ir patreizējā karte un nevar būt nominēta"
+	}
+
+	"Map in Exclude List"
+	{
+		"lv"		"Tevis izvēlētā karte nesen tika spēlēta un nevar būt nominēta"
+	}
+
+	"Current Map"
+	{
+		"lv"		"Patreizējā karte"
+	}
+
+	"Recently Played"
+	{
+		"lv"		"Nesen spēlēta"
+	}
+
+	"Nominated"
+	{
+		"lv"		"Nominēja"
+	}
+
+}

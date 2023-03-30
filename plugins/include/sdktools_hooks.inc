@@ -38,6 +38,23 @@
 #define FEATURECAP_PLAYERRUNCMD_11PARAMS    "SDKTools PlayerRunCmd 11Params"
 
 /**
+ * Called when a clients movement buttons are being processed (Read Only)
+ *
+ * @param client        Index of the client.
+ * @param buttons       Current commands (as bitflags - see entity_prop_stocks.inc).
+ * @param impulse       Current impulse command.
+ * @param vel           Players desired velocity.
+ * @param angles        Players desired view angles.
+ * @param weapon        Entity index of the new weapon if player switches weapon, 0 otherwise.
+ * @param subtype       Weapon subtype when selected from a menu.
+ * @param cmdnum        Command number. Increments from the first command sent.
+ * @param tickcount     Tick count. A client's prediction based on the server's GetGameTickCount value.
+ * @param seed          Random seed. Used to determine weapon recoil, spread, and other predicted elements.
+ * @param mouse         Mouse direction (x, y).
+ */
+forward void OnPlayerRunCmdPre(int client, int buttons, int impulse, const float vel[3], const float angles[3], int weapon, int subtype, int cmdnum, int tickcount, int seed, const int mouse[2]);
+
+/**
  * Called when a clients movement buttons are being processed
  *
  * @param client        Index of the client.

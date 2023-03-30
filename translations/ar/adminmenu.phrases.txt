@@ -1,0 +1,23 @@
+"Phrases"
+{
+	"Admin Menu"
+	{
+		"ar"		"قائمة المدير"
+	}
+
+	"Player Commands"
+	{
+		"ar"		"اوامر اللاعبين"
+	}
+
+	"Server Commands"
+	{
+		"ar"		"اوامر السيرفر"
+	}
+
+	"Voting Commands"
+	{
+		"ar"		"اوامر التصويت"
+	}
+
+}

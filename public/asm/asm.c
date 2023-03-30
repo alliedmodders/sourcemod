@@ -1,10 +1,10 @@
 #include "asm.h"
 #include "libudis86/udis86.h"
+#include <string.h>
 
 #ifndef WIN32
 #define _GNU_SOURCE
 #include <dlfcn.h>
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -24,7 +24,6 @@
 *
 * @param dest		Destination buffer where a call opcode + addr (5 bytes) has just been written.
 * @param pc		The program counter value that needs to be set (usually the next address from the source).
-* @noreturn
 */
 void check_thunks(unsigned char *dest, unsigned char *pc)
 {
@@ -90,7 +89,7 @@ void check_thunks(unsigned char *dest, unsigned char *pc)
 #endif
 }
 
-int copy_bytes(unsigned char *func, unsigned char *dest, int required_len)
+int copy_bytes(unsigned char *func, unsigned char *dest, unsigned int required_len)
 {
 	ud_t ud_obj;
 	ud_init(&ud_obj);

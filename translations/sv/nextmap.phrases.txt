@@ -1,0 +1,38 @@
+"Phrases"
+{
+	"Map History"
+	{
+		"sv"		"Banans historia"
+	}
+
+	"Map"
+	{
+		"sv"		"[Bana]  "
+	}
+
+	"Started"
+	{
+		"sv"		"[Startad]  "
+	}
+
+	"Played Time"
+	{
+		"sv"		"[Spelad tid]  "
+	}
+
+	"Reason"
+	{
+		"sv"		"[Anledning till avslutande]  "
+	}
+
+	"Current Map"
+	{
+		"sv"		"Nuvarande bana"
+	}
+
+	"ago"
+	{
+		"sv"		"sedan"
+	}
+
+}

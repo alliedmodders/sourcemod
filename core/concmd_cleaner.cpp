@@ -36,7 +36,7 @@
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 SH_DECL_HOOK1_void(ICvar, UnregisterConCommand, SH_NOATTRIB, 0, ConCommandBase *);
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 SH_DECL_HOOK2_void(ICvar, RegisterConCommand, SH_NOATTRIB, 0, ConCommandBase *, bool);
 #else
 SH_DECL_HOOK1_void(ICvar, RegisterConCommand, SH_NOATTRIB, 0, ConCommandBase *);
@@ -82,7 +82,7 @@ public:
 #endif
 	}
 
-#if SOURCE_ENGINE == SE_CSGO
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	void LinkConCommandBase(ConCommandBase *pBase, bool unknown)
 #else
 	void LinkConCommandBase(ConCommandBase *pBase)

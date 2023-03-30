@@ -353,7 +353,7 @@ native void Call_PushArray(const any[] value, int size);
  * @param value         Array to push.
  * @param size          Size of array.
  * @param cpflags       Whether or not changes should be copied back to the input array.
- *                      See SP_PARAM_* constants for details.
+ *                      See SM_PARAM_* constants for details.
  * @error               Called before a call has been started.
  */
 native void Call_PushArrayEx(any[] value, int size, int cpflags);
@@ -466,6 +466,8 @@ native void CreateNative(const char[] name, NativeCall func);
  * @param error         Error code to use.
  * @param fmt           Error message format.
  * @param ...           Format arguments.
+ * @noreturn
+ * @error               Always!
  */
 native int ThrowNativeError(int error, const char[] fmt, any ...);
 

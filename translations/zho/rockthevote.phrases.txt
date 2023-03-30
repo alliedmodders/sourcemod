@@ -1,0 +1,68 @@
+"Phrases"
+{
+	"Rock The Vote"
+	{
+		"zho"		"Rock The Vote:"
+	}
+
+	"RTV Not Allowed"
+	{
+		"zho"		"並未可以 Rock the Vote."
+	}
+
+	"RTV Started"
+	{
+		"zho"		"Rock the Vote 已開始."
+	}
+
+	"RTV Ended"
+	{
+		"zho"		"RTV 已結束, 你不可再開始 RTV 或提名地圖."
+	}
+
+	"Already Voted"
+	{
+		"zho"		"你已在 Rock the Vote 投過票了. (現有{1}票,仍需{2}票)"
+	}
+
+	"Minimal Players Not Met"
+	{
+		"zho"		"並未得到所需玩家人數."
+	}
+
+	"RTV Requested"
+	{
+		"zho"		"{1} 想要 Rock the Vote. (現有 {2} 票, 至少需要 {3} 票) "
+	}
+
+	"RTV Vote Ready"
+	{
+		"zho"		"Rock the Vote 準備好了!"
+	}
+
+	"Don't Change"
+	{
+		"zho"		"保留現在的地圖"
+	}
+
+	"Selected Map"
+	{
+		"zho"		"{1} 揀選了 {2} "
+	}
+
+	"No Votes"
+	{
+		"zho"		"Rock the Vote 未得到任何投票, 繼續現在的地圖."
+	}
+
+	"Current Map Stays"
+	{
+		"zho"		"繼續現在的地圖! Rock the Vote 已有結果!"
+	}
+
+	"Changing Maps"
+	{
+		"zho"		"正更變地圖為 {1}! Rock the Vote 已有結果!"
+	}
+
+}

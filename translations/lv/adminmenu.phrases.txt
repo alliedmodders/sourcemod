@@ -1,0 +1,23 @@
+"Phrases"
+{
+	"Admin Menu"
+	{
+		"lv"		"Administratora izvēlne"
+	}
+
+	"Player Commands"
+	{
+		"lv"		"Spēlētāju komandas"
+	}
+
+	"Server Commands"
+	{
+		"lv"		"Servera komandas"
+	}
+
+	"Voting Commands"
+	{
+		"lv"		"Aptauju komandas"
+	}
+
+}

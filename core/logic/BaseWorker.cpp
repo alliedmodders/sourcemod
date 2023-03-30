@@ -40,7 +40,7 @@ BaseWorker::BaseWorker(IThreadWorkerCallbacks *hooks) :
 
 BaseWorker::~BaseWorker()
 {
-	if (m_state != Worker_Stopped || m_state != Worker_Invalid)
+	if (m_state != Worker_Stopped && m_state != Worker_Invalid)
 		Stop(true);
 
 	if (m_ThreadQueue.size())

@@ -1,0 +1,108 @@
+"Phrases"
+{
+	"Timeleft"
+	{
+		"ko"		"다음 맵까지 남은 시간:"
+	}
+
+	"Thetime"
+	{
+		"ko"		"현재 서버 시간은 {1} 입니다"
+	}
+
+	"Friendly Fire On"
+	{
+		"ko"		"아군 공격이 가능하게 설정되었습니다."
+	}
+
+	"Friendly Fire Off"
+	{
+		"ko"		"아군 공격이 불가능하게 설정되었습니다."
+	}
+
+	"Current Map"
+	{
+		"ko"		"현재 맵은 {1} 입니다."
+	}
+
+	"LastRound"
+	{
+		"ko"		"지금이 마지막 라운드입니다!!"
+	}
+
+	"NoTimelimit"
+	{
+		"ko"		"맵의 시간제한 설정이 없습니다"
+	}
+
+	"Next Map"
+	{
+		"ko"		"다음 맵은 {1} 입니다"
+	}
+
+	"Pending Vote"
+	{
+		"ko"		"투표를 기다리는 중입니다"
+	}
+
+	"WinLimitAppend"
+	{
+		"ko"		", 또한 한 팀이 한 라운드를 이긴 뒤에도 맵이 바뀔 것입니다"
+	}
+
+	"WinLimit"
+	{
+		"ko"		"맵은 한 팀이 한 라운드를 이긴 뒤에 바뀔 것입니다"
+	}
+
+	"MaxRoundsAppend"
+	{
+		"ko"		", 또한 한 라운드 이후에도 맵이 바뀔 것입니다"
+	}
+
+	"MaxRounds"
+	{
+		"ko"		"맵은 한 라운드 이후에 바뀔 것입니다"
+	}
+
+	"FragLimitAppend"
+	{
+		"ko"		", 또한 플레이어가 1 사살을 달성한 뒤에도 맵이 바뀔 것입니다"
+	}
+
+	"FragLimit"
+	{
+		"ko"		"맵은 플레이어가 1 사살을 달성한 뒤에 바뀔 것입니다"
+	}
+
+	"WinLimitAppendPlural"
+	{
+		"ko"		", 또한 한 팀이 {1} 라운드를 이긴 뒤에도 맵이 바뀔 것입니다"
+	}
+
+	"WinLimitPlural"
+	{
+		"ko"		"맵은 한 팀이 {1} 라운드를 이긴 뒤에 바뀔 것입니다"
+	}
+
+	"MaxRoundsAppendPlural"
+	{
+		"ko"		", 또한 {1} 라운드 이후에도 맵이 바뀔 것입니다"
+	}
+
+	"MaxRoundsPlural"
+	{
+		"ko"		"맵은 {1} 라운드 이후에 바뀔 것입니다"
+	}
+
+	"FragLimitAppendPlural"
+	{
+		"ko"		", 또한 플레이어가 {1} 사살을 달성한 뒤에도 맵이 바뀔 것입니다"
+	}
+
+	"FragLimitPlural"
+	{
+		"ko"		"맵은 플레이어가 {1} 사살을 달성한 뒤에 바뀔 것입니다"
+	}
+
+}

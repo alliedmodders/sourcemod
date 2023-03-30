@@ -523,6 +523,7 @@ private:
 	// Forwards
 	IForward *m_pOnLibraryAdded;
 	IForward *m_pOnLibraryRemoved;
+	IForward *m_pOnNotifyPluginUnloaded;
 };
 
 extern CPluginManager g_PluginSys;

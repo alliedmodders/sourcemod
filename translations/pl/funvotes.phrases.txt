@@ -1,0 +1,98 @@
+"Phrases"
+{
+	"Initiated Vote Gravity"
+	{
+		"pl"		"Rozpoczęto głosowanie na grawitację."
+	}
+
+	"Initiated Vote Burn"
+	{
+		"pl"		"Rozpoczęto głosowanie o podpalenie {1}. "
+	}
+
+	"Initiated Vote Slay"
+	{
+		"pl"		"Rozpoczęto głosowanie o zgładzenie {1}. "
+	}
+
+	"Initiated Vote Alltalk"
+	{
+		"pl"		"Rozpoczęto głosowanie na AllTalk."
+	}
+
+	"Initiated Vote FF"
+	{
+		"pl"		"Rozpoczęto głosowanie o Ogień Sojuszniczy."
+	}
+
+	"Gravity Vote"
+	{
+		"pl"		"Głosowanie na grawitację: {1} "
+	}
+
+	"Change Gravity To"
+	{
+		"pl"		"Zmienić grawitację na {1}?"
+	}
+
+	"Voteburn player"
+	{
+		"pl"		"Podpalić gracza {1}?"
+	}
+
+	"Voteslay Player"
+	{
+		"pl"		"Zgładzić gracza {1}?"
+	}
+
+	"Votealltalk Off"
+	{
+		"pl"		"Wyłączyć AllTalk? {1}"
+	}
+
+	"Votealltalk On"
+	{
+		"pl"		"Włączyć AllTalk? {1}"
+	}
+
+	"Voteff Off"
+	{
+		"pl"		"Wyłączyć ogień sojuszniczy? {1}"
+	}
+
+	"Voteff On"
+	{
+		"pl"		"Włączyć ogień sojuszniczy? {1}"
+	}
+
+	"Gravity vote"
+	{
+		"pl"		"Głosowanie na grawitację "
+	}
+
+	"Vote FF"
+	{
+		"pl"		"Głosowanie na Ogień Sojuszniczy"
+	}
+
+	"Burn vote"
+	{
+		"pl"		"Głosowanie na podpalenie"
+	}
+
+	"Alltalk vote"
+	{
+		"pl"		"Głosowanie na AllTalk"
+	}
+
+	"Slay vote"
+	{
+		"pl"		"Głosowanie o zgładzenie"
+	}
+
+	"Slayed player"
+	{
+		"pl"		"Zgładzono gracza '{1}'"
+	}
+
+}

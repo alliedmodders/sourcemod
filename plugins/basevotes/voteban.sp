@@ -42,7 +42,7 @@ void DisplayVoteBanMenu(int client, int target)
 	LogAction(client, target, "\"%L\" initiated a ban vote against \"%L\"", client, target);
 	ShowActivity2(client, "[SM] ", "%t", "Initiated Vote Ban", g_voteInfo[VOTE_NAME]);
 
-	g_voteType = ban;
+	g_voteType = VoteType_Ban;
 	
 	g_hVoteMenu = new Menu(Handler_VoteCallback, MENU_ACTIONS_ALL);
 	g_hVoteMenu.SetTitle("Voteban Player");
@@ -123,6 +123,8 @@ public int MenuHandler_Ban(Menu menu, MenuAction action, int param1, int param2)
 			DisplayVoteBanMenu(param1, target);
 		}
 	}
+
+	return 0;
 }
 
 public Action Command_Voteban(int client, int args)

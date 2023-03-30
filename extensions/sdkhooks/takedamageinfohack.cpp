@@ -58,8 +58,8 @@ CTakeDamageInfoHack::CTakeDamageInfoHack( CBaseEntity *pInflictor, CBaseEntity *
 	m_bitsDamageType = bitsDamageType;
 
 	m_flMaxDamage = flDamage;
-	m_vecDamageForce = vec3_origin;
-	m_vecDamagePosition = vec3_origin;
+	m_vecDamageForce = vecDamageForce;
+	m_vecDamagePosition = vecDamagePosition;
 	m_vecReportedPosition = vec3_origin;
 	m_iAmmoType = -1;
 
@@ -70,7 +70,7 @@ CTakeDamageInfoHack::CTakeDamageInfoHack( CBaseEntity *pInflictor, CBaseEntity *
 #endif
 
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 	m_iDamagedOtherPlayers = 0;
 	m_iPlayerPenetrationCount = 0;
 	m_flDamageBonus = 0.0f;
@@ -89,7 +89,7 @@ CTakeDamageInfoHack::CTakeDamageInfoHack( CBaseEntity *pInflictor, CBaseEntity *
 	m_flRadius = 0.0f;
 #endif
 
-#if SOURCE_ENGINE == SE_INSURGENCY || SOURCE_ENGINE == SE_DOI || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_INSURGENCY || SOURCE_ENGINE == SE_DOI || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	m_iDamagedOtherPlayers = 0;
 	m_iObjectsPenetrated = 0;
 	m_uiBulletID = 0;

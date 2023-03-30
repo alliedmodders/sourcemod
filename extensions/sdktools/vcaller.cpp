@@ -119,9 +119,15 @@ static cell_t PrepSDKCall_SetSignature(IPluginContext *pContext, const cell_t *p
 	char *sig;
 	pContext->LocalToString(params[2], &sig);
 
-#if defined PLATFORM_POSIX
 	if (sig[0] == '@')
 	{
+#if defined PLATFORM_WINDOWS
+		MEMORY_BASIC_INFORMATION mem;
+		if (VirtualQuery(addrInBase, &mem, sizeof(mem)))
+		{
+			s_call_addr = memutils->ResolveSymbol(mem.AllocationBase, &sig[1]);
+		}
+#elif defined PLATFORM_POSIX
 		Dl_info info;
 		if (dladdr(addrInBase, &info) == 0)
 		{
@@ -132,6 +138,7 @@ static cell_t PrepSDKCall_SetSignature(IPluginContext *pContext, const cell_t *p
 		{
 			return 0;
 		}
+
 #if SOURCE_ENGINE == SE_CSS            \
 	|| SOURCE_ENGINE == SE_HL2DM       \
 	|| SOURCE_ENGINE == SE_DODS        \
@@ -144,16 +151,19 @@ static cell_t PrepSDKCall_SetSignature(IPluginContext *pContext, const cell_t *p
 	|| SOURCE_ENGINE == SE_BLADE       \
 	|| SOURCE_ENGINE == SE_INSURGENCY  \
 	|| SOURCE_ENGINE == SE_DOI         \
-	|| SOURCE_ENGINE == SE_CSGO
+	|| SOURCE_ENGINE == SE_CSGO        \
+	|| SOURCE_ENGINE == SE_PVKII       \
+	|| SOURCE_ENGINE == SE_MCV
 		s_call_addr = memutils->ResolveSymbol(handle, &sig[1]);
 #else
 		s_call_addr = dlsym(handle, &sig[1]);
-#endif
+#endif /* SOURCE_ENGINE */
+
 		dlclose(handle);
+#endif
 
 		return (s_call_addr != NULL) ? 1 : 0;
 	}
-#endif
 
 	s_call_addr = memutils->FindPattern(addrInBase, sig, params[3]);
 
@@ -327,6 +337,26 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 				startparam++;
 			}
 			break;
+		case ValveCall_Server:
+			{
+				if (iserver == NULL)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("Server unsupported or not available; file a bug report");
+				}
+				*(void **)ptr = iserver;
+			}
+			break;
+		case ValveCall_Engine:
+			{
+				if (engine == NULL)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("Engine unsupported or not available; file a bug report");
+				}
+				*(void **)ptr = engine;
+			}
+			break;
 		case ValveCall_GameRules:
 			{
 				void *pGameRules = GameRules();
@@ -383,6 +413,11 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 				startparam++;
 			}
 			break;
+		default:
+			{
+				vc->stk_put(ptr);
+				return pContext->ThrowNativeError("Unrecognized SDK Call type (%d)", vc->type);
+			}
 		}
 	}
 
@@ -486,16 +521,7 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 					|| vc->retinfo->vtype == Valve_CBasePlayer)
 		{
 			CBaseEntity *pEntity = *(CBaseEntity **)(vc->retbuf);
-			if (!pEntity)
-			{
-				return -1;
-			}
-			edict_t *pEdict = gameents->BaseEntityToEdict(pEntity);
-			if (!pEdict || pEdict->IsFree())
-			{
-				return -1;
-			}
-			return IndexOfEdict(pEdict);
+			return gamehelpers->EntityToBCompatRef(pEntity);
 		} else if (vc->retinfo->vtype == Valve_Edict) {
 			edict_t *pEdict = *(edict_t **)(vc->retbuf);
 			if (!pEdict || pEdict->IsFree())

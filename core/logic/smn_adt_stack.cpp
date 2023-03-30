@@ -83,6 +83,22 @@ static cell_t CreateStack(IPluginContext *pContext, const cell_t *params)
 	return hndl;
 }
 
+static cell_t ClearStack(IPluginContext *pContext, const cell_t *params)
+{
+	CellArray *array;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = handlesys->ReadHandle(params[1], htCellStack, &sec, (void **)&array)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
+	}
+
+	array->clear();
+
+	return 1;
+}
+
 static cell_t CloneStack(IPluginContext *pContext, const cell_t *params)
 {
 	CellArray *oldArray;
@@ -425,6 +441,7 @@ REGISTER_NATIVES(cellStackNatives)
 
 	// Transitional syntax support.
 	{"ArrayStack.ArrayStack",		CreateStack},
+	{"ArrayStack.Clear",			ClearStack},
 	{"ArrayStack.Clone",			CloneStack},
 	{"ArrayStack.Pop",				ArrayStack_Pop},
 	{"ArrayStack.PopString",		ArrayStack_PopString},

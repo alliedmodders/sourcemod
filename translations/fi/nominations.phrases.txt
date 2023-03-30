@@ -1,0 +1,68 @@
+"Phrases"
+{
+	"Already Nominated"
+	{
+		"fi"		"Olet jo ehdottanut karttaa."
+	}
+
+	"Max Nominations"
+	{
+		"fi"		"Suurin sallittu ehdotusmäärä saavutettu."
+	}
+
+	"Map Already In Vote"
+	{
+		"fi"		"Kartta '{1}' on jo ehdotettujen listalla."
+	}
+
+	"Map Inserted"
+	{
+		"fi"		"Kartta '{1}' lisätty ehdotettujen listalle."
+	}
+
+	"Map Already Nominated"
+	{
+		"fi"		"Valitsemaasi karttaa on jo ehdotettu."
+	}
+
+	"Map Nominated"
+	{
+		"fi"		"{1} on ehdottanut karttaa {2}."
+	}
+
+	"Map Nomination Changed"
+	{
+		"fi"		"{1} vaihtoi ehdotuksensa karttaan {2}."
+	}
+
+	"Nominate Title"
+	{
+		"fi"		"Ehdota karttaa:"
+	}
+
+	"Can't Nominate Current Map"
+	{
+		"fi"		"Valitsemasi kartta on tämänhetkinen kartta, eikä sitä voi ehdottaa."
+	}
+
+	"Map in Exclude List"
+	{
+		"fi"		"Valitsemaasi karttaa pelattiin viimeaikoina, eikä sitä voi ehdottaa."
+	}
+
+	"Current Map"
+	{
+		"fi"		"Tämänhetkinen kartta"
+	}
+
+	"Recently Played"
+	{
+		"fi"		"Viimeaikoina pelattu"
+	}
+
+	"Nominated"
+	{
+		"fi"		"Ehdotettu"
+	}
+
+}

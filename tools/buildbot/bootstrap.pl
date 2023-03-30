@@ -9,6 +9,8 @@ use File::Path;
 my ($myself, $path) = fileparse($0);
 chdir($path);
 
+use FindBin;
+use lib $FindBin::Bin;
 require 'helpers.pm';
 
 #Go back to tree root.
@@ -23,8 +25,17 @@ chdir(Build::PathFormat('..'));
 #Get the source path.
 our ($root) = getcwd();
 
-my $reconf = 0;
-
+my $trigger_file = 'build/tools/buildbot/trigger_full_rebuild';
+if (-f $trigger_file) {
+	my $trigger_mtime = (stat $trigger_file)[9];
+	if (-f 'OUTPUT/.ambuild2/graph') {
+		my $graph_mtime = (stat 'OUTPUT/.ambuild2/graph')[9];
+		if ($trigger_mtime > $graph_mtime) {
+			print "Trigger time $trigger_mtime > $graph_mtime, cleaning objdir...\n";
+			rmtree('OUTPUT');
+		}
+	}
+}
 if (!(-f 'OUTPUT/.ambuild2/graph') || !(-f 'OUTPUT/.ambuild2/vars')) {
 	rmtree('OUTPUT');
 	mkdir('OUTPUT') or die("Failed to create output folder: $!\n");
@@ -44,29 +55,27 @@ my @conf_argv = (
 
 if ($^O =~ /darwin/) {
 	push(@conf_argv, '--hl2sdk-root=/Volumes/hgshare');
-	push(@conf_argv, '--mms-path=/Users/builds/slaves/common/mmsource-1.10');
+	push(@conf_argv, '--mms-path=/Users/builds/slaves/common/mmsource-master');
 } elsif ($^O =~ /linux/) {
 	push(@conf_argv, '--hl2sdk-root=/hgshare');
-	push(@conf_argv, '--mms-path=/home/builds/common/mmsource-1.10');
+	push(@conf_argv, '--mms-path=/home/builds/common/mmsource-master');
 } elsif ($^O =~ /MSWin/) {
 	push(@conf_argv, '--hl2sdk-root=H:\\');
+	push(@conf_argv, '--mms-path=D:\\Scripts\\common\\mmsource-master');
 }
 
-if ($^O !~ /MSWin/) {
-	push(@conf_argv, '--target-arch=x86,x64');
-} else {
-	push(@conf_argv, '--target-arch=x86');
-}
+push(@conf_argv, '--targets=x86,x86_64');
+push(@conf_argv, '--sdks=all');
 
 my $conf_args = join(' ', @conf_argv);
 
 if ($argn > 0 && $^O !~ /MSWin/) {
-	$result = `CC=$ARGV[0] CXX=$ARGV[1] python ../build/configure.py $conf_args`;
+	$result = `CC=$ARGV[0] CXX=$ARGV[1] python3 ../build/configure.py $conf_args`;
 } else {
 	if ($^O =~ /MSWin/) {
-		$result = `C:\\Python27\\Python.exe ..\\build\\configure.py $conf_args`;
+		$result = `C:\\Python38\\Python.exe ..\\build\\configure.py $conf_args`;
 	} else {
-		$result = `CC=clang CXX=clang python ../build/configure.py $conf_args`;
+		$result = `CC=clang CXX=clang python3 ../build/configure.py $conf_args`;
 	}
 }
 print "$result\n";
@@ -74,15 +83,4 @@ if ($? != 0) {
 	die("Could not configure: $!\n");
 }
 
-sub IsNewer
-{
-	my ($file, $time) = (@_);
-
-	my @s = stat($file);
-	my $mtime = $s[9];
-	return $mtime > $time;
-}
-
 exit(0);
-
-

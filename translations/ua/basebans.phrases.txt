@@ -1,0 +1,63 @@
+"Phrases"
+{
+	"Ban player"
+	{
+		"ua"		"Забанити гравця"
+	}
+
+	"Ban reason"
+	{
+		"ua"		"Причина бану"
+	}
+
+	"Permabanned player"
+	{
+		"ua"		"Назавжди забанив гравця \"{1}\"."
+	}
+
+	"Permabanned player reason"
+	{
+		"ua"		"Назавжди забанив гравця \"{1}\" (причина: {2}). "
+	}
+
+	"Banned player"
+	{
+		"ua"		"Забанив гравця \"{1}\" на {2} хвилин. "
+	}
+
+	"Banned player reason"
+	{
+		"ua"		"Забанив гравця \"{1}\" на {2} хвилин (причина: {3}). "
+	}
+
+	"Removed bans matching"
+	{
+		"ua"		"Видалено бани які задовольняють фільтр: {1} "
+	}
+
+	"Ban added"
+	{
+		"ua"		"Бан додано."
+	}
+
+	"Cannot ban that IP"
+	{
+		"ua"		"Ви не можете забанити цю IP адресу."
+	}
+
+	"Custom ban reason explanation"
+	{
+		"ua"		"Введіть в чат причину бану або {1} щоб перервати введення."
+	}
+
+	"AbortBan applied successfully"
+	{
+		"ua"		"Бан відмінено."
+	}
+
+	"AbortBan not waiting for custom reason"
+	{
+		"ua"		"Не очікується введення причини бану, немає бану для відміни."
+	}
+
+}

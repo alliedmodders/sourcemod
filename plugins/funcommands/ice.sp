@@ -431,6 +431,8 @@ public int MenuHandler_Freeze(Menu menu, MenuAction action, int param1, int para
 			DisplayFreezeMenu(param1);
 		}
 	}
+
+	return 0;
 }
 
 public int MenuHandler_FreezeBomb(Menu menu, MenuAction action, int param1, int param2)
@@ -477,6 +479,8 @@ public int MenuHandler_FreezeBomb(Menu menu, MenuAction action, int param1, int 
 			DisplayFreezeBombMenu(param1);
 		}
 	}
+
+	return 0;
 }
 
 public Action Command_Freeze(int client, int args)

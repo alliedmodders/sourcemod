@@ -20,6 +20,11 @@
 				"class"			"CBasePlayer"
 				"prop"			"m_lifeState"
 			}
+			"CSendPropExtra_UtlVector::m_Offset"
+			{
+				"windows"		"16"
+				"linux"			"16"
+			}
 		}
 	}
 	
@@ -100,6 +105,8 @@
 			"engine"			"csgo"
 			"engine"			"sdk2013"
 			"engine"			"contagion"
+			"engine"			"pvkii"
+			"engine"			"mcv"
 		}
 		
 		"Offsets"
@@ -107,6 +114,7 @@
 			"GetDataDescMap"
 			{
 				"windows"		"11"
+				"windows64"		"11"
 				"linux"			"12"
 				"linux64"		"12"
 				"mac"			"12"
@@ -183,6 +191,7 @@
 			"game"					"doi"
 			"game"					"bms"
 			"game"					"iosoccer"
+			"game"					"vietnam"
 		}
 
 		"Keys"
@@ -191,7 +200,7 @@
 		}
 	}
 	
-		"#default"
+	"#default"
 	{
 		"#supported"
 		{
@@ -233,6 +242,8 @@
 			"game"					"doi"
 			"game"					"bms"
 			"game"					"iosoccer"
+			"game"					"vietnam"
+			"game"					"reactivedrop"
 		}
 		
 		"Keys"
@@ -293,6 +304,7 @@
 			"game"					"csgo"
 			"game"					"reactivedrop"
 			"game"					"FortressForever"
+			"game"					"vietnam"
 		}
 		
 		"Keys"
@@ -345,6 +357,7 @@
 			"engine"	"csgo"
 			"engine"	"blade"
 			"engine"	"insurgency"
+			"engine"	"mcv"
 		}
 		
 		"Keys"
@@ -358,6 +371,49 @@
 		"Keys"
 		{
 			"RadioMenuMaxPageItems"	"6"
+		}
+	}
+
+	"#default"
+	{
+		"#supported"
+		{
+			"engine"	"left4dead"
+			"engine"	"left4dead2"
+			"engine"	"nucleardawn"
+		}
+
+		"Keys"
+		{
+			"RadioMenuClosesOnInvalidSlot"	"yes"
+		}
+	}
+
+
+	/**
+	 * Menu Sounds
+	 */
+	"#default"
+	{
+		"Keys"
+		{
+			/**
+	 		 * Specifies the sound that gets played when an item is selected from a menu.
+	 		 */
+			"MenuItemSound"			"buttons/button14.wav"
+
+			/**
+			 * Specifies the sound that gets played when an "Exit" button is selected 
+			 * from a menu.
+			 */
+			"MenuExitSound"			"buttons/combine_button7.wav"
+			
+			/**
+			 * Specifies the sound that gets played when an "Exit Back" button is selected 
+			 * from a menu.  This is the special "Back" button that is intended to roll back
+			 * to a previous menu.
+			 */
+			"MenuExitBackSound"		"buttons/combine_button7.wav"
 		}
 	}
 }

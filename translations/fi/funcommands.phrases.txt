@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"fi"		"Polta pelaaja"
+	}
+
+	"FireBomb player"
+	{
+		"fi"		"Tulipommita pelaaja"
+	}
+
+	"Freeze player"
+	{
+		"fi"		"Jäädytä pelaaja"
+	}
+
+	"FreezeBomb player"
+	{
+		"fi"		"Jääpommita pelaaja"
+	}
+
+	"TimeBomb player"
+	{
+		"fi"		"Aikapommita pelaaja"
+	}
+
+	"Beacon player"
+	{
+		"fi"		"Majakoi pelaaja"
+	}
+
+	"NoClip player"
+	{
+		"fi"		"NoClippaa pelaaja"
+	}
+
+	"Blind player"
+	{
+		"fi"		"Sokaise pelaaja"
+	}
+
+	"Drug player"
+	{
+		"fi"		"Huumaa pelaaja"
+	}
+
+	"Gravity player"
+	{
+		"fi"		"Painovoimita pelaaja"
+	}
+
+	"Blind amount"
+	{
+		"fi"		"Kuinka sokea?"
+	}
+
+	"Fully blind"
+	{
+		"fi"		"Täysin sokea"
+	}
+
+	"Half blind"
+	{
+		"fi"		"Puolisokea"
+	}
+
+	"No blind"
+	{
+		"fi"		"Ei sokeutta"
+	}
+
+	"Gravity amount"
+	{
+		"fi"		"Painovoima?"
+	}
+
+	"Gravity Very High"
+	{
+		"fi"		"Erittäin suuri painovoima"
+	}
+
+	"Gravity High"
+	{
+		"fi"		"Suuri painovoima"
+	}
+
+	"Gravity Normal"
+	{
+		"fi"		"Normaali painovoima"
+	}
+
+	"Gravity Low"
+	{
+		"fi"		"Pieni painovoima"
+	}
+
+	"Gravity Very Low"
+	{
+		"fi"		"Erittäin pieni painovoima"
+	}
+
+	"Set target on fire"
+	{
+		"fi"		"Sytytettiin pelaaja {1} tuleen."
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"fi"		"asetti tulipommin pelaajalle {1}."
+	}
+
+	"Froze target"
+	{
+		"fi"		"jäädytti pelaajan {1}."
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"fi"		"asetti jääpommin pelaajalle {1}."
+	}
+
+	"Toggled beacon on target"
+	{
+		"fi"		"asetti majakan pelaajalle {1}."
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"fi"		"asetti aikapommin pelaajalle {1}."
+	}
+
+	"Toggled noclip on target"
+	{
+		"fi"		"asetti noclipin pelaajalle {1}."
+	}
+
+	"Toggled drug on target"
+	{
+		"fi"		"huumasi pelaajan {1}."
+	}
+
+	"Set blind on target"
+	{
+		"fi"		"sokaisi pelaajan {1}."
+	}
+
+	"Set gravity on target"
+	{
+		"fi"		"vaihtoi pelaajan {1} painovoimaa."
+	}
+
+	"Till Explodes"
+	{
+		"fi"		"{2} sekuntia pelaajan {1} räjähtämiseen."
+	}
+
+	"Unfrozen"
+	{
+		"fi"		"Et ole enää jäädytetty."
+	}
+
+	"You will be unfrozen"
+	{
+		"fi"		"Jäädytyksesi poistuu {1} sekunnin kuluttua."
+	}
+
+}

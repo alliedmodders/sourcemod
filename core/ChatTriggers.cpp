@@ -363,7 +363,7 @@ bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args)
 	if (!g_ConCmds.LookForSourceModCommand(cmd_buf))
 	{
 		/* Check if we had an "sm_" prefix */
-		if (strncmp(cmd_buf, "sm_", 3) == 0)
+		if (strncasecmp(cmd_buf, "sm_", 3) == 0)
 		{
 			return false;
 		}
@@ -387,15 +387,7 @@ bool ChatTriggers::PreProcessTrigger(edict_t *pEdict, const char *args)
 	/* See if we need to do extra string manipulation */
 	if (prepended)
 	{
-		size_t len;
-
-		/* Check if we need to prepend sm_ */
-		if (prepended)
-		{
-			len = ke::SafeSprintf(m_ToExecute, sizeof(m_ToExecute), "sm_%s", args);
-		} else {
-			len = ke::SafeStrcpy(m_ToExecute, sizeof(m_ToExecute), args);
-		}
+		ke::SafeSprintf(m_ToExecute, sizeof(m_ToExecute), "sm_%s", args);
 	} else {
 		ke::SafeStrcpy(m_ToExecute, sizeof(m_ToExecute), args);
 	}
@@ -468,4 +460,24 @@ bool ChatTriggers::ClientIsFlooding(int client)
 bool ChatTriggers::WasFloodedMessage()
 {
 	return m_bWasFloodedMessage;
+}
+
+const char *ChatTriggers::GetPublicChatTrigger()
+{
+	if (!m_PubTrigger.length())
+	{
+		return NULL;
+	}
+
+	return m_PubTrigger.c_str();
+}
+
+const char *ChatTriggers::GetPrivateChatTrigger()
+{
+	if (!m_PrivTrigger.length())
+	{
+		return NULL;
+	}
+
+	return m_PrivTrigger.c_str();
 }

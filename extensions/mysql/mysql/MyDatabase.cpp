@@ -185,7 +185,7 @@ bool MyDatabase::DoSimpleQuery(const char *query)
 
 IQuery *MyDatabase::DoQuery(const char *query)
 {
-	if (mysql_real_query(m_mysql, query, strlen(query)) != 0)
+	if (mysql_real_query(m_mysql, query, static_cast<unsigned long>(strlen(query))) != 0)
 	{
 		return NULL;
 	}
@@ -216,7 +216,7 @@ bool MyDatabase::DoSimpleQueryEx(const char *query, size_t len)
 
 IQuery *MyDatabase::DoQueryEx(const char *query, size_t len)
 {
-	if (mysql_real_query(m_mysql, query, len) != 0)
+	if (mysql_real_query(m_mysql, query, static_cast<unsigned long>(len)) != 0)
 	{
 		return NULL;
 	}
@@ -258,7 +258,7 @@ IPreparedQuery *MyDatabase::PrepareQuery(const char *query, char *error, size_t 
 		return NULL;
 	}
 
-	if (mysql_stmt_prepare(stmt, query, strlen(query)) != 0)
+	if (mysql_stmt_prepare(stmt, query, static_cast<unsigned long>(strlen(query))) != 0)
 	{
 		if (error)
 		{

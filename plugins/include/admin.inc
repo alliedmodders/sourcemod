@@ -191,6 +191,20 @@ methodmap AdminId {
 	// @param enabled       True to enable, false to disable.
 	public native void SetFlag(AdminFlag flag, bool enabled);
 
+	// Sets multiple bitwise flags to be enabled/disabled on an admin.
+	//
+	// @param flags         Bitwise admin flags (ADMFLAG_*).
+	// @param enabled       True to set the flag, false to unset/disable.
+	public void SetBitFlags(int flags, bool enabled)
+	{
+		AdminFlag flagArray[AdminFlags_TOTAL];
+		int num = FlagBitsToArray(flags, flagArray, sizeof(flagArray));
+		for (int i = 0; i < num; i++)
+		{
+			this.SetFlag(flagArray[i], enabled);
+		}
+	}
+
 	// Returns whether or not a flag is enabled on an admin.
 	//
 	// @param flag          Admin flag to use.
@@ -277,6 +291,20 @@ methodmap GroupId {
 	// @param flag          Admin flag to toggle.
 	// @param enabled       True to set the flag, false to unset/disable.
 	public native void SetFlag(AdminFlag flag, bool enabled);
+
+	// Adds or removes multiple bitwise flags from a group's flag set.
+	//
+	// @param flags         Bitwise admin flags (ADMFLAG_*).
+	// @param enabled       True to set the flag, false to unset/disable.
+	public void SetBitFlags(int flags, bool enabled)
+	{
+		AdminFlag flagArray[AdminFlags_TOTAL];
+		int num = FlagBitsToArray(flags, flagArray, sizeof(flagArray));
+		for (int i = 0; i < num; i++)
+		{
+			this.SetFlag(flagArray[i], enabled);
+		}
+	}
 
 	// Returns the flag set that is added to users from this group.
 	//
@@ -772,4 +800,33 @@ stock bool BitToFlag(int bit, AdminFlag &flag)
 	}
 
 	return false;
+}
+
+/**
+ * Converts a bit string to a string of flag characters.
+ *
+ * @param bits			Bit string containing the flags.
+ * @param flags			Output array to write a string of flag characters.
+ * @param maxSize		Maximum size of the string array.
+ * @return				Number of flag characters written.
+ */
+stock int FlagBitsToString(const int bits, char[] flags, const int maxSize)
+{
+	AdminFlag array[AdminFlags_TOTAL];
+	int numFlags = FlagBitsToArray(bits, array, AdminFlags_TOTAL);
+	if (numFlags > maxSize)
+	{
+		numFlags = maxSize;
+	}
+	int i, c, numId = 0;
+	for (i = 0; i < numFlags; ++i)
+	{
+		if(FindFlagChar(array[i], c))
+		{
+			flags[numId++] = c;
+		}
+	}
+	flags[numId] = '\0';
+
+	return numId;
 }

@@ -1,0 +1,63 @@
+"Phrases"
+{
+	"Ban player"
+	{
+		"sv"		"Bannlys spelare"
+	}
+
+	"Ban reason"
+	{
+		"sv"		"Bannlysningsanledning"
+	}
+
+	"Permabanned player"
+	{
+		"sv"		"Bannlyste spelare \"{1}\" permanent"
+	}
+
+	"Permabanned player reason"
+	{
+		"sv"		"Bannlyste spelare \"{1}\" permanent (skäl: {2})."
+	}
+
+	"Banned player"
+	{
+		"sv"		"Bannlyste spelaren \"{1}\" i {2} minuter."
+	}
+
+	"Banned player reason"
+	{
+		"sv"		"Bannlyste spelaren \"{1}\" i {2} minuter (anledning: {3})."
+	}
+
+	"Removed bans matching"
+	{
+		"sv"		"Tog bort bannlysningar som möter kriterierna: {1}"
+	}
+
+	"Ban added"
+	{
+		"sv"		"Bannlysning tillagd."
+	}
+
+	"Cannot ban that IP"
+	{
+		"sv"		" Du kan inte bannlysa den IP adressen."
+	}
+
+	"Custom ban reason explanation"
+	{
+		"sv"		"Skriv in anledningen som ett chattmeddelande. Använd {1} för att avbryta."
+	}
+
+	"AbortBan applied successfully"
+	{
+		"sv"		"Bannlysning avbruten."
+	}
+
+	"AbortBan not waiting for custom reason"
+	{
+		"sv"		"Väntar inte på att en bannlysningsanledning ska skrivas in, ingen bannlysning att avbryta."
+	}
+
+}

@@ -1,0 +1,68 @@
+"Phrases"
+{
+	"Already Nominated"
+	{
+		"de"		"Du hast bereits eine Karte nominiert."
+	}
+
+	"Max Nominations"
+	{
+		"de"		"Das Maximum der erlaubten Nominierungen wurde erreicht."
+	}
+
+	"Map Already In Vote"
+	{
+		"de"		"Karte '{1}' ist bereits in der Nominierungs-Liste."
+	}
+
+	"Map Inserted"
+	{
+		"de"		"Karte '{1}' wurde zur Nominierungs-Liste hinzugefügt. "
+	}
+
+	"Map Already Nominated"
+	{
+		"de"		"Die Karte, die du gewählt hast, wurde bereits nominiert."
+	}
+
+	"Map Nominated"
+	{
+		"de"		"{1} hat {2} nominiert."
+	}
+
+	"Map Nomination Changed"
+	{
+		"de"		"{1} hat seine Nominierung zu {2} geändert."
+	}
+
+	"Nominate Title"
+	{
+		"de"		"Karte nominieren:"
+	}
+
+	"Can't Nominate Current Map"
+	{
+		"de"		"Die ausgewählte Karte ist die aktuelle Karte und kann nicht nominiert werden"
+	}
+
+	"Map in Exclude List"
+	{
+		"de"		"Die ausgewählte Karte wurde vor kurzem gespielt und kann nicht nominiert werden"
+	}
+
+	"Current Map"
+	{
+		"de"		"Aktuelle Karte"
+	}
+
+	"Recently Played"
+	{
+		"de"		"Vor kurzem gespielt"
+	}
+
+	"Nominated"
+	{
+		"de"		"Nominiert"
+	}
+
+}

@@ -1,8 +1,8 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-for arch in SM.archs:
-  binary = SM.ExtLibrary(builder, 'updater.ext', arch)
+for cxx in builder.targets:
+  binary = SM.ExtLibrary(builder, cxx, 'updater.ext')
   binary.compiler.cxxincludes += [
     os.path.join(SM.mms_root, 'core', 'sourcehook'),
   ]

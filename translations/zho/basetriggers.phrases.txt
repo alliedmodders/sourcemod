@@ -1,0 +1,108 @@
+"Phrases"
+{
+	"Timeleft"
+	{
+		"zho"		"地圖剩餘時間: "
+	}
+
+	"Thetime"
+	{
+		"zho"		"當前伺服器時間: {1}"
+	}
+
+	"Friendly Fire On"
+	{
+		"zho"		"隊友傷害已開啟."
+	}
+
+	"Friendly Fire Off"
+	{
+		"zho"		"隊友傷害已關閉."
+	}
+
+	"Current Map"
+	{
+		"zho"		"當前的地圖為 {1}"
+	}
+
+	"LastRound"
+	{
+		"zho"		"這是最後一局了!!"
+	}
+
+	"NoTimelimit"
+	{
+		"zho"		"地圖時間無限制"
+	}
+
+	"Next Map"
+	{
+		"zho"		"下一幅地圖: {1}"
+	}
+
+	"Pending Vote"
+	{
+		"zho"		"有待投票"
+	}
+
+	"WinLimitAppend"
+	{
+		"zho"		", 或當某隊贏得 1 局，便更換地圖"
+	}
+
+	"WinLimit"
+	{
+		"zho"		"地圖將會在某隊贏得 1 局時更換"
+	}
+
+	"MaxRoundsAppend"
+	{
+		"zho"		", 或一局之後更換地圖"
+	}
+
+	"MaxRounds"
+	{
+		"zho"		"一局之後更換地圖"
+	}
+
+	"FragLimitAppend"
+	{
+		"zho"		", 或當某玩家得到 1 分時，就會更換地圖"
+	}
+
+	"FragLimit"
+	{
+		"zho"		"地圖將會在某位玩家取得 1 分時更換"
+	}
+
+	"WinLimitAppendPlural"
+	{
+		"zho"		", 或當某隊贏得 {1} 局，便更換地圖"
+	}
+
+	"WinLimitPlural"
+	{
+		"zho"		"地圖將會在某隊贏得 {1} 局時更換"
+	}
+
+	"MaxRoundsAppendPlural"
+	{
+		"zho"		", 或 {1} 局之後更換地圖"
+	}
+
+	"MaxRoundsPlural"
+	{
+		"zho"		"{1} 局之後更換地圖"
+	}
+
+	"FragLimitAppendPlural"
+	{
+		"zho"		", 或當某玩家得到 {1} 分時，就會更換地圖"
+	}
+
+	"FragLimitPlural"
+	{
+		"zho"		"地圖將會在某位玩家取得 {1} 分時更換"
+	}
+
+}

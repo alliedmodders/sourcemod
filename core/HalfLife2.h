@@ -74,7 +74,7 @@ using namespace SourceMod;
 	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_INSURGENCY || SOURCE_ENGINE == SE_DOI
 #define SOURCE_BIN_PREFIX "lib"
 #define SOURCE_BIN_SUFFIX "_srv"
-#elif SOURCE_ENGINE >= SE_LEFT4DEAD
+#elif SOURCE_ENGINE >= SE_LEFT4DEAD || SOURCE_ENGINE == SE_PVKII
 #define SOURCE_BIN_PREFIX "lib"
 #define SOURCE_BIN_SUFFIX ""
 #else
@@ -235,7 +235,7 @@ public: //IGameHelpers
 	bool IsMapValid(const char *map);
 	SMFindMapResult FindMap(char *pMapName, size_t nMapNameMax);
 	SMFindMapResult FindMap(const char *pMapName, char *pFoundMap = NULL, size_t nMapNameMax = 0);
-#if SOURCE_ENGINE >= SE_LEFT4DEAD && defined PLATFORM_WINDOWS
+#if SOURCE_ENGINE >= SE_LEFT4DEAD && defined PLATFORM_WINDOWS && SOURCE_ENGINE != SE_MOCK
 	void FreeUtlVectorUtlString(CUtlVector<CUtlString, CUtlMemoryGlobalMalloc<CUtlString>> &vec);
 #endif
 	bool GetMapDisplayName(const char *pMapName, char *pDisplayname, size_t nMapNameMax);

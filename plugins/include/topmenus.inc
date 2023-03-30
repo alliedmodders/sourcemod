@@ -361,7 +361,7 @@ native void RemoveFromTopMenu(Handle topmenu, TopMenuObject topobj);
  * @param client        Client index.
  * @param position      Position to display from.
  * @return              True on success, false on failure.
- * @error               Invalid TopMenu Handle or client not in game.
+ * @error               Invalid TopMenu Handle, invalid client index, or client not in game.
  */
 native bool DisplayTopMenu(Handle topmenu, int client, TopMenuPosition position);
 
@@ -372,7 +372,7 @@ native bool DisplayTopMenu(Handle topmenu, int client, TopMenuPosition position)
  * @param category      Category topobj id.
  * @param client        Client index.
  * @return              True on success, false on failure.
- * @error               Invalid TopMenu Handle or client not in game.
+ * @error               Invalid TopMenu Handle, invalid client index, or client not in game.
  */
 native bool DisplayTopMenuCategory(Handle topmenu, TopMenuObject category, int client);
 

@@ -91,6 +91,16 @@ void SDKTools::VoiceInit()
 	SH_ADD_HOOK(IServerGameClients, ClientCommand, serverClients, SH_MEMBER(this, &SDKTools::OnClientCommand), true);
 }
 
+void SDKTools::VoiceShutdown()
+{
+	if (g_VoiceHookCount > 0)
+	{
+		g_VoiceHookCount = 1;
+		DecHookCount();
+	}
+	SH_REMOVE_HOOK(IServerGameClients, ClientCommand, serverClients, SH_MEMBER(this, &SDKTools::OnClientCommand), true);
+}
+
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 void SDKTools::OnClientCommand(edict_t *pEntity, const CCommand &args)
 {
@@ -167,6 +177,11 @@ bool SDKTools::OnSetClientListening(int iReceiver, int iSender, bool bListen)
 
 void SDKTools::OnClientDisconnecting(int client)
 {
+	if (g_hTimerSpeaking[client])
+	{
+		timersys->KillTimer(g_hTimerSpeaking[client]);
+	}
+
 	int max_clients = playerhelpers->GetMaxClients();
 
 	if (g_VoiceHookCount == 0)
@@ -353,6 +368,33 @@ static cell_t IsClientMuted(IPluginContext *pContext, const cell_t *params)
 	}
 
 	return g_ClientMutes[params[1]][params[2]];
+}
+
+/* FIXME: Presently if there's no hook present these natives will result in an invalid state.
+ * One suggestion could be to look at if the native is bound, and then invoke the hooks in the background.
+ * However, at that point really we should be enforcing the forward usage to catch new-consumers immediately.
+ * If you're looking to work on this, you're welcome to ping asherkin or KyleS, or even submit a patch to add this.
+ * Additional comments can be found here (if GitHub still exists): https://github.com/alliedmodders/sourcemod/pull/1247
+ */
+static cell_t IsClientSpeaking(IPluginContext *pContext, const cell_t *params)
+{
+	IGamePlayer *player;
+	
+	player = playerhelpers->GetGamePlayer(params[1]);
+	if (player == NULL)
+	{
+		return pContext->ThrowNativeError("Client index %d is invalid", params[1]);
+	}
+	else if (!player->IsConnected())
+	{
+		return pContext->ThrowNativeError("Client %d is not connected", params[1]);
+	}
+	else if (!player->IsInGame())
+	{
+		return false;
+	}
+	
+	return g_hTimerSpeaking[params[1]] != nullptr;
 }
 
 sp_nativeinfo_t g_VoiceNatives[] =

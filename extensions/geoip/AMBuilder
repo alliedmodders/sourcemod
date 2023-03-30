@@ -1,20 +1,21 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-for arch in SM.archs:
-  binary = SM.ExtLibrary(builder, 'geoip.ext', arch)
+for cxx in builder.targets:
+  binary = SM.ExtLibrary(builder, cxx, 'geoip.ext')
   if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
     binary.compiler.cxxflags += ['-fno-rtti']
   elif binary.compiler.family == 'msvc':
     binary.compiler.cxxflags += ['/GR-']
-  if builder.target.platform == 'windows':
-    binary.compiler.postlink += ['wsock32.lib']
+  if binary.compiler.target.platform == 'windows':
+    binary.compiler.postlink += ['wsock32.lib', 'ws2_32.lib']
 
   binary.sources += [
     'extension.cpp',
-    'GeoIP.c',
-    '../../public/smsdk_ext.cpp'
+    'geoip_util.cpp',
+    '../../public/smsdk_ext.cpp',
+    'data-pool.c',
+    'maxminddb.c',
   ]
 
   SM.extensions += [builder.Add(binary)]
-

@@ -30,6 +30,7 @@
 #include "common_logic.h"
 #include <string.h>
 #include <stdlib.h>
+#include <sstream>
 #include <sh_list.h>
 #include <sh_string.h>
 #include "GameConfigs.h"
@@ -46,6 +47,7 @@
 #include <am-string.h>
 #include <bridge/include/ILogger.h>
 #include <bridge/include/CoreProvider.h>
+#include <bridge/include/IFileSystemBridge.h>
 
 #if defined PLATFORM_POSIX
 #include <dlfcn.h>
@@ -85,15 +87,12 @@ static const char *g_pParseEngine = NULL;
 
 #if defined PLATFORM_WINDOWS
 #define PLATFORM_NAME				"windows" PLATFORM_ARCH_SUFFIX
-#define PLATFORM_SERVER_BINARY		"server.dll"
 #elif defined PLATFORM_LINUX
 #define PLATFORM_NAME				"linux" PLATFORM_ARCH_SUFFIX
 #define PLATFORM_COMPAT_ALT			"mac" PLATFORM_ARCH_SUFFIX	/* Alternate platform name if game data is missing for primary one */
-#define PLATFORM_SERVER_BINARY		"server_i486.so"
 #elif defined PLATFORM_APPLE
 #define PLATFORM_NAME				"mac" PLATFORM_ARCH_SUFFIX
 #define PLATFORM_COMPAT_ALT			"linux" PLATFORM_ARCH_SUFFIX
-#define PLATFORM_SERVER_BINARY		"server.dylib"
 #endif
 
 struct TempSigInfo
@@ -106,8 +105,6 @@ struct TempSigInfo
 	char sig[1024];
 	char library[64];
 } s_TempSig;
-unsigned int s_ServerBinCRC;
-bool s_ServerBinCRC_Ok = false;
 
 static bool DoesGameMatch(const char *value)
 {
@@ -153,12 +150,31 @@ static inline bool IsPlatformCompatible(const char *platform, bool *hadPrimaryMa
 	return false;
 }
 
+static inline time_t GetFileModTime(const char *path)
+{
+	char filepath[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_SM, filepath, sizeof(filepath), "gamedata/%s.txt", path);
+#ifdef PLATFORM_WINDOWS
+	struct _stat64 s;
+	if (_stat64(filepath, &s) != 0)
+#elif defined PLATFORM_POSIX
+	struct stat s;
+	if (stat(filepath, &s) != 0)
+#endif
+	{
+		return 0;
+	}
+	return s.st_mtime;
+}
+
 CGameConfig::CGameConfig(const char *file, const char *engine)
 {
 	strncopy(m_File, file, sizeof(m_File));
 
 	m_CustomLevel = 0;
 	m_CustomHandler = NULL;
+
+	m_ModTime = GetFileModTime(file);
 
 	if (!engine)
 		m_pEngine = bridge->GetSourceEngineName();
@@ -206,7 +222,7 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			{
 				bShouldBeReadingDefault = true;
 				m_ParseState = PSTATE_GAMEDEFS;
-				strncopy(m_Game, name, sizeof(m_Game));
+				m_Game = name;
 			} else {
 				m_IgnoreLevel++;
 			}
@@ -222,7 +238,7 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 			{
 				m_ParseState = PSTATE_GAMEDEFS_KEYS;
 			}
-			else if ((strcmp(name, "#supported") == 0) && (strcmp(m_Game, "#default") == 0))
+			else if ((strcmp(name, "#supported") == 0) && (m_Game == "#default"))
 			{
 				m_ParseState = PSTATE_GAMEDEFS_SUPPORTED;
 				/* Ignore this section unless we get a game. */
@@ -261,23 +277,23 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 		}
 	case PSTATE_GAMEDEFS_KEYS:
 		{
-			strncopy(m_Key, name, sizeof(m_Key));
+			m_Key = name;
 			m_ParseState = PSTATE_GAMEDEFS_KEYS_PLATFORM;
 			matched_platform = false;
 			break;
 		}
 	case PSTATE_GAMEDEFS_OFFSETS:
 		{
-			m_Prop[0] = '\0';
-			m_Class[0] = '\0';
-			strncopy(m_offset, name, sizeof(m_offset));
+			m_Prop.clear();
+			m_Class.clear();
+			m_offset = name;
 			m_ParseState = PSTATE_GAMEDEFS_OFFSETS_OFFSET;
 			matched_platform = false;
 			break;
 		}
 	case PSTATE_GAMEDEFS_SIGNATURES:
 		{
-			strncopy(m_offset, name, sizeof(m_offset));
+			m_offset = name;
 			s_TempSig.Reset();
 			m_ParseState = PSTATE_GAMEDEFS_SIGNATURES_SIG;
 			matched_platform = false;
@@ -287,39 +303,25 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 		{
 			char error[255];
 			error[0] = '\0';
-			if (strcmp(name, "server") != 0)
+			GameBinaryInfo binInfo;
+			if (!g_GameConfigs.TryGetGameBinaryInfo(name, &binInfo))
 			{
 				ke::SafeSprintf(error, sizeof(error), "Unrecognized library \"%s\"", name);
 			} 
-			else if (!s_ServerBinCRC_Ok)
+			else if (!binInfo.m_crcOK)
 			{
-				FILE *fp;
-				char path[PLATFORM_MAX_PATH];
-
-				g_pSM->BuildPath(Path_Game, path, sizeof(path), "bin/" PLATFORM_SERVER_BINARY);
-				if ((fp = fopen(path, "rb")) == NULL)
-				{
-					ke::SafeSprintf(error, sizeof(error), "Could not open binary: %s", path);
-				} else {
-					size_t size;
-					void *buffer;
-
-					fseek(fp, 0, SEEK_END);
-					size = ftell(fp);
-					fseek(fp, 0, SEEK_SET);
-
-					buffer = malloc(size);
-					fread(buffer, size, 1, fp);
-					s_ServerBinCRC = UTIL_CRC32(buffer, size);
-					free(buffer);
-					s_ServerBinCRC_Ok = true;
-					fclose(fp);
-				}
+				ke::SafeSprintf(error, sizeof(error), "Could not get CRC for binary: %s", name);
 			}
+			else
+			{
+				bCurrentBinCRC_Ok = binInfo.m_crcOK;
+				bCurrentBinCRC = binInfo.m_crc;
+			}
+
 			if (error[0] != '\0')
 			{
 				m_IgnoreLevel = 1;
-				logger->LogError("[SM] Error while parsing CRC section for \"%s\" (%s):", m_Game, m_CurFile);
+				logger->LogError("[SM] Error while parsing CRC section for \"%s\" (%s):", m_Game.c_str(), m_CurFile);
 				logger->LogError("[SM] %s", error);
 			} else {
 				m_ParseState = PSTATE_GAMEDEFS_CRC_BINARY;
@@ -334,12 +336,12 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 		}
 	case PSTATE_GAMEDEFS_ADDRESSES:
 		{
-			m_Address[0] = '\0';
-			m_AddressSignature[0] = '\0';
+			m_Address.clear();
+			m_AddressSignature.clear();
 			m_AddressReadCount = 0;
 			m_AddressLastIsOffset = false;
 
-			strncopy(m_Address, name, sizeof(m_Address));
+			m_Address = name;
 			m_ParseState = PSTATE_GAMEDEFS_ADDRESSES_ADDRESS;
 
 			break;
@@ -355,7 +357,7 @@ SMCResult CGameConfig::ReadSMC_NewSection(const SMCStates *states, const char *n
 				if (strcmp(name, "linux") != 0 && strcmp(name, "windows") != 0 && strcmp(name, "mac") != 0 &&
 					strcmp(name, "linux64") != 0 && strcmp(name, "windows64") != 0 && strcmp(name, "mac64") != 0)
 				{
-					logger->LogError("[SM] Error while parsing Address section for \"%s\" (%s):", m_Address, m_CurFile);
+					logger->LogError("[SM] Error while parsing Address section for \"%s\" (%s):", m_Address.c_str(), m_CurFile);
 					logger->LogError("[SM] Unrecognized platform \"%s\"", name);
 				}
 				m_IgnoreLevel = 1;
@@ -392,11 +394,11 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 	{
 		if (strcmp(key, "class") == 0)
 		{
-			strncopy(m_Class, value, sizeof(m_Class));
+			m_Class = value;
 		} else if (strcmp(key, "prop") == 0) {
-			strncopy(m_Prop, value, sizeof(m_Prop));
+			m_Prop = value;
 		} else if (IsPlatformCompatible(key, &matched_platform)) {
-			m_Offsets.replace(m_offset, atoi(value));
+			m_Offsets.replace(m_offset.c_str(), static_cast<int>(strtol(value, NULL, 0)));
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_KEYS) {
 		std::string vstr(value);
@@ -406,7 +408,7 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 		if (IsPlatformCompatible(key, &matched_platform))
 		{
 			std::string vstr(value);
-			m_Keys.replace(m_Key, std::move(vstr));
+			m_Keys.replace(m_Key.c_str(), std::move(vstr));
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_SUPPORTED) {
 		if (strcmp(key, "game") == 0)
@@ -442,12 +444,12 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_CRC_BINARY) {
 		if (DoesPlatformMatch(key)
-			&& s_ServerBinCRC_Ok
+			&& bCurrentBinCRC_Ok
 			&& !bShouldBeReadingDefault)
 		{
 			unsigned int crc = 0;
 			sscanf(value, "%08X", &crc);
-			if (s_ServerBinCRC == crc)
+			if (bCurrentBinCRC == crc)
 			{
 				bShouldBeReadingDefault = true;
 			}
@@ -457,7 +459,7 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 			int limit = sizeof(m_AddressRead)/sizeof(m_AddressRead[0]);
 			if (m_AddressLastIsOffset)
 			{
-				logger->LogError("[SM] Error parsing Address \"%s\", 'offset' entry must be the last entry (gameconf \"%s\")", m_Address, m_CurFile);
+				logger->LogError("[SM] Error parsing Address \"%s\", 'offset' entry must be the last entry (gameconf \"%s\")", m_Address.c_str(), m_CurFile);
 			}
 			else if (m_AddressReadCount < limit)
 			{
@@ -465,15 +467,15 @@ SMCResult CGameConfig::ReadSMC_KeyValue(const SMCStates *states, const char *key
 				{
 					m_AddressLastIsOffset = true;
 				}
-				m_AddressRead[m_AddressReadCount] = atoi(value);
+				m_AddressRead[m_AddressReadCount] = static_cast<int>(strtol(value, NULL, 0));
 				m_AddressReadCount++;
 			}
 			else
 			{
-				logger->LogError("[SM] Error parsing Address \"%s\", does not support more than %d read offsets (gameconf \"%s\")", m_Address, limit, m_CurFile);
+				logger->LogError("[SM] Error parsing Address \"%s\", does not support more than %d read offsets (gameconf \"%s\")", m_Address.c_str(), limit, m_CurFile);
 			}
 		} else if (strcmp(key, "signature") == 0) {
-			strncopy(m_AddressSignature, value, sizeof(m_AddressSignature));
+			m_AddressSignature = value;
 		}
 	} else if (m_ParseState == PSTATE_GAMEDEFS_CUSTOM) {
 		return m_CustomHandler->ReadSMC_KeyValue(states, key, value);
@@ -529,25 +531,24 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 	case PSTATE_GAMEDEFS_OFFSETS_OFFSET:
 		{
 			/* Parse the offset... */
-			if (m_Class[0] != '\0'
-				&& m_Prop[0] != '\0')
+			if (!m_Class.empty() && !m_Prop.empty())
 			{
-				SendProp *pProp = gamehelpers->FindInSendTable(m_Class, m_Prop);
+				SendProp *pProp = gamehelpers->FindInSendTable(m_Class.c_str(), m_Prop.c_str());
 				if (pProp)
 				{
 					int val = gamehelpers->GetSendPropOffset(pProp);
-					m_Offsets.replace(m_offset, val);
-					m_Props.replace(m_offset, pProp);
+					m_Offsets.replace(m_offset.c_str(), val);
+					m_Props.replace(m_offset.c_str(), pProp);
 				} else {
 					/* Check if it's a non-default game and no offsets exist */
-					if (((strcmp(m_Game, "*") != 0) && strcmp(m_Game, "#default") != 0)
-						&& (!m_Offsets.retrieve(m_offset)))
+					if ((m_Game != "*" && m_Game != "#default")
+						&& (!m_Offsets.retrieve(m_offset.c_str())))
 					{
 						logger->LogError("[SM] Unable to find property %s.%s (file \"%s\") (mod \"%s\")", 
-							m_Class,
-							m_Prop,
+							m_Class.c_str(),
+							m_Prop.c_str(),
 							m_CurFile,
-							m_Game);
+							m_Game.c_str());
 					}
 				}
 			}
@@ -585,14 +586,12 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 				strncopy(s_TempSig.library, "server", sizeof(s_TempSig.library));
 			}
 			void *addrInBase = NULL;
-			if (strcmp(s_TempSig.library, "server") == 0)
+			GameBinaryInfo binInfo;
+			if (g_GameConfigs.TryGetGameBinaryInfo(s_TempSig.library, &binInfo))
 			{
-				addrInBase = bridge->serverFactory;
-			} else if (strcmp(s_TempSig.library, "engine") == 0) {
-				addrInBase = bridge->engineFactory;
-			} else if (strcmp(s_TempSig.library, "matchmaking_ds") == 0) {
-				addrInBase = bridge->matchmakingDSFactory;
+				addrInBase = binInfo.m_pAddr;
 			}
+
 			void *final_addr = NULL;
 			if (addrInBase == NULL)
 			{
@@ -655,7 +654,7 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 					}
 				}
 
-				m_Sigs.replace(m_offset, final_addr);
+				m_Sigs.replace(m_offset.c_str(), final_addr);
 			}
 
 			m_ParseState = PSTATE_GAMEDEFS_SIGNATURES;
@@ -671,10 +670,10 @@ SMCResult CGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 		{
 			m_ParseState = PSTATE_GAMEDEFS_ADDRESSES;
 
-			if (m_Address[0] != '\0' && m_AddressSignature[0] != '\0')
+			if (!m_Address.empty() && !m_AddressSignature.empty())
 			{
-				AddressConf addrConf(m_AddressSignature, sizeof(m_AddressSignature), m_AddressReadCount, m_AddressRead, m_AddressLastIsOffset);
-				m_Addresses.replace(m_Address, addrConf);
+				AddressConf addrConf(std::move(m_AddressSignature), m_AddressReadCount, m_AddressRead, m_AddressLastIsOffset);
+				m_Addresses.replace(m_Address.c_str(), addrConf);
 			}
 
 			break;
@@ -792,7 +791,10 @@ public:
 				(!had_game && matched_engine) ||
 				(matched_engine && matched_game))
 			{
-				fileList->push_back(cur_file);
+				if (fileList->find(cur_file) == fileList->end())
+				{
+					fileList->push_back(cur_file);
+				}
 			}
 			state = MSTATE_MAIN;
 		}
@@ -1022,7 +1024,7 @@ bool CGameConfig::GetAddress(const char *key, void **retaddr)
 	AddressConf &addrConf = r->value;
 
 	void *addr;
-	if (!GetMemSig(addrConf.signatureName, &addr))
+	if (!GetMemSig(addrConf.signatureName.c_str(), &addr))
 	{
 		*retaddr = NULL;
 		return false;
@@ -1055,11 +1057,11 @@ static inline unsigned minOf(unsigned a, unsigned b)
 	return a <= b ? a : b;
 }
 
-CGameConfig::AddressConf::AddressConf(char *sigName, unsigned sigLength, unsigned readCount, int *read, bool lastIsOffset)
+CGameConfig::AddressConf::AddressConf(std::string&& sigName, unsigned readCount, int *read, bool lastIsOffset)
 {
 	unsigned readLimit = minOf(readCount, sizeof(this->read) / sizeof(this->read[0]));
 
-	strncopy(signatureName, sigName, sizeof(signatureName) / sizeof(signatureName[0]));
+	this->signatureName = std::move(sigName);
 	this->readCount = readLimit;
 	memcpy(&this->read[0], read, sizeof(this->read[0])*readLimit);
 
@@ -1081,6 +1083,42 @@ bool CGameConfig::GetMemSig(const char *key, void **addr)
 	return m_Sigs.retrieve(key, addr);
 }
 
+void GameBinPathManager::Init()
+{
+	char search_path[PLATFORM_MAX_PATH * 8];
+	bridge->filesystem->GetSearchPath("GAMEBIN", false, search_path, sizeof(search_path));
+
+	char addons_folder[12];
+	ke::SafeSprintf(addons_folder, sizeof(addons_folder), "%caddons%c", PLATFORM_SEP_CHAR, PLATFORM_SEP_CHAR);
+
+	std::istringstream iss(search_path);
+	for (std::string path; std::getline(iss, path, ';');)
+	{
+		if (path.length() > 0
+			&& path.find(addons_folder) == std::string::npos
+			&& m_lookup.find(path) == m_lookup.cend()
+			)
+		{
+			m_lookup.insert(path);
+			m_ordered.push_back(path);
+		}
+	}
+
+	iss.clear();
+	
+	bridge->filesystem->GetSearchPath("EXECUTABLE_PATH", false, search_path, sizeof(search_path));
+	iss.str(search_path);
+	
+	for (std::string path; std::getline(iss, path, ';');)
+	{
+		if (m_lookup.find(path) == m_lookup.cend())
+		{
+			m_lookup.insert(path);
+			m_ordered.push_back(path);
+		}
+	}
+}
+
 GameConfigManager::GameConfigManager()
 {
 }
@@ -1091,6 +1129,8 @@ GameConfigManager::~GameConfigManager()
 
 void GameConfigManager::OnSourceModStartup(bool late)
 {
+	m_gameBinPathManager.Init();
+	
 	LoadGameConfigFile("core.games", &g_pGameConf, NULL, 0);
 
 	strncopy(g_Game, g_pSM->GetGameFolderName(), sizeof(g_Game));
@@ -1132,9 +1172,17 @@ bool GameConfigManager::LoadGameConfigFile(const char *file, IGameConfig **_pCon
 
 	if (m_Lookup.retrieve(file, &pConfig))
 	{
+		bool ret = true;
+		time_t modtime = GetFileModTime(file);
+		if (pConfig->m_ModTime != modtime)
+		{
+			pConfig->m_ModTime = modtime;
+			ret = pConfig->Reparse(error, maxlength);
+		}
+
 		pConfig->AddRef();
 		*_pConfig = pConfig;
-		return true;
+		return ret;
 	}
 
 	pConfig = new CGameConfig(file);
@@ -1204,4 +1252,77 @@ void GameConfigManager::ReleaseLock()
 void GameConfigManager::RemoveCachedConfig(CGameConfig *config)
 {
 	m_Lookup.remove(config->m_File);
+}
+
+void GameConfigManager::CacheGameBinaryInfo(const char* pszName)
+{
+	GameBinaryInfo info;
+
+	char name[64];
+	bridge->FormatSourceBinaryName(pszName, name, sizeof(name));
+
+	bool binary_found = false;
+	char binary_path[PLATFORM_MAX_PATH];
+	for (auto it = m_gameBinPathManager.Paths().begin(); it != m_gameBinPathManager.Paths().end(); ++it)
+	{
+		ke::SafeSprintf(binary_path, sizeof(binary_path), "%s%s%s", it->c_str(), it->back() == PLATFORM_SEP_CHAR ? "" : PLATFORM_SEP, name);
+#if defined PLATFORM_WINDOWS
+		HMODULE hModule = LoadLibraryA(binary_path);
+		if (hModule)
+		{
+			info.m_pAddr = GetProcAddress(hModule, "CreateInterface");
+			FreeLibrary(hModule);
+		}
+#else
+		void *pHandle = dlopen(binary_path, RTLD_NOW);
+		if (pHandle)
+		{
+			info.m_pAddr = dlsym(pHandle, "CreateInterface");
+			dlclose(pHandle);
+		}
+#endif
+		
+		if (info.m_pAddr)
+			break;
+	}
+
+	// Don't bother trying to get CRC if we couldn't find the bin loaded
+	if (info.m_pAddr)
+	{
+		FILE *fp;
+
+		if ((fp = fopen(binary_path, "rb")) == 0)
+		{
+			info.m_crc = 0;
+		}
+		else
+		{
+			size_t size;
+			void* buffer;
+
+			fseek(fp, 0, SEEK_END);
+			size = ftell(fp);
+			fseek(fp, 0, SEEK_SET);
+
+			buffer = malloc(size);
+			fread(buffer, size, 1, fp);
+			info.m_crc = UTIL_CRC32(buffer, size);
+			free(buffer);
+			info.m_crcOK = true;
+			fclose(fp);
+		}
+	}
+
+	// But insert regardless, to cache the first lookup (even as failed)
+	m_gameBinInfos.insert(pszName, info);
+}
+
+bool GameConfigManager::TryGetGameBinaryInfo(const char* pszName, GameBinaryInfo* pDest)
+{
+	if (m_gameBinInfos.retrieve(pszName, pDest))
+		return pDest->m_pAddr != nullptr;
+
+	CacheGameBinaryInfo(pszName);
+
+	return m_gameBinInfos.retrieve(pszName, pDest);
 }

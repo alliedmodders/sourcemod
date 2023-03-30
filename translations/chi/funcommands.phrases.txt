@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"chi"		"烧烤玩家"
+	}
+
+	"FireBomb player"
+	{
+		"chi"		"把玩家变成燃烧弹"
+	}
+
+	"Freeze player"
+	{
+		"chi"		"冰冻玩家"
+	}
+
+	"FreezeBomb player"
+	{
+		"chi"		"把玩家变成冰冻弹"
+	}
+
+	"TimeBomb player"
+	{
+		"chi"		"把玩家变成定时炸弹"
+	}
+
+	"Beacon player"
+	{
+		"chi"		"点玩家灯"
+	}
+
+	"NoClip player"
+	{
+		"chi"		"设置穿墙模式"
+	}
+
+	"Blind player"
+	{
+		"chi"		"把玩家变成瞎子"
+	}
+
+	"Drug player"
+	{
+		"chi"		"给玩家下毒药"
+	}
+
+	"Gravity player"
+	{
+		"chi"		"改变玩家重力指标"
+	}
+
+	"Blind amount"
+	{
+		"chi"		"致盲到何程度?"
+	}
+
+	"Fully blind"
+	{
+		"chi"		"全盲"
+	}
+
+	"Half blind"
+	{
+		"chi"		"半盲"
+	}
+
+	"No blind"
+	{
+		"chi"		"不盲"
+	}
+
+	"Gravity amount"
+	{
+		"chi"		"改重力指标为多少?"
+	}
+
+	"Gravity Very High"
+	{
+		"chi"		"超高重力"
+	}
+
+	"Gravity High"
+	{
+		"chi"		"高重力"
+	}
+
+	"Gravity Normal"
+	{
+		"chi"		"常规重力"
+	}
+
+	"Gravity Low"
+	{
+		"chi"		"低重力"
+	}
+
+	"Gravity Very Low"
+	{
+		"chi"		"超低重力"
+	}
+
+	"Set target on fire"
+	{
+		"chi"		"将 {1} 点燃."
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"chi"		"触发 {1} 身上的燃烧弹."
+	}
+
+	"Froze target"
+	{
+		"chi"		"冰冻了 {1}."
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"chi"		"触发 {1} 身上的冰冻弹."
+	}
+
+	"Toggled beacon on target"
+	{
+		"chi"		"触发 {1} 身上的灯."
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"chi"		"触发 {1} 身上的定时炸弹."
+	}
+
+	"Toggled noclip on target"
+	{
+		"chi"		"触发{1}的穿墙模式"
+	}
+
+	"Toggled drug on target"
+	{
+		"chi"		"激活 {1} 身上的毒药."
+	}
+
+	"Set blind on target"
+	{
+		"chi"		"使 {1} 致盲."
+	}
+
+	"Set gravity on target"
+	{
+		"chi"		"更改 {1} 的重力指标."
+	}
+
+	"Till Explodes"
+	{
+		"chi"		"还有 {2} 秒钟 {1} 就要爆炸."
+	}
+
+	"Unfrozen"
+	{
+		"chi"		"您已被冻结."
+	}
+
+	"You will be unfrozen"
+	{
+		"chi"		"您将被解冻."
+	}
+
+}

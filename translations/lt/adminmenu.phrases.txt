@@ -1,0 +1,23 @@
+"Phrases"
+{
+	"Admin Menu"
+	{
+		"lt"		"Administratorių meniu."
+	}
+
+	"Player Commands"
+	{
+		"lt"		"Žaidėjo komandos"
+	}
+
+	"Server Commands"
+	{
+		"lt"		"Serverio komandos"
+	}
+
+	"Voting Commands"
+	{
+		"lt"		"Balsavimo komandos"
+	}
+
+}

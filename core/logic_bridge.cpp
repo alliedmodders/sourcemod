@@ -51,9 +51,6 @@
 #include <bridge/include/IVEngineServerBridge.h>
 #include <bridge/include/IPlayerInfoBridge.h>
 #include <bridge/include/IFileSystemBridge.h>
-#if PROTOBUF_PROXY_ENABLE
-# include "pb_handle.h"
-#endif
 
 sm_logic_t logicore;
 
@@ -105,89 +102,93 @@ public:
 class VFileSystem_Logic : public IFileSystemBridge
 {
 public:
-	const char *FindFirstEx(const char *pWildCard, const char *pPathID, FileFindHandle_t *pHandle)
+	const char *FindFirstEx(const char *pWildCard, const char *pPathID, FileFindHandle_t *pHandle) override
 	{
 		return filesystem->FindFirstEx(pWildCard, pPathID, pHandle);
 	}
-	const char *FindNext(FileFindHandle_t handle)
+	const char *FindNext(FileFindHandle_t handle) override
 	{
 		return filesystem->FindNext(handle);
 	}
-	bool FindIsDirectory(FileFindHandle_t handle)
+	bool FindIsDirectory(FileFindHandle_t handle) override
 	{
 		return filesystem->FindIsDirectory(handle);
 	}
-	void FindClose(FileFindHandle_t handle)
+	void FindClose(FileFindHandle_t handle) override
 	{
 		filesystem->FindClose(handle);
 	}
-	FileHandle_t Open(const char *pFileName, const char *pOptions, const char *pathID = 0)
+	FileHandle_t Open(const char *pFileName, const char *pOptions, const char *pathID = 0) override
 	{
 		return filesystem->Open(pFileName, pOptions, pathID);
 	}
-	void Close(FileHandle_t file)
+	void Close(FileHandle_t file) override
 	{
 		filesystem->Close(file);
 	}
-	char *ReadLine(char *pOutput, int maxChars, FileHandle_t file)
+	char *ReadLine(char *pOutput, int maxChars, FileHandle_t file) override
 	{
 		return filesystem->ReadLine(pOutput, maxChars, file);
 	}
-	bool EndOfFile(FileHandle_t file)
+	bool EndOfFile(FileHandle_t file) override
 	{
 		return filesystem->EndOfFile(file);
 	}
-	bool FileExists(const char *pFileName, const char *pPathID = 0)
+	bool FileExists(const char *pFileName, const char *pPathID = 0) override
 	{
 		return filesystem->FileExists(pFileName, pPathID);
 	}
-	unsigned int Size(const char *pFileName, const char *pPathID = 0)
+	unsigned int Size(const char *pFileName, const char *pPathID = 0) override
 	{
 		return filesystem->Size(pFileName, pPathID);
 	}
-	int Read(void* pOutput, int size, FileHandle_t file)
+	int Read(void* pOutput, int size, FileHandle_t file) override
 	{
 		return filesystem->Read(pOutput, size, file);
 	}
-	int Write(void const* pInput, int size, FileHandle_t file)
+	int Write(void const* pInput, int size, FileHandle_t file) override
 	{
 		return filesystem->Write(pInput, size, file);
 	}
-	void Seek(FileHandle_t file, int pos, int seekType)
+	void Seek(FileHandle_t file, int pos, int seekType) override
 	{
 		filesystem->Seek(file, pos, (FileSystemSeek_t) seekType);
 	}
-	unsigned int Tell(FileHandle_t file)
+	unsigned int Tell(FileHandle_t file) override
 	{
 		return filesystem->Tell(file);
 	}
-	int FPrint(FileHandle_t file, const char *pData)
+	int FPrint(FileHandle_t file, const char *pData) override
 	{
 		return filesystem->FPrintf(file, "%s", pData);
 	}
-	void Flush(FileHandle_t file)
+	void Flush(FileHandle_t file) override
 	{
 		filesystem->Flush(file);
 	}
-	bool IsOk(FileHandle_t file)
+	bool IsOk(FileHandle_t file) override
 	{
 		return filesystem->IsOk(file);
 	}
-	void RemoveFile(const char *pRelativePath, const char *pathID)
+	void RemoveFile(const char *pRelativePath, const char *pathID) override
 	{
 		filesystem->RemoveFile(pRelativePath, pathID);
 	}
-	void RenameFile(char const *pOldPath, char const *pNewPath, const char *pathID)
+	void RenameFile(char const *pOldPath, char const *pNewPath, const char *pathID) override
 	{
 		filesystem->RenameFile(pOldPath, pNewPath, pathID);
 	}
-	bool IsDirectory(const char *pFileName, const char *pathID)
+	bool IsDirectory(const char *pFileName, const char *pathID) override
 	{
 		return filesystem->IsDirectory(pFileName, pathID);
 	}
-	void CreateDirHierarchy(const char *path, const char *pathID)
+	void CreateDirHierarchy(const char *path, const char *pathID) override
 	{
 		filesystem->CreateDirHierarchy(path, pathID);
+	}
+	int GetSearchPath(const char* pathID, bool bGetPackFiles, char* pPath, int nMaxLen) override
+	{
+		return filesystem->GetSearchPath(pathID, bGetPackFiles, pPath, nMaxLen);
 	}
 } fs_wrapper;
 
@@ -374,6 +375,12 @@ void UTIL_ConsolePrint(const char *fmt, ...)
 #define GAMEFIX "2.csgo"
 #elif SOURCE_ENGINE == SE_CONTAGION
 #define GAMEFIX "2.contagion"
+#elif SOURCE_ENGINE == SE_PVKII
+#define GAMEFIX "2.pvkii"
+#elif SOURCE_ENGINE == SE_MCV
+#define GAMEFIX "2.mcv"
+#elif SOURCE_ENGINE == SE_MOCK
+#define GAMEFIX "2.mock"
 #else
 #define GAMEFIX "2.ep1"
 #endif
@@ -406,9 +413,6 @@ CoreProviderImpl::CoreProviderImpl()
 	this->GetGlobalTarget = get_global_target;
 	this->gamesuffix = GAMEFIX;
 	this->serverGlobals = &::serverGlobals;
-	this->serverFactory = nullptr;
-	this->engineFactory = nullptr;
-	this->matchmakingDSFactory = nullptr;
 	this->listeners = nullptr;
 }
 
@@ -496,6 +500,12 @@ const char *CoreProviderImpl::GetSourceEngineName()
 	return "doi";
 #elif SOURCE_ENGINE == SE_CSGO
 	return "csgo";
+#elif SOURCE_ENGINE == SE_MOCK
+	return "mock";
+#elif SOURCE_ENGINE == SE_PVKII
+	return "pvkii";
+#elif SOURCE_ENGINE == SE_MCV
+	return "mcv";
 #endif
 }
 
@@ -513,7 +523,9 @@ bool CoreProviderImpl::SymbolsAreHidden()
 	|| (SOURCE_ENGINE == SE_INSURGENCY)  \
 	|| (SOURCE_ENGINE == SE_DOI)  \
 	|| (SOURCE_ENGINE == SE_BLADE)       \
-	|| (SOURCE_ENGINE == SE_CSGO)
+	|| (SOURCE_ENGINE == SE_CSGO) \
+	|| (SOURCE_ENGINE == SE_PVKII) \
+	|| (SOURCE_ENGINE == SE_MCV)
 	return true;
 #else
 	return false;
@@ -626,15 +638,8 @@ void CoreProviderImpl::InitializeBridge()
 	::serverGlobals.frametime = &gpGlobals->frametime;
 	::serverGlobals.interval_per_tick = &gpGlobals->interval_per_tick;
 
-	this->engineFactory = (void *)g_SMAPI->GetEngineFactory(false);
-	this->serverFactory = (void *)g_SMAPI->GetServerFactory(false);
 	this->listeners = SMGlobalClass::head;
 
-	if (ke::RefPtr<ke::SharedLib> mmlib = ke::SharedLib::Open(FORMAT_SOURCE_BIN_NAME("matchmaking_ds"), NULL, 0)) {
-		this->matchmakingDSFactory =
-		  mmlib->get<decltype(sCoreProviderImpl.matchmakingDSFactory)>("CreateInterface");
-	}
-	
 	logic_init_(this, &logicore);
 
 	// Join logic's SMGlobalClass instances.
@@ -654,41 +659,6 @@ void CoreProviderImpl::InitializeBridge()
 	adminsys = logicore.adminsys;
 	logger = logicore.logger;
 	rootmenu = logicore.rootmenu;
-}
-
-bool CoreProviderImpl::LoadProtobufProxy(char *error, size_t maxlength)
-{
-#if !defined(PROTOBUF_PROXY_ENABLE)
-	return false;
-#else
-	char file[PLATFORM_MAX_PATH];
-
-#if !defined(PROTOBUF_PROXY_BINARY_NAME)
-# error "No engine suffix defined"
-#endif
-
-	/* Now it's time to load the logic binary */
-	g_SMAPI->PathFormat(file,
-		sizeof(file),
-		"%s/bin/" PLATFORM_ARCH_FOLDER PROTOBUF_PROXY_BINARY_NAME PLATFORM_LIB_EXT,
-		g_SourceMod.GetSourceModPath());
-
-	char myerror[255];
-	pbproxy_ = ke::SharedLib::Open(file, myerror, sizeof(myerror));
-	if (!pbproxy_) {
-		ke::SafeSprintf(error, maxlength, "failed to load %s: %s", file, myerror);
-		return false;
-	}
-
-	auto fn = pbproxy_->get<GetProtobufProxyFn>("GetProtobufProxy");
-	if (!fn) {
-		ke::SafeStrcpy(error, maxlength, "could not find GetProtobufProxy function");
-		return false;
-	}
-
-	gProtobufProxy = fn();
-	return true;
-#endif
 }
 
 bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)
@@ -769,6 +739,12 @@ CoreProviderImpl::DefineCommand(const char *name, const char *help, const Comman
 
 	ke::RefPtr<CommandImpl> impl = new CommandImpl(cmd, hook);
 	commands_.push_back(impl);
+}
+
+void CoreProviderImpl::FormatSourceBinaryName(const char *basename, char *buffer, size_t maxlength)
+{
+	bool use_prefix = (!strcasecmp(basename, "tier0") || !strcasecmp(basename, "vstdlib"));
+	ke::SafeSprintf(buffer, maxlength, "%s%s%s%s", use_prefix ? SOURCE_BIN_PREFIX : "", basename, SOURCE_BIN_SUFFIX, SOURCE_BIN_EXT);
 }
 
 void CoreProviderImpl::InitializeHooks()

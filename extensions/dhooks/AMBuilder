@@ -1,0 +1,64 @@
+# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
+import os
+
+for cxx in builder.targets:
+  binary = SM.ExtLibrary(builder, cxx, 'dhooks.ext')
+
+  # Only x86 on Linux and Windows is supported.
+  if binary.compiler.target.platform == 'mac' or binary.compiler.target.arch != 'x86':
+    continue
+
+  binary.compiler.defines += [
+    'META_NO_HL2SDK',
+    'HAVE_STRING_H',
+  ]
+
+  if binary.compiler.like('gcc'):
+    binary.compiler.cflags += ['-Wno-invalid-offsetof']
+
+  binary.compiler.cxxincludes += [
+    os.path.join(SM.mms_root, 'core'),
+    os.path.join(SM.mms_root, 'core', 'sourcehook'),
+    os.path.join(builder.sourcePath, 'public', 'jit'),
+    os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
+    os.path.join(builder.sourcePath, 'sourcepawn', 'include'),
+    os.path.join(builder.sourcePath, 'sourcepawn', 'vm'),
+    os.path.join(builder.sourcePath, 'sourcepawn', 'vm', 'x86'),
+    os.path.join(builder.sourcePath, 'extensions', 'dhooks', 'DynamicHooks'),
+  ]
+
+  binary.sources += [
+    'extension.cpp',
+    'listeners.cpp',
+    'natives.cpp',
+    'signatures.cpp',
+    'vhook.cpp',
+    'util.cpp',
+    'dynhooks_sourcepawn.cpp',
+    '../../public/smsdk_ext.cpp',
+    '../../public/asm/asm.c',
+    '../../public/libudis86/decode.c',
+    '../../public/libudis86/itab.c',
+    '../../public/libudis86/syn-att.c',
+    '../../public/libudis86/syn-intel.c',
+    '../../public/libudis86/syn.c',
+    '../../public/libudis86/udis86.c',
+    '../../sourcepawn/vm/x86/assembler-x86.cpp',
+  ]
+
+  # DynamicHooks
+  binary.sources += [
+    os.path.join('DynamicHooks', 'hook.cpp'),
+    os.path.join('DynamicHooks', 'manager.cpp'),
+    os.path.join('DynamicHooks', 'registers.cpp'),
+    os.path.join('DynamicHooks', 'conventions', 'x86MsCdecl.cpp'),
+    os.path.join('DynamicHooks', 'conventions', 'x86MsStdcall.cpp'),
+    os.path.join('DynamicHooks', 'conventions', 'x86MsFastcall.cpp'),
+  ]
+
+  if binary.compiler.target.platform == 'windows':
+    binary.sources += [os.path.join('DynamicHooks', 'conventions', 'x86MsThiscall.cpp')]
+  else:
+    binary.sources += [os.path.join('DynamicHooks', 'conventions', 'x86GccThiscall.cpp')]
+  
+  SM.extensions += [builder.Add(binary)]

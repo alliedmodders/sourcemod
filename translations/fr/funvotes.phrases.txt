@@ -1,0 +1,98 @@
+"Phrases"
+{
+	"Initiated Vote Gravity"
+	{
+		"fr"		"a lancé un vote pour modifier la Gravité."
+	}
+
+	"Initiated Vote Burn"
+	{
+		"fr"		"a lancé un vote pour brûler {1}."
+	}
+
+	"Initiated Vote Slay"
+	{
+		"fr"		"a lancé un vote pour massacrer {1}."
+	}
+
+	"Initiated Vote Alltalk"
+	{
+		"fr"		"a lancé un vote pour modifier le alltalk."
+	}
+
+	"Initiated Vote FF"
+	{
+		"fr"		"a lancé un vote pour modifier le tir amical(FF)."
+	}
+
+	"Gravity Vote"
+	{
+		"fr"		"Vote de modification de la Gravité: {1}"
+	}
+
+	"Change Gravity To"
+	{
+		"fr"		"Changer la gravité pour {1}?"
+	}
+
+	"Voteburn player"
+	{
+		"fr"		"Brûler le joueur {1}?"
+	}
+
+	"Voteslay Player"
+	{
+		"fr"		"Tuer {1} ?"
+	}
+
+	"Votealltalk Off"
+	{
+		"fr"		"Enlever le alltalk? {1} "
+	}
+
+	"Votealltalk On"
+	{
+		"fr"		"Mettre le alltalk? {1} "
+	}
+
+	"Voteff Off"
+	{
+		"fr"		"Désactiver le tir amical (FF) ? {1} "
+	}
+
+	"Voteff On"
+	{
+		"fr"		"Activer le tir amical (FF) ? {1} "
+	}
+
+	"Gravity vote"
+	{
+		"fr"		"Vote pour modifier la Gravité"
+	}
+
+	"Vote FF"
+	{
+		"fr"		"Vote pour le tir amical (FF)"
+	}
+
+	"Burn vote"
+	{
+		"fr"		"Vote pour Brûler un Joueur"
+	}
+
+	"Alltalk vote"
+	{
+		"fr"		"Vote pour modifier le Alltalk"
+	}
+
+	"Slay vote"
+	{
+		"fr"		"Vote pour tuer"
+	}
+
+	"Slayed player"
+	{
+		"fr"		"a tué le joueur '{1}"
+	}
+
+}

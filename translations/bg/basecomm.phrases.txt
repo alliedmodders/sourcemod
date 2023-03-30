@@ -1,0 +1,18 @@
+"Phrases"
+{
+	"Choose Type"
+	{
+		"bg"		"Избиране на тип"
+	}
+
+	"Silenced target"
+	{
+		"bg"		"{1} е заглушен."
+	}
+
+	"Unsilenced target"
+	{
+		"bg"		"{1} вече не е заглушен."
+	}
+
+}

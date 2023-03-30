@@ -164,6 +164,14 @@ enum RayType
 	RayType_Infinite    /**< The trace ray will go from the start position to infinity using a direction vector. */
 };
 
+enum TraceType
+{
+	TRACE_EVERYTHING = 0,
+	TRACE_WORLD_ONLY,               /**< NOTE: This does *not* test static props!!! */
+	TRACE_ENTITIES_ONLY,            /**< NOTE: This version will *not* test static props */
+	TRACE_EVERYTHING_FILTER_PROPS   /**< NOTE: This version will pass the IHandleEntity for props through the filter, unlike all other filters */
+};
+
 typeset TraceEntityFilter
 {
 	/**
@@ -220,6 +228,7 @@ native int TR_GetPointContents(const float pos[3], int &entindex=-1);
  * @param entindex      Entity index to test.
  * @param pos           World position.
  * @return              Contents mask.
+ * @error               Invalid entity.
  */
 native int TR_GetPointContentsEnt(int entindex, const float pos[3]);
 
@@ -356,13 +365,15 @@ native void TR_EnumerateEntitiesPoint(const float pos[3],
  * @param filter        Function to use as a filter.
  * @param data          Arbitrary data value to pass through to the filter
  *                      function.
+ * @param traceType     Trace type.
  */
 native void TR_TraceRayFilter(const float pos[3],
                               const float vec[3],
                               int flags,
                               RayType rtype,
                               TraceEntityFilter filter,
-                              any data=0);
+                              any data=0,
+			      TraceType traceType=TRACE_EVERYTHING);
 
 /**
  * Starts up a new trace hull using a global trace result and a customized
@@ -379,6 +390,7 @@ native void TR_TraceRayFilter(const float pos[3],
  * @param filter        Function to use as a filter.
  * @param data          Arbitrary data value to pass through to the filter
  *                      function.
+ * @param traceType     Trace type.
  */
 native void TR_TraceHullFilter(const float pos[3],
                                const float vec[3],
@@ -386,7 +398,8 @@ native void TR_TraceHullFilter(const float pos[3],
                                const float maxs[3],
                                int flags,
                                TraceEntityFilter filter,
-                               any data=0);
+                               any data=0,
+			       TraceType traceType=TRACE_EVERYTHING);
 
 /**
  * Clips a ray to a particular entity.
@@ -397,6 +410,7 @@ native void TR_TraceHullFilter(const float pos[3],
  * @param flags         Trace flags.
  * @param rtype         Method to calculate the ray direction.
  * @param entity        Entity to clip to.
+ * @error               Invalid entity.
  */
 native void TR_ClipRayToEntity(const float pos[3],
                                const float vec[3],
@@ -413,6 +427,7 @@ native void TR_ClipRayToEntity(const float pos[3],
  * @param maxs          Hull maximum size.
  * @param flags         Trace flags.
  * @param entity        Entity to clip to.
+ * @error               Invalid entity.
  */
 native void TR_ClipRayHullToEntity(const float pos[3],
                                    const float vec[3],
@@ -426,6 +441,7 @@ native void TR_ClipRayHullToEntity(const float pos[3],
  *
  * @param flags         Trace flags.
  * @param entity        Entity to clip to.
+ * @error               Invalid entity.
  */
 native void TR_ClipCurrentRayToEntity(int flags, int entity);
 
@@ -474,6 +490,7 @@ native Handle TR_TraceHullEx(const float pos[3],
  * @param rtype         Method to calculate the ray direction.
  * @param filter        Function to use as a filter.
  * @param data          Arbitrary data value to pass through to the filter function.
+ * @param traceType     Trace type.
  * @return              Ray trace handle, which must be closed via CloseHandle().
  */
 native Handle TR_TraceRayFilterEx(const float pos[3],
@@ -481,7 +498,8 @@ native Handle TR_TraceRayFilterEx(const float pos[3],
                                   int flags,
                                   RayType rtype,
                                   TraceEntityFilter filter,
-                                  any data=0);
+                                  any data=0,
+				  TraceType traceType=TRACE_EVERYTHING);
 
 /**
  * Starts up a new trace hull using a new trace result and a customized
@@ -497,6 +515,7 @@ native Handle TR_TraceRayFilterEx(const float pos[3],
  * @param flags         Trace flags.
  * @param filter        Function to use as a filter.
  * @param data          Arbitrary data value to pass through to the filter function.
+ * @param traceType     Trace type.
  * @return              Ray trace handle, which must be closed via CloseHandle().
  */
 native Handle TR_TraceHullFilterEx(const float pos[3],
@@ -505,7 +524,8 @@ native Handle TR_TraceHullFilterEx(const float pos[3],
                                    const float maxs[3],
                                    int flags,
                                    TraceEntityFilter filter,
-                                   any data=0);
+                                   any data=0,
+				   TraceType traceType=TRACE_EVERYTHING);
 
 /**
  * Clips a ray to a particular entity.
@@ -517,6 +537,7 @@ native Handle TR_TraceHullFilterEx(const float pos[3],
  * @param rtype         Method to calculate the ray direction.
  * @param entity        Entity to clip to.
  * @return              Ray trace handle, which must be closed via CloseHandle().
+ * @error               Invalid entity.
  */
 native Handle TR_ClipRayToEntityEx(const float pos[3],
                                    const float vec[3],
@@ -534,6 +555,7 @@ native Handle TR_ClipRayToEntityEx(const float pos[3],
  * @param flags         Trace flags.
  * @param entity        Entity to clip to.
  * @return              Ray trace handle, which must be closed via CloseHandle().
+ * @error               Invalid entity.
  */
 native Handle TR_ClipRayHullToEntityEx(const float pos[3],
                                        const float vec[3],
@@ -548,6 +570,7 @@ native Handle TR_ClipRayHullToEntityEx(const float pos[3],
  * @param flags         Trace flags.
  * @param entity        Entity to clip to.
  * @return              Ray trace handle, which must be closed via CloseHandle().
+ * @error               Invalid entity.
  */
 native Handle TR_ClipCurrentRayToEntityEx(int flags, int entity);
 

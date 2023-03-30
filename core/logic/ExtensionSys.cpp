@@ -79,7 +79,7 @@ CLocalExtension::CLocalExtension(const char *filename, bool bRequired)
 		g_pSM->BuildPath(Path_SM,
 			path,
 			PLATFORM_MAX_PATH,
-			"extensions/%s." PLATFORM_LIB_EXT,
+			"extensions/" PLATFORM_ARCH_FOLDER "%s." PLATFORM_LIB_EXT,
 			filename);
 	}
 	else
@@ -88,7 +88,7 @@ CLocalExtension::CLocalExtension(const char *filename, bool bRequired)
 		g_pSM->BuildPath(Path_SM,
 			path,
 			PLATFORM_MAX_PATH,
-			"extensions/%s.%s." PLATFORM_LIB_EXT,
+			"extensions/" PLATFORM_ARCH_FOLDER "%s.%s." PLATFORM_LIB_EXT,
 			filename,
 			bridge->gamesuffix);
 
@@ -103,7 +103,7 @@ CLocalExtension::CLocalExtension(const char *filename, bool bRequired)
 				g_pSM->BuildPath(Path_SM,
 					path,
 					PLATFORM_MAX_PATH,
-					"extensions/%s.2.ep2v." PLATFORM_LIB_EXT,
+					"extensions/" PLATFORM_ARCH_FOLDER "%s.2.ep2v." PLATFORM_LIB_EXT,
 					filename);
 			}
 			else if (strcmp(bridge->gamesuffix, "2.nd") == 0)
@@ -111,7 +111,7 @@ CLocalExtension::CLocalExtension(const char *filename, bool bRequired)
 				g_pSM->BuildPath(Path_SM,
 					path,
 					PLATFORM_MAX_PATH,
-					"extensions/%s.2.l4d2." PLATFORM_LIB_EXT,
+					"extensions/" PLATFORM_ARCH_FOLDER "%s.2.l4d2." PLATFORM_LIB_EXT,
 					filename);
 			}
 
@@ -122,7 +122,7 @@ CLocalExtension::CLocalExtension(const char *filename, bool bRequired)
 				g_pSM->BuildPath(Path_SM,
 					path,
 					PLATFORM_MAX_PATH,
-					"extensions/auto.%s/%s." PLATFORM_LIB_EXT,
+					"extensions/" PLATFORM_ARCH_FOLDER "auto.%s/%s." PLATFORM_LIB_EXT,
 					filename,
 					bridge->gamesuffix);
 
@@ -132,7 +132,7 @@ CLocalExtension::CLocalExtension(const char *filename, bool bRequired)
 					g_pSM->BuildPath(Path_SM,
 						path,
 						PLATFORM_MAX_PATH,
-						"extensions/%s." PLATFORM_LIB_EXT,
+						"extensions/" PLATFORM_ARCH_FOLDER "%s." PLATFORM_LIB_EXT,
 						filename);
 				}
 			}
@@ -240,6 +240,8 @@ void CLocalExtension::Unload()
 		m_pLib->CloseLibrary();
 		m_pLib = NULL;
 	}
+
+	m_bFullyLoaded = false;
 }
 
 bool CRemoteExtension::Reload(char *error, size_t maxlength)
@@ -631,9 +633,15 @@ IExtension *CExtensionManager::FindExtensionByName(const char *ext)
 
 IExtension *CExtensionManager::LoadExtension(const char *file, char *error, size_t maxlength)
 {
+	if (strstr(file, "..") != NULL)
+	{
+		ke::SafeStrcpy(error, maxlength, "Cannot load extensions outside the \"extensions\" folder.");
+		return NULL;
+	}
+
 	/* Remove platform extension if it's there. Compat hack. */
 	const char *ext = libsys->GetFileExtension(file);
-	if (strcmp(ext, PLATFORM_LIB_EXT) == 0)
+	if (ext && strcmp(ext, PLATFORM_LIB_EXT) == 0)
 	{
 		char path2[PLATFORM_MAX_PATH];
 		ke::SafeStrcpy(path2, sizeof(path2), file);
@@ -1174,7 +1182,6 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 						rootmenu->ConsolePrint(" -> %s", pPlugin->GetFilename());
 					}
 				}
-				srand(static_cast<int>(time(NULL)));
 				pExt->unload_code = (rand() % 877) + 123;	//123 to 999
 				rootmenu->ConsolePrint("[SM] To verify unloading %s, please use the following: ", pExt->GetFilename());
 				rootmenu->ConsolePrint("[SM] sm exts unload %d %d", num, pExt->unload_code);

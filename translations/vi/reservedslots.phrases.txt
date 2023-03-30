@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Slot reserved"
+	{
+		"vi"		"Bị đuổi để dành chỗ."
+	}
+
+}

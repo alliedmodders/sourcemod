@@ -350,6 +350,27 @@ static cell_t SetTrieString(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t ContainsKeyInTrie(IPluginContext *pContext, const cell_t *params)
+{
+	CellTrie *pTrie;
+	HandleError err;
+	HandleSecurity sec = HandleSecurity(pContext->GetIdentity(), g_pCoreIdent);
+
+	Handle_t hndl = params[1];
+
+	if ((err = handlesys->ReadHandle(hndl, htCellTrie, &sec, (void **)&pTrie)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
+	}
+
+	char *key;
+	pContext->LocalToString(params[2], &key);
+
+	StringHashMap<Entry>::Result r = pTrie->map.find(key);
+
+	return r.found() ? 1 : 0;
+}
+
 static cell_t RemoveFromTrie(IPluginContext *pContext, const cell_t *params)
 {
 	CellTrie *pTrie;
@@ -710,6 +731,7 @@ REGISTER_NATIVES(trieNatives)
 	{"StringMap.GetArray",		GetTrieArray},
 	{"StringMap.GetString",		GetTrieString},
 	{"StringMap.GetValue",		GetTrieValue},
+	{"StringMap.ContainsKey",	ContainsKeyInTrie},
 	{"StringMap.Remove",		RemoveFromTrie},
 	{"StringMap.SetArray",		SetTrieArray},
 	{"StringMap.SetString",		SetTrieString},

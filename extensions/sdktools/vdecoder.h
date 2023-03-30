@@ -48,11 +48,12 @@ enum ValveType
 	Valve_CBasePlayer,		/**< CBasePlayer (disallow normal ents) */
 	Valve_Vector,			/**< Vector */
 	Valve_QAngle,			/**< QAngle */
-	Valve_POD,				/**< Plain old data */
+	Valve_POD,				/**< Plain old data, int32 size */
 	Valve_Float,			/**< Float */
 	Valve_Edict,			/**< Edict */
 	Valve_String,			/**< String */
 	Valve_Bool,				/**< Boolean */
+	Valve_Object,			/**< Object, not matching one of the above types */
 };
 
 enum DataStatus
@@ -81,6 +82,8 @@ enum ValveCallType
 	ValveCall_GameRules,	/**< Thiscall (CGameRules implicit first paramater) */
 	ValveCall_EntityList,	/**< Thiscall (CGlobalEntityList implicit first paramater) */
 	ValveCall_Raw, 		/**< Thiscall (address explicit first parameter) */
+	ValveCall_Server,       /**< Thiscall (CBaseServer implicit first parameter) */
+	ValveCall_Engine,       /**< Thiscall (CVEngineServer implicit first parameter) */
 };
 
 /**

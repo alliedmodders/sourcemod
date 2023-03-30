@@ -80,7 +80,7 @@ enum RoundState {
  *                      only used as a fallback in case detection fails.
  * @param element       Element # (starting from 0) if property is an array.
  * @return              Value at the given property offset.
- * @error               Not supported.
+ * @error               Prop type is not an integer, or lack of mod support.
  */
 native int GameRules_GetProp(const char[] prop, int size=4, int element=0);
 
@@ -94,7 +94,7 @@ native int GameRules_GetProp(const char[] prop, int size=4, int element=0);
  *                      only used as a fallback in case detection fails.
  * @param element       Element # (starting from 0) if property is an array.
  * @param changeState   This parameter is ignored.
- * @error               Not supported.
+ * @error               Prop type is not an integer, or lack of mod support.
  */
 native void GameRules_SetProp(const char[] prop, any value, int size=4, int element=0, bool changeState=false);
 
@@ -104,7 +104,7 @@ native void GameRules_SetProp(const char[] prop, any value, int size=4, int elem
  * @param prop          Property name.
  * @param element       Element # (starting from 0) if property is an array.
  * @return              Value at the given property offset.
- * @error               Not supported.
+ * @error               Prop type is not a float, or lack of mod support.
  */
 native float GameRules_GetPropFloat(const char[] prop, int element=0);
 
@@ -115,7 +115,7 @@ native float GameRules_GetPropFloat(const char[] prop, int element=0);
  * @param value         Value to set.
  * @param element       Element # (starting from 0) if property is an array.
  * @param changeState   This parameter is ignored.
- * @error               Not supported.
+ * @error               Prop type is not a float, or lack of mod support.
  */
 native void GameRules_SetPropFloat(const char[] prop, float value, int element=0, bool changeState=false);
 
@@ -127,7 +127,7 @@ native void GameRules_SetPropFloat(const char[] prop, float value, int element=0
  * @return              Entity index at the given property.
  *                      If there is no entity, or the entity is not valid,
  *                      then -1 is returned.
- * @error               Not supported.
+ * @error               Prop type is not an entity, or lack of mod support.
  */
 native int GameRules_GetPropEnt(const char[] prop, int element=0);
 
@@ -138,7 +138,7 @@ native int GameRules_GetPropEnt(const char[] prop, int element=0);
  * @param other         Entity index to set, or -1 to unset.
  * @param element       Element # (starting from 0) if property is an array.
  * @param changeState   This parameter is ignored.
- * @error               Not supported.
+ * @error               Prop type is not an entity, invalid entity, or lack of mod support.
  */
 native void GameRules_SetPropEnt(const char[] prop, int other, int element=0, bool changeState=false);
 
@@ -148,7 +148,7 @@ native void GameRules_SetPropEnt(const char[] prop, int other, int element=0, bo
  * @param prop          Property name.
  * @param vec           Vector buffer to store data in.
  * @param element       Element # (starting from 0) if property is an array.
- * @error               Not supported.
+ * @error               Prop type is not a vector, or lack of mod support.
  */
 native void GameRules_GetPropVector(const char[] prop, float vec[3], int element=0);
 
@@ -159,7 +159,7 @@ native void GameRules_GetPropVector(const char[] prop, float vec[3], int element
  * @param vec           Vector to set.
  * @param element       Element # (starting from 0) if property is an array.
  * @param changeState   This parameter is ignored.
- * @error               Not supported.
+ * @error               Prop type is not a vector, or lack of mod support.
  */
 native void GameRules_SetPropVector(const char[] prop, const float vec[3], int element=0, bool changeState=false);
 
@@ -169,10 +169,11 @@ native void GameRules_SetPropVector(const char[] prop, const float vec[3], int e
  * @param prop          Property to use.
  * @param buffer        Destination string buffer.
  * @param maxlen        Maximum length of output string buffer.
+ * @param element       Element # (starting from 0) if property is an array.
  * @return              Number of non-null bytes written.
- * @error               Not supported.
+ * @error               Prop type is not a string, or lack of mod support.
  */
-native int GameRules_GetPropString(const char[] prop, char[] buffer, int maxlen);
+native int GameRules_GetPropString(const char[] prop, char[] buffer, int maxlen, int element=0);
 
 /**
  * Sets a gamerules property as a string.
@@ -180,10 +181,11 @@ native int GameRules_GetPropString(const char[] prop, char[] buffer, int maxlen)
  * @param prop          Property to use.
  * @param buffer        String to set.
  * @param changeState   This parameter is ignored.
+ * @param element       Element # (starting from 0) if property is an array.
  * @return              Number of non-null bytes written.
- * @error               Not supported.
+ * @error               Prop type is not a string, or lack of mod support.
  */
-native int GameRules_SetPropString(const char[] prop, const char[] buffer, bool changeState=false);
+native int GameRules_SetPropString(const char[] prop, const char[] buffer, bool changeState=false, int element=0);
 
 /**
  * Gets the current round state.

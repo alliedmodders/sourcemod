@@ -135,6 +135,8 @@ forward void OnNominationRemoved(const char[] map, int owner);
  */
 forward void OnMapVoteStarted();
 
+/* DO NOT EDIT BELOW THIS LINE */
+
 public SharedPlugin __pl_mapchooser =
 {
 	name = "mapchooser",
@@ -146,6 +148,7 @@ public SharedPlugin __pl_mapchooser =
 #endif
 };
 
+#if !defined REQUIRE_PLUGIN
 public void __pl_mapchooser_SetNTVOptional()
 {
 	MarkNativeAsOptional("NominateMap");
@@ -158,3 +161,4 @@ public void __pl_mapchooser_SetNTVOptional()
 	MarkNativeAsOptional("HasEndOfMapVoteFinished");
 	MarkNativeAsOptional("EndOfMapVoteEnabled");
 }
+#endif

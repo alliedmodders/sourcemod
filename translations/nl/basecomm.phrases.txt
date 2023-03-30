@@ -1,0 +1,73 @@
+"Phrases"
+{
+	"Gag/Mute player"
+	{
+		"nl"		"Speler knevelen/dempen"
+	}
+
+	"Choose Type"
+	{
+		"nl"		"Kies Soort"
+	}
+
+	"Gagged target"
+	{
+		"nl"		"{1} kan niet meer chatten."
+	}
+
+	"Ungagged target"
+	{
+		"nl"		"{1} kan nu weer chatten."
+	}
+
+	"Muted target"
+	{
+		"nl"		"{1} gedempt."
+	}
+
+	"Unmuted target"
+	{
+		"nl"		"{1} kan weer spreken."
+	}
+
+	"Silenced target"
+	{
+		"nl"		"{1} is het zwijgen opgelegd."
+	}
+
+	"Unsilenced target"
+	{
+		"nl"		"{1} kan weer praten."
+	}
+
+	"Mute Player"
+	{
+		"nl"		"Speler dempen"
+	}
+
+	"UnMute Player"
+	{
+		"nl"		"Speler dempen opheffen"
+	}
+
+	"Gag Player"
+	{
+		"nl"		"Speler knevelen"
+	}
+
+	"UnGag Player"
+	{
+		"nl"		"Speler ontknevelen"
+	}
+
+	"Silence Player"
+	{
+		"nl"		"Speler het zwijgen opleggen"
+	}
+
+	"UnSilence Player"
+	{
+		"nl"		"Speler zwijgen opheffen"
+	}
+
+}

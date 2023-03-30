@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Vote Nextmap"
+	{
+		"zho"		"為下一幅地票投票吧！"
+	}
+
+	"Nextmap Voting Started"
+	{
+		"zho"		"下一幅圖的投票已開始"
+	}
+
+	"Nextmap Voting Finished"
+	{
+		"zho"		"地圖投票已結束，下一幅地圖為 {1} (得到共 {3} 票中的 {2}%%) "
+	}
+
+	"Current Map Extended"
+	{
+		"zho"		"當前地圖延時 (得到共 {2} 票中的 {1}%%) "
+	}
+
+	"Extend Map"
+	{
+		"zho"		"地圖延時"
+	}
+
+	"Dont Change"
+	{
+		"zho"		"不改變"
+	}
+
+	"Current Map Stays"
+	{
+		"zho"		"投票結果︰當前地圖繼續！(得到共 {2} 票中的 {1}%%) "
+	}
+
+	"Changed Next Map"
+	{
+		"zho"		"將下幅地圖改為 \"{1}\""
+	}
+
+	"Starting Runoff"
+	{
+		"zho"		"沒有圖得到超過 {1}%% 票 ({2} [{3}%%] & {4} [{5}%%]), 開始決選"
+	}
+
+}

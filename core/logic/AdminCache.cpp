@@ -1843,7 +1843,7 @@ bool AdminCache::DumpCache(const char *filename)
 		fprintf(fp, "\n\t\t\"Overrides\"\n\t\t{\n");
 		if (pGroup->pCmdGrpTable != NULL)
 		{
-			for (OverrideMap::iterator iter = pGroup->pCmdTable->iter(); !iter.empty(); iter.next())
+			for (OverrideMap::iterator iter = pGroup->pCmdGrpTable->iter(); !iter.empty(); iter.next())
 				iterator_group_grp_override(fp, iter->key.c_str(), iter->value);
 		}
 		if (pGroup->pCmdTable != NULL)

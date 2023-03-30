@@ -115,7 +115,7 @@ void GameHooks::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *pPla
                                          const char *cvarName, const char *cvarValue){
 	int client = IndexOfEdict(pPlayer);
 
-# if SOURCE_ENGINE == SE_CSGO
+# if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	if (g_Players.HandleConVarQuery(cookie, client, result, cvarName, cvarValue))
 		return;
 # endif
