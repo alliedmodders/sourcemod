@@ -71,7 +71,7 @@ public:
 	void SetLastIDAndRows(unsigned int insertID, unsigned int affectedRows);
 private:
 	PGconn *m_pgsql;
-	std::mutex m_FullLock;
+	std::recursive_mutex m_FullLock;
 
 	unsigned int m_lastInsertID;
 	unsigned int m_lastAffectedRows;

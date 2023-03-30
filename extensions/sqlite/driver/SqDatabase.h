@@ -70,7 +70,7 @@ public:
 	}
 private:
 	sqlite3 *m_sq3;
-	std::mutex m_FullLock;
+	std::recursive_mutex m_FullLock;
 	bool m_Persistent;
 	String m_LastError;
 	int m_LastErrorCode;
