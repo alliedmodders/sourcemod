@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Played sound to target"
+	{
+		"ko"		"{1} 님에게 소리를 들려주었습니다"
+	}
+
+}

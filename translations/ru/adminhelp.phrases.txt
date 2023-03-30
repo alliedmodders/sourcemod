@@ -1,0 +1,33 @@
+"Phrases"
+{
+	"SM help commands"
+	{
+		"ru"		"Справка SourceMod: Описание Команд"
+	}
+
+	"No description available"
+	{
+		"ru"		"Описание отсутствует"
+	}
+
+	"No commands available"
+	{
+		"ru"		"Нет доступных команд"
+	}
+
+	"Type sm_help to see more"
+	{
+		"ru"		"Введите sm_help {1} для просмотра остальных команд"
+	}
+
+	"Entries n - m in page k"
+	{
+		"ru"		"Элементы {1} - {2} на {3} странице"
+	}
+
+	"No matching results found"
+	{
+		"ru"		"Совпадений не найдено"
+	}
+
+}

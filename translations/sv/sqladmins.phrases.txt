@@ -1,0 +1,78 @@
+"Phrases"
+{
+	"Invalid authtype"
+	{
+		"sv"		"Identifikations typ måste vara 'steam', 'namn', eller 'ip'. "
+	}
+
+	"Invalid immunity"
+	{
+		"sv"		"Immunitet måste vara ett positivt heltal. "
+	}
+
+	"SQL Admin already exists"
+	{
+		"sv"		"En administratör med dem rättigheterna finns redan."
+	}
+
+	"SQL Admin added"
+	{
+		"sv"		"Administratören har blivit tillagd i databasen."
+	}
+
+	"SQL Admin deleted"
+	{
+		"sv"		"Administratören har blivit borttagen från databasen."
+	}
+
+	"SQL Admin not found"
+	{
+		"sv"		"Det finns ingen administratör med dem rättigheterna."
+	}
+
+	"SQL Group already exists"
+	{
+		"sv"		"En grupp med det namnet finns redan. "
+	}
+
+	"SQL Group added"
+	{
+		"sv"		"Gruppen har blivit tillagd i databasen. "
+	}
+
+	"SQL Group deleted"
+	{
+		"sv"		"Gruppen har blivit borttagen från databasen."
+	}
+
+	"SQL Group not found"
+	{
+		"sv"		"Ingen grupp med det namnet hittades."
+	}
+
+	"SQL Admin groups reset"
+	{
+		"sv"		"Administratörsgrupperna har blivit återställda. "
+	}
+
+	"SQL Group X not found"
+	{
+		"sv"		"Kunde inte hitta grupp: \"{1}\""
+	}
+
+	"SQL Group X failed to bind"
+	{
+		"sv"		"Gruppen misslyckades att binda: \"{1}\""
+	}
+
+	"Added group to user"
+	{
+		"sv"		"Har framgångsrikt lagt till en grupp till den valda administratören."
+	}
+
+	"Added groups to user"
+	{
+		"sv"		"Framgångsrikt lagt till {1} grupper till den valda administratören. "
+	}
+
+}

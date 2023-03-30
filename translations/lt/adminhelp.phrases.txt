@@ -1,0 +1,33 @@
+"Phrases"
+{
+	"SM help commands"
+	{
+		"lt"		"SourceMod Pagalba: Komandos Informacija"
+	}
+
+	"No description available"
+	{
+		"lt"		"Nėra aprašymo"
+	}
+
+	"No commands available"
+	{
+		"lt"		"Nėra galimų komandų"
+	}
+
+	"Type sm_help to see more"
+	{
+		"lt"		"Įveskite sm_help {1} norėdami pamatyti daugiau komandų"
+	}
+
+	"Entries n - m in page k"
+	{
+		"lt"		"Įrašai {1} - {2} puslapyje {3}"
+	}
+
+	"No matching results found"
+	{
+		"lt"		"Nepavyko rasti atitikmenų."
+	}
+
+}

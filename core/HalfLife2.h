@@ -89,16 +89,24 @@ using namespace SourceMod;
 
 struct DataTableInfo
 {
-	struct SendPropPolicy
+	struct SendPropInfo
 	{
-		static inline bool matches(const char *name, const sm_sendprop_info_t &info)
+		static inline bool matches(const char *name, const SendPropInfo &info)
 		{
-			return strcmp(name, info.prop->GetName()) == 0;
+			return strcmp(name, info.name.c_str()) == 0;
 		}
 		static inline uint32_t hash(const detail::CharsAndLength &key)
 		{
 			return key.hash();
 		}
+
+		SendPropInfo()
+			: name(), info{nullptr, 0}
+		{
+		}
+
+		std::string name;
+		sm_sendprop_info_t info;
 	};
 
 	static inline bool matches(const char *name, const DataTableInfo *info)
@@ -116,22 +124,30 @@ struct DataTableInfo
 	}
 
 	ServerClass *sc;
-	NameHashSet<sm_sendprop_info_t, SendPropPolicy> lookup;
+	NameHashSet<SendPropInfo> lookup;
 };
 
-struct DataMapCachePolicy
+struct DataMapCacheInfo
 {
-	static inline bool matches(const char *name, const sm_datatable_info_t &info)
+	static inline bool matches(const char *name, const DataMapCacheInfo &info)
 	{
-		return strcmp(name, info.prop->fieldName) == 0;
+		return strcmp(name, info.name.c_str()) == 0;
 	}
 	static inline uint32_t hash(const detail::CharsAndLength &key)
 	{
 		return key.hash();
 	}
+
+	DataMapCacheInfo()
+		: name(), info{nullptr, 0}
+	{
+	}
+
+	std::string name;
+	sm_datatable_info_t info;
 };
 
-typedef NameHashSet<sm_datatable_info_t, DataMapCachePolicy> DataMapCache;
+typedef NameHashSet<DataMapCacheInfo> DataMapCache;
 
 struct DelayedFakeCliCmd
 {

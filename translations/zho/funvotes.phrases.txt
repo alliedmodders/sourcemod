@@ -1,0 +1,98 @@
+"Phrases"
+{
+	"Initiated Vote Gravity"
+	{
+		"zho"		"啟動了對於地心吸力的投票."
+	}
+
+	"Initiated Vote Burn"
+	{
+		"zho"		"啟動了燃燒 {1} 的投票."
+	}
+
+	"Initiated Vote Slay"
+	{
+		"zho"		"啟動了對於處死 {1} 的投票."
+	}
+
+	"Initiated Vote Alltalk"
+	{
+		"zho"		"啟動了關於全服對話的投票."
+	}
+
+	"Initiated Vote FF"
+	{
+		"zho"		"啟動了對於隊友傷害的投票."
+	}
+
+	"Gravity Vote"
+	{
+		"zho"		"地心吸力投票: {1}"
+	}
+
+	"Change Gravity To"
+	{
+		"zho"		"更改地心吸力為 {1}?"
+	}
+
+	"Voteburn player"
+	{
+		"zho"		"燃燒玩家 {1}?"
+	}
+
+	"Voteslay Player"
+	{
+		"zho"		"處死 {1}?"
+	}
+
+	"Votealltalk Off"
+	{
+		"zho"		"關閉全服對話功能? {1}"
+	}
+
+	"Votealltalk On"
+	{
+		"zho"		"開啟全服對話功能? {1}"
+	}
+
+	"Voteff Off"
+	{
+		"zho"		"關閉隊友傷害功能? {1}"
+	}
+
+	"Voteff On"
+	{
+		"zho"		"開啟隊友傷害功能? {1}"
+	}
+
+	"Gravity vote"
+	{
+		"zho"		"地心吸力投票"
+	}
+
+	"Vote FF"
+	{
+		"zho"		"隊友傷害投票"
+	}
+
+	"Burn vote"
+	{
+		"zho"		"燃燒投票"
+	}
+
+	"Alltalk vote"
+	{
+		"zho"		"全服對話投票"
+	}
+
+	"Slay vote"
+	{
+		"zho"		"投票處死"
+	}
+
+	"Slayed player"
+	{
+		"zho"		"玩家 '{1}' 已被處死"
+	}
+
+}

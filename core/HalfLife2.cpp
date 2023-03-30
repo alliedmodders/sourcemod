@@ -445,20 +445,25 @@ bool CHalfLife2::FindSendPropInfo(const char *classname, const char *offset, sm_
 		return false;
 	}
 
-	if (!pInfo->lookup.retrieve(offset, info))
-	{
-		sm_sendprop_info_t temp_info;
+	DataTableInfo::SendPropInfo temp;
 
-		if (!UTIL_FindInSendTable(pInfo->sc->m_pTable, offset, &temp_info, 0))
+	if (!pInfo->lookup.retrieve(offset, &temp))
+	{
+		bool found = UTIL_FindInSendTable(pInfo->sc->m_pTable, offset, &temp.info, 0);
+		temp.name = offset;
+
+		pInfo->lookup.insert(offset, temp);
+
+		if (found)
 		{
-			return false;
+			*info = temp.info;
 		}
 
-		pInfo->lookup.insert(offset, temp_info);
-		*info = temp_info;
+		return found;
 	}
-	
-	return true;
+
+	*info = temp.info;
+	return info->prop != nullptr;
 }
 
 SendProp *CHalfLife2::FindInSendTable(const char *classname, const char *offset)
@@ -492,15 +497,25 @@ bool CHalfLife2::FindDataMapInfo(datamap_t *pMap, const char *offset, sm_datatab
 		m_Maps.add(i, pMap, new DataMapCache());
 
 	DataMapCache *cache = i->value;
+	DataMapCacheInfo temp;
 
-	if (!cache->retrieve(offset, pDataTable))
+	if (!cache->retrieve(offset, &temp))
 	{
-		if (!UTIL_FindDataMapInfo(pMap, offset, pDataTable))
-			return false;
-		cache->insert(offset, *pDataTable);
+		bool found = UTIL_FindDataMapInfo(pMap, offset, &temp.info);
+		temp.name = offset;
+
+		cache->insert(offset, temp);
+
+		if (found)
+		{
+			*pDataTable = temp.info;
+		}
+
+		return found;
 	}
 
-	return true;
+	*pDataTable = temp.info;
+	return pDataTable->prop != nullptr;
 }
 
 void CHalfLife2::ClearDataTableCache()

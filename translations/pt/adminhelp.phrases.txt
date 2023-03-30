@@ -1,0 +1,33 @@
+"Phrases"
+{
+	"SM help commands"
+	{
+		"pt"		"Ajuda do SourceMod: Informações sobre comandos"
+	}
+
+	"No description available"
+	{
+		"pt"		"Descrição não disponível"
+	}
+
+	"No commands available"
+	{
+		"pt"		"Nenhum comando disponível"
+	}
+
+	"Type sm_help to see more"
+	{
+		"pt"		"Digite sm_help {1} para ver mais comandos"
+	}
+
+	"Entries n - m in page k"
+	{
+		"pt"		"Itens {1} - {2} na página {3}"
+	}
+
+	"No matching results found"
+	{
+		"pt"		"Nenhum resultado encontrado"
+	}
+
+}

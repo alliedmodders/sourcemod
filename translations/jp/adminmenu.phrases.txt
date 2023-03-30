@@ -1,0 +1,23 @@
+"Phrases"
+{
+	"Admin Menu"
+	{
+		"jp"		"管理メニュー"
+	}
+
+	"Player Commands"
+	{
+		"jp"		"プレイヤーコマンド"
+	}
+
+	"Server Commands"
+	{
+		"jp"		"サーバコマンド"
+	}
+
+	"Voting Commands"
+	{
+		"jp"		"投票コマンド"
+	}
+
+}

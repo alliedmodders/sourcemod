@@ -1,0 +1,88 @@
+"Phrases"
+{
+	"No Access"
+	{
+		"chi"		"您无权使用该指令"
+	}
+
+	"Back"
+	{
+		"chi"		"返回"
+	}
+
+	"Next"
+	{
+		"chi"		"下一页"
+	}
+
+	"Exit"
+	{
+		"chi"		"退出"
+	}
+
+	"Previous"
+	{
+		"chi"		"上一页"
+	}
+
+	"all players"
+	{
+		"chi"		"全体玩家"
+	}
+
+	"all humans"
+	{
+		"chi"		"全体真人"
+	}
+
+	"all bots"
+	{
+		"chi"		"全体机器人"
+	}
+
+	"all dead players"
+	{
+		"chi"		"全体已死玩家"
+	}
+
+	"all alive players"
+	{
+		"chi"		"全体活人玩家"
+	}
+
+	"_s"
+	{
+		"chi"		"{1}"
+	}
+
+	"all spectators"
+	{
+		"chi"		"所有旁观者"
+	}
+
+	"Vote Count"
+	{
+		"chi"		"投票计数:{1}/{2},剩余{3}人"
+	}
+
+	"Voted For"
+	{
+		"chi"		"{1}投票选择了{2}"
+	}
+
+	"Changed Vote"
+	{
+		"chi"		"{1} 已更改其投票为 {2} "
+	}
+
+	"No Vote"
+	{
+		"chi"		"无投票"
+	}
+
+	"Name Reserved"
+	{
+		"chi"		"你所用名称已由 SourceMod 保留; 请输入相应密码启用."
+	}
+
+}

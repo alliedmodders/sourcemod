@@ -1,0 +1,43 @@
+"Phrases"
+{
+	"Gag/Mute player"
+	{
+		"he"		"השתק שחקן מצ'אט\קול"
+	}
+
+	"Choose Type"
+	{
+		"he"		"תבחר סוג"
+	}
+
+	"Gagged target"
+	{
+		"he"		"השחקן {1} הושתק בצ'אט"
+	}
+
+	"Ungagged target"
+	{
+		"he"		"השחקן {1} כבר לא מושתק בצ'אט"
+	}
+
+	"Muted target"
+	{
+		"he"		"השחקן {1} הושתק בקשר קול"
+	}
+
+	"Unmuted target"
+	{
+		"he"		"השחקן {1} כבר לא מושתק בקשר קול"
+	}
+
+	"Silenced target"
+	{
+		"he"		"השחקן {1} הושתק לגמרי"
+	}
+
+	"Unsilenced target"
+	{
+		"he"		"השחקן {1} כבר לא מושתק בכללי"
+	}
+
+}

@@ -1,0 +1,68 @@
+"Phrases"
+{
+	"Already Nominated"
+	{
+		"vi"		"Bạn đã đề cử một bản đồ rồi."
+	}
+
+	"Max Nominations"
+	{
+		"vi"		"Số lượng đề cử đã đạt mức tối đa rồi."
+	}
+
+	"Map Already In Vote"
+	{
+		"vi"		"Bản đồ '{1}' đã nằm trong danh sách đề cử."
+	}
+
+	"Map Inserted"
+	{
+		"vi"		"Bản đồ {1} đã được thêm vào danh sách đề cử."
+	}
+
+	"Map Already Nominated"
+	{
+		"vi"		"Bản đồ này đã đươc đề cử rồi."
+	}
+
+	"Map Nominated"
+	{
+		"vi"		"{1} đã đề cử {2}."
+	}
+
+	"Map Nomination Changed"
+	{
+		"vi"		"{1} đã thay đổi đề cử thành {2}"
+	}
+
+	"Nominate Title"
+	{
+		"vi"		"Đề cử bản đồ:"
+	}
+
+	"Can't Nominate Current Map"
+	{
+		"vi"		"Đây là bản đồ hiện tại, bạn không thể đề cử bản đồ này"
+	}
+
+	"Map in Exclude List"
+	{
+		"vi"		"Bản đồ này vừa được chơi gần đây và không thể được đề cử."
+	}
+
+	"Current Map"
+	{
+		"vi"		"Bản đồ hiện tại"
+	}
+
+	"Recently Played"
+	{
+		"vi"		"Đã chơi gần đây"
+	}
+
+	"Nominated"
+	{
+		"vi"		"Đã đề cử"
+	}
+
+}

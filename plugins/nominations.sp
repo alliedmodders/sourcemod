@@ -145,7 +145,7 @@ public Action Command_Addmap(int client, int args)
 	int status;
 	if (!g_mapTrie.GetValue(resolvedMap, status))
 	{
-		ReplyToCommand(client, "%t", "Map was not found", displayName);
+		ReplyToCommand(client, "%t", "Map Not In Pool", displayName);
 		return Plugin_Handled;		
 	}
 	
@@ -300,7 +300,7 @@ void AttemptNominate(int client, const char[] map, int size)
 	int status;
 	if (!g_mapTrie.GetValue(mapname, status))
 	{
-		ReplyToCommand(client, "%t", "Map was not found", displayName);
+		ReplyToCommand(client, "%t", "Map Not In Pool", displayName);
 		return;		
 	}
 	

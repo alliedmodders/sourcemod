@@ -1,0 +1,23 @@
+"Phrases"
+{
+	"Admin Menu"
+	{
+		"nl"		"Admin Menu"
+	}
+
+	"Player Commands"
+	{
+		"nl"		"Speler Commando's"
+	}
+
+	"Server Commands"
+	{
+		"nl"		"Server Commando's"
+	}
+
+	"Voting Commands"
+	{
+		"nl"		"Stem Commando's"
+	}
+
+}

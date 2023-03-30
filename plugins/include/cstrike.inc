@@ -440,9 +440,18 @@ native CSWeaponID CS_ItemDefIndexToID(int iDefIndex);
  * @return              Returns item definition index value for the weapon id.
  * @error               Invalid weapon id.
  *
- * @note In most cases the item deinition index will be the id. Works for CS:GO ONLY.
+ * @note In most cases the item definition index will be the id. Works for CS:GO ONLY.
  */
 native int CS_WeaponIDToItemDefIndex(CSWeaponID id);
+
+/**
+ * Returns the loadout slot based on the CSWeaponID. (CS:GO only)
+ *
+ * @param id            CSWeaponID to get the loadout slot for.
+ * @return              Returns loadout slot value for the weapon id.
+ * @error               Invalid weapon id.
+ */
+native int CS_WeaponIDToLoadoutSlot(CSWeaponID id);
 
 /**
  * Do not edit below this line!
@@ -484,5 +493,6 @@ public void __ext_cstrike_SetNTVOptional()
 	MarkNativeAsOptional("CS_UpdateClientModel");
 	MarkNativeAsOptional("CS_ItemDefIndexToID");
 	MarkNativeAsOptional("CS_WeaponIDToItemDefIndex");
+	MarkNativeAsOptional("CS_WeaponIDToLoadoutSlot");
 }
 #endif

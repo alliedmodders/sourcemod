@@ -1,0 +1,98 @@
+"Phrases"
+{
+	"Initiated Vote Gravity"
+	{
+		"cze"		"Zahajil hlasovani o gravitaci."
+	}
+
+	"Initiated Vote Burn"
+	{
+		"cze"		"Zahajil hlasovani o zapaleni proti hraci {1}."
+	}
+
+	"Initiated Vote Slay"
+	{
+		"cze"		"Zahajil hlasovani o zabiti proti hraci {1}."
+	}
+
+	"Initiated Vote Alltalk"
+	{
+		"cze"		"Zahajil hlasovani o alltalku."
+	}
+
+	"Initiated Vote FF"
+	{
+		"cze"		"Zahajil hlasovani o Friendly Fire."
+	}
+
+	"Gravity Vote"
+	{
+		"cze"		"Hlasovani o gravitaci: {1}"
+	}
+
+	"Change Gravity To"
+	{
+		"cze"		"Zmenit gravitaci na {1}?"
+	}
+
+	"Voteburn player"
+	{
+		"cze"		" Zapalit hrace {1}?"
+	}
+
+	"Voteslay Player"
+	{
+		"cze"		"Zabit hrace {1}?"
+	}
+
+	"Votealltalk Off"
+	{
+		"cze"		" Vypnout alltalk? {1}"
+	}
+
+	"Votealltalk On"
+	{
+		"cze"		"Zapnout alltalk? {1}"
+	}
+
+	"Voteff Off"
+	{
+		"cze"		"Vypnout FriendlyFire? {1}"
+	}
+
+	"Voteff On"
+	{
+		"cze"		"Zapnout FriendlyFire? {1}"
+	}
+
+	"Gravity vote"
+	{
+		"cze"		"Hlasovani o gravitaci"
+	}
+
+	"Vote FF"
+	{
+		"cze"		"Hlasovani o FriendlyFire"
+	}
+
+	"Burn vote"
+	{
+		"cze"		"Hlasovani o zapaleni"
+	}
+
+	"Alltalk vote"
+	{
+		"cze"		"Hlasovani o Alltalk"
+	}
+
+	"Slay vote"
+	{
+		"cze"		"Hlasovani o zabiti"
+	}
+
+	"Slayed player"
+	{
+		"cze"		"Zabil hrace '{1}'"
+	}
+
+}

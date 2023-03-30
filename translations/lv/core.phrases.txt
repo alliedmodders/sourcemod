@@ -1,0 +1,88 @@
+"Phrases"
+{
+	"No Access"
+	{
+		"lv"		"Tev nav pieejas šai komandai"
+	}
+
+	"Back"
+	{
+		"lv"		"Atpakaļ"
+	}
+
+	"Next"
+	{
+		"lv"		"Tālāk"
+	}
+
+	"Exit"
+	{
+		"lv"		"Iziet"
+	}
+
+	"Previous"
+	{
+		"lv"		"Atpakaļ"
+	}
+
+	"all players"
+	{
+		"lv"		"visi spēlētāji"
+	}
+
+	"all humans"
+	{
+		"lv"		"visi cilvēki"
+	}
+
+	"all bots"
+	{
+		"lv"		"visi boti"
+	}
+
+	"all dead players"
+	{
+		"lv"		"visi mirušie spēlētāji"
+	}
+
+	"all alive players"
+	{
+		"lv"		"visi dzīvie spēlētāji"
+	}
+
+	"_s"
+	{
+		"lv"		"{1}"
+	}
+
+	"all spectators"
+	{
+		"lv"		"visi skatītāji"
+	}
+
+	"Vote Count"
+	{
+		"lv"		"Balsis: {1}/{2}, {3} atlikušas"
+	}
+
+	"Voted For"
+	{
+		"lv"		"{1} nobalsoja par {2}  "
+	}
+
+	"Changed Vote"
+	{
+		"lv"		"{1} nomainija savu balsojumu uz {2}  "
+	}
+
+	"No Vote"
+	{
+		"lv"		"Nav balsojuma"
+	}
+
+	"Name Reserved"
+	{
+		"lv"		"Tavs vārds ir rezervēts iekš SourceMod; ievadi paroli lai to izmantotu."
+	}
+
+}

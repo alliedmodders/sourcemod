@@ -1,0 +1,88 @@
+"Phrases"
+{
+	"No Access"
+	{
+		"ro"		"Nu ai acces la această comandă"
+	}
+
+	"Back"
+	{
+		"ro"		"Înapoi"
+	}
+
+	"Next"
+	{
+		"ro"		"Următor"
+	}
+
+	"Exit"
+	{
+		"ro"		"Ieşire"
+	}
+
+	"Previous"
+	{
+		"ro"		"Anterior"
+	}
+
+	"all players"
+	{
+		"ro"		"totţi jucătorii"
+	}
+
+	"all humans"
+	{
+		"ro"		"toţi oamenii"
+	}
+
+	"all bots"
+	{
+		"ro"		"toti boţii"
+	}
+
+	"all dead players"
+	{
+		"ro"		"toţi jucătorii morţi"
+	}
+
+	"all alive players"
+	{
+		"ro"		"toţi jucătorii în viaţă"
+	}
+
+	"_s"
+	{
+		"ro"		"{1}"
+	}
+
+	"all spectators"
+	{
+		"ro"		"toţi spectatorii"
+	}
+
+	"Vote Count"
+	{
+		"ro"		"Voturi: {1}/{2}, rămase {3}"
+	}
+
+	"Voted For"
+	{
+		"ro"		"{1} a votat pentru {2}"
+	}
+
+	"Changed Vote"
+	{
+		"ro"		"{1} si-au schimbat votul in {2}"
+	}
+
+	"No Vote"
+	{
+		"ro"		"Nici un vot"
+	}
+
+	"Name Reserved"
+	{
+		"ro"		"Numele tau este acum rezervat de catre SourceMod; seteaza-ti o parola pentru a-l putea folosi."
+	}
+
+}

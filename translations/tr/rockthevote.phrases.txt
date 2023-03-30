@@ -1,0 +1,68 @@
+"Phrases"
+{
+	"Rock The Vote"
+	{
+		"tr"		"Rock The Vote:"
+	}
+
+	"RTV Not Allowed"
+	{
+		"tr"		"Rock the Vote'a daha izin verilmiyor."
+	}
+
+	"RTV Started"
+	{
+		"tr"		"Rock the Vote zaten başladı."
+	}
+
+	"RTV Ended"
+	{
+		"tr"		"RTV zaten sona erdi, tekrar başlatamaz veya harita aday gösteremezsiniz."
+	}
+
+	"Already Voted"
+	{
+		"tr"		"Rock the Vote'a zaten oy verdiniz."
+	}
+
+	"Minimal Players Not Met"
+	{
+		"tr"		"Gereken asgari oyuncu sayısına ulaşılamadı."
+	}
+
+	"RTV Requested"
+	{
+		"tr"		"{1} rock the vote istiyor. ({2} oy, {3} gerekli) "
+	}
+
+	"RTV Vote Ready"
+	{
+		"tr"		"Rock the Vote başlatılıyor!"
+	}
+
+	"Don't Change"
+	{
+		"tr"		"Geçerli Haritayı Devam Ettir"
+	}
+
+	"Selected Map"
+	{
+		"tr"		"{1}, {2} adlı haritayı seçti."
+	}
+
+	"No Votes"
+	{
+		"tr"		"Rock the Vote için oy alınmadı, geçerli harita sürdürülüyor."
+	}
+
+	"Current Map Stays"
+	{
+		"tr"		"Geçerli harita devam ediyor! Rock the Vote konuştu!"
+	}
+
+	"Changing Maps"
+	{
+		"tr"		"Harita {1} olarak değiştiriliyor! Rock the Vote konuştu!"
+	}
+
+}

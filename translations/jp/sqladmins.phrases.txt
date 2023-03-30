@@ -1,0 +1,78 @@
+"Phrases"
+{
+	"Invalid authtype"
+	{
+		"jp"		"認証タイプは\"steam\", \"name\", \"ip\"でなければなりません。"
+	}
+
+	"Invalid immunity"
+	{
+		"jp"		"Immunityは正の数である必要があります。"
+	}
+
+	"SQL Admin already exists"
+	{
+		"jp"		"指定された管理者は既に存在します。"
+	}
+
+	"SQL Admin added"
+	{
+		"jp"		"管理者をデータベースに追加しました。"
+	}
+
+	"SQL Admin deleted"
+	{
+		"jp"		"管理者をデータベースから削除しました。"
+	}
+
+	"SQL Admin not found"
+	{
+		"jp"		"指定された管理者は見つかりませんでした。"
+	}
+
+	"SQL Group already exists"
+	{
+		"jp"		"この名前のグループは既に存在します。"
+	}
+
+	"SQL Group added"
+	{
+		"jp"		"グループをデータベースに追加しました。"
+	}
+
+	"SQL Group deleted"
+	{
+		"jp"		"グループをデータベースから削除しました。"
+	}
+
+	"SQL Group not found"
+	{
+		"jp"		"指定された名前のグループは存在しません。"
+	}
+
+	"SQL Admin groups reset"
+	{
+		"jp"		"管理者のグループをリセットしました。"
+	}
+
+	"SQL Group X not found"
+	{
+		"jp"		"グループ \"{1}\" が見つかりませんでした。"
+	}
+
+	"SQL Group X failed to bind"
+	{
+		"jp"		"グループの関連づけに失敗しました: \"{1}\""
+	}
+
+	"Added group to user"
+	{
+		"jp"		"管理者にグループを追加しました。"
+	}
+
+	"Added groups to user"
+	{
+		"jp"		"管理者に{1}個のグループを追加しました。"
+	}
+
+}

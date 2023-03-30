@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"de"		"Spieler verbrennen"
+	}
+
+	"FireBomb player"
+	{
+		"de"		"Spieler zur Feuerbombe machen"
+	}
+
+	"Freeze player"
+	{
+		"de"		"Spieler einfrieren"
+	}
+
+	"FreezeBomb player"
+	{
+		"de"		"Spieler zur Eisbombe machen"
+	}
+
+	"TimeBomb player"
+	{
+		"de"		"Spieler als Zeitbombe"
+	}
+
+	"Beacon player"
+	{
+		"de"		"Spieler zum Peilsignal machen"
+	}
+
+	"NoClip player"
+	{
+		"de"		"Kollisionsabfrage ausschalten"
+	}
+
+	"Blind player"
+	{
+		"de"		"Spieler erblinden"
+	}
+
+	"Drug player"
+	{
+		"de"		"Spieler unter Drogen setzen"
+	}
+
+	"Gravity player"
+	{
+		"de"		"Schwerkraft des Spielers"
+	}
+
+	"Blind amount"
+	{
+		"de"		"Wie blind?"
+	}
+
+	"Fully blind"
+	{
+		"de"		"Komplett blind"
+	}
+
+	"Half blind"
+	{
+		"de"		"Halb blind"
+	}
+
+	"No blind"
+	{
+		"de"		"Nicht blind"
+	}
+
+	"Gravity amount"
+	{
+		"de"		"Schwerkraft?"
+	}
+
+	"Gravity Very High"
+	{
+		"de"		"Sehr starke Schwerkraft"
+	}
+
+	"Gravity High"
+	{
+		"de"		"Starke Schwerkraft"
+	}
+
+	"Gravity Normal"
+	{
+		"de"		"Normale Schwerkraft"
+	}
+
+	"Gravity Low"
+	{
+		"de"		"Schwache Schwerkraft"
+	}
+
+	"Gravity Very Low"
+	{
+		"de"		"Sehr schwache Schwerkraft"
+	}
+
+	"Set target on fire"
+	{
+		"de"		"Setze {1} unter Feuer."
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"de"		" Feuerbombe für {1} umgeschaltet. "
+	}
+
+	"Froze target"
+	{
+		"de"		"{1} eingefroren."
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"de"		"Eisbombe für {1} umgeschaltet. "
+	}
+
+	"Toggled beacon on target"
+	{
+		"de"		"Peilsignal für {1} umgeschaltet. "
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"de"		"Zeitbombe für {1} umgeschaltet. "
+	}
+
+	"Toggled noclip on target"
+	{
+		"de"		"Kollisionsabfrage für {1} umgeschaltet. "
+	}
+
+	"Toggled drug on target"
+	{
+		"de"		"Drogen für {1} umgeschaltet. "
+	}
+
+	"Set blind on target"
+	{
+		"de"		"Erblinde Spieler {1}."
+	}
+
+	"Set gravity on target"
+	{
+		"de"		"{1}s Schwerkarft einstellen. "
+	}
+
+	"Till Explodes"
+	{
+		"de"		"{2} Sekunden bis {1} explodiert."
+	}
+
+	"Unfrozen"
+	{
+		"de"		"Du bist jetzt aufgetaut."
+	}
+
+	"You will be unfrozen"
+	{
+		"de"		"Du wirst in {1} Sekunden aufgetaut."
+	}
+
+}

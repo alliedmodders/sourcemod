@@ -1,0 +1,23 @@
+"Phrases"
+{
+	"Admin Menu"
+	{
+		"tr"		"Yönetici Menüsü"
+	}
+
+	"Player Commands"
+	{
+		"tr"		"Oyuncu Komutları"
+	}
+
+	"Server Commands"
+	{
+		"tr"		"Sunucu Komutları"
+	}
+
+	"Voting Commands"
+	{
+		"tr"		"Oylama Komutları"
+	}
+
+}

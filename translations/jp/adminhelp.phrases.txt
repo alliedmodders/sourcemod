@@ -1,0 +1,33 @@
+"Phrases"
+{
+	"SM help commands"
+	{
+		"jp"		"SourceMod ヘルプ: コマンド情報"
+	}
+
+	"No description available"
+	{
+		"jp"		"概要はありません。"
+	}
+
+	"No commands available"
+	{
+		"jp"		"コマンドはありません。"
+	}
+
+	"Type sm_help to see more"
+	{
+		"jp"		"sm_help {1}と入力することでコマンドを表示出来ます。"
+	}
+
+	"Entries n - m in page k"
+	{
+		"jp"		"{1} - {2}ページ中{3}ページを表示しています。"
+	}
+
+	"No matching results found"
+	{
+		"jp"		"検索結果が見つかりませんでした。"
+	}
+
+}

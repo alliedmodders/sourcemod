@@ -1,0 +1,88 @@
+"Phrases"
+{
+	"No Access"
+	{
+		"tr"		"Bu komuta erişiminiz yok"
+	}
+
+	"Back"
+	{
+		"tr"		"Geri"
+	}
+
+	"Next"
+	{
+		"tr"		"Sonraki"
+	}
+
+	"Exit"
+	{
+		"tr"		"Çık"
+	}
+
+	"Previous"
+	{
+		"tr"		"Önceki"
+	}
+
+	"all players"
+	{
+		"tr"		"tüm oyuncular"
+	}
+
+	"all humans"
+	{
+		"tr"		"tüm insanlar"
+	}
+
+	"all bots"
+	{
+		"tr"		"tüm botlar"
+	}
+
+	"all dead players"
+	{
+		"tr"		"tüm ölü oyuncular"
+	}
+
+	"all alive players"
+	{
+		"tr"		"tüm canlı oyuncular"
+	}
+
+	"_s"
+	{
+		"tr"		"{1}"
+	}
+
+	"all spectators"
+	{
+		"tr"		"tüm izleyiciler"
+	}
+
+	"Vote Count"
+	{
+		"tr"		"Oylar: {1}/{2}, {3}s kaldı"
+	}
+
+	"Voted For"
+	{
+		"tr"		"{1} oyunu {2} olarak kullandı"
+	}
+
+	"Changed Vote"
+	{
+		"tr"		"{1} oyunu {2} olarak değiştirdi"
+	}
+
+	"No Vote"
+	{
+		"tr"		"Oy Yok"
+	}
+
+	"Name Reserved"
+	{
+		"tr"		"Adınız SourceMod tarafından ayırtılmış, kullanmak için parolanızı ayarlayın."
+	}
+
+}

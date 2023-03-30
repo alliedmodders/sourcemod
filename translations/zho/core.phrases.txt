@@ -1,0 +1,88 @@
+"Phrases"
+{
+	"No Access"
+	{
+		"zho"		"你無權使用該指令"
+	}
+
+	"Back"
+	{
+		"zho"		"返回"
+	}
+
+	"Next"
+	{
+		"zho"		"繼續"
+	}
+
+	"Exit"
+	{
+		"zho"		"退出"
+	}
+
+	"Previous"
+	{
+		"zho"		"前一頁"
+	}
+
+	"all players"
+	{
+		"zho"		"所有玩家"
+	}
+
+	"all humans"
+	{
+		"zho"		"所有人類"
+	}
+
+	"all bots"
+	{
+		"zho"		"所有電腦玩家 (Bots)"
+	}
+
+	"all dead players"
+	{
+		"zho"		"所有已死玩家"
+	}
+
+	"all alive players"
+	{
+		"zho"		"所有生存玩家"
+	}
+
+	"_s"
+	{
+		"zho"		"{1}"
+	}
+
+	"all spectators"
+	{
+		"zho"		"所有觀察者"
+	}
+
+	"Vote Count"
+	{
+		"zho"		"投票計數:{1}/{2}, 剩餘{3}票"
+	}
+
+	"Voted For"
+	{
+		"zho"		"{1}投票選擇{2}"
+	}
+
+	"Changed Vote"
+	{
+		"zho"		"{1}更改投票為{2}"
+	}
+
+	"No Vote"
+	{
+		"zho"		"沒有投票"
+	}
+
+	"Name Reserved"
+	{
+		"zho"		"你你名稱已被Sourcemod保留，請設定密碼以使用這個名稱"
+	}
+
+}

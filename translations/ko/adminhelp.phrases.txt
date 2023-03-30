@@ -1,0 +1,33 @@
+"Phrases"
+{
+	"SM help commands"
+	{
+		"ko"		"소스모드 도움말: 명령어 정보"
+	}
+
+	"No description available"
+	{
+		"ko"		"설명이 없습니다"
+	}
+
+	"No commands available"
+	{
+		"ko"		"사용 가능한 명령이 없습니다"
+	}
+
+	"Type sm_help to see more"
+	{
+		"ko"		"더 많은 명령어들을 보려면 sm_help {1}을 입력하세요"
+	}
+
+	"Entries n - m in page k"
+	{
+		"ko"		"{3} 번 페이지의 목록 {1} - {2}"
+	}
+
+	"No matching results found"
+	{
+		"ko"		"일치하는 결과가 없습니다."
+	}
+
+}

@@ -1,0 +1,78 @@
+"Phrases"
+{
+	"Invalid authtype"
+	{
+		"vi"		"Loại xác thực phải là \"steam\", \"name\", hoặc \"ip\"."
+	}
+
+	"Invalid immunity"
+	{
+		"vi"		"Cấp độ bảo hộ phải là một số nguyên dương."
+	}
+
+	"SQL Admin already exists"
+	{
+		"vi"		"Quản trị viên với chứng chỉ này đã tồn tại rồi."
+	}
+
+	"SQL Admin added"
+	{
+		"vi"		"Đã thêm quản trị viên vào cơ sở dữ liệu."
+	}
+
+	"SQL Admin deleted"
+	{
+		"vi"		"Đã xóa quản trị viên khỏi cơ sở dữ liệu."
+	}
+
+	"SQL Admin not found"
+	{
+		"vi"		"Không tìm thấy quản trị viên nào với chứng chỉ này."
+	}
+
+	"SQL Group already exists"
+	{
+		"vi"		"Một nhóm khớp với tên này đã tồn tại."
+	}
+
+	"SQL Group added"
+	{
+		"vi"		"Đã thêm nhóm vào cơ sở dữ liệu."
+	}
+
+	"SQL Group deleted"
+	{
+		"vi"		"Đã xóa nhóm khỏi cơ sở dữ liệu."
+	}
+
+	"SQL Group not found"
+	{
+		"vi"		"Không tìm thấy nhóm nào với tên này."
+	}
+
+	"SQL Admin groups reset"
+	{
+		"vi"		"Nhóm của quản trị viên đã được cài lại."
+	}
+
+	"SQL Group X not found"
+	{
+		"vi"		"Không thể tìm thấy nhóm: \"{1}\"."
+	}
+
+	"SQL Group X failed to bind"
+	{
+		"vi"		"Không thể liên kết nhóm: \"{1}\""
+	}
+
+	"Added group to user"
+	{
+		"vi"		"Một nhóm đã được thêm thành công vào danh mục quản trị viên được chỉ định."
+	}
+
+	"Added groups to user"
+	{
+		"vi"		"{1} nhóm đã được thêm thành công vào danh mục quản trị viên được chỉ định."
+	}
+
+}

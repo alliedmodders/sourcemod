@@ -1,0 +1,63 @@
+"Phrases"
+{
+	"Ban player"
+	{
+		"zho"		"封鎖玩家"
+	}
+
+	"Ban reason"
+	{
+		"zho"		"封鎖原因"
+	}
+
+	"Permabanned player"
+	{
+		"zho"		"玩家 \"{1}\" 已被永久封鎖."
+	}
+
+	"Permabanned player reason"
+	{
+		"zho"		"玩家 \"{1}\" 已被永久封鎖 (原因: {2})."
+	}
+
+	"Banned player"
+	{
+		"zho"		"封鎖玩家 \"{1}\" {2} 分鐘."
+	}
+
+	"Banned player reason"
+	{
+		"zho"		"封鎖玩家 \"{1}\" {2} 分鐘 (原因: {3}). "
+	}
+
+	"Removed bans matching"
+	{
+		"zho"		"移除符合條件: {1} 的封鎖"
+	}
+
+	"Ban added"
+	{
+		"zho"		"封鎖已加入."
+	}
+
+	"Cannot ban that IP"
+	{
+		"zho"		"你無法封鎖該IP地址."
+	}
+
+	"Custom ban reason explanation"
+	{
+		"zho"		"以聊天信息方式輸入封鎖理由,按{1} 則中止"
+	}
+
+	"AbortBan applied successfully"
+	{
+		"zho"		"封鎖已中止"
+	}
+
+	"AbortBan not waiting for custom reason"
+	{
+		"zho"		"不等待封鎖原因被輸入,封鎖無法被中止"
+	}
+
+}

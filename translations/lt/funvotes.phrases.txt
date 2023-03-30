@@ -1,0 +1,98 @@
+"Phrases"
+{
+	"Initiated Vote Gravity"
+	{
+		"lt"		"Pradėtas balsavimas dėl žaidimo gravitacijos."
+	}
+
+	"Initiated Vote Burn"
+	{
+		"lt"		"Pradėtas sudeginimo balsavimas prieš {1}."
+	}
+
+	"Initiated Vote Slay"
+	{
+		"lt"		"Pradėtas balsavimas nužudyti žaidėją {1}."
+	}
+
+	"Initiated Vote Alltalk"
+	{
+		"lt"		"Pradėtas balsavimas dėl leidimo visiem šnekėti."
+	}
+
+	"Initiated Vote FF"
+	{
+		"lt"		"Pradėtas balsavimas dėl leidimo šaudyti komandos narius."
+	}
+
+	"Gravity Vote"
+	{
+		"lt"		"Gravitacijos balsavimas: {1}"
+	}
+
+	"Change Gravity To"
+	{
+		"lt"		"Pakeisti žaidimo gravitaciją į {1}?"
+	}
+
+	"Voteburn player"
+	{
+		"lt"		"Sudeginti žaidėją {1}?"
+	}
+
+	"Voteslay Player"
+	{
+		"lt"		"Patiesti {1}?"
+	}
+
+	"Votealltalk Off"
+	{
+		"lt"		"Išjungti leidimą visiem šnekėti? {1}"
+	}
+
+	"Votealltalk On"
+	{
+		"lt"		"Įjungti leidimą visiem šnekėti? {1}"
+	}
+
+	"Voteff Off"
+	{
+		"lt"		"Išjungti leidimą šaudyti komandos narius? {1}"
+	}
+
+	"Voteff On"
+	{
+		"lt"		"Įjungti leidimą šaudyti komandos narius? {1}"
+	}
+
+	"Gravity vote"
+	{
+		"lt"		"Gravitacijos balsavimas"
+	}
+
+	"Vote FF"
+	{
+		"lt"		"Balsavimas FF"
+	}
+
+	"Burn vote"
+	{
+		"lt"		"Balsavimas dėl sudeginimo"
+	}
+
+	"Alltalk vote"
+	{
+		"lt"		"Balsavimas dėl leidimo visiem šnekėti"
+	}
+
+	"Slay vote"
+	{
+		"lt"		"Balsavimas nužudyti"
+	}
+
+	"Slayed player"
+	{
+		"lt"		"Nužudytas žaidėjas '{1}'"
+	}
+
+}

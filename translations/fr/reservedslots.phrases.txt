@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Slot reserved"
+	{
+		"fr"		"Kické pour cause de slot réservé."
+	}
+
+}
