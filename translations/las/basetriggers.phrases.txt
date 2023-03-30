@@ -20,6 +20,11 @@
 		"las"		"Fuego Amigo está desactivado."
 	}
 
+	"Friendly Fire Percent"
+	{
+		"las"		"Fuego Amigo está al {1}%."
+	}
+
 	"Current Map"
 	{
 		"las"		"El mapa actual es {1}."

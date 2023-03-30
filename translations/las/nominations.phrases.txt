@@ -65,4 +65,8 @@
 		"las"		"Nominados"
 	}
 
+	"Map Not In Pool"
+	{
+		"las"		"El mapa '{1}' no está en el grupo de nominaciones."
+	}
 }
