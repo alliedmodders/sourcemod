@@ -57,6 +57,7 @@ CHook::CHook(void* pFunc, ICallingConvention* pConvention)
 	m_pFunc = pFunc;
 	m_pRegisters = new CRegisters(pConvention->GetRegisters());
 	m_pCallingConvention = pConvention;
+	m_pNewRetAddr = NULL;
 
 	if (!m_hookHandler.init())
 		return;
