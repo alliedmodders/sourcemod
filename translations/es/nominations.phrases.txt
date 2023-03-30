@@ -67,7 +67,6 @@
 
 	"Map Not In Pool"
 	{
-		"#format"	"{1:s}"
 		"es"		"El mapa '{1}' no está en el grupo de nominaciones."
 	}
 }
