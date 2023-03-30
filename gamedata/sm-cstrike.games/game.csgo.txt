@@ -269,7 +269,7 @@
 	{
 		"Keys"
 		{
-			"MTUPatchSize"		"65000"
+			"MTUPatchSize"		"5000"
 		}
 		"Addresses"
 		{
