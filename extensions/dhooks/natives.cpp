@@ -101,9 +101,6 @@ IPluginFunction *GetCallback(IPluginContext *pContext, HookSetup * setup, const 
 //native Handle:DHookCreate(offset, HookType:hooktype, ReturnType:returntype, ThisPointerType:thistype, DHookCallback:callback = INVALID_FUNCTION); // Callback is now optional here.
 cell_t Native_CreateHook(IPluginContext *pContext, const cell_t *params)
 {
-	if ((CallingConvention)params[2] == CallConv_INSTRUCTION)
-		return pContext->ThrowNativeError("Can't create an instruction hook from a vtable offset.");
-
 	IPluginFunction *callback = nullptr;
 	// The methodmap constructor doesn't have the callback parameter anymore.
 	if (params[0] >= 5)
