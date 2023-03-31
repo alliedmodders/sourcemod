@@ -231,6 +231,21 @@ SMCResult SignatureGameConfig::ReadSMC_KeyValue(const SMCStates *states, const c
 				return SMCResult_HaltFail;
 			}
 
+			if (callConv == CallConv_INSTRUCTION)
+			{
+				if (g_CurrentSignature->thisType != ThisPointer_Ignore)
+				{
+					smutils->LogError(myself, "Cannot use a this pointer with an instruction hook: line: %i col: %i", states->line, states->col);
+					return SMCResult_HaltFail;
+				}
+
+				if (g_CurrentSignature->retType != ReturnType_Unknown && g_CurrentSignature->retType != ReturnType_Void)
+				{
+					smutils->LogError(myself, "Cannot use a non-void return type with an instruction hook: line: %i col: %i", states->line, states->col);
+					return SMCResult_HaltFail;
+				}
+			}
+
 			g_CurrentSignature->callConv = callConv;
 		}
 		else if (!strcmp(key, "hooktype"))
@@ -260,6 +275,12 @@ SMCResult SignatureGameConfig::ReadSMC_KeyValue(const SMCStates *states, const c
 				smutils->LogError(myself, "Invalid return type \"%s\": line: %i col: %i", value, states->line, states->col);
 				return SMCResult_HaltFail;
 			}
+
+			if (g_CurrentSignature->callConv == CallConv_INSTRUCTION && g_CurrentSignature->retType != ReturnType_Void)
+			{
+				smutils->LogError(myself, "Cannot use a non-void return type with an instruction hook: line: %i col: %i", states->line, states->col);
+				return SMCResult_HaltFail;
+			}
 		}
 		else if (!strcmp(key, "this"))
 		{
@@ -272,6 +293,12 @@ SMCResult SignatureGameConfig::ReadSMC_KeyValue(const SMCStates *states, const c
 			else
 			{
 				smutils->LogError(myself, "Invalid this type \"%s\": line: %i col: %i", value, states->line, states->col);
+				return SMCResult_HaltFail;
+			}
+
+			if (g_CurrentSignature->callConv == CallConv_INSTRUCTION && g_CurrentSignature->thisType != ThisPointer_Ignore)
+			{
+				smutils->LogError(myself, "Cannot use a this pointer with an instruction hook: line: %i col: %i", states->line, states->col);
 				return SMCResult_HaltFail;
 			}
 		}

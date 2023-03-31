@@ -194,18 +194,6 @@ cell_t Native_DHookCreateFromConf(IPluginContext *pContext, const cell_t *params
 			}
 		}
 
-		if (sig->callConv == CallConv_INSTRUCTION)
-		{
-			if (sig->retType != ReturnType_Void)
-				return pContext->ThrowNativeError("Return type must be void for an instruction hook.");
-
-			for (ArgumentInfo &arg : sig->args)
-			{
-				if (arg.info.custom_register != None)
-					return pContext->ThrowNativeError("Must specify registers for parameters in an instruction hook.");
-			}
-		}
-
 		setup = new HookSetup(sig->retType, PASSFLAG_BYVAL, sig->callConv, sig->thisType, addr);
 	}
 
