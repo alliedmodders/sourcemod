@@ -436,6 +436,12 @@ SMCResult SignatureGameConfig::ReadSMC_LeavingSection(const SMCStates *states)
 			return SMCResult_HaltFail;
 		}
 
+		if (g_CurrentSignature->callConv == CallConv_INSTRUCTION && g_CurrentArgumentInfo.info.custom_register == None)
+		{
+			smutils->LogError(myself, "Must specify registers for parameters in an instruction hook: line: %i col: %i", states->line, states->col);
+			return SMCResult_HaltFail;
+		}
+
 		// The size wasn't set in the config. See if that's fine and we can guess it from the type.
 		if (!g_CurrentArgumentInfo.info.size)
 		{
