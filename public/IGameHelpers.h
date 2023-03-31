@@ -40,7 +40,7 @@
  */
 
 #define SMINTERFACE_GAMEHELPERS_NAME		"IGameHelpers"
-#define SMINTERFACE_GAMEHELPERS_VERSION		11
+#define SMINTERFACE_GAMEHELPERS_VERSION		12
 
 class CBaseEntity;
 class CBaseHandle;
@@ -351,6 +351,21 @@ namespace SourceMod
 		 * @return				64-bit server Steam id.
 		 */
 		virtual uint64_t GetServerSteamId64() const =0;
+
+		/**
+		 * @brief Removes a datamap from the DataTable cache.
+		 *
+		 * @param pMap			datamap_t pointer.
+		 */
+		virtual void RemoveDataTableCache(datamap_t *pMap) =0;
+
+		/**
+		 * @brief Removes a class from the SendProp cache.
+		 *
+		 * @param classname		Entity class name.
+		 * @return				True if cache was found and removed.
+		 */
+		virtual bool RemoveSendPropCache(const char *classname) =0;
 	};
 }
 
