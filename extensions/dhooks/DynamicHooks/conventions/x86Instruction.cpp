@@ -80,7 +80,15 @@ void** x86Instruction::GetStackArgumentPtr(CRegisters* pRegisters)
 
 int x86Instruction::GetArgRegisterSize()
 {
-	return 0;
+	int iArgRegisterSize = 0;
+
+	for (size_t i = 0; i < m_vecArgTypes.size(); i++)
+	{
+		if (m_vecArgTypes[i].custom_register != None)
+			iArgRegisterSize += m_vecArgTypes[i].size;
+	}
+
+	return iArgRegisterSize;
 }
 
 void* x86Instruction::GetArgumentPtr(unsigned int iIndex, CRegisters* pRegisters)
