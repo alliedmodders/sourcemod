@@ -52,17 +52,13 @@ x86Instruction::~x86Instruction()
 
 std::vector<Register_t> x86Instruction::GetRegisters()
 {
-	std::vector<Register_t> registers;
-
-	// Save all the custom calling convention registers as well.
-	for (size_t i = 0; i < m_vecArgTypes.size(); i++)
+	std::vector<Register_t> registers =
 	{
-		if (m_vecArgTypes[i].custom_register == None)
-			continue;
-
-		// TODO: Make sure the list is unique? Set?
-		registers.push_back(m_vecArgTypes[i].custom_register);
-	}
+		AL, CL, DL, BL, AH, CH, DH, BH,
+		EAX, ECX, EDX, EBX, ESP, EBP, ESI, EDI,
+		XMM0, XMM1, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7,
+		ST0
+	};
 
 	return registers;
 }
