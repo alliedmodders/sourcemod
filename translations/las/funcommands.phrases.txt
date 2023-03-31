@@ -17,12 +17,12 @@
 
 	"FreezeBomb player"
 	{
-		"las"		"Bomba de congelamiento"
+		"las"		"Bomba congelante"
 	}
 
 	"TimeBomb player"
 	{
-		"las"		"Bomba de relojería"
+		"las"		"Bomba de tiempo"
 	}
 
 	"Beacon player"
@@ -117,7 +117,7 @@
 
 	"Toggled FreezeBomb on target"
 	{
-		"las"		"bomba de congelamiento (des)activada sobre {1}."
+		"las"		"bomba congelante (des)activada sobre {1}."
 	}
 
 	"Toggled beacon on target"
@@ -127,7 +127,7 @@
 
 	"Toggled TimeBomb on target"
 	{
-		"las"		"bomba de relojería (des)activada sobre {1}."
+		"las"		"bomba de tiempo (des)activada sobre {1}."
 	}
 
 	"Toggled noclip on target"

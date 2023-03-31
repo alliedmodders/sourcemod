@@ -7,37 +7,37 @@
 
 	"RTV Not Allowed"
 	{
-		"las"		"Rock the Vote no esta permitido aún."
+		"las"		"Todavía no puedes hacer RTV."
 	}
 
 	"RTV Started"
 	{
-		"las"		"Rock the Vote ya ha comenzado."
+		"las"		"Empezó el Rock The Vote."
 	}
 
 	"RTV Ended"
 	{
-		"las"		"RTV ya ha terminado, no puedes comenzarlo de nuevo ni nominar mapas."
+		"las"		"Ya terminó el RTV, no puedes empezar otro de nuevo ni nominar mapas."
 	}
 
 	"Already Voted"
 	{
-		"las"		"Ya has votado hacer un Rock the Vote. ({1} votos, {2} requeridos)"
+		"las"		"Ya votaste por hacer un RTV. ({1} votos, {2} requeridos)"
 	}
 
 	"Minimal Players Not Met"
 	{
-		"las"		"No se ha alcanzado el mínimo de jugadores requerido."
+		"las"		"No se alcanzó el mínimo de jugadores requerido."
 	}
 
 	"RTV Requested"
 	{
-		"las"		"{1} quiere hacer un rock the vote. ({2} votos, {3} requeridos)"
+		"las"		"{1} quiere hacer un RTV. ({2} votos, {3} requeridos)"
 	}
 
 	"RTV Vote Ready"
 	{
-		"las"		"¡Rock the Vote en progreso!"
+		"las"		"¡Rock the Vote en curso!"
 	}
 
 	"Don't Change"
@@ -47,7 +47,7 @@
 
 	"Selected Map"
 	{
-		"las"		"{1} ha eligido {2}"
+		"las"		"{1} eligió {2}"
 	}
 
 	"No Votes"
@@ -57,12 +57,12 @@
 
 	"Current Map Stays"
 	{
-		"las"		"¡El mapa actual continúa! ¡Rock the Vote ha hablado!"
+		"las"		"¡El mapa actual continuará!"
 	}
 
 	"Changing Maps"
 	{
-		"las"		"¡Cambiando mapa a {1}! ¡Rock the Vote ha hablado!"
+		"las"		"¡Cambiando mapa a {1}!"
 	}
 
 }

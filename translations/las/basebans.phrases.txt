@@ -7,7 +7,7 @@
 
 	"Ban reason"
 	{
-		"las"		"Causa de ban"
+		"las"		"Razón del ban"
 	}
 
 	"Permabanned player"
@@ -32,12 +32,12 @@
 
 	"Removed bans matching"
 	{
-		"las"		"Eliminados bans coincidentes con: {1}"
+		"las"		"Se eliminaron los bans coincidentes con: {1}"
 	}
 
 	"Ban added"
 	{
-		"las"		"Se ha agregado el ban."
+		"las"		"Se añadió el ban."
 	}
 
 	"Cannot ban that IP"
