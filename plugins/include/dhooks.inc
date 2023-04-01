@@ -115,7 +115,10 @@ enum CallingConvention
 	CallConv_THISCALL,
 	CallConv_STDCALL,
 	CallConv_FASTCALL,
-	CallConv_INSTRUCTION
+	CallConv_INSTRUCTION, /**< Single instruction pre-hook. Be careful with instructions that are less than 6 bytes in length.
+							   If the instruction length is less than 6 bytes, then the next instruction(s) will be modified too.
+							   If any instruction within 6 bytes (excluding the hooked instruction) is a jump target, then don't hook.
+							   In the graph view of IDA/Ghidra (default colors) there shouldn't be a blue or red line that leads to a node that is labeled (loc_/LAB_). */
 };
 
 enum HookMode
