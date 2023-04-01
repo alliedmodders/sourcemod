@@ -231,13 +231,13 @@ void __cdecl CHook::SetReturnAddress(void* pRetAddr, void* pESP)
 	i->value.push_back(pRetAddr);
 }
 
-void* CHook::CreateBridge(bool createPostHook)
+void* CHook::CreateBridge(bool isFunctionHook)
 {
 	sp::MacroAssembler masm;
 	Label label_supercede;
 
 	// Write a redirect to the post-hook code
-	if (createPostHook)
+	if (isFunctionHook)
 		Write_ModifyReturnAddress(masm);
 
 	// Call the pre-hook handler and jump to label_supercede if ReturnAction_Supercede was returned
@@ -247,8 +247,7 @@ void* CHook::CreateBridge(bool createPostHook)
 	// Restore the previously saved registers, so any changes will be applied
 	Write_RestoreRegisters(masm, HOOKTYPE_PRE);
 
-	if (createPostHook)
-		masm.j(equal, &label_supercede);
+	masm.j(equal, &label_supercede);
 
 	// Jump to the trampoline
 	masm.jmp(ExternalAddress(m_pTrampoline));
@@ -256,9 +255,18 @@ void* CHook::CreateBridge(bool createPostHook)
 	// This code will be executed if a pre-hook returns ReturnAction_Supercede
 	masm.bind(&label_supercede);
 
-	// Finally, return to the caller
-	// This will still call post hooks, but will skip the original function.
-	masm.ret(m_pCallingConvention->GetPopSize());
+	if (isFunctionHook)
+	{
+		// Finally, return to the caller
+		// This will still call post hooks, but will skip the original function.
+		masm.ret(m_pCallingConvention->GetPopSize());
+	}
+	else
+	{
+		// Jump to the instruction right after the hooked instruction inside the trampoline
+		void* target = (char*)m_pTrampoline + instruction_length(m_pFunc);
+		masm.jmp(ExternalAddress(target));
+	}
 
 	void *base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.length());
 	masm.emitToExecutableMemory(base);

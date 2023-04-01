@@ -432,14 +432,6 @@ ReturnAction_t HandleDetour(HookType_t hookType, CHook* pDetour)
 				}
 			}
 
-			// It doesn't make sense to supercede instruction detours when they're detouring individual instructions
-			if (pWrapper->callConv == CallConv_INSTRUCTION && result == MRES_Supercede)
-			{
-				tempRet = ReturnAction_Ignored;
-				pCallback->GetParentRuntime()->GetDefaultContext()->BlamePluginError(pCallback, "Tried to supercede an instruction detour which is not possible");
-				break;
-			}
-
 			// Store if the plugin wants the original function to be called.
 			if (result == MRES_Supercede)
 				tempRet = ReturnAction_Supercede;
