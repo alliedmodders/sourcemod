@@ -179,6 +179,17 @@ methodmap ArrayList < Handle {
 	// @error               Invalid index.
 	public native void ShiftUp(int index);
 
+	// Randomly sort the elements in the array.
+	public void Shuffle()
+	{
+		int len = this.Length;
+		for (int i = len - 1; i > 0; --i)
+		{
+			int randIndex = GetRandomInt(0, i);
+			this.SwapAt(i, randIndex);
+		}
+	}
+
 	// Removes an array index, shifting the entire array down from that position
 	// on.  For example, if item 8 of 10 is removed, the last 3 items will then be
 	// (6,7,8) instead of (7,8,9), and all indexes before 8 will remain unchanged.
