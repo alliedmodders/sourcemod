@@ -67,6 +67,6 @@
 	
 	"Map Not In Pool"
 	{
-		"pt"			"O mapa '{1}' não está na lista de sugestões."
+		"pt"		"O mapa '{1}' não está na lista de sugestões."
 	}
 }

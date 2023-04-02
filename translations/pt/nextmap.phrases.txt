@@ -17,7 +17,7 @@
 
 	"Played Time"
 	{
-		"pt"		"[Tempo jogado] "
+		"pt"		"[Tempo jogado]"
 	}
 
 	"Reason"
@@ -34,5 +34,4 @@
 	{
 		"pt"		"atrás"
 	}
-
 }

@@ -12,17 +12,17 @@
 
 	"Initiated Vote Kick"
 	{
-		"pt"		"Votação para expulsar {1} iniciada. "
+		"pt"		"Votação para expulsar {1} iniciada."
 	}
 
 	"Initiated Vote Ban"
 	{
-		"pt"		"Votacão para banir {1} iniciada. "
+		"pt"		"Votacão para banir {1} iniciada."
 	}
 
 	"Map Vote"
 	{
-		"pt"		"Votação para o mapa: {1} "
+		"pt"		"Votação para o mapa: {1}"
 	}
 
 	"Change Map To"
@@ -42,12 +42,12 @@
 
 	"Vote Successful"
 	{
-		"pt"		"Votação aprovada. ({1}%% de {2}) "
+		"pt"		"Votação aprovada. ({1}%% de {2})"
 	}
 
 	"Vote Failed"
 	{
-		"pt"		"Votação falhou. {1}%% votos necessários. ({2}%% de {3}) "
+		"pt"		"Votação falhou. {1}%% votos necessários. ({2}%% de {3})"
 	}
 
 	"Vote End"
@@ -57,7 +57,7 @@
 
 	"Kick vote"
 	{
-		"pt"		"Votação de expulsão "
+		"pt"		"Votação de expulsão"
 	}
 
 	"Ban vote"
@@ -84,5 +84,4 @@
 	{
 		"pt"		"Iniciar a votação"
 	}
-
 }

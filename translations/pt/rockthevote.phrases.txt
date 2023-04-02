@@ -57,7 +57,7 @@
 
 	"Current Map Stays"
 	{
-		"pt"		"O mapa atual continua! O Rock the Vote assim decidiu! "
+		"pt"		"O mapa atual continua! O Rock the Vote assim decidiu!"
 	}
 
 	"Changing Maps"
