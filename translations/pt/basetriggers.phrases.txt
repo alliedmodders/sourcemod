@@ -19,6 +19,11 @@
 	{
 		"pt"		"O fogo amigo está desativado."
 	}
+	
+	"Friendly Fire Percent"
+	{
+		"pt"		"O fogo amigo está {1}%."
+	}
 
 	"Current Map"
 	{
@@ -47,7 +52,7 @@
 
 	"WinLimitAppend"
 	{
-		"pt"		" ou quando uma equipe vencer uma rodada "
+		"pt"		", ou quando uma equipe vencer uma rodada"
 	}
 
 	"WinLimit"
@@ -57,7 +62,7 @@
 
 	"MaxRoundsAppend"
 	{
-		"pt"		" ou após mais uma rodada"
+		"pt"		", ou após mais uma rodada"
 	}
 
 	"MaxRounds"
@@ -67,7 +72,7 @@
 
 	"FragLimitAppend"
 	{
-		"pt"		" ou quando um jogador atingir um ponto"
+		"pt"		", ou quando um jogador atingir um ponto"
 	}
 
 	"FragLimit"
@@ -82,7 +87,7 @@
 
 	"WinLimitPlural"
 	{
-		"pt"		" ou quando uma equipe vencer {1} rodadas "
+		"pt"		", ou quando uma equipe vencer {1} rodadas"
 	}
 
 	"MaxRoundsAppendPlural"
@@ -97,12 +102,11 @@
 
 	"FragLimitAppendPlural"
 	{
-		"pt"		" ou quando um jogador atingir {1} pontos"
+		"pt"		", ou quando um jogador atingir {1} pontos"
 	}
 
 	"FragLimitPlural"
 	{
 		"pt"		"O mapa será alterado quando um jogador atingir {1} pontos"
 	}
-
 }
