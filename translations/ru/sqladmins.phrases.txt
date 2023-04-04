@@ -62,7 +62,7 @@
 
 	"SQL Group X failed to bind"
 	{
-		"ru"		"К группе не удалось привязать:"
+		"ru"		"Не удалось привязать группу: \"{1}\""
 	}
 
 	"Added group to user"
