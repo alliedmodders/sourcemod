@@ -2,7 +2,7 @@
 {
 	"Invalid authtype"
 	{
-		"pt"		"O tipo de autenticação deve ser 'STEAM_ID', 'NAME' ou 'IP'."
+		"pt"		"O tipo de autenticação deve ser 'STEAM_ID', 'NOME' ou 'IP'."
 	}
 
 	"Invalid immunity"

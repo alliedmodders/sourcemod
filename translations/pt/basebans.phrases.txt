@@ -12,7 +12,7 @@
 
 	"Permabanned player"
 	{
-		"pt"		"\"{1}\" banido permanentemente."
+		"pt"		"\"{1}\" banido(a) permanentemente."
 	}
 
 	"Permabanned player reason"

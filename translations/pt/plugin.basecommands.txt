@@ -67,12 +67,12 @@
 
 	"Identify player"
 	{
-		"pt"		"Identificar jogador"
+		"pt"		"Identificar Jogador"
 	}
 
 	"Choose Map"
 	{
-		"pt"		"Escolher mapa"
+		"pt"		"Escolher Mapa"
 	}
 
 	"Exec CFG"
@@ -122,7 +122,7 @@
 
 	"Kicked target reason"
 	{
-		"pt"		"Expulsou {1} (Motivo: {2})"
+		"pt"		"Expulsou {1}. (Motivo: {2})"
 	}
 
 	"Please select a map"

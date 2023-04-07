@@ -2,52 +2,52 @@
 {
 	"Burn player"
 	{
-		"pt"		"Queimar jogador"
+		"pt"		"Queimar Jogador"
 	}
 
 	"FireBomb player"
 	{
-		"pt"		"Bomba de fogo no jogador"
+		"pt"		"Bomba de Fogo no Jogador"
 	}
 
 	"Freeze player"
 	{
-		"pt"		"Congelar jogador"
+		"pt"		"Congelar Jogador"
 	}
 
 	"FreezeBomb player"
 	{
-		"pt"		"Bomba de gelo no jogador"
+		"pt"		"Bomba de Gelo no Jogador"
 	}
 
 	"TimeBomb player"
 	{
-		"pt"		"Bomba relógio no jogador"
+		"pt"		"Bomba Relógio no Jogador"
 	}
 
 	"Beacon player"
 	{
-		"pt"		"Sinalizar jogador"
+		"pt"		"Sinalizar Jogador"
 	}
 
 	"NoClip player"
 	{
-		"pt"		"Alterar NoClip em jogador"
+		"pt"		"Alterar NoClip em Jogador"
 	}
 
 	"Blind player"
 	{
-		"pt"		"Cegar jogador"
+		"pt"		"Cegar Jogador"
 	}
 
 	"Drug player"
 	{
-		"pt"		"Drogar jogador"
+		"pt"		"Drogar Jogador"
 	}
 
 	"Gravity player"
 	{
-		"pt"		"Gravidade do jogador"
+		"pt"		"Gravidade do Jogador"
 	}
 
 	"Blind amount"
@@ -57,17 +57,17 @@
 
 	"Fully blind"
 	{
-		"pt"		"Completamente cego"
+		"pt"		"Completamente Cego"
 	}
 
 	"Half blind"
 	{
-		"pt"		"Parcialmente cego"
+		"pt"		"Parcialmente Cego"
 	}
 
 	"No blind"
 	{
-		"pt"		"Visão normal"
+		"pt"		"Visão Normal"
 	}
 
 	"Gravity amount"
@@ -77,27 +77,27 @@
 
 	"Gravity Very High"
 	{
-		"pt"		"Gravidade muito alta"
+		"pt"		"Gravidade Muito Alta"
 	}
 
 	"Gravity High"
 	{
-		"pt"		"Gravidade alta"
+		"pt"		"Gravidade Alta"
 	}
 
 	"Gravity Normal"
 	{
-		"pt"		"Gravidade normal"
+		"pt"		"Gravidade Normal"
 	}
 
 	"Gravity Low"
 	{
-		"pt"		"Gravidade baixa"
+		"pt"		"Gravidade Baixa"
 	}
 
 	"Gravity Very Low"
 	{
-		"pt"		"Gravidade muito baixa"
+		"pt"		"Gravidade Muito Baixa"
 	}
 
 	"Set target on fire"

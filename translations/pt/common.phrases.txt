@@ -37,7 +37,7 @@
 
 	"Kick player"
 	{
-		"pt"		"Expulsar jogador"
+		"pt"		"Expulsar Jogador"
 	}
 
 	"Kicked by admin"
@@ -62,7 +62,7 @@
 
 	"Name"
 	{
-		"pt"		"Name"
+		"pt"		"Nome"
 	}
 
 	"Access"

@@ -12,7 +12,7 @@
 
 	"Nextmap Voting Finished"
 	{
-		"pt"		"A votação está concluída! O próximo mapa será {1}.  ({2}%% de {3} votos)"
+		"pt"		"A votação está concluída! O próximo mapa será {1}. ({2}%% de {3} votos)"
 	}
 
 	"Current Map Extended"

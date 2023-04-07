@@ -2,17 +2,17 @@
 {
 	"Slap player"
 	{
-		"pt"		"Estapear jogador"
+		"pt"		"Estapear Jogador"
 	}
 
 	"Slap damage"
 	{
-		"pt"		"Dano do tapa"
+		"pt"		"Dano do Tapa"
 	}
 
 	"Slay player"
 	{
-		"pt"		"Assassinar jogador"
+		"pt"		"Assassinar Jogador"
 	}
 
 	"Slapped target"
@@ -37,6 +37,6 @@
 
 	"Rename player"
 	{
-		"pt"		"Renomear jogador"
+		"pt"		"Renomear Jogador"
 	}
 }

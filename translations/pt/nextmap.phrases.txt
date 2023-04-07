@@ -2,7 +2,7 @@
 {
 	"Map History"
 	{
-		"pt"		"Histórico de mapas"
+		"pt"		"Histórico de Mapas"
 	}
 
 	"Map"
@@ -17,21 +17,21 @@
 
 	"Played Time"
 	{
-		"pt"		"[Tempo jogado]"
+		"pt"		"[Tempo Jogado]"
 	}
 
 	"Reason"
 	{
-		"pt"		"[Motivo para término]"
+		"pt"		"[Motivo para Término]"
 	}
 
 	"Current Map"
 	{
-		"pt"		"Mapa atual"
+		"pt"		"Mapa Atual"
 	}
 
 	"ago"
 	{
-		"pt"		"atrás"
+		"pt"		"Atrás"
 	}
 }

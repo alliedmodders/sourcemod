@@ -64,5 +64,4 @@
 	{
 		"pt"		"Mudando mapa para {1}! O Rock the Vote assim decidiu!"
 	}
-
 }
