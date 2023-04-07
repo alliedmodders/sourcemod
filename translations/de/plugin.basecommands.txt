@@ -129,5 +129,10 @@
 	{
 		"de"		"Bitte wähle eine Map "
 	}
+	
+	"Choose Config"
+	{
+		"de"		"Wähle eine Konfiguration"
+	}
 
 }
