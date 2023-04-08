@@ -17,7 +17,7 @@
 
 	"Initiated Vote Alltalk"
 	{
-		"pt"		"Iniciou uma votação para alterar fala aberta."
+		"pt"		"Iniciou uma votação para alterar fala aberta (AllTalk)."
 	}
 
 	"Initiated Vote FF"
