@@ -17,7 +17,7 @@
 
 	"Initiated Vote Alltalk"
 	{
-		"pt"		"Iniciou uma votação para alterar AllTalk."
+		"pt"		"Iniciou uma votação para alterar fala aberta."
 	}
 
 	"Initiated Vote FF"
@@ -47,12 +47,12 @@
 
 	"Votealltalk Off"
 	{
-		"pt"		"Desativar AllTalk? {1}"
+		"pt"		"Desativar fala aberta? {1}"
 	}
 
 	"Votealltalk On"
 	{
-		"pt"		"Ativar AllTalk? {1}"
+		"pt"		"Ativar fala aberta? {1}"
 	}
 
 	"Voteff Off"
@@ -82,7 +82,7 @@
 
 	"Alltalk vote"
 	{
-		"pt"		"Votação para alterar AllTalk"
+		"pt"		"Votação para alterar fala aberta"
 	}
 
 	"Slay vote"

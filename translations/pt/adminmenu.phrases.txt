@@ -2,21 +2,21 @@
 {
 	"Admin Menu"
 	{
-		"pt"		"Menu de Administração"
+		"pt"		"Menu de administração"
 	}
 
 	"Player Commands"
 	{
-		"pt"		"Comandos de Jogadores"
+		"pt"		"Comandos de jogadores"
 	}
 
 	"Server Commands"
 	{
-		"pt"		"Comandos do Servidor"
+		"pt"		"Comandos do servidor"
 	}
 
 	"Voting Commands"
 	{
-		"pt"		"Comandos de Votação"
+		"pt"		"Comandos de votação"
 	}
 }

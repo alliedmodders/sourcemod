@@ -67,12 +67,12 @@
 
 	"Identify player"
 	{
-		"pt"		"Identificar Jogador"
+		"pt"		"Identificar jogador"
 	}
 
 	"Choose Map"
 	{
-		"pt"		"Escolher Mapa"
+		"pt"		"Escolher mapa"
 	}
 
 	"Exec CFG"

@@ -2,7 +2,7 @@
 {
 	"Gag/Mute player"
 	{
-		"pt"		"Amordaçar/Emudecer Jogador"
+		"pt"		"Amordaçar/Emudecer jogador"
 	}
 
 	"Choose Type"
@@ -42,31 +42,31 @@
 
 	"Mute Player"
 	{
-		"pt"		"Emudecer Jogador"
+		"pt"		"Emudecer jogador"
 	}
 
 	"UnMute Player"
 	{
-		"pt"		"Desemudecer Jogador"
+		"pt"		"Desemudecer jogador"
 	}
 
 	"Gag Player"
 	{
-		"pt"		"Amordaçar Jogador"
+		"pt"		"Amordaçar jogador"
 	}
 
 	"UnGag Player"
 	{
-		"pt"		"Desamordaçar Jogador"
+		"pt"		"Desamordaçar jogador"
 	}
 
 	"Silence Player"
 	{
-		"pt"		"Silenciar Jogador"
+		"pt"		"Silenciar jogador"
 	}
 
 	"UnSilence Player"
 	{
-		"pt"		"Desilenciar Jogador"
+		"pt"		"Desilenciar jogador"
 	}
 }
