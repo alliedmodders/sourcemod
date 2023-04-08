@@ -47,12 +47,12 @@
 
 	"Votealltalk Off"
 	{
-		"pt"		"Desativar fala aberta? {1}"
+		"pt"		"Desativar fala aberta (AllTalk)? {1}"
 	}
 
 	"Votealltalk On"
 	{
-		"pt"		"Ativar fala aberta? {1}"
+		"pt"		"Ativar fala aberta (AllTalk)? {1}"
 	}
 
 	"Voteff Off"
@@ -82,7 +82,7 @@
 
 	"Alltalk vote"
 	{
-		"pt"		"Votação para alterar fala aberta"
+		"pt"		"Votação para alterar fala aberta (AllTalk)"
 	}
 
 	"Slay vote"
