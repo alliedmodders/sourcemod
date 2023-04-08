@@ -182,7 +182,7 @@
 
 	"Invalid SteamID specified"
 	{
-		"pt"		"Você especificou um STEAM_ID inválida (precisa começar com 'STEAM_:')."
+		"pt"		"Você especificou um STEAM_ID inválido (precisa começar com 'STEAM_:')."
 	}
 
 	"Reload admins"

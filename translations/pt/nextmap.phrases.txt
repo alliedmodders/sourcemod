@@ -2,7 +2,7 @@
 {
 	"Map History"
 	{
-		"pt"		"Histórico de ,apas"
+		"pt"		"Histórico de mapas"
 	}
 
 	"Map"

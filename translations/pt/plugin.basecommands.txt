@@ -37,7 +37,7 @@
 
 	"Permabanned player reason"
 	{
-		"pt"		"Baniu \"{1}\" permanentemente.(Motivo: {2})"
+		"pt"		"Baniu \"{1}\" permanentemente. (Motivo: {2})"
 	}
 
 	"Banned player"
