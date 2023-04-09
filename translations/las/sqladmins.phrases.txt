@@ -12,47 +12,47 @@
 
 	"SQL Admin already exists"
 	{
-		"las"		"Ya existe un administrador con los credenciales dados."
+		"las"		"Ya existe un administrador con las credenciales brindadas."
 	}
 
 	"SQL Admin added"
 	{
-		"las"		"Administrador agregado exitosamente a la base de datos."
+		"las"		"Administrador añadido a la base de datos con éxito."
 	}
 
 	"SQL Admin deleted"
 	{
-		"las"		"Administrador borrado exitosamente de la base de datos."
+		"las"		"Administrador removido de la base de datos con éxito."
 	}
 
 	"SQL Admin not found"
 	{
-		"las"		"No se encontró ningún administrador con los credenciales dados."
+		"las"		"No se encontró ningún administrador con las credenciales brindadas."
 	}
 
 	"SQL Group already exists"
 	{
-		"las"		"Un grupo con este nombre ya existe."
+		"las"		"Ya existe un grupo con este nombre."
 	}
 
 	"SQL Group added"
 	{
-		"las"		"Grupo agregado exitosamente a la base de datos."
+		"las"		"Grupo añadido a la base de datos con éxito."
 	}
 
 	"SQL Group deleted"
 	{
-		"las"		"Grupo borrado exitosamente de la base de datos."
+		"las"		"Grupo removido de la base de datos con éxito."
 	}
 
 	"SQL Group not found"
 	{
-		"las"		" No se encontró ningún grupo con el nombre dado. "
+		"las"		"No se encontró ningún grupo con el nombre brindado."
 	}
 
 	"SQL Admin groups reset"
 	{
-		"las"		"Los grupos del administrador han sido reestablecidos exitosamente."
+		"las"		"Los grupos del administrador fueron restablecidos con éxito."
 	}
 
 	"SQL Group X not found"
@@ -62,17 +62,17 @@
 
 	"SQL Group X failed to bind"
 	{
-		"las"		"El grupo no se pudo agregar: \"{1}\""
+		"las"		"El grupo no se pudo añadir: \"{1}\""
 	}
 
 	"Added group to user"
 	{
-		"las"		"Agregado exitosamente un grupo al administrador dado."
+		"las"		"El grupo fue añadido al administrador brindado con éxito."
 	}
 
 	"Added groups to user"
 	{
-		"las"		"Agregados exitosamente {1} grupos al administrador dado."
+		"las"		"{1} grupos fueron añadidos al administrador brindado con éxito."
 	}
 
 }

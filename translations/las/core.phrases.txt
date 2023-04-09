@@ -82,7 +82,7 @@
 
 	"Name Reserved"
 	{
-		"las"		"Tu nombre esta reservado por SourceMod; establece una contraseña para usarlo."
+		"las"		"Tu nombre se encuentra reservado por SourceMod; establece una contraseña para usarlo."
 	}
 
 }

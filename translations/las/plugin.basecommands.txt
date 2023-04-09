@@ -2,7 +2,7 @@
 {
 	"Unable to find cvar"
 	{
-		"las"		"No se puede encontrar la cvar: {1}"
+		"las"		"No se encontró la cvar: {1}"
 	}
 
 	"No access to cvar"
@@ -22,7 +22,7 @@
 
 	"Config not found"
 	{
-		"las"		"Fichero de configuración \"{1}\" no encontrado."
+		"las"		"Archivo de configuración \"{1}\" no encontrado."
 	}
 
 	"Executed config"
@@ -52,17 +52,17 @@
 
 	"Removed bans matching"
 	{
-		"las"		"Eliminados los bans que coinciden con el filtro: {1}"
+		"las"		"Se eliminaron los bans coincidentes con: {1}"
 	}
 
 	"Ban added"
 	{
-		"las"		"El ban ha sido agregado."
+		"las"		"Se añadió el ban."
 	}
 
 	"Admin cache refreshed"
 	{
-		"las"		"La caché de admins ha sido actualizada."
+		"las"		"La caché de admins se actualizó."
 	}
 
 	"Identify player"
@@ -122,17 +122,17 @@
 
 	"Kicked target reason"
 	{
-		"las"		"{1} kickeado (Razón: {2})"
+		"las"		"{1} expulsado (Razón: {2})"
 	}
 
 	"Please select a map"
 	{
-		"las"		"Por favor seleccione un mapa"
+		"las"		"Por favor elige un mapa"
 	}
 
 	"Choose Config"
 	{
-		"las"		"Seleccionar Config"
+		"las"		"Elegir Config"
 	}
 
 }

@@ -22,7 +22,7 @@
 
 	"Reason"
 	{
-		"las"		"[Causa de finalizacion]"
+		"las"		"[Razón de finalizacion]"
 	}
 
 	"Current Map"

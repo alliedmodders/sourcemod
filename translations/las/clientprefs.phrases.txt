@@ -32,12 +32,12 @@
 
 	"No Console"
 	{
-		"las"		"Imposible mostrar el menu de configuración en consola"
+		"las"		"No puedes ver el menú de configuración desde la consola."
 	}
 
 	"Choose Option"
 	{
-		"las"		"Elige Opcion"
+		"las"		"Elige una opción"
 	}
 
 	"Client Settings"
