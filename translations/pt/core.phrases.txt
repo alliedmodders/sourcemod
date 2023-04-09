@@ -72,7 +72,7 @@
 
 	"Changed Vote"
 	{
-		"pt"		"{1} trocou o seu voto para {2} "
+		"pt"		"{1} trocou o seu voto para {2}"
 	}
 
 	"No Vote"
@@ -84,5 +84,4 @@
 	{
 		"pt"		"Seu nome é reservado pelo SourceMod, configure sua senha para usá-lo."
 	}
-
 }

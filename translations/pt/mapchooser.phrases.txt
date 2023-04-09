@@ -12,12 +12,12 @@
 
 	"Nextmap Voting Finished"
 	{
-		"pt"		"A votação está concluída. O próximo mapa será {1}.  ({2}%% de {3} voto(s))"
+		"pt"		"A votação está concluída! O próximo mapa será {1}. ({2}%% de {3} votos)"
 	}
 
 	"Current Map Extended"
 	{
-		"pt"		"O mapa atual foi estendido. ({1}%% de {2} voto(s)) "
+		"pt"		"O mapa atual foi estendido. ({1}%% de {2} votos)"
 	}
 
 	"Extend Map"
@@ -44,5 +44,4 @@
 	{
 		"pt"		"Nenhum mapa recebeu mais de {1}%% votos ({2} [{3}%%] & {4} [{5}%%]), iniciando segundo turno"
 	}
-
 }

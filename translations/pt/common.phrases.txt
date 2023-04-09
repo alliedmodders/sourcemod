@@ -47,7 +47,7 @@
 
 	"Changing map"
 	{
-		"pt"		"Alterando mapa para {1}... "
+		"pt"		"Alterando mapa para {1}..."
 	}
 
 	"Map was not found"
@@ -167,7 +167,7 @@
 
 	"Vote Delay Seconds"
 	{
-		"pt"		"Você precisa esperar {1} segundo(s) antes de iniciar outra votação."
+		"pt"		"Você precisa esperar {1} segundos antes de iniciar outra votação."
 	}
 
 	"Could not connect to database"
@@ -182,7 +182,7 @@
 
 	"Invalid SteamID specified"
 	{
-		"pt"		"Você especificou um SteamID inválido (precisa começar com 'STEAM_:')."
+		"pt"		"Você especificou um STEAM_ID inválido (precisa começar com 'STEAM_:')."
 	}
 
 	"Reload admins"
@@ -249,5 +249,4 @@
 	{
 		"pt"		"(Privado para {1}) {2}"
 	}
-
 }

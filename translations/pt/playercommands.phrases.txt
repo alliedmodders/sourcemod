@@ -39,5 +39,4 @@
 	{
 		"pt"		"Renomear jogador"
 	}
-
 }

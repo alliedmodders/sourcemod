@@ -82,17 +82,17 @@
 
 	"Gravity High"
 	{
-		"pt"		"Gravidade alta "
+		"pt"		"Gravidade alta"
 	}
 
 	"Gravity Normal"
 	{
-		"pt"		"Gravidade normal "
+		"pt"		"Gravidade normal"
 	}
 
 	"Gravity Low"
 	{
-		"pt"		"Gravidade baixa "
+		"pt"		"Gravidade baixa"
 	}
 
 	"Gravity Very Low"
@@ -147,7 +147,7 @@
 
 	"Set gravity on target"
 	{
-		"pt"		"alterou a gravidade de {1}. "
+		"pt"		"alterou a gravidade de {1}."
 	}
 
 	"Till Explodes"
@@ -164,5 +164,4 @@
 	{
 		"pt"		"Você será descongelado em {1} segundos."
 	}
-
 }
