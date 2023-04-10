@@ -260,7 +260,8 @@ static cell_t FormatTime(IPluginContext *pContext, const cell_t *params)
 #ifdef PLATFORM_WINDOWS
 		InvalidParameterHandler p;
 #endif
-		if (params[5])
+		// Older plugins dont have param[5]
+		if (params[0] < 5 || params[5])
 		{
 			t = (params[4] == -1) ? g_pSM->GetAdjustedTime() : (time_t)params[4];
 			written = strftime(buffer, params[2], format, localtime(&t));
