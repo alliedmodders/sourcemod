@@ -22,7 +22,7 @@
 
 	"Friendly Fire Percent"
 	{
-		"da"		"Fjendtligt skade er {1}%."
+		"da"		"Friendly Fire er {1}%."
 	}
 
 	"Current Map"

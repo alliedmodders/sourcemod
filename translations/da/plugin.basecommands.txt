@@ -132,7 +132,7 @@
 
 	"Choose Config"
 	{
-		"da"		"Vælg Config"
+		"da"		"Vælg Konfiguration"
 	}
 
 }
