@@ -132,6 +132,6 @@
 	
 	"Choose Config"
 	{
-		"en"			"Scegli una configurazione"
+		"it"			"Scegli una configurazione"
 	}
 }
