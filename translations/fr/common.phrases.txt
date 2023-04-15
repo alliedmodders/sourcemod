@@ -230,4 +230,24 @@
 		"fr"		"Off"
 	}
 
+	"Say all"
+	{
+		"fr"		"(TOUS) {1}"
+	}
+	
+	"Chat admins"
+	{
+		"fr"		"(ADMINS) {1}"
+	}
+	
+	"Chat to admins"
+	{
+		"fr"		"(AUX ADMINS) {1}"
+	}
+	
+	"Private say to"
+	{
+		"fr"		"(Privé à {1}) {2}"
+	}
+
 }

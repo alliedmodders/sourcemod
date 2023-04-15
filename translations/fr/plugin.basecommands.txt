@@ -130,4 +130,9 @@
 		"fr"		"Veuillez selectionner une map"
 	}
 
+	"Choose Config"
+	{
+		"fr"		"Choisir une Config"
+	}
+
 }
