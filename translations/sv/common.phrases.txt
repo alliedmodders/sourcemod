@@ -230,4 +230,23 @@
 		"sv"		"Av"
 	}
 
+	"Say all"
+	{
+		"sv"			"(ALLA) {1}"
+	}
+
+	"Chat admins"
+	{
+		"sv"			"(ADMINS) {1}"
+	}
+
+	"Chat to admins"
+	{
+		"sv"			"(TILL ADMINS) {1}"
+	}
+
+	"Private say to"
+	{
+		"sv"			"(Privat till {1}) {2}"
+	}
 }

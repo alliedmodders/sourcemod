@@ -20,6 +20,11 @@
 		"sv"		" Vänlig skada är av. "
 	}
 
+	"Friendly Fire Percent"
+	{
+		"sv"		"Vänlig skada är {1}%."
+	}
+
 	"Current Map"
 	{
 		"sv"		"Nuvarande karta är {1}. "

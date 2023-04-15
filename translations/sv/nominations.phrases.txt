@@ -65,4 +65,8 @@
 		"sv"		"Nominerad"
 	}
 
+	"Map Not In Pool"
+	{
+		"sv"		"Kartan '{1}' kunde inte hittas bland alternativen för nominering."
+	}
 }

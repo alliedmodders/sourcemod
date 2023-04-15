@@ -130,4 +130,8 @@
 		"sv"		"Vänligen välj en karta"
 	}
 
+	"Choose Config"
+	{
+		"sv"		"Välj konfiguration"
+	}
 }
