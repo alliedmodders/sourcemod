@@ -230,4 +230,24 @@
 		"lv"		"Izslēgts"
 	}
 
+	"Say all"
+	{
+		"lv"		"(VISI) {1}"
+	}
+
+	"Chat admins"
+	{
+		"lv"		"(ADMINI) {1}"
+	}
+
+	"Chat to admins"
+	{
+		"lv"		"(ADMINIEM) {1}"
+	}
+
+	"Private say to"
+	{
+		"lv"		"(Privāts priekš {1}) {2}"
+	}
+
 }

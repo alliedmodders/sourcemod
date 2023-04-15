@@ -22,7 +22,6 @@
 	
 	"Friendly Fire Percent"
 	{
-		"#format"	"{1:0.0f}"
 		"lv"		"Draudzīgas uguns iespējamība {1}%."
 	}
 

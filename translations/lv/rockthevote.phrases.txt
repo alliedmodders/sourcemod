@@ -22,7 +22,6 @@
 	
 	"Already Voted"
 	{
- 		"#format"		"{1:d},{2:d}"
 	 	"lv"			"Tu jau nobalsoji par kartes maiņu ar RTV ({1} balsis, {2} balsis palikušas)"
 	}
 
