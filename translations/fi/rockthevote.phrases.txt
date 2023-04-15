@@ -22,7 +22,7 @@
 
 	"Already Voted"
 	{
-		"fi"		"Olet jo äänestänyt Rock the Votessa."
+		"fi"		"Olet jo äänestänyt Rock the Votessa. ({1} ääntä, {2} vaaditaan)"
 	}
 
 	"Minimal Players Not Met"
