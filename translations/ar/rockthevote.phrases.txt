@@ -22,7 +22,7 @@
 
 	"Already Voted"
 	{
-		"ar"		"لقد صوت بلفعل لصالح Rock the Vote. ({1}, تصويت {2} مطلوب)"
+		"ar"		"لقد أردت التصويت مسبقا!"
 	}
 
 	"Minimal Players Not Met"
@@ -62,7 +62,7 @@
 
 	"Changing Maps"
 	{
-		"ar"		"Rock the Vote done {1}! تغيير الخريطة الى"
+		"ar"		"لقد أردت التصويت مسبقا.({1} تصويت، {1} لازمة)"
 	}
 
 }
