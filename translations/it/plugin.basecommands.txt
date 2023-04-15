@@ -134,5 +134,4 @@
 	{
 		"en"			"Scegli una configurazione"
 	}
-
 }
