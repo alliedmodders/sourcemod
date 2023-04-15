@@ -2,7 +2,7 @@
 {
 	"Already Nominated"
 	{
-		"sv"		"Du har redan nominerat en bana"
+		"sv"		"Du har redan nominerat en karta"
 	}
 
 	"Max Nominations"
@@ -12,17 +12,17 @@
 
 	"Map Already In Vote"
 	{
-		"sv"		"Bana '{1}' finns redan i nomineringslistan."
+		"sv"		"Kartan '{1}' finns redan i nomineringslistan."
 	}
 
 	"Map Inserted"
 	{
-		"sv"		"Bana '{1}' har lagts till i nomineringslistan"
+		"sv"		"Kartan '{1}' har lagts till i nomineringslistan"
 	}
 
 	"Map Already Nominated"
 	{
-		"sv"		"Banan du valde har redan blivit nominerad"
+		"sv"		"Kartan du valde har redan blivit nominerad"
 	}
 
 	"Map Nominated"
@@ -37,22 +37,22 @@
 
 	"Nominate Title"
 	{
-		"sv"		"Nominera bana:"
+		"sv"		"Nominera karta:"
 	}
 
 	"Can't Nominate Current Map"
 	{
-		"sv"		"Banan du valde är den banan som spelas just nu och kan inte bli nominerad"
+		"sv"		"Kartan du valde är den kartan som spelas just nu och kan inte bli nominerad"
 	}
 
 	"Map in Exclude List"
 	{
-		"sv"		"Den banan du valde har nyligen blivit spelad och kan inte bli nominerad"
+		"sv"		"Den kartan du valde har nyligen blivit spelad och kan inte bli nominerad"
 	}
 
 	"Current Map"
 	{
-		"sv"		"Nuvarande bana"
+		"sv"		"Nuvarande karta"
 	}
 
 	"Recently Played"
