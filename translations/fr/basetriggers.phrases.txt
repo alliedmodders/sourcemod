@@ -20,6 +20,11 @@
 		"fr"		"Le Tir Amical (FriendlyFire) est désactivé "
 	}
 
+	"Friendly Fire Percent"
+	{
+		"fr"		"Le Tir Amical est {1}%."
+	}
+
 	"Current Map"
 	{
 		"fr"		"La map actuelle est {1} ."
