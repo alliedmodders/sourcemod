@@ -182,7 +182,7 @@
 
 	"Invalid SteamID specified"
 	{
-		"sv"		"Du har specificerat ett ogiltigt Steam ID (måste börja med 'STEAM_:')."
+		"sv"		"Du har specificerat ett ogiltigt Steam ID (måste börja med 'STEAM_')."
 	}
 
 	"Reload admins"
