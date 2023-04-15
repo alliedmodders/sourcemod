@@ -17,7 +17,7 @@
 
 	"RTV Ended"
 	{
-		"sv"		"RTV är redan över, du kan inte starta det igen eller nominera kartor. "
+		"sv"		"RTV är redan över, du kan inte starta det igen eller nominera kartor."
 	}
 
 	"Already Voted"
@@ -32,7 +32,7 @@
 
 	"RTV Requested"
 	{
-		"sv"		"{1} Vill rock the vote. ({2} röster, {3} krävs) "
+		"sv"		"{1} Vill rock the vote. ({2} röster, {3} krävs)"
 	}
 
 	"RTV Vote Ready"
@@ -47,7 +47,7 @@
 
 	"Selected Map"
 	{
-		"sv"		"{1} har valt {2} "
+		"sv"		"{1} har valt {2}"
 	}
 
 	"No Votes"
@@ -57,7 +57,7 @@
 
 	"Current Map Stays"
 	{
-		"sv"		"Den nuvarande kartan behålls! Rock the Vote har talat! "
+		"sv"		"Den nuvarande kartan behålls! Rock the Vote har talat!"
 	}
 
 	"Changing Maps"

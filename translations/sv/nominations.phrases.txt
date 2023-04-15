@@ -27,12 +27,12 @@
 
 	"Map Nominated"
 	{
-		"sv"		"{1} har nominerat {2}.  "
+		"sv"		"{1} har nominerat {2}."
 	}
 
 	"Map Nomination Changed"
 	{
-		"sv"		"{1} har ändrat sin nominering till {2}.  "
+		"sv"		"{1} har ändrat sin nominering till {2}."
 	}
 
 	"Nominate Title"
@@ -47,7 +47,7 @@
 
 	"Map in Exclude List"
 	{
-		"sv"		"Den banan  du valde har nyligen blivit spelad och kan inte bli nominerad"
+		"sv"		"Den banan du valde har nyligen blivit spelad och kan inte bli nominerad"
 	}
 
 	"Current Map"

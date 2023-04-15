@@ -7,22 +7,22 @@
 
 	"Map"
 	{
-		"sv"		"[Bana]  "
+		"sv"		"[Bana]"
 	}
 
 	"Started"
 	{
-		"sv"		"[Startad]  "
+		"sv"		"[Startad]"
 	}
 
 	"Played Time"
 	{
-		"sv"		"[Spelad tid]  "
+		"sv"		"[Spelad tid]"
 	}
 
 	"Reason"
 	{
-		"sv"		"[Anledning till avslutande]  "
+		"sv"		"[Anledning till avslutande]"
 	}
 
 	"Current Map"

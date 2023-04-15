@@ -47,7 +47,7 @@
 
 	"Gravity player"
 	{
-		"sv"		"Gravitation på spelare "
+		"sv"		"Gravitation på spelare"
 	}
 
 	"Blind amount"
@@ -102,7 +102,7 @@
 
 	"Set target on fire"
 	{
-		"sv"		"Sätt eld på {1}. "
+		"sv"		"Sätt eld på {1}."
 	}
 
 	"Toggled FireBomb on target"
@@ -132,12 +132,12 @@
 
 	"Toggled noclip on target"
 	{
-		"sv"		"växlade noclip på {1}. "
+		"sv"		"växlade noclip på {1}."
 	}
 
 	"Toggled drug on target"
 	{
-		"sv"		"växlade droger på {1}. "
+		"sv"		"växlade droger på {1}."
 	}
 
 	"Set blind on target"

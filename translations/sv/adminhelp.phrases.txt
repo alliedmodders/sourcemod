@@ -7,12 +7,12 @@
 
 	"No description available"
 	{
-		"sv"		" Ingen beskrivning tillgänglig "
+		"sv"		"Ingen beskrivning tillgänglig"
 	}
 
 	"No commands available"
 	{
-		"sv"		"Inga kommandon tillgängliga "
+		"sv"		"Inga kommandon tillgängliga"
 	}
 
 	"Type sm_help to see more"
@@ -27,7 +27,7 @@
 
 	"No matching results found"
 	{
-		"sv"		" Hittade inga matchande resultat "
+		"sv"		"Hittade inga matchande resultat"
 	}
 
 }

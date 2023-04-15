@@ -42,7 +42,7 @@
 
 	"Kicked by admin"
 	{
-		"sv"		"Utkastad av administratören "
+		"sv"		"Utkastad av administratören"
 	}
 
 	"Changing map"
@@ -72,7 +72,7 @@
 
 	"See console for output"
 	{
-		"sv"		"Se consolen för utmatning. "
+		"sv"		"Se consolen för utmatning."
 	}
 
 	"Cannot target bot"
@@ -87,7 +87,7 @@
 
 	"No access to cvar"
 	{
-		"sv"		" Du har inte tillgång till denna cvar."
+		"sv"		"Du har inte tillgång till denna cvar."
 	}
 
 	"Value of cvar"
@@ -97,7 +97,7 @@
 
 	"Cvar changed"
 	{
-		"sv"		"Ändrade cvar \"{1}\" till \"{2}\". "
+		"sv"		"Ändrade cvar \"{1}\" till \"{2}\"."
 	}
 
 	"Config not found"
@@ -107,7 +107,7 @@
 
 	"Executed config"
 	{
-		"sv"		"Utför konfiguration \"{1}\". "
+		"sv"		"Utför konfiguration \"{1}\"."
 	}
 
 	"Admin cache refreshed"
@@ -177,12 +177,12 @@
 
 	"Failed to query database"
 	{
-		"sv"		"Misslyckade att förfråga databasen. "
+		"sv"		"Misslyckade att förfråga databasen."
 	}
 
 	"Invalid SteamID specified"
 	{
-		"sv"		"Du har specificerat ett ogiltigt Steam ID (måste börja med 'STEAM_:'). "
+		"sv"		"Du har specificerat ett ogiltigt Steam ID (måste börja med 'STEAM_:')."
 	}
 
 	"Reload admins"
