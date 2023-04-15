@@ -20,6 +20,11 @@
 		"pt_p"		"O fogo amigável está desligado."
 	}
 
+	"Friendly Fire Percent"
+	{
+		"pt_p"		"Fogo Amigo é {1}%."
+	}
+
 	"Current Map"
 	{
 		"pt_p"		"O mapa atual é {1}."

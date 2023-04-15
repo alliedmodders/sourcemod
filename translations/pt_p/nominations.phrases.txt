@@ -65,4 +65,9 @@
 		"pt_p"		"Sugerido"
 	}
 
+	"Map Not In Pool"
+	{
+		"pt_p"		"Mapa '{1}' não se encontra na lista de nomeações."
+	}
+
 }
