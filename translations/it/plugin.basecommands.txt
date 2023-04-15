@@ -129,5 +129,10 @@
 	{
 		"it"		"Seleziona una mappa"
 	}
+	
+	"Choose Config"
+	{
+		"en"			"Scegli una configurazione"
+	}
 
 }
