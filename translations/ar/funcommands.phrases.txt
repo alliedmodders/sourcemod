@@ -122,7 +122,7 @@
 
 	"Toggled beacon on target"
 	{
-		"ar"		"مارس تحديد الموقع على {1ç"
+		"ar"		"{1} مارس تحديد الموقع على"
 	}
 
 	"Toggled TimeBomb on target"
