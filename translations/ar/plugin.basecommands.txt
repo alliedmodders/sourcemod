@@ -32,7 +32,7 @@
 
 	"Permabanned player"
 	{
-		"ar"		"\لاعب فرض حظر دائم \"{1}""
+		"ar"		"حظر الاعب \"{1}\" من الدخول أبديا."
 	}
 
 	"Permabanned player reason"
@@ -47,7 +47,7 @@
 
 	"Banned player reason"
 	{
-		"ar"		"حظر اللاعب \"{1}\" لمدت {2} دقائق(السبب: {3})."
+		"ar"		"حظر اللاعب \"{1}\" لمدة {2} دقائق(السبب: {3})."
 	}
 
 	"Removed bans matching"
