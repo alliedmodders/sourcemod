@@ -669,9 +669,21 @@ static cell_t smn_KvRewind(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
 	}
 
-	while (pStk->pCurRoot.size() > 1)
+	// Older plugins do not have the clearHistory param
+	if (params[0] < 2 || params[2])
 	{
-		pStk->pCurRoot.pop();
+		while (pStk->pCurRoot.size() > 1)
+		{
+			pStk->pCurRoot.pop();
+		}
+	}
+	else
+	{
+		auto root = pStk->pCurRoot.begin();
+		if (root != pStk->pCurRoot.end())
+		{
+			pStk->pCurRoot.push(*root);
+		}
 	}
 
 	return 1;
