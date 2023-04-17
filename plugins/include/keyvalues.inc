@@ -272,9 +272,9 @@ methodmap KeyValues < Handle
 	//                        thus the state is as if KvGoBack() was called.
 	public native int DeleteThis();
 
-	// Sets the position back to the top node, optionally emptying the entire
-	// node traversal history.  This can be used instead of looping KvGoBack()
-	// if recursive iteration is not important.
+	// Sets the position back to the top node and clears the entire
+	// node traversal history (by default).  This can be used instead of looping
+	// KvGoBack() if recursive iteration is not important.
 	//
 	// @param kv            KeyValues Handle.
 	// @param clearHistory  If true, the entire node traversal stack is cleared.
