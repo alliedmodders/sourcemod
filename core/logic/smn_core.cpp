@@ -309,8 +309,13 @@ static int ParseTime(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid date/time string or time format.");
 	}
 
-	// Assuming "C" locale is localised not global, we don't need timegm() or _mkgmtime()
-	return mktime(&t);
+#if defined PLATFORM_WINDOWS
+	return _mkgmtime(&t);
+#elif defined PLATFORM_LINUX || defined PLATFORM_APPLE
+	return timegm(&t);
+#else
+	return pContext->ThrowNativeError("Platform has no implemented UTC conversion for std::tm to std::time_t");
+#endif
 }
 
 static cell_t GetPluginIterator(IPluginContext *pContext, const cell_t *params)
