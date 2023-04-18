@@ -397,7 +397,7 @@ native int GetTime(int bigStamp[2]={0,0});
  * Produces a date and/or time string value for a timestamp.
  *
  * See this URL for valid parameters:
- * http://cplusplus.com/reference/clibrary/ctime/strftime.html
+ * https://cplusplus.com/reference/ctime/strftime/
  *
  * Note that available parameters depends on support from your operating system.
  * In particular, ones highlighted in yellow on that page are not currently
@@ -415,7 +415,7 @@ native void FormatTime(char[] buffer, int maxlength, const char[] format, int st
  * Parses a string representing a date and/or time into a unix timestamp.
  *
  * See this URL for valid parameters:
- * http://cplusplus.com/reference/clibrary/ctime/strftime.html
+ * https://en.cppreference.com/w/cpp/io/manip/get_time
  *
  * Note that available parameters depends on support from your operating system.
  * In particular, ones highlighted in yellow on that page are not currently
