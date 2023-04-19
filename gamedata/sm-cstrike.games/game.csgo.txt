@@ -267,6 +267,10 @@
 	
 	"#default"
 	{
+		"Keys"
+		{
+			"MTUPatchSize"		"5000"
+		}
 		"Addresses"
 		{
 			// Offset from NET_SendPacket sig to MTU
