@@ -54,13 +54,13 @@ enum ObjectValueType
 	ObjectValueType_Vector,
 	ObjectValueType_VectorPtr,
 	ObjectValueType_CharPtr,
-	ObjectValueType_String
+	ObjectValueType_String,
 };
 
 enum ListenType
 {
 	ListenType_Created,
-	ListenType_Deleted
+	ListenType_Deleted,
 };
 
 enum ReturnType
@@ -76,7 +76,7 @@ enum ReturnType
 	ReturnType_Vector,
 	ReturnType_VectorPtr,
 	ReturnType_CBaseEntity,
-	ReturnType_Edict
+	ReturnType_Edict,
 };
 
 enum HookParamType
@@ -92,21 +92,21 @@ enum HookParamType
 	HookParamType_CBaseEntity,
 	HookParamType_ObjectPtr,
 	HookParamType_Edict,
-	HookParamType_Object
+	HookParamType_Object,
 };
 
 enum ThisPointerType
 {
 	ThisPointer_Ignore,
 	ThisPointer_CBaseEntity,
-	ThisPointer_Address
+	ThisPointer_Address,
 };
 
 enum HookType
 {
 	HookType_Entity,
 	HookType_GameRules,
-	HookType_Raw
+	HookType_Raw,
 };
 
 enum CallingConvention
@@ -124,7 +124,7 @@ enum CallingConvention
 enum HookMode
 {
 	Hook_Pre,                   /**< Callback will be executed BEFORE the original function. */
-	Hook_Post                   /**< Callback will be executed AFTER the original function. */
+	Hook_Post,                  /**< Callback will be executed AFTER the original function. */
 };
 
 enum MRESReturn
@@ -134,7 +134,7 @@ enum MRESReturn
 	MRES_Ignored,               /**< plugin didn't take any action */
 	MRES_Handled,               /**< plugin did something, but real function should still be called */
 	MRES_Override,              /**< call real function, but use my return value */
-	MRES_Supercede              /**< skip real function; use my return value */
+	MRES_Supercede,             /**< skip real function; use my return value */
 };
 
 enum DHookPassFlag
@@ -182,7 +182,7 @@ enum DHookRegister
 	DHookRegister_XMM7,
 
 	// 80-bit FPU registers
-	DHookRegister_ST0
+	DHookRegister_ST0,
 };
 
 typeset ListenCB
