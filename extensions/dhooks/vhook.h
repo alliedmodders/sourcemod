@@ -41,6 +41,7 @@
 
 enum CallingConvention
 {
+	CallConv_UNKNOWN = -1,
 	CallConv_CDECL,
 	CallConv_THISCALL,
 	CallConv_STDCALL,
@@ -116,6 +117,7 @@ enum ThisPointerType
 
 enum HookType
 {
+	HookType_Unknown = -1,
 	HookType_Entity,
 	HookType_GameRules,
 	HookType_Raw

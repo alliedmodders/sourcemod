@@ -213,7 +213,7 @@ SMCResult SignatureGameConfig::ReadSMC_KeyValue(const SMCStates *states, const c
 		}
 		else if (!strcmp(key, "callconv"))
 		{
-			CallingConvention callConv;
+			CallingConvention callConv = CallConv_UNKNOWN;
 
 			if (!strcmp(value, "cdecl"))
 				callConv = CallConv_CDECL;
@@ -250,7 +250,7 @@ SMCResult SignatureGameConfig::ReadSMC_KeyValue(const SMCStates *states, const c
 		}
 		else if (!strcmp(key, "hooktype"))
 		{
-			HookType hookType;
+			HookType hookType = HookType_Unknown;
 
 			if (!strcmp(value, "entity"))
 				hookType = HookType_Entity;
