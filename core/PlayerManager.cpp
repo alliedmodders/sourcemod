@@ -1148,7 +1148,7 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 	if (g_ConsoleDetours.IsEnabled())
 	{
 		cell_t res2 = g_ConsoleDetours.InternalDispatch(client, &cargs);
-		if (res2 >= Pl_Stop)
+		if (res2 >= Pl_Handled)
 		{
 			RETURN_META(MRES_SUPERCEDE);
 		}
