@@ -115,9 +115,9 @@ enum CallingConvention
 	CallConv_THISCALL,
 	CallConv_STDCALL,
 	CallConv_FASTCALL,
-	CallConv_INSTRUCTION, /**< Single instruction pre-hook. Be careful with instructions that are less than 6 bytes in length.
-							   If the instruction length is less than 6 bytes, then the next instruction(s) will be modified too.
-							   If any instruction within 6 bytes (excluding the hooked instruction) is a jump target, then don't hook.
+	CallConv_INSTRUCTION, /**< Single instruction pre-hook. Be careful with instructions that are less than 5 bytes in length.
+							   If the instruction length is less than 5 bytes, then the next instruction(s) will be modified too.
+							   If any instruction within 5 bytes (excluding the hooked instruction) is a jump target, then don't hook.
 							   In the graph view of IDA/Ghidra (default colors) there shouldn't be a blue or red line that leads to a node that is labeled (loc_/LAB_). */
 };
 
@@ -571,8 +571,9 @@ methodmap DynamicHook < DHookSetup
 // with a jump to our own code. This means that the signature used to find
 // the function address in the first place might not match anymore after a detour.
 // If you need to detour the same function in different plugins make sure to
-// wildcard \x2a the first 6 bytes of the signature to accommodate for the patched
-// jump introduced by the detour.
+// wildcard \x2a the first 5 bytes of the signature to accommodate for the patched
+// jump introduced by the detour. This is not necessary for plugins that use GameConfigs
+// because a cached copy of the libraries will be used for finding signatures instead.
 methodmap DynamicDetour < DHookSetup
 {
 	// Creates a detour.
