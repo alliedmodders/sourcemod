@@ -518,26 +518,6 @@ bool CHalfLife2::FindDataMapInfo(datamap_t *pMap, const char *offset, sm_datatab
 	return pDataTable->prop != nullptr;
 }
 
-void CHalfLife2::ClearDataTableCache()
-{
-	m_Maps.clear();
-}
-
-void CHalfLife2::ClearDataTableCache(datamap_t *pMap)
-{
-	m_Maps.removeIfExists(pMap);
-}
-
-void CHalfLife2::ClearSendPropCache()
-{
-	m_Classes.clear();
-}
-
-bool CHalfLife2::ClearSendPropCache(const char *classname)
-{
-	return m_Classes.remove(classname);
-}
-
 void CHalfLife2::SetEdictStateChanged(edict_t *pEdict, unsigned short offset)
 {
 #if SOURCE_ENGINE != SE_DARKMESSIAH
@@ -1595,10 +1575,23 @@ uint64_t CHalfLife2::GetServerSteamId64() const
 
 void CHalfLife2::RemoveDataTableCache(datamap_t *pMap)
 {
-	this->ClearDataTableCache(pMap);
+	if (pMap == nullptr)
+	{
+		m_Maps.clear();
+		return;
+	}
+
+	m_Maps.removeIfExists(pMap);
 }
 
 bool CHalfLife2::RemoveSendPropCache(const char *classname)
 {
-	return this->ClearSendPropCache(classname);
+	if (classname == nullptr)
+	{
+		m_Classes.clear();
+		return true;
+	}
+
+	return m_Classes.remove(classname);
 }
+

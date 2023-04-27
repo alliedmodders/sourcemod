@@ -353,19 +353,19 @@ namespace SourceMod
 		virtual uint64_t GetServerSteamId64() const =0;
 
 		/**
-		 * @brief Removes a datamap from the DataTable cache.
+		 * @brief Clears all, or removes a single datamap from the DataTable cache.
 		 *
-		 * @param pMap			datamap_t pointer.
+		 * @param pMap			NULL or datamap_t pointer.
 		 */
-		virtual void RemoveDataTableCache(datamap_t *pMap) =0;
+		virtual void RemoveDataTableCache(datamap_t *pMap = nullptr) =0;
 
 		/**
-		 * @brief Removes a class from the SendProp cache.
+		 * @brief Clears all, or removes a single class from the SendProp cache.
 		 *
-		 * @param classname		Entity class name.
+		 * @param classname		NULL pointer or entity class name.
 		 * @return				True if cache was found and removed.
 		 */
-		virtual bool RemoveSendPropCache(const char *classname) =0;
+		virtual bool RemoveSendPropCache(const char *classname = nullptr) =0;
 	};
 }
 
