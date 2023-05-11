@@ -31,21 +31,18 @@
  * Version: $Id$
  */
 
-void PrepareBan(int client, int target, int time, const char[] reason)
+void PrepareBan(int adminClient, int banTargetUserId, int time, const char[] reason)
 {
-	int originalTarget = GetClientOfUserId(playerinfo[client].banTargetUserId);
-
-	if (originalTarget != target)
+	if (adminClient == 0)
 	{
-		if (client == 0)
-		{
-			PrintToServer("[SM] %t", "Player no longer available");
-		}
-		else
-		{
-			PrintToChat(client, "[SM] %t", "Player no longer available");
-		}
+		PrintToServer("[SM] %t", "Player no longer available");
+		return;
+	}
 
+	int target = GetClientOfUserId(banTargetUserId);
+	if (target == 0)
+	{
+		PrintToChat(adminClient, "[SM] %t", "Player no longer available");
 		return;
 	}
 
@@ -56,34 +53,34 @@ void PrepareBan(int client, int target, int time, const char[] reason)
 	{
 		if (reason[0] == '\0')
 		{
-			ShowActivity(client, "%t", "Permabanned player", name);
+			ShowActivity(adminClient, "%t", "Permabanned player", name);
 		}
 		else
 		{
-			ShowActivity(client, "%t", "Permabanned player reason", name, reason);
+			ShowActivity(adminClient, "%t", "Permabanned player reason", name, reason);
 		}
 	}
 	else
 	{
 		if (reason[0] == '\0')
 		{
-			ShowActivity(client, "%t", "Banned player", name, time);
+			ShowActivity(adminClient, "%t", "Banned player", name, time);
 		}
 		else
 		{
-			ShowActivity(client, "%t", "Banned player reason", name, time, reason);
+			ShowActivity(adminClient, "%t", "Banned player reason", name, time, reason);
 		}
 	}
 
-	LogAction(client, target, "\"%L\" banned \"%L\" (minutes \"%d\") (reason \"%s\")", client, target, time, reason);
+	LogAction(adminClient, target, "\"%L\" banned \"%L\" (minutes \"%d\") (reason \"%s\")", adminClient, target, time, reason);
 
 	if (reason[0] == '\0')
 	{
-		BanClient(target, time, BANFLAG_AUTO, "Banned", "Banned", "sm_ban", client);
+		BanClient(target, time, BANFLAG_AUTO, "Banned", "Banned", "sm_ban", adminClient);
 	}
 	else
 	{
-		BanClient(target, time, BANFLAG_AUTO, reason, reason, "sm_ban", client);
+		BanClient(target, time, BANFLAG_AUTO, reason, reason, "sm_ban", adminClient);
 	}
 }
 
@@ -103,10 +100,17 @@ void DisplayBanTargetMenu(int client)
 
 void DisplayBanTimeMenu(int client)
 {
+	int target = GetClientOfUserId(playerinfo[client].banTargetUserId);
+	if (target == 0)
+	{
+		PrintToChat(client, "[SM] %t", "Player no longer available");
+		return;
+	}
+
 	Menu menu = new Menu(MenuHandler_BanTimeList);
 
 	char title[100];
-	Format(title, sizeof(title), "%T: %N", "Ban player", client, playerinfo[client].banTarget);
+	Format(title, sizeof(title), "%T: %N", "Ban player", client, target);
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
 
@@ -123,10 +127,17 @@ void DisplayBanTimeMenu(int client)
 
 void DisplayBanReasonMenu(int client)
 {
+	int target = GetClientOfUserId(playerinfo[client].banTargetUserId);
+	if (target == 0)
+	{
+		PrintToChat(client, "[SM] %t", "Player no longer available");
+		return;
+	}
+
 	Menu menu = new Menu(MenuHandler_BanReasonList);
 
 	char title[100];
-	Format(title, sizeof(title), "%T: %N", "Ban reason", client, playerinfo[client].banTarget);
+	Format(title, sizeof(title), "%T: %N", "Ban reason", client, target);
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
 	
@@ -201,8 +212,8 @@ public int MenuHandler_BanReasonList(Menu menu, MenuAction action, int param1, i
 			char info[64];
 			
 			menu.GetItem(param2, info, sizeof(info));
-			
-			PrepareBan(param1, playerinfo[param1].banTarget, playerinfo[param1].banTime, info);
+
+			PrepareBan(param1, playerinfo[param1].banTargetUserId, playerinfo[param1].banTime, info);
 		}
 	}
 
@@ -240,7 +251,6 @@ public int MenuHandler_BanPlayerList(Menu menu, MenuAction action, int param1, i
 		}
 		else
 		{
-			playerinfo[param1].banTarget = target;
 			playerinfo[param1].banTargetUserId = userid;
 			DisplayBanTimeMenu(param1);
 		}
@@ -264,12 +274,19 @@ public int MenuHandler_BanTimeList(Menu menu, MenuAction action, int param1, int
 	}
 	else if (action == MenuAction_Select)
 	{
-		char info[32];
+		if (GetClientOfUserId(playerinfo[param1].banTargetUserId) == 0)
+		{
+			PrintToChat(param1, "[SM] %t", "Player no longer available");
+		}
+		else
+		{
+			char info[32];
 
-		menu.GetItem(param2, info, sizeof(info));
-		playerinfo[param1].banTime = StringToInt(info);
+			menu.GetItem(param2, info, sizeof(info));
+			playerinfo[param1].banTime = StringToInt(info);
 
-		DisplayBanReasonMenu(param1);
+			DisplayBanReasonMenu(param1);
+		}
 	}
 
 	return 0;
@@ -318,7 +335,7 @@ public Action Command_Ban(int client, int args)
 	playerinfo[client].banTargetUserId = GetClientUserId(target);
 
 	int time = StringToInt(s_time);
-	PrepareBan(client, target, time, Arguments[len]);
+	PrepareBan(client, playerinfo[client].banTargetUserId, time, Arguments[len]);
 
 	return Plugin_Handled;
 }

@@ -51,7 +51,6 @@ public Plugin myinfo =
 TopMenu hTopMenu;
 
 enum struct PlayerInfo {
-	int banTarget;
 	int banTargetUserId;
 	int banTime;
 	int isWaitingForChatReason;
@@ -387,7 +386,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 	if(playerinfo[client].isWaitingForChatReason)
 	{
 		playerinfo[client].isWaitingForChatReason = false;
-		PrepareBan(client, playerinfo[client].banTarget, playerinfo[client].banTime, sArgs);
+		PrepareBan(client, playerinfo[client].banTargetUserId, playerinfo[client].banTime, sArgs);
 		return Plugin_Stop;
 	}
 
