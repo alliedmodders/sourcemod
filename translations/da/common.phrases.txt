@@ -230,4 +230,24 @@
 		"da"		"Af"
 	}
 
+	"Say all"
+	{
+		"da"		"(ALLE) {1}"
+	}
+	
+	"Chat admins"
+	{
+		"da"		"(ADMINS) {1}"
+	}
+	
+	"Chat to admins"
+	{
+		"da"		"(TIL ADMINS) {1}"
+	}
+	
+	"Private say to"
+	{
+		"da"		"(Privat til {1}) {2}"
+	}
+
 }

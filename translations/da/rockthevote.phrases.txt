@@ -22,7 +22,7 @@
 
 	"Already Voted"
 	{
-		"da"		"Du har allerede stemt på Rock The Vote."
+		"da"		"Du har allerede stemt på Rock The Vote. ({1} stemmer, {2} påkrævet)"
 	}
 
 	"Minimal Players Not Met"

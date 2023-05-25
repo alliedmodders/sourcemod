@@ -20,6 +20,11 @@
 		"da"		"Friendly Fire er slået fra."
 	}
 
+	"Friendly Fire Percent"
+	{
+		"da"		"Friendly Fire er {1}%."
+	}
+
 	"Current Map"
 	{
 		"da"		"Den nuværende bane er {1}."
