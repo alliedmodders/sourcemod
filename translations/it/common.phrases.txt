@@ -229,5 +229,24 @@
 	{
 		"it"		"No"
 	}
-
+	
+	"Say all"
+	{
+		"it"		"(TUTTI) {1}"
+	}
+	
+	"Chat admins"
+	{
+		"it"		"(AMMINISTRATORI) {1}"
+	}
+	
+	"Chat to admins"
+	{
+		"it"		"(AGLI AMMINISTRATORI) {1}"
+	}
+	
+	"Private say to"
+	{
+		"it"		"(Privato a {1}) {2}"
+	}
 }
