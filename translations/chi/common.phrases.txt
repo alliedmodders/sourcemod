@@ -229,5 +229,25 @@
 	{
 		"chi"		"关"
 	}
+	
+	"Say all"
+	{
+		"chi"		"(所有人) {1}"
+	}
+	
+	"Chat admins"
+	{
+		"chi"		"(管理员频道) {1}"
+	}
+
+	"Chat to admins"
+	{
+		"chi"		"(发送给管理员) {1}"
+	}
+
+	"Private say to"
+	{
+		"chi"		"(私聊给 {1}) {2}"
+	}
 
 }

@@ -32,7 +32,7 @@
 
 	"Map Nomination Changed"
 	{
-		"chi"		"{1} 将其所订改为了 {2}."
+		"chi"		"{1} 将其预定的地图改为了 {2}."
 	}
 
 	"Nominate Title"
@@ -42,7 +42,7 @@
 
 	"Can't Nominate Current Map"
 	{
-		"chi"		"您所选的图正是当前地图, 无法预订"
+		"chi"		"您所选的图正在游玩, 无法预订"
 	}
 
 	"Map in Exclude List"
@@ -65,4 +65,9 @@
 		"chi"		"已预订的地图"
 	}
 
+	"Map Not In Pool"
+	{
+		"chi"		"地图 '{1}' 未在预定地图池中."
+	}
+	
 }
