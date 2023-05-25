@@ -2,12 +2,12 @@
 {
 	"Invalid authtype"
 	{
-		"sv"		"Identifikations typ måste vara 'steam', 'namn', eller 'ip'. "
+		"sv"		"Identifikations typ måste vara 'steam', 'namn', eller 'ip'."
 	}
 
 	"Invalid immunity"
 	{
-		"sv"		"Immunitet måste vara ett positivt heltal. "
+		"sv"		"Immunitet måste vara ett positivt heltal."
 	}
 
 	"SQL Admin already exists"
@@ -32,12 +32,12 @@
 
 	"SQL Group already exists"
 	{
-		"sv"		"En grupp med det namnet finns redan. "
+		"sv"		"En grupp med det namnet finns redan."
 	}
 
 	"SQL Group added"
 	{
-		"sv"		"Gruppen har blivit tillagd i databasen. "
+		"sv"		"Gruppen har blivit tillagd i databasen."
 	}
 
 	"SQL Group deleted"
@@ -52,7 +52,7 @@
 
 	"SQL Admin groups reset"
 	{
-		"sv"		"Administratörsgrupperna har blivit återställda. "
+		"sv"		"Administratörsgrupperna har blivit återställda."
 	}
 
 	"SQL Group X not found"
@@ -72,7 +72,7 @@
 
 	"Added groups to user"
 	{
-		"sv"		"Framgångsrikt lagt till {1} grupper till den valda administratören. "
+		"sv"		"Framgångsrikt lagt till {1} grupper till den valda administratören."
 	}
 
 }
