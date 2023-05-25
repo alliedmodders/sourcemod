@@ -230,4 +230,24 @@
 		"pt_p"		"Desligado"
 	}
 
+	"Say all"
+	{
+		"pt_p"		"(TODOS) {1}"
+	}
+	
+	"Chat admins"
+	{
+		"pt_p"		"(ADMINS) {1}"
+	}
+	
+	"Chat to admins"
+	{
+		"pt_p"		"(PARA ADMINS) {1}"
+	}
+	
+	"Private say to"
+	{
+		"pt_p"		"(Privado para {1}) {2}"
+	}
+
 }

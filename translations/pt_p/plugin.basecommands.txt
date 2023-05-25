@@ -130,4 +130,9 @@
 		"pt_p"		"Escolhe um mapa"
 	}
 
+	"Choose Config"
+	{
+		"pt_p"		"Escolher Configuração"
+	}
+
 }
