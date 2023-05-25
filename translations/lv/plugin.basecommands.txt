@@ -132,7 +132,7 @@
 	
 	"Choose Config"
 	{
-		"lv"			"Izvēlies konfigurācijas failu"
+		"lv"		"Izvēlies konfigurācijas failu"
 	}
 
 }
