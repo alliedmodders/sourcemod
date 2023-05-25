@@ -20,6 +20,11 @@
 		"fi"		"Omien tulitus on pois päältä."
 	}
 
+	"Friendly Fire Percent"
+	{
+		"fi"		"Omien tulitus on {1}%."
+	}
+
 	"Current Map"
 	{
 		"fi"		"Tämänhetkinen kartta on {1}."
