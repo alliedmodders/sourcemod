@@ -316,7 +316,7 @@ IServerGameDLL *gamedll = NULL;				/**< IServerGameDLL pointer */
 /** Exposes the extension to Metamod */
 SMEXT_DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, const MetamodLoaderInfo *mli)
 {
-	return g_pExtensionIface;
+	return g_pExtensionIface->SDK_OnMetamodCreateInterface(mvi, mli);
 }
 
 bool SDKExtension::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late)
@@ -443,6 +443,11 @@ const char *SDKExtension::GetURL()
 const char *SDKExtension::GetVersion()
 {
 	return GetExtensionVerString();
+}
+
+METAMOD_PLUGIN *SDKExtension::SDK_OnMetamodCreateInterface(const MetamodVersionInfo *mvi, const MetamodLoaderInfo *mli)
+{
+	return this;
 }
 
 bool SDKExtension::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength, bool late)
