@@ -68,6 +68,6 @@
 	"Map Not In Pool"
 	{
 		"#format"	"{1:s}"
-		"en"		"Mapa '{1}' nie je v skupine nominácií."
+		"sk"		"Mapa '{1}' nie je v skupine nominácií."
 	}
 }
