@@ -307,6 +307,57 @@ static cell_t smn_TEReadNum(IPluginContext *pContext, const cell_t *params)
 	return val;
 }
 
+static cell_t smn_TEWriteEnt(IPluginContext *pContext, const cell_t *params)
+{
+	if (!g_TEManager.IsAvailable())
+	{
+		return pContext->ThrowNativeError("TempEntity System unsupported or not available, file a bug report");
+	}
+	if (!g_CurrentTE)
+	{
+		return pContext->ThrowNativeError("No TempEntity call is in progress");
+	}
+
+	char *prop;
+	pContext->LocalToString(params[1], &prop);
+
+	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(params[2]);
+	if (!pEntity && params[2] != -1)
+	{
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", gamehelpers->ReferenceToIndex(params[2]));
+	}
+
+	if (!g_CurrentTE->TE_SetEntDataEnt(prop, reinterpret_cast<IHandleEntity *>(pEntity)))
+	{
+		return pContext->ThrowNativeError("Temp entity property \"%s\" not found", prop);
+	}
+
+	return 1;
+}
+
+static cell_t smn_TEReadEnt(IPluginContext *pContext, const cell_t *params)
+{
+	if (!g_TEManager.IsAvailable())
+	{
+		return pContext->ThrowNativeError("TempEntity System unsupported or not available, file a bug report");
+	}
+	if (!g_CurrentTE)
+	{
+		return pContext->ThrowNativeError("No TempEntity call is in progress");
+	}
+
+	char *prop;
+	IHandleEntity *val;
+	pContext->LocalToString(params[1], &prop);
+
+	if (!g_CurrentTE->TE_GetEntDataEnt(prop, &val))
+	{
+		return pContext->ThrowNativeError("Temp entity property \"%s\" not found", prop);
+	}
+
+	return gamehelpers->EntityToBCompatRef(reinterpret_cast<CBaseEntity *>(val));
+}
+
 static cell_t smn_TE_WriteFloat(IPluginContext *pContext, const cell_t *params)
 {
 	if (!g_TEManager.IsAvailable())
@@ -547,6 +598,8 @@ sp_nativeinfo_t g_TENatives[] =
 	{"TE_Start",				smn_TEStart},
 	{"TE_WriteNum",				smn_TEWriteNum},
 	{"TE_ReadNum",				smn_TEReadNum},
+	{"TE_WriteEnt",				smn_TEWriteEnt},
+	{"TE_ReadEnt",				smn_TEReadEnt},
 	{"TE_WriteFloat",			smn_TE_WriteFloat},
 	{"TE_ReadFloat",			smn_TE_ReadFloat},
 	{"TE_WriteVector",			smn_TEWriteVector},

@@ -1,0 +1,98 @@
+"Phrases"
+{
+	"Initiated Vote Gravity"
+	{
+		"las"		"Votación para cambiar gravedad iniciada."
+	}
+
+	"Initiated Vote Burn"
+	{
+		"las"		"Votación para quemar a {1} iniciada."
+	}
+
+	"Initiated Vote Slay"
+	{
+		"las"		"Votación para matar a {1} iniciada."
+	}
+
+	"Initiated Vote Alltalk"
+	{
+		"las"		"Votación para alltalk iniciada."
+	}
+
+	"Initiated Vote FF"
+	{
+		"las"		"Votación para fuego amigo iniciada."
+	}
+
+	"Gravity Vote"
+	{
+		"las"		"Votar gravedad: {1}"
+	}
+
+	"Change Gravity To"
+	{
+		"las"		"Cambiar la gravedad a {1}?"
+	}
+
+	"Voteburn player"
+	{
+		"las"		"Quemar a {1}?"
+	}
+
+	"Voteslay Player"
+	{
+		"las"		"Matar a {1}?"
+	}
+
+	"Votealltalk Off"
+	{
+		"las"		"Desactivar alltalk? {1}"
+	}
+
+	"Votealltalk On"
+	{
+		"las"		"Activar alltalk? {1}"
+	}
+
+	"Voteff Off"
+	{
+		"las"		"Desactivar fuego amigo? {1}"
+	}
+
+	"Voteff On"
+	{
+		"las"		"Activar fuego amigo? {1}"
+	}
+
+	"Gravity vote"
+	{
+		"las"		"Votar gravedad"
+	}
+
+	"Vote FF"
+	{
+		"las"		"Votar FF"
+	}
+
+	"Burn vote"
+	{
+		"las"		"Votar quemar"
+	}
+
+	"Alltalk vote"
+	{
+		"las"		"Votar alltalk"
+	}
+
+	"Slay vote"
+	{
+		"las"		"Votar matar"
+	}
+
+	"Slayed player"
+	{
+		"las"		"'{1}' matado."
+	}
+
+}

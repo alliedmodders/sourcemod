@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"vi"		"Thiêu đốt người chơi"
+	}
+
+	"FireBomb player"
+	{
+		"vi"		"Dùng bom lửa lên người chơi"
+	}
+
+	"Freeze player"
+	{
+		"vi"		"Đóng băng người chơi"
+	}
+
+	"FreezeBomb player"
+	{
+		"vi"		"Dùng bom đóng băng lên người chơi"
+	}
+
+	"TimeBomb player"
+	{
+		"vi"		"Đặt bom đếm giờ vào người chơi"
+	}
+
+	"Beacon player"
+	{
+		"vi"		"Đặt đèn hiệu lên người chơi"
+	}
+
+	"NoClip player"
+	{
+		"vi"		"NoClip người chơi"
+	}
+
+	"Blind player"
+	{
+		"vi"		"Làm mù người chơi"
+	}
+
+	"Drug player"
+	{
+		"vi"		"Kích độc người chơi"
+	}
+
+	"Gravity player"
+	{
+		"vi"		"Trọng lực lên người chơi"
+	}
+
+	"Blind amount"
+	{
+		"vi"		"Mù đến mức nào?"
+	}
+
+	"Fully blind"
+	{
+		"vi"		"Hoàn toàn mù"
+	}
+
+	"Half blind"
+	{
+		"vi"		"Nửa mù"
+	}
+
+	"No blind"
+	{
+		"vi"		"Không mù"
+	}
+
+	"Gravity amount"
+	{
+		"vi"		"Mức độ trọng lực?"
+	}
+
+	"Gravity Very High"
+	{
+		"vi"		"Trọng lực rất cao"
+	}
+
+	"Gravity High"
+	{
+		"vi"		"Trọng lực cao"
+	}
+
+	"Gravity Normal"
+	{
+		"vi"		"Trọng lực bình thường"
+	}
+
+	"Gravity Low"
+	{
+		"vi"		"Trọng lực thấp"
+	}
+
+	"Gravity Very Low"
+	{
+		"vi"		"Trọng lực rất thấp"
+	}
+
+	"Set target on fire"
+	{
+		"vi"		"Đã đốt {1}."
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"vi"		"Đã bật/tắt bom lửa lên {1}."
+	}
+
+	"Froze target"
+	{
+		"vi"		"Đã đóng băng {1}."
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"vi"		"Đã bật/tắt bom đóng băng lên {1}."
+	}
+
+	"Toggled beacon on target"
+	{
+		"vi"		"Đã bật/tắt bom lửa lên {1}."
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"vi"		"Đã bật/tắt đèn hiệu lên {1}."
+	}
+
+	"Toggled noclip on target"
+	{
+		"vi"		"Đã bật tắt noclip lên {1}."
+	}
+
+	"Toggled drug on target"
+	{
+		"vi"		"Đã bật/tắt kích độc lên {1}."
+	}
+
+	"Set blind on target"
+	{
+		"vi"		"Đã làm mù {1}."
+	}
+
+	"Set gravity on target"
+	{
+		"vi"		"Đã thay đổi trọng lực của {1}."
+	}
+
+	"Till Explodes"
+	{
+		"vi"		"Còn {2} nữa thì {1} phát nổ."
+	}
+
+	"Unfrozen"
+	{
+		"vi"		"Bạn không còn bị đóng băng nữa."
+	}
+
+	"You will be unfrozen"
+	{
+		"vi"		"Bạn sẽ không còn bị đóng băng sau {1} giây nữa."
+	}
+
+}

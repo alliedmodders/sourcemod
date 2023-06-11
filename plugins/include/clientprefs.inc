@@ -132,6 +132,31 @@ methodmap Cookie < Handle {
 	// @param value         String value to set.
 	// @error               Invalid cookie handle or invalid client index.
 	public native void Set(int client, const char[] value);
+	
+	// Set the integer value of a Client preference cookie.
+	//
+	// @param client        Client index.
+	// @param value         Integer value to set.
+	// @error               Invalid cookie handle or invalid client index.
+	public void SetInt(int client, int value) {
+		char sValue[12];
+		IntToString(value, sValue, sizeof(sValue));
+		
+		this.Set(client, sValue);
+	}
+	
+	// Set the float value of a Client preference cookie.
+	//
+	// @param client        Client index.
+	// @param value         Float value to set.
+	// @error               Invalid cookie handle or invalid client index.
+	public void SetFloat(int client, float value) {
+		char sValue[32];
+		FloatToString(value, sValue, sizeof(sValue));
+		
+		this.Set(client, sValue);
+	}
+
 
 	// Retrieve the value of a Client preference cookie.
 	//
@@ -141,7 +166,43 @@ methodmap Cookie < Handle {
 	// @error               Invalid cookie handle or invalid client index.
 	public native void Get(int client, char[] buffer, int maxlen);
 
-	// Sets the value of a Client preference cookie based on an authID string.
+	// Retrieve the integer value of a Client preference cookie.
+	//
+	// @param client        Client index.
+	// @return              Integer value of cookie
+	// @error               Invalid cookie handle or invalid client index.
+	public int GetInt(int client, int defaultValue = 0)
+	{
+		char buffer[12];
+		this.Get(client, buffer, sizeof(buffer));
+
+		int value;
+		if (!StringToIntEx(buffer, value))
+		{
+			value = defaultValue;
+		}
+		return value;
+	}
+	
+	// Retrieve the float value of a Client preference cookie.
+	//
+	// @param client        Client index.
+	// @return              Float value of cookie
+	// @error               Invalid cookie handle or invalid client index.
+	public float GetFloat(int client, float defaultValue = 0.0)
+	{
+		char buffer[32];
+		this.Get(client, buffer, sizeof(buffer));
+
+		float value;
+		if (!StringToFloatEx(buffer, value))
+		{
+			value = defaultValue;
+		}
+		return value;
+	}
+	
+	// Set the value of a Client preference cookie based on an authID string.
 	//
 	// @param authID        String Auth/STEAM ID of player to set.
 	// @param value         String value to set.

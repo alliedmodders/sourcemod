@@ -67,7 +67,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 			|| StrEqual(game, "swarm", false)
 			|| StrEqual(game, "reactivedrop", false)
 			|| engine == Engine_Insurgency
-			|| engine == Engine_DOI)
+			|| engine == Engine_DOI
+			|| engine == Engine_MCV)
 	{
 		strcopy(error, err_max, "Nextmap is incompatible with this game");
 		return APLRes_SilentFailure;
@@ -190,11 +191,11 @@ public Action Command_MapHistory(int client, int args)
 	
 	int lastMapStartTime = g_CurrentMapStartTime;
 	
-	PrintToConsole(client, "Map History:\n");
-	PrintToConsole(client, "Map : Started : Played Time : Reason for ending");
+	PrintToConsole(client, "%t:\n", "Map History");
+	PrintToConsole(client, "%t : %t : %t : %t", "Map", "Started", "Played Time", "Reason");
 	
 	GetCurrentMap(mapName, sizeof(mapName));
-	PrintToConsole(client, "%02i. %s (Current Map)", 0, mapName);
+	PrintToConsole(client, "%02i. %s (%t)", 0, mapName, "Current Map");
 	
 	for (int i=0; i<mapCount; i++)
 	{

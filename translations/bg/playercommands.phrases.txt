@@ -1,0 +1,43 @@
+"Phrases"
+{
+	"Slap player"
+	{
+		"bg"		"Шамаросване на играч"
+	}
+
+	"Slap damage"
+	{
+		"bg"		"Щети на шамара"
+	}
+
+	"Slay player"
+	{
+		"bg"		"Убиване на играч"
+	}
+
+	"Slapped target"
+	{
+		"bg"		"{1} е шамаросан."
+	}
+
+	"Slayed target"
+	{
+		"bg"		"{1} е убит."
+	}
+
+	"Name changed"
+	{
+		"bg"		"Администратор Ви смени името."
+	}
+
+	"Renamed target"
+	{
+		"bg"		"{1} е преименуван."
+	}
+
+	"Rename player"
+	{
+		"bg"		"Преименуване на играч"
+	}
+
+}

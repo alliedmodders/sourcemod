@@ -20,7 +20,13 @@
 	{
 		"en"		"Friendly Fire is disabled."
 	}
-	
+
+	"Friendly Fire Percent"
+	{
+		"#format"	"{1:0.0f}"
+		"en"		"Friendly Fire is {1}%."
+	}
+
 	"Current Map"
 	{
 		"#format"		"{1:s}"

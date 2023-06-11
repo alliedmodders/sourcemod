@@ -36,27 +36,6 @@ require 'helpers.pm';
 #Switch to the output folder.
 chdir(Build::PathFormat('../../../OUTPUT/package'));
 
-print "Downloading languages.cfg...\n";
-# Don't check certificate. It will fail on the slaves and we're resolving to internal addressing anyway
-system('wget --no-check-certificate -q -O addons/sourcemod/configs/languages.cfg "https://sm.alliedmods.net/translator/index.php?go=translate&op=export_langs"');
-open(my $fh, '<', 'addons/sourcemod/configs/languages.cfg')
-    or die "Could not open languages.cfg' $!";
- 
-while (my $ln = <$fh>) {
-    if ($ln =~ /"([^"]+)"\s*"[^"]+.*\((\d+)\) /)
-    {
-	my $abbr = $1;
-	my $id = $2;
-
-	print "Downloading language pack $abbr.zip...\n";
-        # Don't check certificate. It will fail on the slaves and we're resolving to internal addressing anyway
-        system("wget --no-check-certificate -q -O $abbr.zip \"https://sm.alliedmods.net/translator/index.php?go=translate&op=export&lang_id=$id\"");
-        system("unzip -qo $abbr.zip -d addons/sourcemod/translations/");
-        unlink("$abbr.zip");
-    }
-}
-close($fh);
-
 unless (-e '../GeoLite2-City_20191217.tar')
 {
     print "Downloading GeoLite2-City.mmdb...\n";

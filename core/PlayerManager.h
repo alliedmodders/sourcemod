@@ -96,6 +96,7 @@ public:
 	bool IsInKickQueue();
 	IPlayerInfo *GetPlayerInfo();
 	unsigned int GetLanguageId();
+	unsigned int GetOriginalLanguageId();
 	void SetLanguageId(unsigned int id);
 	int GetUserId();
 	bool RunAdminCacheChecks();
@@ -145,13 +146,14 @@ private:
 	bool m_bAdminCheckSignalled = false;
 	int m_iIndex;
 	unsigned int m_LangId = SOURCEMOD_LANGUAGE_ENGLISH;
+	unsigned int m_OriginalLangId = SOURCEMOD_LANGUAGE_ENGLISH;
 	int m_UserId = -1;
 	bool m_bFakeClient = false;
 	bool m_bIsSourceTV = false;
 	bool m_bIsReplay = false;
 	serial_t m_Serial;
 	CSteamID m_SteamId;
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	QueryCvarCookie_t m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
 	std::deque<std::string> m_PrintfBuffer;
@@ -236,7 +238,7 @@ public:
 	{
 		return m_bInCCKVHook;
 	}
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	bool HandleConVarQuery(QueryCvarCookie_t cookie, int client, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue);
 #endif
 private:

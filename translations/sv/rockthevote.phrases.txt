@@ -1,0 +1,68 @@
+"Phrases"
+{
+	"Rock The Vote"
+	{
+		"sv"		"Rock The Vote:"
+	}
+
+	"RTV Not Allowed"
+	{
+		"sv"		"Rock the Vote är inte tillåtet ännu."
+	}
+
+	"RTV Started"
+	{
+		"sv"		"Rock the Vote har redan börjat."
+	}
+
+	"RTV Ended"
+	{
+		"sv"		"RTV är redan över, du kan inte starta det igen eller nominera kartor."
+	}
+
+	"Already Voted"
+	{
+		"sv"		"Du har redan röstat för Rock the Vote. ({1} röster, {2} krävs)"
+	}
+
+	"Minimal Players Not Met"
+	{
+		"sv"		"Antalet spelare som behövs har inte uppnåtts."
+	}
+
+	"RTV Requested"
+	{
+		"sv"		"{1} Vill rock the vote. ({2} röster, {3} krävs)"
+	}
+
+	"RTV Vote Ready"
+	{
+		"sv"		"Rocking the Vote!"
+	}
+
+	"Don't Change"
+	{
+		"sv"		"Behåll nuvarande karta."
+	}
+
+	"Selected Map"
+	{
+		"sv"		"{1} har valt {2}"
+	}
+
+	"No Votes"
+	{
+		"sv"		"Inga röstningar för Rock the Vote, behåller nuvarande karta."
+	}
+
+	"Current Map Stays"
+	{
+		"sv"		"Den nuvarande kartan behålls! Rock the Vote har talat!"
+	}
+
+	"Changing Maps"
+	{
+		"sv"		"Byter karta till {1}! Rock the vote har talat!"
+	}
+
+}

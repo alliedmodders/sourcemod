@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Cookie List"
+	{
+		"fi"		"Sourcemodin evästeluettelo"
+	}
+
+	"Printing Cookie List"
+	{
+		"fi"		"Kirjoitetaan evästeluetteloa konsoliin"
+	}
+
+	"Cookie not Found"
+	{
+		"fi"		"Evästettä \"{1}\" ei löytynyt"
+	}
+
+	"Cookie Value"
+	{
+		"fi"		"Evästeen {1} arvo on {2}"
+	}
+
+	"Protected Cookie"
+	{
+		"fi"		"Suojatun evästeen \"{1}\" arvoa ei voida muuttaa"
+	}
+
+	"Cookie Changed Value"
+	{
+		"fi"		"Vaihda evästeen \"{1}\" arvoksi \"{2}\""
+	}
+
+	"No Console"
+	{
+		"fi"		"Asetusvalikkoa ei voida näyttää konsolissa"
+	}
+
+	"Choose Option"
+	{
+		"fi"		"Valitse vaihtoehto"
+	}
+
+	"Client Settings"
+	{
+		"fi"		"Pelaajan asetukset"
+	}
+
+}

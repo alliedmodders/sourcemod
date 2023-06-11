@@ -1,0 +1,38 @@
+"Phrases"
+{
+	"Map History"
+	{
+		"tr"		"Harita Geçmişi"
+	}
+
+	"Map"
+	{
+		"tr"		"[Harita]"
+	}
+
+	"Started"
+	{
+		"tr"		"[Başladı]"
+	}
+
+	"Played Time"
+	{
+		"tr"		"[Oynanılan Zaman]"
+	}
+
+	"Reason"
+	{
+		"tr"		"[Bitme nedeni]"
+	}
+
+	"Current Map"
+	{
+		"tr"		"Geçerli Harita"
+	}
+
+	"ago"
+	{
+		"tr"		"zaman önce"
+	}
+
+}

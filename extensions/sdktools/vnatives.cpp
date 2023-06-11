@@ -163,10 +163,10 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 		char *pWeaponName;
 		pContext->LocalToString(params[2], &pWeaponName);
 
-		// Don't allow knives other than weapon_knife,  weapon_knifegg, and weapon_knife_t.
+		// Don't allow knives other than weapon_knife, weapon_knifegg, and weapon_knife_t.
 		// Others follow pattern weapon_knife_*
 		size_t len = strlen(pWeaponName);
-		if (len >= 14 && strnicmp(pWeaponName, "weapon_knife_", 13) == 0 && !(pWeaponName[13] == 't' && pWeaponName[14] == '\0'))
+		if ((len >= 14 && strnicmp(pWeaponName, "weapon_knife_", 13) == 0 && !(pWeaponName[13] == 't' && pWeaponName[14] == '\0')) || (len == 14 && stricmp(pWeaponName, "weapon_bayonet") == 0))
 		{
 			return pContext->ThrowNativeError("Blocked giving of %s due to core.cfg option FollowCSGOServerGuidelines", pWeaponName);
 		}
@@ -202,7 +202,7 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 
 	return gamehelpers->EntityToBCompatRef(pEntity);
 }
-#elif SOURCE_ENGINE == SE_BLADE
+#elif SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 class CEconItemView;
 static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 {
@@ -373,25 +373,39 @@ static cell_t IgniteEntity(IPluginContext *pContext, const cell_t *params)
 			{
 				return pContext->ThrowNativeError("\"Ignite\" not supported by this mod");
 			}
-			else if (!pCall) {
+			else if (!pCall)
+			{
 				return pContext->ThrowNativeError("\"Ignite\" wrapper failed to initialize");
 			}
 		}
 		else
 #endif // SDK2013
 		{
+#if SOURCE_ENGINE == SE_MCV
+			ValvePassInfo pass[6];
+			InitPass(pass[0], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
+			InitPass(pass[1], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+			InitPass(pass[2], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
+			InitPass(pass[3], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+			InitPass(pass[4], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
+			InitPass(pass[5], Valve_POD, PassType_Basic, PASSFLAG_BYVAL);
+			if (!CreateBaseCall("Ignite", ValveCall_Entity, NULL, pass, 6, &pCall)) {
+				return pContext->ThrowNativeError("\"Ignite\" not supported by this mod");
+			} else if (!pCall) {
+				return pContext->ThrowNativeError("\"Ignite\" wrapper failed to initialize");
+			}
+#else
 			ValvePassInfo pass[4];
 			InitPass(pass[0], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
 			InitPass(pass[1], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
 			InitPass(pass[2], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
 			InitPass(pass[3], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
-			if (!CreateBaseCall("Ignite", ValveCall_Entity, NULL, pass, 4, &pCall))
-			{
+			if (!CreateBaseCall("Ignite", ValveCall_Entity, NULL, pass, 4, &pCall)) {
 				return pContext->ThrowNativeError("\"Ignite\" not supported by this mod");
-			}
-			else if (!pCall) {
+			} else if (!pCall) {
 				return pContext->ThrowNativeError("\"Ignite\" wrapper failed to initialize");
 			}
+#endif // MCV
 		}
 	}
 
@@ -408,6 +422,9 @@ static cell_t IgniteEntity(IPluginContext *pContext, const cell_t *params)
 		*(int *) (vptr + pCall->vparams[4].offset) = 0;
 		*(int *) (vptr + pCall->vparams[5].offset) = 0;
 	}
+#elif SOURCE_ENGINE == SE_MCV
+	*(CBaseEntity **) (vptr + pCall->vparams[4].offset) = nullptr; // pAttacker
+	*(string_t *) (vptr + pCall->vparams[5].offset) = NULL_STRING; // sRootWeaponClassname
 #endif // SDK2013
 
 	FINISH_CALL_SIMPLE(NULL);
@@ -476,11 +493,19 @@ static cell_t TeleportEntity(IPluginContext *pContext, const cell_t *params)
 	static ValveCall *pCall = NULL;
 	if (!pCall)
 	{
-		ValvePassInfo pass[3];
+#if SOURCE_ENGINE >= SE_PORTAL2
+		constexpr size_t paramCount = 4;
+#else
+		constexpr size_t paramCount = 3;
+#endif
+		ValvePassInfo pass[paramCount];
 		InitPass(pass[0], Valve_Vector, PassType_Basic, PASSFLAG_BYVAL, VDECODE_FLAG_ALLOWNULL);
 		InitPass(pass[1], Valve_QAngle, PassType_Basic, PASSFLAG_BYVAL, VDECODE_FLAG_ALLOWNULL);
 		InitPass(pass[2], Valve_Vector, PassType_Basic, PASSFLAG_BYVAL, VDECODE_FLAG_ALLOWNULL);
-		if (!CreateBaseCall("Teleport", ValveCall_Entity, NULL, pass, 3, &pCall))
+#if SOURCE_ENGINE >= SE_PORTAL2
+		InitPass(pass[3], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+#endif
+		if (!CreateBaseCall("Teleport", ValveCall_Entity, NULL, pass, paramCount, &pCall))
 		{
 			return pContext->ThrowNativeError("\"Teleport\" not supported by this mod");
 		} else if (!pCall) {
@@ -493,6 +518,11 @@ static cell_t TeleportEntity(IPluginContext *pContext, const cell_t *params)
 	DECODE_VALVE_PARAM(2, vparams, 0);
 	DECODE_VALVE_PARAM(3, vparams, 1);
 	DECODE_VALVE_PARAM(4, vparams, 2);
+
+#if SOURCE_ENGINE >= SE_PORTAL2
+	*(bool *)(vptr + pCall->vparams[3].offset) = true;
+#endif
+
 	FINISH_CALL_SIMPLE(NULL);
 
 	return 1;
@@ -516,19 +546,23 @@ static cell_t ForcePlayerSuicide(IPluginContext *pContext, const cell_t *params)
 			return pContext->ThrowNativeError("\"CommitSuicide\" wrapper failed to initialize");
 		}
 	}
-	bool bForce = false;
-	if (!strcmp(g_pSM->GetGameFolderName(), "zps"))
-	{
-		// ZPS requires force to be set as true otherwise the action itself is delayed.
-		// Which affects Slay and Timebomb.
-		bForce = true;
-	}
 
 	START_CALL();
 	DECODE_VALVE_PARAM(1, thisinfo, 0);
-	*(bool *)(vptr + pCall->vparams[0].offset) = false;
-	*(bool *)(vptr + pCall->vparams[1].offset) = bForce;
+
+	if (params[0] >= 2)
+	{
+		DECODE_VALVE_PARAM(2, vparams, 0);
+	}
+	else
+	{
+		*(bool *)(vptr + pCall->vparams[0].offset) = false;
+	}
+	
+	*(bool *)(vptr + pCall->vparams[1].offset) = true;
+
 	FINISH_CALL_SIMPLE(NULL);
+
 	return 1;
 }
 #else
@@ -727,7 +761,7 @@ static cell_t SlapPlayer(IPluginContext *pContext, const cell_t *params)
 			rf.SetToReliable(true);
 			rf.Initialize(player_list, total_players);
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 			engsound->EmitSound(rf, params[1], CHAN_AUTO, sound_name, VOL_NORM, ATTN_NORM, 0, PITCH_NORM, 0, &pos);
 #elif SOURCE_ENGINE < SE_PORTAL2
 			engsound->EmitSound(rf, params[1], CHAN_AUTO, sound_name, VOL_NORM, ATTN_NORM, 0, PITCH_NORM, &pos);
@@ -921,7 +955,8 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 	|| SOURCE_ENGINE == SE_BMS     \
 	|| SOURCE_ENGINE == SE_SDK2013 \
 	|| SOURCE_ENGINE == SE_BLADE   \
-	|| SOURCE_ENGINE == SE_NUCLEARDAWN
+	|| SOURCE_ENGINE == SE_NUCLEARDAWN \
+	|| SOURCE_ENGINE == SE_PVKII
 
 	static bool bHasServerTools3 = !!g_SMAPI->GetServerFactory(false)("VSERVERTOOLS003", nullptr);
 	if (bHasServerTools3)
@@ -1015,7 +1050,7 @@ static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 
 	char *classname;
 	pContext->LocalToString(params[1], &classname);
-#if SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_BLADE
+#if SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_BLADE && SOURCE_ENGINE != SE_MCV
 	CBaseEntity *pEntity = (CBaseEntity *)servertools->CreateEntityByName(classname);
 #else
 	CBaseEntity *pEntity = (CBaseEntity *)servertools->CreateItemEntityByName(classname);

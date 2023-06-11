@@ -1,0 +1,33 @@
+"Phrases"
+{
+	"SM help commands"
+	{
+		"ar"		"مساعدة SourceMod: معلومات الامر"
+	}
+
+	"No description available"
+	{
+		"ar"		"لا وصف موجود"
+	}
+
+	"No commands available"
+	{
+		"ar"		"لا اوامر موجودة"
+	}
+
+	"Type sm_help to see more"
+	{
+		"ar"		"اكتب sm_help {1} لترى المزيد من الاوامر"
+	}
+
+	"Entries n - m in page k"
+	{
+		"ar"		"جزء {1} - {2} في الصفحة {3} "
+	}
+
+	"No matching results found"
+	{
+		"ar"		"لم يتم العثور على نتائج مطابقه"
+	}
+
+}

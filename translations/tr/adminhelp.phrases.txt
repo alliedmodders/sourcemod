@@ -1,0 +1,33 @@
+"Phrases"
+{
+	"SM help commands"
+	{
+		"tr"		"SourceMod Yardımı: Komut Bilgisi"
+	}
+
+	"No description available"
+	{
+		"tr"		"Açıklama mevcut değil"
+	}
+
+	"No commands available"
+	{
+		"tr"		"Komut mevcut değil"
+	}
+
+	"Type sm_help to see more"
+	{
+		"tr"		"Daha fazla komut görmek için sm_help {1} yazın"
+	}
+
+	"Entries n - m in page k"
+	{
+		"tr"		"{3}. sayfadaki {1} - {2} arası girişler"
+	}
+
+	"No matching results found"
+	{
+		"tr"		"Eşleşen sonuç bulunamadı"
+	}
+
+}

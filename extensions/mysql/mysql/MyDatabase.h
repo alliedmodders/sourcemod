@@ -70,7 +70,7 @@ public:
 	const DatabaseInfo &GetInfo();
 private:
 	MYSQL *m_mysql;
-	std::mutex m_FullLock;
+	std::recursive_mutex m_FullLock;
 
 	/* ---------- */
 	DatabaseInfo m_Info;

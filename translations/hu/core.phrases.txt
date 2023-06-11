@@ -1,0 +1,88 @@
+"Phrases"
+{
+	"No Access"
+	{
+		"hu"		"Nincs hozzáférési jogod!"
+	}
+
+	"Back"
+	{
+		"hu"		"Vissza"
+	}
+
+	"Next"
+	{
+		"hu"		"Következő"
+	}
+
+	"Exit"
+	{
+		"hu"		"Kilépés"
+	}
+
+	"Previous"
+	{
+		"hu"		"Elöző"
+	}
+
+	"all players"
+	{
+		"hu"		"Mindenkit"
+	}
+
+	"all humans"
+	{
+		"hu"		"minden embert"
+	}
+
+	"all bots"
+	{
+		"hu"		"minden Bot-ot"
+	}
+
+	"all dead players"
+	{
+		"hu"		"minden halottat"
+	}
+
+	"all alive players"
+	{
+		"hu"		"minden élőt"
+	}
+
+	"_s"
+	{
+		"hu"		"{1}"
+	}
+
+	"all spectators"
+	{
+		"hu"		"minden nézőt"
+	}
+
+	"Vote Count"
+	{
+		"hu"		"Szavazatok: {1}/{2}, {3} még hátra"
+	}
+
+	"Voted For"
+	{
+		"hu"		"{1} szavazott {2}-ra"
+	}
+
+	"Changed Vote"
+	{
+		"hu"		"{1} meváltoztatta a szavazatát {2}-ra"
+	}
+
+	"No Vote"
+	{
+		"hu"		"Tartózkodom"
+	}
+
+	"Name Reserved"
+	{
+		"hu"		"A neved a SourceMod védi ezen a szerveren, használathoz állítsd be a jelszavad."
+	}
+
+}

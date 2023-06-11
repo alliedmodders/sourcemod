@@ -177,7 +177,7 @@ SH_DECL_MANUALHOOK1_void(StartTouch, 0, 0, 0, CBaseEntity *);
 SH_DECL_MANUALHOOK0_void(Think, 0, 0, 0);
 SH_DECL_MANUALHOOK1_void(Touch, 0, 0, 0, CBaseEntity *);
 #if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_PVKII
 SH_DECL_MANUALHOOK4_void(TraceAttack, 0, 0, 0, CTakeDamageInfoHack &, const Vector &, CGameTrace *, CDmgAccumulator *);
 #else
 SH_DECL_MANUALHOOK3_void(TraceAttack, 0, 0, 0, CTakeDamageInfoHack &, const Vector &, CGameTrace *);
@@ -230,10 +230,15 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	if (!entListeners)
 	{
 		g_pSM->Format(error, maxlength, "Failed to setup entity listeners");
+#if SOURCE_ENGINE != SE_MOCK
 		return false;
+#endif
+	}
+	else
+	{
+		entListeners->AddToTail(this);
 	}
 
-	entListeners->AddToTail(this);
 
 	sharesys->AddDependency(myself, "bintools.ext", true, true);
 	sharesys->AddNatives(myself, g_Natives);
@@ -367,7 +372,10 @@ void SDKHooks::SDK_OnUnload()
 	sharesys->DropCapabilityProvider(myself, this, "SDKHook_LogicalEntSupport");
 
 	CUtlVector<IEntityListener *> *entListeners = EntListeners();
-	entListeners->FindAndRemove(this);
+	if (entListeners)
+	{
+		entListeners->FindAndRemove(this);
+	}
 
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 }
@@ -1046,7 +1054,7 @@ int SDKHooks::Hook_GetMaxHealth()
 
 		int new_max = original_max;
 
-		cell_t res = Pl_Continue;
+		cell_t ret = Pl_Continue;
 
 		std::vector<IPluginFunction *> callbackList;
 		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
@@ -1055,10 +1063,20 @@ int SDKHooks::Hook_GetMaxHealth()
 			IPluginFunction *callback = callbackList[entry];
 			callback->PushCell(entity);
 			callback->PushCellByRef(&new_max);
+
+			cell_t res;
 			callback->Execute(&res);
+
+			if (res > ret)
+			{
+				ret = res;
+			}
 		}
 
-		if (res >= Pl_Changed)
+		if (ret >= Pl_Handled)
+			RETURN_META_VALUE(MRES_SUPERCEDE, original_max);
+
+		if (ret >= Pl_Changed)
 			RETURN_META_VALUE(MRES_SUPERCEDE, new_max);
 
 		break;
@@ -1383,7 +1401,7 @@ void SDKHooks::Hook_Spawn()
 		}
 
 		int entity = gamehelpers->EntityToBCompatRef(pEntity);
-		cell_t res = Pl_Continue;
+		cell_t ret = Pl_Continue;
 
 		std::vector<IPluginFunction *> callbackList;
 		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
@@ -1391,10 +1409,17 @@ void SDKHooks::Hook_Spawn()
 		{
 			IPluginFunction *callback = callbackList[entry];
 			callback->PushCell(entity);
+
+			cell_t res;
 			callback->Execute(&res);
+
+			if (res > ret)
+			{
+				ret = res;
+			}
 		}
 
-		if (res >= Pl_Handled)
+		if (ret >= Pl_Handled)
 			RETURN_META(MRES_SUPERCEDE);
 
 		break;
@@ -1455,7 +1480,7 @@ void SDKHooks::Hook_TouchPost(CBaseEntity *pOther)
 }
 
 #if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_PVKII
 void SDKHooks::Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator)
 #else
 void SDKHooks::Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr)
@@ -1536,7 +1561,7 @@ void SDKHooks::Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir,
 }
 
 #if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_PVKII
 void SDKHooks::Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator)
 #else
 void SDKHooks::Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr)
@@ -1605,7 +1630,14 @@ void SDKHooks::Hook_Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 			callback->PushCell(caller);
 			callback->PushCell(useType);
 			callback->PushFloat(value);
-			callback->Execute(&ret);
+
+			cell_t res;
+			callback->Execute(&res);
+
+			if (res > ret)
+			{
+				ret = res;
+			}
 		}
 
 		if (ret >= Pl_Handled)

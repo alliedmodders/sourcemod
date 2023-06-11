@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Slot reserved"
+	{
+		"lt"		"Išmestas dėl vietų rezervacijos"
+	}
+
+}

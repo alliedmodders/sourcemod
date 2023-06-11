@@ -4,44 +4,57 @@ import os
 project = builder.LibraryProject('sourcemod')
 
 project.sources += [
+  'MenuStyle_Valve.cpp',
+  'logic_bridge.cpp',
+  'smn_entities.cpp',
+  'sm_stringutil.cpp',
+  'MenuVoting.cpp',
+  'smn_events.cpp',
+  'frame_hooks.cpp',
+  'smn_nextmap.cpp',
+  'sourcemm_api.cpp',
   'ChatTriggers.cpp',
+  'smn_player.cpp',
+  'sourcemod.cpp',
+  'concmd_cleaner.cpp',
+  'HalfLife2.cpp',
+  'NextMap.cpp',
   'ConCmdManager.cpp',
   'ConVarManager.cpp',
-  'ConsoleDetours.cpp',
-  'CoreConfig.cpp',
-  'EventManager.cpp',
-  'GameHooks.cpp',
-  'HalfLife2.cpp',
-  'Logger.cpp',
-  'MenuManager.cpp',
-  'MenuStyle_Base.cpp',
-  'MenuStyle_Radio.cpp',
-  'MenuStyle_Valve.cpp',
-  'MenuVoting.cpp',
-  'NextMap.cpp',
   'PlayerManager.cpp',
   'TimerSys.cpp',
-  'UserMessages.cpp',
-  'concmd_cleaner.cpp',
-  'frame_hooks.cpp',
-  'logic_bridge.cpp',
-  'pb_handle.cpp',
-  'sm_autonatives.cpp',
-  'sm_stringutil.cpp',
-  'smn_commandline.cpp',
-  'smn_console.cpp',
-  'smn_entities.cpp',
-  'smn_events.cpp',
+  'CoreConfig.cpp',
+  'Logger.cpp',
   'smn_halflife.cpp',
+  'smn_console.cpp',
+  'UserMessages.cpp',
+  'MenuManager.cpp',
   'smn_hudtext.cpp',
-  'smn_keyvalues.cpp',
-  'smn_nextmap.cpp',
-  'smn_player.cpp',
   'smn_usermsgs.cpp',
+  'MenuStyle_Base.cpp',
+  'smn_keyvalues.cpp',
   'smn_vector.cpp',
-  'sourcemm_api.cpp',
-  'sourcemod.cpp',
+  'EventManager.cpp',
+  'MenuStyle_Radio.cpp',
+  'sm_autonatives.cpp',
+  'ConsoleDetours.cpp',
+  'smn_commandline.cpp',
+  'GameHooks.cpp',
 ]
+
+# SDK name to shipping gamedir
+pb_gamedir_map = {
+  'csgo': 'csgo',
+  'blade': 'berimbau',
+  'mcv': 'vietnam',
+}
+
+# SDK name to source code gamedir
+pb_gamesrcdir_map = {
+  'csgo': 'cstrike15',
+  'blade': 'berimbau',
+  'mcv': 'vietnam',
+}
 
 for sdk_name in SM.sdks:
   sdk = SM.sdks[sdk_name]
@@ -59,27 +72,19 @@ for sdk_name in SM.sdks:
       builder.sourcePath
     ]
 
-    pb_includes = []
-    if sdk.name == 'csgo':
-      pb_includes = [
+    if sdk.name in ['csgo', 'blade', 'mcv']:
+      compiler.cxxincludes += [
         os.path.join(sdk.path, 'common', 'protobuf-2.5.0', 'src'),
         os.path.join(sdk.path, 'public', 'engine', 'protobuf'),
-        os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf')
+        os.path.join(sdk.path, 'public', 'game', 'shared', pb_gamedir_map[sdk.name], 'protobuf')
       ]
-    elif sdk.name == 'blade':
-      pb_includes = [
-        os.path.join(sdk.path, 'common', 'protobuf-2.5.0', 'src'),
-        os.path.join(sdk.path, 'public', 'engine', 'protobuf'),
-        os.path.join(sdk.path, 'public', 'game', 'shared', 'berimbau', 'protobuf')
-      ]
-    compiler.cxxincludes += pb_includes
-
+    
     if compiler.like('msvc'):
       compiler.defines += ['_ALLOW_KEYWORD_MACROS']
     if cxx.target.platform == 'linux':
       compiler.postlink += ['-lpthread', '-lrt']
 
-    if sdk.name in ['csgo', 'blade']:
+    if sdk.name in ['csgo', 'blade', 'mcv']:
       if compiler.target.platform == 'linux':
         if compiler.target.arch == 'x86':
           lib_path = os.path.join(sdk.path, 'lib', 'linux32', 'release', 'libprotobuf.a')
@@ -88,9 +93,9 @@ for sdk_name in SM.sdks:
         compiler.linkflags += ['-Wl,--exclude-libs=libprotobuf.a']
       elif compiler.target.platform == 'mac':
         if compiler.target.arch == 'x86':
-          lib_path = os.path.join(sdk.path, 'lib', 'osx32', 'release', 'libprotobuf-libcxx.a')
+          lib_path = os.path.join(sdk.path, 'lib', 'osx32', 'release', 'libprotobuf.a')
         elif compiler.target.arch == 'x86_64':
-          lib_path = os.path.join(sdk.path, 'lib', 'osx64', 'release', 'libprotobuf-libcxx.a')
+          lib_path = os.path.join(sdk.path, 'lib', 'osx64', 'release', 'libprotobuf.a')
       elif compiler.target.platform == 'windows':
         msvc_ver = compiler.version
         vs_year = ''
@@ -111,7 +116,7 @@ for sdk_name in SM.sdks:
           lib_path = os.path.join(sdk.path, 'lib', platform, 'release', 'vs' + vs_year, 'libprotobuf.lib')
       compiler.linkflags.insert(0, lib_path)
   
-    if sdk.name in ['csgo', 'blade']:
+    if sdk.name in ['csgo', 'blade', 'mcv']:
       binary.sources += ['smn_protobuf.cpp']
     else:
       binary.sources += ['smn_bitbuffer.cpp']
@@ -121,53 +126,17 @@ for sdk_name in SM.sdks:
         'vprof_tool.cpp',
       ]
 
-    pb_sources = []
-    if sdk.name == 'csgo':
-      pb_sources = [
+    if sdk.name in ['csgo', 'blade', 'mcv']:
+      binary.sources += [
         os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'netmessages.pb.cc'),
-        os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessages.pb.cc'),
-        os.path.join(sdk.path, 'public', 'game', 'shared', 'csgo', 'protobuf', 'cstrike15_usermessage_helpers.cpp'),
+        os.path.join(sdk.path, 'public', 'game', 'shared', pb_gamedir_map[sdk.name], 'protobuf', pb_gamesrcdir_map[sdk.name] + '_usermessages.pb.cc'),
+        os.path.join(sdk.path, 'public', 'game', 'shared', pb_gamedir_map[sdk.name], 'protobuf', pb_gamesrcdir_map[sdk.name] + '_usermessage_helpers.cpp'),
       ]
-    elif sdk.name == 'blade':
-      pb_sources = [
-        os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'netmessages.pb.cc'),
-        os.path.join(sdk.path, 'public', 'game', 'shared', 'berimbau', 'protobuf', 'berimbau_usermessages.pb.cc'),
-        os.path.join(sdk.path, 'public', 'game', 'shared', 'berimbau', 'protobuf', 'berimbau_usermessage_helpers.cpp'),
-      ]
-    if len(pb_sources):
-      binary.sources += pb_sources
-      binary.compiler.cxxdefines += ['PROTOBUF_ENABLE']
-
-    if cxx.target.platform == 'mac' and sdk.name in ['csgo']:
-      # We need a proxy library since the game uses libstdc++.
-      pb_binary = SM.HL2Library(builder, cxx, 'pbproxy.' + sdk.ext, sdk)
-      pb_binary.sources += pb_sources
-      pb_binary.sources += ['pb_proxy.cpp']
-      pb_binary.compiler.cxxincludes += pb_includes
-
-      # Switch from libc++ to libstdc++.
-      pb_binary.compiler.cxxflags.remove('-stdlib=libc++')
-      pb_binary.compiler.linkflags.remove('-lc++')
-      pb_binary.compiler.linkflags.remove('-stdlib=libc++')
-      pb_binary.compiler.cxxflags.append('-stdlib=libstdc++')
-      pb_binary.compiler.linkflags.append('-lstdc++')
-      pb_binary.compiler.linkflags.append('-stdlib=libstdc++')
-      if '-std=c++1y' in pb_binary.compiler.cxxflags:
-        pb_binary.compiler.cxxflags.remove('-std=c++1y')
-      elif '-std=c++14' in pb_binary.compiler.cxxflags:
-        pb_binary.compiler.cxxflags.remove('-std=c++14')
-
-      if cxx.target.arch == 'x86':
-        pb_lib_path = os.path.join(sdk.path, 'lib', 'osx32', 'release', 'libprotobuf.a')
-      elif cxx.target.arch == 'x86_64':
-        pb_lib_path = os.path.join(sdk.path, 'lib', 'osx64', 'release', 'libprotobuf.a')
-      pb_binary.compiler.linkflags.append(pb_lib_path)
-
-      SM.binaries += [builder.Add(pb_binary)]
-
-      binary.compiler.cxxdefines += [
-          'PROTOBUF_PROXY_ENABLE',
-          'PROTOBUF_PROXY_BINARY_NAME="pbproxy.{}"'.format(sdk.ext),
-      ]
+      if sdk.name == 'mcv':
+        binary.sources += [
+          os.path.join(sdk.path, 'public', 'game', 'shared', pb_gamedir_map[sdk.name], 'protobuf', pb_gamesrcdir_map[sdk.name] + '_gcmessages.pb.cc'),
+          os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'engine_gcmessages.pb.cc'),
+        ]
 
 SM.binaries += builder.Add(project)
+

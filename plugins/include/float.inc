@@ -98,6 +98,19 @@ native float FloatAdd(float oper1, float oper2);
 native float FloatSub(float oper1, float oper2);
 
 /**
+ * Returns the modulus of oper1 and oper2.
+ *
+ * Note: This native is internal implementation. For modulo use the '%' operator.
+ *
+ * @param oper1         First value.
+ * @param oper2         Second value.
+ * @return              oper1%oper2.
+ * @deprecated          This native is internal implementation. For modulo use the '%' operator.
+ */
+#pragma deprecated This native is internal implementation. For modulo use the '%' operator.
+native float FloatMod(float oper1, float oper2);
+
+/**
  * Returns the decimal part of a float.
  *
  * @param value         Input value.
@@ -269,6 +282,7 @@ native float __FLOAT_MUL__(float a, float b) = FloatMul;
 native float __FLOAT_DIV__(float a, float b) = FloatDiv;
 native float __FLOAT_ADD__(float a, float b) = FloatAdd;
 native float __FLOAT_SUB__(float a, float b) = FloatSub;
+native float __FLOAT_MOD__(float a, float b) = FloatMod;
 
 native bool __FLOAT_GT__(float a, float b);
 native bool __FLOAT_GE__(float a, float b);
@@ -282,6 +296,7 @@ native float operator*(float oper1, float oper2) = FloatMul;
 native float operator/(float oper1, float oper2) = FloatDiv;
 native float operator+(float oper1, float oper2) = FloatAdd;
 native float operator-(float oper1, float oper2) = FloatSub;
+native float operator%(float oper1, float oper2) = FloatMod;
 native bool operator!(float oper1) = __FLOAT_NOT__;
 native bool operator>(float oper1, float oper2) = __FLOAT_GT__;
 native bool operator>=(float oper1, float oper2) = __FLOAT_GE__;
@@ -387,12 +402,15 @@ stock bool operator<=(int oper1, float oper2)
 	return __FLOAT_LE__(float(oper1), oper2);
 }
 
-/**
- * Forbidden operators.
- */
-forward operator%(float oper1, float oper2);
-forward operator%(float oper1, int oper2);
-forward operator%(int oper1, float oper2);
+stock float operator%(float oper1, int oper2)
+{
+	return __FLOAT_MOD__(oper1, float(oper2));
+}
+
+stock float operator%(int oper1, float oper2)
+{
+	return __FLOAT_MOD__(float(oper1), oper2);
+}
 #endif // __sourcepawn2__
 
 #define FLOAT_PI 3.1415926535897932384626433832795

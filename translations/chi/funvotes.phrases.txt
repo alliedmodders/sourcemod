@@ -1,0 +1,98 @@
+"Phrases"
+{
+	"Initiated Vote Gravity"
+	{
+		"chi"		"发起重力投票."
+	}
+
+	"Initiated Vote Burn"
+	{
+		"chi"		"发起烧烤 {1} 的投票."
+	}
+
+	"Initiated Vote Slay"
+	{
+		"chi"		"发起处死 {1} 的投票."
+	}
+
+	"Initiated Vote Alltalk"
+	{
+		"chi"		"发起开启全局语音通讯的投票."
+	}
+
+	"Initiated Vote FF"
+	{
+		"chi"		"发起友军伤害投票"
+	}
+
+	"Gravity Vote"
+	{
+		"chi"		"重力投票: {1}"
+	}
+
+	"Change Gravity To"
+	{
+		"chi"		"更改重力为 {1}?"
+	}
+
+	"Voteburn player"
+	{
+		"chi"		"烧烤玩家 {1}?"
+	}
+
+	"Voteslay Player"
+	{
+		"chi"		"处死 {1}?"
+	}
+
+	"Votealltalk Off"
+	{
+		"chi"		"关闭全局语音通讯? {1}"
+	}
+
+	"Votealltalk On"
+	{
+		"chi"		"开启全局语音通讯? {1}"
+	}
+
+	"Voteff Off"
+	{
+		"chi"		"关闭友军伤害? {1}"
+	}
+
+	"Voteff On"
+	{
+		"chi"		"开启友军伤害? {1}"
+	}
+
+	"Gravity vote"
+	{
+		"chi"		"重力投票"
+	}
+
+	"Vote FF"
+	{
+		"chi"		"队友伤害投票"
+	}
+
+	"Burn vote"
+	{
+		"chi"		"烧烤投票"
+	}
+
+	"Alltalk vote"
+	{
+		"chi"		"全局语音投票"
+	}
+
+	"Slay vote"
+	{
+		"chi"		"处死投票"
+	}
+
+	"Slayed player"
+	{
+		"chi"		"处死了玩家 '{1}'"
+	}
+
+}

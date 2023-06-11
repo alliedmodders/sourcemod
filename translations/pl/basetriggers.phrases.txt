@@ -1,0 +1,108 @@
+"Phrases"
+{
+	"Timeleft"
+	{
+		"pl"		"Pozostały czas mapy:"
+	}
+
+	"Thetime"
+	{
+		"pl"		"Aktualny czas na serwerze to {1} "
+	}
+
+	"Friendly Fire On"
+	{
+		"pl"		"Ogień Sojuszniczy jest włączony."
+	}
+
+	"Friendly Fire Off"
+	{
+		"pl"		"Ogień Sojuszniczy jest wyłączony. "
+	}
+
+	"Current Map"
+	{
+		"pl"		"Aktualna mapa to: {1}."
+	}
+
+	"LastRound"
+	{
+		"pl"		"To jest ostatnia runda!"
+	}
+
+	"NoTimelimit"
+	{
+		"pl"		"Brak limitu czasu dla mapy"
+	}
+
+	"Next Map"
+	{
+		"pl"		"Następna mapa: {1} "
+	}
+
+	"Pending Vote"
+	{
+		"pl"		"Oczekujące głosowanie"
+	}
+
+	"WinLimitAppend"
+	{
+		"pl"		", lub gdy drużyna wygra jedną rundę"
+	}
+
+	"WinLimit"
+	{
+		"pl"		"Mapa zmieni się, gdy drużyna wygra jedną rundę"
+	}
+
+	"MaxRoundsAppend"
+	{
+		"pl"		", lub po jednej rundzie"
+	}
+
+	"MaxRounds"
+	{
+		"pl"		"Mapa zmieni się po jednej rundzie"
+	}
+
+	"FragLimitAppend"
+	{
+		"pl"		", lub po zdobyciu przez gracza jednego fraga"
+	}
+
+	"FragLimit"
+	{
+		"pl"		"Mapa zmieni się po zdobyciu przez gracza jednego fraga"
+	}
+
+	"WinLimitAppendPlural"
+	{
+		"pl"		", lub gdy drużyna wygra w {1} rundach "
+	}
+
+	"WinLimitPlural"
+	{
+		"pl"		"Mapa zmieni się, gdy drużyna wygra {1} rund"
+	}
+
+	"MaxRoundsAppendPlural"
+	{
+		"pl"		", lub po {1} rundach "
+	}
+
+	"MaxRoundsPlural"
+	{
+		"pl"		"Mapa zmieni się po {1} rundach"
+	}
+
+	"FragLimitAppendPlural"
+	{
+		"pl"		", lub po zdobyciu przez gracza {1} fragów"
+	}
+
+	"FragLimitPlural"
+	{
+		"pl"		"Mapa zmieni się po zdobyciu przez gracza {1} fragów"
+	}
+
+}

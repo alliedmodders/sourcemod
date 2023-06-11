@@ -1,0 +1,78 @@
+"Phrases"
+{
+	"Invalid authtype"
+	{
+		"fi"		"Tunnistautumistyypin tulee olla 'steam', 'name' tai 'ip'."
+	}
+
+	"Invalid immunity"
+	{
+		"fi"		"Immuniteetin tulee olla positiivinen arvo."
+	}
+
+	"SQL Admin already exists"
+	{
+		"fi"		"Annetuilla arvoilla löytyy jo admin."
+	}
+
+	"SQL Admin added"
+	{
+		"fi"		"Admin lisätty onnistuneesti tietokantaan."
+	}
+
+	"SQL Admin deleted"
+	{
+		"fi"		"Poistettiin onnistuneesti admin tietokannasta."
+	}
+
+	"SQL Admin not found"
+	{
+		"fi"		"Annetuilla arvoilla ei löytynyt adminia."
+	}
+
+	"SQL Group already exists"
+	{
+		"fi"		"Annetulla nimellä löytyy jo ryhmä."
+	}
+
+	"SQL Group added"
+	{
+		"fi"		"Lisättiin ryhmä onnistuneesti tietokantaan."
+	}
+
+	"SQL Group deleted"
+	{
+		"fi"		"Poistettiin ryhmä onnistuneesti tietokannasta."
+	}
+
+	"SQL Group not found"
+	{
+		"fi"		"Annetulla nimellä ei löytynyt ryhmää."
+	}
+
+	"SQL Admin groups reset"
+	{
+		"fi"		"Resetoitiin adminin ryhmät onnistuneesti."
+	}
+
+	"SQL Group X not found"
+	{
+		"fi"		"Ryhmää \"{1} ei löytynyt."
+	}
+
+	"SQL Group X failed to bind"
+	{
+		"fi"		"Ryhmän \"{1}\" sitominen epäonnistui."
+	}
+
+	"Added group to user"
+	{
+		"fi"		"Annetulle ylläpitäjälle lisättiin onnistuneesti yksi ryhmä."
+	}
+
+	"Added groups to user"
+	{
+		"fi"		"Lisättiin onnistuneesti {1} ryhmää annetulle adminille."
+	}
+
+}

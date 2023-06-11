@@ -41,7 +41,7 @@
 #include <IAdminSystem.h>
 
 #define SMINTERFACE_PLAYERMANAGER_NAME		"IPlayerManager"
-#define SMINTERFACE_PLAYERMANAGER_VERSION	21
+#define SMINTERFACE_PLAYERMANAGER_VERSION	22
 
 struct edict_t;
 class IPlayerInfo;
@@ -294,6 +294,14 @@ namespace SourceMod
 		 * @return			Steam3 Id on success or NULL if not available.
 		 */
 		virtual const char *GetSteam3Id(bool validated = true) =0;
+
+		/**
+		 * @brief Returns the original language id the client had when
+		 * they connected.
+		 *
+		 * @return		Language id.
+		 */
+		virtual unsigned int GetOriginalLanguageId() =0;
 	};
 
 	/**

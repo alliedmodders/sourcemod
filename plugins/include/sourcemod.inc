@@ -76,6 +76,7 @@ struct Plugin
 #include <commandfilters>
 #include <nextmap>
 #include <commandline>
+#include <entitylump>
 
 enum APLRes
 {
@@ -243,6 +244,28 @@ forward void OnAllPluginsLoaded();
  */
 native Handle GetMyHandle();
 
+methodmap PluginIterator < Handle
+{
+	// Returns an iterator that can be used to search through plugins.
+	//
+	// @return              A new Handle to a PluginIterator.
+	public native PluginIterator();
+
+	// Advances the iterator. Returns whether there are more plugins available in the iterator.
+	//
+	// @return              True on more plugins, false otherwise.
+	// @error               Invalid Handle.
+	public native bool Next();
+
+	// Returns the current plugin in the iterator.
+	//
+	// @return              Current plugin the iterator is at
+	// @error               Invalid Handle.
+	property Handle Plugin {
+		public native get();
+	}
+}
+
 /**
  * Returns an iterator that can be used to search through plugins.
  *
@@ -375,7 +398,7 @@ native int GetTime(int bigStamp[2]={0,0});
  * Produces a date and/or time string value for a timestamp.
  *
  * See this URL for valid parameters:
- * http://cplusplus.com/reference/clibrary/ctime/strftime.html
+ * https://cplusplus.com/reference/ctime/strftime/
  *
  * Note that available parameters depends on support from your operating system.
  * In particular, ones highlighted in yellow on that page are not currently

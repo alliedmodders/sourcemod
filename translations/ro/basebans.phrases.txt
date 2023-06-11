@@ -1,0 +1,63 @@
+"Phrases"
+{
+	"Ban player"
+	{
+		"ro"		"Ban jucător"
+	}
+
+	"Ban reason"
+	{
+		"ro"		"Motiv ban"
+	}
+
+	"Permabanned player"
+	{
+		"ro"		"Jucătorul \"{1}\" a primit ban permanent."
+	}
+
+	"Permabanned player reason"
+	{
+		"ro"		"Jucătorul \"{1}\" a primit ban permanent (motiv: {2})."
+	}
+
+	"Banned player"
+	{
+		"ro"		"Jucătorul \"{1}\" a primit ban pentru {2} minute"
+	}
+
+	"Banned player reason"
+	{
+		"ro"		"Jucătorul \"{1}\" a primit ban pentru {2} minute (motiv: {3})."
+	}
+
+	"Removed bans matching"
+	{
+		"ro"		"Au fost şterge ban-urile conforme cu filtrul: {1}"
+	}
+
+	"Ban added"
+	{
+		"ro"		"Ban-ul a fost adaugat."
+	}
+
+	"Cannot ban that IP"
+	{
+		"ro"		"Nu poţi da ban acestei adrese IP."
+	}
+
+	"Custom ban reason explanation"
+	{
+		"ro"		"Scrie motivul ca mesaj in chat. Foloseste {1} pentru a anula asta."
+	}
+
+	"AbortBan applied successfully"
+	{
+		"ro"		"Ban anulat."
+	}
+
+	"AbortBan not waiting for custom reason"
+	{
+		"ro"		"Nu se asteapta scrierea unui motiv pentru ban, nu exista nici un ban."
+	}
+
+}

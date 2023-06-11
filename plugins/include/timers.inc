@@ -54,8 +54,18 @@ typeset Timer
 	 * @param data          Handle or value passed to CreateTimer() when timer was created.
 	 * @return              Plugin_Stop to stop a repeating timer, any other value for
 	 *                      default behavior.
+	 *                      Ignored for non-repeating timers (use void return type).
 	 */
 	function Action(Handle timer, any data);
+
+	/**
+	 * Called when the timer interval has elapsed.
+	 * For repeating timers, use the callback with return value.
+	 *
+	 * @param timer         Handle to the timer object.
+	 * @param data          Handle or value passed to CreateTimer() when timer was created.
+	 */
+	function void(Handle timer, any data);
 
 	/**
 	 * Called when the timer interval has elapsed.
@@ -63,8 +73,17 @@ typeset Timer
 	 * @param timer         Handle to the timer object.
 	 * @return              Plugin_Stop to stop a repeating timer, any other value for
 	 *                      default behavior.
+	 *                      Ignored for non-repeating timers (use void return type).
 	 */
 	function Action(Handle timer);
+	
+	/**
+	 * Called when the timer interval has elapsed.
+	 * For repeating timers, use the callback with return value.
+	 *
+	 * @param timer         Handle to the timer object.
+	 */
+	function void(Handle timer);
 };
 
 /**

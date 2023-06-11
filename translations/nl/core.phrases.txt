@@ -1,0 +1,88 @@
+"Phrases"
+{
+	"No Access"
+	{
+		"nl"		"Je hebt geen toegang tot dit commando"
+	}
+
+	"Back"
+	{
+		"nl"		"Terug"
+	}
+
+	"Next"
+	{
+		"nl"		"Volgende"
+	}
+
+	"Exit"
+	{
+		"nl"		"Einde"
+	}
+
+	"Previous"
+	{
+		"nl"		"Vorige"
+	}
+
+	"all players"
+	{
+		"nl"		"alle spelers"
+	}
+
+	"all humans"
+	{
+		"nl"		"alle mensen"
+	}
+
+	"all bots"
+	{
+		"nl"		"alle bots"
+	}
+
+	"all dead players"
+	{
+		"nl"		"alle dode spelers"
+	}
+
+	"all alive players"
+	{
+		"nl"		"alle levende spelers"
+	}
+
+	"_s"
+	{
+		"nl"		"{1}"
+	}
+
+	"all spectators"
+	{
+		"nl"		"alle toeschouwers"
+	}
+
+	"Vote Count"
+	{
+		"nl"		"{1}/{2}, {3}s over"
+	}
+
+	"Voted For"
+	{
+		"nl"		"{1} heeft gestemd op {2}"
+	}
+
+	"Changed Vote"
+	{
+		"nl"		"{1} heeft zijn vote gewijzigd naar {2}"
+	}
+
+	"No Vote"
+	{
+		"nl"		"Geen Vote"
+	}
+
+	"Name Reserved"
+	{
+		"nl"		"Jouw naam is gereserveerd door SourceMod; stel je wachtwoord in om het te gebruiken."
+	}
+
+}

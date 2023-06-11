@@ -1,0 +1,78 @@
+"Phrases"
+{
+	"Invalid authtype"
+	{
+		"tr"		"Kimlik denetleme tipi 'steam', 'name' veya 'ip' olmalıdır."
+	}
+
+	"Invalid immunity"
+	{
+		"tr"		"Dokunulmazlık mutlak sayı olmalıdır."
+	}
+
+	"SQL Admin already exists"
+	{
+		"tr"		"Verilen kimlikle bir yönetici zaten mevcut."
+	}
+
+	"SQL Admin added"
+	{
+		"tr"		"Yönetici veritabanına başarıyla eklendi."
+	}
+
+	"SQL Admin deleted"
+	{
+		"tr"		"Yönetici veritabanından başarıyla silindi."
+	}
+
+	"SQL Admin not found"
+	{
+		"tr"		"Verilen kimlikle hiçbir yönetici bulunamadı."
+	}
+
+	"SQL Group already exists"
+	{
+		"tr"		"Aynı adla bir grup zaten mevcut."
+	}
+
+	"SQL Group added"
+	{
+		"tr"		"Grup veritabanına başarıyla eklendi."
+	}
+
+	"SQL Group deleted"
+	{
+		"tr"		"Grup veritabanından başarıyla silindi."
+	}
+
+	"SQL Group not found"
+	{
+		"tr"		"Verilen adla hiçbir grup bulunamadı."
+	}
+
+	"SQL Admin groups reset"
+	{
+		"tr"		"Yöneticilerin grupları başarıyla sıfırlandı."
+	}
+
+	"SQL Group X not found"
+	{
+		"tr"		"Grup bulunamadı: \"{1}\""
+	}
+
+	"SQL Group X failed to bind"
+	{
+		"tr"		"Grup bağlanamadı: \"{1}\" "
+	}
+
+	"Added group to user"
+	{
+		"tr"		"Verilen yöneticiye başarıyla bir grup eklendi."
+	}
+
+	"Added groups to user"
+	{
+		"tr"		"Verilen yöneticiye başarıyla {1} grup eklendi."
+	}
+
+}
