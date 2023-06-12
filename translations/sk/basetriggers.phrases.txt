@@ -22,7 +22,6 @@
 
 	"Friendly Fire Percent"
 	{
-		"#format"	"{1:0.0f}"
 		"sk"		"Zranenie priateľských hráčov je na {1}%."
 	}
 
