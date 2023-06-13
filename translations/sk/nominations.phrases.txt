@@ -65,4 +65,8 @@
 		"sk"		"Nominované"
 	}
 
+	"Map Not In Pool"
+	{
+		"sk"		"Mapa '{1}' nie je v skupine nominácií."
+	}
 }
