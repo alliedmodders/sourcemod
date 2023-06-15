@@ -19,6 +19,11 @@
 	{
 		"pl"		"Ogień Sojuszniczy jest wyłączony. "
 	}
+	
+	"Friendly Fire Percent"
+	{
+		"pl"		"Ogień Sojuszniczy: {1}%."
+	}
 
 	"Current Map"
 	{
