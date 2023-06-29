@@ -87,9 +87,10 @@ typeset Timer
 };
 
 /**
- * Creates a basic timer.  Calling CloseHandle() on a timer will end the timer.
+ * Creates a basic timer with 0.1 second accuracy.  Calling CloseHandle() on a timer will end the timer.
  *
  * @param interval      Interval from the current game time to execute the given function.
+ *                      Timer intervals are rounded to the nearest tenth of a second.
  * @param func          Function to execute once the given interval has elapsed.
  * @param data          Handle or value to pass through to the timer callback function.
  * @param flags         Flags to set (such as repeatability or auto-Handle closing).
