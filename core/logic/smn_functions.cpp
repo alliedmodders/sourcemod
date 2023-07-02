@@ -732,6 +732,33 @@ static cell_t sm_AddFrameAction(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t sm_CallPushFunction(IPluginContext *pContext, const cell_t *params)
+{
+	if (!s_CallStarted)
+	{
+		return pContext->ThrowNativeError("Cannot push parameters when there is no call in progress");
+	}
+	
+	IPlugin *const pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
+
+	// make sure function is valid before pushing its id.
+	const cell_t fn_id = params[1];
+	IPluginFunction *const pFunction = pPlugin->GetBaseContext()->GetFunctionById(fn_id);
+	if (!pFunction)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", params[1]);
+	}
+	
+	const int err = s_pCallable->PushCell(fn_id);
+	if (err)
+	{
+		s_pCallable->Cancel();
+		ResetCall();
+		return pContext->ThrowNativeErrorEx(err, NULL);
+	}
+	return 1;
+}
+
 REGISTER_NATIVES(functionNatives)
 {
 	{"GetFunctionByName",                   sm_GetFunctionByName},
@@ -753,6 +780,7 @@ REGISTER_NATIVES(functionNatives)
 	{"Call_PushStringEx",                   sm_CallPushStringEx},
 	{"Call_PushNullVector",                 sm_CallPushNullVector},
 	{"Call_PushNullString",                 sm_CallPushNullString},
+	{"Call_PushFunction",                   sm_CallPushFunction},
 	{"Call_Finish",                         sm_CallFinish},
 	{"Call_Cancel",                         sm_CallCancel},
 	{"RequestFrame",                        sm_AddFrameAction},
