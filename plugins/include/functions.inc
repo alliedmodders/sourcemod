@@ -406,6 +406,17 @@ native void Call_PushStringEx(char[] value, int length, int szflags, int cpflags
 native void Call_PushNullString();
 
 /**
+ * Pushes a function id onto the current call.
+ *
+ * @note Cannot be used before a call has been started.
+ *
+ * @param fn            Function to push.
+ *
+ * @error               Called before a call has been started.
+ */
+native void Call_PushFunction(Function fn);
+
+/**
  * Completes a call to a function or forward's call list.
  *
  * @note Cannot be used before a call has been started.
