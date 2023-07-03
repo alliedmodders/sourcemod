@@ -162,7 +162,7 @@ methodmap DBResultSet < Handle
 	// Fetches a row from the current result set.  This must be 
 	// successfully called before any results are fetched.
 	//
-	// If this function fails, _MoreResults can be used to
+	// If this function fails, MoreRows can be used to
 	// tell if there was an error or the result set is finished.
 	// 
 	// @return             True if a row was fetched, false otherwise.
@@ -360,7 +360,7 @@ methodmap Database < Handle
 	// 
 	// Example: "utf8", "latin1"
 	//
-	// @param characterset  The character set string to change to.
+	// @param charset       The character set string to change to.
 	// @return              True, if character set was changed, false otherwise.
 	public native bool SetCharset(const char[] charset);
 
@@ -374,8 +374,8 @@ methodmap Database < Handle
 	// the database's character set.
 	//
 	// NOTE: SourceMod only guarantees properly escaped strings when the query
-	// encloses the string in ''. While drivers tend to allow " instead, the string
-	// may be not be escaped (for example, on SQLite)!
+	// encloses the string in single quotes. While drivers tend to allow double
+	// quotes (") instead, the string may be not be escaped (for example, on SQLite)!
 	//
 	// @param string        String to quote.
 	// @param buffer        Buffer to store quoted string in.
@@ -393,7 +393,7 @@ methodmap Database < Handle
 	// @param format        Formatting rules.
 	// @param ...           Variable number of format parameters.
 	// @return              Number of cells written.
-	public native int Format(const char[] buffer, int maxlength, const char[] format, any ...);
+	public native int Format(char[] buffer, int maxlength, const char[] format, any ...);
 
 	// Returns whether a database is the same connection as another database.
 	public native bool IsSameConnection(Database other);
@@ -590,7 +590,7 @@ native void SQL_GetDriverProduct(Handle driver, char[] product, int maxlength);
  * Example: "utf8", "latin1"
  *
  * @param database      Database Handle.
- * @param characterset  The character set string to change to.
+ * @param charset       The character set string to change to.
  * @return              True, if character set was changed, false otherwise.
  */
 native bool SQL_SetCharset(Handle database, const char[] charset);
@@ -635,8 +635,8 @@ native bool SQL_GetError(Handle hndl, char[] error, int maxlength);
  * the database's character set.
  *
  * NOTE: SourceMod only guarantees properly escaped strings when the query
- * encloses the string in ''. While drivers tend to allow " instead, the string
- * may be not be escaped (for example, on SQLite)!
+ * encloses the string in single quotes. While drivers tend to allow double
+ * quotes (") instead, the string may be not be escaped (for example, on SQLite)!
  *
  * @param database      A database Handle.
  * @param string        String to quote.
@@ -664,7 +664,7 @@ native bool SQL_EscapeString(Handle database,
  * @param ...           Variable number of format parameters.
  * @return              Number of cells written.
  */
-native int SQL_FormatQuery(Handle database, const char[] buffer, int maxlength, const char[] format, any ...);
+native int SQL_FormatQuery(Handle database, char[] buffer, int maxlength, const char[] format, any ...);
 
 /**
  * This function is deprecated.  Use SQL_EscapeString instead.
@@ -797,7 +797,7 @@ native bool SQL_FieldNameToNum(Handle query, const char[] name, int &field);
  * Fetches a row from the current result set.  This must be 
  * successfully called before any results are fetched.
  *
- * If this function fails, SQL_MoreResults() can be used to
+ * If this function fails, SQL_MoreRows() can be used to
  * tell if there was an error or the result set is finished.
  * 
  * @param query         A query (or statement) Handle.
@@ -958,6 +958,10 @@ native bool SQL_Execute(Handle statement);
  *
  * If the lock cannot be acquired, the main thread will pause until the 
  * threaded operation has concluded.
+ *
+ * Care should be taken to not lock an already-locked database. Internally,
+ * lock calls are nested recursively and must be paired with an equal amount
+ * of unlocks to be undone. This behaviour should not be relied on.
  *
  * @param database      A database Handle.
  * @error               Invalid database Handle.

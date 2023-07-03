@@ -4,7 +4,7 @@
  * SourceMod Random Map Cycle Plugin
  * Randomly picks a map from the mapcycle.
  *
- * SourceMod (C)2004-2014 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2021 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This program is free software; you can redistribute it and/or modify it under
@@ -76,7 +76,7 @@ public void OnConfigsExecuted()
 		}
 	}
 	
-	CreateTimer(5.0, Timer_RandomizeNextmap); // Small delay to give Nextmap time to complete OnMapStart()
+	CreateTimer(5.0, Timer_RandomizeNextmap, _, TIMER_FLAG_NO_MAPCHANGE); // Small delay to give Nextmap time to complete OnMapStart()
 }
 
 public Action Timer_RandomizeNextmap(Handle timer)

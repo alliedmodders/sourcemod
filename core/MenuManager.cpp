@@ -38,6 +38,7 @@
 #include "sourcemm_api.h"
 #include "PlayerManager.h"
 #include "MenuStyle_Valve.h"
+#include <IGameConfigs.h>
 #include "sourcemm_api.h"
 #include "logic_bridge.h"
 
@@ -66,6 +67,29 @@ void MenuManager::OnSourceModAllInitialized()
 	/* Also deny deletion to styles */
 	access.access[HandleAccess_Delete] = HANDLE_RESTRICT_OWNER|HANDLE_RESTRICT_IDENTITY;
 	m_StyleType = handlesys->CreateType("IMenuStyle", this, 0, NULL, &access, g_pCoreIdent, NULL);
+}
+
+void MenuManager::OnSourceModAllInitialized_Post()
+{
+	const char* pTmp;
+	
+	pTmp = g_pGameConf->GetKeyValue("MenuItemSound");
+	if (nullptr != pTmp)
+	{
+		m_SelectSound = pTmp;
+	}
+
+	pTmp = g_pGameConf->GetKeyValue("MenuExitSound");
+	if (nullptr != pTmp)
+	{
+		m_ExitSound = pTmp;
+	}
+
+	pTmp = g_pGameConf->GetKeyValue("MenuExitBackSound");
+	if (nullptr != pTmp)
+	{
+		m_ExitBackSound = pTmp;
+	}
 }
 
 void MenuManager::OnSourceModAllShutdown()
@@ -308,7 +332,7 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 	{
 		ItemDrawInfo &dr = drawItems[foundItems].draw;
 		/* Is the item valid? */
-		if (menu->GetItemInfo(i, &dr) != NULL)
+		if (menu->GetItemInfo(i, &dr, client) != NULL)
 		{
 			/* Ask the user to change the style, if necessary */
 			mh->OnMenuDrawItem(menu, client, i, dr.style);
@@ -398,7 +422,7 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 			}
 			while (++lastItem < totalItems)
 			{
-				if (menu->GetItemInfo(lastItem, &dr) != NULL)
+				if (menu->GetItemInfo(lastItem, &dr, client) != NULL)
 				{
 					mh->OnMenuDrawItem(menu, client, lastItem, dr.style);
 					if (IsSlotItem(panel, dr.style))
@@ -420,7 +444,7 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 			lastItem--;
 			while (lastItem != 0)
 			{
-				if (menu->GetItemInfo(lastItem, &dr) != NULL)
+				if (menu->GetItemInfo(lastItem, &dr, client) != NULL)
 				{
 					mh->OnMenuDrawItem(menu, client, lastItem, dr.style);
 					if (IsSlotItem(panel, dr.style))
@@ -699,30 +723,9 @@ bool MenuManager::MenuSoundsEnabled()
 	return (sm_menu_sounds.GetInt() != 0);
 }
 
-ConfigResult MenuManager::OnSourceModConfigChanged(const char *key,
-												   const char *value,
-												   ConfigSource source,
-												   char *error,
-												   size_t maxlength)
+std::string *MenuManager::GetMenuSound(ItemSelection sel)
 {
-	if (strcmp(key, "MenuItemSound") == 0)
-	{
-		m_SelectSound.assign(value);
-		return ConfigResult_Accept;
-	} else if (strcmp(key, "MenuExitBackSound") == 0) {
-		m_ExitBackSound.assign(value);
-		return ConfigResult_Accept;
-	} else if (strcmp(key, "MenuExitSound") == 0) {
-		m_ExitSound.assign(value);
-		return ConfigResult_Accept;
-	}
-
-	return ConfigResult_Ignore;
-}
-
-const char *MenuManager::GetMenuSound(ItemSelection sel)
-{
-	const char *sound = NULL;
+	std::string *sound = nullptr;
 
 	switch (sel)
 	{
@@ -732,7 +735,7 @@ const char *MenuManager::GetMenuSound(ItemSelection sel)
 		{
 			if (m_SelectSound.size() > 0)
 			{
-				sound = m_SelectSound.c_str();
+				sound = &m_SelectSound;
 			}
 			break;
 		}
@@ -740,7 +743,7 @@ const char *MenuManager::GetMenuSound(ItemSelection sel)
 		{
 			if (m_ExitBackSound.size() > 0)
 			{
-				sound = m_ExitBackSound.c_str();
+				sound = &m_ExitBackSound;
 			}
 			break;
 		}
@@ -748,7 +751,7 @@ const char *MenuManager::GetMenuSound(ItemSelection sel)
 		{
 			if (m_ExitSound.size() > 0)
 			{
-				sound = m_ExitSound.c_str();
+				sound = &m_ExitSound;
 			}
 			break;
 		}

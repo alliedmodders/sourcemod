@@ -194,6 +194,8 @@ public int MenuHandler_Beacon(Menu menu, MenuAction action, int param1, int para
 			DisplayBeaconMenu(param1);
 		}
 	}
+	
+	return 0;
 }
 
 public Action Command_Beacon(int client, int args)

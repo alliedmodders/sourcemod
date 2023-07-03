@@ -51,7 +51,7 @@
 #include <bridge/include/ILogger.h>
 #include <ITranslator.h>
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 #include <netmessages.pb.h>
 #endif
 
@@ -182,11 +182,17 @@ private:
 	{
 		static inline bool matches(const char *name, ConCommandBase *base)
 		{
-			return strcmp(name, base->GetName()) == 0;
+			const char *conCommandChars = base->GetName();
+			
+			std::string conCommandName = ke::Lowercase(conCommandChars);
+			std::string input = ke::Lowercase(name);
+			
+			return conCommandName == input;
 		}
 		static inline uint32_t hash(const detail::CharsAndLength &key)
 		{
-			return key.hash();
+			std::string lower = ke::Lowercase(key.c_str());
+			return detail::CharsAndLength(lower.c_str()).hash();
 		}
 	};
 	NameHashSet<ConCommandBase *, ConCommandPolicy> m_CmdFlags;
@@ -547,6 +553,21 @@ static cell_t sm_GetConVarFlags(IPluginContext *pContext, const cell_t *params)
 	return pConVar->m_nFlags;
 }
 
+static cell_t sm_GetConVarPlugin(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError err;
+	IPlugin *pPlugin;
+
+	if ((err=g_ConVarManager.ReadConVarHandle(hndl, nullptr, &pPlugin))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
+	}
+
+	return pPlugin ? pPlugin->GetMyHandle() : BAD_HANDLE;
+}
+
 static cell_t sm_SetConVarFlags(IPluginContext *pContext, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
@@ -640,6 +661,23 @@ static cell_t sm_GetConVarName(IPluginContext *pContext, const cell_t *params)
 	}
 
 	pContext->StringToLocalUTF8(params[2], params[3], pConVar->GetName(), NULL);
+
+	return 1;
+}
+
+static cell_t sm_GetConVarDescription(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError err;
+	ConVar *pConVar;
+
+	if ((err=g_ConVarManager.ReadConVarHandle(hndl, &pConVar))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
+	}
+
+	pContext->StringToLocalUTF8(params[2], params[3], pConVar->GetHelpText(), NULL);
 
 	return 1;
 }
@@ -1053,6 +1091,26 @@ static cell_t IsChatTrigger(IPluginContext *pContext, const cell_t *params)
 	return g_ChatTriggers.IsChatTrigger() ? 1 : 0;
 }
 
+static cell_t GetPublicChatTriggers(IPluginContext *pContext, const cell_t *params)
+{
+	size_t length;
+
+	const char *triggers = g_ChatTriggers.GetPublicChatTrigger();
+	pContext->StringToLocalUTF8(params[1], params[2], triggers ? triggers : "", &length);
+
+	return static_cast<cell_t>(length);
+}
+
+static cell_t GetSilentChatTriggers(IPluginContext *pContext, const cell_t *params)
+{
+	size_t length;
+
+	const char *triggers = g_ChatTriggers.GetPrivateChatTrigger();
+	pContext->StringToLocalUTF8(params[1], params[2], triggers ? triggers : "", &length);
+
+	return static_cast<cell_t>(length);
+}
+
 static cell_t SetCommandFlags(IPluginContext *pContext, const cell_t *params)
 {
 	char *name;
@@ -1171,7 +1229,7 @@ static cell_t SendConVarValue(IPluginContext *pContext, const cell_t *params)
 	char data[256];
 	bf_write buffer(data, sizeof(data));
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	CNETMsg_SetConVar msg;
 	CMsg_CVars_CVar *cvar = msg.mutable_convars()->add_cvars();
 
@@ -1355,7 +1413,7 @@ static cell_t sm_CommandIteratorNext(IPluginContext *pContext, const cell_t *par
 	return iter->iter != cmds.end();
 }
 
-static cell_t sm_CommandIteratorFlags(IPluginContext *pContext, const cell_t *params)
+static cell_t sm_CommandIteratorAdminFlags(IPluginContext *pContext, const cell_t *params)
 {
 	GlobCmdIter *iter;
 	HandleError err;
@@ -1374,6 +1432,27 @@ static cell_t sm_CommandIteratorFlags(IPluginContext *pContext, const cell_t *pa
 	
 	ConCmdInfo *pInfo = (*(iter->iter));
 	return pInfo->eflags;
+}
+
+static cell_t sm_CommandIteratorConVarFlags(IPluginContext *pContext, const cell_t *params)
+{
+	GlobCmdIter *iter;
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = handlesys->ReadHandle(params[1], hCmdIterType, &sec, (void **)&iter))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid CommandIterator Handle %x", params[1]);
+	}
+	const List<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
+	if (!iter->started || iter->iter == cmds.end())
+	{
+		return pContext->ThrowNativeError("Invalid CommandIterator position");
+	}
+	
+	ConCmdInfo *pInfo = (*(iter->iter));
+	return pInfo->pCmd->m_nFlags;
 }
 
 static cell_t sm_CommandIteratorGetDesc(IPluginContext *pContext, const cell_t *params)
@@ -1476,6 +1555,8 @@ REGISTER_NATIVES(consoleNatives)
 	{"ReadCommandIterator",	ReadCommandIterator},
 	{"FakeClientCommandEx",	FakeClientCommandEx},
 	{"IsChatTrigger",		IsChatTrigger},
+	{"GetPublicChatTriggers", GetPublicChatTriggers},
+	{"GetSilentChatTriggers", GetSilentChatTriggers},
 	{"SetCommandFlags",		SetCommandFlags},
 	{"GetCommandFlags",		GetCommandFlags},
 	{"FindFirstConCommand",	FindFirstConCommand},
@@ -1494,6 +1575,7 @@ REGISTER_NATIVES(consoleNatives)
 	{"ConVar.IntValue.set",		sm_SetConVarNum},
 	{"ConVar.Flags.get",		sm_GetConVarFlags},
 	{"ConVar.Flags.set",		sm_SetConVarFlags},
+	{"ConVar.Plugin.get",		sm_GetConVarPlugin},
 	{"ConVar.SetBool",			sm_SetConVarNum},
 	{"ConVar.SetInt",			sm_SetConVarNum},
 	{"ConVar.SetFloat",			sm_SetConVarFloat},
@@ -1504,6 +1586,7 @@ REGISTER_NATIVES(consoleNatives)
 	{"ConVar.GetBounds",		sm_GetConVarBounds},
 	{"ConVar.SetBounds",		sm_SetConVarBounds},
 	{"ConVar.GetName",			sm_GetConVarName},
+	{"ConVar.GetDescription",	sm_GetConVarDescription},
 	{"ConVar.ReplicateToClient",	ConVar_ReplicateToClient},
 	{"ConVar.AddChangeHook",	sm_HookConVarChange},
 	{"ConVar.RemoveChangeHook",	sm_UnhookConVarChange},
@@ -1512,7 +1595,9 @@ REGISTER_NATIVES(consoleNatives)
 	{"CommandIterator.Next",		sm_CommandIteratorNext},
 	{"CommandIterator.GetDescription",	sm_CommandIteratorGetDesc},
 	{"CommandIterator.GetName",		sm_CommandIteratorGetName},
-	{"CommandIterator.Flags.get",		sm_CommandIteratorFlags},
+	{"CommandIterator.Flags.get",		sm_CommandIteratorAdminFlags},
+	{"CommandIterator.AdminFlags.get",		sm_CommandIteratorAdminFlags},
+	{"CommandIterator.ConVarFlags.get",		sm_CommandIteratorConVarFlags},
 	{"CommandIterator.Plugin.get",		sm_CommandIteratorPlugin},
 
 	{NULL,					NULL}

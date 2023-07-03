@@ -428,6 +428,7 @@ native int FindSendPropOffs(const char[] cls, const char[] prop);
  *                      for strings.
  * @param local_offset  Optional parameter to store the local offset, as
  *                      FindSendPropOffs() would return.
+ * @param array_size    Optional parameter to store array size, 0 if not an array.
  * @return              On success, returns an absolutely computed offset.
  *                      If no offset is available, 0 is returned.
  *                      If the property is not found, -1 is returned.
@@ -436,7 +437,8 @@ native int FindSendPropInfo(const char[] cls,
 						const char[] prop,
 						PropFieldType &type=view_as<PropFieldType>(0),
 						int &num_bits=0,
-						int &local_offset=0);
+						int &local_offset=0,
+						int &array_size=0);
 
 /**
  * Given an entity, finds a datamap property offset.
@@ -700,7 +702,7 @@ native int SetEntPropString(int entity, PropType type, const char[] prop, const 
  * @param entity        Entity/edict index.
  * @param type          Property type.
  * @param prop          Property name.
- * @return              Size of array (in elements) or 1 if property is not an array.
+ * @return              Size of array (in elements) or 0 if property is not an array.
  * @error               Invalid entity or property not found.
  */
 native int GetEntPropArraySize(int entity, PropType type, const char[] prop);
@@ -715,7 +717,7 @@ native int GetEntPropArraySize(int entity, PropType type, const char[] prop);
  * @param dataSize      Size of each value in bytes (1, 2, or 4).
  * @error               Invalid entity or offset out of reasonable bounds.
  */
-stock void GetEntDataArray(int entity, int offset, int[] array, int arraySize, int dataSize=4)
+stock void GetEntDataArray(int entity, int offset, any[] array, int arraySize, int dataSize=4)
 {
 	for (int i = 0; i < arraySize; i++)
 	{
@@ -734,7 +736,7 @@ stock void GetEntDataArray(int entity, int offset, int[] array, int arraySize, i
  * @param changeState   True to set the network state as changed; false otherwise.
  * @error               Invalid entity or offset out of reasonable bounds.
  */
-stock void SetEntDataArray(int entity, int offset, const int[] array, int arraySize, int dataSize=4, bool changeState=false)
+stock void SetEntDataArray(int entity, int offset, const any[] array, int arraySize, int dataSize=4, bool changeState=false)
 {
 	for (int i = 0; i < arraySize; i++)
 	{
@@ -765,3 +767,19 @@ stock bool GetEntityClassname(int entity, char[] clsname, int maxlength)
 {
 	return !!GetEntPropString(entity, Prop_Data, "m_iClassname", clsname, maxlength);
 }
+
+/**
+ * Interprets the address as an entity handle and returns the associated entity.
+ *
+ * @param addr          Address to a memory location.
+ * @return              Entity index at the given location.  If there is no entity, or the stored entity is invalid, then -1 is returned.
+ */
+native int LoadEntityFromHandleAddress(Address addr);
+
+/**
+ * Interprets the address as an entity handle and sets the entity.
+ *
+ * @param addr          Address to a memory location.
+ * @param entity        Entity index to set, or -1 to clear.
+ */
+native void StoreEntityToHandleAddress(Address addr, int entity);

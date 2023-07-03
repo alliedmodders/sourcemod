@@ -126,7 +126,7 @@ methodmap File < Handle
 	// @param size            Size of each element, in bytes, to be read.
 	//                        Valid sizes are 1, 2, or 4.
 	// @return                Number of elements read, or -1 on error.
-	public native int Read(int[] items, int num_items, int size);
+	public native int Read(any[] items, int num_items, int size);
 
 	// Reads a UTF8 or ANSI string from a file.
 	//
@@ -152,7 +152,7 @@ methodmap File < Handle
 	// @param size            Size of each item in the array in bytes.
 	//                        Valid sizes are 1, 2, or 4.
 	// @return                True on success, false on error.
-	public native bool Write(const int[] items, int num_items, int size);
+	public native bool Write(const any[] items, int num_items, int size);
 
 	// Writes a binary string to a file.
 	//
@@ -361,7 +361,7 @@ native bool ReadFileLine(Handle hndl, char[] buffer, int maxlength);
  *                      Valid sizes are 1, 2, or 4.
  * @return              Number of elements read, or -1 on error.
  */
-native int ReadFile(Handle hndl, int[] items, int num_items, int size);
+native int ReadFile(Handle hndl, any[] items, int num_items, int size);
 
 /**
  * Reads a UTF8 or ANSI string from a file.
@@ -394,7 +394,7 @@ native int ReadFileString(Handle hndl, char[] buffer, int max_size, int read_cou
  * @return              True on success, false on error.
  * @error               Invalid Handle.
  */
-native bool WriteFile(Handle hndl, const int[] items, int num_items, int size);
+native bool WriteFile(Handle hndl, const any[] items, int num_items, int size);
 
 /**
  * Writes a binary string to a file.
@@ -575,7 +575,7 @@ native bool RemoveDir(const char[] path);
 /**
  * Creates a directory.
  *
- * @param path          Path to create.
+ * @param path          Path to create. Note that directories are not created recursively unless use_valve_fs is used.
  * @param mode          Permissions (default is o=rx,g=rx,u=rwx).  Note that folders must have
  *                      the execute bit set on Linux.  On Windows, the mode is ignored.
  * @param use_valve_fs  If true, the Valve file system will be used instead.
@@ -585,7 +585,7 @@ native bool RemoveDir(const char[] path);
  *                      In this case, mode is ignored.
  * @return              True on success, false otherwise.
  */
-native bool CreateDirectory(const char[] path, int mode, bool use_valve_fs=false, const char[] valve_path_id="DEFAULT_WRITE_PATH");
+native bool CreateDirectory(const char[] path, int mode=FPERM_O_READ|FPERM_O_EXEC|FPERM_G_READ|FPERM_G_EXEC|FPERM_U_READ|FPERM_U_WRITE|FPERM_U_EXEC, bool use_valve_fs=false, const char[] valve_path_id="DEFAULT_WRITE_PATH");
 
 /**
  * Changes a file or directories permissions.

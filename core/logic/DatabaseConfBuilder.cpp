@@ -36,8 +36,8 @@
 #define DBPARSE_LEVEL_DATABASE	2
 
 DatabaseConfBuilder::DatabaseConfBuilder()
-	: m_ParseList(nullptr),
-	  m_InfoList(new ConfDbInfoList())
+	: m_ParseList(),
+	  m_InfoList()
 {
 }
 
@@ -50,7 +50,7 @@ DatabaseConfBuilder::~DatabaseConfBuilder()
 {
 }
 
-ConfDbInfoList *DatabaseConfBuilder::GetConfigList()
+ConfDbInfoList &DatabaseConfBuilder::GetConfigList()
 {
 	return m_InfoList;
 }
@@ -59,9 +59,9 @@ void DatabaseConfBuilder::StartParse()
 {
 	SMCError err;
 	SMCStates states = {0, 0};
-	if ((err = textparsers->ParseFile_SMC(m_Filename.chars(), this, &states)) != SMCError_Okay)
+	if ((err = textparsers->ParseFile_SMC(m_Filename.c_str(), this, &states)) != SMCError_Okay)
 	{
-		logger->LogError("[SM] Detected parse error(s) in file \"%s\"", m_Filename.chars());
+		logger->LogError("[SM] Detected parse error(s) in file \"%s\"", m_Filename.c_str());
 		if (err != SMCError_Custom)
 		{
 			const char *txt = textparsers->GetSMCErrorString(err);
@@ -75,7 +75,7 @@ void DatabaseConfBuilder::ReadSMC_ParseStart()
 	m_ParseLevel = 0;
 	m_ParseState = DBPARSE_LEVEL_NONE;
 	
-	m_ParseList = new ConfDbInfoList();
+	m_ParseList.clear();
 }
  
 SMCResult DatabaseConfBuilder::ReadSMC_NewSection(const SMCStates *states, const char *name)
@@ -116,7 +116,7 @@ SMCResult DatabaseConfBuilder::ReadSMC_KeyValue(const SMCStates *states, const c
 	{
 		if (strcmp(key, "driver_default") == 0)
 		{
-			m_ParseList->SetDefaultDriver(value);
+			m_ParseList.SetDefaultDriver(value);
 		}
 	} else if (m_ParseState == DBPARSE_LEVEL_DATABASE) {
 		if (strcmp(key, "driver") == 0)
@@ -153,15 +153,15 @@ SMCResult DatabaseConfBuilder::ReadSMC_LeavingSection(const SMCStates *states)
 
 	if (m_ParseState == DBPARSE_LEVEL_DATABASE)
 	{
-		m_ParseCurrent->info.driver = m_ParseCurrent->driver.chars();
-		m_ParseCurrent->info.database = m_ParseCurrent->database.chars();
-		m_ParseCurrent->info.host = m_ParseCurrent->host.chars();
-		m_ParseCurrent->info.user = m_ParseCurrent->user.chars();
-		m_ParseCurrent->info.pass = m_ParseCurrent->pass.chars();
+		m_ParseCurrent->info.driver = m_ParseCurrent->driver.c_str();
+		m_ParseCurrent->info.database = m_ParseCurrent->database.c_str();
+		m_ParseCurrent->info.host = m_ParseCurrent->host.c_str();
+		m_ParseCurrent->info.user = m_ParseCurrent->user.c_str();
+		m_ParseCurrent->info.pass = m_ParseCurrent->pass.c_str();
 		
 		/* Save it.. */
 		m_ParseCurrent->AddRef();
-		m_ParseList->append(m_ParseCurrent);
+		m_ParseList.push_back(m_ParseCurrent);
 		m_ParseCurrent = nullptr;
 		
 		/* Go up one level */
@@ -176,9 +176,7 @@ SMCResult DatabaseConfBuilder::ReadSMC_LeavingSection(const SMCStates *states)
 
 void DatabaseConfBuilder::ReadSMC_ParseEnd(bool halted, bool failed)
 {
-	m_InfoList->ReleaseMembers();
-	delete m_InfoList;
+	m_InfoList.clear();
 	m_InfoList = m_ParseList;
-	
-	m_ParseList = nullptr;
+	m_ParseList.clear();
 }

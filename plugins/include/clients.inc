@@ -71,6 +71,7 @@ enum AuthIdType
 
 #define MAXPLAYERS      65  /**< Maximum number of players SourceMod supports */
 #define MAX_NAME_LENGTH 128 /**< Maximum buffer required to store a client name */
+#define MAX_AUTHID_LENGTH 64 /**< Maximum buffer required to store any AuthID type */
 
 public const int MaxClients;   /**< Maximum number of players the server supports (dynamic) */
 
@@ -226,6 +227,14 @@ forward void OnClientPostAdminFilter(int client);
 forward void OnClientPostAdminCheck(int client);
 
 /**
+ * Called when the language was received from the player.
+ *
+ * @param client        Client index.
+ * @param language      Language number.
+ */
+forward void OnClientLanguageChanged(int client, int language);
+
+/**
  * This function is deprecated. Use the MaxClients variable instead.
  *
  * Returns the maximum number of clients allowed on the server.  This may 
@@ -347,6 +356,7 @@ native int GetClientUserId(int client);
  *
  * @param client        Player index.
  * @return              True if player is connected to the server, false otherwise.
+ * @error               Invalid client index.
  */
 native bool IsClientConnected(int client);
 
@@ -384,6 +394,7 @@ stock bool IsPlayerInGame(int client)
  *
  * @param client        Player index.
  * @return              True if player has been authenticated, false otherwise.
+ * @error               Invalid client index.
  */
 native bool IsClientAuthorized(int client);
 
@@ -392,6 +403,7 @@ native bool IsClientAuthorized(int client);
  *
  * @param client        Player index.
  * @return              True if player is a fake client, false otherwise.
+ * @error               Invalid client index, or client not connected.
  */
 native bool IsFakeClient(int client);
 
@@ -400,6 +412,7 @@ native bool IsFakeClient(int client);
  *
  * @param client        Player index.
  * @return              True if player is the SourceTV bot, false otherwise.
+ * @error               Invalid client index, or client not connected.
  */
 native bool IsClientSourceTV(int client);
 
@@ -408,6 +421,7 @@ native bool IsClientSourceTV(int client);
  *
  * @param client        Player index.
  * @return              True if player is the Replay bot, false otherwise.
+ * @error               Invalid client index, or client not connected.
  */
 native bool IsClientReplay(int client);
 
@@ -416,6 +430,7 @@ native bool IsClientReplay(int client);
  *
  * @param client        Player index.
  * @return              True if player is an observer, false otherwise.
+ * @error               Invalid client index, client not in game, or no mod support.
  */
 native bool IsClientObserver(int client);
 
@@ -496,6 +511,7 @@ native void RemoveUserFlags(int client, AdminFlag ...);
  *
  * @param client        Player's index.
  * @param flags         Bitstring of flags to set on client.
+ * @error               Invalid client index, or client not connected.
  */
 native void SetUserFlagBits(int client, int flags);
 
@@ -548,6 +564,7 @@ native void NotifyPostAdminCheck(int client);
  *
  * @param name          Name to use.
  * @return              Client index on success, 0 otherwise.
+ * @error               No map is active.
  */
 native int CreateFakeClient(const char[] name);
 
@@ -791,7 +808,7 @@ native void KickClientEx(int client, const char[] format="", any ...);
  *
  * @param client        Client index.
  * @param team          Mod-specific team index.
- * @error               Invalid client index, client not connected, or lack of 
+ * @error               Invalid client index, client not in game, or lack of 
  *                      mod support.
  */
 native void ChangeClientTeam(int client, int team);

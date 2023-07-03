@@ -1,0 +1,52 @@
+# vim: set ts=8 sts=2 sw=2 tw=99 et ft=python:
+import os
+
+# This is where the files will be output to
+# package is the default
+builder.SetBuildFolder('package')
+
+# Add any folders you need to this list
+folder_list = [
+  'addons/sourcemod/extensions',
+  #'addons/sourcemod/scripting/include',
+  #'addons/sourcemod/gamedata',
+  #'addons/sourcemod/configs',
+]
+
+# Create the distribution folder hierarchy.
+folder_map = {}
+for folder in folder_list:
+  norm_folder = os.path.normpath(folder)
+  folder_map[folder] = builder.AddFolder(norm_folder)
+
+# Do all straight-up file copies from the source tree.
+def CopyFiles(src, dest, files):
+  if not dest:
+    dest = src
+  dest_entry = folder_map[dest]
+  for source_file in files:
+    source_path = os.path.join(builder.sourcePath, src, source_file)
+    builder.AddCopy(source_path, dest_entry)
+
+# Include files 
+#CopyFiles('include', 'addons/sourcemod/scripting/include',
+#  [ 'sample.inc', ]
+#)
+
+# GameData files
+#CopyFiles('gamedata', 'addons/sourcemod/gamedata',
+#  [ 'myfile.txt',
+#  'file2.txt'
+#  ]
+#)
+
+# Config Files
+#CopyFiles('configs', 'addons/sourcemod/configs',
+#  [ 'configfile.cfg',
+#  'otherconfig.cfg,
+#  ]
+#)
+
+# Copy binaries.
+for cxx_task in Extension.extensions:
+  builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/extensions'])

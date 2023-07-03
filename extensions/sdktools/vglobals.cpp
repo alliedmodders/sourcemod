@@ -66,7 +66,12 @@ void InitializeValveGlobals()
 		{
 			return;
 		}
+#ifdef PLATFORM_X86
 		g_ppGameRules = *reinterpret_cast<void ***>(addr + offset);
+#else
+		int32_t varOffset = *(int32_t *) ((unsigned char *) addr + offset);
+		g_ppGameRules = *reinterpret_cast<void ***>((unsigned char *) addr + offset + sizeof(int32_t) + varOffset);
+#endif
 	}
 }
 
@@ -144,6 +149,11 @@ void UpdateValveGlobals()
 			}
 		}
 	}
+}
+
+void ClearValveGlobals()
+{
+	s_pGameRules = nullptr;
 }
 
 size_t UTIL_StringToSignature(const char *str, char buffer[], size_t maxlength)
@@ -224,11 +234,13 @@ void GetIServer()
 	|| SOURCE_ENGINE == SE_SDK2013 \
 	|| SOURCE_ENGINE == SE_BMS     \
 	|| SOURCE_ENGINE == SE_DOI     \
-	|| SOURCE_ENGINE == SE_INSURGENCY
+	|| SOURCE_ENGINE == SE_BLADE   \
+	|| SOURCE_ENGINE == SE_INSURGENCY \
+	|| SOURCE_ENGINE == SE_PVKII
 
-#if SOURCE_ENGINE != SE_INSURGENCY && SOURCE_ENGINE != SE_DOI
+#if SOURCE_ENGINE == SE_SDK2013
 	if (g_SMAPI->GetEngineFactory(false)("VEngineServer022", nullptr))
-#endif // !SE_INSURGENCY
+#endif // SE_SDK2013
 	{
 		iserver = engine->GetIServer();
 		return;

@@ -1,0 +1,43 @@
+"Phrases"
+{
+	"Slap player"
+	{
+		"las"		"Abofetear jugador"
+	}
+
+	"Slap damage"
+	{
+		"las"		"Daño de bofetada"
+	}
+
+	"Slay player"
+	{
+		"las"		"Matar jugador"
+	}
+
+	"Slapped target"
+	{
+		"las"		"{1} abofeteado."
+	}
+
+	"Slayed target"
+	{
+		"las"		"{1} matado."
+	}
+
+	"Name changed"
+	{
+		"las"		"Un administrador te cambió el nombre"
+	}
+
+	"Renamed target"
+	{
+		"las"		"{1} renombrado."
+	}
+
+	"Rename player"
+	{
+		"las"		"Renombrar jugador"
+	}
+
+}

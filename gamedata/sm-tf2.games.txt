@@ -18,7 +18,7 @@
 			"Burn"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x56\x8B\xF1\x8B\x8E\x90\x01\x00\x00\x8B\x01"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x56\x8B\xF1\x8B\x8E\x8C\x01\x00\x00\x8B\x01"
 				"linux"		"@_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef"
 				"mac"		"@_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef"
 			}
@@ -32,7 +32,7 @@
 			"Disguise"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x24\x56\x57\x8B\xF9\x8B\x8F\x90\x01\x00\x00"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x24\x56\x57\x8B\xF9\x8B\x8F\x8C\x01\x00\x00"
 				"linux"		"@_ZN15CTFPlayerShared8DisguiseEiiP9CTFPlayerb"
 				"mac"		"@_ZN15CTFPlayerShared8DisguiseEiiP9CTFPlayerb"
 			}
@@ -74,14 +74,14 @@
 			"StunPlayer"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x20\x57\x8B\xF9\x8B\x87\x58\x04\x00\x00"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x20\x57\x8B\xF9\x8B\x87\x54\x04\x00\x00"
 				"linux"		"@_ZN15CTFPlayerShared10StunPlayerEffiP9CTFPlayer"
 				"mac"		"@_ZN15CTFPlayerShared10StunPlayerEffiP9CTFPlayer"
 			}
 			"MakeBleed"
 			{
 				"library" 	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x30\x53\x8B\xD9\x89\x5D\xEC"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x2C\x57\x8B\xF9\x89\x7D\xF0"
 				"linux"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefibi"
 				"mac"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefibi"
 			}
@@ -113,21 +113,21 @@
 		{
 			"ForceRespawn"
 			{
-				"windows"	"329"
-				"linux"		"330"
-				"mac"		"330"
+				"windows"	"336"
+				"linux"		"337"
+				"mac"		"337"
 			}
 			"CalcIsAttackCriticalHelper"
 			{
-				"windows"	"390"
-				"linux"		"397"
-				"mac"		"397"
+				"windows"	"398"
+				"linux"		"405"
+				"mac"		"405"
 			}
 			"CalcIsAttackCriticalHelperNoCrits"
 			{
-				"windows"	"391"
-				"linux"		"398"
-				"mac"		"398"
+				"windows"	"399"
+				"linux"		"406"
+				"mac"		"406"
 			}
 			
 			// CTFGameRules::IsHolidayActive
@@ -140,9 +140,9 @@
 
 			"RemoveWearable"
 			{
-				"windows"	"431"
-				"linux"		"432"
-				"mac"		"432"
+				"windows"	"439"
+				"linux"		"440"
+				"mac"		"440"
 			}
 		}
 	}
@@ -165,6 +165,7 @@
 			"TFHoliday_HalloweenOrFullMoon"				"9"
 			"TFHoliday_HalloweenOrFullMoonOrValentines"	"10"
 			"TFHoliday_AprilFools"		"11"
+			"TFHoliday_Soldier"			"12"
 		}
 	}
 }

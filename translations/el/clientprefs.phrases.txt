@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Cookie List"
+	{
+		"el"		"Λίστα SourceMod Cookies"
+	}
+
+	"Printing Cookie List"
+	{
+		"el"		"Προβολή λίστας cookie στην κονσόλα"
+	}
+
+	"Cookie not Found"
+	{
+		"el"		"Δεν μπορεί να βρεθεί το cookie \"{1}\""
+	}
+
+	"Cookie Value"
+	{
+		"el"		"η τιμή του {1} είναι {2}"
+	}
+
+	"Protected Cookie"
+	{
+		"el"		"Δεν γίνεται να αλλάξει η τιμή ενός προστατευμένου cookie \"{1}\""
+	}
+
+	"Cookie Changed Value"
+	{
+		"el"		"Άλλαξε την τιμή του cookie από \"{1}\" σε \"{2}\""
+	}
+
+	"No Console"
+	{
+		"el"		"Το μενού επιλογών δεν μπορεί να εμφανιστεί στην κονσόλα"
+	}
+
+	"Choose Option"
+	{
+		"el"		"Διαλέξτε επιλογή"
+	}
+
+	"Client Settings"
+	{
+		"el"		"Προσωπικές Επιλογές"
+	}
+
+}

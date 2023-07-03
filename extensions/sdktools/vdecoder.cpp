@@ -110,6 +110,7 @@ size_t ValveParamToBinParam(ValveType type,
 	case Valve_CBasePlayer:
 	case Valve_Edict:
 	case Valve_String:
+	case Valve_Object:
 		{
 			if (pass != PassType_Basic || (flags & PASSFLAG_BYREF))
 			{

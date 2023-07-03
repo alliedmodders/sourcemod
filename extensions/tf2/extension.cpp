@@ -167,6 +167,28 @@ void TF2Tools::SDK_OnUnload()
 	SH_REMOVE_HOOK(IServerGameDLL, ServerActivate, gamedll, SH_STATIC(OnServerActivate), true);
 
 	g_HolidayManager.OnSDKUnload();
+	m_GameEventManager->RemoveListener(this);
+
+	if (m_CritDetoursEnabled)
+	{
+		g_CritManager.Disable();
+		m_CritDetoursEnabled = false;
+	}
+	if (m_CondChecksEnabled)
+	{
+		g_CondMgr.Shutdown();
+		m_CondChecksEnabled = false;
+	}
+	if (m_RulesDetoursEnabled)
+	{
+		RemoveRulesDetours();
+		m_RulesDetoursEnabled = false;
+	}
+	if (m_TeleportDetourEnabled)
+	{
+		RemoveTeleporterDetour();
+		m_TeleportDetourEnabled = false;
+	}
 
 	g_RegNatives.UnregisterAll();
 	gameconfs->CloseGameConfigFile(g_pGameConf);

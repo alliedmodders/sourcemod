@@ -1,0 +1,88 @@
+"Phrases"
+{
+	"No Access"
+	{
+		"lt"		"Jūs neturite teisių šiai komandai"
+	}
+
+	"Back"
+	{
+		"lt"		"Atgal"
+	}
+
+	"Next"
+	{
+		"lt"		"Sekantis"
+	}
+
+	"Exit"
+	{
+		"lt"		"Išeiti"
+	}
+
+	"Previous"
+	{
+		"lt"		"Ankstesnis"
+	}
+
+	"all players"
+	{
+		"lt"		"visiems žaidėjams"
+	}
+
+	"all humans"
+	{
+		"lt"		"visiems žmonėms"
+	}
+
+	"all bots"
+	{
+		"lt"		"visiems botams"
+	}
+
+	"all dead players"
+	{
+		"lt"		"visiems negyviems žaidėjams"
+	}
+
+	"all alive players"
+	{
+		"lt"		"visiems gyviems žaidėjams"
+	}
+
+	"_s"
+	{
+		"lt"		"{1}"
+	}
+
+	"all spectators"
+	{
+		"lt"		"visi stebėtojai"
+	}
+
+	"Vote Count"
+	{
+		"lt"		"Balsai: {1}/{2}, {3} liko"
+	}
+
+	"Voted For"
+	{
+		"lt"		"{1} balsavo už {2}"
+	}
+
+	"Changed Vote"
+	{
+		"lt"		"{1} pakeitė savo balsą į {2}"
+	}
+
+	"No Vote"
+	{
+		"lt"		"Nebalsavo"
+	}
+
+	"Name Reserved"
+	{
+		"lt"		"Jūsų slapyvardis rezervuotas SourceMod; nustatykite slaptažodį norėdami jį panaudoti."
+	}
+
+}

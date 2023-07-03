@@ -3,7 +3,6 @@
 
 #include "smsdk_ext.h"
 #include <ISDKHooks.h>
-#include <IBinTools.h>
 #include <convar.h>
 #include <sh_list.h>
 #include <am-vector.h>
@@ -21,7 +20,9 @@
 #if SOURCE_ENGINE >= SE_CSS && SOURCE_ENGINE != SE_LEFT4DEAD
 #define GETMAXHEALTH_IS_VIRTUAL
 #endif
-#if SOURCE_ENGINE != SE_HL2DM && SOURCE_ENGINE != SE_DODS && SOURCE_ENGINE != SE_CSS && SOURCE_ENGINE != SE_TF2 && SOURCE_ENGINE != SE_LEFT4DEAD2 && SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_NUCLEARDAWN && SOURCE_ENGINE != SE_BLADE
+#if SOURCE_ENGINE != SE_HL2DM && SOURCE_ENGINE != SE_DODS && SOURCE_ENGINE != SE_CSS && SOURCE_ENGINE != SE_TF2 && \
+	SOURCE_ENGINE != SE_LEFT4DEAD2 && SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_NUCLEARDAWN && \
+	SOURCE_ENGINE != SE_BLADE && SOURCE_ENGINE != SE_MCV
 #define GAMEDESC_CAN_CHANGE
 #endif
 
@@ -107,6 +108,10 @@ class IPhysicsObject;
 class CDmgAccumulator;
 typedef CBaseEntity CBaseCombatWeapon;
 
+namespace SourceMod {
+	class IBinTools;
+}
+
 struct HookList
 {
 public:
@@ -127,7 +132,7 @@ public:
 	};
 public:
 	CVTableHook *vtablehook;
-	ke::Vector<HookList> hooks;
+	std::vector<HookList> hooks;
 };
 
 class IEntityListener
@@ -184,7 +189,9 @@ public:
 	 * @param maxlength	Size of error message buffer.
 	 * @return			True if working, false otherwise.
 	 */
-	//virtual bool QueryRunning(char *error, size_t maxlength);
+	virtual bool QueryRunning(char *error, size_t maxlength);
+
+	virtual bool QueryInterfaceDrop(SMInterface* pInterface);
 
 	/** Returns version string */
 	virtual const char *GetExtensionVerString();
@@ -269,7 +276,6 @@ public:
 #ifdef GAMEDESC_CAN_CHANGE
 	const char *Hook_GetGameDescription();
 #endif
-	const char *Hook_GetMapEntitiesString();
 	bool Hook_LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
 
 	/**
@@ -304,7 +310,7 @@ public:
 	void Hook_Touch(CBaseEntity *pOther);
 	void Hook_TouchPost(CBaseEntity *pOther);
 #if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_PVKII
 	void Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator);
 	void Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator);
 #else
@@ -344,12 +350,14 @@ private:
 };
 
 extern CGlobalVars *gpGlobals;
-extern ke::Vector<CVTableList *> g_HookList[SDKHook_MAXHOOKS];
+extern std::vector<CVTableList *> g_HookList[SDKHook_MAXHOOKS];
 
 extern ICvar *icvar;
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 extern IServerTools *servertools;
 #endif
+extern SourceMod::IBinTools *g_pBinTools;
+extern IGameConfig *g_pGameConf;
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_

@@ -319,7 +319,7 @@ void Logger::_UpdateFiles(bool bLevelChange)
 	char buff[PLATFORM_MAX_PATH];
 	ke::SafeSprintf(buff, sizeof(buff), "%04d%02d%02d", curtime->tm_year + 1900, curtime->tm_mon + 1, curtime->tm_mday);
 
-	ke::AString currentDate(buff);
+	std::string currentDate(buff);
 
 	if (m_Mode == LoggingMode_PerMap)
 	{
@@ -327,7 +327,7 @@ void Logger::_UpdateFiles(bool bLevelChange)
 		{
 			for (size_t iter = 0; iter < static_cast<size_t>(-1); ++iter)
 			{
-				g_pSM->BuildPath(Path_SM, buff, sizeof(buff), "logs/L%s%u.log", currentDate.chars(), iter);
+				g_pSM->BuildPath(Path_SM, buff, sizeof(buff), "logs/L%s%u.log", currentDate.c_str(), iter);
 				if (!libsys->IsPathFile(buff))
 				{
 					break;
@@ -336,12 +336,12 @@ void Logger::_UpdateFiles(bool bLevelChange)
 		}
 		else
 		{
-			ke::SafeStrcpy(buff, sizeof(buff), m_NormalFileName.chars());
+			ke::SafeStrcpy(buff, sizeof(buff), m_NormalFileName.c_str());
 		}
 	}
 	else
 	{
-		g_pSM->BuildPath(Path_SM, buff, sizeof(buff), "logs/L%s.log", currentDate.chars());
+		g_pSM->BuildPath(Path_SM, buff, sizeof(buff), "logs/L%s.log", currentDate.c_str());
 	}
 
 	if (m_NormalFileName.compare(buff))
@@ -353,11 +353,11 @@ void Logger::_UpdateFiles(bool bLevelChange)
 	{
 		if (bLevelChange)
 		{
-			LogMessage("-------- Mapchange to %s --------", m_CurrentMapName.chars());
+			LogMessage("-------- Mapchange to %s --------", m_CurrentMapName.c_str());
 		}
 	}
 
-	g_pSM->BuildPath(Path_SM, buff, sizeof(buff), "logs/errors_%s.log", currentDate.chars());
+	g_pSM->BuildPath(Path_SM, buff, sizeof(buff), "logs/errors_%s.log", currentDate.c_str());
 	if (bLevelChange || m_ErrorFileName.compare(buff))
 	{
 		_CloseError();
@@ -369,7 +369,7 @@ FILE *Logger::_OpenNormal()
 {
 	_UpdateFiles();
 
-	FILE *pFile = fopen(m_NormalFileName.chars(), "a+");
+	FILE *pFile = fopen(m_NormalFileName.c_str(), "a+");
 	if (pFile == NULL)
 	{
 		_LogFatalOpen(m_NormalFileName);
@@ -383,7 +383,7 @@ FILE *Logger::_OpenNormal()
 		char date[32];
 
 		strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
-		fprintf(pFile, "L %s: SourceMod log file session started (file \"%s\") (Version \"%s\")\n", date, m_NormalFileName.chars(), SOURCEMOD_VERSION);
+		fprintf(pFile, "L %s: SourceMod log file session started (file \"%s\") (Version \"%s\")\n", date, m_NormalFileName.c_str(), SOURCEMOD_VERSION);
 		m_DamagedNormalFile = true;
 	}
 
@@ -394,7 +394,7 @@ FILE *Logger::_OpenError()
 {
 	_UpdateFiles();
 
-	FILE *pFile = fopen(m_ErrorFileName.chars(), "a+");
+	FILE *pFile = fopen(m_ErrorFileName.c_str(), "a+");
 	if (pFile == NULL)
 	{
 		_LogFatalOpen(m_ErrorFileName);
@@ -409,7 +409,7 @@ FILE *Logger::_OpenError()
 		char date[32];
 		strftime(date, sizeof(date), "%m/%d/%Y - %H:%M:%S", curtime);
 		fprintf(pFile, "L %s: SourceMod error session started\n", date);
-		fprintf(pFile, "L %s: Info (map \"%s\") (file \"%s\")\n", date, m_CurrentMapName.chars(), m_ErrorFileName.chars());
+		fprintf(pFile, "L %s: Info (map \"%s\") (file \"%s\")\n", date, m_CurrentMapName.c_str(), m_ErrorFileName.c_str());
 		m_DamagedErrorFile = true;
 	}
 
@@ -423,11 +423,11 @@ FILE *Logger::_OpenFatal()
 	return fopen(path, "at");
 }
 
-void Logger::_LogFatalOpen(ke::AString &str)
+void Logger::_LogFatalOpen(std::string &str)
 {
 	char error[255];
 	libsys->GetPlatformError(error, sizeof(error));
-	LogFatal("[SM] Unexpected fatal logging error (file \"%s\")", str.chars());
+	LogFatal("[SM] Unexpected fatal logging error (file \"%s\")", str.c_str());
 	LogFatal("[SM] Platform returned error: \"%s\"", error);
 }
 

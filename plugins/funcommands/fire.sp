@@ -316,6 +316,8 @@ public int MenuHandler_Burn(Menu menu, MenuAction action, int param1, int param2
 			DisplayBurnMenu(param1);
 		}
 	}
+
+	return 0;
 }
 
 public int MenuHandler_FireBomb(Menu menu, MenuAction action, int param1, int param2)
@@ -362,6 +364,8 @@ public int MenuHandler_FireBomb(Menu menu, MenuAction action, int param1, int pa
 			DisplayFireBombMenu(param1);
 		}
 	}
+
+	return 0;
 }
 
 public Action Command_Burn(int client, int args)
@@ -379,9 +383,7 @@ public Action Command_Burn(int client, int args)
 	
 	if (args > 1)
 	{
-		char time[20];
-		GetCmdArg(2, time, sizeof(time));
-		if (StringToFloatEx(time, seconds) == 0)
+		if (!GetCmdArgFloatEx(2, seconds))
 		{
 			ReplyToCommand(client, "[SM] %t", "Invalid Amount");
 			return Plugin_Handled;

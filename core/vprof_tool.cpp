@@ -36,11 +36,6 @@
 
 VProfTool sVProfTool;
 
-VProfTool::VProfTool()
-	: active_(false)
-{
-}
-
 void
 VProfTool::OnSourceModAllInitialized()
 {
@@ -62,14 +57,24 @@ VProfTool::Description()
 bool
 VProfTool::Start()
 {
-	g_VProfCurrentProfile.Start();
-	return IsActive();
+	// Some engines are very sensitive to exactly when in a frame vprof is
+	// enabled, the vprof commands use a special command registration method
+	// to defer their execution to the start of the next frame. Instead of
+	// starting/stopping vprof directly ourselves, we use the built-in commands
+	// to ensure that the timing is correct and the server does not crash.
+	//
+	// g_VProfCurrentProfile.Start();
+	engine->ServerCommand("vprof_on\n");
+	return true; // IsActive();
 }
 
 void
 VProfTool::Stop(void (*render)(const char *fmt, ...))
 {
-	g_VProfCurrentProfile.Stop();
+	// See note in VProfTool::Start
+	//
+	// g_VProfCurrentProfile.Stop();
+	engine->ServerCommand("vprof_off\n");
 	RenderHelp(render);
 }
 

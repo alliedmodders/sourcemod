@@ -35,7 +35,7 @@
 #include <IGameConfigs.h>
 #include "PlayerManager.h"
 #if defined MENU_DEBUG
-#include "Logger.h"
+#include <bridge/include/ILogger.h>
 #endif
 #include "logic_bridge.h"
 
@@ -47,6 +47,8 @@
 #include <game/shared/csgo/protobuf/cstrike15_usermessages.pb.h>
 #elif SOURCE_ENGINE == SE_BLADE
 #include <game/shared/berimbau/protobuf/berimbau_usermessages.pb.h>
+#elif SOURCE_ENGINE == SE_MCV
+#include <game/shared/vietnam/protobuf/vietnam_usermessages.pb.h>
 #endif
 
 extern const char *g_RadioNumTable[];
@@ -61,7 +63,7 @@ unsigned int g_RadioMenuTimeout = 0;
 #define MAX_MENUSLOT_KEYS 10
 
 static unsigned int s_RadioMaxPageItems = MAX_MENUSLOT_KEYS;
-
+static bool s_RadioClosesOnInvalidSlot = false;
 
 CRadioStyle::CRadioStyle()
 {
@@ -124,6 +126,12 @@ void CRadioStyle::OnSourceModLevelChange(const char *mapName)
 		}
 	}
 
+	const char *closes = g_pGameConf->GetKeyValue("RadioMenuClosesOnInvalidSlot");
+	if (closes != nullptr && strcmp(closes, "yes") == 0)
+	{
+		s_RadioClosesOnInvalidSlot = true;
+	}
+
 	g_Menus.SetDefaultStyle(this);
 
 	g_UserMsgs.HookUserMessage(g_ShowMenuId, this, false);
@@ -176,7 +184,7 @@ void CRadioStyle::OnUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFil
 {
 	int count = pFilter->GetRecipientCount();
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	int c = ((CCSUsrMsg_ShowMenu &)msg).display_time();
 #else
 	bf_read br(bf->GetBasePointer(), 3);
@@ -199,7 +207,7 @@ void CRadioStyle::OnUserMessageSent(int msg_id)
 	{
 		int client = g_last_clients[i];
 #if defined MENU_DEBUG
-		g_Logger.LogMessage("[SM_MENU] CRadioStyle got ShowMenu (client %d) (bInMenu %d)",
+		logger->LogMessage("[SM_MENU] CRadioStyle got ShowMenu (client %d) (bInMenu %d)",
 			client,
 			m_players[client].bInExternMenu);
 #endif
@@ -464,7 +472,16 @@ void CRadioMenuPlayer::Radio_Init(int keys, const char *title, const char *text)
 			sizeof(display_pkt), 
 			text);
 	}
-	display_keys = keys;
+
+	// Some games have implemented CHudMenu::SelectMenuItem to close the menu
+	// even if an invalid slot has been selected, which causes us a problem as
+	// we'll never get any notification from the client and we'll keep the menu
+	// alive on our end indefinitely. For these games, pretend that every slot
+	// is valid for selection so we're guaranteed to get a menuselect command.
+	// We don't want to do this for every game as the common SelectMenuItem
+	// implementation ignores invalid selections and keeps the menu open, which
+	// is a much nicer user experience.
+	display_keys = s_RadioClosesOnInvalidSlot ? 0x7ff : keys;
 }
 
 void CRadioMenuPlayer::Radio_Refresh()
@@ -485,9 +502,13 @@ void CRadioMenuPlayer::Radio_Refresh()
 		time = menuHoldTime - (unsigned int)(gpGlobals->curtime - menuStartTime);
 	}
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	// TODO: find what happens past 240 on CS:GO
 	CCSUsrMsg_ShowMenu *msg = (CCSUsrMsg_ShowMenu *)g_UserMsgs.StartProtobufMessage(g_ShowMenuId, players, 1, USERMSG_BLOCKHOOKS);
+	if (!msg)
+	{
+		return;
+	}
 	msg->set_bits_valid_slots(display_keys);
 	msg->set_display_time(time);
 	msg->set_menu_string(ptr);
@@ -578,7 +599,7 @@ bool CRadioMenu::DisplayAtItem(int client,
 							   IMenuHandler *alt_handler)
 {
 #if defined MENU_DEBUG
-	g_Logger.LogMessage("[SM_MENU] CRadioMenu::Display(%p) (client %d) (time %d)",
+	logger->LogMessage("[SM_MENU] CRadioMenu::Display(%p) (client %d) (time %d)",
 		this,
 		client,
 		time);

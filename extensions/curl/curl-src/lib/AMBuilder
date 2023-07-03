@@ -4,25 +4,25 @@ import os, platform
 builder.SetBuildFolder('libcurl')
 
 rvalue = {}
-for arch in SM.archs:
-  binary = SM.StaticLibrary(builder, 'curl', arch)
+for cxx in builder.targets:
+  binary = SM.StaticLibrary(builder, cxx, 'curl')
   binary.compiler.includes += [
     os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl-src', 'lib'),
     os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl-src', 'include')
   ]
 
-  if builder.target.platform == 'mac':
+  if binary.compiler.target.platform == 'mac':
     mac_version, ignore, ignore = platform.mac_ver()
     mac_tuple = mac_version.split('.')
     if int(mac_tuple[0]) >= 10 and int(mac_tuple[1]) >= 9:
       binary.compiler.defines += ['BUILTIN_STRLCAT']
-  elif builder.target.platform == 'windows':
+  elif binary.compiler.target.platform == 'windows':
     binary.compiler.defines += [
       'BUILDING_LIBCURL',
       'CURL_STATICLIB',
       'CURL_DISABLE_LDAP',
     ]
-  elif builder.target.platform == 'linux':
+  elif binary.compiler.target.platform == 'linux':
     binary.compiler.defines += ['_GNU_SOURCE']
 
   if binary.compiler.family == 'clang':
@@ -96,5 +96,5 @@ for arch in SM.archs:
     'url.c',
     'version.c'
   ]
-  rvalue[arch] = builder.Add(binary)
+  rvalue[binary.compiler.target.arch] = builder.Add(binary)
 

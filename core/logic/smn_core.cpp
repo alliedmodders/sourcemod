@@ -32,6 +32,7 @@
 #include <time.h>
 #include <string.h>
 #include <stdlib.h>
+#include <list>
 #include "common_logic.h"
 #include "Logger.h"
 
@@ -45,6 +46,7 @@
 
 #if defined PLATFORM_WINDOWS
 #include <windows.h>
+#include "sm_invalidparamhandler.h"
 #elif defined PLATFORM_POSIX
 #include <limits.h>
 #include <unistd.h>
@@ -55,6 +57,7 @@
 #include <bridge/include/CoreProvider.h>
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/IExtensionBridge.h>
+#include <sh_vector.h>
 
 using namespace SourceMod;
 using namespace SourcePawn;
@@ -65,7 +68,7 @@ HandleType_t g_FrameIter;
 
 IForward *g_OnLogAction = NULL;
 
-static ConVar *sm_datetime_format = NULL;
+ConVar *g_datetime_format = NULL;
 
 class CoreNativeHelpers : 
 	public SMGlobalClass,
@@ -91,7 +94,7 @@ public:
 			Param_Cell,
 			Param_String);
 		
-		sm_datetime_format = bridge->FindConVar("sm_datetime_format");
+		g_datetime_format = bridge->FindConVar("sm_datetime_format");
 	}
 	void OnHandleDestroy(HandleType_t type, void *object)
 	{
@@ -112,6 +115,71 @@ public:
 		handlesys->RemoveType(g_FrameIter, g_pCoreIdent);
 	}
 } g_CoreNativeHelpers;
+
+/**
+ * @brief Nearly identical to the standard core plugin iterator
+ * with one key difference. Next doesn't increment the counter
+ * the first time it is ran. This is a hack for the methodmap..
+ */
+class CMMPluginIterator
+	: public IPluginIterator,
+	  public IPluginsListener
+{
+public:
+	CMMPluginIterator(const CVector<SMPlugin *> *list)
+		: m_hasStarted(false)
+	{
+		for(auto iter = list->begin(); iter != list->end(); ++iter) {
+			m_list.push_back(*iter);
+		}
+		scripts->FreePluginList(list);
+
+		m_current = m_list.begin();
+
+		scripts->AddPluginsListener(this);
+	}
+
+	virtual ~CMMPluginIterator()
+	{
+		scripts->RemovePluginsListener(this);
+	}
+	virtual bool MorePlugins() override
+	{
+		return (m_current != m_list.end());
+	}
+	virtual IPlugin *GetPlugin() override
+	{
+		return *m_current;
+	}
+	virtual void NextPlugin() override
+	{
+		if(!m_hasStarted)
+		{
+			m_hasStarted = true;
+			return;
+		}
+
+		m_current++;
+	}
+	virtual void Release() override
+	{
+		delete this;
+	}
+
+public:
+	virtual void OnPluginDestroyed(IPlugin *plugin) override
+	{
+		if (*m_current == plugin)
+			m_current = m_list.erase(m_current);
+		else
+			m_list.remove(static_cast<SMPlugin *>(plugin));
+	}
+
+private:
+	std::list<SMPlugin *> m_list;
+	std::list<SMPlugin *>::iterator m_current;
+	bool m_hasStarted;
+};
 
 void LogAction(Handle_t hndl, int type, int client, int target, const char *message)
 {
@@ -145,7 +213,7 @@ void LogAction(Handle_t hndl, int type, int client, int target, const char *mess
 	g_Logger.LogMessage("[%s] %s", logtag, message);
 }
  
- static cell_t ThrowError(IPluginContext *pContext, const cell_t *params)
+static cell_t ThrowError(IPluginContext *pContext, const cell_t *params)
 {
 	char buffer[512];
 
@@ -173,19 +241,6 @@ static cell_t GetTime(IPluginContext *pContext, const cell_t *params)
 	return static_cast<cell_t>(t);
 }
 
-#if defined SUBPLATFORM_SECURECRT
-void _ignore_invalid_parameter(
-						const wchar_t * expression,
-						const wchar_t * function, 
-						const wchar_t * file, 
-						unsigned int line,
-						uintptr_t pReserved
-						)
-{
-	/* Wow we don't care, thanks Microsoft. */
-}
-#endif
-
 static cell_t FormatTime(IPluginContext *pContext, const cell_t *params)
 {
 	char *format, *buffer;
@@ -194,19 +249,20 @@ static cell_t FormatTime(IPluginContext *pContext, const cell_t *params)
 
 	if (format == NULL)
 	{
-		format = const_cast<char *>(bridge->GetCvarString(sm_datetime_format));
+		format = const_cast<char *>(bridge->GetCvarString(g_datetime_format));
 	}
 
-#if defined SUBPLATFORM_SECURECRT
-	_invalid_parameter_handler handler = _set_invalid_parameter_handler(_ignore_invalid_parameter);
+	time_t t;
+	size_t written = 0;
+	
+	// scope for InvalidParameterHandler
+	{
+#ifdef PLATFORM_WINDOWS
+		InvalidParameterHandler p;
 #endif
-
-	time_t t = (params[4] == -1) ? g_pSM->GetAdjustedTime() : (time_t)params[4];
-	size_t written = strftime(buffer, params[2], format, localtime(&t));
-
-#if defined SUBPLATFORM_SECURECRT
-	_set_invalid_parameter_handler(handler);
-#endif
+		t = (params[4] == -1) ? g_pSM->GetAdjustedTime() : (time_t)params[4];
+		written = strftime(buffer, params[2], format, localtime(&t));
+	}
 
 	if (params[2] && format[0] != '\0' && !written)
 	{
@@ -271,6 +327,60 @@ static cell_t ReadPlugin(IPluginContext *pContext, const cell_t *params)
 	}
 
 	pIter->NextPlugin();
+
+	return pPlugin->GetMyHandle();
+}
+
+static cell_t PluginIterator_Create(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginIterator *iter = new CMMPluginIterator(scripts->ListPlugins());
+
+	Handle_t hndl = handlesys->CreateHandle(g_PlIter, iter, pContext->GetIdentity(), g_pCoreIdent, NULL);
+
+	if (hndl == BAD_HANDLE)
+	{
+		iter->Release();
+	}
+
+	return hndl;
+}
+
+static cell_t PluginIterator_Next(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleSecurity sec{pContext->GetIdentity(), g_pCoreIdent};
+	HandleError err{};
+	IPluginIterator *pIter = nullptr;
+
+	if ((err=handlesys->ReadHandle(hndl, g_PlIter, &sec, (void **)&pIter)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
+	}
+
+	if(!pIter->MorePlugins())
+		return 0;
+
+	pIter->NextPlugin();
+	return 1;
+}
+
+static cell_t PluginIterator_Plugin_get(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleSecurity sec{pContext->GetIdentity(), g_pCoreIdent};
+	HandleError err{};
+	IPluginIterator *pIter = nullptr;
+
+	if ((err=handlesys->ReadHandle(hndl, g_PlIter, &sec, (void **)&pIter)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
+	}
+	
+	IPlugin *pPlugin = pIter->GetPlugin();
+	if (!pPlugin)
+	{
+		return BAD_HANDLE;
+	}
 
 	return pPlugin->GetMyHandle();
 }
@@ -758,18 +868,34 @@ static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 
 	NumberType size = static_cast<NumberType>(params[3]);
 
+	// new parameter added after SM 1.10; defaults to true for backwards compatibility
+	bool updateMemAccess = true;
+	if (params[0] >= 4)
+	{
+		updateMemAccess = params[4];
+	}
+
 	switch(size)
 	{
 	case NumberType_Int8:
-		SourceHook::SetMemAccess(addr, sizeof(uint8_t), SH_MEM_READ|SH_MEM_WRITE|SH_MEM_EXEC);
+		if (updateMemAccess)
+		{
+			SourceHook::SetMemAccess(addr, sizeof(uint8_t), SH_MEM_READ|SH_MEM_WRITE|SH_MEM_EXEC);
+		}
 		*reinterpret_cast<uint8_t*>(addr) = data;
 		break;
 	case NumberType_Int16:
-		SourceHook::SetMemAccess(addr, sizeof(uint16_t), SH_MEM_READ|SH_MEM_WRITE|SH_MEM_EXEC);
+		if (updateMemAccess)
+		{
+			SourceHook::SetMemAccess(addr, sizeof(uint16_t), SH_MEM_READ|SH_MEM_WRITE|SH_MEM_EXEC);
+		}
 		*reinterpret_cast<uint16_t*>(addr) = data;
 		break;
 	case NumberType_Int32:
-		SourceHook::SetMemAccess(addr, sizeof(uint32_t), SH_MEM_READ|SH_MEM_WRITE|SH_MEM_EXEC);
+		if (updateMemAccess)
+		{
+			SourceHook::SetMemAccess(addr, sizeof(uint32_t), SH_MEM_READ|SH_MEM_WRITE|SH_MEM_EXEC);
+		}
 		*reinterpret_cast<uint32_t*>(addr) = data;
 		break;
 	default:
@@ -943,16 +1069,16 @@ static cell_t LogStackTrace(IPluginContext *pContext, const cell_t *params)
 	g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 1);
 
 	IFrameIterator *it = pContext->CreateFrameIterator();
-	ke::Vector<ke::AString> arr = g_DbgReporter.GetStackTrace(it);
+	std::vector<std::string> arr = g_DbgReporter.GetStackTrace(it);
 	pContext->DestroyFrameIterator(it);
 
 	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
 
 	g_Logger.LogError("[SM] Stack trace requested: %s", buffer);
 	g_Logger.LogError("[SM] Called from: %s", pPlugin->GetFilename());
-	for (size_t i = 0; i < arr.length(); ++i)
+	for (size_t i = 0; i < arr.size(); ++i)
 	{
-		g_Logger.LogError("%s", arr[i].chars());
+		g_Logger.LogError("%s", arr[i].c_str());
 	}
 	return 0;
 }
@@ -964,7 +1090,7 @@ REGISTER_NATIVES(coreNatives)
 	{"FormatTime",				FormatTime},
 	{"GetPluginIterator",		GetPluginIterator},
 	{"MorePlugins",				MorePlugins},
-	{"ReadPlugin",				ReadPlugin},
+	{"ReadPlugin", 				ReadPlugin},
 	{"GetPluginStatus",			GetPluginStatus},
 	{"GetPluginFilename",		GetPluginFilename},
 	{"IsPluginDebugging",		IsPluginDebugging},
@@ -995,5 +1121,9 @@ REGISTER_NATIVES(coreNatives)
 	{"FrameIterator.LineNumber.get",			FrameIterator_LineNumber},
 	{"FrameIterator.GetFunctionName",			FrameIterator_GetFunctionName},
 	{"FrameIterator.GetFilePath",				FrameIterator_GetFilePath},
+
+	{"PluginIterator.PluginIterator", 			PluginIterator_Create},
+	{"PluginIterator.Next", 					PluginIterator_Next},
+	{"PluginIterator.Plugin.get", 				PluginIterator_Plugin_get},
 	{NULL,						NULL},
 };

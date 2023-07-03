@@ -62,6 +62,7 @@ struct ConVarInfo
 	bool sourceMod;						/**< Determines whether or not convar was created by a SourceMod plugin */
 	IChangeableForward *pChangeForward;	/**< Forward associated with convar */
 	ConVar *pVar;						/**< The actual convar */
+	IPlugin *pPlugin; 					/**< Originally owning plugin */
 	List<IConVarChangeListener *> changeListeners;
 
 	struct ConVarPolicy
@@ -70,18 +71,16 @@ struct ConVarInfo
 		{
 			const char *conVarChars = info->pVar->GetName();
 
-			ke::AString convarName = ke::AString(conVarChars).lowercase();
-			ke::AString input = ke::AString(name).lowercase();
+			std::string convarName = ke::Lowercase(conVarChars);
+			std::string input = ke::Lowercase(name);
 
 			return convarName == input;
 		}
 
 		static inline uint32_t hash(const detail::CharsAndLength &key)
 		{
-			ke::AString original(key.chars());
-			ke::AString lower = original.lowercase();
-
-			return detail::CharsAndLength(lower.chars()).hash();
+			std::string lower = ke::Lowercase(key.c_str());
+			return detail::CharsAndLength(lower.c_str()).hash();
 		}
 	};
 };
@@ -156,7 +155,7 @@ public:
 
 	bool IsQueryingSupported();
 
-	HandleError ReadConVarHandle(Handle_t hndl, ConVar **pVar);
+	HandleError ReadConVarHandle(Handle_t hndl, ConVar **pVar, IPlugin **ppPlugin = nullptr);
 
 	// Called via game hooks.
 	void OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue);
@@ -173,7 +172,7 @@ private:
 	/**
 	 * Adds a convar to a plugin's list.
 	 */
-	static void AddConVarToPluginList(IPluginContext *pContext, const ConVar *pConVar);
+	static void AddConVarToPluginList(IPlugin *plugin, const ConVar *pConVar);
 private:
 	HandleType_t m_ConVarType;
 	List<ConVarInfo *> m_ConVars;

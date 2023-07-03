@@ -36,7 +36,7 @@
 #include "MenuManager.h"
 #include "CellRecipientFilter.h"
 #if defined MENU_DEBUG
-#include "Logger.h"
+#include <bridge/include/ILogger.h>
 #endif
 #include "logic_bridge.h"
 #include "AutoHandleRooter.h"
@@ -59,7 +59,7 @@ Handle_t BaseMenuStyle::GetHandle()
 void BaseMenuStyle::AddClientToWatch(int client)
 {
 #if defined MENU_DEBUG
-	g_Logger.LogMessage("[SM_MENU] AddClientToWatch(%d)", client);
+	logger->LogMessage("[SM_MENU] AddClientToWatch(%d)", client);
 #endif
 	m_WatchList.push_back(client);
 }
@@ -67,7 +67,7 @@ void BaseMenuStyle::AddClientToWatch(int client)
 void BaseMenuStyle::RemoveClientFromWatch(int client)
 {
 #if defined MENU_DEBUG
-	g_Logger.LogMessage("[SM_MENU] RemoveClientFromWatch(%d)", client);
+	logger->LogMessage("[SM_MENU] RemoveClientFromWatch(%d)", client);
 #endif
 	m_WatchList.remove(client);
 }
@@ -75,7 +75,7 @@ void BaseMenuStyle::RemoveClientFromWatch(int client)
 void BaseMenuStyle::_CancelClientMenu(int client, MenuCancelReason reason, bool bAutoIgnore/* =false */)
 {
 #if defined MENU_DEBUG
-	g_Logger.LogMessage("[SM_MENU] _CancelClientMenu() (client %d) (bAutoIgnore %d) (reason %d)", client, bAutoIgnore, reason);
+	logger->LogMessage("[SM_MENU] _CancelClientMenu() (client %d) (bAutoIgnore %d) (reason %d)", client, bAutoIgnore, reason);
 #endif
 	CBaseMenuPlayer *player = GetMenuPlayer(client);
 	menu_states_t &states = player->states;
@@ -115,7 +115,7 @@ void BaseMenuStyle::_CancelClientMenu(int client, MenuCancelReason reason, bool 
 void BaseMenuStyle::CancelMenu(CBaseMenu *menu)
 {
 #if defined MENU_DEBUG
-	g_Logger.LogMessage("[SM_MENU] CancelMenu() (menu %p)", menu);
+	logger->LogMessage("[SM_MENU] CancelMenu() (menu %p)", menu);
 #endif
 	int maxClients = g_Players.GetMaxClients();
 	for (int i=1; i<=maxClients; i++)
@@ -135,7 +135,7 @@ void BaseMenuStyle::CancelMenu(CBaseMenu *menu)
 bool BaseMenuStyle::CancelClientMenu(int client, bool autoIgnore)
 {
 #if defined MENU_DEBUG
-	g_Logger.LogMessage("[SM_MENU] CancelClientMenu() (client %d) (bAutoIgnore %d)", client, autoIgnore);
+	logger->LogMessage("[SM_MENU] CancelClientMenu() (client %d) (bAutoIgnore %d)", client, autoIgnore);
 #endif
 	if (client < 1 || client > g_Players.MaxClients())
 	{
@@ -191,7 +191,7 @@ MenuSource BaseMenuStyle::GetClientMenu(int client, void **object)
 void BaseMenuStyle::OnClientDisconnected(int client)
 {
 #if defined MENU_DEBUG
-	g_Logger.LogMessage("[SM_MENU] OnClientDisconnected(%d)", client);
+	logger->LogMessage("[SM_MENU] OnClientDisconnected(%d)", client);
 #endif
 	CBaseMenuPlayer *player = GetMenuPlayer(client);
 	if (!player->bInMenu)
@@ -214,7 +214,7 @@ void BaseMenuStyle::ProcessWatchList()
 	}
 
 #if defined MENU_DEBUG
-	g_Logger.LogMessage("BaseMenuStyle::ProcessWatchList(%d,%d,%d,%d,%d,%p)", 
+	logger->LogMessage("BaseMenuStyle::ProcessWatchList(%d,%d,%d,%d,%d,%p)", 
 		m_WatchList.m_Size,
 		m_WatchList.m_FirstLink,
 		m_WatchList.m_FreeNodes,
@@ -232,7 +232,7 @@ void BaseMenuStyle::ProcessWatchList()
 #if defined MENU_DEBUG
 	if (total)
 	{
-		g_Logger.LogMessage("[SM_MENU] ProcessWatchList() found %d clients", total);
+		logger->LogMessage("[SM_MENU] ProcessWatchList() found %d clients", total);
 	}
 #endif
 
@@ -244,7 +244,7 @@ void BaseMenuStyle::ProcessWatchList()
 		client = do_lookup[i];
 		player = GetMenuPlayer(client);
 #if defined MENU_DEBUG
-		g_Logger.LogMessage("[SM_MENU] ProcessWatchList() (client %d) (bInMenu %d) (menuHoldTime %d) (curTime %f) (menuStartTime %f)",
+		logger->LogMessage("[SM_MENU] ProcessWatchList() (client %d) (bInMenu %d) (menuHoldTime %d) (curTime %f) (menuStartTime %f)",
 			client,
 			player->bInMenu,
 			player->menuHoldTime,
@@ -254,7 +254,7 @@ void BaseMenuStyle::ProcessWatchList()
 		if (!player->bInMenu || !player->menuHoldTime)
 		{
 #if defined MENU_DEBUG
-			g_Logger.LogMessage("[SM_MENU] ProcessWatchList() removing client %d", client);
+			logger->LogMessage("[SM_MENU] ProcessWatchList() removing client %d", client);
 #endif
 			m_WatchList.remove(client);
 			continue;
@@ -269,7 +269,7 @@ void BaseMenuStyle::ProcessWatchList()
 void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 {
 #if defined MENU_DEBUG
-	g_Logger.LogMessage("[SM_MENU] ClientPressedKey() (client %d) (key_press %d)", client, key_press);
+	logger->LogMessage("[SM_MENU] ClientPressedKey() (client %d) (key_press %d)", client, key_press);
 #endif
 	CBaseMenuPlayer *player = GetMenuPlayer(client);
 
@@ -311,9 +311,9 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 			clients[0] = client;
 			filter.Initialize(clients, 1);
 
-			const char *sound = g_Menus.GetMenuSound(type);
+			std::string *sound = g_Menus.GetMenuSound(type);
 
-			if (sound != NULL)
+			if (nullptr != sound && !sound->empty())
 			{
 				edict_t *pEdict = PEntityOfEntIndex(client);
 				if (pEdict)
@@ -327,10 +327,10 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 							client, 
 							CHAN_AUTO, 
 #if SOURCE_ENGINE >= SE_PORTAL2
-							sound, 
+							sound->c_str(),
 							-1, 
 #endif
-							sound, 
+							sound->c_str(),
 							VOL_NORM, 
 							ATTN_NORM, 
 #if SOURCE_ENGINE >= SE_PORTAL2
@@ -339,7 +339,7 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 							0, 
 							PITCH_NORM, 
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS \
-	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 							0,
 #endif
 							&pos);
@@ -412,7 +412,7 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 bool BaseMenuStyle::DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh, unsigned int time)
 {
 #if defined MENU_DEBUG
-	g_Logger.LogMessage("[SM_MENU] DoClientMenu() (client %d) (panel %p) (mh %p) (time %d)",
+	logger->LogMessage("[SM_MENU] DoClientMenu() (client %d) (panel %p) (mh %p) (time %d)",
 		client,
 		menu,
 		mh,
@@ -475,7 +475,7 @@ bool BaseMenuStyle::DoClientMenu(int client,
 								 unsigned int time)
 {
 #if defined MENU_DEBUG
-	g_Logger.LogMessage("[SM_MENU] DoClientMenu() (client %d) (menu %p) (mh %p) (time %d)",
+	logger->LogMessage("[SM_MENU] DoClientMenu() (client %d) (menu %p) (mh %p) (time %d)",
 		client,
 		menu,
 		mh,
@@ -487,7 +487,7 @@ bool BaseMenuStyle::DoClientMenu(int client,
 	if (!pPlayer || pPlayer->IsFakeClient() || !pPlayer->IsInGame())
 	{
 #if defined MENU_DEBUG
-		g_Logger.LogMessage("[SM_MENU] DoClientMenu(): Failed to display to client %d", client);
+		logger->LogMessage("[SM_MENU] DoClientMenu(): Failed to display to client %d", client);
 #endif
 		mh->OnMenuCancel(menu, client, MenuCancel_NoDisplay);
 		mh->OnMenuEnd(menu, MenuEnd_Cancelled);
@@ -498,7 +498,7 @@ bool BaseMenuStyle::DoClientMenu(int client,
 	if (player->bAutoIgnore)
 	{
 #if defined MENU_DEBUG
-		g_Logger.LogMessage("[SM_MENU] DoClientMenu(): Client %d is autoIgnoring", client);
+		logger->LogMessage("[SM_MENU] DoClientMenu(): Client %d is autoIgnoring", client);
 #endif
 		mh->OnMenuCancel(menu, client, MenuCancel_NoDisplay);
 		mh->OnMenuEnd(menu, MenuEnd_Cancelled);
@@ -517,7 +517,7 @@ bool BaseMenuStyle::DoClientMenu(int client,
 	if (player->bInMenu)
 	{
 #if defined MENU_DEBUG
-		g_Logger.LogMessage("[SM_MENU] DoClientMenu(): Cancelling old menu to client %d", client);
+		logger->LogMessage("[SM_MENU] DoClientMenu(): Cancelling old menu to client %d", client);
 #endif
 		_CancelClientMenu(client, MenuCancel_Interrupted, true);
 	}
@@ -532,7 +532,7 @@ bool BaseMenuStyle::DoClientMenu(int client,
 	if (!display)
 	{
 #if defined MENU_DEBUG
-		g_Logger.LogMessage("[SM_MENU] DoClientMenu(): Failed to render to client %d", client);
+		logger->LogMessage("[SM_MENU] DoClientMenu(): Failed to render to client %d", client);
 #endif
 		player->bAutoIgnore = false;
 		player->bInMenu = false;
@@ -562,7 +562,7 @@ bool BaseMenuStyle::DoClientMenu(int client,
 	player->bAutoIgnore = false;
 
 #if defined MENU_DEBUG
-	g_Logger.LogMessage("[SM_MENU] DoClientMenu() finished successfully (client %d)", client);
+	logger->LogMessage("[SM_MENU] DoClientMenu() finished successfully (client %d)", client);
 #endif
 
 	return true;
@@ -571,7 +571,7 @@ bool BaseMenuStyle::DoClientMenu(int client,
 bool BaseMenuStyle::RedoClientMenu(int client, ItemOrder order)
 {
 #if defined MENU_DEBUG
-	g_Logger.LogMessage("[SM_MENU] RedoClientMenu() (client %d) (order %d)", client, order);
+	logger->LogMessage("[SM_MENU] RedoClientMenu() (client %d) (order %d)", client, order);
 #endif
 	CBaseMenuPlayer *player = GetMenuPlayer(client);
 	menu_states_t &states = player->states;
@@ -581,7 +581,7 @@ bool BaseMenuStyle::RedoClientMenu(int client, ItemOrder order)
 	if (!display)
 	{
 #if defined MENU_DEBUG
-		g_Logger.LogMessage("[SM_MENU] RedoClientMenu(): Failed to render menu");
+		logger->LogMessage("[SM_MENU] RedoClientMenu(): Failed to render menu");
 #endif
 		if (player->menuHoldTime)
 		{
@@ -598,7 +598,7 @@ bool BaseMenuStyle::RedoClientMenu(int client, ItemOrder order)
 	player->bAutoIgnore = false;
 
 #if defined MENU_DEBUG
-	g_Logger.LogMessage("[SM_MENU] RedoClientMenu(): Succeeded to client %d", client);
+	logger->LogMessage("[SM_MENU] RedoClientMenu(): Succeeded to client %d", client);
 #endif
 
 	return true;
@@ -628,49 +628,49 @@ Handle_t CBaseMenu::GetHandle()
 bool CBaseMenu::AppendItem(const char *info, const ItemDrawInfo &draw)
 {
 	if (m_Pagination == (unsigned)MENU_NO_PAGINATION
-		&& m_items.length() >= m_pStyle->GetMaxPageItems())
+		&& m_items.size() >= m_pStyle->GetMaxPageItems())
 	{
 		return false;
 	}
 
-	CItem item;
+	CItem item(m_items.size());
 
 	item.info = info;
 	if (draw.display)
-		item.display = new ke::AString(draw.display);
+		item.display = std::make_unique<std::string>(draw.display);
 	item.style = draw.style;
 
-	m_items.append(ke::Move(item));
+	m_items.push_back(std::move(item));
 	return true;
 }
 
 bool CBaseMenu::InsertItem(unsigned int position, const char *info, const ItemDrawInfo &draw)
 {
 	if (m_Pagination == (unsigned)MENU_NO_PAGINATION &&
-	    m_items.length() >= m_pStyle->GetMaxPageItems())
+	    m_items.size() >= m_pStyle->GetMaxPageItems())
 	{
 		return false;
 	}
 
-	if (position >= m_items.length())
+	if (position >= m_items.size())
 		return false;
 
-	CItem item;
+	CItem item(position);
 	item.info = info;
 	if (draw.display)
-		item.display = new ke::AString(draw.display);
+		item.display = std::make_unique<std::string>(draw.display);
 	item.style = draw.style;
 
-	m_items.insert(position, ke::Move(item));
+	m_items.emplace(m_items.begin() + position, std::move(item));
 	return true;
 }
 
 bool CBaseMenu::RemoveItem(unsigned int position)
 {
-	if (position >= m_items.length())
+	if (position >= m_items.size())
 		return false;
 
-	m_items.remove(position);
+	m_items.erase(m_items.begin() + position);
 	return true;
 }
 
@@ -679,23 +679,84 @@ void CBaseMenu::RemoveAllItems()
 	m_items.clear();
 }
 
-const char *CBaseMenu::GetItemInfo(unsigned int position, ItemDrawInfo *draw/* =NULL */)
+const char *CBaseMenu::GetItemInfo(unsigned int position, ItemDrawInfo *draw/* =NULL */, int client/* =0 */)
 {
-	if (position >= m_items.length())
+	if (position >= m_items.size())
 		return NULL;
+
+	if (client > 0 && position < m_RandomMaps[client].size())
+	{
+		position = m_RandomMaps[client][position];
+	}
 
 	if (draw)
 	{
-		draw->display = m_items[position].display->chars();
+		draw->display = m_items[position].display->c_str();
 		draw->style = m_items[position].style;
 	}
 
-	return m_items[position].info.chars();
+	return m_items[position].info.c_str();
+}
+
+void CBaseMenu::ShufflePerClient(int start, int stop)
+{
+	// limit map len to 255 items since it's using uint8
+	int length = MIN(GetItemCount(), 255);
+	if (stop >= 0)
+		length = MIN(length, stop);
+
+	for (int i = 1; i <= SM_MAXPLAYERS; i++)
+	{
+		// populate per-client map ...
+		m_RandomMaps[i].resize(length);
+		for (int j = 0; j < length; j++)
+			m_RandomMaps[i][j] = j;
+
+		// ... and random shuffle it
+		for (int j = length - 1; j > start; j--)
+		{
+			int x = rand() % (j - start + 1) + start;
+			uint8_t tmp = m_RandomMaps[i][x];
+			m_RandomMaps[i][x] = m_RandomMaps[i][j];
+			m_RandomMaps[i][j] = tmp;
+		}
+	}
+}
+
+void CBaseMenu::SetClientMapping(int client, int *array, int length)
+{
+	length = MIN(length, 255);
+	m_RandomMaps[client].resize(length);
+	for (int i = 0; i < length; i++)
+	{
+		m_RandomMaps[client][i] = array[i];
+	}
+}
+
+bool CBaseMenu::IsPerClientShuffled()
+{
+	for (int i = 1; i <= SM_MAXPLAYERS; i++)
+	{
+		if(m_RandomMaps[i].size() > 0)
+			return true;
+	}
+	return false;
+}
+
+unsigned int CBaseMenu::GetRealItemIndex(int client, unsigned int position)
+{
+	if (client > 0 && position < m_RandomMaps[client].size())
+	{
+		position = m_RandomMaps[client][position];
+		return m_items[position].index;
+	}
+
+	return position;
 }
 
 unsigned int CBaseMenu::GetItemCount()
 {
-	return m_items.length();
+	return m_items.size();
 }
 
 bool CBaseMenu::SetPagination(unsigned int itemsPerPage)
@@ -733,7 +794,7 @@ void CBaseMenu::SetDefaultTitle(const char *message)
 
 const char *CBaseMenu::GetDefaultTitle()
 {
-	return m_Title.chars();
+	return m_Title.c_str();
 }
 
 void CBaseMenu::Cancel()
@@ -744,7 +805,7 @@ void CBaseMenu::Cancel()
 	}
 
 #if defined MENU_DEBUG
-	g_Logger.LogMessage("[SM_MENU] CBaseMenu::Cancel(%p) (m_bShouldDelete %d)",
+	logger->LogMessage("[SM_MENU] CBaseMenu::Cancel(%p) (m_bShouldDelete %d)",
 		this,
 		m_bShouldDelete);
 #endif
@@ -768,7 +829,7 @@ void CBaseMenu::Destroy(bool releaseHandle)
 	}
 
 #if defined MENU_DEBUG
-	g_Logger.LogMessage("[SM_MENU] CBaseMenu::Destroy(%p) (release %d) (m_bCancelling %d) (m_bShouldDelete %d)",
+	logger->LogMessage("[SM_MENU] CBaseMenu::Destroy(%p) (release %d) (m_bCancelling %d) (m_bShouldDelete %d)",
 		this,
 		releaseHandle,
 		m_bCancelling,
@@ -825,5 +886,5 @@ IMenuHandler *CBaseMenu::GetHandler()
 
 unsigned int CBaseMenu::GetBaseMemUsage()
 {
-	return m_Title.length() + (m_items.length() * sizeof(CItem));
+	return m_Title.size() + (m_items.size() * sizeof(CItem));
 }

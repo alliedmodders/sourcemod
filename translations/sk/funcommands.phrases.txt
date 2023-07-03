@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"sk"		"Podpáliť hráča"
+	}
+
+	"FireBomb player"
+	{
+		"sk"		"Ohnivá bomba na hráča"
+	}
+
+	"Freeze player"
+	{
+		"sk"		"Zmraziť hráča"
+	}
+
+	"FreezeBomb player"
+	{
+		"sk"		"Zmrazovacia bomba na hráča"
+	}
+
+	"TimeBomb player"
+	{
+		"sk"		"Časovaná bomba na hráča"
+	}
+
+	"Beacon player"
+	{
+		"sk"		"Zvýrazniť hráča"
+	}
+
+	"NoClip player"
+	{
+		"sk"		"Zapnúť NoClip pre hráča"
+	}
+
+	"Blind player"
+	{
+		"sk"		"Oslepiť hráča"
+	}
+
+	"Drug player"
+	{
+		"sk"		"Nadrogovať hráča"
+	}
+
+	"Gravity player"
+	{
+		"sk"		"Zmeniť gravitáciu hráča"
+	}
+
+	"Blind amount"
+	{
+		"sk"		"Koľko oslepiť?"
+	}
+
+	"Fully blind"
+	{
+		"sk"		"Úplne slepý"
+	}
+
+	"Half blind"
+	{
+		"sk"		"Poloslepý"
+	}
+
+	"No blind"
+	{
+		"sk"		"Zrušiť oslepenie"
+	}
+
+	"Gravity amount"
+	{
+		"sk"		"Hodnota gravitácie?"
+	}
+
+	"Gravity Very High"
+	{
+		"sk"		"Veľmi vysoká gravitácia"
+	}
+
+	"Gravity High"
+	{
+		"sk"		"Vysoká gravitácia"
+	}
+
+	"Gravity Normal"
+	{
+		"sk"		"Normálna gravitácia"
+	}
+
+	"Gravity Low"
+	{
+		"sk"		"Nízka gravitácia"
+	}
+
+	"Gravity Very Low"
+	{
+		"sk"		"Veľmi nízka gravitácia"
+	}
+
+	"Set target on fire"
+	{
+		"sk"		"{1} bol podpálený."
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"sk"		"aplikovaná ohňivá bomba na {1}."
+	}
+
+	"Froze target"
+	{
+		"sk"		"{1} bol zmrazený."
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"sk"		"aplikovaná mraziaca bomba na {1}."
+	}
+
+	"Toggled beacon on target"
+	{
+		"sk"		"aplikované zvýraznenie na hráča {1}."
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"sk"		"aplikovaná časovaná bomba na {1}."
+	}
+
+	"Toggled noclip on target"
+	{
+		"sk"		"aplikovaný noclip na {1}."
+	}
+
+	"Toggled drug on target"
+	{
+		"sk"		"aplikované drogy na {1}."
+	}
+
+	"Set blind on target"
+	{
+		"sk"		"{1} bol oslepený."
+	}
+
+	"Set gravity on target"
+	{
+		"sk"		"Nastavená gravitácia hráča {1}."
+	}
+
+	"Till Explodes"
+	{
+		"sk"		"{2} sekúnd kým {1} vybuchne."
+	}
+
+	"Unfrozen"
+	{
+		"sk"		"Teraz si odmrazený."
+	}
+
+	"You will be unfrozen"
+	{
+		"sk"		"Budeš odmrazený za {1} sekúnd."
+	}
+
+}

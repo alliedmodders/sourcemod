@@ -32,6 +32,8 @@
 
 #include "common_logic.h"
 #include <IMemoryUtils.h>
+#include <am-hashmap.h>
+#include <memory>
 #if defined PLATFORM_LINUX || defined PLATFORM_APPLE
 #include <sh_vector.h>
 #include "sm_symtable.h"
@@ -49,6 +51,7 @@ struct DynLibInfo
 {
 	void *baseAddress;
 	size_t memorySize;
+	std::unique_ptr<char[]> originalCopy;
 };
 
 #if defined PLATFORM_LINUX || defined PLATFORM_APPLE
@@ -73,7 +76,7 @@ public: // IMemoryUtils
 	void *FindPattern(const void *libPtr, const char *pattern, size_t len);
 	void *ResolveSymbol(void *handle, const char *symbol);
 public:
-	bool GetLibraryInfo(const void *libPtr, DynLibInfo &lib);
+	const DynLibInfo *GetLibraryInfo(const void *libPtr);
 #if defined PLATFORM_LINUX || defined PLATFORM_APPLE
 private:
 	CVector<LibSymbolTable *> m_SymTables;
@@ -83,6 +86,8 @@ private:
 	SInt32 m_OSXMinor;
 #endif
 #endif
+	typedef ke::HashMap<void *, DynLibInfo, ke::PointerPolicy<void> > LibraryInfoMap;
+	LibraryInfoMap m_InfoMap;
 };
 
 extern MemoryUtils g_MemUtils;

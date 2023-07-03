@@ -3,11 +3,11 @@
 use strict;
 use Cwd;
 use File::Basename;
+use File::Copy;
 use File::stat;
 use File::Temp qw/ tempfile :seekable/;
 use Net::FTP;
-use IO::Uncompress::Gunzip qw(gunzip $GunzipError) ;
-use Time::localtime;
+use autodie qw(:all);
 
 my ($ftp_file, $ftp_host, $ftp_user, $ftp_pass, $ftp_path, $tag);
 
@@ -29,73 +29,26 @@ chomp $ftp_path;
 my ($myself, $path) = fileparse($0);
 chdir($path);
 
+use FindBin;
+use lib $FindBin::Bin;
 require 'helpers.pm';
 
 #Switch to the output folder.
 chdir(Build::PathFormat('../../../OUTPUT/package'));
 
-print "Downloading languages.cfg...\n";
-# Don't check certificate. It will fail on the slaves and we're resolving to internal addressing anyway
-system('wget --no-check-certificate -q -O addons/sourcemod/configs/languages.cfg "https://sm.alliedmods.net/translator/index.php?go=translate&op=export_langs"');
-open(my $fh, '<', 'addons/sourcemod/configs/languages.cfg')
-    or die "Could not open languages.cfg' $!";
- 
-while (my $ln = <$fh>) {
-    if ($ln =~ /"([^"]+)"\s*"[^"]+.*\((\d+)\) /)
-    {
-	my $abbr = $1;
-	my $id = $2;
-
-	print "Downloading language pack $abbr.zip...\n";
-        # Don't check certificate. It will fail on the slaves and we're resolving to internal addressing anyway
-        system("wget --no-check-certificate -q -O $abbr.zip \"https://sm.alliedmods.net/translator/index.php?go=translate&op=export&lang_id=$id\"");
-        system("unzip -qo $abbr.zip -d addons/sourcemod/translations/");
-        unlink("$abbr.zip");
-    }
-}
-close($fh);
-
-my $needNewGeoIP = 1;
-if (-e '../GeoIP.dat.gz')
+unless (-e '../GeoLite2-City_20191217.tar')
 {
-	my $stats = stat('../GeoIP.dat.gz');
-	if ($stats->size != 0)
-	{
-		my $fileModifiedTime = $stats->mtime;
-		my $fileModifiedMonth = localtime($fileModifiedTime)->mon;
-		my $currentMonth = localtime->mon;
-		my $thirtyOneDays = 60 * 60 * 24 * 31;
-
-		# GeoIP file only updates once per month
-		if ($currentMonth == $fileModifiedMonth || (time() - $fileModifiedTime) < $thirtyOneDays)
-		{
-			$needNewGeoIP = 0;
-		}
-	}
-}
-
-if ($needNewGeoIP)
-{
-    print "Downloading GeoIP.dat...\n";
+    print "Downloading GeoLite2-City.mmdb...\n";
     # Don't check certificate. It will fail on the slaves and we're resolving to internal addressing anyway
-    system('wget --no-check-certificate -q -O ../GeoIP.dat.gz https://sm.alliedmods.net/GeoIP.dat.gz');
+    system('wget --no-check-certificate -q -O ../GeoLite2-City_20191217.tar.gz https://sm.alliedmods.net/GeoLite2-City_20191217.tar.gz');
+    system('gunzip ../GeoLite2-City_20191217.tar.gz');
+    system('tar -C ../ -xf ../GeoLite2-City_20191217.tar');
+    copy('../GeoLite2-City_20191217/GeoLite2-City.mmdb', 'addons/sourcemod/configs/geoip/GeoLite2-City.mmdb');
 }
 else
 {
-    print "Reusing existing GeoIP.dat\n";
+    print "Reusing existing GeoLite2-City.mmdb\n";
 }
-
-my $geoIPfile = 'addons/sourcemod/configs/geoip/GeoIP.dat';
-if (-e $geoIPfile) {
-	unlink($geoIPfile);
-}
-
-open(my $fh, ">", $geoIPfile) 
-    	or die "cannot open $geoIPfile for writing: $!";
-binmode($fh);
-gunzip '../GeoIP.dat.gz' => $fh
-        or die "gunzip failed: $GunzipError\n";
-close($fh);
 
 my ($version);
 
@@ -176,7 +129,13 @@ $ftp->put($tmpfile, $latest)
 
 $ftp->close();
 
-print "File sent to drop site as $filename -- build succeeded.\n";
+print "File sent to drop site as $filename.\n";
+
+print "Deleting file \"$filename\"...\n";
+unlink($filename) or die "Cannot delete file \"$filename\"\n";
+print "Successfully deleted file.\n";
+
+print "Build succeeded.\n";
 
 exit(0);
 

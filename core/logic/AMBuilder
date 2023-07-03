@@ -1,8 +1,8 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-for arch in SM.archs:
-  binary = SM.Library(builder, 'sourcemod.logic', arch)
+for cxx in builder.targets:
+  binary = SM.Library(builder, cxx, 'sourcemod.logic')
   binary.compiler.cxxincludes += [
     builder.sourcePath,
     os.path.join(builder.sourcePath, 'core', 'logic'),
@@ -17,9 +17,9 @@ for arch in SM.archs:
     'SM_LOGIC'
   ]
   
-  if builder.target.platform == 'linux':
+  if binary.compiler.target.platform == 'linux':
     binary.compiler.postlink += ['-lpthread', '-lrt']
-  elif builder.target.platform == 'mac':
+  elif binary.compiler.target.platform == 'mac':
     binary.compiler.cflags += ['-Wno-deprecated-declarations']
     binary.compiler.postlink += ['-framework', 'CoreServices']
 
@@ -35,8 +35,7 @@ for arch in SM.archs:
     'smn_maplists.cpp',
     'ADTFactory.cpp',
     'smn_adt_stack.cpp',
-    'thread/ThreadWorker.cpp',
-    'thread/BaseWorker.cpp',
+    'BaseWorker.cpp',
     'ThreadSupport.cpp',
     'smn_float.cpp',
     'TextParsers.cpp',
@@ -85,14 +84,11 @@ for arch in SM.archs:
     'smn_halflife.cpp',
     'FrameIterator.cpp',
     'DatabaseConfBuilder.cpp',
+    'LumpManager.cpp',
+    'smn_entitylump.cpp',
   ]
 
-  if arch == 'x64':
+  if binary.compiler.target.arch == 'x86_64':
     binary.sources += ['PseudoAddrManager.cpp']
-
-  if builder.target.platform == 'windows':
-    binary.sources += ['thread/WinThreads.cpp']
-  else:
-    binary.sources += ['thread/PosixThreads.cpp']
 
   SM.binaries += [builder.Add(binary)]

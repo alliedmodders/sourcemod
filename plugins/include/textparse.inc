@@ -147,6 +147,14 @@ methodmap SMCParser < Handle
 	// @return              An SMCParseError result.
 	public native SMCError ParseFile(const char[] file, int &line = 0, int &col = 0);
 
+	// Parses raw UTF-8 text as an SMC file.
+	//
+	// @param string        A string containing an SMC file.
+	// @param line          An optional variable to store the last line number read.
+	// @param col           An optional variable to store the last column number read.
+	// @return              An SMCParseError result.
+	public native SMCError ParseString(const char[] string, int &line = 0, int &col = 0);
+
 	// Sets the callback for receiving SMC_ParseStart events.
 	property SMC_ParseStart OnStart {
 		public native set(SMC_ParseStart func);

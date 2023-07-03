@@ -1,0 +1,138 @@
+"Phrases"
+{
+	"Unable to find cvar"
+	{
+		"vi"		"Không thể tìm thấy cvar: {1}."
+	}
+
+	"No access to cvar"
+	{
+		"vi"		"Bạn không có quyền truy cập cvar này."
+	}
+
+	"Value of cvar"
+	{
+		"vi"		"Giá trị của cvar \"{1}\": \"{2}\""
+	}
+
+	"Cvar changed"
+	{
+		"vi"		"Đã thay đổi cvar \"{1}\" thành \"{2}\"."
+	}
+
+	"Config not found"
+	{
+		"vi"		"Không tìm thấy tệp cấu hình \"{1}\"."
+	}
+
+	"Executed config"
+	{
+		"vi"		"Đã thực thi cấu hình \"{1}\"."
+	}
+
+	"Permabanned player"
+	{
+		"vi"		"Đã cấm vĩnh viễn người chơi \"{1}\"."
+	}
+
+	"Permabanned player reason"
+	{
+		"vi"		"Đã cấm vĩnh viễn người chơi \"{1}\". (Lý do: {2})"
+	}
+
+	"Banned player"
+	{
+		"vi"		"Đã cấm người chơi \"{1}\" trong vòng {2} phút."
+	}
+
+	"Banned player reason"
+	{
+		"vi"		"Đã cấm người chơi \"{1}\" trong vòng {2} phút. (Lý do: {3})."
+	}
+
+	"Removed bans matching"
+	{
+		"vi"		"Đã bỏ lệnh cấm trùng bộ lọc: {1}."
+	}
+
+	"Ban added"
+	{
+		"vi"		"Đã thêm lệnh cấm."
+	}
+
+	"Admin cache refreshed"
+	{
+		"vi"		"Bộ nhớ cache của quản trị viên đã được làm mới."
+	}
+
+	"Identify player"
+	{
+		"vi"		"Xác định người chơi"
+	}
+
+	"Choose Map"
+	{
+		"vi"		"Chọn bản đồ"
+	}
+
+	"Exec CFG"
+	{
+		"vi"		"Thực thi CFG"
+	}
+
+	"Admin logged in as"
+	{
+		"vi"		"\"{1}\" đã đăng nhập bằng \"{2}\" với quyền: {3}"
+	}
+
+	"Admin logged in anon"
+	{
+		"vi"		"\"{1}\" có quyền: {2}"
+	}
+
+	"Player is not an admin"
+	{
+		"vi"		"\"{1}\" không phải là một quản trị viên."
+	}
+
+	"Player is an admin"
+	{
+		"vi"		"\"{1}\" là một quản trị viên."
+	}
+
+	"Username"
+	{
+		"vi"		"Tên người dùng"
+	}
+
+	"Kicked target"
+	{
+		"vi"		"Đã đuổi {1}"
+	}
+
+	"Admin access"
+	{
+		"vi"		"Truy cập quản trị viên"
+	}
+
+	"Cvar is now protected"
+	{
+		"vi"		"Cvar {1} đã được bảo vệ."
+	}
+
+	"Kicked target reason"
+	{
+		"vi"		"Đã đuổi {1} (Lý do: {2})"
+	}
+
+	"Please select a map"
+	{
+		"vi"		"Hãy chọn một bản đồ"
+	}
+
+	"Choose Config"
+	{
+		"vi"		"Chọn cấu hình"
+	}
+
+}

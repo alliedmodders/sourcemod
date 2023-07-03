@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"cze"		"Zapalit hrace"
+	}
+
+	"FireBomb player"
+	{
+		"cze"		"Udelat z hrace ohnivou bombu"
+	}
+
+	"Freeze player"
+	{
+		"cze"		" Zmrazit hrace"
+	}
+
+	"FreezeBomb player"
+	{
+		"cze"		"Udelat z hrace mrazici bombu"
+	}
+
+	"TimeBomb player"
+	{
+		"cze"		" Udelat z hrace casovanou bombu"
+	}
+
+	"Beacon player"
+	{
+		"cze"		"Oznacit hrace"
+	}
+
+	"NoClip player"
+	{
+		"cze"		"Dat hraci NoClip"
+	}
+
+	"Blind player"
+	{
+		"cze"		"Oslepit hrace"
+	}
+
+	"Drug player"
+	{
+		"cze"		"Zfetovat hrace"
+	}
+
+	"Gravity player"
+	{
+		"cze"		"Nastavit hraci gravitaci"
+	}
+
+	"Blind amount"
+	{
+		"cze"		"Sila oslepeni?"
+	}
+
+	"Fully blind"
+	{
+		"cze"		"Uplne oslepeni"
+	}
+
+	"Half blind"
+	{
+		"cze"		"Polovicni oslepeni"
+	}
+
+	"No blind"
+	{
+		"cze"		"Zadne oslepeni"
+	}
+
+	"Gravity amount"
+	{
+		"cze"		"Sila gravitace?"
+	}
+
+	"Gravity Very High"
+	{
+		"cze"		"Velmi vysoka gravitace"
+	}
+
+	"Gravity High"
+	{
+		"cze"		"Vysoka gravitace"
+	}
+
+	"Gravity Normal"
+	{
+		"cze"		"Normalni gravitace"
+	}
+
+	"Gravity Low"
+	{
+		"cze"		"Nizka gravitace"
+	}
+
+	"Gravity Very Low"
+	{
+		"cze"		"Velmi nizka gravitace"
+	}
+
+	"Set target on fire"
+	{
+		"cze"		"zapalil hrace {1}."
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"cze"		"zmenil hrace {1} v ohnivou bombu."
+	}
+
+	"Froze target"
+	{
+		"cze"		"zmrazil hrace {1}."
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"cze"		"zmenil hrace {1} v mrazici bombu."
+	}
+
+	"Toggled beacon on target"
+	{
+		"cze"		"oznacil hrace {1}."
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"cze"		"zmenil hrace {1} v casovanou bombu."
+	}
+
+	"Toggled noclip on target"
+	{
+		"cze"		"prepl NoClip na  hraci {1}."
+	}
+
+	"Toggled drug on target"
+	{
+		"cze"		"zfetoval hrace {1}."
+	}
+
+	"Set blind on target"
+	{
+		"cze"		"oslepil hrace {1}."
+	}
+
+	"Set gravity on target"
+	{
+		"cze"		"nastavil gravitaci hraci {1}."
+	}
+
+	"Till Explodes"
+	{
+		"cze"		"{2} sekund(y) nez {1} vybuchne."
+	}
+
+	"Unfrozen"
+	{
+		"cze"		"Byl jsi rozmrazen."
+	}
+
+	"You will be unfrozen"
+	{
+		"cze"		"Budes rozmrazen za {1} vterin."
+	}
+
+}

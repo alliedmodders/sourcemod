@@ -288,6 +288,8 @@ public int MenuHandler_TimeBomb(Menu menu, MenuAction action, int param1, int pa
 			DisplayTimeBombMenu(param1);
 		}
 	}
+
+	return 0;
 }
 
 public Action Command_TimeBomb(int client, int args)

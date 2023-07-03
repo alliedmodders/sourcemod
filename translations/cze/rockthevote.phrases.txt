@@ -1,0 +1,68 @@
+"Phrases"
+{
+	"Rock The Vote"
+	{
+		"cze"		"Rock the Vote:"
+	}
+
+	"RTV Not Allowed"
+	{
+		"cze"		"Rock the Vote zatim neni povoleno."
+	}
+
+	"RTV Started"
+	{
+		"cze"		"Rock the Vote jiz zacalo."
+	}
+
+	"RTV Ended"
+	{
+		"cze"		"RTV jiz skoncilo, nemuzete ho znovu zacit ani nominovat mapy."
+	}
+
+	"Already Voted"
+	{
+		"cze"		"Uz jste hlasoval pro Rock the Vote. ({1} hlasu z {2} potrebnych)"
+	}
+
+	"Minimal Players Not Met"
+	{
+		"cze"		"Nebyl dosahnut minimalni pocet potrebnych hracu."
+	}
+
+	"RTV Requested"
+	{
+		"cze"		"{1} chce zacit Rock the Vote. ({2} hlasu z {3} potrebnych)"
+	}
+
+	"RTV Vote Ready"
+	{
+		"cze"		"Rock the Vote zacalo!"
+	}
+
+	"Don't Change"
+	{
+		"cze"		"Zachovat soucasnou mapu"
+	}
+
+	"Selected Map"
+	{
+		"cze"		"{1} hlasoval pro {2}"
+	}
+
+	"No Votes"
+	{
+		"cze"		"Nebyly prijaty zadne hlasy pro Rock the Vote, zachovana soucasna mapa."
+	}
+
+	"Current Map Stays"
+	{
+		"cze"		"Soucasna mapa pokracuje! Rock the Vote promluvilo!"
+	}
+
+	"Changing Maps"
+	{
+		"cze"		"Zmena mapy na {1}! Rock the Vote promluvilo!"
+	}
+
+}

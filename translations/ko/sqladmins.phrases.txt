@@ -1,0 +1,78 @@
+"Phrases"
+{
+	"Invalid authtype"
+	{
+		"ko"		"인증 종류는 반드시 'steam', 'name', 'ip' 중 하나여야 합니다"
+	}
+
+	"Invalid immunity"
+	{
+		"ko"		"면책 수준은 반드시 양의 정수여야 합니다."
+	}
+
+	"SQL Admin already exists"
+	{
+		"ko"		"그 자격증명의 관리자가 이미 존재합니다."
+	}
+
+	"SQL Admin added"
+	{
+		"ko"		"데이터베이스에 관리자를 성공적으로 추가했습니다."
+	}
+
+	"SQL Admin deleted"
+	{
+		"ko"		"데이터베이스에서 관리자를 성공적으로 삭제했습니다."
+	}
+
+	"SQL Admin not found"
+	{
+		"ko"		"주어진 자격증명과 일치하는 관리자를 찾을 수 없습니다."
+	}
+
+	"SQL Group already exists"
+	{
+		"ko"		"같은 이름의 그룹이 이미 존재합니다."
+	}
+
+	"SQL Group added"
+	{
+		"ko"		"데이터베이스에 그룹을 성공적으로 추가했습니다."
+	}
+
+	"SQL Group deleted"
+	{
+		"ko"		"데이터베이스에서 그룹을 성공적으로 삭제했습니다."
+	}
+
+	"SQL Group not found"
+	{
+		"ko"		"주어진 이름과 일치하는 그룹을 찾을 수 없습니다."
+	}
+
+	"SQL Admin groups reset"
+	{
+		"ko"		"관리자의 그룹을 성공적으로 초기화했습니다."
+	}
+
+	"SQL Group X not found"
+	{
+		"ko"		"그룹 \"{1}\" 을 찾을 수 없었습니다."
+	}
+
+	"SQL Group X failed to bind"
+	{
+		"ko"		"그룹 \"{1}\" 을 정의하는 데 실패했습니다."
+	}
+
+	"Added group to user"
+	{
+		"ko"		"주어진 관리자에게 성공적으로 하나의 그룹을 추가했습니다."
+	}
+
+	"Added groups to user"
+	{
+		"ko"		"주어진 관리자에게 성공적으로 {1} 개의 그룹을 추가했습니다."
+	}
+
+}

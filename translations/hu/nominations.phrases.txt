@@ -1,0 +1,68 @@
+"Phrases"
+{
+	"Already Nominated"
+	{
+		"hu"		"Mar megjelolted a kedvenc palyadat"
+	}
+
+	"Max Nominations"
+	{
+		"hu"		"Nem lehet tobb kedvenc palyat megjelolni"
+	}
+
+	"Map Already In Vote"
+	{
+		"hu"		"{1} palya mar szerepel a listaban"
+	}
+
+	"Map Inserted"
+	{
+		"hu"		"{1} hozza lett adva a listahoz"
+	}
+
+	"Map Already Nominated"
+	{
+		"hu"		"Az altalad kivalaszott palya mar meg lett jelolve"
+	}
+
+	"Map Nominated"
+	{
+		"hu"		"{2} palyat megjelolte: {1}"
+	}
+
+	"Map Nomination Changed"
+	{
+		"hu"		"{1} modositotta a megjelolt palyat {2} -ra"
+	}
+
+	"Nominate Title"
+	{
+		"hu"		"Palya megjelolese:"
+	}
+
+	"Can't Nominate Current Map"
+	{
+		"hu"		"Nem jelölheted a jelenlegi pályát!"
+	}
+
+	"Map in Exclude List"
+	{
+		"hu"		"Nem jelölheted ezt a pályát"
+	}
+
+	"Current Map"
+	{
+		"hu"		"Jelenlegi pálya"
+	}
+
+	"Recently Played"
+	{
+		"hu"		"Sürűn játszott"
+	}
+
+	"Nominated"
+	{
+		"hu"		"Jelölve"
+	}
+
+}

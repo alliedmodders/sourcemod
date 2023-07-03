@@ -34,14 +34,14 @@
 
 SH_DECL_HOOK8_void(IVEngineServer, EmitAmbientSound, SH_NOATTRIB, 0, int, const Vector &, const char *, float, soundlevel_t, int, int, float);
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 SH_DECL_HOOK18(IEngineSound, EmitSound, SH_NOATTRIB, 0, int, IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, float, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *);
 SH_DECL_HOOK18(IEngineSound, EmitSound, SH_NOATTRIB, 1, int, IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *);
 #elif SOURCE_ENGINE >= SE_PORTAL2
 SH_DECL_HOOK17(IEngineSound, EmitSound, SH_NOATTRIB, 0, int, IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, float, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
 SH_DECL_HOOK17(IEngineSound, EmitSound, SH_NOATTRIB, 1, int, IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
 #elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 SH_DECL_HOOK15_void(IEngineSound, EmitSound, SH_NOATTRIB, 0, IRecipientFilter &, int, int, const char *, float, float, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
 SH_DECL_HOOK15_void(IEngineSound, EmitSound, SH_NOATTRIB, 1, IRecipientFilter &, int, int, const char *, float, soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
 #else
@@ -316,7 +316,7 @@ uint32 GenerateSoundEntryHash(char const *pSoundEntry)
 }
 #endif
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 int SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChannel, const char *pSoundEntry, unsigned int nSoundEntryHash, const char *pSample, 
 							 float flVolume, soundlevel_t iSoundlevel, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
 							 const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
@@ -327,7 +327,7 @@ int SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChanne
 							 const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 							 float soundtime, int speakerentity)
 #elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChannel, const char *pSample, 
 							 float flVolume, soundlevel_t iSoundlevel, int iFlags, int iPitch, int iSpecialDSP, const Vector *pOrigin, 
 							 const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
@@ -388,6 +388,17 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 			}
 		case Pl_Changed:
 			{
+				if (size < 0 || size > SM_ARRAYSIZE(players))
+				{
+					pFunc->GetParentContext()->BlamePluginError(pFunc, "Callback-provided size %d is invalid", size);
+
+#if SOURCE_ENGINE >= SE_PORTAL2
+					RETURN_META_VALUE(MRES_IGNORED, -1);
+#else
+					return;
+#endif
+				}
+
 				/* Client validation */
 				for (int i = 0; i < size; i++)
 				{
@@ -397,17 +408,18 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 					if (!pPlayer)
 					{
 						pFunc->GetParentContext()->BlamePluginError(pFunc, "Callback-provided client index %d is invalid", client);
-					} else if (!pPlayer->IsInGame()) {
-						pFunc->GetParentContext()->BlamePluginError(pFunc, "Client %d is not in game", client);
-					} else {
-						continue;
-					}
 
 #if SOURCE_ENGINE >= SE_PORTAL2
-					RETURN_META_VALUE(MRES_IGNORED, -1 );
+						RETURN_META_VALUE(MRES_IGNORED, -1);
 #else
-					return;
+						return;
 #endif
+					} else if (!pPlayer->IsInGame()) {
+						// Shift array down to remove non-ingame client
+						memmove(&players[i], &players[i+1], (size-i-1) * sizeof(int));
+						--i;
+						--size;
+					}
 				}
 
 #if SOURCE_ENGINE >= SE_PORTAL2
@@ -422,7 +434,7 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 
 				CellRecipientFilter crf;
 				crf.Initialize(players, size);
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 				RETURN_META_VALUE_NEWPARAMS(
 					MRES_IGNORED,
 					-1,
@@ -441,7 +453,7 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 					pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity)
 					);
 #elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 				RETURN_META_NEWPARAMS(
 					MRES_IGNORED,
 					static_cast<void (IEngineSound::*)(IRecipientFilter &, int, int, const char*, float, soundlevel_t, 
@@ -467,7 +479,7 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 #endif
 }
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 int SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChannel, const char *pSoundEntry, unsigned int nSoundEntryHash, const char *pSample, 
 							 float flVolume, float flAttenuation, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
 							 const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
@@ -478,7 +490,7 @@ int SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChann
 							 const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 							 float soundtime, int speakerentity)
 #elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChannel, const char *pSample, 
 							 float flVolume, float flAttenuation, int iFlags, int iPitch, int iSpecialDSP, const Vector *pOrigin, 
 							 const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
@@ -540,6 +552,17 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 			}
 		case Pl_Changed:
 			{
+				if (size < 0 || size > SM_ARRAYSIZE(players))
+				{
+					pFunc->GetParentContext()->BlamePluginError(pFunc, "Callback-provided size %d is invalid", size);
+
+#if SOURCE_ENGINE >= SE_PORTAL2
+					RETURN_META_VALUE(MRES_IGNORED, -1);
+#else
+					return;
+#endif
+				}
+
 				/* Client validation */
 				for (int i = 0; i < size; i++)
 				{
@@ -549,17 +572,18 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 					if (!pPlayer)
 					{
 						pFunc->GetParentContext()->BlamePluginError(pFunc, "Client index %d is invalid", client);
-					} else if (!pPlayer->IsInGame()) {
-						pFunc->GetParentContext()->BlamePluginError(pFunc, "Client %d is not in game", client);
-					} else {
-						continue;
-					}
 
 #if SOURCE_ENGINE >= SE_PORTAL2
-					RETURN_META_VALUE(MRES_IGNORED, -1 );
+						RETURN_META_VALUE(MRES_IGNORED, -1);
 #else
-					return;
+						return;
 #endif
+					} else if (!pPlayer->IsInGame()) {
+						// Shift array down to remove non-ingame client
+						memmove(&players[i], &players[i+1], (size-i-1) * sizeof(int));
+						--i;
+						--size;
+					}
 				}
 
 #if SOURCE_ENGINE >= SE_PORTAL2
@@ -574,7 +598,7 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 
 				CellRecipientFilter crf;
 				crf.Initialize(players, size);
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 				RETURN_META_VALUE_NEWPARAMS(
 					MRES_IGNORED,
 					-1,
@@ -593,7 +617,7 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 					nSeed, iFlags, iPitch, pOrigin, pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity)
 					);
 #elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 RETURN_META_NEWPARAMS(
 					MRES_IGNORED,
 					static_cast<void (IEngineSound::*)(IRecipientFilter &, int, int, const char *, float, float, 
@@ -624,13 +648,20 @@ bool GetSoundParams(CSoundParameters *soundParams, const char *soundname, cell_t
 	if ( !soundname[0] )
 		return false;
 
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+	HSOUNDSCRIPTHASH index = soundemitterbase->HashSoundName(soundname);
+	
+	if(!soundemitterbase->IsValidHash(index))
+		return false;
+#else
 #if SOURCE_ENGINE >= SE_PORTAL2
 	HSOUNDSCRIPTHASH index = (HSOUNDSCRIPTHASH)soundemitterbase->GetSoundIndex(soundname);
 #else
 	HSOUNDSCRIPTHANDLE index = (HSOUNDSCRIPTHANDLE)soundemitterbase->GetSoundIndex(soundname);
-#endif
+#endif // SOURCE_ENGINE >= SE_PORTAL2
 	if (!soundemitterbase->IsValidIndex(index))
 		return false;
+#endif // SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 
 	gender_t gender = GENDER_NONE;
 
@@ -876,7 +907,7 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 			player[0] = cl_array[i];
 			crf.Reset();
 			crf.Initialize(player, 1);
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 			if (g_InSoundHook)
 			{
 				SH_CALL(enginesoundPatch, 
@@ -971,7 +1002,7 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 					speakerentity);
 			}
 #elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 			if (g_InSoundHook)
 			{
 				SH_CALL(enginesoundPatch, 
@@ -1054,7 +1085,7 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 #endif
 		}
 	} else {
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 		if (g_InSoundHook)
 		{
 			SH_CALL(enginesoundPatch, 
@@ -1147,7 +1178,7 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 				speakerentity);
 		}
 #elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 		if (g_InSoundHook)
 		{
 			SH_CALL(enginesoundPatch, 
@@ -1341,7 +1372,7 @@ static cell_t EmitSoundEntry(IPluginContext *pContext, const cell_t *params)
 
 			if (g_InSoundHook)
 			{
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 SH_CALL(enginesoundPatch,
 					static_cast<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float,
 					soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *)>
@@ -1365,7 +1396,7 @@ SH_CALL(enginesoundPatch,
 	else {
 		if (g_InSoundHook)
 		{
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 			SH_CALL(enginesoundPatch,
 				static_cast<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float,
 				soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *)>
@@ -1478,7 +1509,7 @@ static cell_t EmitSentence(IPluginContext *pContext, const cell_t *params)
 		flags, 
 		pitch, 
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 		0, 
 #endif
 		pOrigin,

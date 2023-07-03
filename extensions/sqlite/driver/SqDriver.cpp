@@ -75,7 +75,7 @@ SqDriver::SqDriver()
 // of g_SqDriver in SqDatabase's destructor.
 SqDriver::~SqDriver()
 {
-	ke::AutoLock lock(&m_OpenLock);
+	std::lock_guard<std::mutex> lock(m_OpenLock);
 
 	List<SqDbInfo>::iterator iter;
 	SqDatabase *sqdb;
@@ -178,7 +178,7 @@ inline bool IsPathSepChar(char c)
 
 IDatabase *SqDriver::Connect(const DatabaseInfo *info, bool persistent, char *error, size_t maxlength)
 {
-	ke::AutoLock lock(&m_OpenLock);
+	std::lock_guard<std::mutex> lock(m_OpenLock);
 	
 	/* Full path to the database file */
 	char fullpath[PLATFORM_MAX_PATH];
@@ -296,7 +296,7 @@ IDatabase *SqDriver::Connect(const DatabaseInfo *info, bool persistent, char *er
 
 void SqDriver::RemovePersistent(IDatabase *pdb)
 {
-	ke::AutoLock lock(&m_OpenLock);
+	std::lock_guard<std::mutex> lock(m_OpenLock);
 
 	List<SqDbInfo>::iterator iter;
 	for (iter = m_Cache.begin(); iter != m_Cache.end(); iter++)

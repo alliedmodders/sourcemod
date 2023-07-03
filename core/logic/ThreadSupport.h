@@ -32,48 +32,12 @@
 #ifndef _INCLUDE_SOURCEMOD_THREAD_SUPPORT_H
 #define _INCLUDE_SOURCEMOD_THREAD_SUPPORT_H
 
+#include <mutex>
+
 #include <IThreader.h>
-#include <am-thread-utils.h>
 #include <am-utility.h>
 
 using namespace SourceMod;
-
-class CompatMutex : public IMutex
-{
-public:
-	bool TryLock() {
-		return mutex_.TryLock();
-	}
-	void Lock() {
-		mutex_.Lock();
-	}
-	void Unlock() {
-		mutex_.Unlock();
-	}
-	void DestroyThis() {
-		delete this;
-	}
-private:
-	ke::Mutex mutex_;
-};
-
-class CompatCondVar : public IEventSignal
-{
-public:
-	void Wait() {
-		ke::AutoLock lock(&cv_);
-		cv_.Wait();
-	}
-	void Signal() {
-		ke::AutoLock lock(&cv_);
-		cv_.Notify();
-	}
-	void DestroyThis() {
-		delete this;
-	}
-private:
-	ke::ConditionVariable cv_;
-};
 
 extern IThreader *g_pThreader;
 

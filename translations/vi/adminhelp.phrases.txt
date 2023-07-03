@@ -1,0 +1,33 @@
+"Phrases"
+{
+	"SM help commands"
+	{
+		"vi"		"Các câu lệnh giúp đỡ của SourceMod"
+	}
+
+	"No description available"
+	{
+		"vi"		"Không có mô tả nào"
+	}
+
+	"No commands available"
+	{
+		"vi"		"Không có câu lệnh nào"
+	}
+
+	"Type sm_help to see more"
+	{
+		"vi"		"Gõ sm_help để xem thêm câu lệnh"
+	}
+
+	"Entries n - m in page k"
+	{
+		"vi"		"Lựa chọn {1} - {2} ở trang {3}"
+	}
+
+	"No matching results found"
+	{
+		"vi"		"Không tìm thấy kết quả phù hợp"
+	}
+
+}

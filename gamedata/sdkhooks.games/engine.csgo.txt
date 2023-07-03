@@ -30,14 +30,14 @@
 				"windows"	"122"
 				"linux"		"123"
 				"linux64"	"123"
-				"mac64"		"123"			
+				"mac64"		"123"
 			}
 			"GroundEntChanged"
 			{
-				"windows"	"177"
-				"linux"		"179"
-				"linux64"	"179"
-				"mac64"		"179"
+				"windows"	"178"
+				"linux"		"180"
+				"linux64"	"180"
+				"mac64"		"180"
 			}
 			"OnTakeDamage"
 			{
@@ -48,31 +48,31 @@
 			}
 			"OnTakeDamage_Alive"
 			{
-				"windows"	"298"
-				"linux"		"299"
-				"linux64"	"299"
-				"mac64"		"299"
+				"windows"	"299"
+				"linux"		"300"
+				"linux64"	"300"
+				"mac64"		"300"
 			}
 			"PreThink"
-			{
-				"windows"	"371"
-				"linux"		"372"
-				"linux64"	"372"
-				"mac64"		"372"
-			}
-			"PostThink"
 			{
 				"windows"	"372"
 				"linux"		"373"
 				"linux64"	"373"
 				"mac64"		"373"
 			}
+			"PostThink"
+			{
+				"windows"	"373"
+				"linux"		"374"
+				"linux64"	"374"
+				"mac64"		"374"
+			}
 			"Reload"
 			{
-				"windows"	"311"
-				"linux"		"317"
-				"linux64"	"317"
-				"mac64"		"317"
+				"windows"	"312"
+				"linux"		"318"
+				"linux64"	"318"
+				"mac64"		"318"
 			}
 			"SetTransmit"
 			{
@@ -132,45 +132,45 @@
 			}
 			"VPhysicsUpdate"
 			{
-				"windows"	"156"
-				"linux"		"157"
-				"linux64"	"157"
-				"mac64"		"157"
+				"windows"	"157"
+				"linux"		"158"
+				"linux64"	"158"
+				"mac64"		"158"
 			}
 			"Weapon_CanSwitchTo"
 			{
-				"windows"	"290"
-				"linux"		"291"
-				"linux64"	"291"
-				"mac64"		"291"
+				"windows"	"291"
+				"linux"		"292"
+				"linux64"	"292"
+				"mac64"		"292"
 			}
 			"Weapon_CanUse"
-			{
-				"windows"	"284"
-				"linux"		"285"
-				"linux64"	"285"
-				"mac64"		"285"
-			}
-			"Weapon_Drop"
-			{
-				"windows"	"287"
-				"linux"		"288"
-				"linux64"	"288"
-				"mac64"		"288"
-			}
-			"Weapon_Equip"
 			{
 				"windows"	"285"
 				"linux"		"286"
 				"linux64"	"286"
 				"mac64"		"286"
 			}
-			"Weapon_Switch"
+			"Weapon_Drop"
 			{
 				"windows"	"288"
 				"linux"		"289"
 				"linux64"	"289"
 				"mac64"		"289"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"286"
+				"linux"		"287"
+				"linux64"	"287"
+				"mac64"		"287"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"289"
+				"linux"		"290"
+				"linux64"	"290"
+				"mac64"		"290"
 			}
 		}
 	}

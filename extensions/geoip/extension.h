@@ -38,6 +38,8 @@
  */
 
 #include "smsdk_ext.h"
+#include "maxminddb.h"
+#include "am-string.h"
 
 
 /**
@@ -119,6 +121,7 @@ public:
 #endif
 };
 
+extern MMDB_s mmdb;
 extern const sp_nativeinfo_t geoip_natives[];
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_

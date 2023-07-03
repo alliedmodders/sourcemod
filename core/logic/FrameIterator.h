@@ -48,16 +48,18 @@ public:
 	 */
 	struct FrameInfo
 	{	
-		ke::AString FunctionName;
-		ke::AString FilePath;
+		std::string FunctionName;
+		std::string FilePath;
 		unsigned LineNumber;
 
 		FrameInfo(IFrameIterator *it)
 		{		
 			LineNumber = it->LineNumber();
 			
-			FunctionName = it->FunctionName();
-			FilePath = it->FilePath();
+			if (it->FunctionName())
+				FunctionName = it->FunctionName();
+			if (it->FilePath())
+				FilePath = it->FilePath();
 		}
 	};
 
@@ -73,5 +75,5 @@ public:
 
 private:
 	size_t current;
-	ke::Vector<FrameInfo> frames;
+	std::vector<FrameInfo> frames;
 };

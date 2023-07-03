@@ -108,12 +108,43 @@ enum PropFieldType
 	{ \
 	case type: \
 		{ \
-			if (element > 0) \
+			if (element != 0) \
 			{ \
 				return pContext->ThrowNativeError("SendProp %s is not an array. Element %d is invalid.", \
 					prop, \
 					element); \
 			} \
+			break; \
+		} \
+	case DPT_Array: \
+		{ \
+			int elementCount = pProp->GetNumElements(); \
+			int elementStride = pProp->GetElementStride(); \
+			if (element < 0 || element >= elementCount) \
+			{ \
+				return pContext->ThrowNativeError("Element %d is out of bounds (Prop %s has %d elements).", \
+					element, \
+					prop, \
+					elementCount); \
+			} \
+			\
+			pProp = pProp->GetArrayProp(); \
+			if (!pProp) { \
+				return pContext->ThrowNativeError("Error looking up ArrayProp for prop %s", \
+					prop); \
+			} \
+			\
+			if (pProp->GetType() != type) \
+			{ \
+				return pContext->ThrowNativeError("SendProp %s type is not " type_name " ([%d,%d] != %d)", \
+					prop, \
+					pProp->GetType(), \
+					pProp->m_nBits, \
+					type); \
+			} \
+			\
+			offset += pProp->GetOffset() + (elementStride * element); \
+			bit_count = pProp->m_nBits; \
 			break; \
 		} \
 	case DPT_DataTable: \
@@ -142,7 +173,7 @@ enum PropFieldType
 	} \
 	\
 	int elementCount = pTable->GetNumProps(); \
-	if (element >= elementCount) \
+	if (element < 0 || element >= elementCount) \
 	{ \
 		return pContext->ThrowNativeError("Element %d is out of bounds (Prop %s has %d elements).", \
 			element, \
@@ -182,7 +213,8 @@ static cell_t GameRules_GetProp(IPluginContext *pContext, const cell_t *params)
 
 	// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE \
+	|| SOURCE_ENGINE == SE_PVKII || SOURCE_ENGINE == SE_MCV
 	if (pProp->GetFlags() & SPROP_VARINT)
 	{
 		bit_count = sizeof(int) * 8;
@@ -256,7 +288,8 @@ static cell_t GameRules_SetProp(IPluginContext *pContext, const cell_t *params)
 	FIND_PROP_SEND(DPT_Int, "integer");
 
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE \
+	|| SOURCE_ENGINE == SE_PVKII || SOURCE_ENGINE == SE_MCV
 	if (pProp->GetFlags() & SPROP_VARINT)
 	{
 		bit_count = sizeof(int) * 8;
@@ -507,6 +540,13 @@ static cell_t GameRules_GetPropString(IPluginContext *pContext, const cell_t *pa
 {
 	char *prop;
 	int offset;
+	int bit_count;
+
+	int element = 0;
+	if (params[0] >= 4)
+	{
+		element = params[4];
+	}
 
 	void *pGameRules = GameRules();
 
@@ -515,56 +555,43 @@ static cell_t GameRules_GetPropString(IPluginContext *pContext, const cell_t *pa
 
 	pContext->LocalToString(params[1], &prop);
 
-	sm_sendprop_info_t info;
-	if (!gamehelpers->FindSendPropInfo(g_szGameRulesProxy, prop, &info))
-	{
-		return pContext->ThrowNativeError("Property \"%s\" not found on the gamerules proxy", prop);
-	}
-	
-	offset = info.actual_offset;
-	
-	if (info.prop->GetType() != DPT_String)
-	{
-		return pContext->ThrowNativeError("SendProp %s type is not a string (%d != %d)",
-				prop,
-				info.prop->GetType(),
-				DPT_String);
-	}
+	FIND_PROP_SEND(DPT_String, "string");
 
-	size_t len;
 	const char *src;
-
-	src = (char *)((intptr_t)pGameRules + offset);
-
-	pContext->StringToLocalUTF8(params[2], params[3], src, &len);
-
-	return len;
-}
-
-// From sm_stringutil
-inline int strncopy(char *dest, const char *src, size_t count)
-{
-	if (!count)
+	if (pProp->GetProxyFn())
 	{
-		return 0;
+		DVariant var;
+		pProp->GetProxyFn()(pProp, pGameRules, (const void *)((intptr_t)pGameRules + offset), &var, element, 0 /* TODO */);
+		src = var.m_pString;
+	}
+	else
+	{
+		src = *(char **)((uint8_t *)pGameRules + offset);
 	}
 
-	char *start = dest;
-	while ((*src) && (--count))
+	if (src)
 	{
-		*dest++ = *src++;
+		size_t len;
+		pContext->StringToLocalUTF8(params[2], params[3], src, &len);
+		return len;
 	}
-	*dest = '\0';
 
-	return (dest - start);
+	pContext->StringToLocal(params[2], params[3], "");
+	return 0;
 }
-//
 
 static cell_t GameRules_SetPropString(IPluginContext *pContext, const cell_t *params)
 {
 	char *prop;
 	int offset;
 	int maxlen;
+	int bit_count;
+
+	int element = 0;
+	if (params[0] >= 4)
+	{
+		element = params[4];
+	}
 
 	void *pGameRules = GameRules();
 
@@ -577,29 +604,46 @@ static cell_t GameRules_SetPropString(IPluginContext *pContext, const cell_t *pa
 
 	pContext->LocalToString(params[1], &prop);
 
-	sm_sendprop_info_t info;
-	if (!gamehelpers->FindSendPropInfo(g_szGameRulesProxy, prop, &info))
+#if SOURCE_ENGINE == SE_CSGO
+	if (!g_SdkTools.CanSetCSGOEntProp(prop))
 	{
-		return pContext->ThrowNativeError("Property \"%s\" not found on the gamerules proxy", prop);
+		return pContext->ThrowNativeError("Cannot set ent prop %s with core.cfg option \"FollowCSGOServerGuidelines\" enabled.", prop);
 	}
-	
-	offset = info.actual_offset;
-	
-	if (info.prop->GetType() != DPT_String)
+#endif
+
+	FIND_PROP_SEND(DPT_String, "string");
+
+	bool bIsStringIndex = false;
+	if (pProp->GetProxyFn())
 	{
-		return pContext->ThrowNativeError("SendProp %s type is not a string (%d != %d)",
-				prop,
-				info.prop->GetType(),
-				DPT_String);
+		DVariant var;
+		pProp->GetProxyFn()(pProp, pGameRules, (const void *)((intptr_t)pGameRules + offset), &var, element, 0 /* TODO */);
+		if (var.m_pString == ((string_t *)((intptr_t)pGameRules + offset))->ToCStr())
+		{
+			bIsStringIndex = true;
+		}
 	}
 
+	// Only used if not string index.
+	// TODO: If we're writing to a DPT_Array, we should use the element stride here.
 	maxlen = DT_MAX_STRING_BUFFERSIZE;
 
 	char *src;
-	char *dest = (char *)((intptr_t)pGameRules + offset);
-
+	size_t len;
 	pContext->LocalToString(params[2], &src);
-	size_t len = strncopy(dest, src, maxlen);
+
+	if (bIsStringIndex)
+	{
+		return pContext->ThrowNativeError("Setting string_t gamerules prop %s not supported yet.", prop);
+
+		// *(string_t *)((intptr_t)pGameRules + offset) = g_HL2.AllocPooledString(src);
+		// len = strlen(src);
+	}
+	else
+	{
+		char *dest = (char *)((uint8_t *)pGameRules + offset);
+		len = ke::SafeStrcpy(dest, maxlen, src);
+	}
 
 	edict_t *proxyEdict = gamehelpers->EdictOfIndex(gamehelpers->EntityToBCompatRef(pProxy));
 	if (proxyEdict != NULL)

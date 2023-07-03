@@ -76,6 +76,7 @@ struct Plugin
 #include <commandfilters>
 #include <nextmap>
 #include <commandline>
+#include <entitylump>
 
 enum APLRes
 {
@@ -113,6 +114,12 @@ methodmap GameData < Handle
 	// @param name          Name of the property to find.
 	// @return              An address calculated on success, or 0 on failure.
 	public native Address GetAddress(const char[] name);
+
+	// Returns a function address calculated from a signature.
+	//
+	// @param name          Name of the property to find.
+	// @return              An address calculated on success, or 0 on failure.
+	public native Address GetMemSig(const char[] name);
 };
 
 /**
@@ -176,10 +183,14 @@ forward void OnPluginPauseChange(bool pause);
 forward void OnGameFrame();
 
 /**
- * Called when the map is loaded.
+ * Called when the map starts loading.
  *
- * @note This used to be OnServerLoad(), which is now deprecated.
- *       Plugins still using the old forward will work.
+ * @param mapName Name of the map
+ */
+forward void OnMapInit(const char[] mapName);
+
+/**
+ * Called when the map is loaded.
  */
 forward void OnMapStart();
 
@@ -232,6 +243,28 @@ forward void OnAllPluginsLoaded();
  * @return              Handle of the calling plugin.
  */
 native Handle GetMyHandle();
+
+methodmap PluginIterator < Handle
+{
+	// Returns an iterator that can be used to search through plugins.
+	//
+	// @return              A new Handle to a PluginIterator.
+	public native PluginIterator();
+
+	// Advances the iterator. Returns whether there are more plugins available in the iterator.
+	//
+	// @return              True on more plugins, false otherwise.
+	// @error               Invalid Handle.
+	public native bool Next();
+
+	// Returns the current plugin in the iterator.
+	//
+	// @return              Current plugin the iterator is at
+	// @error               Invalid Handle.
+	property Handle Plugin {
+		public native get();
+	}
+}
 
 /**
  * Returns an iterator that can be used to search through plugins.
@@ -338,6 +371,7 @@ native void SetFailState(const char[] string, any ...);
  *
  * @param fmt           String format.
  * @param ...           Format arguments.
+ * @noreturn
  * @error               Always!
  */
 native void ThrowError(const char[] fmt, any ...);
@@ -364,7 +398,7 @@ native int GetTime(int bigStamp[2]={0,0});
  * Produces a date and/or time string value for a timestamp.
  *
  * See this URL for valid parameters:
- * http://cplusplus.com/reference/clibrary/ctime/strftime.html
+ * https://cplusplus.com/reference/ctime/strftime/
  *
  * Note that available parameters depends on support from your operating system.
  * In particular, ones highlighted in yellow on that page are not currently
@@ -452,7 +486,7 @@ native void RegPluginLibrary(const char[] name);
  * Returns whether a library exists.  This function should be considered
  * expensive; it should only be called on plugin to determine availability
  * of resources.  Use OnLibraryAdded()/OnLibraryRemoved() to detect changes
- * in optional resources.
+ * in libraries.
  *
  * @param name          Library name of a plugin or extension.
  * @return              True if exists, false otherwise.
@@ -473,8 +507,8 @@ native bool LibraryExists(const char[] name);
 native int GetExtensionFileStatus(const char[] name, char[] error="", int maxlength=0);
 
 /**
- * Called after a library is added that the current plugin references
- * optionally. A library is either a plugin name or extension name, as
+ * Called after a library is added.
+ * A library is either a plugin name or extension name, as
  * exposed via its include file.
  *
  * @param name          Library name.
@@ -482,13 +516,20 @@ native int GetExtensionFileStatus(const char[] name, char[] error="", int maxlen
 forward void OnLibraryAdded(const char[] name);
 
 /**
- * Called right before a library is removed that the current plugin references
- * optionally.  A library is either a plugin name or extension name, as
+ * Called right before a library is removed.
+ * A library is either a plugin name or extension name, as
  * exposed via its include file.
  *
  * @param name          Library name.
  */
 forward void OnLibraryRemoved(const char[] name);
+
+/**
+ * Called when a plugin unloaded.
+ *
+ * @param plugin        Plugin Handle who unloaded.
+ */
+forward void OnNotifyPluginUnloaded(Handle plugin);
 
 #define MAPLIST_FLAG_MAPSFOLDER    (1<<0)    /**< On failure, use all maps in the maps folder. */
 #define MAPLIST_FLAG_CLEARARRAY    (1<<1)    /**< If an input array is specified, clear it before adding. */
@@ -676,18 +717,24 @@ enum Address
  *
  * @param addr          Address to a memory location.
  * @param size          How many bytes should be read.
+ *                      If loading a floating-point value, use NumberType_Int32.
  * @return              The value that is stored at that address.
+ * @error               Address is null or pointing to reserved memory.
  */
-native int LoadFromAddress(Address addr, NumberType size);
+native any LoadFromAddress(Address addr, NumberType size);
 
 /**
  * Store up to 4 bytes to a memory address.
  *
- * @param addr          Address to a memory location.
- * @param data          Value to store at the address.
- * @param size          How many bytes should be written.
+ * @param addr                     Address to a memory location.
+ * @param data                     Value to store at the address.
+ * @param size                     How many bytes should be written.
+ *                                 If storing a floating-point value, use NumberType_Int32.
+ * @param updateMemAccess          If true, SourceMod will set read / write / exec permissions
+ *                                 on the memory page being written to.
+ * @error                          Address is null or pointing to reserved memory.
  */
-native void StoreToAddress(Address addr, int data, NumberType size);
+native void StoreToAddress(Address addr, any data, NumberType size, bool updateMemAccess = true);
 
 methodmap FrameIterator < Handle {
 	// Creates a stack frame iterator to build your own stack traces.

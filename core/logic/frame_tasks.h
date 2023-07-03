@@ -31,7 +31,7 @@
 
 namespace SourceMod {
 
-void ScheduleTaskForNextFrame(ke::Lambda<void()>&& task);
+void ScheduleTaskForNextFrame(ke::Function<void()>&& task);
 
 void RunScheduledFrameTasks(bool simulating);
 

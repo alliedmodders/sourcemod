@@ -1,0 +1,68 @@
+"Phrases"
+{
+	"Rock The Vote"
+	{
+		"pl"		"Rock The Vote:  "
+	}
+
+	"RTV Not Allowed"
+	{
+		"pl"		"Rock the Vote nie jest jeszcze dozwolone."
+	}
+
+	"RTV Started"
+	{
+		"pl"		"Rock the Vote już się rozpoczęło."
+	}
+
+	"RTV Ended"
+	{
+		"pl"		"RTV już się skończyło, nie możesz rozpocząć go ponownie oraz nominować map."
+	}
+
+	"Already Voted"
+	{
+		"pl"		"Głos w Rock the Vote został już przez ciebie oddany. (Głosy: {1}, wymagane: {2})"
+	}
+
+	"Minimal Players Not Met"
+	{
+		"pl"		"Minimalna wymagana liczba graczy nie została osiągnięta."
+	}
+
+	"RTV Requested"
+	{
+		"pl"		"{1} chce Rock the Vote. (Głosy: {2}, wymagane: {3})"
+	}
+
+	"RTV Vote Ready"
+	{
+		"pl"		"Niech głos ludu przemówi!"
+	}
+
+	"Don't Change"
+	{
+		"pl"		"Zachowaj Aktualną Mapę"
+	}
+
+	"Selected Map"
+	{
+		"pl"		"{1} wybiera {2}"
+	}
+
+	"No Votes"
+	{
+		"pl"		"Nie otrzymano głosów w Rock the Vote, aktualna mapa zostaje."
+	}
+
+	"Current Map Stays"
+	{
+		"pl"		"Aktualna mapa będzie kontynuowana! Głos ludu przemówił!"
+	}
+
+	"Changing Maps"
+	{
+		"pl"		"Zmiana mapy na {1}! Głos ludu przemówił!"
+	}
+
+}

@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"lv"		"Aizdedzināt spēlētāju"
+	}
+
+	"FireBomb player"
+	{
+		"lv"		"Uzlikt ugunsbombu spēlētājam"
+	}
+
+	"Freeze player"
+	{
+		"lv"		"Sasaldēt spēlētāju"
+	}
+
+	"FreezeBomb player"
+	{
+		"lv"		"Uzlikt ledusbombu spēlētājam"
+	}
+
+	"TimeBomb player"
+	{
+		"lv"		"Uzlikt laikabombu spēlētājam"
+	}
+
+	"Beacon player"
+	{
+		"lv"		"Uzlikt radaru spēlētājam"
+	}
+
+	"NoClip player"
+	{
+		"lv"		"Uzlikt NoClip spēlētājam"
+	}
+
+	"Blind player"
+	{
+		"lv"		"Padarīt aklu spēlētāju"
+	}
+
+	"Drug player"
+	{
+		"lv"		"Sazāļot spēlētāju"
+	}
+
+	"Gravity player"
+	{
+		"lv"		"Gravitācija spēlētājam"
+	}
+
+	"Blind amount"
+	{
+		"lv"		"Cik aklu?"
+	}
+
+	"Fully blind"
+	{
+		"lv"		"Pilnībā akls"
+	}
+
+	"Half blind"
+	{
+		"lv"		"Pus akls"
+	}
+
+	"No blind"
+	{
+		"lv"		"Normāla redze"
+	}
+
+	"Gravity amount"
+	{
+		"lv"		"Gravitācija?"
+	}
+
+	"Gravity Very High"
+	{
+		"lv"		"Ļoti augsta gravitācija"
+	}
+
+	"Gravity High"
+	{
+		"lv"		"Augsta gravitācija"
+	}
+
+	"Gravity Normal"
+	{
+		"lv"		"Normāla gravitācija"
+	}
+
+	"Gravity Low"
+	{
+		"lv"		"Zema gravitācija"
+	}
+
+	"Gravity Very Low"
+	{
+		"lv"		"Ļoti zema gravitācija"
+	}
+
+	"Set target on fire"
+	{
+		"lv"		"Aizdedzināja {1}."
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"lv"		"uzlika ugunsbombu spēlētājam {1}."
+	}
+
+	"Froze target"
+	{
+		"lv"		"sasaldēja {1}."
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"lv"		"uzlika ledusbombu spēlētājam {1}."
+	}
+
+	"Toggled beacon on target"
+	{
+		"lv"		"uzlika radaru spēlētājam {1}."
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"lv"		"uzlika laikabombu spēlētājam {1}."
+	}
+
+	"Toggled noclip on target"
+	{
+		"lv"		"ieslēdza noclip spēlētājam {1}."
+	}
+
+	"Toggled drug on target"
+	{
+		"lv"		"sazāļoja spēlētāju {1}."
+	}
+
+	"Set blind on target"
+	{
+		"lv"		"padarija aklu {1}."
+	}
+
+	"Set gravity on target"
+	{
+		"lv"		"uzlika {1}am gravitāciju."
+	}
+
+	"Till Explodes"
+	{
+		"lv"		"{2} sekundes līdz {1} eksplozijai."
+	}
+
+	"Unfrozen"
+	{
+		"lv"		"Tu tagad esi atkausēts. "
+	}
+
+	"You will be unfrozen"
+	{
+		"lv"		"Tu tiksi atkausēts pēc {1} sekundēm. "
+	}
+
+}

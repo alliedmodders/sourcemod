@@ -1,0 +1,45 @@
+#include "winres.h"
+
+#include <sourcemod_version.h>
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif
+
+#ifndef SM_GENERATED_BUILD
+#define BINARY_NAME "dhooks.ext.dll\0"
+#endif
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION SM_VERSION_FILE
+ PRODUCTVERSION SM_VERSION_FILE
+ FILEFLAGSMASK 0x17L
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments", "DHooks Extension"
+            VALUE "FileDescription", "SourceMod Dynamic Hooks Extension"
+            VALUE "FileVersion", SM_VERSION_STRING
+            VALUE "InternalName", "SourceMod DHooks Extension"
+            VALUE "LegalCopyright", "Copyright (c) 2021, AlliedModders LLC"
+            VALUE "OriginalFilename", BINARY_NAME
+            VALUE "ProductName", "SourceMod DHooks Extension"
+            VALUE "ProductVersion", SM_VERSION_STRING
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 0x04B0
+    END
+END

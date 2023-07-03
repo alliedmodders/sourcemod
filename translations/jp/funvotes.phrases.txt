@@ -1,0 +1,98 @@
+"Phrases"
+{
+	"Initiated Vote Gravity"
+	{
+		"jp"		"重力投票を開始しました。"
+	}
+
+	"Initiated Vote Burn"
+	{
+		"jp"		"{1}への燃焼投票を開始しました。"
+	}
+
+	"Initiated Vote Slay"
+	{
+		"jp"		"{1}への殺害投票を開始しました。"
+	}
+
+	"Initiated Vote Alltalk"
+	{
+		"jp"		"alltalk投票を開始しました。"
+	}
+
+	"Initiated Vote FF"
+	{
+		"jp"		"Friendly Fire投票を開始しました。"
+	}
+
+	"Gravity Vote"
+	{
+		"jp"		"重力投票: {1}"
+	}
+
+	"Change Gravity To"
+	{
+		"jp"		"重力を{1}に変更しますか？"
+	}
+
+	"Voteburn player"
+	{
+		"jp"		"プレイヤー {1}を燃焼？"
+	}
+
+	"Voteslay Player"
+	{
+		"jp"		"{1}を殺害？"
+	}
+
+	"Votealltalk Off"
+	{
+		"jp"		"alltalkをオフ？{1}"
+	}
+
+	"Votealltalk On"
+	{
+		"jp"		"alltalkをオン？{1}"
+	}
+
+	"Voteff Off"
+	{
+		"jp"		"Friendly Fireをオフにしますか？{1}"
+	}
+
+	"Voteff On"
+	{
+		"jp"		"Friendly Fireをオンにしますか？{1}"
+	}
+
+	"Gravity vote"
+	{
+		"jp"		"重力投票"
+	}
+
+	"Vote FF"
+	{
+		"jp"		"FF投票"
+	}
+
+	"Burn vote"
+	{
+		"jp"		"燃焼投票"
+	}
+
+	"Alltalk vote"
+	{
+		"jp"		"Alltalk投票"
+	}
+
+	"Slay vote"
+	{
+		"jp"		"殺害投票"
+	}
+
+	"Slayed player"
+	{
+		"jp"		"プレイヤー '{1}' を殺害しました。"
+	}
+
+}

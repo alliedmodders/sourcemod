@@ -51,30 +51,39 @@ typeset Timer
 	 * Called when the timer interval has elapsed.
 	 *
 	 * @param timer         Handle to the timer object.
-	 * @param hndl          Handle passed to CreateTimer() when timer was created.
+	 * @param data          Handle or value passed to CreateTimer() when timer was created.
 	 * @return              Plugin_Stop to stop a repeating timer, any other value for
 	 *                      default behavior.
-	 */
-	function Action(Handle timer, Handle hndl);
-
-	/**
-	 * Called when the timer interval has elapsed.
-	 *
-	 * @param timer         Handle to the timer object.
-	 * @param data          Data passed to CreateTimer() when timer was created.
-	 * @return              Plugin_Stop to stop a repeating timer, any other value for
-	 *                      default behavior.
+	 *                      Ignored for non-repeating timers (use void return type).
 	 */
 	function Action(Handle timer, any data);
 
 	/**
 	 * Called when the timer interval has elapsed.
+	 * For repeating timers, use the callback with return value.
+	 *
+	 * @param timer         Handle to the timer object.
+	 * @param data          Handle or value passed to CreateTimer() when timer was created.
+	 */
+	function void(Handle timer, any data);
+
+	/**
+	 * Called when the timer interval has elapsed.
 	 *
 	 * @param timer         Handle to the timer object.
 	 * @return              Plugin_Stop to stop a repeating timer, any other value for
 	 *                      default behavior.
+	 *                      Ignored for non-repeating timers (use void return type).
 	 */
 	function Action(Handle timer);
+	
+	/**
+	 * Called when the timer interval has elapsed.
+	 * For repeating timers, use the callback with return value.
+	 *
+	 * @param timer         Handle to the timer object.
+	 */
+	function void(Handle timer);
 };
 
 /**
@@ -87,7 +96,7 @@ typeset Timer
  * @return              Handle to the timer object.  You do not need to call CloseHandle().
  *                      If the timer could not be created, INVALID_HANDLE will be returned.
  */
-native Handle CreateTimer(float interval, Timer func, any data=INVALID_HANDLE, int flags=0);
+native Handle CreateTimer(float interval, Timer func, any data=0, int flags=0);
 
 /**
  * Kills a timer.  Use this instead of CloseHandle() if you need more options.
@@ -95,7 +104,7 @@ native Handle CreateTimer(float interval, Timer func, any data=INVALID_HANDLE, i
  * @param timer         Timer Handle to kill.
  * @param autoClose     If autoClose is true, the data that was passed to CreateTimer() will
  *                      be closed as a handle if TIMER_DATA_HNDL_CLOSE was not specified.
- * @error               Invalid handles will cause a run time error.
+ * @error               Invalid timer handle.
  */
 native void KillTimer(Handle timer, bool autoClose=false);
 
@@ -105,6 +114,7 @@ native void KillTimer(Handle timer, bool autoClose=false);
  * @param timer         Timer Handle to trigger.
  * @param reset         If reset is true, the elapsed time counter is reset
  *                      so the full interval must pass again.
+ * @error               Invalid timer handle.
  */
 native void TriggerTimer(Handle timer, bool reset=false);
 

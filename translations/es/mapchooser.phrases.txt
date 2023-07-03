@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Vote Nextmap"
+	{
+		"es"		"Vota por el siguiente mapa!"
+	}
+
+	"Nextmap Voting Started"
+	{
+		"es"		"La votación para el siguiente mapa ha comenzado."
+	}
+
+	"Nextmap Voting Finished"
+	{
+		"es"		"Votación de mapa finalizada. El próximo mapa será {1}. (Obtenidos {2}%% de {3} votos) "
+	}
+
+	"Current Map Extended"
+	{
+		"es"		"El mapa actual ha sido extendido. (Obtenidos {1}%% de {2} votos)"
+	}
+
+	"Extend Map"
+	{
+		"es"		"Extender el Mapa Actual"
+	}
+
+	"Dont Change"
+	{
+		"es"		"No cambiar"
+	}
+
+	"Current Map Stays"
+	{
+		"es"		"¡El mapa actual continúa! ¡El voto ha decidido! (Obtenidos {1}%% de {2} votos)"
+	}
+
+	"Changed Next Map"
+	{
+		"es"		"Siguiente mapa cambiado a \"{1}\"."
+	}
+
+	"Starting Runoff"
+	{
+		"es"		"No hay ningún mapa que superase el {1}%% de los votos ({2} [{3}%%] & {4} [{5}%%]), comenzando segunda votación"
+	}
+
+}
