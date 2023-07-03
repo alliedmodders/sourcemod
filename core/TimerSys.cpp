@@ -234,13 +234,15 @@ void TimerSystem::GameFrame(bool simulating)
 	m_fLastTickedTime = gpGlobals->curtime;
 	m_bHasMapTickedYet = true;
 
+	RunFrame();
+/*
 	if (g_fUniversalTime >= g_fTimerThink)
 	{
 		RunFrame();
 
 		g_fTimerThink = CalcNextThink(g_fTimerThink, TIMER_MIN_ACCURACY);
 	}
-
+*/
 	RunFrameHooks(simulating);
 
 	if (m_pOnGameFrame->GetFunctionCount())
