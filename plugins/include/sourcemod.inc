@@ -413,6 +413,7 @@ native void FormatTime(char[] buffer, int maxlength, const char[] format, int st
 
 /**
  * Parses a string representing a date and/or time into a unix timestamp.
+ * The timezone is always interpreted as UTC/GMT.
  *
  * See this URL for valid parameters:
  * https://en.cppreference.com/w/cpp/io/manip/get_time
