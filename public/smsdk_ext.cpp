@@ -298,9 +298,9 @@ void SDKExtension::SDK_OnDependenciesDropped()
 #if defined SMEXT_CONF_METAMOD
 
 #if defined _MSC_VER
-	#define SMEXT_DLL_EXPORT				extern "C" __declspec(dllexport)
+#define SMEXT_DLL_EXPORT				extern "C" __declspec(dllexport)
 #else
-	#define SMEXT_DLL_EXPORT				extern "C" __attribute__((visibility("default")))
+#define SMEXT_DLL_EXPORT				extern "C" __attribute__((visibility("default")))
 #endif
 
 PluginId g_PLID = 0;						/**< Metamod plugin ID */
