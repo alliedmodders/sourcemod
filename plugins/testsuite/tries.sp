@@ -170,6 +170,9 @@ public Action:RunIntTests(argc)
     if (!map.SetValue(i, i))
       ThrowError("set map to %d failed", i);
 
+    if (!map.ContainsKey(i))
+      ThrowError("map contains %d failed", i)
+
     new value;
     if (!map.GetValue(i, value))
       ThrowError("get map %d", i);
@@ -195,7 +198,8 @@ public Action:RunIntTests(argc)
   // Check 100 is not found.
   int array[64];
   char string[64];
-  if (map.GetValue(100, value) ||
+  if (map.ContainsKey(100) || 
+      map.GetValue(100, value) ||
       map.GetArray(100, array, sizeof(array)) ||
       map.GetString(100, string, sizeof(string)))
   {
@@ -226,9 +230,9 @@ public Action:RunIntTests(argc)
   // Arrays.
   new data[5] = { 93, 1, 2, 3, 4 };
   if (!map.SetArray(17, data, 5))
-    ThrowError("17 should be string");
+    ThrowError("couldn't set 17 to 5-entry array");
   if (!map.GetArray(17, array, sizeof(array)))
-    ThrowError("17 should be hellokitty");
+    ThrowError("couldn't fetch 5-entry array");
   for (new i = 0; i < 5; i++) {
     if (data[i] != array[i])
       ThrowError("17 slot %d should be %d, got %d", i, data[i], array[i]);
@@ -236,7 +240,7 @@ public Action:RunIntTests(argc)
   if (map.GetValue(17, value) ||
       map.GetString(17, string, sizeof(string)))
   {
-    ThrowError("entry 17 should not be an array or string");
+    ThrowError("entry 17 should not be a value or string");
   }
 
   if (!map.SetArray(17, data, 1))
@@ -257,7 +261,8 @@ public Action:RunIntTests(argc)
     ThrowError("17 should have been removed");
   if (map.Remove(17))
     ThrowError("17 should not exist");
-  if (map.GetValue(17, value) ||
+  if (map.ContainsKey(17) || 
+      map.GetValue(17, value) ||
       map.GetArray(17, array, sizeof(array)) ||
       map.GetString(17, string, sizeof(string)))
   {
@@ -296,6 +301,47 @@ public Action:RunIntTests(argc)
       ThrowError("did not find all keys");
   }
   delete keys;
+
+  map.SetValue(10240, 6744);
+  map.SetValue(8, 13);
+
+  new cloneData[5] = { 12, 23, 55, 1, 2 };
+  new cloneArr[5];
+  map.SetArray(9102, cloneData, 5);
+
+  IntMap clone = map.Clone();
+
+  if (clone.Size != map.Size)
+    ThrowError("cloned map size mismatch (%d, expected %d)", clone.Size, map.Size);
+
+  if (!clone.GetString(42, string, sizeof(string)))
+    ThrowError("cloned map entry 42 should be a string");
+  if (strcmp(string, "time!") != 0)
+    ThrowError("cloned map entry 42 should be \"time!\"");
+  if (!clone.GetString(84, string, sizeof(string)))
+    ThrowError("cloned map entry 84 should be a string");
+  if (strcmp(string, "bees") != 0)
+    ThrowError("cloned map entry 84 should be \"bees\"");
+  if (!clone.GetString(126, string, sizeof(string)))
+    ThrowError("cloned map entry 126 should be a string");
+  if (strcmp(string, "egg") != 0)
+    ThrowError("cloned map entry 126 should be \"egg\"");
+  if (!clone.GetValue(10240, value))
+    ThrowError("cloned map entry 10240 should be a value");
+  if (value != 6744)
+    ThrowError("cloned map entry 10240 should be 6744")
+  if (!clone.GetValue(8, value))
+    ThrowError("cloned map entry 8 should be a value");
+  if (value != 13)
+    ThrowError("cloned map entry 8 should be 13")
+  if (!clone.GetArray(9102, cloneArr, 5))
+    ThrowError("cloned map entry 9102 should be an array");
+  for (new i = 0; i < 5; i++) {
+    if (cloneData[i] != cloneArr[i])
+      ThrowError("cloned map entry 9102 slot %d should be %d, got %d", i, cloneData[i], cloneArr[i]);
+  }
+
+  delete clone;
 
   PrintToServer("All tests passed!");
 
