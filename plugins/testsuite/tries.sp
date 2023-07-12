@@ -13,6 +13,7 @@ public Plugin:myinfo =
 public OnPluginStart()
 {
   RegServerCmd("test_maps", RunTests);
+  RegServerCmd("test_int_maps", RunIntTest);
 }
 
 public Action:RunTests(argc)
@@ -161,3 +162,143 @@ public Action:RunTests(argc)
   return Plugin_Handled;
 }
 
+public Action:RunIntTests(argc)
+{
+  IntMap map = new IntMap();
+
+  for (new i = 0; i < 64; i++) {
+    if (!map.SetValue(i, i))
+      ThrowError("set map to %d failed", i);
+
+    new value;
+    if (!map.GetValue(buffer, value))
+      ThrowError("get map %d", i);
+    if (value != i)
+      ThrowError("get map %d == %d", i, i);
+  }
+
+  // Setting 17 without replace should fail.
+  new value;
+  if (map.SetValue(17, 999, false))
+    ThrowError("set map 17 should fail");
+  if (!map.GetValue(17, value) || value != 17)
+    ThrowError("value at 17 not correct");
+  if (!map.SetValue(17, 999))
+    ThrowError("set map 17 = 999 should succeed");
+  if (!map.GetValue(17, value) || value != 999)
+    ThrowError("value at 17 not correct");
+
+  // Check size is 64.
+  if (map.Size != 64)
+    ThrowError("map size not 64");
+
+  // Check 100 is not found.
+  int array[64];
+  char string[64];
+  if (map.GetValue(100, value) ||
+      map.GetArray(100, array, sizeof(array)) ||
+      map.GetString(100, string, sizeof(string)))
+  {
+    ThrowError("map should not have 100");
+  }
+
+  // Check that 17 is not a string or array.
+  if (map.GetArray(17, array, sizeof(array)) ||
+      map.GetString(17, string, sizeof(string)))
+  {
+    ThrowError("entry 17 should not be an array or string");
+  }
+
+  // Strings.
+  if (!map.SetString(17, "hellokitty"))
+    ThrowError("17 should be string");
+  if (!map.GetString(17, string, sizeof(string)) ||
+      strcmp(string, "hellokitty") != 0)
+  {
+    ThrowError("17 should be hellokitty");
+  }
+  if (map.GetValue(17, value) ||
+      map.GetArray("17", array, sizeof(array)))
+  {
+    ThrowError("entry 17 should not be an array or string");
+  }
+
+  // Arrays.
+  new data[5] = { 93, 1, 2, 3, 4 };
+  if (!map.SetArray(17, data, 5))
+    ThrowError("17 should be string");
+  if (!map.GetArray(17, array, sizeof(array)))
+    ThrowError("17 should be hellokitty");
+  for (new i = 0; i < 5; i++) {
+    if (data[i] != array[i])
+      ThrowError("17 slot %d should be %d, got %d", i, data[i], array[i]);
+  }
+  if (map.GetValue(17, value) ||
+      map.GetString(17, string, sizeof(string)))
+  {
+    ThrowError("entry 17 should not be an array or string");
+  }
+
+  if (!map.SetArray(17, data, 1))
+    ThrowError("couldn't set 17 to 1-entry array");
+  // Check that we fixed an old bug where 1-entry arrays where cells
+  if (!map.GetArray(17, array, sizeof(array), value))
+    ThrowError("couldn't fetch 1-entry array");
+  if (value != 1)
+    ThrowError("array size mismatch (%d, expected %d)", value, 1);
+  // Check that we maintained backward compatibility.
+  if (!map.GetValue(17, value))
+    ThrowError("backwards compatibility failed");
+  if (value != data[0])
+    ThrowError("wrong value (%d, expected %d)", value, data[0]);
+
+  // Remove "17".
+  if (!map.Remove(17))
+    ThrowError("17 should have been removed");
+  if (map.Remove(17))
+    ThrowError("17 should not exist");
+  if (map.GetValue(17, value) ||
+      map.GetArray(17, array, sizeof(array)) ||
+      map.GetString(17, string, sizeof(string)))
+  {
+    ThrowError("map should not have a 17");
+  }
+
+  map.Clear();
+
+  if (map.Size)
+    ThrowError("size should be 0");
+
+  map.SetString(42, "time!");
+  map.SetString(84, "bees");
+  map.SetString(126, "egg");
+
+  IntMapSnapshot keys = map.Snapshot();
+  {
+    if (keys.Length != 3)
+      ThrowError("map snapshot length should be 3");
+
+    bool found[3];
+    for (new i = 0; i < keys.Length; i++) {
+      decl key = keys.GetKey(i);
+
+      if (key == 42)
+        found[0] = true;
+      else if (key == 84)
+        found[1] = true;
+      else if (key == 126)
+        found[2] = true;
+      else
+        ThrowError("unexpected key: %d", key);
+    }
+
+    if (!found[0] || !found[1] || !found[2])
+      ThrowError("did not find all keys");
+  }
+  delete keys;
+
+  PrintToServer("All tests passed!");
+
+  delete map;
+  return Plugin_Handled;
+}

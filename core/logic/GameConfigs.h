@@ -36,7 +36,7 @@
 #include <IGameConfigs.h>
 #include <ITextParsers.h>
 #include <am-refcounting.h>
-#include <sm_stringhashmap.h>
+#include <sm_hashmap.h>
 #include <sm_namehashset.h>
 #include <unordered_set>
 
