@@ -13,7 +13,7 @@ public Plugin:myinfo =
 public OnPluginStart()
 {
   RegServerCmd("test_maps", RunTests);
-  RegServerCmd("test_int_maps", RunIntTest);
+  RegServerCmd("test_int_maps", RunIntTests);
 }
 
 public Action:RunTests(argc)
@@ -171,7 +171,7 @@ public Action:RunIntTests(argc)
       ThrowError("set map to %d failed", i);
 
     new value;
-    if (!map.GetValue(buffer, value))
+    if (!map.GetValue(i, value))
       ThrowError("get map %d", i);
     if (value != i)
       ThrowError("get map %d == %d", i, i);
@@ -218,7 +218,7 @@ public Action:RunIntTests(argc)
     ThrowError("17 should be hellokitty");
   }
   if (map.GetValue(17, value) ||
-      map.GetArray("17", array, sizeof(array)))
+      map.GetArray(17, array, sizeof(array)))
   {
     ThrowError("entry 17 should not be an array or string");
   }
