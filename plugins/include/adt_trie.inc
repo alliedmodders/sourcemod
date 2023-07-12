@@ -188,7 +188,7 @@ methodmap IntMap < Handle
 	// handle with the same data but no relation to the original. It should be
 	// closed when no longer needed with delete or CloseHandle().
 	//
-	// @return              New handle to the cloned string map
+	// @return              New handle to the cloned hash map
 	public native IntMap Clone();
 
 	// Sets a value in a hash map, either inserting a new entry or replacing an old one.
