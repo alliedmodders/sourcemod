@@ -232,22 +232,22 @@
 
 	"Say all"
 	{
-		"ro"		"Say tuturor"
+		"ro"		"(Say tuturor) {1}"
 	}
 
 	"Chat admins"
 	{
-		"ro"		"Chat admins"
+		"ro"		"(Chat admins) {1}"
 	}
 
 	"Chat to admins"
 	{
-		"ro"		"Chat cu admins"
+		"ro"		"(Chat cu admins) {1}"
 	}
 
 	"Private say to"
 	{
-		"ro"		"Say privat lui"
+		"ro"		"(Say privat lui {1}) {2}"
 	}
 
 }
