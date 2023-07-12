@@ -12,7 +12,7 @@
 
 	"Value of cvar"
 	{
-		"jp"		"CVar \"{1]\" の値: \"{2}\""
+		"jp"		"CVar \"{1}\" の値: \"{2}\""
 	}
 
 	"Cvar changed"
