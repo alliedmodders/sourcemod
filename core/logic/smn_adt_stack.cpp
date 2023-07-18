@@ -478,7 +478,6 @@ static cell_t ArrayStack_TopArray(IPluginContext *pContext, const cell_t *params
 		indexes = params[3];
 
 	memcpy(addr, blk, sizeof(cell_t) * indexes);
-	array->remove(idx);
 	return 0;
 }
 
