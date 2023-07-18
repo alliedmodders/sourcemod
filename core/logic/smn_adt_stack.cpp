@@ -365,7 +365,7 @@ static cell_t ArrayStack_Pop(IPluginContext *pContext, const cell_t *params)
 	return rval;
 }
 
-static cell_t ArrayStack_Top(IPluginContext* pContext, const cell_t* params)
+static cell_t ArrayStack_Top(IPluginContext *pContext, const cell_t *params)
 {
 	OpenHandle<CellArray> array(pContext, params[1], htCellStack);
 	if (!array.Ok())
@@ -374,7 +374,7 @@ static cell_t ArrayStack_Top(IPluginContext* pContext, const cell_t* params)
 	if (array->size() == 0)
 		return pContext->ThrowNativeError("stack is empty");
 
-	cell_t* blk = array->at(array->size() - 1);
+	cell_t *blk = array->at(array->size() - 1);
 	size_t idx = (size_t)params[2];
 
 	cell_t rval;
@@ -382,11 +382,10 @@ static cell_t ArrayStack_Top(IPluginContext* pContext, const cell_t* params)
 		if (idx >= array->blocksize())
 			return pContext->ThrowNativeError("Invalid block %d (blocksize: %d)", idx, array->blocksize());
 		rval = blk[idx];
-	}
-	else {
+	} else {
 		if (idx >= array->blocksize() * 4)
 			return pContext->ThrowNativeError("Invalid byte %d (blocksize: %d bytes)", idx, array->blocksize() * 4);
-		rval = (cell_t) * ((char*)blk + idx);
+		rval = (cell_t)*((char *)blk + idx);
 	}
 
 	return rval;
@@ -426,7 +425,7 @@ static cell_t ArrayStack_TopString(IPluginContext *pContext, const cell_t *param
 	size_t idx = array->size() - 1;
 	cell_t *blk = array->at(idx);
 
-	cell_t* pWritten;
+	cell_t *pWritten;
 	pContext->LocalToPhysAddr(params[4], &pWritten);
 
 	size_t numWritten;
@@ -498,13 +497,13 @@ static cell_t GetStackBlockSize(IPluginContext *pContext, const cell_t *params)
 	return array->blocksize();
 }
 
-static cell_t GetStackSize(IPluginContext* pContext, const cell_t* params)
+static cell_t GetStackSize(IPluginContext *pContext, const cell_t *params)
 {
 	HandleError err;
-	CellArray* array;
+	CellArray *array;
 	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
 
-	if ((err = handlesys->ReadHandle(params[1], htCellStack, &sec, (void**)&array))
+	if ((err = handlesys->ReadHandle(params[1], htCellStack, &sec, (void **)&array))
 		!= HandleError_None)
 	{
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
