@@ -32,6 +32,8 @@
 #include <time.h>
 #include <string.h>
 #include <stdlib.h>
+#include <iomanip>
+#include <sstream>
 #include <list>
 #include "common_logic.h"
 #include "Logger.h"
@@ -271,6 +273,49 @@ static cell_t FormatTime(IPluginContext *pContext, const cell_t *params)
 	}
 
 	return 1;
+}
+
+static int ParseTime(IPluginContext *pContext, const cell_t *params)
+{
+	char *datetime;
+	char *format;
+	pContext->LocalToStringNULL(params[1], &datetime);
+	pContext->LocalToStringNULL(params[2], &format);
+
+	if (format == NULL)
+	{
+		format = const_cast<char *>(bridge->GetCvarString(g_datetime_format));
+	}
+	else if (!format[0])
+	{
+		return pContext->ThrowNativeError("Time format string cannot be empty.");
+	}
+	if (!datetime || !datetime[0])
+	{
+		return pContext->ThrowNativeError("Date/time string cannot be empty.");
+	}
+
+	// https://stackoverflow.com/a/33542189
+	std::tm t{};
+	std::istringstream input(datetime);
+
+	auto previousLocale = input.imbue(std::locale::classic());
+	input >> std::get_time(&t, format);
+	bool failed = input.fail();
+	input.imbue(previousLocale);
+
+	if (failed)
+	{
+		return pContext->ThrowNativeError("Invalid date/time string or time format.");
+	}
+
+#if defined PLATFORM_WINDOWS
+	return _mkgmtime(&t);
+#elif defined PLATFORM_LINUX || defined PLATFORM_APPLE
+	return timegm(&t);
+#else
+	return pContext->ThrowNativeError("Platform has no implemented UTC conversion for std::tm to std::time_t");
+#endif
 }
 
 static cell_t GetPluginIterator(IPluginContext *pContext, const cell_t *params)
@@ -1088,6 +1133,7 @@ REGISTER_NATIVES(coreNatives)
 	{"ThrowError",				ThrowError},
 	{"GetTime",					GetTime},
 	{"FormatTime",				FormatTime},
+	{"ParseTime",				ParseTime},
 	{"GetPluginIterator",		GetPluginIterator},
 	{"MorePlugins",				MorePlugins},
 	{"ReadPlugin", 				ReadPlugin},

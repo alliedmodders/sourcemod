@@ -42,7 +42,7 @@
 
 	"Starting Runoff"
 	{
-		"cze"		"Zadna mapa neziskala {1]%% hlasu ({2} [{3}%%] & {4} [{5}%%]), zacina rozhodujici hlasovani."
+		"cze"		"Zadna mapa neziskala {1}%% hlasu ({2} [{3}%%] & {4} [{5}%%]), zacina rozhodujici hlasovani."
 	}
 
 }
