@@ -2,7 +2,7 @@
 {
 	"SM help commands"
 	{
-		"pl"		" Pomoc SourceMod: Informacje o komendach "
+		"pl"		"Pomoc SourceMod: Informacje o komendach"
 	}
 
 	"No description available"
