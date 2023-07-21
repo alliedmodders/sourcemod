@@ -764,7 +764,7 @@ native int DHookGamerules(Handle setup, bool post, DHookRemovalCB removalcb=INVA
  *
  * @param setup             Setup handle to use to add the hook.
  * @param post              true to make the hook a post hook. (If you need to change the return value or need the return 
- *                          alue use a post hook! If you need to change params and return use a pre and post hook!)
+ *                          value use a post hook! If you need to change params and return use a pre and post hook!)
  * @param addr              This pointer address.
  * @param removalcb         Callback for when the hook is removed (Entity hooks are auto-removed on entity destroyed and
  *                          will call this callback)
