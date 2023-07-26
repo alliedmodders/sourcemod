@@ -49,7 +49,7 @@ class IPlayerInfo;
 #define SM_REPLY_CONSOLE	0			/**< Reply to console. */
 #define SM_REPLY_CHAT		1			/**< Reply to chat. */
 
-#define SM_MAXPLAYERS				65		/**< Maxplayer Count */
+#define SM_MAXPLAYERS				101		/**< Maxplayer Count */
 
 namespace SourceMod
 {
