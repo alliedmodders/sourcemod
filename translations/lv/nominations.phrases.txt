@@ -67,7 +67,6 @@
 	
 	"Map Not In Pool"
 	{
-		"#format"		"{1:s}"
 		"lv"			"Karte '{1}' nav pieejama nomināciju sarakstā."
 	}
 
