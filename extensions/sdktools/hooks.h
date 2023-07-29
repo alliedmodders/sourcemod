@@ -90,9 +90,6 @@ private:
 #endif
 	INetChannel *m_pActiveNetChannel;
 	bool m_bFSTranHookWarned = false;
-#if SOURCE_ENGINE == SE_TF2
-	ConVarRef replay_enabled;
-#endif
 };
 
 extern CHookManager g_Hooks;
