@@ -405,9 +405,9 @@ static cell_t SetArrayString(IPluginContext *pContext, const cell_t *params)
 
 	// the blocknumber is not guaranteed to always be passed
 	size_t blocknumber = 0;
-	if (params[0] >= 4)
+	if (params[0] >= 5)
 	{
-		blocknumber = (size_t)params[4];
+		blocknumber = (size_t)params[5];
 	}
 
 	if (blocknumber >= array->blocksize())
@@ -420,7 +420,13 @@ static cell_t SetArrayString(IPluginContext *pContext, const cell_t *params)
 	char *str;
 	pContext->LocalToString(params[3], &str);
 
-	return strncopy((char *)blk, str, array->blocksize() * sizeof(cell_t));
+	size_t maxlength = array->blocksize() * sizeof(cell_t);
+	if (params[0] >= 4 && params[4] != -1 && (size_t)params[4] <= array->blocksize())
+	{
+		maxlength = (size_t)params[4];
+	}
+
+	return strncopy((char*)blk, str, maxlength);
 }
 
 static cell_t SetArrayArray(IPluginContext *pContext, const cell_t *params)
