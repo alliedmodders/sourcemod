@@ -240,9 +240,9 @@ static cell_t PopStackCell(IPluginContext *pContext, const cell_t *params)
 	}
 	else
 	{
-		if (idx >= array->blocksize() * 4)
+		if (idx >= array->blocksize() * sizeof(cell_t))
 		{
-			return pContext->ThrowNativeError("Invalid byte %d (blocksize: %d bytes)", idx, array->blocksize() * 4);
+			return pContext->ThrowNativeError("Invalid byte %d (blocksize: %d bytes)", idx, array->blocksize() * sizeof(cell_t));
 		}
 		*buffer = (cell_t)*((char *)blk + idx);
 	}
@@ -356,8 +356,8 @@ static cell_t ArrayStack_Pop(IPluginContext *pContext, const cell_t *params)
 			return pContext->ThrowNativeError("Invalid block %d (blocksize: %d)", idx, array->blocksize());
 		rval = blk[idx];
 	} else {
-		if (idx >= array->blocksize() * 4)
-			return pContext->ThrowNativeError("Invalid byte %d (blocksize: %d bytes)", idx, array->blocksize() * 4);
+		if (idx >= array->blocksize() * sizeof(cell_t))
+			return pContext->ThrowNativeError("Invalid byte %d (blocksize: %d bytes)", idx, array->blocksize() * sizeof(cell_t));
 		rval = (cell_t)*((char *)blk + idx);
 	}
 
@@ -383,8 +383,8 @@ static cell_t ArrayStack_Top(IPluginContext *pContext, const cell_t *params)
 			return pContext->ThrowNativeError("Invalid block %d (blocksize: %d)", idx, array->blocksize());
 		rval = blk[idx];
 	} else {
-		if (idx >= array->blocksize() * 4)
-			return pContext->ThrowNativeError("Invalid byte %d (blocksize: %d bytes)", idx, array->blocksize() * 4);
+		if (idx >= array->blocksize() * sizeof(cell_t))
+			return pContext->ThrowNativeError("Invalid byte %d (blocksize: %d bytes)", idx, array->blocksize() * sizeof(cell_t));
 		rval = (cell_t)*((char *)blk + idx);
 	}
 
