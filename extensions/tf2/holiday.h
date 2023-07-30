@@ -57,7 +57,7 @@ private:
 	bool IsHookEnabled() const { return m_iHookID != 0; }
 	void *GetGameRules();
 	void HookIfNecessary();
-	void UnhookIfNecessary();
+	void Unhook();
 
 private:
 	int m_iHookID;

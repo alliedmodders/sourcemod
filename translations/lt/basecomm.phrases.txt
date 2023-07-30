@@ -1,0 +1,73 @@
+"Phrases"
+{
+	"Gag/Mute player"
+	{
+		"lt"		"Užkimšti/Užtildyti žaidėją"
+	}
+
+	"Choose Type"
+	{
+		"lt"		"Pasirinkti tipą"
+	}
+
+	"Gagged target"
+	{
+		"lt"		"Užkimštas {1}."
+	}
+
+	"Ungagged target"
+	{
+		"lt"		"Atkimštas {1}."
+	}
+
+	"Muted target"
+	{
+		"lt"		"Užtildytas {1}."
+	}
+
+	"Unmuted target"
+	{
+		"lt"		"Leista šnekėti {1}."
+	}
+
+	"Silenced target"
+	{
+		"lt"		"Užtildytas {1}."
+	}
+
+	"Unsilenced target"
+	{
+		"lt"		"Leista šnekėti {1}."
+	}
+
+	"Mute Player"
+	{
+		"lt"		"Drausti kalbėti žaidėjui"
+	}
+
+	"UnMute Player"
+	{
+		"lt"		"Leisti kalbėti žaidėjui"
+	}
+
+	"Gag Player"
+	{
+		"lt"		"Drausti rašyti žaidėjui"
+	}
+
+	"UnGag Player"
+	{
+		"lt"		"Leisti rašyti žaidėjui"
+	}
+
+	"Silence Player"
+	{
+		"lt"		"Drausti bendrauti žaidėjui"
+	}
+
+	"UnSilence Player"
+	{
+		"lt"		"Leisti bendrauti žaidėjui"
+	}
+
+}

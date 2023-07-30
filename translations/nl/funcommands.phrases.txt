@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"nl"		"Zet speler in vuur"
+	}
+
+	"FireBomb player"
+	{
+		"nl"		"Maak speler een vuurbom"
+	}
+
+	"Freeze player"
+	{
+		"nl"		"Bevries speler"
+	}
+
+	"FreezeBomb player"
+	{
+		"nl"		"Maak speler een vriesbom"
+	}
+
+	"TimeBomb player"
+	{
+		"nl"		"Maak speler tijdbom"
+	}
+
+	"Beacon player"
+	{
+		"nl"		"Beacon speler"
+	}
+
+	"NoClip player"
+	{
+		"nl"		"NoClip speler"
+	}
+
+	"Blind player"
+	{
+		"nl"		"Maak speler blind"
+	}
+
+	"Drug player"
+	{
+		"nl"		"Drug een speler"
+	}
+
+	"Gravity player"
+	{
+		"nl"		"Zwaartekracht speler"
+	}
+
+	"Blind amount"
+	{
+		"nl"		"Hoe blind?"
+	}
+
+	"Fully blind"
+	{
+		"nl"		"Volledig blind"
+	}
+
+	"Half blind"
+	{
+		"nl"		"Half blind"
+	}
+
+	"No blind"
+	{
+		"nl"		"Niet blind"
+	}
+
+	"Gravity amount"
+	{
+		"nl"		"Zwaartekracht?"
+	}
+
+	"Gravity Very High"
+	{
+		"nl"		"Zeer Hoge Zwaartekracht"
+	}
+
+	"Gravity High"
+	{
+		"nl"		"Hoge Zwaartekracht"
+	}
+
+	"Gravity Normal"
+	{
+		"nl"		"Normale Zwaartekracht"
+	}
+
+	"Gravity Low"
+	{
+		"nl"		"Lage Zwaartekracht"
+	}
+
+	"Gravity Very Low"
+	{
+		"nl"		"Zeer Lage Zwaartekracht"
+	}
+
+	"Set target on fire"
+	{
+		"nl"		"Zet {1} in vuur."
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"nl"		"tijdbom veranderd voor {1}."
+	}
+
+	"Froze target"
+	{
+		"nl"		"{1} bevroren. "
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"nl"		"vriesbom veranderd voor {1}."
+	}
+
+	"Toggled beacon on target"
+	{
+		"nl"		"beacon veranderd voor {1}."
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"nl"		"tijdbom veranderd voor {2}."
+	}
+
+	"Toggled noclip on target"
+	{
+		"nl"		"noclip veranderd voor {1}."
+	}
+
+	"Toggled drug on target"
+	{
+		"nl"		"drugs veranderd voor {1}."
+	}
+
+	"Set blind on target"
+	{
+		"nl"		"blind gebruikt op {1}."
+	}
+
+	"Set gravity on target"
+	{
+		"nl"		"stel {1}'s zwaartekracht in."
+	}
+
+	"Till Explodes"
+	{
+		"nl"		"{2} seconden totdat {1} explodeert."
+	}
+
+	"Unfrozen"
+	{
+		"nl"		"Je bent nu bevroren."
+	}
+
+	"You will be unfrozen"
+	{
+		"nl"		"Je zult ontdooien in {1} seconden."
+	}
+
+}

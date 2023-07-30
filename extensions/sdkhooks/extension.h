@@ -20,7 +20,9 @@
 #if SOURCE_ENGINE >= SE_CSS && SOURCE_ENGINE != SE_LEFT4DEAD
 #define GETMAXHEALTH_IS_VIRTUAL
 #endif
-#if SOURCE_ENGINE != SE_HL2DM && SOURCE_ENGINE != SE_DODS && SOURCE_ENGINE != SE_CSS && SOURCE_ENGINE != SE_TF2 && SOURCE_ENGINE != SE_LEFT4DEAD2 && SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_NUCLEARDAWN && SOURCE_ENGINE != SE_BLADE
+#if SOURCE_ENGINE != SE_HL2DM && SOURCE_ENGINE != SE_DODS && SOURCE_ENGINE != SE_CSS && SOURCE_ENGINE != SE_TF2 && \
+	SOURCE_ENGINE != SE_LEFT4DEAD2 && SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_NUCLEARDAWN && \
+	SOURCE_ENGINE != SE_BLADE && SOURCE_ENGINE != SE_MCV
 #define GAMEDESC_CAN_CHANGE
 #endif
 
@@ -308,7 +310,7 @@ public:
 	void Hook_Touch(CBaseEntity *pOther);
 	void Hook_TouchPost(CBaseEntity *pOther);
 #if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_PVKII
 	void Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator);
 	void Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator);
 #else

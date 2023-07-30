@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Played sound to target"
+	{
+		"tr"		"{1} adlı oyuncuya ses çalındı"
+	}
+
+}

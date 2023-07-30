@@ -225,6 +225,11 @@ public:
 	DHooksInfo *dg;
 };
 
+enum HookMethod {
+	Virtual,
+	Detour
+};
+
 class HookSetup
 {
 public:
@@ -238,6 +243,7 @@ public:
 		this->offset = offset;
 		this->funcAddr = nullptr;
 		this->callback = callback;
+		this->hookMethod = Virtual;
 	};
 	HookSetup(ReturnType returnType, unsigned int returnFlag, CallingConvention callConv, ThisPointerType thisType, void *funcAddr)
 	{
@@ -249,6 +255,7 @@ public:
 		this->offset = -1;
 		this->funcAddr = funcAddr;
 		this->callback = nullptr;
+		this->hookMethod = Detour;
 	};
 	~HookSetup(){};
 
@@ -266,6 +273,7 @@ public:
 	int offset;
 	void *funcAddr;
 	IPluginFunction *callback;
+	HookMethod hookMethod;
 };
 
 class DHooksManager

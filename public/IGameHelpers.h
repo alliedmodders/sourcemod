@@ -188,7 +188,6 @@ namespace SourceMod
 		 *
 		 * @param hndl			CBaseHandle object.
 		 * @param pEnt			Edict pointer.
-		 * @noreturn
 		 */
 		virtual void SetHandleEntity(CBaseHandle &hndl, edict_t *pEnt) =0;
 

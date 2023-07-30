@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+      - '[0-9]+.[0-9]+-dev'
     paths:
       - 'plugins/include/*'
       - 'sourcepawn/**'
@@ -26,12 +27,12 @@ jobs:
     env:
       ARCH: x86,x86_64
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
 
       # Setup Python for AMBuild
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         name: Setup Python 3.8
         with:
           python-version: 3.8
@@ -72,7 +73,7 @@ jobs:
           echo "SM_VERSION=$(cat ../product.version)" >> $GITHUB_ENV
 
       - name: Archive tooling
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: sourcemod-tooling-${{ env.SM_VERSION }}-${{ matrix.os_short }}
           path: build/package

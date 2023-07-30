@@ -1,0 +1,138 @@
+"Phrases"
+{
+	"Unable to find cvar"
+	{
+		"nl"		"Onmogelijk om cvar: {1} te vinden"
+	}
+
+	"No access to cvar"
+	{
+		"nl"		"Je hebt geen toegang tot deze cvar."
+	}
+
+	"Value of cvar"
+	{
+		"nl"		"Waarde van cvar \"{1}\": \"{2}\""
+	}
+
+	"Cvar changed"
+	{
+		"nl"		"cvar \"{1}\" verandert naar \"{2}\"."
+	}
+
+	"Config not found"
+	{
+		"nl"		"Config bestand \"{1}\" niet gevonden."
+	}
+
+	"Executed config"
+	{
+		"nl"		"Config \"{1}\" uitgevoerd."
+	}
+
+	"Permabanned player"
+	{
+		"nl"		"Speler \"{1}\" permanent verbannen."
+	}
+
+	"Permabanned player reason"
+	{
+		"nl"		"Speler \"{1}\" permanent verbannen (reden: {2})."
+	}
+
+	"Banned player"
+	{
+		"nl"		"Speler \"{1}\" verbannen voor {2} minuten."
+	}
+
+	"Banned player reason"
+	{
+		"nl"		"Speler \"{1}\" verbannen voor {2} minuten (reden: {3})."
+	}
+
+	"Removed bans matching"
+	{
+		"nl"		"Bans verwijderd die voldoen aan filter: {1}"
+	}
+
+	"Ban added"
+	{
+		"nl"		"Ban toegevoegd."
+	}
+
+	"Admin cache refreshed"
+	{
+		"nl"		"Beheerders geheugen is ververst."
+	}
+
+	"Identify player"
+	{
+		"nl"		"Identificeer speler"
+	}
+
+	"Choose Map"
+	{
+		"nl"		"Kies Map"
+	}
+
+	"Exec CFG"
+	{
+		"nl"		"CFG uitvoeren"
+	}
+
+	"Admin logged in as"
+	{
+		"nl"		"\"{1}\" is ingelogd als \"{2}\" met toegang: {3}"
+	}
+
+	"Admin logged in anon"
+	{
+		"nl"		"\"{1}\" heeft toegang: {2}"
+	}
+
+	"Player is not an admin"
+	{
+		"nl"		"\"{1}\" is geen beheerder."
+	}
+
+	"Player is an admin"
+	{
+		"nl"		"\"{1}\" is een beheerder."
+	}
+
+	"Username"
+	{
+		"nl"		"Gebruikersnaam"
+	}
+
+	"Kicked target"
+	{
+		"nl"		"{1} verwijderd."
+	}
+
+	"Admin access"
+	{
+		"nl"		"Admin toegang"
+	}
+
+	"Cvar is now protected"
+	{
+		"nl"		"Cvar {1} is nu beschermt."
+	}
+
+	"Kicked target reason"
+	{
+		"nl"		"{1} verwijderd (Reden: {2})"
+	}
+
+	"Please select a map"
+	{
+		"nl"		"Selecteer een map"
+	}
+
+	"Choose Config"
+	{
+		"nl"		"Kies configuratie"
+	}
+
+}

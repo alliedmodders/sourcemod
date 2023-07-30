@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Played sound to target"
+	{
+		"las"		"Sonido reproducido a {1}"
+	}
+
+}

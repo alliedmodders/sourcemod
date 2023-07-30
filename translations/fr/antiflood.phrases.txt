@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Flooding the server"
+	{
+		"fr"		"Vous floodez le serveur!"
+	}
+
+}

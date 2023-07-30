@@ -1,0 +1,63 @@
+"Phrases"
+{
+	"Ban player"
+	{
+		"de"		"Spieler bannen"
+	}
+
+	"Ban reason"
+	{
+		"de"		"Grund für den Bann"
+	}
+
+	"Permabanned player"
+	{
+		"de"		"\"{1}\" wurde permanent gebannt."
+	}
+
+	"Permabanned player reason"
+	{
+		"de"		"\"{1}\" wurde permanent gebannt (Grund: {2}). "
+	}
+
+	"Banned player"
+	{
+		"de"		" \"{1}\" wurde für {2} Minuten gebannt."
+	}
+
+	"Banned player reason"
+	{
+		"de"		"\"{1}\" wurde für {2} Minuten gebannt (Grund: {3}). "
+	}
+
+	"Removed bans matching"
+	{
+		"de"		"Banns passend zum Kriterium '{1}' wurden entfernt."
+	}
+
+	"Ban added"
+	{
+		"de"		"Bann wurde hinzugefügt"
+	}
+
+	"Cannot ban that IP"
+	{
+		"de"		"Du kannst diese IP-Adresse nicht bannen. "
+	}
+
+	"Custom ban reason explanation"
+	{
+		"de"		"Gib den Grund als Chat-Nachricht ein. Nutze {1} um abzubrechen. "
+	}
+
+	"AbortBan applied successfully"
+	{
+		"de"		"Bann abgebrochen"
+	}
+
+	"AbortBan not waiting for custom reason"
+	{
+		"de"		"Du kannst keinen Bann abbrechen, da kein Bann ausgewählt wurde."
+	}
+
+}

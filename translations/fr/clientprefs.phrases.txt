@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Cookie List"
+	{
+		"fr"		"Liste des cookies Sourcemod"
+	}
+
+	"Printing Cookie List"
+	{
+		"fr"		"Liste de(s) cookie(s) affichée dans la console"
+	}
+
+	"Cookie not Found"
+	{
+		"fr"		"Impossible de trouver le cookie \"{1}\""
+	}
+
+	"Cookie Value"
+	{
+		"fr"		"La valeur du Cookie {1} est {2}"
+	}
+
+	"Protected Cookie"
+	{
+		"fr"		"Impossible de changer la valeur de {1} (cookie protégé)"
+	}
+
+	"Cookie Changed Value"
+	{
+		"fr"		" Valeur du cookie changée de {1} à {2} "
+	}
+
+	"No Console"
+	{
+		"fr"		"Impossible d'afficher le menu paramètres dans la console. "
+	}
+
+	"Choose Option"
+	{
+		"fr"		"Choisissez une option"
+	}
+
+	"Client Settings"
+	{
+		"fr"		"Paramètres client. "
+	}
+
+}

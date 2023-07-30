@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Flooding the server"
+	{
+		"es"		"¡Estás saturando el servidor!"
+	}
+
+}

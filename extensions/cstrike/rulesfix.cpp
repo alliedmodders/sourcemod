@@ -36,11 +36,9 @@
 // Grab the convar ref
 ConVar *host_rules_show = nullptr;
 bool bPatched = false;
+int iPatchSize = -1;
 
 RulesFix rulesfix;
-
-ISteamGameServer *(*SteamAPI_SteamGameServer)();
-void (*SteamAPI_ISteamGameServer_SetKeyValue)(ISteamGameServer *self, const char *pKey, const char *pValue);
 
 SH_DECL_HOOK1_void(IServerGameDLL, GameServerSteamAPIActivated, SH_NOATTRIB, 0, bool);
 
@@ -56,7 +54,7 @@ bool SetMTUMax(int iValue)
 
 	//If we never changed skip resetting
 	if (iOriginalValue == -1 && iValue == -1)
-		return true;
+		return false;
 
 	if (m_pMaxMTU == nullptr)
 	{
@@ -80,43 +78,16 @@ bool SetMTUMax(int iValue)
 
 void RulesFix::OnLoad()
 {
-	ILibrary *pLibrary = libsys->OpenLibrary(
-#if defined ( PLATFORM_WINDOWS )
-	"steam_api.dll"
-#elif defined( PLATFORM_LINUX )
-	"libsteam_api.so"
-#elif defined( PLATFORM_APPLE )
-	"libsteam_api.dylib"
-#else
-#error Unsupported platform
-#endif
-	, nullptr, 0);
-	if (pLibrary != nullptr)
+	const char *patchSize = g_pGameConf->GetKeyValue("MTUPatchSize");
+	if (patchSize != NULL)
 	{
-		const char *pSteamGameServerFuncName = "SteamAPI_SteamGameServer_v013";
-		const char *pSetKeyValueFuncName = "SteamAPI_ISteamGameServer_SetKeyValue";
-
-		// When will hl2sdk-csgo be updated the SteamWorks SDK, change this to export.
-		SteamAPI_SteamGameServer = reinterpret_cast<ISteamGameServer *(*)()>(pLibrary->GetSymbolAddress(pSteamGameServerFuncName));
-		SteamAPI_ISteamGameServer_SetKeyValue = reinterpret_cast<void (*)(ISteamGameServer *self, const char *pKey, const char *pValue)>(pLibrary->GetSymbolAddress(pSetKeyValueFuncName));
-
-		if(SteamAPI_SteamGameServer == nullptr)
-		{
-			g_pSM->LogError(myself, "[CStrike] Failed to get %s function", pSteamGameServerFuncName);
-		}
-
-		if(SteamAPI_ISteamGameServer_SetKeyValue == nullptr)
-		{
-			g_pSM->LogError(myself, "[CStrike] Failed to get %s function", pSetKeyValueFuncName);
-		}
-
-		pLibrary->CloseLibrary();
+		iPatchSize = atoi(patchSize);
 	}
-	
+
 	host_rules_show = g_pCVar->FindVar("host_rules_show");
 	if (host_rules_show)
 	{
-		if (SetMTUMax(5000))
+		if (SetMTUMax(iPatchSize))
 		{
 			// Default to enabled. Explicit disable via cfg will still be obeyed.
 			host_rules_show->SetValue(true);
@@ -160,7 +131,7 @@ static void OnConVarChanged(IConVar *var, const char *pOldValue, float flOldValu
 		{
 			if (!bPatched)
 			{
-				if (SetMTUMax(5000))
+				if (SetMTUMax(iPatchSize))
 				{
 					bPatched = true;
 					NotifyAllCVars();
@@ -185,20 +156,18 @@ static void OnConVarChanged(IConVar *var, const char *pOldValue, float flOldValu
 
 void RulesFix::OnNotifyConVarChanged(ConVar *pVar)
 {
-	if (!bPatched || !SteamAPI_SteamGameServer || !SteamAPI_ISteamGameServer_SetKeyValue)
+	if (!bPatched)
 		return;
 
-	ISteamGameServer *pSteamClientGameServer = SteamAPI_SteamGameServer();
-
-	if (pSteamClientGameServer)
+	if (SteamGameServer())
 	{
 		if (pVar->IsFlagSet(FCVAR_PROTECTED))
 		{
-			SteamAPI_ISteamGameServer_SetKeyValue(pSteamClientGameServer, pVar->GetName(), !pVar->GetString()[0] ? "0" : "1");
+			SteamGameServer()->SetKeyValue(pVar->GetName(), !pVar->GetString()[0] ? "0" : "1");
 		}
 		else
 		{
-			SteamAPI_ISteamGameServer_SetKeyValue(pSteamClientGameServer, pVar->GetName(), pVar->GetString());
+			SteamGameServer()->SetKeyValue(pVar->GetName(), pVar->GetString());
 		}
 	}
 }

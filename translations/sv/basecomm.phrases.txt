@@ -1,0 +1,73 @@
+"Phrases"
+{
+	"Gag/Mute player"
+	{
+		"sv"		"Sätt munkavle på/dämpa spelare"
+	}
+
+	"Choose Type"
+	{
+		"sv"		"Välj typ"
+	}
+
+	"Gagged target"
+	{
+		"sv"		"Satte munkavle på {1}."
+	}
+
+	"Ungagged target"
+	{
+		"sv"		"Tog bort munkavle på {1}."
+	}
+
+	"Muted target"
+	{
+		"sv"		"Dämpade {1}."
+	}
+
+	"Unmuted target"
+	{
+		"sv"		"Odämpade spelare {1}."
+	}
+
+	"Silenced target"
+	{
+		"sv"		"Tystade {1}."
+	}
+
+	"Unsilenced target"
+	{
+		"sv"		"Otystade spelare {1}."
+	}
+
+	"Mute Player"
+	{
+		"sv"		"Dämpa spelare"
+	}
+
+	"UnMute Player"
+	{
+		"sv"		"Odämpa spelare"
+	}
+
+	"Gag Player"
+	{
+		"sv"		"Sätt munkavle på spelare"
+	}
+
+	"UnGag Player"
+	{
+		"sv"		"Ta bort munkavle på spelare"
+	}
+
+	"Silence Player"
+	{
+		"sv"		"Tysta spelare"
+	}
+
+	"UnSilence Player"
+	{
+		"sv"		"Otysta spelare"
+	}
+
+}

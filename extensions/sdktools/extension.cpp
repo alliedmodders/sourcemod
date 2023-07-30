@@ -54,6 +54,7 @@
  */
 
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
+SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
 SH_DECL_HOOK1_void_vafmt(IVEngineServer, ClientCommand, SH_NOATTRIB, 0, edict_t *);
 #endif
@@ -107,7 +108,7 @@ extern sp_nativeinfo_t g_ClientNatives[];
 
 static void InitSDKToolsAPI();
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 CDetour *g_WriteBaselinesDetour = NULL;
 
 DETOUR_DECL_MEMBER3(CNetworkStringTableContainer__WriteBaselines, void, char const *, mapName, void *, buffer, int, currentTick)
@@ -174,6 +175,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	CONVAR_REGISTER(this);
 
 	SH_ADD_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(this, &SDKTools::LevelInit), true);
+	SH_ADD_HOOK(IServerGameDLL, LevelShutdown, gamedll, SH_MEMBER(this, &SDKTools::LevelShutdown), true);
 
 	playerhelpers->RegisterCommandTargetProcessor(this);
 
@@ -207,7 +209,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	m_CSGOBadList.add("m_bIsQuestEligible");
 #endif
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	g_WriteBaselinesDetour = DETOUR_CREATE_MEMBER(CNetworkStringTableContainer__WriteBaselines, "WriteBaselines");
 	if (g_WriteBaselinesDetour) {
 		g_WriteBaselinesDetour->EnableDetour();
@@ -245,7 +247,7 @@ void SDKTools::SDK_OnUnload()
 	g_RegCalls.clear();
 	ShutdownHelpers();
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	if (g_WriteBaselinesDetour) {
 		g_WriteBaselinesDetour->DisableDetour();
 		g_WriteBaselinesDetour = NULL;
@@ -274,6 +276,7 @@ void SDKTools::SDK_OnUnload()
 	plsys->RemovePluginsListener(&g_OutputManager);
 
 	SH_REMOVE_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(this, &SDKTools::LevelInit), true);
+	SH_REMOVE_HOOK(IServerGameDLL, LevelShutdown, gamedll, SH_MEMBER(this, &SDKTools::LevelShutdown), true);
 
 	if (enginePatch)
 	{
@@ -445,6 +448,11 @@ bool SDKTools::LevelInit(char const *pMapName, char const *pMapEntities, char co
 	}
 
 	RETURN_META_VALUE(MRES_IGNORED, true);
+}
+
+void SDKTools::LevelShutdown()
+{
+	ClearValveGlobals();
 }
 
 bool SDKTools::ProcessCommandTarget(cmd_target_info_t *info)

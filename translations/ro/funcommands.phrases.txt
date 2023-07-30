@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"ro"		"Arde jucător"
+	}
+
+	"FireBomb player"
+	{
+		"ro"		"FireBomb jucător"
+	}
+
+	"Freeze player"
+	{
+		"ro"		"Îngheaţă jucător"
+	}
+
+	"FreezeBomb player"
+	{
+		"ro"		"FreezeBomb jucător"
+	}
+
+	"TimeBomb player"
+	{
+		"ro"		"Jucător TimeBomb"
+	}
+
+	"Beacon player"
+	{
+		"ro"		"Luminează jucător"
+	}
+
+	"NoClip player"
+	{
+		"ro"		"NoClip jucător"
+	}
+
+	"Blind player"
+	{
+		"ro"		"Orbeşte jucător"
+	}
+
+	"Drug player"
+	{
+		"ro"		"Droghează jucător"
+	}
+
+	"Gravity player"
+	{
+		"ro"		"Gravitate pentru jucător"
+	}
+
+	"Blind amount"
+	{
+		"ro"		"Cât de orb?"
+	}
+
+	"Fully blind"
+	{
+		"ro"		"Orb complet"
+	}
+
+	"Half blind"
+	{
+		"ro"		"Orb pe jumătate"
+	}
+
+	"No blind"
+	{
+		"ro"		"Scoate orbire"
+	}
+
+	"Gravity amount"
+	{
+		"ro"		"Gravitate?"
+	}
+
+	"Gravity Very High"
+	{
+		"ro"		"Gravitate Foarte Mare"
+	}
+
+	"Gravity High"
+	{
+		"ro"		"Gravitate Mare"
+	}
+
+	"Gravity Normal"
+	{
+		"ro"		"Gravitate Normală"
+	}
+
+	"Gravity Low"
+	{
+		"ro"		"Gravitate Mică"
+	}
+
+	"Gravity Very Low"
+	{
+		"ro"		"Gravitate Foarte Mică"
+	}
+
+	"Set target on fire"
+	{
+		"ro"		"Da-i foc lui {1}."
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"ro"		"schimbat firebomb pe {1}."
+	}
+
+	"Froze target"
+	{
+		"ro"		"îngheaţă {1}."
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"ro"		"schimbat freezebomb pe {1}."
+	}
+
+	"Toggled beacon on target"
+	{
+		"ro"		"schimbat beacon pe {1}."
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"ro"		"schimbat timebomb pe {1}."
+	}
+
+	"Toggled noclip on target"
+	{
+		"ro"		"schimbat noclip pe {1}."
+	}
+
+	"Toggled drug on target"
+	{
+		"ro"		"schimbat drog pe {1}."
+	}
+
+	"Set blind on target"
+	{
+		"ro"		"folosit orbire pe {1}."
+	}
+
+	"Set gravity on target"
+	{
+		"ro"		"seteaza gravitatea pentru {1}."
+	}
+
+	"Till Explodes"
+	{
+		"ro"		"{2} secunde până ce {1} explodează."
+	}
+
+	"Unfrozen"
+	{
+		"ro"		"Eşti dezgheţat."
+	}
+
+	"You will be unfrozen"
+	{
+		"ro"		"Vei fi dezgheţat în {1} secunde."
+	}
+
+}

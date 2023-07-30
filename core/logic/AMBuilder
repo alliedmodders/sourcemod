@@ -84,6 +84,8 @@ for cxx in builder.targets:
     'smn_halflife.cpp',
     'FrameIterator.cpp',
     'DatabaseConfBuilder.cpp',
+    'LumpManager.cpp',
+    'smn_entitylump.cpp',
   ]
 
   if binary.compiler.target.arch == 'x86_64':

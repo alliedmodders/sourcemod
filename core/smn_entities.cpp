@@ -706,6 +706,36 @@ static cell_t GetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 	return g_HL2.EntityToBCompatRef(pHandleEntity);
 }
 
+//memory addresses below 0x10000 are automatically considered invalid for dereferencing
+//this is copied over from smn_core.cpp
+#define VALID_MINIMUM_MEMORY_ADDRESS 0x10000
+
+static cell_t LoadEntityFromHandleAddress(IPluginContext *pContext, const cell_t *params)
+{
+#ifdef PLATFORM_X86
+	void *addr = reinterpret_cast<void*>(params[1]);
+#else
+	void *addr = g_SourceMod.FromPseudoAddress(params[1]);
+#endif
+
+	if (addr == NULL)
+	{
+		return pContext->ThrowNativeError("Address cannot be null");
+	}
+	else if (reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
+	{
+		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory.", addr);
+	}
+
+	CBaseHandle &hndl = *reinterpret_cast<CBaseHandle*>(addr);
+	CBaseEntity *pHandleEntity = g_HL2.ReferenceToEntity(hndl.GetEntryIndex());
+
+	if (!pHandleEntity || hndl != reinterpret_cast<IHandleEntity *>(pHandleEntity)->GetRefEHandle())
+		return -1;
+
+	return g_HL2.EntityToBCompatRef(pHandleEntity);
+}
+
 /* THIS GUY IS DEPRECATED. */
 static cell_t SetEntDataEnt(IPluginContext *pContext, const cell_t *params)
 {
@@ -791,6 +821,44 @@ static cell_t SetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t StoreEntityToHandleAddress(IPluginContext *pContext, const cell_t *params)
+{
+#ifdef PLATFORM_X86
+	void *addr = reinterpret_cast<void*>(params[1]);
+#else
+	void *addr = g_SourceMod.FromPseudoAddress(params[1]);
+#endif
+
+	if (addr == NULL)
+	{
+		return pContext->ThrowNativeError("Address cannot be null");
+	}
+	else if (reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
+	{
+		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory.", addr);
+	}
+
+	CBaseHandle &hndl = *reinterpret_cast<CBaseHandle*>(addr);
+
+	if ((unsigned)params[2] == INVALID_EHANDLE_INDEX)
+	{
+		hndl.Set(NULL);
+	}
+	else
+	{
+		CBaseEntity *pOther = GetEntity(params[2]);
+
+		if (!pOther)
+		{
+			return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[2]), params[2]);
+		}
+
+		IHandleEntity *pHandleEnt = (IHandleEntity *)pOther;
+		hndl.Set(pHandleEnt);
+	}
+	return 1;
+}
+
 static cell_t ChangeEdictState(IPluginContext *pContext, const cell_t *params)
 {
 	edict_t *pEdict = GetEdict(params[1]);
@@ -816,6 +884,12 @@ static cell_t FindSendPropOffs(IPluginContext *pContext, const cell_t *params)
 	if (!pSend)
 	{
 		return -1;
+	}
+
+	// Before we added support for DPT_Array props, FindInSendTable would have given us the inner array prop itself.
+	// To maintain compatibility with older plugins still using us, pluck out the inner array prop ourselves.
+	if (pSend->GetType() == DPT_Array && pSend->GetArrayProp()) {
+		return pSend->GetArrayProp()->GetOffset();
 	}
 
 	return pSend->GetOffset();
@@ -1452,7 +1526,8 @@ static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 			// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS \
 	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+	|| SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_PVKII \
+	|| SOURCE_ENGINE == SE_MCV
 			if (pProp->GetFlags() & SPROP_VARINT)
 			{
 				bit_count = sizeof(int) * 8;
@@ -1571,7 +1646,8 @@ static cell_t SetEntProp(IPluginContext *pContext, const cell_t *params)
 			// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS \
 	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+	|| SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_PVKII \
+	|| SOURCE_ENGINE == SE_MCV
 			if (pProp->GetFlags() & SPROP_VARINT)
 			{
 				bit_count = sizeof(int) * 8;
@@ -2502,7 +2578,7 @@ static int32_t SDKEntFlagToSMEntFlag(int flag)
 		case FL_FREEZING:
 			return ENTFLAG_FREEZING;
 #elif SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 		case FL_EP2V_UNKNOWN:
 			return ENTFLAG_EP2V_UNKNOWN1;
 #endif
@@ -2581,7 +2657,7 @@ static int32_t SMEntFlagToSDKEntFlag(int32_t flag)
 		case ENTFLAG_FREEZING:
 			return FL_FREEZING;
 #elif SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 		case ENTFLAG_EP2V_UNKNOWN1:
 			return FL_EP2V_UNKNOWN;
 #endif
@@ -2744,5 +2820,7 @@ REGISTER_NATIVES(entityNatives)
 	{"SetEntPropVector",		SetEntPropVector},
 	{"GetEntityAddress",		GetEntityAddress},
 	{"FindDataMapInfo",		FindDataMapInfo},
+	{"LoadEntityFromHandleAddress",	LoadEntityFromHandleAddress},
+	{"StoreEntityToHandleAddress",	StoreEntityToHandleAddress},
 	{NULL,						NULL}
 };

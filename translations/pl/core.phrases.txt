@@ -1,0 +1,88 @@
+"Phrases"
+{
+	"No Access"
+	{
+		"pl"		"Nie masz dostępu do tej komendy."
+	}
+
+	"Back"
+	{
+		"pl"		"Wstecz"
+	}
+
+	"Next"
+	{
+		"pl"		"Dalej"
+	}
+
+	"Exit"
+	{
+		"pl"		"Wyjdź"
+	}
+
+	"Previous"
+	{
+		"pl"		"Poprzednia"
+	}
+
+	"all players"
+	{
+		"pl"		"wszyscy gracze"
+	}
+
+	"all humans"
+	{
+		"pl"		"wszyscy ludzie"
+	}
+
+	"all bots"
+	{
+		"pl"		"wszystkie boty"
+	}
+
+	"all dead players"
+	{
+		"pl"		"wszyscy martwi gracze"
+	}
+
+	"all alive players"
+	{
+		"pl"		"wszyscy żywi gracze"
+	}
+
+	"_s"
+	{
+		"pl"		"{1} "
+	}
+
+	"all spectators"
+	{
+		"pl"		"wszyscy obserwatorzy"
+	}
+
+	"Vote Count"
+	{
+		"pl"		"Głosy: {1}/{2}, pozostało {3}"
+	}
+
+	"Voted For"
+	{
+		"pl"		"{1} głosuje na {2}"
+	}
+
+	"Changed Vote"
+	{
+		"pl"		"{1} zmienił swój głos na {2}"
+	}
+
+	"No Vote"
+	{
+		"pl"		"Brak głosowania"
+	}
+
+	"Name Reserved"
+	{
+		"pl"		"Twój nick jest zarezerwowany przez SourceModa; ustaw swoje hasło, aby go użyć."
+	}
+
+}

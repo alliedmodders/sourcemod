@@ -274,6 +274,24 @@ native ReplySource SetCmdReplySource(ReplySource source);
 native bool IsChatTrigger();
 
 /**
+ * Get the list of characters used for public chat triggers.
+ *
+ * @param buffer        Buffer to use for storing the string.
+ * @param maxlength     Maximum length of the buffer.
+ * @return              Length of string written to buffer.
+ */
+native int GetPublicChatTriggers(char[] buffer, int maxlength);
+
+/**
+ * Get the list of characters used for silent chat triggers.
+ *
+ * @param buffer        Buffer to use for storing the string.
+ * @param maxlength     Maximum length of the buffer.
+ * @return              Length of string written to buffer.
+ */
+native int GetSilentChatTriggers(char[] buffer, int maxlength);
+
+/**
  * Displays usage of an admin command to users depending on the 
  * setting of the sm_show_activity cvar.  All users receive a message 
  * in their chat text, except for the originating client, who receives 
@@ -428,10 +446,11 @@ native int GetCmdArg(int argnum, char[] buffer, int maxlength);
  * console or server command. Will return 0 if the argument can not be
  * parsed as a number. Use GetCmdArgIntEx to handle that explicitly.
  *
- * @param argnum Argument number to retrieve.
- * @return       Value of the command argument.
+ * @param argnum        Argument number to retrieve.
+ * @return              Value of the command argument.
  */
-stock int GetCmdArgInt(int argnum) {
+stock int GetCmdArgInt(int argnum)
+{
     char str[12];
     GetCmdArg(argnum, str, sizeof(str));
 
@@ -443,15 +462,49 @@ stock int GetCmdArgInt(int argnum) {
  * console or server command. Returns false if the argument can not be
  * completely parsed as an integer.
  *
- * @param argnum Argument number to retrieve.
- * @param value  Populated with the value of the command argument.
- * @return       Whether the argument was entirely a numeric value.
+ * @param argnum        Argument number to retrieve.
+ * @param value         Populated with the value of the command argument.
+ * @return              Whether the argument was entirely a numeric value.
  */
-stock bool GetCmdArgIntEx(int argnum, int &value) {
+stock bool GetCmdArgIntEx(int argnum, int &value)
+{
     char str[12];
     int len = GetCmdArg(argnum, str, sizeof(str));
 
     return StringToIntEx(str, value) == len && len > 0;
+}
+
+/**
+ * Retrieves a float command argument given its index, from the current
+ * console or server command. Will return 0.0 if the argument can not be
+ * parsed as a number. Use GetCmdArgFloatEx to handle that explicitly.
+ *
+ * @param argnum        Argument number to retrieve.
+ * @return              Value of the command argument.
+ */
+stock float GetCmdArgFloat(int argnum)
+{
+    char str[18];
+    GetCmdArg(argnum, str, sizeof(str));
+
+    return StringToFloat(str);
+}
+
+/**
+ * Retrieves a float command argument given its index, from the current
+ * console or server command. Returns false if the argument can not be
+ * completely parsed as a floating point.
+ *
+ * @param argnum        Argument number to retrieve.
+ * @param value         Populated with the value of the command argument.
+ * @return              Whether the argument was entirely a floating point value.
+ */
+stock bool GetCmdArgFloatEx(int argnum, float &value)
+{
+    char str[18];
+    int len = GetCmdArg(argnum, str, sizeof(str));
+
+    return StringToFloatEx(str, value) == len && len > 0;
 }
 
 /**
@@ -502,10 +555,27 @@ methodmap CommandIterator < Handle {
 		public native get();
 	}
 
-	// Retrieves the command's default flags
+	// This property is deprecated. Use .AdminFlags instead.
+	// Retrieves the command's effective admin flags.
 	//
 	// @error                Invalid iterator position.
+	// @deprecated           Use .AdminFlags instead.
+	#pragma deprecated Use .AdminFlags instead.
 	property int Flags {
+		public native get();
+	}
+
+	// Retrieves the command's effective admin flags.
+	//
+	// @error                Invalid iterator position.
+	property int AdminFlags {
+		public native get();
+	}
+
+	// Retrieves the command's convar flags.
+	//
+	// @error                Invalid iterator position.
+	property int ConVarFlags {
 		public native get();
 	}
 }

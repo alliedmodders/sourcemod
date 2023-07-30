@@ -160,7 +160,7 @@ ReturnAction_t CHook::HookHandler(HookType_t eHookType)
 	{
 		ReturnAction_t lastPreReturnAction = m_LastPreReturnAction.back();
 		m_LastPreReturnAction.pop_back();
-		if (lastPreReturnAction == ReturnAction_Override)
+		if (lastPreReturnAction >= ReturnAction_Override)
 			m_pCallingConvention->RestoreReturnValue(m_pRegisters);
 		if (lastPreReturnAction < ReturnAction_Supercede)
 			m_pCallingConvention->RestoreCallArguments(m_pRegisters);
@@ -191,7 +191,7 @@ ReturnAction_t CHook::HookHandler(HookType_t eHookType)
 	if (eHookType == HOOKTYPE_PRE)
 	{
 		m_LastPreReturnAction.push_back(returnAction);
-		if (returnAction == ReturnAction_Override)
+		if (returnAction >= ReturnAction_Override)
 			m_pCallingConvention->SaveReturnValue(m_pRegisters);
 		if (returnAction < ReturnAction_Supercede)
 			m_pCallingConvention->SaveCallArguments(m_pRegisters);
@@ -355,13 +355,13 @@ void CHook::Write_CallHandler(sp::MacroAssembler& masm, HookType_t type)
 	Write_SaveRegisters(masm, type);
 
 	// Align the stack to 16 bytes.
-	masm.subl(esp, 8);
+	masm.subl(esp, 4);
 
 	// Call the global hook handler
 	masm.push(type);
 	masm.push(intptr_t(this));
 	masm.call(ExternalAddress((void *&)HookHandler));
-	masm.addl(esp, 16);
+	masm.addl(esp, 12);
 }
 
 void CHook::Write_SaveRegisters(sp::MacroAssembler& masm, HookType_t type)

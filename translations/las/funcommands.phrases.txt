@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"las"		"Quemar jugador"
+	}
+
+	"FireBomb player"
+	{
+		"las"		"Bomba de fuego"
+	}
+
+	"Freeze player"
+	{
+		"las"		"Congelar jugador"
+	}
+
+	"FreezeBomb player"
+	{
+		"las"		"Bomba congelante"
+	}
+
+	"TimeBomb player"
+	{
+		"las"		"Bomba de tiempo"
+	}
+
+	"Beacon player"
+	{
+		"las"		"Balizar jugador"
+	}
+
+	"NoClip player"
+	{
+		"las"		"Dar NoClip a jugador"
+	}
+
+	"Blind player"
+	{
+		"las"		"Cegar jugador"
+	}
+
+	"Drug player"
+	{
+		"las"		"Drogar jugador"
+	}
+
+	"Gravity player"
+	{
+		"las"		"Gravedad de jugador"
+	}
+
+	"Blind amount"
+	{
+		"las"		"¿Cuánto de ciego?"
+	}
+
+	"Fully blind"
+	{
+		"las"		"Cegar completamente"
+	}
+
+	"Half blind"
+	{
+		"las"		"Cegar por la mitad"
+	}
+
+	"No blind"
+	{
+		"las"		"No cegar"
+	}
+
+	"Gravity amount"
+	{
+		"las"		"Gravedad?"
+	}
+
+	"Gravity Very High"
+	{
+		"las"		"Gravedad muy alta"
+	}
+
+	"Gravity High"
+	{
+		"las"		"Gravedad alta"
+	}
+
+	"Gravity Normal"
+	{
+		"las"		"Gravedad normal"
+	}
+
+	"Gravity Low"
+	{
+		"las"		"Gravedad baja"
+	}
+
+	"Gravity Very Low"
+	{
+		"las"		"Gravedad muy baja"
+	}
+
+	"Set target on fire"
+	{
+		"las"		"Prendido fuego a {1}."
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"las"		"bomba de fuego (des)activada sobre {1}."
+	}
+
+	"Froze target"
+	{
+		"las"		"{1} congelado."
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"las"		"bomba congelante (des)activada sobre {1}."
+	}
+
+	"Toggled beacon on target"
+	{
+		"las"		"baliza (des)activada sobre {1}. "
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"las"		"bomba de tiempo (des)activada sobre {1}."
+	}
+
+	"Toggled noclip on target"
+	{
+		"las"		"noclip (des)activado sobre {1}."
+	}
+
+	"Toggled drug on target"
+	{
+		"las"		"drogas (des)activadas sobre {1}. "
+	}
+
+	"Set blind on target"
+	{
+		"las"		"{1} cegado."
+	}
+
+	"Set gravity on target"
+	{
+		"las"		"gravedad de {1} cambiada."
+	}
+
+	"Till Explodes"
+	{
+		"las"		"{2} segundos hasta que {1} explote."
+	}
+
+	"Unfrozen"
+	{
+		"las"		"Has sido descongelado."
+	}
+
+	"You will be unfrozen"
+	{
+		"las"		"Serás descongelado en {1} segundos."
+	}
+
+}

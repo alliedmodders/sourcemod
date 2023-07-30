@@ -1,0 +1,138 @@
+"Phrases"
+{
+	"Unable to find cvar"
+	{
+		"ro"		"Nu a fost găsit cvar: {1}"
+	}
+
+	"No access to cvar"
+	{
+		"ro"		"Nu ai acces la acest cvar."
+	}
+
+	"Value of cvar"
+	{
+		"ro"		"Valoare cvar \"{1}\": \"{2}\""
+	}
+
+	"Cvar changed"
+	{
+		"ro"		"Cvar schimbat din \"{1}\" în \"{2}\"."
+	}
+
+	"Config not found"
+	{
+		"ro"		"Fişier config \"{1}\" nu a fost găsit."
+	}
+
+	"Executed config"
+	{
+		"ro"		"Config \"{1}\" a fost executat."
+	}
+
+	"Permabanned player"
+	{
+		"ro"		"Ban permanent pentru jucătorul \"{1}\"."
+	}
+
+	"Permabanned player reason"
+	{
+		"ro"		"Ban permanent pentru jucătorul \"{1}\" (motiv: {2})."
+	}
+
+	"Banned player"
+	{
+		"ro"		"Ban jucător \"{1}\" pentru {2} minute."
+	}
+
+	"Banned player reason"
+	{
+		"ro"		"Ban jucător \"{1}\" pentru {2} minute (motiv: {3})."
+	}
+
+	"Removed bans matching"
+	{
+		"ro"		"Şters ban conform filtrului: {1}"
+	}
+
+	"Ban added"
+	{
+		"ro"		"Ban a fost adăugat."
+	}
+
+	"Admin cache refreshed"
+	{
+		"ro"		"Admin cache a fost actualizat."
+	}
+
+	"Identify player"
+	{
+		"ro"		"Identifică jucător"
+	}
+
+	"Choose Map"
+	{
+		"ro"		"Alege harta"
+	}
+
+	"Exec CFG"
+	{
+		"ro"		"Exec CFG"
+	}
+
+	"Admin logged in as"
+	{
+		"ro"		"\"{1}\" este conectat ca \"{2}\" cu acces: {3}"
+	}
+
+	"Admin logged in anon"
+	{
+		"ro"		"\"{1}\" are acces: {2}"
+	}
+
+	"Player is not an admin"
+	{
+		"ro"		"\"{1}\" nu este admin."
+	}
+
+	"Player is an admin"
+	{
+		"ro"		"\"{1}\" este admin."
+	}
+
+	"Username"
+	{
+		"ro"		"Nume utilizator"
+	}
+
+	"Kicked target"
+	{
+		"ro"		"{1} a primit kick."
+	}
+
+	"Admin access"
+	{
+		"ro"		"Acces admin"
+	}
+
+	"Cvar is now protected"
+	{
+		"ro"		"Cvar {1} este acum protejat."
+	}
+
+	"Kicked target reason"
+	{
+		"ro"		"{1} a primit Kick (motiv: {2})"
+	}
+
+	"Please select a map"
+	{
+		"ro"		"Selecteaza o harta"
+	}
+
+	"Choose Config"
+	{
+		"ro"		"Alege config"
+	}
+
+}

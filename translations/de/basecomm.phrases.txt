@@ -1,0 +1,73 @@
+"Phrases"
+{
+	"Gag/Mute player"
+	{
+		"de"		"Chat / Voice-Chat für Spieler verbieten"
+	}
+
+	"Choose Type"
+	{
+		"de"		"Wähle Art "
+	}
+
+	"Gagged target"
+	{
+		"de"		"{1} kann nun nicht mehr im Chat schreiben."
+	}
+
+	"Ungagged target"
+	{
+		"de"		"{1} wurde für den Chat wieder freigeschaltet."
+	}
+
+	"Muted target"
+	{
+		"de"		"{1} kann nun nicht mehr im Voice-Chat reden."
+	}
+
+	"Unmuted target"
+	{
+		"de"		"{1} wurde für den Voice-Chat wieder freigeschaltet."
+	}
+
+	"Silenced target"
+	{
+		"de"		"{1} kann Chat und Voice-Chat nun nicht mehr benutzen."
+	}
+
+	"Unsilenced target"
+	{
+		"de"		"{1} wurde für den Chat und Voice-Chat wieder freigeschaltet."
+	}
+
+	"Mute Player"
+	{
+		"de"		"Spieler im Voice-Chat stummschalten"
+	}
+
+	"UnMute Player"
+	{
+		"de"		"Spieler für den Voice-Chat freigeben"
+	}
+
+	"Gag Player"
+	{
+		"de"		"Spieler im Chat stummschalten"
+	}
+
+	"UnGag Player"
+	{
+		"de"		"Spieler für den Chat freigeben"
+	}
+
+	"Silence Player"
+	{
+		"de"		"Spieler im Chat und Voice-Chat stummschalten"
+	}
+
+	"UnSilence Player"
+	{
+		"de"		"Spieler für Chat und Voice-Chat freigeben"
+	}
+
+}

@@ -30,6 +30,7 @@
  */
 
 #include "tempents.h"
+#include <basehandle.h>
 
 TempEntityManager g_TEManager;
 ICallWrapper *g_GetServerClass = NULL;
@@ -183,6 +184,43 @@ bool TempEntityInfo::TE_GetEntData(const char *name, int *value)
 	return true;
 }
 
+bool TempEntityInfo::TE_SetEntDataEnt(const char *name, IHandleEntity *value)
+{
+	/* Search for our offset */
+	int offset = _FindOffset(name);
+
+	if (offset < 0)
+	{
+		return false;
+	}
+
+	auto *pHndl = (CBaseHandle *)((uint8_t *)m_Me + offset);
+	pHndl->Set(value);
+
+	return true;
+}
+
+
+bool TempEntityInfo::TE_GetEntDataEnt(const char *name, IHandleEntity **value)
+{
+	/* Search for our offset */
+	int offset = _FindOffset(name);
+
+	if (offset < 0)
+	{
+		return false;
+	}
+
+	auto *pHndl = (CBaseHandle *)((uint8_t *)m_Me + offset);
+	auto *pEnt = reinterpret_cast<IHandleEntity *>(gamehelpers->ReferenceToEntity(pHndl->GetEntryIndex()));
+	if (!pEnt || *pHndl != pEnt->GetRefEHandle())
+		return false;
+
+	*value = pEnt;
+
+	return true;
+}
+
 bool TempEntityInfo::TE_SetEntDataFloat(const char *name, float value)
 {
 	/* Search for our offset */
@@ -292,7 +330,8 @@ void TempEntityManager::Initialize()
 	|| SOURCE_ENGINE == SE_SDK2013 \
 	|| SOURCE_ENGINE == SE_BMS     \
 	|| SOURCE_ENGINE == SE_BLADE   \
-	|| SOURCE_ENGINE == SE_NUCLEARDAWN
+	|| SOURCE_ENGINE == SE_NUCLEARDAWN \
+	|| SOURCE_ENGINE == SE_PVKII
 
 	if (g_SMAPI->GetServerFactory(false)("VSERVERTOOLS003", nullptr))
 	{

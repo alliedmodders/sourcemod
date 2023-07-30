@@ -102,9 +102,10 @@ native void TeleportEntity(int entity, const float origin[3] = NULL_VECTOR, cons
  * Forces a player to commit suicide.
  *
  * @param client        Client index.
+ * @param explode       If true, explode the player.
  * @error               Invalid client or client not in game, or lack of mod support.
  */
-native void ForcePlayerSuicide(int client);
+native void ForcePlayerSuicide(int client, bool explode = false);
 
 /**
  * Slaps a player in a random direction.
@@ -168,6 +169,23 @@ native bool DispatchSpawn(int entity);
  * @error               Invalid entity index or lack of mod support.
  */
 native bool DispatchKeyValue(int entity, const char[] keyName, const char[] value);
+
+/**
+ * Dispatches a KeyValue into given entity using an integer value.
+ *
+ * @param entity        Destination entity index.
+ * @param keyName       Name of the key.
+ * @param value         Integer value.
+ * @return              True on success, false otherwise.
+ * @error               Invalid entity index or lack of mod support.
+ */
+stock bool DispatchKeyValueInt(int entity, const char[] keyName, int value)
+{
+    char str[12];
+    FormatEx(str, sizeof(str), "%d", value);
+
+    return DispatchKeyValue(entity, keyName, str);
+}
 
 /**
  * Dispatches a KeyValue into given entity using a floating point value.
@@ -373,7 +391,29 @@ native void EntityCollisionRulesChanged(int entity);
  * Sets an entity's owner (CBaseEntity::SetEntityOwner).
  * 
  * @param entity            The entity index.
- * @param owner    			The owner entity index, can be invalid.
+ * @param owner             The owner entity index, can be invalid.
  * @error                   Invalid entity or lack of mod support.
  */
 native void SetEntityOwner(int entity, int owner=INVALID_ENT_REFERENCE);
+
+/**
+ * Returns the index number of a given named attachment.
+ * 
+ * @param entity        The entity index.
+ * @param name          The attachment name.
+ * @return              An attachment index, or 0 if the attachment name is invalid or unused.
+ * @error               Invalid entity or lack of mod support.
+ */
+native int LookupEntityAttachment(int entity, const char[] name);
+
+/**
+ * Returns the world location and world angles of an attachment.
+ * 
+ * @param entity        The entity index.
+ * @param attachment    The attachment index.
+ * @param origin        Destination vector to store the attachment's origin vector.
+ * @param angles        Destination vector to store the attachment's position angle.
+ * @return              True on success, otherwise false.
+ * @error               Invalid entity or lack of mod support.
+ */
+native bool GetEntityAttachment(int entity, int attachment, float origin[3], float angles[3]);

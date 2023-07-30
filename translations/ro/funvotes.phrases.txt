@@ -1,0 +1,98 @@
+"Phrases"
+{
+	"Initiated Vote Gravity"
+	{
+		"ro"		"Iniţializat un vot pentru gravity."
+	}
+
+	"Initiated Vote Burn"
+	{
+		"ro"		"Iniţializat un vot de burn impotriva lui {1}."
+	}
+
+	"Initiated Vote Slay"
+	{
+		"ro"		"Iniţializat un vot de slay împotriva lui {1}."
+	}
+
+	"Initiated Vote Alltalk"
+	{
+		"ro"		"Iniţializat un vot pentru alltalk."
+	}
+
+	"Initiated Vote FF"
+	{
+		"ro"		"Iniţializat un vot pentru friendly fire."
+	}
+
+	"Gravity Vote"
+	{
+		"ro"		"Vot gravitate: {1}"
+	}
+
+	"Change Gravity To"
+	{
+		"ro"		"Modific gravitatea în {1}?"
+	}
+
+	"Voteburn player"
+	{
+		"ro"		"Burn jucător {1}?"
+	}
+
+	"Voteslay Player"
+	{
+		"ro"		"Slay{1}?"
+	}
+
+	"Votealltalk Off"
+	{
+		"ro"		"Oprim alltalk? {1}"
+	}
+
+	"Votealltalk On"
+	{
+		"ro"		"Pornim alltalk? {1}"
+	}
+
+	"Voteff Off"
+	{
+		"ro"		"Oprim friendly fire? {1}"
+	}
+
+	"Voteff On"
+	{
+		"ro"		"Pornim friendly fire? {1}"
+	}
+
+	"Gravity vote"
+	{
+		"ro"		"Vot pentru gravitate"
+	}
+
+	"Vote FF"
+	{
+		"ro"		"Vot pentru FF"
+	}
+
+	"Burn vote"
+	{
+		"ro"		"Vot pentru burn"
+	}
+
+	"Alltalk vote"
+	{
+		"ro"		"Vot pentru alltalk"
+	}
+
+	"Slay vote"
+	{
+		"ro"		"Vot pentru slay"
+	}
+
+	"Slayed player"
+	{
+		"ro"		"Ucis jucatorul '{1}'"
+	}
+
+}

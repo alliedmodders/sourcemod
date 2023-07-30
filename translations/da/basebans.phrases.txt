@@ -1,0 +1,63 @@
+"Phrases"
+{
+	"Ban player"
+	{
+		"da"		"Bandlys spiller"
+	}
+
+	"Ban reason"
+	{
+		"da"		"Bandlysnings årsag"
+	}
+
+	"Permabanned player"
+	{
+		"da"		"Spiller \"{1}\" er blevet bandlyst permanent."
+	}
+
+	"Permabanned player reason"
+	{
+		"da"		" Spiller \"{1}\" er blevet bandlyst permanent (årsag: {2})."
+	}
+
+	"Banned player"
+	{
+		"da"		"Spiller \"{1}\" er blevet bandlyst i {2} minutter."
+	}
+
+	"Banned player reason"
+	{
+		"da"		" Spiller \"{1}\" er blevet bandlyst i {2} minutter (årsag: {3})."
+	}
+
+	"Removed bans matching"
+	{
+		"da"		"Bandlysninger som matcher filter: \"{1}\" er blevet fjernet."
+	}
+
+	"Ban added"
+	{
+		"da"		"Bandlysningen er blevet tilføjet. "
+	}
+
+	"Cannot ban that IP"
+	{
+		"da"		"Du kan ikke bandlyse den IP adresse."
+	}
+
+	"Custom ban reason explanation"
+	{
+		"da"		"Skriv årsag som en chat besked. Brug {1} for at afbryde dette."
+	}
+
+	"AbortBan applied successfully"
+	{
+		"da"		"Bandlysning afbrudt."
+	}
+
+	"AbortBan not waiting for custom reason"
+	{
+		"da"		"Venter ikke på at en bandlysnings årsag bliver skrevet ind, ingen bandlysning til at afbryde."
+	}
+
+}

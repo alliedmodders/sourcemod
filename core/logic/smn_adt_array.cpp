@@ -75,7 +75,11 @@ static cell_t CreateArray(IPluginContext *pContext, const cell_t *params)
 
 	if (params[2])
 	{
-		array->resize(params[2]);
+		if (!array->resize(params[2]))
+		{
+			delete array;
+			return pContext->ThrowNativeError("Failed to resize array to startsize \"%u\".", params[2]);
+		}
 	}
 
 	Handle_t hndl = handlesys->CreateHandle(htCellArray, array, pContext->GetIdentity(), g_pCoreIdent, NULL);

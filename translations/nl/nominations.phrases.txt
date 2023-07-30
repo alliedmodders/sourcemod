@@ -1,0 +1,68 @@
+"Phrases"
+{
+	"Already Nominated"
+	{
+		"nl"		"Je hebt deze map al gekozen."
+	}
+
+	"Max Nominations"
+	{
+		"nl"		"De maximum toegestane nominaties zijn bereikt."
+	}
+
+	"Map Already In Vote"
+	{
+		"nl"		"Map '{1}' staat al in de nominatie lijst."
+	}
+
+	"Map Inserted"
+	{
+		"nl"		"Map '{1}' is toegevoegd aan de nominatie lijst."
+	}
+
+	"Map Already Nominated"
+	{
+		"nl"		"De map die je hebt gekozen is al aangesteld."
+	}
+
+	"Map Nominated"
+	{
+		"nl"		"{1} heeft {2} genomineerd."
+	}
+
+	"Map Nomination Changed"
+	{
+		"nl"		"{1} heeft zjin nominatie veranderd naar {2}."
+	}
+
+	"Nominate Title"
+	{
+		"nl"		"Stel Map aan:"
+	}
+
+	"Can't Nominate Current Map"
+	{
+		"nl"		"De map die je hebt gekozen is de huidige map en kan daarom niet worden aangesteld"
+	}
+
+	"Map in Exclude List"
+	{
+		"nl"		"De map die je hebt gekozen is recentelijk gespeeld en kan niet genomineerd worden"
+	}
+
+	"Current Map"
+	{
+		"nl"		"Huidige Map"
+	}
+
+	"Recently Played"
+	{
+		"nl"		"Recentelijk gespeeld"
+	}
+
+	"Nominated"
+	{
+		"nl"		"Genomineerd"
+	}
+
+}

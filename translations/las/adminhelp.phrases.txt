@@ -1,0 +1,33 @@
+"Phrases"
+{
+	"SM help commands"
+	{
+		"las"		"Ayuda SourceMod: Información de Comandos"
+	}
+
+	"No description available"
+	{
+		"las"		"Descripción no disponible"
+	}
+
+	"No commands available"
+	{
+		"las"		"No hay comandos disponibles"
+	}
+
+	"Type sm_help to see more"
+	{
+		"las"		"Escribe sm_help {1} para ver más comandos"
+	}
+
+	"Entries n - m in page k"
+	{
+		"las"		"Entradas {1} - {2} en página {3}"
+	}
+
+	"No matching results found"
+	{
+		"las"		"No se encontraron resultados que coincidan"
+	}
+
+}

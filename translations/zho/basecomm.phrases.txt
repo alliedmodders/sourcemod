@@ -1,0 +1,73 @@
+"Phrases"
+{
+	"Gag/Mute player"
+	{
+		"zho"		"將玩家禁言/靜音"
+	}
+
+	"Choose Type"
+	{
+		"zho"		"選擇類別"
+	}
+
+	"Gagged target"
+	{
+		"zho"		"{1} 已被禁言."
+	}
+
+	"Ungagged target"
+	{
+		"zho"		"{1} 已被解除禁言."
+	}
+
+	"Muted target"
+	{
+		"zho"		"{1} 已被靜音. "
+	}
+
+	"Unmuted target"
+	{
+		"zho"		"{1} 已被解除靜音."
+	}
+
+	"Silenced target"
+	{
+		"zho"		"已令 {1} 緘默."
+	}
+
+	"Unsilenced target"
+	{
+		"zho"		"{1} 已被解除緘默."
+	}
+
+	"Mute Player"
+	{
+		"zho"		"將玩家靜音 "
+	}
+
+	"UnMute Player"
+	{
+		"zho"		"解除靜音玩家"
+	}
+
+	"Gag Player"
+	{
+		"zho"		"將玩家禁言"
+	}
+
+	"UnGag Player"
+	{
+		"zho"		"解除禁言玩家"
+	}
+
+	"Silence Player"
+	{
+		"zho"		"將玩家緘默"
+	}
+
+	"UnSilence Player"
+	{
+		"zho"		"解除緘默玩家"
+	}
+
+}

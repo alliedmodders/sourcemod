@@ -36,6 +36,9 @@
 #include "extension.h"
 #include "geoip_util.h"
 
+// Log a message if the database is older than the set amount of days.
+#define DATABASE_MAX_AGE 90
+
 /**
  * @file extension.cpp
  * @brief Implement extension code here.
@@ -75,7 +78,7 @@ bool GeoIP_Extension::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 					if (status != MMDB_SUCCESS)
 					{
-						ke::SafeStrcpy(error, maxlength, "Failed to open GeoIP2 database.");
+						ke::SafeSprintf(error, maxlength, "Failed to open GeoIP2 database %s: %s", database, MMDB_strerror(status));
 						libsys->CloseDirectory(dir);
 						return false;
 					}
@@ -102,7 +105,7 @@ bool GeoIP_Extension::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	const time_t epoch = (const time_t)mmdb.metadata.build_epoch;
 	strftime(date, 40, "%F %T UTC", gmtime(&epoch));
 
-	g_pSM->LogMessage(myself, "GeoIP2 database loaded: %s (%s)", mmdb.metadata.database_type, date);
+	g_pSM->LogMessage(myself, "GeoIP2 database loaded: %s (%s) (%s)", mmdb.metadata.database_type, date, mmdb.filename);
 
 	if (mmdb.metadata.languages.count > 0)
 	{
@@ -122,6 +125,11 @@ bool GeoIP_Extension::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 		g_pSM->LogMessage(myself, "GeoIP2 supported languages: %s", buf);
 	}
+
+	time_t now = time(NULL);
+	double days_since_update = difftime(now, epoch) / (60 * 60 * 24);
+	if (days_since_update > DATABASE_MAX_AGE)
+		smutils->LogMessage(myself, "Your database is older than %u days. You should consider downloading a newer version from e.g. https://dev.maxmind.com/geoip/geolite2-free-geolocation-data", DATABASE_MAX_AGE);
 
 	return true;
 }

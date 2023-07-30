@@ -1,0 +1,68 @@
+"Phrases"
+{
+	"Rock The Vote"
+	{
+		"lv"		"Aptauja:"
+	}
+
+	"RTV Not Allowed"
+	{
+		"lv"		"Balsošana dotajā momentā nav atļauta."
+	}
+
+	"RTV Started"
+	{
+		"lv"		"Balsošana jau ir sākusies."
+	}
+
+	"RTV Ended"
+	{
+		"lv"		"Aptauja jau ir beigusies, tu nevari sākt vēl vienu aptauju kā arī nevari pievienot kartes."
+	}
+	
+	"Already Voted"
+	{
+	 	"lv"			"Tu jau nobalsoji par kartes maiņu ar RTV ({1} balsis, {2} balsis palikušas)"
+	}
+
+	"Minimal Players Not Met"
+	{
+		"lv"		"Minimālais spēlētāju skaits nav sasniegts."
+	}
+
+	"RTV Requested"
+	{
+		"lv"		"{1} vēlas uzsākt balsošanu. ({2} balsis, vēl {3} nepieciešama/s)"
+	}
+
+	"RTV Vote Ready"
+	{
+		"lv"		"Sākas balsošana:"
+	}
+
+	"Don't Change"
+	{
+		"lv"		"Atstāt esošo karti"
+	}
+
+	"Selected Map"
+	{
+		"lv"		"{1} izvēlējās {2}"
+	}
+
+	"No Votes"
+	{
+		"lv"		"Netika saņemta neviena balss, esošā karte netiek mainīta."
+	}
+
+	"Current Map Stays"
+	{
+		"lv"		"Esošā karte turpinās! Tas tika noteikts balsošanas rezultātā!"
+	}
+
+	"Changing Maps"
+	{
+		"lv"		"Maina karti uz {1}! Kas tika noteikta balsošanas rezultātā!"
+	}
+
+}

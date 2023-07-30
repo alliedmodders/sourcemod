@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Flooding the server"
+	{
+		"ko"		"조금 더 천천히 대화하세요!"
+	}
+
+}

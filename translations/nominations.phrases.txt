@@ -68,4 +68,10 @@
 	{
 		"en"			"Nominated"
 	}
+
+	"Map Not In Pool"
+	{
+		"#format"		"{1:s}"
+		"en"			"Map '{1}' is not in the nominations pool."
+	}
 }

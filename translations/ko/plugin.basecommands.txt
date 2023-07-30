@@ -1,0 +1,138 @@
+"Phrases"
+{
+	"Unable to find cvar"
+	{
+		"ko"		"설정변수 {1} 을 찾을 수 없습니다"
+	}
+
+	"No access to cvar"
+	{
+		"ko"		"당신은 이 설정변수에 대한 권한이 없습니다."
+	}
+
+	"Value of cvar"
+	{
+		"ko"		"설정변수 \"{1}\" 의 값 : \"{2}\""
+	}
+
+	"Cvar changed"
+	{
+		"ko"		"설정변수 \"{1}\" 의 값을 \"{2}\" 으로 설정합니다. "
+	}
+
+	"Config not found"
+	{
+		"ko"		"설정파일 \"{1}\" 을 찾을 수 없습니다."
+	}
+
+	"Executed config"
+	{
+		"ko"		"설정파일 \"{1}\" 을 실행했습니다.  "
+	}
+
+	"Permabanned player"
+	{
+		"ko"		"플레이어 \"{1}\" 님을 영구히 차단했습니다."
+	}
+
+	"Permabanned player reason"
+	{
+		"ko"		"플레이어 \"{1}\" 님을 영구히 차단했습니다. (이유 : {2})"
+	}
+
+	"Banned player"
+	{
+		"ko"		"플레이어 \"{1}\" 님을 {2} 분동안 차단합니다. "
+	}
+
+	"Banned player reason"
+	{
+		"ko"		"플레이어 \"{1}\" 님을 {2} 분동안 차단합니다. (이유 : {3}) "
+	}
+
+	"Removed bans matching"
+	{
+		"ko"		"조건 {1} 에 일치하는 추방을 제거했습니다."
+	}
+
+	"Ban added"
+	{
+		"ko"		"차단이 추가되었습니다."
+	}
+
+	"Admin cache refreshed"
+	{
+		"ko"		"관리자 캐시가 재설정되었습니다."
+	}
+
+	"Identify player"
+	{
+		"ko"		"플레이어 식별"
+	}
+
+	"Choose Map"
+	{
+		"ko"		"맵 선택"
+	}
+
+	"Exec CFG"
+	{
+		"ko"		"설정파일 실행"
+	}
+
+	"Admin logged in as"
+	{
+		"ko"		"\"{1}\" 님이 {3} 권한의 \"{2}\" (으)로 로그인함"
+	}
+
+	"Admin logged in anon"
+	{
+		"ko"		"\"{1}\" 님이 가진 권한 : {2}"
+	}
+
+	"Player is not an admin"
+	{
+		"ko"		"\"{1}\" 님은 관리자가 아닙니다."
+	}
+
+	"Player is an admin"
+	{
+		"ko"		"\"{1}\" 님은 관리자입니다."
+	}
+
+	"Username"
+	{
+		"ko"		"사용자 이름"
+	}
+
+	"Kicked target"
+	{
+		"ko"		"{1} 님을 추방했습니다"
+	}
+
+	"Admin access"
+	{
+		"ko"		"관리자 권한"
+	}
+
+	"Cvar is now protected"
+	{
+		"ko"		"설정변수 {1} 은 이제 보호됩니다. "
+	}
+
+	"Kicked target reason"
+	{
+		"ko"		"{1} 님을 추방했습니다. (이유 : {2})"
+	}
+
+	"Please select a map"
+	{
+		"ko"		"맵을 선택해 주세요"
+	}
+
+	"Choose Config"
+	{
+		"ko"		"설정을 고르세요"
+	}
+
+}

@@ -461,3 +461,23 @@ bool ChatTriggers::WasFloodedMessage()
 {
 	return m_bWasFloodedMessage;
 }
+
+const char *ChatTriggers::GetPublicChatTrigger()
+{
+	if (!m_PubTrigger.length())
+	{
+		return NULL;
+	}
+
+	return m_PubTrigger.c_str();
+}
+
+const char *ChatTriggers::GetPrivateChatTrigger()
+{
+	if (!m_PrivTrigger.length())
+	{
+		return NULL;
+	}
+
+	return m_PrivTrigger.c_str();
+}

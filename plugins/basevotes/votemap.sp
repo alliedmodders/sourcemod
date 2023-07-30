@@ -51,7 +51,7 @@ void DisplayVoteMapMenu(int client, int mapCount, char[][] maps)
 	LogAction(client, -1, "\"%L\" initiated a map vote for%s.", client, maps_list);
 	ShowActivity2(client, "[SM] ", "%t", "Initiated Vote Map");
 	
-	g_voteType = map;
+	g_voteType = VoteType_Map;
 	
 	g_hVoteMenu = new Menu(Handler_VoteCallback, MENU_ACTIONS_ALL);
 	

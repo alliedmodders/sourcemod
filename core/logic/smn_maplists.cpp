@@ -592,7 +592,10 @@ private:
 			}
 		}
 
-		if (!libsys->FileTime(pMapList->path, FileTime_LastChange, &last_time)
+		char realpath[PLATFORM_MAX_PATH];
+		g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", pMapList->path);
+
+		if (!libsys->FileTime(realpath, FileTime_LastChange, &last_time)
 			|| last_time > pMapList->last_modified_time)
 		{
 			/* Reparse */
