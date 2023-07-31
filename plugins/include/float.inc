@@ -555,7 +555,7 @@ stock int IntLog3(int x)
 		43046720, 129140162, 387420488, 1162261466
 	};
 	int y = (5 * IntLog2(x)) >> 3;
-	y += (x > log3_tab[y]);
+	y += view_as< int >(x > log3_tab[y]);
 	return y;
 }
 
@@ -581,7 +581,7 @@ stock int IntLog4(int x)
 		4194303, 16777215, 67108863, 268435455, 1073741823
 	};
 	int y = (IntLog2(x) - 1) >> 1;
-	y += (x > log4_tab[y]);
+	y += view_as< int >(x > log4_tab[y]);
 	return y;
 }
 
