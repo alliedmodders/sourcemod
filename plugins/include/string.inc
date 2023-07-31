@@ -589,7 +589,13 @@ stock int ImplodeStrings(const char[][] strings, int numStrings, const char[] jo
 	return total;
 }
 
-stock void RemoveAllWhitespace(char[] str)
+/**
+ * Removes all whitespace characters from a string.
+ *
+ * @param str           The string to modify.
+ * @return              New length of the modified string.
+ */
+stock int RemoveAllWhitespace(char[] str)
 {
 	int j;
 	for (int i=0; str[i] != 0; i++)
@@ -600,4 +606,5 @@ stock void RemoveAllWhitespace(char[] str)
 		}
 	}
 	str[j] = 0;
+	return j;
 }
