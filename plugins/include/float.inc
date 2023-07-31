@@ -595,7 +595,7 @@ stock int IntLog4(int x)
  * 
  * @return       power of the base of N
  */
-int IntLog(int x, int base=10)
+stock int IntLog(int x, int base=10)
 {
 	if (x < 0 || base <= 0)
 	{
