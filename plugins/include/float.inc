@@ -476,3 +476,164 @@ stock void SetURandomSeedSimple(int seed)
 	seeds[0] = seed;
 	SetURandomSeed(seeds, 1);
 }
+
+
+/**
+ * Integer version of the Logarithm of base-2.
+ * Uses a combination of bitwise rounding (the '|=' and '>>') 
+ * alongside a De Bruijn Sequence (the magic constant and table) which
+ * effectively executes a more performant version of a modular division.
+ * 
+ * @param x      integer value
+ * 
+ * @return       power of the base of 2
+ */
+stock int IntLog2(int x)
+{
+	if (x < 0)
+	{
+		return -1;
+	}
+	
+	static int de_bruijn_tab[] = {
+		 0,  9,  1, 10, 13, 21,  2, 29,
+		11, 14, 16, 18, 22, 25,  3, 30,
+		 8, 12, 20, 28, 15, 17, 24,  7,
+		19, 27, 23,  6, 26,  5,  4, 31
+	};
+	x |= x >> 1;
+	x |= x >> 2;
+	x |= x >> 4;
+	x |= x >> 8;
+	x |= x >> 16;
+	enum { DeBruijnLog2Magic = 0x07C4ACDD };
+	return de_bruijn_tab[(x * DeBruijnLog2Magic) >>> 27];
+}
+
+/**
+ * Integer version of the Logarithm of base-10.
+ * Uses IntLog2 and the Change of Base Log property where 'log10(x) == log2(x) / log2(10)' 
+ * Multiply-Shifts are used to derive into the powers-1 table and then a final
+ * adjustment of an off-by-one condition check if the power-1 is smaller than the x.
+ * 
+ * @param x      integer value
+ * 
+ * @return       power of the base of 10
+ */
+stock int IntLog10(int x)
+{
+	if (x < 0)
+	{
+		return -1;
+	}
+	static int log10_tab[] = {9, 99, 999, 9999, 99999, 999999, 9999999, 99999999, 999999999};
+	int y = (9 * IntLog2(x)) >> 5;
+	y += view_as< int >(x > log10_tab[y]);
+	return y;
+}
+
+/**
+ * Integer version of the Logarithm of base-3.
+ * See the documentation for 'IntLog10'.
+ * 
+ * Uses IntLog2 and the Change of Base Log property where 'log3(x) == log2(x) / log2(3)' 
+ * 
+ * @param x      integer value
+ * 
+ * @return       power of the base of 3
+ */
+stock int IntLog3(int x)
+{
+	if (x < 0)
+	{
+		return -1;
+	}
+	static int log3_tab[] = {
+		2, 8, 26, 80, 242,
+		728, 2186, 6560, 19682, 59048,
+		177146, 531440, 1594322, 4782968, 14348906,
+		43046720, 129140162, 387420488, 1162261466
+	};
+	int y = (5 * IntLog2(x)) >> 3;
+	y += (x > log3_tab[y]);
+	return y;
+}
+
+/**
+ * Integer version of the Logarithm of base-4.
+ * See the documentation for 'IntLog10'.
+ * 
+ * Uses IntLog2 and the Change of Base Log property where 'log4(x) == log2(x) / log2(4)' 
+ * 
+ * @param x      integer value
+ * 
+ * @return       power of the base of 4
+ */
+stock int IntLog4(int x)
+{
+	if (x < 0)
+	{
+		return -1;
+	}
+	static int log4_tab[] = {
+		3, 15, 63, 255, 1023,
+		4095, 16383, 65535, 262143, 1048575,
+		4194303, 16777215, 67108863, 268435455, 1073741823
+	};
+	int y = (IntLog2(x) - 1) >> 1;
+	y += (x > log4_tab[y]);
+	return y;
+}
+
+
+/**
+ * Integer version of the Logarithm of an arbitrary base.
+ * 
+ * The Logs of base 2, 3, & 4 are manually called for performance reasons.
+ * the Log implementations for base 2, 3, & 4 use lookup tables and multiply-shifts
+ * to derive the power of their respective bases. Doing so by the division-loop 
+ * will reduce performance. The higher the arbitrary base, the less looping & dividing needed.
+ * 
+ * Log Base-2 would require looping & dividing at most 30 times which will be significantly
+ * less performant compared to a series of bitwise operations and a multiply-shift in a table.
+ * 
+ * The same case for Log base-3 and Log base-4 is similar though not as much as Log base-2 given
+ * the range of a 32-bit signed integer. Log base-3 would requires 19 loops & divides whereas Log base-4 requires 15.
+ * Log base-5 wasn't included as its max loop & division range is 13.
+ * 
+ * 
+ * @param x      integer value
+ * @param base   what base to get the power of.
+ * 
+ * @return       power of the base of N
+ */
+int IntLog(int x, int base=10)
+{
+	if (x < 0 || base <= 0)
+	{
+		return -1;
+	}
+	
+	switch (base)
+	{
+		case 2:
+		{
+			return IntLog2(x);
+		}
+		case 3:
+		{
+			return IntLog3(x);
+		}
+		case 4:
+		{
+			return IntLog4(x);
+		}
+		case 10:
+		{
+			return IntLog10(x);
+		}
+	}
+	int r=0;
+	for( ; x /= base; r++ ) {}
+	return r;
+}
