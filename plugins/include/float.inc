@@ -481,7 +481,7 @@ stock void SetURandomSeedSimple(int seed)
 /**
  * Integer version of the Logarithm of base-2.
  * Uses a combination of bitwise rounding (the '|=' and '>>') 
- * alongside a De Bruijn Sequence (the magic constant and table) which
+ * and a de Bruijn Sequence (the magic constant and table) which
  * effectively executes a more performant version of a modular division.
  * 
  * @param x      integer value
@@ -588,18 +588,6 @@ stock int IntLog4(int x)
 
 /**
  * Integer version of the Logarithm of an arbitrary base.
- * 
- * The Logs of base 2, 3, & 4 are manually called for performance reasons.
- * the Log implementations for base 2, 3, & 4 use lookup tables and multiply-shifts
- * to derive the power of their respective bases. Doing so by the division-loop 
- * will reduce performance. The higher the arbitrary base, the less looping & dividing needed.
- * 
- * Log Base-2 would require looping & dividing at most 30 times which will be significantly
- * less performant compared to a series of bitwise operations and a multiply-shift in a table.
- * 
- * The same case for Log base-3 and Log base-4 is similar though not as much as Log base-2 given
- * the range of a 32-bit signed integer. Log base-3 would requires 19 loops & divides whereas Log base-4 requires 15.
- * Log base-5 wasn't included as its max loop & division range is 13.
  * 
  * 
  * @param x      integer value
