@@ -332,6 +332,7 @@ void CRadioDisplay::Reset()
 	m_Title.assign("");
 	m_NextPos = 1;
 	keys = 0;
+	m_SendToSourceTV = false;
 }
 
 bool CRadioDisplay::DirectSet(const char *str)
@@ -357,6 +358,16 @@ bool CRadioDisplay::SetCurrentKey(unsigned int key)
 	m_NextPos = key;
 
 	return true;
+}
+
+bool CRadioDisplay::IsAllowSendToSourceTV()
+{
+	return m_SendToSourceTV;
+}
+
+void CRadioDisplay::SetSendToSourceTV(bool type)
+{
+	m_SendToSourceTV = type;
 }
 
 bool CRadioDisplay::SendDisplay(int client, IMenuHandler *handler, unsigned int time)

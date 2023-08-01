@@ -1308,6 +1308,8 @@ static cell_t SendPanelToClient(IPluginContext *pContext, const cell_t *params)
 	}
 
 	CPanelHandler *handler = g_MenuHelpers.GetPanelHandler(pFunction);
+	panel->SetSendToSourceTV((params[0] >= 5) ? params[5] : false);
+
 	if (!panel->SendDisplay(params[2], handler, params[4]))
 	{
 		g_MenuHelpers.FreePanelHandler(handler);
