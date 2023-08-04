@@ -621,7 +621,7 @@ stock int IntLog(int x, int base=10)
 			return IntLog10(x);
 		}
 	}
-	int r=0;
-	for( ; x /= base; r++ ) {}
+	int r = 0;
+	for (; x /= base; r++) {}
 	return r;
 }
