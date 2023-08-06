@@ -598,11 +598,12 @@ stock int ImplodeStrings(const char[][] strings, int numStrings, const char[] jo
 stock int RemoveAllWhitespace(char[] str)
 {
 	int j;
-	for (int i=0; str[i] != 0; i++)
+	for (int i; str[i] != 0; i++)
 	{
 		if (!IsCharSpace(str[i]))
 		{
-			str[j++] = str[i];
+			str[j] = str[i];
+			j++;
 		}
 	}
 	str[j] = 0;
