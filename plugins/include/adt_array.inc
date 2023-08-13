@@ -167,7 +167,7 @@ methodmap ArrayList < Handle {
 	//                      (useful if the blocksize > 0).
 	// @return              Number of characters copied.
 	// @error               Invalid index.
-	public native void SetString(int index, const char[] value, int size=-1, int block=0);
+	public native int SetString(int index, const char[] value, int size=-1, int block=0);
 
 	// Sets an array of cells in an array.
 	//
@@ -179,7 +179,7 @@ methodmap ArrayList < Handle {
 	//                      (useful if the blocksize > 0).
 	// @return              Number of cells copied.
 	// @error               Invalid index.
-	public native void SetArray(int index, const any[] values, int size=-1, int block=0);
+	public native int SetArray(int index, const any[] values, int size=-1, int block=0);
 
 	// Shifts an array up.  All array contents after and including the given
 	// index are shifted up by one, and the given index is then "free."
