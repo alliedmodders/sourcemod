@@ -477,14 +477,31 @@ stock void SetURandomSeedSimple(int seed)
 	SetURandomSeed(seeds, 1);
 }
 
+/**
+ * Brings the value of 'x' to the nearest power of 2 minus 1.
+ * i.e. something like 336 will be rounded to 511.
+ * 
+ * @param x      arbitrary value
+ * @return       nearest power of 2 minus 1.
+ */
+stock int BitwiseCeil(int x)
+{
+	x |= x >>> 1;
+	x |= x >>> 2;
+	x |= x >>> 4;
+	x |= x >>> 8;
+	x |= x >>> 16;
+	return x;
+}
 
 /**
  * Integer version of the Logarithm of base-2.
- * Uses a combination of bitwise rounding (the '|=' and '>>') 
- * and a de Bruijn Sequence (the magic constant and table) which
+ * Uses a De Bruijn Sequence (the magic constant and table) which
  * effectively executes a more performant version of a modular division.
  * 
- * @param x      integer value
+ * Note: Negative numbers are treated like unsigned.
+ * 
+ * @param x      arbitrary value
  * 
  * @return       power of the base of 2
  */
@@ -496,11 +513,34 @@ stock int IntLog2(int x)
 		 8, 12, 20, 28, 15, 17, 24,  7,
 		19, 27, 23,  6, 26,  5,  4, 31
 	};
-	x |= x >> 1;
-	x |= x >> 2;
-	x |= x >> 4;
-	x |= x >> 8;
-	x |= x >> 16;
 	enum { DeBruijnLog2Magic = 0x07C4ACDD };
-	return de_bruijn_tab[(x * DeBruijnLog2Magic) >>> 27];
+	return de_bruijn_tab[(BitwiseCeil(x) * DeBruijnLog2Magic) >>> 27];
+}
+
+/**
+ * Integer version of the Logarithm of base-10.
+ * Uses 'IntLog2' via the change of base log property: 'log2 x / log2 10 == log10 x'
+ * to index a lookup table of the logarithms of 10 for a 32-bit int.
+ * 
+ * @param x      arbitrary value
+ * 
+ * @return       power of the base of 10
+ */
+stock int IntLog10(int x)
+{
+	static int log10_tab[] = {
+		0, 0, 0, 0, 1, 1, 1, 2,
+		2, 2, 3, 3, 3, 3, 4, 4,
+		4, 5, 5, 5, 6, 6, 6, 6,
+		7, 7, 7, 8, 8, 8, 9, 9, 9
+	};
+	static int powers_of_10[] = {
+		1,      10,      100,      1000,      10000,
+		100000, 1000000, 10000000, 100000000, 1000000000,
+		0
+	};
+	int log2_of_x = IntLog2(x);
+	int power_idx = log10_tab[log2_of_x];
+	int next_pow  = powers_of_10[power_idx + 1];
+	return power_idx + view_as< int >(0 < next_pow <= x);
 }
