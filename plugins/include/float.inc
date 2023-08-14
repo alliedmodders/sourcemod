@@ -530,7 +530,7 @@ stock int IntLog10(int x)
 {
 	if (x < 0)
 	{
-		ThrowError("IntLog10 :: negative 'x' value (%i)", x);
+		ThrowError("IntLog10 :: 'x' cannot be negative (%i)", x);
 		return -1;
 	}
 	static int log10_tab[] = {
