@@ -52,10 +52,10 @@ int g_IgnoreLevel = 0;               /* Nested ignored section count, so users c
 int g_CurrentLine = 0;               /* Current line we're on */
 char g_Filename[PLATFORM_MAX_PATH];  /* Used for error messages */
 
-#include "admin-overrides.sp"
-#include "admin-groups.sp"
-#include "admin-users.sp"
-#include "admin-simple.sp"
+#include "admin-flatfile/admin-overrides.sp"
+#include "admin-flatfile/admin-groups.sp"
+#include "admin-flatfile/admin-users.sp"
+#include "admin-flatfile/admin-simple.sp"
 
 public void OnRebuildAdminCache(AdminCachePart part)
 {
