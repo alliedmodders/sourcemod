@@ -695,7 +695,7 @@ class SMConfig(object):
         dynamic_libs = ['libtier0_srv.so', 'libvstdlib_srv.so']
       elif compiler.target.arch == 'x86_64' and sdk.name in ['csgo', 'mock']:
         dynamic_libs = ['libtier0_client.so', 'libvstdlib_client.so']
-      elif sdk.name in ['l4d', 'blade', 'insurgency', 'doi', 'csgo', 'pvkii']:
+      elif sdk.name in ['l4d', 'blade', 'insurgency', 'doi', 'csgo', 'pvkii', 'mcv']:
         dynamic_libs = ['libtier0.so', 'libvstdlib.so']
       else:
         dynamic_libs = ['tier0_i486.so', 'vstdlib_i486.so']
