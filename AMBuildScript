@@ -42,6 +42,10 @@ CSGO = {
   'linux': ['x86', 'x86_64'],
   'mac': ['x86_64']
 }
+MCV = {
+  'windows': ['x86_64'],
+  'linux': ['x86_64'],
+}
 Mock = {
   'windows': ['x86', 'x86_64'],
   'linux': ['x86', 'x86_64'],
@@ -63,7 +67,7 @@ SDKMap = {
   'swarm':  SDK('HL2SDK-SWARM', '2.swarm', '17', 'ALIENSWARM', WinOnly, 'swarm'),
   'bgt':  SDK('HL2SDK-BGT', '2.bgt', '4', 'BLOODYGOODTIME', WinOnly, 'bgt'),
   'eye':  SDK('HL2SDK-EYE', '2.eye', '5', 'EYE', WinOnly, 'eye'),
-  'mcv': SDK('HL2SDKMCV', '2.mcv', '22', 'MCV', WinOnly, 'mcv'),
+  'mcv': SDK('HL2SDKMCV', '2.mcv', '22', 'MCV', MCV, 'mcv'),
   'csgo': SDK('HL2SDKCSGO', '2.csgo', '23', 'CSGO', CSGO, 'csgo'),
   'portal2':  SDK('HL2SDKPORTAL2', '2.portal2', '18', 'PORTAL2', [], 'portal2'),
   'blade':  SDK('HL2SDKBLADE', '2.blade', '21', 'BLADE', Blade, 'blade'),
