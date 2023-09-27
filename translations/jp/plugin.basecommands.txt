@@ -7,7 +7,7 @@
 
 	"No access to cvar"
 	{
-		"jp"		"このCVarにアクセス出来ません。"
+		"jp"		"あなたはこのCVarにアクセス出来ません。"
 	}
 
 	"Value of cvar"
@@ -32,32 +32,32 @@
 
 	"Permabanned player"
 	{
-		"jp"		"プレイヤー \"{1}\" を永久禁止されました。"
+		"jp"		"プレイヤー \"{1}\" を永久BANしました。"
 	}
 
 	"Permabanned player reason"
 	{
-		"jp"		"プレイヤー \"{1}\" を永久禁止されました。(理由: {2})"
+		"jp"		"プレイヤー \"{1}\" を永久BANしました。(理由: {2})"
 	}
 
 	"Banned player"
 	{
-		"jp"		"プレイヤー \"{1}\" を{2}分間禁止されました。"
+		"jp"		"プレイヤー \"{1}\" を{2}分間BANしました。"
 	}
 
 	"Banned player reason"
 	{
-		"jp"		"プレイヤー \"{1}\" を{2}分間禁止されました。 (理由: {3})"
+		"jp"		"プレイヤー \"{1}\" を{2}分間BANしました。(理由: {3})"
 	}
 
 	"Removed bans matching"
 	{
-		"jp"		"フィルターにマッチする禁止を削除しました: {1}"
+		"jp"		"フィルターにマッチするBANを削除しました: {1}"
 	}
 
 	"Ban added"
 	{
-		"jp"		"禁止を追加しました。"
+		"jp"		"BANを追加しました。"
 	}
 
 	"Admin cache refreshed"
@@ -107,7 +107,7 @@
 
 	"Kicked target"
 	{
-		"jp"		"{1}を蹴れました。"
+		"jp"		"{1}をキックしました。"
 	}
 
 	"Admin access"
@@ -122,7 +122,7 @@
 
 	"Kicked target reason"
 	{
-		"jp"		"{1}を蹴れました。(理由: {2})"
+		"jp"		"{1}をキックしました。(理由: {2})"
 	}
 
 	"Please select a map"
