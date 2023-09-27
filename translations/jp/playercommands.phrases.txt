@@ -17,12 +17,12 @@
 
 	"Slapped target"
 	{
-		"jp"		"{1}を叩きました。"
+		"jp"		"{1} を叩きました。"
 	}
 
 	"Slayed target"
 	{
-		"jp"		"{1}を殺害しました。"
+		"jp"		"{1} を殺害しました。"
 	}
 
 	"Name changed"
@@ -32,12 +32,11 @@
 
 	"Renamed target"
 	{
-		"jp"		"リネーム対象"
+		"jp"		"{1} をリネームしました"
 	}
 
 	"Rename player"
 	{
 		"jp"		"プレイヤーをリネーム"
 	}
-
 }

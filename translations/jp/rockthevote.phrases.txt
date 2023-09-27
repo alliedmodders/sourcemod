@@ -22,7 +22,7 @@
 
 	"Already Voted"
 	{
-		"jp"		"すでにRock the Voteに投票しています。"
+		"jp"		"すでにRock the Voteに投票しています。（{1}投票、残り{2}必要）"
 	}
 
 	"Minimal Players Not Met"
@@ -32,7 +32,7 @@
 
 	"RTV Requested"
 	{
-		"jp"		"{1}がRock the Voteを希望しています。({2}投票、残り{3}必要)"
+		"jp"		"{1} がRock the Voteを希望しています。({2}投票、残り{3}必要)"
 	}
 
 	"RTV Vote Ready"
@@ -47,7 +47,7 @@
 
 	"Selected Map"
 	{
-		"jp"		"{1}は{2}を選択しました。"
+		"jp"		"{1} は {2} を選択しました。"
 	}
 
 	"No Votes"
