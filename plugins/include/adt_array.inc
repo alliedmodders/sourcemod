@@ -401,12 +401,14 @@ native void SetArrayCell(Handle array, int index, any value, int block=0, bool a
  * @param array         Array Handle.
  * @param index         Index in the array.
  * @param value         String value to set.
+ * @param size          If not set, assumes the buffer size is equal to the
+ *                      blocksize.  Otherwise, the size passed is used.
  * @param block         Optionally specify which block to write to
  *                      (useful if the blocksize > 0).
  * @return              Number of characters copied.
  * @error               Invalid Handle or invalid index.
  */
-native int SetArrayString(Handle array, int index, const char[] value, int block=0);
+native int SetArrayString(Handle array, int index, const char[] value, int size=-1, int block=0);
 
 /**
  * Sets an array of cells in an array.
