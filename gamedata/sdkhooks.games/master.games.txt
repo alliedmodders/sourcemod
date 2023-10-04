@@ -61,7 +61,7 @@
 		"engine"	"insurgency"
 		"engine"	"doi" // #cheating #yolo
 	}
-	
+
 	"engine.mcv.txt"
 	{
 		"engine"	"mcv"
