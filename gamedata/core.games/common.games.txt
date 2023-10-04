@@ -192,6 +192,7 @@
 			"game"					"bms"
 			"game"					"iosoccer"
 			"game"					"vietnam"
+			"game"					"open_fortress"
 		}
 
 		"Keys"
@@ -244,6 +245,7 @@
 			"game"					"iosoccer"
 			"game"					"vietnam"
 			"game"					"reactivedrop"
+			"game"					"open_fortress"
 		}
 		
 		"Keys"
@@ -305,6 +307,7 @@
 			"game"					"reactivedrop"
 			"game"					"FortressForever"
 			"game"					"vietnam"
+			"game"					"open_fortress"
 		}
 		
 		"Keys"

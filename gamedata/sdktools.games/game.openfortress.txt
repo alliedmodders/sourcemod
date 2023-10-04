@@ -1,0 +1,201 @@
+"Games"
+{
+	"#default"
+	{
+		"Offsets"
+		{
+			/* CBaseTempEntity::GetName() */
+			"GetTEName"
+			{
+				"windows"	"4"
+				"linux"		"4"
+				"mac"		"4"
+			}
+
+			/* CBaseTempEntity::GetNext() */
+			"GetTENext"
+			{
+				"windows"	"8"
+				"linux"		"8"
+				"mac"		"8"
+			}
+
+			/* CBaseTempEntity::GetServerClass() */
+			"TE_GetServerClass"
+			{
+				"windows"	"0"
+				"linux"		"0"
+				"mac"		"0"
+			}
+
+			/* CBasePlayer::GiveNamedItem(char const*, int) */
+			"GiveNamedItem"
+			{
+				"windows"	"429"
+				"linux"		"430"
+				"mac"		"429"
+			}
+
+			/* CBaseCombatCharacter::RemovePlayerItem(CBaseCombatWeapon*) */
+			"RemovePlayerItem"
+			{
+				"windows"	"287"
+				"linux"		"288"
+				"mac"		"287"
+			}
+
+			/* CBaseCombatCharacter::Weapon_GetSlot(int) const */
+			"Weapon_GetSlot"
+			{
+				"windows"	"285"
+				"linux"		"286"
+				"mac"		"285"
+			}
+
+			/* CBaseAnimating::Ignite(float, bool, float, bool) */
+			"Ignite"
+			{
+				"windows"	"211"
+				"linux"		"212"
+				"mac"		"212"
+			}
+
+			/* CBaseAnimating::Extinguish() */
+			"Extinguish"
+			{
+				"windows"	"215"
+				"linux"		"216"
+				"mac"		"215"
+			}
+
+			/* CBaseEntity::Teleport(Vector const*, QAngle const*, Vector const*) */
+			"Teleport"
+			{
+				"windows"	"110"
+				"linux"		"111"
+				"mac"		"110"
+			}
+
+			/* CBasePlayer::CommitSuicide(bool, bool) */
+			"CommitSuicide"
+			{
+				"windows"	"469"
+				"linux"		"469"
+				"mac"		"469"
+			}
+
+			/* CBaseEntity::GetVelocity(Vector*, Vector*) */
+			"GetVelocity"
+			{
+				"windows"	"142"
+				"linux"		"143"
+				"mac"		"142"
+			}
+
+			/* CBaseEntity::EyeAngles() */
+			"EyeAngles"
+			{
+				"windows"	"133"
+				"linux"		"134"
+				"mac"		"133"
+			}
+
+			/* CBaseEntity::SetModel(char const*) */
+			"SetEntityModel"
+			{
+				"windows"	"25"
+				"linux"		"26"
+				"mac"		"25"
+			}
+
+			/* CBaseEntity::AcceptInput(char const*, CBaseEntity*, CBaseEntity*, variant_t, int) */
+			"AcceptInput"
+			{
+				"windows"	"37"
+				"linux"		"38"
+				"mac"		"37"
+			}
+
+			/* CBaseCombatCharacter::Weapon_Equip(CBaseCombatWeapon*) */
+			"WeaponEquip"
+			{
+				"windows"	"278"
+				"linux"		"279"
+				"mac"		"279"
+			}
+
+			/* CBaseEntity::Activate() */
+			"Activate"
+			{
+				"windows"	"34"
+				"linux"		"35"
+				"mac"		"34"
+			}
+
+			/* CBasePlayer::PlayerRunCommand(CUserCmd*, IMoveHelper*) */
+			"PlayerRunCmd"
+			{
+				"windows"	"448"
+				"linux"		"449"
+				"mac"		"448"
+			}
+
+			/* CBaseCombatCharacter::GiveAmmo(int, int, bool) */
+			"GiveAmmo"
+			{
+				"windows"	"269"
+				"linux"		"270"
+				"mac"		"269"
+			}
+
+			// CBaseClient::SetUserCVar(char  const*,char  const*);
+			// Linux offset straight from VTable dump.
+			// Windows offset is crazy. Found the windows SetName function using string "(%d)%-0.*s"
+			// Cross referenced back to the vtable and counted manually (SetUserCvar is 1 higher, offsets start from 1)
+			"SetUserCvar"
+			{
+				"windows"	"18"
+				"linux"		"58"
+				"mac"		"58"
+			}
+
+			// CBaseClient::SetName(char  const*);
+			// Linux offset straight from VTable dump.
+			// Has string "(%d)%-0.*s"
+			"SetClientName"
+			{
+				"windows"	"17"
+				"linux"		"57"
+				"mac"		"57"
+			}
+
+			// Offset into CBaseClient - Used by CBaseServer::UpdateUserSettings to determine when changes have been made.
+			// Find CBaseClient::UpdateUserSettings (strings "net_maxroutable", "cl_updaterate" etc) and the offset is set to 0 near the end.
+			// Linux: 	mov     byte ptr [esi+98h], 0
+			// Win:	mov     byte ptr [esi+0A4h], 0
+			//
+			"InfoChanged"
+			{
+				"windows"	"140"
+				"linux"		"141"
+				"mac"		"140"
+			}
+		}
+
+		"Keys"
+		{
+			"GameRulesProxy"	"CTFGameRulesProxy"
+			"GameRulesDataTable" "tf_gamerules_data"
+		}
+
+		"Signatures"
+		{
+			"FireOutput"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x14\xF3\x0F\x10\x45\x10"
+				"linux"		"@_ZN12COutputEvent10FireOutputEP11CBaseEntityS1_f"
+			}
+		}
+	}
+}

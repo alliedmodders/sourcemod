@@ -90,7 +90,7 @@
 		"engine"	"insurgency"
 		"engine"	"doi" // #cheating #yolo
 	}
-
+	
 	"engine.pvkii.txt"
 	{
 		"engine"	"pvkii"
@@ -268,5 +268,9 @@
 	"game.reactivedrop.txt"
 	{
 		"game"		"reactivedrop"
+	}
+	"game.openfortress.txt"
+	{
+		"game"		"open_fortress"
 	}
 }
