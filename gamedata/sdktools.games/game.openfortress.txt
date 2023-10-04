@@ -147,39 +147,6 @@
 				"linux"		"270"
 				"mac"		"269"
 			}
-
-			// CBaseClient::SetUserCVar(char  const*,char  const*);
-			// Linux offset straight from VTable dump.
-			// Windows offset is crazy. Found the windows SetName function using string "(%d)%-0.*s"
-			// Cross referenced back to the vtable and counted manually (SetUserCvar is 1 higher, offsets start from 1)
-			"SetUserCvar"
-			{
-				"windows"	"18"
-				"linux"		"58"
-				"mac"		"58"
-			}
-
-			// CBaseClient::SetName(char  const*);
-			// Linux offset straight from VTable dump.
-			// Has string "(%d)%-0.*s"
-			"SetClientName"
-			{
-				"windows"	"17"
-				"linux"		"57"
-				"mac"		"57"
-			}
-
-			// Offset into CBaseClient - Used by CBaseServer::UpdateUserSettings to determine when changes have been made.
-			// Find CBaseClient::UpdateUserSettings (strings "net_maxroutable", "cl_updaterate" etc) and the offset is set to 0 near the end.
-			// Linux: 	mov     byte ptr [esi+98h], 0
-			// Win:	mov     byte ptr [esi+0A4h], 0
-			//
-			"InfoChanged"
-			{
-				"windows"	"140"
-				"linux"		"141"
-				"mac"		"140"
-			}
 		}
 
 		"Keys"
@@ -193,7 +160,7 @@
 			"FireOutput"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x14\xF3\x0F\x10\x45\x10"
+				"windows"	"@?FireOutput@COutputEvent@@QAEXPAVCBaseEntity@@0M@Z"
 				"linux"		"@_ZN12COutputEvent10FireOutputEP11CBaseEntityS1_f"
 			}
 		}
