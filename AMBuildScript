@@ -773,6 +773,8 @@ if SM.use_auto_versioning():
   )
 
 class SPRoot(object):
+  def __init__(self):
+    self.generated_headers = SM.generated_headers
   # SourcePawn's build scripts are always one-offs, and attach the current target
   # to the builder, so we have to provide a shim to our StaticLibrary() method.
   def StaticLibrary(self, builder, name):
