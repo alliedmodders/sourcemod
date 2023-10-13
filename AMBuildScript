@@ -509,6 +509,7 @@ class SMConfig(object):
     self.AddVersioning(binary)
     if binary.compiler.like('msvc'):
       binary.compiler.linkflags += ['/SUBSYSTEM:WINDOWS']
+    self.AddCxxCompat(binary)
 
     # Dumb clang behavior means we have to manually find libclang_rt.
     if self.enable_asan:
@@ -568,9 +569,16 @@ class SMConfig(object):
     self.ConfigureForExtension(context, binary.compiler)
     return binary
 
+  def AddCxxCompat(self, binary):
+    if binary.compiler.target.platform == 'linux':
+      binary.sources += [
+        os.path.join(builder.sourcePath, 'public', 'amtl', 'compat', 'stdcxx.cpp'),
+      ]
+
   def ConfigureForHL2(self, context, binary, sdk):
     compiler = binary.compiler
     SetArchFlags(compiler)
+    self.AddCxxCompat(binary)
 
     compiler.cxxincludes += [
       os.path.join(self.mms_root, 'core'),
