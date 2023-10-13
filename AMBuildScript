@@ -578,7 +578,6 @@ class SMConfig(object):
   def ConfigureForHL2(self, context, binary, sdk):
     compiler = binary.compiler
     SetArchFlags(compiler)
-    self.AddCxxCompat(binary)
 
     compiler.cxxincludes += [
       os.path.join(self.mms_root, 'core'),
