@@ -59,7 +59,7 @@ def main():
 
     source = os.getcwd()
 
-    with open(os.path.join('support', 'buildbot', 'buildconfig.json'), 'rt') as fp:
+    with open(os.path.join('tools', 'buildbot', 'buildconfig.json'), 'rt') as fp:
         config_root = json.load(fp)
 
     config = config_root.get(args.config, {})
