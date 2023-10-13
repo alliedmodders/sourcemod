@@ -28,7 +28,6 @@ LIB-Debug/
 [Tt]humbs.db
 
 # AMBuild build directories
-build*/
 obj-*/
 *~
 *.rej
