@@ -36,9 +36,9 @@ def output_needs_cleaning():
     if not os.path.isdir('OUTPUT'):
         return False
     amb2_dir = os.path.join('OUTPUT', '.ambuild2')
-    if not os.path.isdir(os.path.join(amb2_dir, 'graph')):
+    if not os.path.exists(os.path.join(amb2_dir, 'graph')):
         return True
-    if not os.path.isdir(os.path.join(amb2_dir, 'vars')):
+    if not os.path.exists(os.path.join(amb2_dir, 'vars')):
         return True
     return False
 
