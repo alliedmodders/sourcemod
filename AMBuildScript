@@ -741,12 +741,14 @@ class SMConfig(object):
   def HL2Config(self, project, context, compiler, name, sdk):
     binary = project.Configure(compiler, name,
                                '{0} - {1} {2}'.format(self.tag, sdk.name, compiler.target.arch))
+    self.AddCxxCompat(binary)
     self.AddVersioning(binary)
     return self.ConfigureForHL2(context, binary, sdk)
 
   def HL2ExtConfig(self, project, context, compiler, name, sdk):
     binary = project.Configure(compiler, name,
                                '{0} - {1} {2}'.format(self.tag, sdk.name, compiler.target.arch))
+    self.AddCxxCompat(binary)
     self.AddVersioning(binary)
     self.ConfigureForHL2(context, binary, sdk)
     self.ConfigureForExtension(context, binary.compiler)
