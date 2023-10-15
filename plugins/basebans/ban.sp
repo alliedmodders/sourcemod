@@ -342,7 +342,7 @@ int GetClientOfAuthId(const char[] authid, AuthIdType authIdType=AuthId_Steam2)
 	char compareId[MAX_AUTHID_LENGTH];
 	for (int client = 1; client <= MaxClients; client++)
 	{
-		if (!IsClientInGame(client) || !IsClientAuthorized(client))
+		if (!IsClientConnected(client) || IsClientInKickQueue(client) || !IsClientAuthorized(client))
 		{
 			continue;
 		}
