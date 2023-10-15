@@ -382,11 +382,13 @@
 			/**
 			 *  CNetworkStringTableContainer::WriteBaselines
 			 *  "Index error writing string table baseline %s\n"
+			 *  "CNetworkStringTableContainer::WriteBaselines"
+			 *  "infested"
 			 */
 			"WriteBaselines"
 			{
 				"library"   "engine"
-				//"windows"   "\x4C\x8B\xDC\x53\x57\x41\x55"
+				"windows"   "\x4C\x8B\xDC\x53\x57\x41\x55"
 				"linux"		"@_ZN28CNetworkStringTableContainer14WriteBaselinesEPKcR8bf_writei"
 			}
 		}
