@@ -16,13 +16,13 @@
 	{
 		"Keys"
 		{
-			"SlapSoundCount"	"6"
-			"SlapSound1"		"physics/flesh/vietnam_flesh_impact_bullet1.wav"
-			"SlapSound2"		"physics/flesh/vietnam_flesh_impact_bullet2.wav"
-			"SlapSound3"		"physics/flesh/vietnam_flesh_impact_bullet3.wav"
-			"SlapSound4"		"physics/flesh/vietnam_flesh_impact_bullet4.wav"
-			"SlapSound5"		"physics/flesh/vietnam_flesh_impact_bullet5.wav"
-			"SlapSound6"		"physics/flesh/vietnam_flesh_impact_bullet6.wav"
+			"SlapSoundCount"    "6"
+			"SlapSound1"        "physics/flesh/vietnam_flesh_impact_bullet1.wav"
+			"SlapSound2"        "physics/flesh/vietnam_flesh_impact_bullet2.wav"
+			"SlapSound3"        "physics/flesh/vietnam_flesh_impact_bullet3.wav"
+			"SlapSound4"        "physics/flesh/vietnam_flesh_impact_bullet4.wav"
+			"SlapSound5"        "physics/flesh/vietnam_flesh_impact_bullet5.wav"
+			"SlapSound6"        "physics/flesh/vietnam_flesh_impact_bullet6.wav"
 		}
 	}
 	
@@ -34,19 +34,19 @@
 			/* Offset into CBaseTempEntity signature address */
 			"s_pTempEntities"
 			{
-				"windows"	"16"
+				// "windows"   "16"
 			}
 			"GetTEName"
 			{
-				"windows"	"4"
+				// "windows"   "4"
 			}
 			"GetTENext"
 			{
-				"windows"	"8"
+				// "windows"   "8"
 			}
 			"TE_GetServerClass"
 			{
-				"windows"	"0"
+				// "windows"   "0"
 			}
 		}
 
@@ -54,8 +54,8 @@
 		{
 			"CBaseTempEntity"
 			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x89\x41\x04\xC7\x01"
+				"library"   "server"
+				// "windows"   "\x55\x8B\xEC\x8B\x45\x08\x89\x41\x04\xC7\x01"
 			}
 		}
 	}
@@ -66,10 +66,42 @@
 		"Signatures"
 		{
 			/* Functions in CGlobalEntityList */
+
+			// "NULL entity in global entity list!\n"
+			/*
+			__int64 __fastcall sub_8DFF50(__int64 a1, _DWORD *a2, _BYTE *a3)
+			{
+			...
+
+				while ( 1 )
+					{
+						while ( 1 )
+						{
+							v10 = *v8;
+							if ( *v8 )
+								break;
+							DevWarning("NULL entity in global entity list!\n"); // <---
+
+			...
+
+			*/
+			// "env_credits"
+			/*
+			__int64 sub_9098B0()
+			{
+				__int64 result; // rax
+				
+				result = sub_8DFF50((__int64)&qword_1857200, 0LL, "env_credits"); // <---
+				if ( result )
+					return sub_89D0C0(result + 1296, result, result, 0.0);
+				return result;
+			}
+			*/
 			"FindEntityByClassname"
 			{
-				"library"	"server"
-				"windows"	"\x55\x89\xE5\x57\x56\x53\x83\xEC\x1C\x8B\x45\x0C\x8B\x5D\x08\x8B\x7D\x10\x85\xC0\x0F\x84\x2A\x2A\x2A\x2A\x8B\x10\x89\x04\x24\xFF\x52\x0C\x8B\x10\xB8\xFF\x1F\x00\x00\x0F\xB7\xCA\x83\xFA\xFF\x0F\x45\xC1\x8D\x04\x40\x8B\x5C\xC3\x10\xEB\x2A\x90\x2A\x2A\x2A\x2A\x89"
+				"library"   "server"
+				"linux"     "\x55\x48\x89\xE5\x41\x55\x49\x89\xD5\x41\x54\x53\x48\x89\xFB\x48\x83\xEC\x08\x48\x85\xF6\x0F\x84\x2A\x2A\x2A\x2A\x48\x8B\x06\x48\x8D\x15\xDA\x09\xE3\xFF"
+				"windows"   "\x55\x8B\xEC\x53\x56\x8B\xF1\x8B\x4D\x08\x57\x85\xC9\x74\x2A\x8B\x01\xFF\x50\x08\x8B\x00\x83\xF8\xFF\x75\x2A\xB8\xFF\x1F\x00\x00\x8D\x04\x40\x8B\x74\xC6\x10\xEB\x2A\x0F\xB7\xC0\x8D\x04\x40\x8B\x74\xC6\x10\xEB\x2A\x8B\xB6\x04\x00\x03\x00\x85\xF6\x74\x2A\x8B\x7D\x0C"
 			}
 		}
 	}
@@ -79,12 +111,14 @@
 	{
 		"Keys"
 		{
-			"GameRulesProxy"		"CVietnamGameRulesProxy"
-			"GameRulesDataTable"	"vietnam_gamerules"
+			// "GameRulesProxy"        "CVietnamGameRulesProxy"
+			// "GameRulesDataTable"    "vietnam_gamerules"
 		}
 	}
 
 	/* IServer interface pointer */
+	// "linux" "@_sv"
+
 	"#default"
 	{
 		"Keys"
@@ -97,7 +131,7 @@
 			 * the expected code. A pointer to sv (IServer interface) is used
 			 * here.
 			 */
-			"CreateFakeClient_Windows"	"\x55\x8B\xEC\x56\xFF\x75\x08\xB9"
+			// "CreateFakeClient_Windows"  "\x55\x8B\xEC\x56\xFF\x75\x08\xB9"
 		}
 		
 		"Offsets"
@@ -105,7 +139,7 @@
 			/* Offset into IVEngineServer::CreateFakeClient */
 			"sv"
 			{
-				"windows"	"8"
+				// "windows"   "8"
 			}
 		}
 		
@@ -118,34 +152,36 @@
 		{
 			"EntityFactory"
 			{
-				"library"	"server"
-				"windows"	"\xA1\x2A\x2A\x2A\x2A\xA8\x01\x0F\x85\x2A\x2A\x2A\x2A\x83\xC8\x01"
+				"library"   "server"
+				//"windows"   "\xA1\x2A\x2A\x2A\x2A\xA8\x01\x0F\x85\x2A\x2A\x2A\x2A\x83\xC8\x01"
 			}
 		}
 	}
 
 	/* CBaseEntityOutput::FireOutput */
+	// "(%0.2f) output: (%s,%s) -> (%s,%s,%.1f)(%s)\n"
 	"#default"
 	{
 		"Signatures"
 		{
 			"FireOutput"
 			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x81\xEC\x44\x01\x00\x00\x8B\xC1"
+				"library"   "server"
+				// "windows"   "\x55\x8B\xEC\x81\xEC\x44\x01\x00\x00\x8B\xC1"
+				"linux"     "\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x55\x41\x54\x53\x48\x81\xEC\x78\x01\x00\x00\x4C\x8B\x7F\x18"
 			}
 		}
 	}
 	
- 	/* CBaseAnimating::LookupAttachment */
+	/* CBaseAnimating::LookupAttachment */
 	"#default"
 	{
 		"Signatures"
 		{
 			"LookupAttachment"
 			{
-				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x83\xBE\xF4\x04\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x86\xF4\x04\x00\x00\x5E\x85\xC0\x74\x2A\x83\x38\x00\x74\x2A\xFF\x75\x08\x50\xE8\x2A\x2A\x2A\x2A\x83\xC4\x08\x40"
+				"library"   "server"
+				"windows"   "\x55\x8B\xEC\x56\x8B\xF1\x83\xBE\xF4\x04\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x86\xF4\x04\x00\x00\x5E\x85\xC0\x74\x2A\x83\x38\x00\x74\x2A\xFF\x75\x08\x50\xE8\x2A\x2A\x2A\x2A\x83\xC4\x08\x40"
 			}
 		}
 	}
@@ -163,8 +199,8 @@
 			 */
 			"SetUserCvar"
 			{
-				/* Not 100% sure on this, why would windows change and not linux - TEST ME */
-				"windows"	"31"
+				"linux"     "69"
+				"windows"   "61"
 			}
 			/**
 			 * CBaseClient::SetName(char  const*);
@@ -173,111 +209,115 @@
 			 */
 			"SetClientName"
 			{
-				"windows"	"30"
+				"linux"     "68"
+				"windows"   "60"
 			}
 			/**
 			 * Offset into CBaseClient - Used by CBaseServer::UpdateUserSettings to determine when changes have been made.
 			 * Find CBaseClient::UpdateUserSettings (strings "net_maxroutable", "cl_updaterate" etc) and the offset is set to 0 near the end.
-			 * Linux: 	mov     byte ptr [esi+0B0h], 0
-			 * Win:		mov     byte ptr [esi+0B0h], 0
+			 * Linux:   mov     byte ptr [esi+0B0h], 0
+			 * Win:     mov     byte ptr [esi+0B0h], 0
 			 *
-			 * L4D2: This has been moved into CBaseClient::UpdateUserSettings(), rest of the details are still relevant.
+			 * MCV: This has been moved into CBaseClient::UpdateUserSettings(), rest of the details are still relevant.
 			 */
 			"InfoChanged"
 			{
-				"windows"	"488"
+				"linux"     "59"
+				// "windows"    "46" <-- ??
 			}
 		}
 	}
 	
- 	"#default"
+	"#default"
 	{
 		"Keys"
 		{
 			// Netprop on the team entity for team score
-			"m_iScore"		"m_scoreTotal"
+			"m_iScore"      "m_scoreTotal"
 		}
 		"Offsets"
 		{
+			/*
 			"SetOwnerEntity"
 			{
-				"windows"	"19"
+				"windows"   "19"
 			}
 			"GiveNamedItem"
 			{
-				"windows"	"461"
+				"windows"   "461"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"304"
+				"windows"   "304"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"299"
+				"windows"   "299"
 			}
 			"Ignite"
 			{
-				"windows"	"229"
+				"windows"   "229"
 			}
 			"Extinguish"
 			{
-				"windows"	"232"
+				"windows"   "232"
 			}
 			"Teleport"
 			{
-				"windows"	"114"
+				"windows"   "114"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"511"
+				"windows"   "511"
 			}
 			"GetVelocity"
 			{
-				"windows"	"140"
+				"windows"   "140"
 			}
 			"EyeAngles"
 			{
-				"windows"	"131"
+				"windows"   "131"
 			}
 			"AcceptInput"
 			{
-				"windows"	"41"
+				"windows"   "41"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"27"
+				"windows"   "27"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"292"
+				"windows"   "292"
 			}
 			"Activate"
 			{
-				"windows"	"38"
+				"windows"   "38"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"481"
+				"windows"   "481"
 			}
 			"GiveAmmo"
 			{
-				"windows"	"285"
+				"windows"   "285"
 			}
 			"GetAttachment"
 			{
-				"windows"	"223"
+				"windows"   "223"
 			}
+			*/
 		}
 		"Signatures"
 		{
 			/**
-			 *	CNetworkStringTableContainer::WriteBaselines
-			 *	"Index error writing string table baseline %s\n"
+			 *  CNetworkStringTableContainer::WriteBaselines
+			 *  "Index error writing string table baseline %s\n"
 			 */
 			"WriteBaselines"
 			{
-				"library"	"engine"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x58\x53\x56\x8B\xF1"
+				"library"   "engine"
+				//"windows"   "\x4C\x8B\xDC\x53\x57\x41\x55"
 			}
 		}
 	}
