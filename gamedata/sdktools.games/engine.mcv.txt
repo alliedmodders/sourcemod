@@ -174,6 +174,74 @@
 	}
 	
 	/* CBaseAnimating::LookupAttachment */
+	// "blood_left" - both instances are right before a call
+	/*
+
+		lea     rsi, aBloodLeft ; "blood_left"
+		call    sub_80E740 <-- calls this function
+
+		...which is:
+
+		; Attributes: bp-based frame
+
+		sub_80E740 proc near
+
+		var_30= qword ptr -30h
+		var_28= qword ptr -28h
+
+		; __unwind {
+		push    rbp
+		mov     rbp, rsp
+		push    r13
+		mov     r13, rcx
+		push    r12
+		mov     r12, rdx
+		push    rbx
+		mov     rbx, rdi
+		sub     rsp, 18h
+		mov     [rbp+var_30], r8
+		mov     [rbp+var_28], r9
+		call    LookupAttachment // <---
+		mov     r9, [rbp+var_28]
+		mov     rcx, r13
+		mov     rdx, r12
+		mov     r8, [rbp+var_30]
+		add     rsp, 18h
+		mov     rdi, rbx
+		mov     esi, eax
+		pop     rbx
+		pop     r12
+		pop     r13
+		pop     rbp
+		jmp     sub_80BCA0
+		; } // starts at 80E740
+		sub_80E740 endp
+
+
+
+		__int64 __fastcall sub_80E690(__int64 a1)
+		{
+		  CStudioHdr *v2; // rdi
+
+		  v2 = *(CStudioHdr **)(a1 + 1632);
+		  if ( !v2 )
+		  {
+		    if ( sub_842720(a1) )
+		      sub_80BE80(a1);
+		    v2 = *(CStudioHdr **)(a1 + 1632);
+		    if ( !v2 )
+		      return 0LL;
+		  }
+		  if ( *(_QWORD *)v2 )
+		    return (unsigned int)sub_F0BFD0(v2) + 1;
+		  else
+		    return 0LL;
+		}
+
+
+	this was found by working backwards from the existing windows signature from forever ago. how did that get there? i have literally no idea.
+
+	*/
 	"#default"
 	{
 		"Signatures"
@@ -182,6 +250,7 @@
 			{
 				"library"   "server"
 				"windows"   "\x55\x8B\xEC\x56\x8B\xF1\x83\xBE\xF4\x04\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x86\xF4\x04\x00\x00\x5E\x85\xC0\x74\x2A\x83\x38\x00\x74\x2A\xFF\x75\x08\x50\xE8\x2A\x2A\x2A\x2A\x83\xC4\x08\x40"
+				"linux"		"\x55\x48\x89\xE5\x53\x48\x89\xFB\x48\x83\xEC\x18\x48\x8B\xBF\x60\x06\x00\x00\x48\x85\xFF\x74\x2A\x48\x83\x3F\x00\x74\x2A\xE8\x2A\x2A\x2A\x2A"
 			}
 		}
 	}
@@ -318,6 +387,7 @@
 			{
 				"library"   "engine"
 				//"windows"   "\x4C\x8B\xDC\x53\x57\x41\x55"
+				"linux"		"@_ZN28CNetworkStringTableContainer14WriteBaselinesEPKcR8bf_writei"
 			}
 		}
 	}
