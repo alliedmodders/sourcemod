@@ -54,6 +54,7 @@ enum struct PlayerInfo {
 	int banTargetUserId;
 	int banTime;
 	int isWaitingForChatReason;
+	char banTargetAuthId[MAX_AUTHID_LENGTH];
 }
 
 PlayerInfo playerinfo[MAXPLAYERS+1];
@@ -386,7 +387,7 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 	if(playerinfo[client].isWaitingForChatReason)
 	{
 		playerinfo[client].isWaitingForChatReason = false;
-		PrepareBan(client, playerinfo[client].banTargetUserId, playerinfo[client].banTime, sArgs);
+		PrepareBan(client, playerinfo[client].banTargetUserId, playerinfo[client].banTargetAuthId, playerinfo[client].banTime, sArgs);
 		return Plugin_Stop;
 	}
 
