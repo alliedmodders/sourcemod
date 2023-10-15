@@ -67,7 +67,12 @@ void PrepareBan(int adminClient, int banTargetUserId, const char[] banTargetAuth
 		}
 	}
 
-	int target = GetClientOfAuthId(banTargetAuthId);
+	int target = (banTargetUserId == 0) ? 0 : GetClientOfUserId(banTargetUserId);
+	if (target == 0)
+	{
+		target = GetClientOfAuthId(banTargetAuthId);
+	}
+
 	// Ban & kick if target is connected, else record the ban with authid
 	if (target != 0)
 	{
