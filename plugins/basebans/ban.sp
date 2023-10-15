@@ -39,10 +39,10 @@
 #define MAX_TARGETNAME_LENGTH MAX_NAME_LENGTH
 #endif
 
-void PrepareBan(int adminClient, int banTargetUserId, const char[] banTargetAuthId, int time, const char[] reason)
+void PrepareBan(int adminClient, int time, const char[] reason)
 {
 	char name[MAX_TARGETNAME_LENGTH];
-	GetTargetName(banTargetUserId, banTargetAuthId, name, sizeof(name));
+	GetTargetName(playerinfo[adminClient].banTargetUserId, playerinfo[adminClient].banTargetAuthId, name, sizeof(name));
 
 	if (!time)
 	{
@@ -67,16 +67,24 @@ void PrepareBan(int adminClient, int banTargetUserId, const char[] banTargetAuth
 		}
 	}
 
-	int target = (banTargetUserId == 0) ? 0 : GetClientOfUserId(banTargetUserId);
+	int target = (playerinfo[adminClient].banTargetUserId == 0)
+					? 0 : GetClientOfUserId(playerinfo[adminClient].banTargetUserId);
+
 	if (target == 0)
 	{
-		target = GetClientOfAuthId(banTargetAuthId);
+		target = GetClientOfAuthId(playerinfo[adminClient].banTargetAuthId);
 	}
 
 	// Ban & kick if target is connected, else record the ban with authid
 	if (target != 0)
 	{
-		LogAction(adminClient, target, "\"%L\" banned \"%L\" (minutes \"%d\") (reason \"%s\")", adminClient, target, time, reason);
+		LogAction(adminClient,
+				target,
+				"\"%L\" banned \"%L\" (minutes \"%d\") (reason \"%s\")",
+				adminClient,
+				target,
+				time,
+				reason);
 
 		BanClient(target, time, BANFLAG_AUTO,
 				(reason[0] == '\0') ? "Banned" : reason,
@@ -90,10 +98,10 @@ void PrepareBan(int adminClient, int banTargetUserId, const char[] banTargetAuth
 			  "\"%L\" added ban (minutes \"%d\") (id \"%s\") (reason \"%s\")",
 			  adminClient,
 			  time,
-			  banTargetAuthId,
+			  playerinfo[adminClient].banTargetAuthId,
 			  reason);
 
-		BanIdentity(banTargetAuthId, time, BANFLAG_AUTHID,
+		BanIdentity(playerinfo[adminClient].banTargetAuthId, time, BANFLAG_AUTHID,
 				(reason[0] == '\0') ? "Banned" : reason,
 				"sm_addban", adminClient);
 	}
@@ -220,7 +228,7 @@ public int MenuHandler_BanReasonList(Menu menu, MenuAction action, int param1, i
 
 			menu.GetItem(param2, info, sizeof(info));
 
-			PrepareBan(param1, playerinfo[param1].banTargetUserId, playerinfo[param1].banTargetAuthId, playerinfo[param1].banTime, info);
+			PrepareBan(param1, playerinfo[param1].banTime, info);
 		}
 	}
 
@@ -324,7 +332,7 @@ public Action Command_Ban(int client, int args)
 	GetClientAuthId(target, AuthId_Steam2, playerinfo[client].banTargetAuthId, sizeof(PlayerInfo::banTargetAuthId));
 
 	int time = StringToInt(s_time);
-	PrepareBan(client, playerinfo[client].banTargetUserId, playerinfo[client].banTargetAuthId, time, Arguments[len]);
+	PrepareBan(client, time, Arguments[len]);
 
 	return Plugin_Handled;
 }
