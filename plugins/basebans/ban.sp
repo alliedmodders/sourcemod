@@ -399,6 +399,11 @@ int AddTargetsToMenuByAuthId(Menu menu, int source_client, int flags, AuthIdType
 			continue;
 		}
 
+		if (!IsClientAuthorized(i))
+		{
+			continue;
+		}
+
 		if (((flags & COMMAND_FILTER_NO_BOTS) == COMMAND_FILTER_NO_BOTS)
 			&& IsFakeClient(i))
 		{
