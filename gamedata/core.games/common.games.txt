@@ -189,6 +189,7 @@
 			"game"					"doi"
 			"game"					"bms"
 			"game"					"iosoccer"
+			"game"					"open_fortress"
 		}
 
 		"Keys"
@@ -240,6 +241,7 @@
 			"game"					"bms"
 			"game"					"iosoccer"
 			"game"					"reactivedrop"
+			"game"					"open_fortress"
 		}
 		
 		"Keys"
@@ -300,6 +302,7 @@
 			"game"					"csgo"
 			"game"					"reactivedrop"
 			"game"					"FortressForever"
+			"game"					"open_fortress"
 		}
 		
 		"Keys"

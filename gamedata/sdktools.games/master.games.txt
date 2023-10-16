@@ -259,4 +259,8 @@
 	{
 		"game"		"reactivedrop"
 	}
+	"game.openfortress.txt"
+	{
+		"game"		"open_fortress"
+	}
 }
