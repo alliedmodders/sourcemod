@@ -363,6 +363,7 @@
 			{
 				"windows"   "38"
 			}
+			// CVietnam_Player::PlayerRunCommand
 			"PlayerRunCmd"
 			{
 				"windows"   "481"
