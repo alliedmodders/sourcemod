@@ -1,4 +1,8 @@
 {
+    "debian8": {
+        "CC": "clang-8",
+        "CXX": "clang++-8"
+    },
     "debian9": {
         "CC": "clang-11",
         "CXX": "clang++-11"
