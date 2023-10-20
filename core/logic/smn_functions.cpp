@@ -131,7 +131,7 @@ static cell_t sm_GetFunctionByName(IPluginContext *pContext, const cell_t *param
 	if (pPlugin->GetBaseContext()->FindPublicByName(name, &idx) == SP_ERROR_NOT_FOUND)
 	{
 		/* Return INVALID_FUNCTION if not found */
-		return -1;
+		return pContext->GetNullFunctionValue();
 	}
 
 	/* Return function ID */
