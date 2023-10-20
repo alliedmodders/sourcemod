@@ -119,5 +119,7 @@ REGISTER_NATIVES(handles)
 	{"CloseHandle",				sm_CloseHandle},
 	{"CloneHandle",				sm_CloneHandle},
 	{"GetMyHandle",				sm_GetMyHandle},
+	{"Handle.Close",			sm_CloseHandle},
+	{"Handle.~Handle",			sm_CloseHandle},
 	{NULL,						NULL},
 };

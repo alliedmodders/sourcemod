@@ -1568,15 +1568,11 @@ static cell_t InternalShowMenu(IPluginContext *pContext, const cell_t *params)
 
 	IMenuHandler *pHandler;
 	CPanelHandler *pActualHandler = NULL;
-	if (params[5] != -1)
-	{
-		IPluginFunction *pFunction = pContext->GetFunctionById(params[5]);
-		if (pFunction == NULL)
-		{
-			return pContext->ThrowNativeError("Invalid function index %x", params[5]);
-		}
-		pActualHandler = g_MenuHelpers.GetPanelHandler(pFunction);
-	}
+	IPluginFunction* func;
+	if (!pContext->GetFunctionByIdOrNull(params[5], &func))
+		return 0;
+	if (func)
+		pActualHandler = g_MenuHelpers.GetPanelHandler(func);
 
 	if (pActualHandler == NULL)
 	{

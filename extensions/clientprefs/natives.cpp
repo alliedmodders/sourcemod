@@ -398,7 +398,7 @@ cell_t AddSettingsPrefabMenuItem(IPluginContext *pContext, const cell_t *params)
 
 
 	/* User passed a function id for a callback */
-	if (params[4] != -1)
+	if (!pContext->IsNullFunctionId(params[4]))
 	{
 		pItem->forward = forwards->CreateForwardEx(NULL, ET_Ignore, 5, NULL, Param_Cell, Param_Cell, Param_Cell, Param_String, Param_Cell); 
 		pItem->forward->AddFunction(pContext, static_cast<funcid_t>(params[4]));
