@@ -251,14 +251,14 @@ class SMConfig(object):
 
   def configure_cxx(self, cxx):
     if cxx.family == 'msvc':
-      if cxx.version < 1900:
-        raise Exception('Only MSVC 2015 and later are supported, c++14 support is required.')
-    if cxx.family == 'gcc':
-      if cxx.version < 'gcc-4.9':
-        raise Exception('Only GCC versions 4.9 or greater are supported, c++14 support is required.')
-    if cxx.family == 'clang':
-      if cxx.version < 'clang-3.4':
-        raise Exception('Only clang versions 3.4 or greater are supported, c++14 support is required.')
+      if cxx.version < 1914:
+        raise Exception('Only MSVC 2017 15.7 and later are supported, full C++17 support is required.')
+    elif cxx.family == 'gcc':
+      if cxx.version < 'gcc-9':
+        raise Exception('Only GCC versions 9 or later are supported, full C++17 support is required.')
+    elif cxx.family == 'clang':
+      if cxx.version < 'clang-5':
+        raise Exception('Only clang versions 5 or later are supported, full C++17 support is required.')
 
     if cxx.like('gcc'):
       self.configure_gcc(cxx)
@@ -317,15 +317,13 @@ class SMConfig(object):
       '-fvisibility=hidden',
     ]
 
-    if cxx.version == 'apple-clang-6.0' or cxx.version == 'clang-3.4':
-      cxx.cxxflags += ['-std=c++1y']
-    else:
-      cxx.cxxflags += ['-std=c++14']
+    cxx.cxxflags += ['-std=c++17']
 
     cxx.cxxflags += [
       '-fno-threadsafe-statics',
       '-Wno-non-virtual-dtor',
       '-Wno-overloaded-virtual',
+      '-Wno-register',
       '-fvisibility-inlines-hidden',
     ]
 
@@ -402,6 +400,7 @@ class SMConfig(object):
       '/EHsc',
       '/GR-',
       '/TP',
+      '/std:c++17',
     ]
     cxx.linkflags += [
       'kernel32.lib',

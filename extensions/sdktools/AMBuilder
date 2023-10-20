@@ -37,6 +37,8 @@ project.sources += [
 
 for sdk_name in SM.sdks:
   sdk = SM.sdks[sdk_name]
+  if sdk.name in ['mock']:
+    continue
 
   for cxx in builder.targets:
     if not cxx.target.arch in sdk.platformSpec[cxx.target.platform]:
