@@ -75,6 +75,7 @@ enum CookieMenuAction
 };
 
 #define COOKIE_MAX_NAME_LENGTH 30 		/**< Maximum Cookie name length. */
+#define COOKIE_MAX_VALUE_LENGTH 100 		/**< Maximum Cookie value length. */
 #define COOKIE_MAX_DESCRIPTION_LENGTH 255 	/**< Maximum Cookie description length. */
 
 /**
@@ -388,24 +389,19 @@ native int GetClientCookieTime(int client, Handle cookie);
 /**
  * Do not edit below this line!
  */
-public Extension __ext_cprefs = 
+public SharedPlugin __pl_cprefs = 
 {
 	name = "Client Preferences",
-	file = "clientprefs.ext",
-#if defined AUTOLOAD_EXTENSIONS
-	autoload = 1,
-#else
-	autoload = 0,
-#endif
-#if defined REQUIRE_EXTENSIONS
+	file = "clientprefs.smx",
+#if defined REQUIRE_PLUGIN
 	required = 1,
 #else
 	required = 0,
 #endif
 };
 
-#if !defined REQUIRE_EXTENSIONS
-public void __ext_cprefs_SetNTVOptional()
+#if !defined REQUIRE_PLUGIN
+public void __pl_cprefs_SetNTVOptional()
 {
 	MarkNativeAsOptional("RegClientCookie");
 	MarkNativeAsOptional("FindClientCookie");
