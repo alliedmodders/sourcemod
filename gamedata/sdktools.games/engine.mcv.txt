@@ -34,28 +34,76 @@
 			/* Offset into CBaseTempEntity signature address */
 			"s_pTempEntities"
 			{
-				// "windows"   "16"
+				"windows"   "16"
 			}
 			"GetTEName"
 			{
-				// "windows"   "4"
+                "windows"   "4"
 			}
 			"GetTENext"
 			{
-				// "windows"   "8"
+				"windows"   "8"
 			}
 			"TE_GetServerClass"
 			{
-				// "windows"   "0"
+				"windows"   "0"
 			}
 		}
+
+/*
+.text:000000018004A500 ; int sub_18004A500()
+.text:000000018004A500 sub_18004A500   proc near               ; DATA XREF: .rdata:0000000180654E70↓o
+.text:000000018004A500                                         ; .pdata:0000000180C2E714↓o
+.text:000000018004A500                 sub     rsp, 28h
+.text:000000018004A504                 lea     rdx, aShotgunShot ; "Shotgun Shot" // <--- uniq string
+.text:000000018004A50B                 lea     rcx, qword_180B89850
+.text:000000018004A512                 call    sub_1803C6210                      // <--- CBaseTempEntity::CBaseTempEntity
+.text:000000018004A517                 lea     rax, ??_7CTEFireBullets@@6B@ ; const CTEFireBullets::`vftable'
+.text:000000018004A51E                 mov     cs:dword_180B89884, 0FFFFFFFFh
+
+
+
+
+QWORD *__fastcall sub_1803C6210(_QWORD *a1, __int64 a2)
+{
+  _QWORD *result; // rax
+
+  a1[1] = a2;
+  *a1 = &CBaseTempEntity::`vftable';
+  a1[2] = qword_180B76B10;
+  result = a1;
+  qword_180B76B10 = (__int64)a1;
+  return result;
+}
+
+
+void __fastcall CBaseTempEntity::CBaseTempEntity(CBaseTempEntity *this, const char *a2)
+{
+  __int64 v2; // rdx
+
+  *((_QWORD *)this + 1) = a2;
+  *(_QWORD *)this = &`vtable for'CBaseTempEntity + 2;
+  v2 = CBaseTempEntity::s_pTempEntities;
+  CBaseTempEntity::s_pTempEntities = this;
+  *((_QWORD *)this + 2) = v2;
+}
+
+== 
+
+
 
 		"Signatures"
 		{
 			"CBaseTempEntity"
 			{
 				"library"   "server"
+                /* Signature for sub_1803C6210:
+                    48 8D 05 51 FD 3C 00 
+                    \x48\x8D\x05\x51\xFD\x3C\x00
+                */
 				// "windows"   "\x55\x8B\xEC\x8B\x45\x08\x89\x41\x04\xC7\x01"
+                // Wrong?
+                "windows"   "\x48\x8D\x05\x51\xFD\x3C\x00"
 			}
 		}
 	}
@@ -100,7 +148,7 @@
 			"FindEntityByClassname"
 			{
 				"library"   "server"
-				"linux"     "\x55\x48\x89\xE5\x41\x55\x49\x89\xD5\x41\x54\x53\x48\x89\xFB\x48\x83\xEC\x08\x48\x85\xF6\x0F\x84\x2A\x2A\x2A\x2A\x48\x8B\x06\x48\x8D\x15\xDA\x09\xE3\xFF"
+				"linux"     "@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 				"windows"   "\x55\x8B\xEC\x53\x56\x8B\xF1\x8B\x4D\x08\x57\x85\xC9\x74\x2A\x8B\x01\xFF\x50\x08\x8B\x00\x83\xF8\xFF\x75\x2A\xB8\xFF\x1F\x00\x00\x8D\x04\x40\x8B\x74\xC6\x10\xEB\x2A\x0F\xB7\xC0\x8D\x04\x40\x8B\x74\xC6\x10\xEB\x2A\x8B\xB6\x04\x00\x03\x00\x85\xF6\x74\x2A\x8B\x7D\x0C"
 			}
 		}
@@ -117,7 +165,7 @@
 	}
 
 	/* IServer interface pointer */
-	// "linux" "@_sv"
+	"linux" "@_sv"
 
 	"#default"
 	{
@@ -150,10 +198,22 @@
 	{
 		"Signatures"
 		{
+            // Signature for _ZN24CEntityFactoryDictionary14InstallFactoryEP14IEntityFactoryPKc:
+            // 48 89 54 24 10 48 83 EC 28 49 8B D0 
+            // \x48\x89\x54\x24\x10\x48\x83\xEC\x28\x49\x8B\xD0
+            /*
+            180B161B8: using guessed type __int64 qword_180B161B8;
+            Signature for sub_180369600:
+            48 83 EC 28 8B 05 CE A9 7F 00 
+            \x48\x83\xEC\x28\x8B\x05\xCE\xA9\x7F\x00
+            
+            Probably wrong.
+            */
 			"EntityFactory"
 			{
 				"library"   "server"
 				//"windows"   "\xA1\x2A\x2A\x2A\x2A\xA8\x01\x0F\x85\x2A\x2A\x2A\x2A\x83\xC8\x01"
+                "windows"       "\x48\x83\xEC\x28\x8B\x05\xCE\xA9\x7F\x00"
 			}
 		}
 	}
@@ -167,8 +227,11 @@
 			"FireOutput"
 			{
 				"library"   "server"
+                // Signature for sub_1801CCDA0:
+                // 4C 8B DC 55 41 56 41 57 49 8D AB E8 FE FF FF 
+                "windows"   "\x4C\x8B\xDC\x55\x41\x56\x41\x57\x49\x8D\xAB\xE8\xFE\xFF\xFF"
 				// "windows"   "\x55\x8B\xEC\x81\xEC\x44\x01\x00\x00\x8B\xC1"
-				"linux"     "\x55\x48\x89\xE5\x41\x57\x41\x56\x41\x55\x41\x54\x53\x48\x81\xEC\x78\x01\x00\x00\x4C\x8B\x7F\x18"
+				"linux"     "@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
 	}
@@ -226,16 +289,16 @@
 		  v2 = *(CStudioHdr **)(a1 + 1632);
 		  if ( !v2 )
 		  {
-		    if ( sub_842720(a1) )
-		      sub_80BE80(a1);
-		    v2 = *(CStudioHdr **)(a1 + 1632);
-		    if ( !v2 )
-		      return 0LL;
+			if ( sub_842720(a1) )
+			  sub_80BE80(a1);
+			v2 = *(CStudioHdr **)(a1 + 1632);
+			if ( !v2 )
+			  return 0LL;
 		  }
 		  if ( *(_QWORD *)v2 )
-		    return (unsigned int)sub_F0BFD0(v2) + 1;
+			return (unsigned int)sub_F0BFD0(v2) + 1;
 		  else
-		    return 0LL;
+			return 0LL;
 		}
 
 
@@ -250,7 +313,7 @@
 			{
 				"library"   "server"
 				"windows"   "\x55\x8B\xEC\x56\x8B\xF1\x83\xBE\xF4\x04\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x86\xF4\x04\x00\x00\x5E\x85\xC0\x74\x2A\x83\x38\x00\x74\x2A\xFF\x75\x08\x50\xE8\x2A\x2A\x2A\x2A\x83\xC4\x08\x40"
-				"linux"		"\x55\x48\x89\xE5\x53\x48\x89\xFB\x48\x83\xEC\x18\x48\x8B\xBF\x60\x06\x00\x00\x48\x85\xFF\x74\x2A\x48\x83\x3F\x00\x74\x2A\xE8\x2A\x2A\x2A\x2A"
+				"linux"     "@_ZN14CBaseAnimating16LookupAttachmentEPKc"
 			}
 		}
 	}
@@ -306,77 +369,111 @@
 		}
 		"Offsets"
 		{
-			/*
+			// "[L0/W0]             L20     W20     CBaseEntity::SetOwnerEntity(CBaseEntity*)",
 			"SetOwnerEntity"
 			{
-				"windows"   "19"
+				"linux"     "20"
+				"windows"   "20"
 			}
+			// "[L0/W0]             L462    W462    CVietnam_Player::GiveNamedItem(char const*,int,bool,bool,Vector const*)",
 			"GiveNamedItem"
 			{
-				"windows"   "461"
+				"linux"     "462"
+				"windows"   "462"
 			}
+			// "[L0/W0]             L305    W304    CBaseCombatCharacter::RemovePlayerItem(CBaseCombatWeapon *)",
 			"RemovePlayerItem"
 			{
+				"linux"     "305"
 				"windows"   "304"
 			}
+			// "[L0/W0]             L301    W300    CBaseCombatCharacter::Weapon_GetSlot(int)",
 			"Weapon_GetSlot"
 			{
-				"windows"   "299"
+				"linux"     "301"
+				"windows"   "300"
 			}
+			// "[L0/W0]             L230    W229    CBaseAnimating::Ignite(float,bool,float,bool,CBaseEntity *,string_t)",
 			"Ignite"
 			{
+				"linux"     "230"
 				"windows"   "229"
 			}
+			// This might be broken, CZombie is the only instance i could find!
+			// "[L0/W0]             L233    W232    CZombie::Extinguish(void)",
 			"Extinguish"
 			{
+				"linux"     "233"
 				"windows"   "232"
 			}
+			// "[L0/W0]             L115    W114    CBaseEntity::Teleport(Vector const*,QAngle const*,Vector const*,bool)",
 			"Teleport"
 			{
+				"linux"     "115"
 				"windows"   "114"
 			}
+            // Unsure which of these to use, so let's try the bool bool one first
+            // "[L0/W0]             L511    W512    CBasePlayer::CommitSuicide(bool,bool)",
+            // "[L0/W0]             L512    W511    CBasePlayer::CommitSuicide(Vector const&,bool,bool)",
 			"CommitSuicide"
 			{
-				"windows"   "511"
+                "linux"     "511"
+				"windows"   "512"
 			}
+            // "[L0/W0]             L141    W140    CBaseEntity::GetVelocity(Vector *,Vector *)",
 			"GetVelocity"
 			{
-				"windows"   "140"
+                "linux"     "140"
+                "windows"   "140"
 			}
+            // "[L0/W0]             L132    W131    CBaseEntity::EyeAngles(void)",
 			"EyeAngles"
 			{
-				"windows"   "131"
+                "linux"     "132"
+                "windows"   "131"
 			}
+            // "[L0/W0]             L42     W41     CBaseEntity::AcceptInput(char const*,CBaseEntity*,CBaseEntity*,variant_t,int)",
 			"AcceptInput"
 			{
-				"windows"   "41"
+                "linux"     "42"
+                "windows"   "41"
 			}
+            // "[L0/W0]             L28     W29     CBaseEntity::SetModel(char const*)",
 			"SetEntityModel"
 			{
-				"windows"   "27"
+                "linux"     "28"
+                "windows"   "27"
 			}
+            // "[L0/W0]             L293    W292    CBaseCombatCharacter::Weapon_Equip(CBaseCombatWeapon *)",
 			"WeaponEquip"
 			{
-				"windows"   "292"
+                "linux"     "293"
+                "windows"   "292"
 			}
+            // "[L0/W0]             L39     W41     CBaseEntity::Activate(void)",
 			"Activate"
 			{
-				"windows"   "38"
+                "linux"     "39"
+                "windows"   "41"
 			}
-			// CVietnam_Player::PlayerRunCommand
+			// "[L0/W0]             L482    W482    CBasePlayer::PlayerRunCommand(CUserCmd *,IMoveHelper *)",
 			"PlayerRunCmd"
 			{
-				"windows"   "481"
+                "linux"     "482"
+                "windows"   "482"
 			}
+            // "[L0/W0]             L286    W285    CBaseCombatCharacter::GiveAmmo(int,int,bool)",
 			"GiveAmmo"
 			{
-				"windows"   "285"
+                "linux"     "286"
+                "windows"   "285"
 			}
+            // "[L0/W0]             L224    W223    CBaseAnimating::GetAttachment(int,matrix3x4_t &)",
 			"GetAttachment"
 			{
-				"windows"   "223"
+                "linux"     "224"
+                "windows"   "223"
 			}
-			*/
 		}
 		"Signatures"
 		{
@@ -390,7 +487,7 @@
 			{
 				"library"   "engine"
 				"windows"   "\x4C\x8B\xDC\x53\x57\x41\x55"
-				"linux"		"@_ZN28CNetworkStringTableContainer14WriteBaselinesEPKcR8bf_writei"
+				"linux"     "@_ZN28CNetworkStringTableContainer14WriteBaselinesEPKcR8bf_writei"
 			}
 		}
 	}
