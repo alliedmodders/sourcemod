@@ -244,7 +244,8 @@ static cell_t smn_WritePackFunction(IPluginContext *pContext, const cell_t *para
 		pDataPack->RemoveItem();
 	}
 
-	pDataPack->PackFunction(params[2]);
+	cell_t funcid = params[2];
+	pDataPack->PackFunction(pContext->IsNullFunctionId(funcid) ? 0 : funcid);
 
 	return 1;
 }
@@ -365,7 +366,8 @@ static cell_t smn_ReadPackFunction(IPluginContext *pContext, const cell_t *param
 		return pContext->ThrowNativeError("Invalid data pack type (got %d / expected %d).", pDataPack->GetCurrentType(), CDataPackType::Function);
 	}
 
-	return pDataPack->ReadFunction();
+	cell_t funcid = pDataPack->ReadFunction();
+	return funcid ? funcid : pContext->GetNullFunctionValue();
 }
 
 static cell_t smn_ReadPackCellArray(IPluginContext *pContext, const cell_t *params)
