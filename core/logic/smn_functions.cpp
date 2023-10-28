@@ -327,7 +327,15 @@ static cell_t sm_CallStartFunction(IPluginContext *pContext, const cell_t *param
 		}
 	}
 
-	s_pFunction = pPlugin->GetBaseContext()->GetFunctionById(params[2]);
+	IPluginContext *pTargetContext = pPlugin->GetBaseContext();
+	cell_t funcid = params[2];
+
+	if (pContext->IsNullFunctionId(funcid))
+	{
+		s_pFunction = pTargetContext->GetFunctionById(pTargetContext->GetNullFunctionValue());
+	} else {
+		s_pFunction = pTargetContext->GetFunctionById(funcid);
+	}
 
 	if (!s_pFunction)
 	{
