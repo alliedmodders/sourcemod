@@ -229,7 +229,17 @@ static cell_t sm_AddToForward(IPluginContext *pContext, const cell_t *params)
 		}
 	}
 
-	IPluginFunction *pFunction = pPlugin->GetBaseContext()->GetFunctionById(params[3]);
+	cell_t funcid = params[3];
+	IPluginFunction *pFunction;
+	if (!pContext->IsNullFunctionId(funcid))
+	{
+		IPluginContext *pTargetContext = pPlugin->GetBaseContext();
+		if (funcid == LEGACY_FIRST_FUNCTION_ID && pTargetContext->GetNullFunctionValue() != 0)
+		{
+			funcid = 0;
+		}
+		pPlugin->GetBaseContext()->GetFunctionByIdOrNull(funcid, &pFunction);
+	}
 
 	if (!pFunction)
 	{
@@ -266,7 +276,17 @@ static cell_t sm_RemoveFromForward(IPluginContext *pContext, const cell_t *param
 		}
 	}
 
-	IPluginFunction *pFunction = pPlugin->GetBaseContext()->GetFunctionById(params[3]);
+	cell_t funcid = params[3];
+	IPluginFunction *pFunction;
+	if (!pContext->IsNullFunctionId(funcid))
+	{
+		IPluginContext *pTargetContext = pPlugin->GetBaseContext();
+		if (funcid == LEGACY_FIRST_FUNCTION_ID && pTargetContext->GetNullFunctionValue() != 0)
+		{
+			funcid = 0;
+		}
+		pPlugin->GetBaseContext()->GetFunctionByIdOrNull(funcid, &pFunction);
+	}
 
 	if (!pFunction)
 	{
