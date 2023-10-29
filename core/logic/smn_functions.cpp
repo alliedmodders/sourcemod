@@ -36,6 +36,7 @@
 #include <IHandleSys.h>
 #include <IForwardSys.h>
 #include <ISourceMod.h>
+#include "LegacyPluginCompat.h"
 
 HandleType_t g_GlobalFwdType = 0;
 HandleType_t g_PrivateFwdType = 0;
@@ -331,7 +332,12 @@ static cell_t sm_CallStartFunction(IPluginContext *pContext, const cell_t *param
 
 	if (!pContext->IsNullFunctionId(funcid))
 	{
-		pPlugin->GetBaseContext()->GetFunctionByIdOrNull(funcid, &s_pFunction);
+		IPluginContext *pTargetContext = pPlugin->GetBaseContext();
+		if (funcid == LEGACY_FIRST_FUNCTION_ID && pTargetContext->GetNullFunctionValue() != 0)
+		{
+			funcid = 0;
+		}
+		pTargetContext->GetFunctionByIdOrNull(funcid, &s_pFunction);
 	}
 
 	if (!s_pFunction)
