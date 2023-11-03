@@ -90,16 +90,20 @@ public void OnPluginStart()
 	{
 		g_Cvar_FriendlyFire = FindConVar("mp_friendlyfire");
 	}
-	
-	RegConsoleCmd("timeleft", Command_Timeleft);
-	RegConsoleCmd("nextmap", Command_Nextmap);
-	RegConsoleCmd("motd", Command_Motd);
-	RegConsoleCmd("ff", Command_FriendlyFire);
-	
-	g_Cvar_TimeleftInterval.AddChangeHook(ConVarChange_TimeleftInterval);
 
 	char folder[64];   	 
 	GetGameFolderName(folder, sizeof(folder));
+
+	if (strcmp(folder, "dystopia") != 0)
+	{
+		RegConsoleCmd("nextmap", Command_Nextmap);
+	}
+
+	RegConsoleCmd("timeleft", Command_Timeleft);
+	RegConsoleCmd("motd", Command_Motd);
+	RegConsoleCmd("ff", Command_FriendlyFire);
+
+	g_Cvar_TimeleftInterval.AddChangeHook(ConVarChange_TimeleftInterval);
 
 	if (strcmp(folder, "insurgency") == 0)
 	{
