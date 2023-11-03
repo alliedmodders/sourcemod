@@ -44,7 +44,7 @@ Function Get-Repository
 
     If (-not (Test-Path $Name -PathType Container))
     {
-        & git clone $Repo -b $Branch $Name 2>&1 | Write-Host
+        & git clone --recursive $Repo -b $Branch $Name 2>&1 | Write-Host
         If ($Origin)
         {
             Set-Location $Name

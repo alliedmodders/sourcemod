@@ -95,7 +95,7 @@ fi
 checkout ()
 {
   if [ ! -d "$name" ]; then
-    git clone $repo -b $branch $name
+    git clone --recursive $repo -b $branch $name
     if [ -n "$origin" ]; then
       cd $name
       git remote set-url origin $origin
