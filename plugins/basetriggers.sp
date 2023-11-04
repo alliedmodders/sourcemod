@@ -65,6 +65,7 @@ ConVar g_Cvar_MaxRounds;
 #define PRINT_TO_ONE			2		/* Print to a single player */
 
 bool mapchooser;
+bool isGameDystopia;
 
 int g_TotalRounds;
 
@@ -97,6 +98,10 @@ public void OnPluginStart()
 	if (strcmp(folder, "dystopia") != 0)
 	{
 		RegConsoleCmd("nextmap", Command_Nextmap);
+	}
+	else
+	{
+		isGameDystopia = True;
 	}
 
 	RegConsoleCmd("timeleft", Command_Timeleft);
@@ -265,9 +270,6 @@ public Action Command_FriendlyFire(int client, int args)
 
 public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
 {
-	char folder[64];   	 
-	GetGameFolderName(folder, sizeof(folder));
-
 	if (IsChatTrigger())
 	{
 	}
@@ -307,7 +309,7 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 			PrintToChat(client,"[SM] %t", "Current Map", map);
 		}
 	}
-	else if (strcmp(sArgs, "nextmap", false) == 0 && strcmp(folder, "dystopia") != 0)
+	else if (strcmp(sArgs, "nextmap", false) == 0 && !isGameDystopia)
 	{
 		char map[PLATFORM_MAX_PATH];
 		GetNextMap(map, sizeof(map));
