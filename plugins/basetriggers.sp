@@ -265,6 +265,9 @@ public Action Command_FriendlyFire(int client, int args)
 
 public void OnClientSayCommand_Post(int client, const char[] command, const char[] sArgs)
 {
+	char folder[64];   	 
+	GetGameFolderName(folder, sizeof(folder));
+
 	if (IsChatTrigger())
 	{
 	}
@@ -304,7 +307,7 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 			PrintToChat(client,"[SM] %t", "Current Map", map);
 		}
 	}
-	else if (strcmp(sArgs, "nextmap", false) == 0)
+	else if (strcmp(sArgs, "nextmap", false) == 0 && strcmp(folder, "dystopia") != 0)
 	{
 		char map[PLATFORM_MAX_PATH];
 		GetNextMap(map, sizeof(map));
