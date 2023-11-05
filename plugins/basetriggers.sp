@@ -101,7 +101,7 @@ public void OnPluginStart()
 	}
 	else
 	{
-		isGameDystopia = True;
+		isGameDystopia = true;
 	}
 
 	RegConsoleCmd("timeleft", Command_Timeleft);
