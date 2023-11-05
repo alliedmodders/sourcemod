@@ -123,7 +123,7 @@ class SMConfig(object):
     self.mms_root = None
     self.mysql_root = {}
     self.spcomp = None
-    self.spcomp_bins = None
+    self.spcomp_bins = []
     self.smx_files = {}
     self.versionlib = None
     self.all_targets = []
@@ -243,7 +243,14 @@ class SMConfig(object):
   def configure(self):
     builder.AddConfigureFile('pushbuild.txt')
     
-    if not set(self.target_archs).issubset(['x86', 'x86_64']):
+    allowed_archs = ['x86_64']
+    if builder.host.platform == 'mac':
+        if getattr(builder.options, 'scripting_only', False):
+            allowed_archs += ['arm64']
+    else:
+        allowed_archs += ['x86']
+
+    if not set(self.target_archs).issubset(allowed_archs):
       raise Exception('Unknown target architecture: {0}'.format(self.target_archs))
 
     for cxx in self.all_targets:
@@ -313,9 +320,10 @@ class SMConfig(object):
       '-Wno-unused',
       '-Wno-switch',
       '-Wno-array-bounds',
-      '-msse',
       '-fvisibility=hidden',
     ]
+    if cxx.target.arch in ['x86', 'x86_64']:
+      cxx.cflags += ['-msse']
 
     cxx.cxxflags += ['-std=c++17']
 
@@ -462,9 +470,9 @@ class SMConfig(object):
 
   def configure_mac(self, cxx):
     cxx.defines += ['OSX', '_OSX', 'POSIX', 'KE_ABSOLUTELY_NO_STL']
-    cxx.cflags += ['-mmacosx-version-min=10.7']
+    cxx.cflags += ['-mmacosx-version-min=10.15']
     cxx.linkflags += [
-      '-mmacosx-version-min=10.7',
+      '-mmacosx-version-min=10.15',
       '-stdlib=libc++',
       '-lc++',
     ]
@@ -810,11 +818,24 @@ SP = builder.Build('sourcepawn/AMBuildScript', {
   'external_amtl': os.path.join(builder.sourcePath, 'public', 'amtl'),
   'external_build': SP_build_parts,
 })
-if len(SP.spcomp) > 1:
-  SM.spcomp = SP.spcomp['x86']
-else:
-  SM.spcomp = SP.spcomp[list(SP.spcomp.keys())[0]]
-SM.spcomp_bins = list(SP.spcomp.values())
+
+def IsBetterDefaultSpcomp(spcomp, other):
+    if other is None:
+        return True
+    if spcomp.target.arch == 'universal':
+        return True
+    if other.target.arch == 'universal':
+        return False
+    return spcomp.target.arch == 'x86'
+
+for spcomp in SP.spcomp:
+    if IsBetterDefaultSpcomp(spcomp, SM.spcomp):
+        SM.spcomp = spcomp
+    SM.spcomp_bins.append(spcomp)
+
+# If we have a universal binary, ignore all other spcomps.
+if SM.spcomp.target.arch == 'universal':
+    SM.spcomp_bins = [SM.spcomp]
 
 if not getattr(builder.options, 'scripting_only', False):
   for cxx in SM.all_targets:

@@ -41,9 +41,9 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install git+https://github.com/alliedmodders/ambuild
 
-      - name: Build only for x64 on macOS
+      - name: Build universal x64/arm64 on macOS
         if: startsWith(runner.os, 'macOS')
-        run: echo "ARCH=x86_64" >> $GITHUB_ENV
+        run: echo "ARCH=x86_64,arm64" >> $GITHUB_ENV
 
       - name: Install Linux dependencies
         if: startsWith(runner.os, 'Linux')
