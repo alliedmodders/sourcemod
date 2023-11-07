@@ -448,6 +448,16 @@ typeset NativeCall
 	 * @return               Value for the native call to return.
 	 */
 	function any (Handle plugin, int numParams);
+
+	/**
+	 * Defines a native function.
+	 *
+	 * It is not necessary to validate the parameter count
+	 *
+	 * @param plugin         Handle of the calling plugin.
+	 * @param numParams      Number of parameters passed to the native.
+	 */
+	function void (Handle plugin, int numParams);
 }
 
 /**
