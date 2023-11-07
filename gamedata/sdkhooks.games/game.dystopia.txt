@@ -1,0 +1,19 @@
+"Games"
+{
+	"!Dystopia"
+	{
+		"Offsets"
+		{
+			"OnTakeDamage"
+			{
+				"windows"	"62"
+				"linux"		"63"
+			}
+			"OnTakeDamage_Alive"
+			{
+				"windows"	"275"
+				"linux"		"276"
+			}
+		}
+	}
+}

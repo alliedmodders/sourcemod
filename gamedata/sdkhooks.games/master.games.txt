@@ -203,4 +203,8 @@
 	{
 		"game"		"open_fortress"
 	}
+	"game.dystopia.txt"
+	{
+		"game"		"!Dystopia"
+	}
 }
