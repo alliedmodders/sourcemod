@@ -1261,7 +1261,6 @@ void GameConfigManager::CacheGameBinaryInfo(const char* pszName)
 	char name[64];
 	bridge->FormatSourceBinaryName(pszName, name, sizeof(name));
 
-	bool binary_found = false;
 	char binary_path[PLATFORM_MAX_PATH];
 	for (auto it = m_gameBinPathManager.Paths().begin(); it != m_gameBinPathManager.Paths().end(); ++it)
 	{
