@@ -63,6 +63,7 @@ for sdk_name in SM.sdks:
       continue
 
     binary_name = 'sourcemod.' + sdk.ext
+    needs_protobuf = sdk.name in ['csgo', 'blade', 'mcv']
 
     binary = SM.HL2Config(project, builder, cxx, binary_name, sdk)
     SM.ConfigureForExtension(builder, binary.compiler)
@@ -72,7 +73,7 @@ for sdk_name in SM.sdks:
       builder.sourcePath
     ]
 
-    if sdk.name in ['csgo', 'blade', 'mcv']:
+    if needs_protobuf:
       compiler.cxxincludes += [
         os.path.join(sdk.path, 'common', 'protobuf-2.5.0', 'src'),
         os.path.join(sdk.path, 'public', 'engine', 'protobuf'),
@@ -81,10 +82,12 @@ for sdk_name in SM.sdks:
     
     if compiler.like('msvc'):
       compiler.defines += ['_ALLOW_KEYWORD_MACROS']
+    if needs_protobuf and compiler.like('gcc'):
+      compiler.defines += ['_GLIBCXX_USE_CXX11_ABI=0']
     if cxx.target.platform == 'linux':
       compiler.postlink += ['-lpthread', '-lrt']
 
-    if sdk.name in ['csgo', 'blade', 'mcv']:
+    if needs_protobuf:
       if compiler.target.platform == 'linux':
         if compiler.target.arch == 'x86':
           lib_path = os.path.join(sdk.path, 'lib', 'linux32', 'release', 'libprotobuf.a')
@@ -116,7 +119,7 @@ for sdk_name in SM.sdks:
           lib_path = os.path.join(sdk.path, 'lib', platform, 'release', 'vs' + vs_year, 'libprotobuf.lib')
       compiler.linkflags.insert(0, lib_path)
   
-    if sdk.name in ['csgo', 'blade', 'mcv']:
+    if needs_protobuf:
       binary.sources += ['smn_protobuf.cpp']
     else:
       binary.sources += ['smn_bitbuffer.cpp']
@@ -126,7 +129,7 @@ for sdk_name in SM.sdks:
         'vprof_tool.cpp',
       ]
 
-    if sdk.name in ['csgo', 'blade', 'mcv']:
+    if needs_protobuf:
       binary.sources += [
         os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'netmessages.pb.cc'),
         os.path.join(sdk.path, 'public', 'game', 'shared', pb_gamedir_map[sdk.name], 'protobuf', pb_gamesrcdir_map[sdk.name] + '_usermessages.pb.cc'),
