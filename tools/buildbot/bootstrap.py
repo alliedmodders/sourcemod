@@ -91,7 +91,7 @@ def main():
         if output_needs_cleaning():
             shutil.rmtree('OUTPUT')
         if not os.path.isdir('OUTPUT'):
-            os.makedirs('OUTPUT')
+            os.mkdir('OUTPUT')
         with Chdir('OUTPUT'):
             run_shell(config_argv, env = build_env)
 
