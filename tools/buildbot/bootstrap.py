@@ -94,10 +94,8 @@ def main():
         if not os.path.isdir('OUTPUT'):
             print("Creating output directory...")
             os.mkdir('OUTPUT')
-        print("Changing to output directory...")
-        with Chdir('OUTPUT'):
-            print("Running configure.py...")
-            run_shell(config_argv, env = build_env)
+        print("Running configure.py...")
+        run_shell(config_argv, env = build_env)
 
 if __name__ == '__main__':
     main()
