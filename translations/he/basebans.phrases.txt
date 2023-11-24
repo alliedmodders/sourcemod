@@ -47,7 +47,7 @@
 
 	"Custom ban reason explanation"
 	{
-		"he"		"הסבר סיבת ההשעייה המותאמת"
+		"he"		"הזן את הסיבה כהודעת צ'אט. השתמש ב-{1} כדי לבטל זאת."
 	}
 
 	"AbortBan applied successfully"
