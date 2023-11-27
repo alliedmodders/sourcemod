@@ -1,112 +1,166 @@
 "Games"
 {
-	"#default"
-	{
-		"Offsets"
-		{
-			"Blocked"
-			{
-				"windows"	"106"
-			}
-			"EndTouch"
-			{
-				"windows"	"104"
-			}
-			"FireBullets"
-			{
-				"windows"	"118"
-			}
-			"GetMaxHealth"
-			{
-				"windows"	"122"
-			}
-			"OnTakeDamage"
-			{
-				"windows"	"68"
-			}
-			"OnTakeDamage_Alive"
-			{
-				"windows"	"306"
-			}
-			"PreThink"
-			{
-				"windows"	"376"
-			}
-			"PostThink"
-			{
-				"windows"	"377"
-			}
-			"Reload"
-			{
-				"windows"	"295"
-			}
-			"SetTransmit"
-			{
-				"windows"	"23"
-			}
-			"ShouldCollide"
-			{
-				"windows"	"18"
-			}
-			"Spawn"
-			{
-				"windows"	"25"
-			}
-			"StartTouch"
-			{
-				"windows"	"102"
-			}
-			"Think"
-			{
-				"windows"	"52"
-			}
-			"Touch"
-			{
-				"windows"	"103"
-			}
-			"TraceAttack"
-			{
-				"windows"	"66"
-			}
-			"Use"
-			{
-				"windows"	"101"
-			}
-			"VPhysicsUpdate"
-			{
-				"windows"	"157"
-			}
-			"Weapon_CanSwitchTo"
-			{
-				"windows"	"297"
-			}
-			"Weapon_CanUse"
-			{
-				"windows"	"291"
-			}
-			"Weapon_Drop"
-			{
-				"windows"	"294"
-			}
-			"Weapon_Equip"
-			{
-				"windows"	"292"
-			}
-			"Weapon_Switch"
-			{
-				"windows"	"296"
-			}
-		}
-	}
-	
-	"#default"
-	{
-		"Offsets"
-		{
-			"EntityListeners"
-			{
-				"windows"	"196644"
-			}
-		}
-	}
+    "#default"
+    {
+        "Offsets"
+        {
+            // "[L0/W0]             L107    W108    CBaseEntity::Blocked(CBaseEntity*)",
+            "Blocked"
+            {
+                "linux64"       "107"
+                "windows64"     "108"
+            }
+            // "[L0/W0]             L105    W106    CBaseEntity::EndTouch(CBaseEntity*)",
+            "EndTouch"
+            {
+                "linux64"       "105"
+                "windows64"     "106"
+            }
+            // "[L0/W0]             L119    W120    CBaseEntity::FireBullets(FireBulletsInfo_t const&)",
+            "FireBullets"
+            {
+                "linux64"       "119"
+                "windows64"     "120"
+            }
+            // "[L0/W0]             L123    W124    CBaseEntity::GetMaxHealth(void)",
+            "GetMaxHealth"
+            {
+                "linux64"       "123"
+                "windows64"     "124"
+            }
+            // "[L0/W0]             L69     W70     CBaseEntity::OnTakeDamage(CTakeDamageInfo const&)",
+            "OnTakeDamage"
+            {
+                "linux64"       "69"
+                "windows64"     "70"
+            }
+            // Only seems to exist on bot functions??
+            // "[L0/W0]             L307    W306    CAI_BaseNPC::OnTakeDamage_Alive(CTakeDamageInfo const&)",
+            // "OnTakeDamage_Alive"
+            // {
+            //     "windows"   "306"
+            // }
+
+
+            // "[L0/W0]             L376    W375    CBasePlayer::PreThink(void)",
+            "PreThink"
+            {
+                "linux64"       "376"
+                "windows64"     "375"
+            }
+            // "[L0/W0]             L377    W376    CBasePlayer::PostThink(void)",
+            "PostThink"
+            {
+                "linux64"       "377"
+                "windows64"     "376"
+            }
+            // CBaseCombatWeapon::FinishReload ?????
+            // "[L0/W0]             L294    W296    CBaseCombatWeapon::FinishReload(void)",
+            "Reload"
+            {
+                "linux64"       "294"
+                "windows64"     "296"
+            }
+            // "[L0/W0]             L24     W24     CBaseEntity::SetTransmit(CCheckTransmitInfo *,bool)",
+            "SetTransmit"
+            {
+                "linux64"       "24"
+                "windows64"     "24"
+            }
+            // "[L0/W0]             L19     W19     CBaseEntity::ShouldCollide(int,int)",
+            "ShouldCollide"
+            {
+                "linux64"       "19"
+                "windows64"     "19"
+            }
+            // "[L0/W0]             L32     W27     CBaseEntity::Spawn(void)",
+            // "[L0/W0]             L26     W26     CBaseCombatCharacter::Spawn(void)",
+            "Spawn"
+            {
+                "linux64"       "26"
+                "windows64"     "26"
+            }
+            // "[L0/W0]             L103    W104    CBaseEntity::StartTouch(CBaseEntity*)",
+            "StartTouch"
+            {
+                "linux64"       "103"
+                "windows64"     "104"
+            }
+            // "[L0/W0]             L53     W55     CBaseEntity::Think(void)",
+            "Think"
+            {
+                "linux64"       "53"
+                "windows64"     "55"
+            }
+            // "[L0/W0]             L104    W105    CBaseEntity::Touch(CBaseEntity*)",
+            "Touch"
+            {
+                "linux64"       "104"
+                "windows64"     "105"
+            }
+            // "[L0/W0]             L67     W68     CBaseEntity::TraceAttack(CTakeDamageInfo const&,Vector const&,CGameTrace *)",
+            "TraceAttack"
+            {
+                "linux64"       "67"
+                "windows64"     "68"
+            }
+            // "[L0/W0]             L102    W103    CBaseEntity::Use(CBaseEntity*,CBaseEntity*,USE_TYPE,float)",
+            "Use"
+            {
+                "linux64"       "102"
+                "windows64"     "103"
+            }
+            // "[L0/W0]             L158    W157    CBaseEntity::VPhysicsUpdate(IPhysicsObject *)",
+            "VPhysicsUpdate"
+            {
+                "linux64"       "158"
+                "windows64"     "157"
+            }
+            // "[L0/W0]             L299    W298    CBaseCombatCharacter::Weapon_CanSwitchTo(CBaseCombatWeapon *)",
+            "Weapon_CanSwitchTo"
+            {
+                "linux64"       "299"
+                "windows64"     "298"
+            }
+            // "[L0/W0]             L292    W291    CBaseCombatCharacter::Weapon_CanUse(CBaseCombatWeapon *)",
+            "Weapon_CanUse"
+            {
+                "linux64"       "292"
+                "windows64"     "291"
+            }
+            // "[L0/W0]             L296    W295    CBaseCombatCharacter::Weapon_Drop(CBaseCombatWeapon *,Vector const*,Vector const*)",
+            "Weapon_Drop"
+            {
+                "linux64"       "296"
+                "windows64"     "295"
+            }
+            // "[L0/W0]             L293    W292    CBaseCombatCharacter::Weapon_Equip(CBaseCombatWeapon *)",
+            "Weapon_Equip"
+            {
+                "linux64"       "293"
+                "windows64"     "292"
+            }
+            // "[L0/W0]             L297    W296    CBaseCombatCharacter::Weapon_Switch(CBaseCombatWeapon *,int)",
+            "Weapon_Switch"
+            {
+                "linux64"       "297"
+                "windows64"     "296"
+            }
+        }
+
+    }
+    
+    "#default"
+    {
+        "Offsets"
+        {
+            "EntityListeners"
+            {
+                // 49159
+                // 98322
+                "windows"   "196644"
+                "linux64"   "49159"
+            }
+        }
+    }
 }
