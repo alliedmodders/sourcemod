@@ -75,6 +75,17 @@
 		}
 	}
 	
+	"nucleardawn"
+	{
+		"Keys"
+		{
+			"SpriteBeam"		"sprites/widestripe.vmt"
+			
+			"Team2BeaconColor"		"75,75,255,255"
+			"Team3BeaconColor"		"255,75,75,255"
+		}
+	}
+	
 	"#default"
 	{
 		"#supported"
