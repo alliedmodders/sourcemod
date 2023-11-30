@@ -6,3 +6,6 @@
 	path = sourcepawn
 	url = https://github.com/alliedmodders/sourcepawn
 	shallow = true
+[submodule "hl2sdk-manifests"]
+	path = hl2sdk-manifests
+	url = https://github.com/alliedmodders/hl2sdk-manifests.git
