@@ -1,21 +1,23 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-libcurl = builder.Build('curl-src/lib/AMBuilder')
-mbedtls = builder.Build('mbedtls-src/library/AMBuilder')
+libcurl = builder.Build('curl/AMBuilder')
+mbedtls = builder.Build('mbedtls/AMBuilder')
 
 for cxx in builder.targets:
   binary = SM.ExtLibrary(builder, cxx, 'webternet.ext')
   binary.compiler.includes += [
-    os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl-src', 'include')
+    os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl', 'lib', 'include')
   ]
   binary.compiler.defines += ['CURL_STATICLIB']
   if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
     binary.compiler.cxxflags += ['-fno-rtti']
   elif binary.compiler.family == 'msvc':
     binary.compiler.cxxflags += ['/GR-']
-  binary.compiler.postlink += [libcurl[binary.compiler.target.arch].binary]
-  binary.compiler.postlink += [mbedtls[binary.compiler.target.arch].binary]
+  binary.compiler.postlink += [
+    libcurl[binary.compiler.target.arch].binary,
+    mbedtls[binary.compiler.target.arch].binary
+  ]
   if binary.compiler.target.platform == 'linux':
     binary.compiler.postlink += ['-lrt']
   elif binary.compiler.target.platform == 'windows':

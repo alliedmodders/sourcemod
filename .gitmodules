@@ -6,11 +6,9 @@
 	path = sourcepawn
 	url = https://github.com/alliedmodders/sourcepawn
 	shallow = true
-[submodule "extensions/curl/curl-src"]
-	path = extensions/curl/curl-src
-	url = https://github.com/curl/curl
-	shallow = true
-[submodule "extensions/curl/mbedtls-src"]
-	path = extensions/curl/mbedtls-src
-	url = https://github.com/Mbed-TLS/mbedtls
-	shallow = true
+[submodule "extensions/curl/curl/lib"]
+	path = extensions/curl/curl/lib
+	url = https://github.com/alliedmodders/curl
+[submodule "extensions/curl/mbedtls/lib"]
+	path = extensions/curl/mbedtls/lib
+	url = https://github.com/alliedmodders/mbedtls
