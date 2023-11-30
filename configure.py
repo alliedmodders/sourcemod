@@ -21,18 +21,12 @@ if ambuild_version.startswith('2.1'):
 parser = run.BuildParser(sourcePath=sys.path[0], api='2.2')
 parser.options.add_argument('--hl2sdk-root', type=str, dest='hl2sdk_root', default=None,
                        help='Root search folder for HL2SDKs')
-parser.options.add_argument('--mysql-path', type=str, dest='mysql_path', default=None,
-                       help='Path to MySQL 5')
-parser.options.add_argument('--mysql64-path', type=str, dest='mysql64_path', default=None,
-                       help='Path to 64-bit MySQL 5')
 parser.options.add_argument('--mms-path', type=str, dest='mms_path', default=None,
                        help='Path to Metamod:Source')
 parser.options.add_argument('--enable-debug', action='store_const', const='1', dest='debug',
                        help='Enable debugging symbols')
 parser.options.add_argument('--enable-optimize', action='store_const', const='1', dest='opt',
                        help='Enable optimization')
-parser.options.add_argument('--no-mysql', action='store_false', default=True, dest='hasMySql',
-                       help='Disable building MySQL extension')
 parser.options.add_argument('-s', '--sdks', default='present', dest='sdks',
                        help='Build against specified SDKs; valid args are "none", "all", "present",'
                             ' or comma-delimited list of engine names')

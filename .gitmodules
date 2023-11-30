@@ -6,3 +6,11 @@
 	path = sourcepawn
 	url = https://github.com/alliedmodders/sourcepawn
 	shallow = true
+[submodule "extensions/mysql/openssl/lib"]
+	path = extensions/mysql/openssl/lib
+	url = https://github.com/openssl/openssl
+	shallow = true
+[submodule "extensions/mysql/mariadb/connector"]
+	path = extensions/mysql/mariadb/connector
+	url = https://github.com/mariadb-corporation/mariadb-connector-c
+	shallow = true
