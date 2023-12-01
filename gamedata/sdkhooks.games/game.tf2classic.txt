@@ -1,0 +1,209 @@
+"Games"
+{
+	"#default"
+	{
+		"Offsets"
+		{
+			/* CBaseMultiplayerPlayer::CanBeAutobalanced()*/
+			"CanBeAutobalanced"
+			{
+				"linux"		"487"
+				"mac"		"487"
+				"windows" 	"486"
+			}
+
+			/* CBaseEntity::EndTouch(CBaseEntity*) */
+			"EndTouch"
+			{
+				"linux"		"103"
+				"mac"		"103"
+				"windows" 	"102"
+			}
+
+			/* CBaseEntity::FireBullets(FireBulletsInfo_t const&) */
+			"FireBullets"
+			{
+				"linux"		"115"
+				"mac"		"115"
+				"windows" 	"114"
+			}
+
+			/* CBaseEntity::GetMaxHealth() const */
+			"GetMaxHealth"
+			{
+				"linux"		"120"
+				"mac"		"120"
+				"windows" 	"119"
+			}
+
+			// NOTE: https://asherkin.github.io/vtable/ provides the correct windows offset, GDC does not appear to.
+			/* CBaseEntity::NetworkStateChanged_m_hGroundEntity(void*) */
+			"GroundEntChanged"
+			{
+				"linux"		"181"
+				"mac"		"181"
+				"windows" 	"179"
+			}
+
+			/* CBaseEntity::OnTakeDamage(CTakeDamageInfo const&) */
+			"OnTakeDamage"
+			{
+				"linux"		"64"
+				"mac"		"64"
+				"windows" 	"63"
+			}
+
+			/* CBasePlayer::OnTakeDamage_Alive(CTakeDamageInfo const&) */
+			"OnTakeDamage_Alive"
+			{
+				"linux"		"290"
+				"mac"		"290"
+				"windows" 	"289"
+			}
+
+			/* CBasePlayer::PreThink() */
+			"PreThink"
+			{
+				"linux"		"362"
+				"mac"		"362"
+				"windows" 	"361"
+			}
+
+			/* CBasePlayer::PostThink() */
+			"PostThink"
+			{
+				"linux"		"363"
+				"mac"		"363"
+				"windows" 	"362"
+			}
+
+			/* CBaseCombatWeapon::Reload() */
+			"Reload"
+			{
+				"linux"		"275"
+				"mac"		"274"
+				"windows" 	"274"
+			}
+
+			/* CBaseEntity::SetTransmit(CCheckTransmitInfo*, bool) */
+			"SetTransmit"
+			{
+				"linux"		"22"
+				"mac"		"21"
+				"windows" 	"21"
+			}
+
+			/* CBaseEntity::ShouldCollide(int, int) const */
+			"ShouldCollide"
+			{
+				"linux"		"18"
+				"mac"		"16"
+				"windows" 	"16"
+			}
+
+			/* CBaseEntity::Spawn() */
+			"Spawn"
+			{
+				"linux"		"24"
+				"mac"		"23"
+				"windows" 	"23"
+			}
+
+			/* CBaseEntity::StartTouch(CBaseEntity*) */
+			"StartTouch"
+			{
+				"linux"		"101"
+				"mac"		"100"
+				"windows" 	"100"
+			}
+
+			/* CBaseEntity::Think() */
+			"Think"
+			{
+				"linux"		"49"
+				"mac"		"48"
+				"windows" 	"48"
+			}
+
+			/* CBaseEntity::Touch(CBaseEntity*) */
+			"Touch"
+			{
+				"linux"		"102"
+				"mac"		"101"
+				"windows" 	"101"
+			}
+
+			/* CBaseEntity::TraceAttack(CTakeDamageInfo const&, Vector const&, CGameTrace*, CDmgAccumulator*) */
+			"TraceAttack"
+			{
+				"linux"		"62"
+				"mac"		"61"
+				"windows" 	"61"
+			}
+
+			/* CBaseEntity::Use(CBaseEntity*, CBaseEntity*, USE_TYPE, float) */
+			"Use"
+			{
+				"linux"		"100"
+				"mac"		"99"
+				"windows" 	"99"
+			}
+
+			/* CBaseEntity::VPhysicsUpdate(IPhysicsObject*) */
+			"VPhysicsUpdate"
+			{
+				"linux"		"160"
+				"mac"		"159"
+				"windows" 	"159"
+			}
+
+			/* CBaseEntity::Blocked(CBaseEntity*) */
+			"Blocked"
+			{
+				"linux"		"105"
+				"mac"		"104"
+				"windows" 	"104"
+			}
+
+			/* CBaseCombatCharacter::Weapon_CanSwitchTo(CBaseCombatWeapon*) */
+			"Weapon_CanSwitchTo"
+			{
+				"linux"		"284"
+				"mac"		"283"
+				"windows" 	"283"
+			}
+
+			/* CBaseCombatCharacter::Weapon_CanUse(CBaseCombatWeapon*) */
+			"Weapon_CanUse"
+			{
+				"linux"		"278"
+				"mac"		"277"
+				"windows" 	"277"
+			}
+
+			/* CBaseCombatCharacter::Weapon_Drop(CBaseCombatWeapon*, Vector const*, Vector const*) */
+			"Weapon_Drop"
+			{
+				"linux"		"281"
+				"mac"		"280"
+				"windows" 	"280"
+			}
+
+			/* CBaseCombatCharacter::Weapon_Equip(CBaseCombatWeapon*) */
+			"Weapon_Equip"
+			{
+				"linux"		"279"
+				"mac"		"278"
+				"windows" 	"278"
+			}
+
+			/* CBaseCombatCharacter::Weapon_Switch(CBaseCombatWeapon*, int) */
+			"Weapon_Switch"
+			{
+				"linux"		"282"
+				"mac"		"281"
+				"windows" 	"281"
+			}
+		}
+	}
+}
