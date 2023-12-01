@@ -31,121 +31,106 @@
 			/* CBasePlayer::GiveNamedItem(char const*, int) */
 			"GiveNamedItem"
 			{
-				"windows"	"429"
-				"linux"		"430"
-				"mac"		"429"
+				"linux"		"404"
+				"windows"	"403"
 			}
 
 			/* CBaseCombatCharacter::RemovePlayerItem(CBaseCombatWeapon*) */
 			"RemovePlayerItem"
 			{
-				"windows"	"287"
-				"linux"		"288"
-				"mac"		"287"
+				"linux"		"274"
+				"windows"	"273"
 			}
 
 			/* CBaseCombatCharacter::Weapon_GetSlot(int) const */
 			"Weapon_GetSlot"
 			{
-				"windows"	"285"
-				"linux"		"286"
-				"mac"		"285"
+				"linux"		"272"
+				"windows"	"271"
 			}
 
 			/* CBaseAnimating::Ignite(float, bool, float, bool) */
 			"Ignite"
 			{
-				"windows"	"211"
-				"linux"		"212"
-				"mac"		"212"
+				"linux"		"213"
+				"windows"	"212"
 			}
 
 			/* CBaseAnimating::Extinguish() */
 			"Extinguish"
 			{
-				"windows"	"215"
-				"linux"		"216"
-				"mac"		"215"
+				"linux"		"217"
+				"windows"	"216"
 			}
 
 			/* CBaseEntity::Teleport(Vector const*, QAngle const*, Vector const*) */
 			"Teleport"
 			{
-				"windows"	"110"
 				"linux"		"111"
-				"mac"		"110"
+				"windows"	"109"
 			}
 
 			/* CBasePlayer::CommitSuicide(bool, bool) */
 			"CommitSuicide"
 			{
-				"windows"	"469"
-				"linux"		"469"
-				"mac"		"469"
+				"linux"		"444"
+				"windows"	"444"
 			}
 
 			/* CBaseEntity::GetVelocity(Vector*, Vector*) */
 			"GetVelocity"
 			{
-				"windows"	"142"
-				"linux"		"143"
-				"mac"		"142"
+				"linux"		"142"
+				"windows"	"141"
 			}
 
 			/* CBaseEntity::EyeAngles() */
 			"EyeAngles"
 			{
-				"windows"	"133"
-				"linux"		"134"
-				"mac"		"133"
+				"linux"		"133"
+				"windows"	"132"
 			}
 
 			/* CBaseEntity::SetModel(char const*) */
 			"SetEntityModel"
 			{
-				"windows"	"25"
 				"linux"		"26"
-				"mac"		"25"
+				"windows"	"25"
 			}
 
 			/* CBaseEntity::AcceptInput(char const*, CBaseEntity*, CBaseEntity*, variant_t, int) */
 			"AcceptInput"
 			{
-				"windows"	"37"
 				"linux"		"38"
-				"mac"		"37"
+				"windows"	"37"
 			}
 
 			/* CBaseCombatCharacter::Weapon_Equip(CBaseCombatWeapon*) */
 			"WeaponEquip"
 			{
-				"windows"	"278"
-				"linux"		"279"
-				"mac"		"279"
+				"linux"		"265"
+				"windows"	"264"
 			}
 
 			/* CBaseEntity::Activate() */
 			"Activate"
 			{
-				"windows"	"34"
 				"linux"		"35"
-				"mac"		"34"
+				"windows"	"34"
 			}
 
 			/* CBasePlayer::PlayerRunCommand(CUserCmd*, IMoveHelper*) */
 			"PlayerRunCmd"
 			{
-				"windows"	"448"
-				"linux"		"449"
-				"mac"		"448"
+				"linux"		"422"
+				"windows"	"421"
 			}
 
 			/* CBaseCombatCharacter::GiveAmmo(int, int, bool) */
 			"GiveAmmo"
 			{
-				"windows"	"269"
-				"linux"		"270"
-				"mac"		"269"
+				"linux"		"256"
+				"windows"	"255"
 			}
 		}
 
