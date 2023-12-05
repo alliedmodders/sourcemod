@@ -1,6 +1,6 @@
 "Games"
 {
-	"pf2"
+	"#default"
 	{
 		"Offsets"
 		{
