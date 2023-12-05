@@ -190,6 +190,7 @@
 			"game"					"bms"
 			"game"					"iosoccer"
 			"game"					"open_fortress"
+			"game"					"tf2classic"
 		}
 
 		"Keys"
@@ -242,6 +243,7 @@
 			"game"					"iosoccer"
 			"game"					"reactivedrop"
 			"game"					"open_fortress"
+			"game"					"tf2classic"
 		}
 		
 		"Keys"
@@ -303,6 +305,7 @@
 			"game"					"reactivedrop"
 			"game"					"FortressForever"
 			"game"					"open_fortress"
+			"game"					"tf2classic"
 		}
 		
 		"Keys"
