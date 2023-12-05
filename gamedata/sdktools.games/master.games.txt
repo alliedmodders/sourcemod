@@ -277,4 +277,8 @@
 	{
 		"game"		"tf2classic"
 	}
+	"game.pf2.txt"
+	{
+		"game"		"pf2"
+	}
 }
