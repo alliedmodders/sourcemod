@@ -263,4 +263,8 @@
 	{
 		"game"		"open_fortress"
 	}
+	"game.tf2classic.txt"
+	{
+		"game"		"tf2classic"
+	}
 }
