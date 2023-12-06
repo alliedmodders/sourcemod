@@ -791,12 +791,14 @@ void SDKHooks::Unhook(CBaseEntity *pEntity)
 				entry--;
 			}
 
+			/*
 			if (pawnhooks.size() == 0)
 			{
 				delete vtablehooklist[listentry];
 				vtablehooklist.erase(vtablehooklist.begin() + listentry);
 				listentry--;
 			}
+   			*/
 		}
 	}
 }
@@ -820,12 +822,14 @@ void SDKHooks::Unhook(IPluginContext *pContext)
 				entry--;
 			}
 
+			/*
 			if (pawnhooks.size() == 0)
 			{
 				delete vtablehooklist[listentry];
 				vtablehooklist.erase(vtablehooklist.begin() + listentry);
 				listentry--;
 			}
+   			*/
 		}
 	}
 }
@@ -862,12 +866,14 @@ void SDKHooks::Unhook(int entity, SDKHookType type, IPluginFunction *pCallback)
 			entry--;
 		}
 
+		/*
 		if (pawnhooks.size() == 0)
 		{
 			delete vtablehooklist[listentry];
 			vtablehooklist.erase(vtablehooklist.begin() + listentry);
 			listentry--;
 		}
+  		*/
 
 		break;
 	}
