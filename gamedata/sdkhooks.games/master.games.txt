@@ -216,4 +216,9 @@
 	{
 		"game"		"tf2classic"
 	}
+	
+	"game.gmod9.txt"
+	{
+		"game"		"gmod9"
+	}
 }
