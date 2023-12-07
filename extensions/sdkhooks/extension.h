@@ -255,6 +255,8 @@ public:  // ISDKHooks
 	virtual void AddEntityListener(ISMEntityListener *listener);
 	virtual void RemoveEntityListener(ISMEntityListener *listener);
 
+public:	// IServerGameDLL
+	void LevelShutdown();
 private:
 	SourceHook::List<ISMEntityListener *> m_EntListeners;
 
