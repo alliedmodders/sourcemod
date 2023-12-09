@@ -31,17 +31,9 @@
  * Version: $Id$
  */
 
-// Because GetTargetName will return either client name, or client authid,
-// and we need to be able to fit whichever is larger to a buffer.
-#if MAX_AUTHID_LENGTH > MAX_NAME_LENGTH
-#define MAX_TARGETNAME_LENGTH MAX_AUTHID_LENGTH
-#else
-#define MAX_TARGETNAME_LENGTH MAX_NAME_LENGTH
-#endif
-
 void PrepareBan(int adminClient, int time, const char[] reason)
 {
-	char name[MAX_TARGETNAME_LENGTH];
+	char name[MAX_TARGET_LENGTH];
 	GetTargetName(playerinfo[adminClient].banTargetUserId, playerinfo[adminClient].banTargetAuthId, name, sizeof(name));
 
 	if (!time)
@@ -123,7 +115,7 @@ void DisplayBanTargetMenu(int client)
 
 void DisplayBanTimeMenu(int client)
 {
-	char targetName[MAX_TARGETNAME_LENGTH];
+	char targetName[MAX_TARGET_LENGTH];
 	GetTargetName(playerinfo[client].banTargetUserId, playerinfo[client].banTargetAuthId, targetName, sizeof(targetName));
 
 	Menu menu = new Menu(MenuHandler_BanTimeList);
@@ -146,7 +138,7 @@ void DisplayBanTimeMenu(int client)
 
 void DisplayBanReasonMenu(int client)
 {
-	char name[MAX_TARGETNAME_LENGTH];
+	char name[MAX_TARGET_LENGTH];
 	GetTargetName(playerinfo[client].banTargetUserId, playerinfo[client].banTargetAuthId, name, sizeof(name));
 
 	Menu menu = new Menu(MenuHandler_BanReasonList);
