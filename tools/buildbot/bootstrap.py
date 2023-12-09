@@ -92,8 +92,8 @@ def main():
             shutil.rmtree('OUTPUT')
         if not os.path.isdir('OUTPUT'):
             os.makedirs('OUTPUT')
-        with Chdir('OUTPUT'):
-            run_shell(config_argv, env = build_env)
+    
+    run_shell(config_argv, env = build_env)
 
 if __name__ == '__main__':
     main()
