@@ -459,20 +459,11 @@ void SDKHooks::LevelShutdown()
 		for (size_t listentry = 0; listentry < vtablehooklist.size(); ++listentry)
 		{
 			std::vector<HookList> &pawnhooks = vtablehooklist[listentry]->hooks;
-			for (size_t entry = 0; entry < pawnhooks.size(); ++entry)
-			{
-				pawnhooks.erase(pawnhooks.begin() + entry);
-				entry--;
-			}
-
-			if (pawnhooks.size() == 0)
-			{
-				delete vtablehooklist[listentry];
-				vtablehooklist.erase(vtablehooklist.begin() + listentry);
-				listentry--;
-			}
-
+			pawnhooks.clear();
+			
+			delete vtablehooklist[listentry];
 		}
+		vtablehooklist.clear();
 	}
 #endif
 }
