@@ -1,54 +1,55 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-libmariadb = builder.Build('mariadb/AMBuilder')
-libopenssl = {}
-if os.name != 'nt':
-  libopenssl = builder.Build('openssl/AMBuilder')
+if builder.options.hasMySql:
+  libmariadb = builder.Build('mariadb/AMBuilder')
+  libopenssl = {}
+  if os.name != 'nt':
+    libopenssl = builder.Build('openssl/AMBuilder')
 
-for cxx in builder.targets:
-  arch = cxx.target.arch
-  binary = SM.ExtLibrary(builder, cxx, 'dbi.mysql.ext')
-  binary.compiler.cxxincludes += [
-    os.path.join(SM.mms_root, 'core', 'sourcehook'),
-    os.path.join(builder.sourcePath, 'extensions', 'mysql', 'mariadb', 'include'),
-    os.path.join(builder.sourcePath, 'extensions', 'mysql', 'mariadb', 'connector', 'include'),
-  ]
-  if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
-    binary.compiler.cxxflags += ['-fno-rtti']
-  elif binary.compiler.family == 'msvc':
-    binary.compiler.cxxflags += ['/GR-']
-
-  binary.compiler.postlink += [
-    libmariadb[arch].binary,
-  ]
-
-  if binary.compiler.target.platform == 'linux':
-    binary.compiler.postlink += [
-      '-lz',
-      '-lpthread',
-      '-lm',
-      '-lrt',
-      libopenssl['ssl-' + arch].binary,
-      libopenssl['crypto-' + arch].binary,
+  for cxx in builder.targets:
+    arch = cxx.target.arch
+    binary = SM.ExtLibrary(builder, cxx, 'dbi.mysql.ext')
+    binary.compiler.cxxincludes += [
+      os.path.join(SM.mms_root, 'core', 'sourcehook'),
+      os.path.join(builder.sourcePath, 'extensions', 'mysql', 'mariadb', 'include'),
+      os.path.join(builder.sourcePath, 'extensions', 'mysql', 'mariadb', 'connector', 'include'),
     ]
-  elif binary.compiler.target.platform == 'windows':
-    binary.compiler.defines += ['WIN32_LEAN_AND_MEAN']
+    if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
+      binary.compiler.cxxflags += ['-fno-rtti']
+    elif binary.compiler.family == 'msvc':
+      binary.compiler.cxxflags += ['/GR-']
+
     binary.compiler.postlink += [
-      'ws2_32.lib',
-      'shlwapi.lib',
-      'crypt32.lib',
-      'secur32.lib',
+      libmariadb[arch].binary,
     ]
 
-  binary.sources += [
-    '../../public/smsdk_ext.cpp',
-    'mysql/MyBasicResults.cpp',
-    'mysql/MyBoundResults.cpp',
-    'mysql/MyDatabase.cpp',
-    'mysql/MyDriver.cpp',
-    'mysql/MyStatement.cpp',
-    'extension.cpp'
-  ]
+    if binary.compiler.target.platform == 'linux':
+      binary.compiler.postlink += [
+        '-lz',
+        '-lpthread',
+        '-lm',
+        '-lrt',
+        libopenssl['ssl-' + arch].binary,
+        libopenssl['crypto-' + arch].binary,
+      ]
+    elif binary.compiler.target.platform == 'windows':
+      binary.compiler.defines += ['WIN32_LEAN_AND_MEAN']
+      binary.compiler.postlink += [
+        'ws2_32.lib',
+        'shlwapi.lib',
+        'crypt32.lib',
+        'secur32.lib',
+      ]
 
-  SM.extensions += [builder.Add(binary)]
+    binary.sources += [
+      '../../public/smsdk_ext.cpp',
+      'mysql/MyBasicResults.cpp',
+      'mysql/MyBoundResults.cpp',
+      'mysql/MyDatabase.cpp',
+      'mysql/MyDriver.cpp',
+      'mysql/MyStatement.cpp',
+      'extension.cpp'
+    ]
+
+    SM.extensions += [builder.Add(binary)]

@@ -51,7 +51,7 @@ jobs:
       - name: Build SourceMod
         working-directory: sourcemod
         run: |
-          python configure.py --enable-optimize --sdks=mock --targets=x86_64
+          python configure.py --no-mysql --enable-optimize --sdks=mock --targets=x86_64
           ambuild objdir
       
       - name: Build hl2sdk-mock
