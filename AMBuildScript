@@ -258,8 +258,8 @@ class SMConfig(object):
 
   def configure_cxx(self, cxx):
     if cxx.family == 'msvc':
-      if cxx.version < 1914:
-        raise Exception('Only MSVC 2017 15.7 and later are supported, full C++17 support is required.')
+      if cxx.version < 1914 and builder.options.generator != 'vs':
+        raise Exception(f'Only MSVC 2017 15.7 and later are supported, full C++17 support is required. ({str(cxx.version)} < 1914)')
     elif cxx.family == 'gcc':
       if cxx.version < 'gcc-9':
         raise Exception('Only GCC versions 9 or later are supported, full C++17 support is required.')
