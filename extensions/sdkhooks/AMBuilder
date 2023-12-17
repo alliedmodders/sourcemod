@@ -14,13 +14,10 @@ for sdk_name in SM.sdks:
   sdk = SM.sdks[sdk_name]
 
   for cxx in builder.targets:
-    if not cxx.target.arch in sdk.platformSpec[cxx.target.platform]:
+    if not cxx.target.arch in sdk['platforms'][cxx.target.platform]:
       continue
   
-    binary = SM.HL2ExtConfig(project, builder, cxx, 'sdkhooks.ext.' + sdk.ext, sdk)
-    binary.compiler.cxxincludes += [
-      os.path.join(sdk.path, 'game', 'shared')
-    ]
+    binary = SM.HL2ExtConfig(project, builder, cxx, 'sdkhooks.ext.' + sdk['extension'], sdk)
     if binary.compiler.behavior == 'gcc':
       binary.compiler.cxxflags += ['-Wno-invalid-offsetof']
 

@@ -37,22 +37,21 @@ project.sources += [
 
 for sdk_name in SM.sdks:
   sdk = SM.sdks[sdk_name]
-  if sdk.name in ['mock']:
+  if sdk['name'] in ['mock']:
     continue
 
   for cxx in builder.targets:
-    if not cxx.target.arch in sdk.platformSpec[cxx.target.platform]:
+    if not cxx.target.arch in sdk['platforms'][cxx.target.platform]:
       continue
 
-    binary = SM.HL2ExtConfig(project, builder, cxx, 'sdktools.ext.' + sdk.ext, sdk)
+    binary = SM.HL2ExtConfig(project, builder, cxx, 'sdktools.ext.' + sdk['extension'], sdk)
     binary.compiler.cxxincludes += [
-      os.path.join(sdk.path, 'game', 'shared'),
       os.path.join(builder.sourcePath, 'public', 'jit'),
       os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
     ]
-    binary.compiler.defines += ['HAVE_STRING_H'];
+    binary.compiler.defines += ['HAVE_STRING_H']
 
-    if sdk.name != 'episode1':
+    if sdk['name'] != 'episode1':
       binary.compiler.defines += ['HOOKING_ENABLED']
 
     if binary.compiler.behavior == 'gcc':

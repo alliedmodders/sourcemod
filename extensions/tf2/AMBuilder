@@ -5,9 +5,9 @@ if 'tf2' in SM.sdks:
   sdk = SM.sdks['tf2']
   
   for cxx in builder.targets:
-    if not cxx.target.arch in sdk.platformSpec[cxx.target.platform]:
+    if not cxx.target.arch in sdk['platforms'][cxx.target.platform]:
       continue
-    binary = SM.HL2Library(builder, cxx, 'game.tf2.ext.' + sdk.ext, sdk)
+    binary = SM.HL2Library(builder, cxx, 'game.tf2.ext.' + sdk['extension'], sdk)
     binary.sources += [
       'extension.cpp',
       'natives.cpp',
@@ -28,5 +28,5 @@ if 'tf2' in SM.sdks:
       '../../public/libudis86/syn.c',
       '../../public/libudis86/udis86.c',
     ]
-    binary.compiler.defines += ['HAVE_STRING_H'];
+    binary.compiler.defines += ['HAVE_STRING_H']
     SM.extensions += [builder.Add(binary)]
