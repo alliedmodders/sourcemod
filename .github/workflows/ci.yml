@@ -33,7 +33,6 @@ jobs:
       ARCH: x86,x86_64
       DEPENDENCIES_FOLDER: dependencies
       DEPENDENCIES_ROOT: ${{ github.workspace }}/dependencies
-      MYSQL_VERSION: '5.5'
       MMSOURCE_VERSION: '1.12'
     steps:
       - uses: actions/checkout@v4
@@ -44,13 +43,13 @@ jobs:
       - name: Cache dependencies
         uses: actions/cache@v3
         env:
-          cache-name: hl2sdk-mysql-mmsource
+          cache-name: hl2sdk-mmsource
         with:
           path: ${{ env.DEPENDENCIES_ROOT }}
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-mysql${{ env.MYSQL_VERSION }}-mmsource${{ env.MMSOURCE_VERSION }}-${{ join(fromJSON(env.SDKS), '') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-mmsource${{ env.MMSOURCE_VERSION }}-${{ join(fromJSON(env.SDKS), '') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-mysql${{ env.MYSQL_VERSION }}-mmsource${{ env.MMSOURCE_VERSION }}-
-            ${{ runner.os }}-build-${{ env.cache-name }}-mysql${{ env.MYSQL_VERSION }}-
+            ${{ runner.os }}-build-${{ env.cache-name }}-mmsource${{ env.MMSOURCE_VERSION }}-
+            ${{ runner.os }}-build-${{ env.cache-name }}-
 
       # Setup Python for AMBuild
       - uses: actions/setup-python@v4
@@ -94,5 +93,5 @@ jobs:
         run: |
           mkdir build
           cd build
-          python ../configure.py --enable-optimize --sdks=${{ join(fromJSON(env.SDKS)) }} --targets=${{ env.ARCH }} --mms-path=${{ env.DEPENDENCIES_ROOT }}/mmsource-${{ env.MMSOURCE_VERSION }} --hl2sdk-root=${{ env.DEPENDENCIES_ROOT }} --mysql-path=${{ env.DEPENDENCIES_ROOT }}/mysql-${{ env.MYSQL_VERSION }} --mysql64-path=${{ env.DEPENDENCIES_ROOT }}/mysql-${{ env.MYSQL_VERSION }}-x86_64
+          python ../configure.py --enable-optimize --sdks=${{ join(fromJSON(env.SDKS)) }} --targets=${{ env.ARCH }} --mms-path=${{ env.DEPENDENCIES_ROOT }}/mmsource-${{ env.MMSOURCE_VERSION }} --hl2sdk-root=${{ env.DEPENDENCIES_ROOT }}
           ambuild
