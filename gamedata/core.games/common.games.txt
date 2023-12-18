@@ -194,6 +194,7 @@
 			"game"					"vietnam"
 			"game"					"open_fortress"
 			"game"					"tf2classic"
+			"game"					"pf2"
 		}
 
 		"Keys"
@@ -248,6 +249,7 @@
 			"game"					"reactivedrop"
 			"game"					"open_fortress"
 			"game"					"tf2classic"
+			"game"					"pf2"
 		}
 		
 		"Keys"
@@ -311,6 +313,7 @@
 			"game"					"vietnam"
 			"game"					"open_fortress"
 			"game"					"tf2classic"
+			"game"					"pf2"
 		}
 		
 		"Keys"

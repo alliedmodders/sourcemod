@@ -216,7 +216,10 @@
 	{
 		"game"		"tf2classic"
 	}
-	
+	"game.pf2.txt"
+	{
+		"game"		"pf2"
+	}
 	"game.gmod9.txt"
 	{
 		"game"		"gmod9"
