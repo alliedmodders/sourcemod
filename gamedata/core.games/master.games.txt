@@ -110,7 +110,12 @@
 	{
 		"game"		"dinodday"
 	}
-
+	
+	"game.gmod9.txt"
+	{
+		"game"		"gmod9"
+	}
+	
 	"blocklist.plugins.txt"
 	{
 	}

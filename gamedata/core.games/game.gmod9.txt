@@ -1,0 +1,24 @@
+/*
+	modified copy of engine.ep1.txt
+*/
+
+"Games"
+{
+	/* CGlobalEntityList */
+	"#default"
+	{
+		"#supported"
+		{
+			"game"		"gmod9"
+		}
+		
+		"Offsets"
+		{
+			"GetDataDescMap"
+			{
+				"windows"	"15"
+				"linux"		"16"
+			}
+		}
+	}	
+}
