@@ -2,87 +2,6 @@
 import collections
 import os, sys
 import subprocess
-import traceback
-
-class SDK(object):
-  def __init__(self, sdk, ext, aDef, name, platform, dir):
-    self.folder = 'hl2sdk-' + dir
-    self.envvar = sdk
-    self.ext = ext
-    self.code = aDef
-    self.define = name
-    self.platform = platform
-    self.name = dir
-    self.path = None # Actual path
-    self.platformSpec = platform
-
-    # By default, nothing supports x64.
-    if type(platform) is list:
-      self.platformSpec = {p: ['x86'] for p in platform}
-    else:
-      self.platformSpec = platform
-
-  def shouldBuild(self, targets):
-    for cxx in targets:
-      if cxx.target.platform in self.platformSpec:
-        if cxx.target.arch in self.platformSpec[cxx.target.platform]:
-          return True
-    return False
-
-WinOnly = ['windows']
-WinLinux = ['windows', 'linux']
-WinLinuxMac = ['windows', 'linux', 'mac']
-Blade = {
-  'windows': ['x86', 'x86_64'],
-  'linux': ['x86_64'],
-  'mac': ['x86_64']
-}
-CSGO = {
-  'windows': ['x86'],
-  'linux': ['x86', 'x86_64'],
-  'mac': ['x86_64']
-}
-MCV = {
-  'windows': ['x86_64'],
-  'linux': ['x86_64'],
-}
-Mock = {
-  'windows': ['x86', 'x86_64'],
-  'linux': ['x86', 'x86_64'],
-  'mac': ['x86_64']
-}
-
-SDKMap = {
-  'episode1':  SDK('HL2SDK', '2.ep1', '1', 'EPISODEONE', WinLinux, 'episode1'),
-  'ep2':  SDK('HL2SDKOB', '2.ep2', '3', 'ORANGEBOX', WinLinux, 'orangebox'),
-  'css':  SDK('HL2SDKCSS', '2.css', '6', 'CSS', WinLinuxMac, 'css'),
-  'hl2dm':  SDK('HL2SDKHL2DM', '2.hl2dm', '7', 'HL2DM', WinLinuxMac, 'hl2dm'),
-  'dods': SDK('HL2SDKDODS', '2.dods', '8', 'DODS', WinLinuxMac, 'dods'),
-  'sdk2013': SDK('HL2SDK2013', '2.sdk2013', '9', 'SDK2013', WinLinuxMac, 'sdk2013'),
-  'tf2':  SDK('HL2SDKTF2', '2.tf2', '12', 'TF2', WinLinuxMac, 'tf2'),
-  'l4d':  SDK('HL2SDKL4D', '2.l4d', '13', 'LEFT4DEAD', WinLinuxMac, 'l4d'),
-  'nucleardawn': SDK('HL2SDKND', '2.nd', '14', 'NUCLEARDAWN', WinLinuxMac, 'nucleardawn'),
-  'l4d2': SDK('HL2SDKL4D2', '2.l4d2', '16', 'LEFT4DEAD2', WinLinuxMac, 'l4d2'),
-  'darkm':  SDK('HL2SDK-DARKM', '2.darkm', '2', 'DARKMESSIAH', WinOnly, 'darkm'),
-  'swarm':  SDK('HL2SDK-SWARM', '2.swarm', '17', 'ALIENSWARM', WinOnly, 'swarm'),
-  'bgt':  SDK('HL2SDK-BGT', '2.bgt', '4', 'BLOODYGOODTIME', WinOnly, 'bgt'),
-  'eye':  SDK('HL2SDK-EYE', '2.eye', '5', 'EYE', WinOnly, 'eye'),
-  'mcv': SDK('HL2SDKMCV', '2.mcv', '22', 'MCV', MCV, 'mcv'),
-  'csgo': SDK('HL2SDKCSGO', '2.csgo', '23', 'CSGO', CSGO, 'csgo'),
-  'portal2':  SDK('HL2SDKPORTAL2', '2.portal2', '18', 'PORTAL2', [], 'portal2'),
-  'blade':  SDK('HL2SDKBLADE', '2.blade', '21', 'BLADE', Blade, 'blade'),
-  'insurgency':  SDK('HL2SDKINSURGENCY', '2.insurgency', '19', 'INSURGENCY', WinLinuxMac, 'insurgency'),
-  'contagion':  SDK('HL2SDKCONTAGION', '2.contagion', '15', 'CONTAGION', WinOnly, 'contagion'),
-  'bms':  SDK('HL2SDKBMS', '2.bms', '11', 'BMS', WinLinux, 'bms'),
-  'doi':  SDK('HL2SDKDOI', '2.doi', '20', 'DOI', WinLinuxMac, 'doi'),
-  'mock': SDK('HL2SDK-MOCK', '2.mock', '999', 'MOCK', Mock, 'mock'),
-  'pvkii': SDK('HL2SDKPVKII', '2.pvkii', '10', 'PVKII', WinLinux, 'pvkii'),
-}
-
-# Stable sorting for command equivalence in AMBuild.
-PossibleSDKs = collections.OrderedDict()
-for key in sorted(SDKMap.keys()):
-    PossibleSDKs[key] = SDKMap[key]
 
 def ResolveEnvPath(env, folder):
   if env in os.environ:
@@ -113,9 +32,15 @@ def SetArchFlags(compiler):
     if compiler.target.arch == 'x86_64':
       compiler.defines += ['WIN64']
 
+SdkHelpers = builder.Eval('hl2sdk-manifests/SdkHelpers.ambuild', {
+    'Project': 'sourcemod'
+})
+
 class SMConfig(object):
   def __init__(self):
+    self.sdk_manifests = []
     self.sdks = {}
+    self.sdk_targets = []
     self.binaries = []
     self.spvm = []
     self.extensions = []
@@ -178,29 +103,26 @@ class SMConfig(object):
       major, minor, release = m.groups()
       self.productVersion = '{0}.{1}.{2}'.format(major, minor, release)
 
+  def findSdkPath(self, sdk_name):
+    dir_name = 'hl2sdk-{}'.format(sdk_name)
+    if builder.options.hl2sdk_root:
+      sdk_path = os.path.join(builder.options.hl2sdk_root, dir_name)
+      if os.path.exists(sdk_path):
+        return sdk_path
+    return ResolveEnvPath('HL2SDK{}'.format(sdk_name.upper()), dir_name)
+
+  def shouldIncludeSdk(self, sdk):
+    return not sdk.get('source2', False)
+
   def detectSDKs(self):
-    sdk_list = builder.options.sdks.split(',')
-    use_none = sdk_list[0] == 'none'
-    use_all = sdk_list[0] == 'all'
-    use_present = sdk_list[0] == 'present'
+    sdk_list = [s for s in builder.options.sdks.split(',') if s]
+    SdkHelpers.sdk_filter = self.shouldIncludeSdk
+    SdkHelpers.find_sdk_path = self.findSdkPath
+    SdkHelpers.findSdks(builder, self.all_targets, sdk_list)
 
-    for sdk_name in PossibleSDKs:
-      sdk = PossibleSDKs[sdk_name]
-      if sdk.shouldBuild(self.all_targets):
-        if builder.options.hl2sdk_root:
-          sdk_path = os.path.join(builder.options.hl2sdk_root, sdk.folder)
-        else:
-          sdk_path = ResolveEnvPath(sdk.envvar, sdk.folder)
-        if sdk_path is None or not os.path.isdir(sdk_path):
-          if (use_all and sdk_name != 'mock') or sdk_name in sdk_list:
-            raise Exception('Could not find a valid path for {0}'.format(sdk.envvar))
-          continue
-        if use_all or use_present or sdk_name in sdk_list:
-          sdk.path = Normalize(sdk_path)
-          self.sdks[sdk_name] = sdk
-
-    if len(self.sdks) < 1 and len(sdk_list) and not use_none:
-      raise Exception('No applicable SDKs were found, nothing to do')
+    self.sdks = SdkHelpers.sdks
+    self.sdk_manifests = SdkHelpers.sdk_manifests
+    self.sdk_targets = SdkHelpers.sdk_targets
 
     if builder.options.mms_path:
       self.mms_root = builder.options.mms_path
@@ -258,8 +180,8 @@ class SMConfig(object):
 
   def configure_cxx(self, cxx):
     if cxx.family == 'msvc':
-      if cxx.version < 1914:
-        raise Exception('Only MSVC 2017 15.7 and later are supported, full C++17 support is required.')
+      if cxx.version < 1914 and builder.options.generator != 'vs':
+        raise Exception(f'Only MSVC 2017 15.7 and later are supported, full C++17 support is required. ({str(cxx.version)} < 1914)')
     elif cxx.family == 'gcc':
       if cxx.version < 'gcc-9':
         raise Exception('Only GCC versions 9 or later are supported, full C++17 support is required.')
@@ -460,7 +382,7 @@ class SMConfig(object):
     self.asan_libs[cxx.target.arch] = os.path.dirname(output)
 
   def configure_linux(self, cxx):
-    cxx.defines += ['_LINUX', 'POSIX', '_FILE_OFFSET_BITS=64']
+    cxx.defines += ['LINUX', '_LINUX', 'POSIX', '_FILE_OFFSET_BITS=64']
     cxx.linkflags += ['-lm']
     if cxx.family == 'gcc':
       cxx.linkflags += ['-static-libgcc']
@@ -591,152 +513,10 @@ class SMConfig(object):
       os.path.join(self.mms_root, 'core', 'sourcehook'),
     ]
 
-    defines = ['SE_' + PossibleSDKs[i].define + '=' + PossibleSDKs[i].code for i in PossibleSDKs]
-    compiler.defines += defines
+    for other_sdk in self.sdk_manifests:
+      compiler.defines += ['SE_{}={}'.format(other_sdk['define'], other_sdk['code'])]
 
-    paths = [
-      ['public'],
-      ['public', 'engine'],
-      ['public', 'mathlib'],
-      ['public', 'vstdlib'],
-      ['public', 'tier0'],
-      ['public', 'tier1']
-    ]
-    if sdk.name == 'episode1' or sdk.name == 'darkm':
-      paths.append(['public', 'dlls'])
-      paths.append(['game_shared'])
-    else:
-      paths.append(['public', 'game', 'server'])
-      paths.append(['public', 'toolframework'])
-      paths.append(['game', 'shared'])
-      paths.append(['common'])
-
-    compiler.defines += ['SOURCE_ENGINE=' + sdk.code]
-
-    if sdk.name in ['sdk2013', 'bms', 'pvkii'] and compiler.like('gcc'):
-      # The 2013 SDK already has these in public/tier0/basetypes.h
-      compiler.defines.remove('stricmp=strcasecmp')
-      compiler.defines.remove('_stricmp=strcasecmp')
-      compiler.defines.remove('_snprintf=snprintf')
-      compiler.defines.remove('_vsnprintf=vsnprintf')
-
-    if compiler.like('msvc'):
-      compiler.defines += ['COMPILER_MSVC']
-      if compiler.target.arch == 'x86':
-        compiler.defines += ['COMPILER_MSVC32']
-      elif compiler.target.arch == 'x86_64':
-        compiler.defines += ['COMPILER_MSVC64']
-      compiler.linkflags += ['legacy_stdio_definitions.lib']
-    else:
-      compiler.defines += ['COMPILER_GCC']
-
-    if compiler.target.arch == 'x86_64':
-      compiler.defines += ['X64BITS', 'PLATFORM_64BITS']
-
-    # For everything after Swarm, this needs to be defined for entity networking
-    # to work properly with sendprop value changes.
-    if sdk.name in ['blade', 'insurgency', 'doi', 'mcv', 'csgo']:
-      compiler.defines += ['NETWORK_VARS_ENABLED']
-
-    if sdk.name in ['css', 'hl2dm', 'dods', 'sdk2013', 'bms', 'tf2', 'l4d', 'nucleardawn', 'l4d2', 'pvkii']:
-      if compiler.target.platform in ['linux', 'mac']:
-        compiler.defines += ['NO_HOOK_MALLOC', 'NO_MALLOC_OVERRIDE']
-
-    if compiler.target.platform == 'linux':
-      if sdk.name in ['csgo', 'blade']:
-        compiler.linkflags.remove('-static-libstdc++')
-        compiler.linkflags += ['-lstdc++']
-        compiler.defines += ['_GLIBCXX_USE_CXX11_ABI=0']
-    elif compiler.target.platform == 'mac':
-      if sdk.name in ['csgo']:
-        # Switch libc++ to libstdc++ for protobuf linkage.
-        compiler.cxxflags.remove('-stdlib=libc++')
-        compiler.linkflags.remove('-stdlib=libc++')
-        compiler.linkflags.remove('-lc++')
-
-        compiler.cxxflags += ['-stdlib=libstdc++']
-        compiler.linkflags += ['-stdlib=libstdc++']
-        compiler.linkflags += ['-lstdc++']
-
-        if 'c++1y' in compiler.cxxflags:
-          compiler.cxxflags.remove('-std=c++1y')
-          compiler.cxxflags += ['-std=c++11']
-        elif 'c++14' in compiler.cxxflags:
-          compiler.cxxflags.remove('-std=c++14')
-          compiler.cxxflags += ['-std=c++11']
-
-    for path in paths:
-      compiler.cxxincludes += [os.path.join(sdk.path, *path)]
-
-    if compiler.target.platform == 'linux':
-      if sdk.name == 'episode1':
-        lib_folder = os.path.join(sdk.path, 'linux_sdk')
-      elif sdk.name in ['sdk2013', 'bms', 'pvkii']:
-        lib_folder = os.path.join(sdk.path, 'lib', 'public', 'linux32')
-      elif compiler.target.arch == 'x86_64':
-        lib_folder = os.path.join(sdk.path, 'lib', 'linux64')
-      else:
-        lib_folder = os.path.join(sdk.path, 'lib', 'linux')
-    elif compiler.target.platform == 'mac':
-      if sdk.name in ['sdk2013', 'bms', 'pvkii']:
-        lib_folder = os.path.join(sdk.path, 'lib', 'public', 'osx32')
-      elif compiler.target.arch == 'x86_64':
-        lib_folder = os.path.join(sdk.path, 'lib', 'osx64')
-      else:
-        lib_folder = os.path.join(sdk.path, 'lib', 'mac')
-
-    if compiler.target.platform in ['linux', 'mac']:
-      if sdk.name in ['sdk2013', 'bms', 'pvkii'] or compiler.target.arch == 'x86_64':
-        compiler.postlink += [
-          os.path.join(lib_folder, 'tier1.a'),
-          os.path.join(lib_folder, 'mathlib.a')
-        ]
-      else:
-        compiler.postlink += [
-          os.path.join(lib_folder, 'tier1_i486.a'),
-          os.path.join(lib_folder, 'mathlib_i486.a')
-        ]
-
-      if sdk.name in ['blade', 'insurgency', 'doi', 'mcv', 'csgo']:
-        if compiler.target.arch == 'x86_64':
-          compiler.postlink += [os.path.join(lib_folder, 'interfaces.a')]
-        else:
-          compiler.postlink += [os.path.join(lib_folder, 'interfaces_i486.a')]
-
-    dynamic_libs = []
-    if compiler.target.platform == 'linux':
-      if sdk.name in ['css', 'hl2dm', 'dods', 'tf2', 'sdk2013', 'bms', 'nucleardawn', 'l4d2', 'insurgency', 'doi']:
-        dynamic_libs = ['libtier0_srv.so', 'libvstdlib_srv.so']
-      elif compiler.target.arch == 'x86_64' and sdk.name in ['csgo', 'mock']:
-        dynamic_libs = ['libtier0_client.so', 'libvstdlib_client.so']
-      elif sdk.name in ['l4d', 'blade', 'insurgency', 'doi', 'csgo', 'pvkii', 'mcv']:
-        dynamic_libs = ['libtier0.so', 'libvstdlib.so']
-      else:
-        dynamic_libs = ['tier0_i486.so', 'vstdlib_i486.so']
-    elif compiler.target.platform == 'mac':
-      compiler.linkflags.append('-liconv')
-      dynamic_libs = ['libtier0.dylib', 'libvstdlib.dylib']
-    elif compiler.target.platform == 'windows':
-      libs = ['tier0', 'tier1', 'vstdlib', 'mathlib']
-      if sdk.name in ['swarm', 'blade', 'insurgency', 'doi', 'mcv', 'csgo']:
-        libs.append('interfaces')
-      for lib in libs:
-        if compiler.target.arch == 'x86':
-          lib_path = os.path.join(sdk.path, 'lib', 'public', lib) + '.lib'
-        elif compiler.target.arch == 'x86_64':
-          lib_path = os.path.join(sdk.path, 'lib', 'public', 'win64', lib) + '.lib'
-        compiler.linkflags.append(lib_path)
-
-    for library in dynamic_libs:
-      source_path = os.path.join(lib_folder, library)
-      output_path = os.path.join(binary.localFolder, library)
-
-      # Ensure the output path exists.
-      context.AddFolder(binary.localFolder)
-      output = context.AddSymlink(source_path, output_path)
-
-      compiler.weaklinkdeps += [output]
-      compiler.linkflags[0:0] = [library]
+    SdkHelpers.configureCxx(context, binary, sdk)
 
     return binary
 
@@ -747,14 +527,14 @@ class SMConfig(object):
 
   def HL2Config(self, project, context, compiler, name, sdk):
     binary = project.Configure(compiler, name,
-                               '{0} - {1} {2}'.format(self.tag, sdk.name, compiler.target.arch))
+                               '{0} - {1} {2}'.format(self.tag, sdk['name'], compiler.target.arch))
     self.AddCxxCompat(binary)
     self.AddVersioning(binary)
     return self.ConfigureForHL2(context, binary, sdk)
 
   def HL2ExtConfig(self, project, context, compiler, name, sdk):
     binary = project.Configure(compiler, name,
-                               '{0} - {1} {2}'.format(self.tag, sdk.name, compiler.target.arch))
+                               '{0} - {1} {2}'.format(self.tag, sdk['name'], compiler.target.arch))
     self.AddCxxCompat(binary)
     self.AddVersioning(binary)
     self.ConfigureForHL2(context, binary, sdk)

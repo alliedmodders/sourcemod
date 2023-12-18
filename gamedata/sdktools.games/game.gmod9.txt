@@ -1,0 +1,167 @@
+
+"Games"
+{
+	/* GMod 9.0.4b */
+	"gmod9"
+	{
+		"Signatures"
+		{
+			/* CBaseEntityOutput::FireOutput */
+			"FireOutput"
+			{
+				"library"	"server"
+				"windows"	"\x83\xEC\x1C\x53\x55\x56\x8B\x71\x14\x85\xF6\x57\x89\x4C\x24\x14\xC7\x44\x24\x2A\x2A\x2A\x2A\x2A\x0F\x84\x2A\x2A\x2A\x2A\x8B\x6C\x24\x48\x8B\x5C\x24\x30\x8B\x46\x14\x8B\x4E\x08\x85\xC9\x50\x55\x75\x45\x8B\x4C\x24\x4C\xD9\x44\x24\x54\xD8\x46\x0C\x8B\x54\x24\x38\x51"
+				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+			}
+
+			/* CBaseAnimating::LookupAttachment */
+			"LookupAttachment"
+			{
+				"library"	"server"
+				"windows"	"\x56\xE8\x2A\x2A\x2A\x2A\x8B\xF0\x85\xF6\x74\x21\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x56\xFF\x50\x24\x83\xF8\x03\x75\x10\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x11\x56\xFF\x52\x28\x85\xC0\x75\x06\x33\xC0\x5E\xC2\x04\x00"
+				"linux"		"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
+			}
+			
+			/* CGlobalEntityList::FindEntityByClassname */
+			"FindEntityByClassname"
+			{
+				"library"	"server"
+				"windows"	"\x53\x55\x56\x8B\xF1\x8B\x4C\x24\x10\x85\xC9\x57\x74\x16\x8B\x01\xFF\x50\x08\x8B\x08\x81\xE1\x2A\x2A\x2A\x2A\x41\xC1\xE1\x04\x8B\x3C\x31\xEB\x06"
+				"linux"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
+			}
+			
+			/* CreateEntityByName */
+			"CreateEntityByName"
+			{
+				"library"	"server"
+				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x25\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x56\xFF\x50\x54\x85\xC0\xA3\x2A\x2A\x2A\x2A\x75\x10\x56\x57\x68\x2A\x2A\x2A\x2A\xFF\x15\x2A\x2A\x2A\x2A\x83\xC4\x0C\xE8\x2A\x2A\x2A\x2A\x8B\x10\x57\x8B\xC8\xFF\x52\x04\x85\xC0\x5F\xC7\x05\x2A\x2A\x2A\x2A\x2A"
+				"linux"		"@_Z18CreateEntityByNamePKci"
+			}
+			
+			/* DispatchSpawn */
+			"DispatchSpawn"
+			{
+				"library"	"server"
+				"windows"	"\x53\x56\x8B\x74\x24\x0C\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\xCB\xFF\x50\x14\x8B\x16\x8B\xCE\xFF\x52\x08\x8B\x38\x8B\x06\x8B\xCE\xFF\x50\x64\x83\xFF\xFF\x74\x58\x8B\x15\x2A\x2A\x2A\x2A\x8B\xCF\x81\xE1\x2A\x2A\x2A\x2A\xC1\xE1\x04\x8D\x44\x11\x04\x8B\x48"
+				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
+			}
+			
+			/* CBasePlayer::CommitSuicide */
+			"CommitSuicide"
+			{
+				"library"	"server"
+				"windows"	"\x83\xEC\x44\x56\x8B\xF1\x8B\x86\x2A\x2A\x2A\x2A\x85\xC0\x75\x6E\x8B\x0D\x2A\x2A\x2A\x2A\xD9\x86\x2A\x2A\x2A\x2A\xD8\x59\x0C\xDF\xE0\xF6\xC4\x41\x74\x58\xD9\x41\x0C\xD8\x05\x2A\x2A\x2A\x2A\xD9\x9E\x2A\x2A\x2A\x2A\x8B\x86\x2A\x2A\x2A\x2A\x85\xC0\x74\x14\x8B\xCE\x8B\x01\xFF\x90\x2A\x2A\x2A\x2A\xC7\x86\x2A"
+				"linux"		"@_ZN11CBasePlayer13CommitSuicideEv"
+			}
+		}
+		"Offsets"
+		{
+			"m_iHealth"
+			{
+				"class"		"CBasePlayer"
+				"prop"		"m_iHealth"
+			}
+			"GiveNamedItem"
+			{
+				"windows"	"299"
+				"linux"		"300"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"212"
+				"linux"		"213"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"210"
+				"linux"		"211"
+			}
+			"Ignite"
+			{
+				"windows"	"174"
+				"linux"		"175"
+			}
+			"Extinguish"
+			{
+				"windows"	"175"
+				"linux"		"176"
+			}
+			"Teleport"
+			{
+				"windows"	"93"
+				"linux"		"94"
+			}
+			"GetVelocity"
+			{
+				"windows"	"117"
+				"linux"		"118"
+			}
+			"EyeAngles"
+			{
+				"windows"	"109"
+				"linux"		"110"
+			}
+			"AcceptInput"
+			{
+				"windows"	"36"
+				"linux"		"37"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"27"
+				"linux"		"28"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"203"
+				"linux"		"204"
+			}
+			"Activate"
+			{
+				"windows"	"34"
+				"linux"		"35"
+			}
+			"PlayerRunCmd"
+			{
+				"windows"	"315"
+				"linux"		"316"
+			}
+			"GiveAmmo"
+			{
+				"windows"	"199"
+				"linux"		"200"
+			}
+			"SetOwnerEntity"
+			{
+				"windows"	"20"
+				"linux"		"21"
+			}
+			"GetAttachment"
+			{
+				"windows"	"170"
+				"linux"		"171"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"32"
+				"linux"		"31"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"30"
+				"linux"		"33"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"31"
+				"linux"		"32"
+			}
+		}
+		
+		"Keys"
+		{
+			"GameRulesProxy"		"CHL2MPGameRulesProxy"
+			"GameRulesDataTable"	"hl2mp_gamerules_data"
+		}
+	}
+}

@@ -29,31 +29,31 @@ for sdk_name in ['css', 'csgo']:
     project.sources += ['rulesfix.cpp']
   
   for cxx in builder.targets:
-    if not cxx.target.arch in sdk.platformSpec[cxx.target.platform]:
+    if not cxx.target.arch in sdk['platforms'][cxx.target.platform]:
       continue
 
     cxx.defines += ['HAVE_STRING_H']
-    binary = SM.HL2ExtConfig(project, builder, cxx, 'game.cstrike.ext.' + sdk.ext, sdk)
+    binary = SM.HL2ExtConfig(project, builder, cxx, 'game.cstrike.ext.' + sdk['extension'], sdk)
     if sdk_name == 'csgo':
       compiler = binary.compiler
-      compiler.cxxincludes += [os.path.join(sdk.path, 'public', 'steam')]
+      compiler.cxxincludes += [os.path.join(sdk['path'], 'public', 'steam')]
       compiler.defines += ['VERSION_SAFE_STEAM_API_INTERFACES']
 
       library_name = ''
       if cxx.target.platform == 'windows':
-        compiler.linkflags += [os.path.join(sdk.path, 'lib', 'public', 'steam_api.lib')]
+        compiler.linkflags += [os.path.join(sdk['path'], 'lib', 'public', 'steam_api.lib')]
       elif cxx.target.platform == 'linux':
         library_name = 'libsteam_api.so'
         if cxx.target.arch == 'x86_64':
-          source_path = os.path.join(sdk.path, 'lib', 'linux64')
+          source_path = os.path.join(sdk['path'], 'lib', 'linux64')
         else:
-          source_path = os.path.join(sdk.path, 'lib', 'linux')
+          source_path = os.path.join(sdk['path'], 'lib', 'linux')
       elif cxx.target.platform == 'mac':
         library_name = 'libsteam_api.dylib'
         if cxx.target.arch == 'x86_64':
-          source_path = os.path.join(sdk.path, 'lib', 'osx64')
+          source_path = os.path.join(sdk['path'], 'lib', 'osx64')
         else:
-          source_path = os.path.join(sdk.path, 'lib', 'mac')
+          source_path = os.path.join(sdk['path'], 'lib', 'mac')
 
       if library_name:
         source_path = os.path.join(source_path, library_name)
