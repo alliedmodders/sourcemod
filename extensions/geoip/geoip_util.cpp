@@ -187,6 +187,9 @@ const char *getLang(int target)
 			{
 				if (strcmp(code, mmdb.metadata.languages.names[i]) == 0)
 				{
+					if (strcmp(code, "chi") == 0 || strcmp(code, "cho") == 0){
+						return "zh-CN";
+					}
 					return code;
 				}
 			}
