@@ -92,6 +92,8 @@ $SDKS | ForEach-Object {
     Get-Repository -Name "hl2sdk-$_" -Branch $_ -Repo "hl2sdk-proxy-repo" "https://github.com/alliedmodders/hl2sdk.git"
 }
 
+Get-Repository -Name "hl2sdk-mock" -Branch "master" -Repo "https://github.com/alliedmodders/hl2sdk-mock.git"
+
 # Find a suitable installation of Python
 $PYTHON_CMD = Get-Command 'python3' -ErrorAction SilentlyContinue
 if ($NULL -eq $PYTHON_CMD)

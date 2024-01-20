@@ -153,6 +153,12 @@ do
   checkout
 done
 
+name=hl2sdk-mock
+branch=master
+repo="https://github.com/alliedmodders/hl2sdk-mock"
+origin=
+checkout
+
 python_cmd=`command -v python3`
 if [ -z "$python_cmd" ]; then
   python_cmd=`command -v python`
