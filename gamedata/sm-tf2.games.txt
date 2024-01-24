@@ -20,84 +20,84 @@
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x56\x8B\xF1\x8B\x8E\x8C\x01\x00\x00\x8B\x01"
 				"linux"		"@_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef"
-				"mac"		"@_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef"
+				"linux64"	"@_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef"
 			}
 			"RemoveDisguise"
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x51\x56\x8B\xF1\x57\xF7\x86\xD0\x00\x00\x00\x00\x00\x02\x00"
 				"linux"		"@_ZN15CTFPlayerShared14RemoveDisguiseEv"
-				"mac"		"@_ZN15CTFPlayerShared14RemoveDisguiseEv"
+				"linux64"	"@_ZN15CTFPlayerShared14RemoveDisguiseEv"
 			}
 			"Disguise"
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\xEC\x24\x56\x57\x8B\xF9\x8B\x8F\x8C\x01\x00\x00"
 				"linux"		"@_ZN15CTFPlayerShared8DisguiseEiiP9CTFPlayerb"
-				"mac"		"@_ZN15CTFPlayerShared8DisguiseEiiP9CTFPlayerb"
+				"linux64"	"@_ZN15CTFPlayerShared8DisguiseEiiP9CTFPlayerb"
 			}
 			"Regenerate"
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\xEC\x24\x53\x56\x57\x8B\xF9\x8B\x07\xFF\x90"
 				"linux"		"@_ZN9CTFPlayer10RegenerateEb"
-				"mac"		"@_ZN9CTFPlayer10RegenerateEb"
+				"linux64"	"@_ZN9CTFPlayer10RegenerateEb"
 			}
 			"AddCondition"
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x56\x8B\xF1\x8B\x8E\x2A\x2A\x2A\x2A\x85\xC9\x0F\x84\x2A\x2A\x2A\x2A\x8B\x01\x8B"
 				"linux"		"@_ZN15CTFPlayerShared7AddCondE7ETFCondfP11CBaseEntity"
-				"mac"		"@_ZN15CTFPlayerShared7AddCondE7ETFCondfP11CBaseEntity"
+				"linux64"	"@_ZN15CTFPlayerShared7AddCondE7ETFCondfP11CBaseEntity"
 			}
 			"RemoveCondition"
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x53\x8B\x5D\x08\x56\x53"
 				"linux"		"@_ZN15CTFPlayerShared10RemoveCondE7ETFCondb"
-				"mac"		"@_ZN15CTFPlayerShared10RemoveCondE7ETFCondb"
+				"linux64"	"@_ZN15CTFPlayerShared10RemoveCondE7ETFCondb"
 			}
 			"SetPowerplayEnabled"
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x80\x7D\x08\x00\x56\x57\x8B\xF9"
 				"linux"		"@_ZN9CTFPlayer19SetPowerplayEnabledEb"
-				"mac"		"@_ZN9CTFPlayer19SetPowerplayEnabledEb"
+				"linux64"	"@_ZN9CTFPlayer19SetPowerplayEnabledEb"
 			}
 			"SetInWaitingForPlayers"
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\xE8\x2A\x2A\x2A\x2A\x84\xC0\x0F\x85\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A"
 				"linux"		"@_ZN24CTeamplayRoundBasedRules22SetInWaitingForPlayersEb"
-				"mac"		"@_ZN24CTeamplayRoundBasedRules22SetInWaitingForPlayersEb"
+				"linux64"	"@_ZN24CTeamplayRoundBasedRules22SetInWaitingForPlayersEb"
 			}
 			"StunPlayer"
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\xEC\x20\x57\x8B\xF9\x8B\x87\xDC\x04\x00\x00"
 				"linux"		"@_ZN15CTFPlayerShared10StunPlayerEffiP9CTFPlayer"
-				"mac"		"@_ZN15CTFPlayerShared10StunPlayerEffiP9CTFPlayer"
+				"linux64"	"@_ZN15CTFPlayerShared10StunPlayerEffiP9CTFPlayer"
 			}
 			"MakeBleed"
 			{
 				"library" 	"server"
 				"windows"	"\x55\x8B\xEC\x83\xEC\x2C\x57\x8B\xF9\x89\x7D\xF0"
 				"linux"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefibi"
-				"mac"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefibi"
+				"linux64"	"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefibi"
 			}
 			"IsPlayerInDuel"
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x81\x65\x2A\x2A\x2A\x2A\x2A\x8D\x45\xF8\x8B\x4D\x08\xC6\x45\xFF\x00\x81\x65\x2A\x2A\x2A\x2A\x2A\x50\xC7\x45\x2A\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x84\xC0\x75\x04"
 				"linux"		"@_Z21DuelMiniGame_IsInDuelP9CTFPlayer"
-				"mac"		"@_Z21DuelMiniGame_IsInDuelP9CTFPlayer"
+				"linux64"	"@_Z21DuelMiniGame_IsInDuelP9CTFPlayer"
 			}
 			"CanPlayerTeleport"
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x53\x57\x8B\x7D\x08\x8B\xD9\x85\xFF\x75\x2A\x5F\x32\xC0\x5B\x5D\xC2\x04\x00"
 				"linux"		"@_ZN17CObjectTeleporter21PlayerCanBeTeleportedEP9CTFPlayer"
-				"mac"		"@_ZN17CObjectTeleporter21PlayerCanBeTeleportedEP9CTFPlayer"
+				"linux64"	"@_ZN17CObjectTeleporter21PlayerCanBeTeleportedEP9CTFPlayer"
 			}
 			
 			// Obsolete
@@ -106,7 +106,7 @@
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\xA1\x2A\x2A\x2A\x2A\x83\x78\x30\x00\x74\x04\x32\xC0"
 				"linux"		"@_Z18TF_IsHolidayActivei"
-				"mac"		"@_Z18TF_IsHolidayActivei"
+				"linux64"	"@_Z18TF_IsHolidayActivei"
 			}
 		}
 		"Offsets"
@@ -115,19 +115,19 @@
 			{
 				"windows"	"336"
 				"linux"		"337"
-				"mac"		"337"
+				"linux64"	"337"
 			}
 			"CalcIsAttackCriticalHelper"
 			{
 				"windows"	"398"
 				"linux"		"405"
-				"mac"		"405"
+				"linux64"	"405"
 			}
 			"CalcIsAttackCriticalHelperNoCrits"
 			{
 				"windows"	"399"
 				"linux"		"406"
-				"mac"		"406"
+				"linux64"	"406"
 			}
 			
 			// CTFGameRules::IsHolidayActive
@@ -135,14 +135,14 @@
 			{
 				"windows"	"139"
 				"linux"		"140"
-				"mac"		"140"
+				"linux64"	"140"
 			}
 
 			"RemoveWearable"
 			{
 				"windows"	"439"
 				"linux"		"440"
-				"mac"		"440"
+				"linux64"	"440"
 			}
 		}
 	}

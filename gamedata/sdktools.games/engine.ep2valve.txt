@@ -20,19 +20,19 @@
 			{
 				"windows"	"4"
 				"linux"		"4"
-				"mac"		"4"
+				"linux64"	"4"
 			}
 			"GetTENext"
 			{
 				"windows"	"8"
 				"linux"		"8"
-				"mac"		"8"
+				"linux64"	"8"
 			}
 			"TE_GetServerClass"
 			{
 				"windows"	"0"
 				"linux"		"0"
-				"mac"		"0"
+				"linux64"	"0"
 			}
 		}
 	}
@@ -69,7 +69,7 @@
 			{
 				"library"	"engine"
 				"linux"		"@sv"
-				"mac"		"@sv"
+				"linux64"	"@sv"
 			}
 		}
 	}
@@ -90,7 +90,7 @@
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x81\xEC\x2A\x2A\x2A\x2A\x53\x8B\xC1"
 				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
-				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+				"linux64"	"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
 	}
@@ -117,7 +117,7 @@
 			{
 				"windows"	"18"
 				"linux"		"58"
-				"mac"		"58"
+				"linux64"	"58"
 			}
 			/**
 			 * CBaseClient::SetName(char  const*);
@@ -128,7 +128,7 @@
 			{
 				"windows"	"17"
 				"linux"		"57"
-				"mac"		"57"
+				"linux64"	"57"
 			}
 			/**
 			 * Offset into CBaseClient - Used by CBaseServer::UpdateUserSettings to determine when changes have been made.
@@ -140,7 +140,7 @@
 			{
 				"windows"	"140"
 				"linux"		"140"
-				"mac"		"140"
+				"linux64"	"160"
 			}
 		}
 	}
