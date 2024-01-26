@@ -26,7 +26,7 @@
 			{
 				"windows"	"4"	
 				"linux"		"4"
-				"mac"		"4"
+				"linux64"	"4"
 			}
 		}
 		
@@ -41,7 +41,7 @@
 			{
 				"library"	"server"
 				"linux"		"@gEntList"
-				"mac"		"@gEntList"
+				"linux64"	"@gEntList"
 			}
 		}
 		
