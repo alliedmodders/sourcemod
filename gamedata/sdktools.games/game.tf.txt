@@ -20,103 +20,103 @@
 			{
 				"windows"	"18"
 				"linux"		"19"
-				"mac"		"19"
+				"linux64"	"19"
 			}
 			"GiveNamedItem"
 			{
 				"windows"	"412"
 				"linux"		"413"
-				"mac"		"413"
+				"linux64"	"413"
 			}
 			"RemovePlayerItem"
 			{
 				"windows"	"280"
 				"linux"		"281"
-				"mac"		"281"
+				"linux64"	"281"
 			}
 			"Weapon_GetSlot"
 			{
 				"windows"	"278"
 				"linux"		"279"
-				"mac"		"279"
+				"linux64"	"279"
 			}
 			"Ignite"
 			{
 				"windows"	"219"
 				"linux"		"220"
-				"mac"		"220"
+				"linux64"	"220"
 			}
 			"Extinguish"
 			{
 				"windows"	"223"
 				"linux"		"224"
-				"mac"		"224"
+				"linux64"	"224"
 			}
 			"Teleport"
 			{
 				"windows"	"113"
 				"linux"		"114"
-				"mac"		"114"
+				"linux64"	"114"
 			}
 			"CommitSuicide"
 			{
 				"windows"	"453"
 				"linux"		"453"
-				"mac"		"453"
+				"linux64"	"453"
 			}
 			"GetVelocity"
 			{
 				"windows"	"146"
 				"linux"		"147"
-				"mac"		"147"
+				"linux64"	"147"
 			}
 			"EyeAngles"
 			{
 				"windows"	"137"
 				"linux"		"138"
-				"mac"		"138"
+				"linux64"	"138"
 			}
 			"SetEntityModel"
 			{
 				"windows"	"26"
 				"linux"		"27"
-				"mac"		"27"
+				"linux64"	"27"
 			}
 			"AcceptInput"
 			{
 				"windows"	"38"
 				"linux"		"39"
-				"mac"		"39"
+				"linux64"	"39"
 			}
 			"WeaponEquip"
 			{
 				"windows"	"271"
 				"linux"		"272"
-				"mac"		"272"
+				"linux64"	"272"
 			}
 			"Activate"
 			{
 				"windows"	"35"
 				"linux"		"36"
-				"mac"		"36"
+				"linux64"	"36"
 			}
 			"PlayerRunCmd"
 			{
 				"windows"	"430"
 				"linux"		"431"
-				"mac"		"431"
+				"linux64"	"431"
 			}
 			"GiveAmmo"
 			{
 				"windows"	"262"
 				"linux"		"263"
-				"mac"		"263"
+				"linux64"	"263"
 			}
 			"GetAttachment"
 			{
 				"windows"	"215"
 				"linux"		"216"
-				"mac"		"216"
+				"linux64"	"216"
 			}
 		}
 		
@@ -137,7 +137,7 @@
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x81\xEC\x24\x01\x00\x00\x53\x8B\xC1"
 				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
-				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+				"linux64"	"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
 	}
@@ -152,7 +152,7 @@
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x80\xBE\x2A\x03\x00\x00\x00\x75\x2A\x83\xBE\x2A\x04\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x86\x2A\x04\x00\x00\x85\xC0\x74\x2A\x83\x38\x00\x74\x2A\xFF\x75\x08\x50\xE8\x2A\x2A\x2A\x2A\x83\xC4\x08\x40"
 				"linux"		"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
-				"mac"		"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
+				"linux64"	"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
 			}
 		}
 	}
