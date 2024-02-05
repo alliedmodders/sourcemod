@@ -782,25 +782,49 @@ native void StoreAddressToAddress(Address addr, Address data, bool updateMemAcce
  * Load up to (len) bytes from a memory address.
  *
  * @param addr         Address to a memory location.
- * @param chunks       Array of one-byte sized values.
+ * @param bytes        Array bytes to load.
  * @param len          How many bytes should be read.	
  * @param offset       Amount of bytes the addr parameter needs to be offsetted by.
  * @error              Address is null or pointing to reserved memory. Chunks length is null or negative.
  */
-native void LoadChunksFromAddress(Address addr, char[] chunks, int len, int offset = 0);
+native void LoadBytesFromAddress(Address addr, char[] bytes, int len, int offset = 0);
 
 /**
  * Store up to (len) bytes to a memory address.
  *
  * @param addr             Address to a memory location.
- * @param chunks           Array of one-byte sized values.
+ * @param bytes            Array of bytes to store.
  * @param len              How many bytes should be written.
  * @param updateMemAccess  If true, SourceMod will set read / write / exec permissions
  *                         on the memory page being written to.
  * @param offset           Amount of bytes the addr parameter needs to be offsetted by.
  * @error                  Address is null or pointing to reserved memory. Chunks length is null or negative.
  */
-native void StoreChunksToAddress(Address addr, char[] chunks, int len, bool updateMemAccess = true, int offset = 0);
+native void StoreBytesToAddress(Address addr, char[] bytes, int len, bool updateMemAccess = true, int offset = 0);
+
+/**
+ * Load a sized span from a memory address.
+ *
+ * @param addr         Address to a memory location.
+ * @param bytes        Array of NumberType sized values that constitute the span.
+ * @param len          Size of the span.	
+ * @param offset       Amount of bytes the addr parameter needs to be offsetted by.
+ * @error              Address is null or pointing to reserved memory. Chunks length is null or negative.
+ */
+native void LoadSpanFromAddress(Address addr, any[] span, int len, NumberType size, int offset = 0);
+
+/**
+ * Store a given sized span to the given address.
+ *
+ * @param addr             Address to a memory location.
+ * @param span             Array of NumberType sized values that constitute the span.
+ * @param len              Size of the span.
+ * @param updateMemAccess  If true, SourceMod will set read / write / exec permissions
+ *                         on the memory page being written to.
+ * @param offset           Amount of bytes the addr parameter needs to be offsetted by.
+ * @error                  Address is null or pointing to reserved memory. Chunks length is null or negative.
+ */
+native void StoreSpanToAddress(Address addr, any[] span, int len, NumberType size, bool updateMemAccess = true, int offset = 0);
 
 /**
  * Offsets the given memory address.

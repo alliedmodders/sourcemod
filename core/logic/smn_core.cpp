@@ -1024,7 +1024,16 @@ static cell_t StoreAddressToAddress(IPluginContext *pContext, const cell_t *para
 	return 0;
 }
 
-static cell_t LoadChunksFromAddress(IPluginContext *pContext, const cell_t *params)
+template<typename T, typename U>
+static inline void AddressMemcpy(T* dest, U* src, cell_t len)
+{
+	for (; len; dest++, src++, len--)
+	{
+		*dest = *src;
+	}
+}
+
+static cell_t LoadBytesFromAddress(IPluginContext *pContext, const cell_t *params)
 {
 	cell_t offset = params[4];
 
@@ -1051,14 +1060,11 @@ static cell_t LoadChunksFromAddress(IPluginContext *pContext, const cell_t *para
 		return pContext->ThrowNativeError("Chunks array length must be positive!");
 	}
 
-	for (; len; chunks++, addr++, len--)
-	{
-		*chunks = *addr;
-	}
+	AddressMemcpy<cell_t, int8_t>(chunks, addr, len);
 	return 0;
 }
 
-static cell_t StoreChunksToAddress(IPluginContext *pContext, const cell_t *params)
+static cell_t StoreBytesToAddress(IPluginContext *pContext, const cell_t *params)
 {
 	cell_t offset = params[5];
 
@@ -1090,10 +1096,112 @@ static cell_t StoreChunksToAddress(IPluginContext *pContext, const cell_t *param
 		SourceHook::SetMemAccess(addr, len, SH_MEM_READ|SH_MEM_WRITE|SH_MEM_EXEC);
 	}
 
-	for (; len; chunks++, addr++, len--)
+	AddressMemcpy<int8_t, cell_t>(addr, chunks, len);
+	return 0;
+}
+
+static cell_t LoadSpanFromAddress(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t offset = params[5];
+
+#ifdef PLATFORM_X86
+	void *addr = reinterpret_cast<void*>(reinterpret_cast<int8_t*>(params[1]) + offset);
+#else
+	void *addr = reinterpret_cast<void*>(reinterpret_cast<int8_t*>(pseudoAddr.FromPseudoAddress(params[1])) + offset);
+#endif
+
+	if (addr == NULL)
 	{
-		*addr = *chunks;
+		return pContext->ThrowNativeError("Address cannot be null");
 	}
+	else if (reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
+	{
+		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory.", addr);
+	}
+
+	cell_t* chunks = nullptr;
+	pContext->LocalToPhysAddr(params[2], &chunks);
+	cell_t len = params[3];
+	if (len <= 0)
+	{
+		return pContext->ThrowNativeError("Chunks array length must be positive!");
+	}
+
+	NumberType size = static_cast<NumberType>(params[4]);
+
+	switch(size)
+	{
+	case NumberType_Int8:
+		AddressMemcpy<cell_t, int8_t>(chunks, reinterpret_cast<int8_t*>(addr), len);
+		break;
+	case NumberType_Int16:
+		AddressMemcpy<cell_t, int16_t>(chunks, reinterpret_cast<int16_t*>(addr), len);
+		break;
+	case NumberType_Int32:
+		AddressMemcpy<cell_t, int32_t>(chunks, reinterpret_cast<int32_t*>(addr), len);
+		break;
+	default:
+		return pContext->ThrowNativeError("Invalid number types %d", size);
+	}
+	return 0;
+}
+
+static cell_t StoreSpanToAddress(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t offset = params[6];
+
+#ifdef PLATFORM_X86
+	void *addr = reinterpret_cast<void*>(reinterpret_cast<int8_t*>(params[1]) + offset);
+#else
+	void *addr = reinterpret_cast<void*>(reinterpret_cast<int8_t*>(pseudoAddr.FromPseudoAddress(params[1])) + offset);
+#endif
+
+	if (addr == NULL)
+	{
+		return pContext->ThrowNativeError("Address cannot be null");
+	}
+	else if (reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
+	{
+		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory.", addr);
+	}
+
+	cell_t* chunks = nullptr;
+	pContext->LocalToPhysAddr(params[2], &chunks);
+	cell_t len = params[3];
+	if (len <= 0)
+	{
+		return pContext->ThrowNativeError("Chunks array length must be positive!");
+	}
+
+	NumberType size = static_cast<NumberType>(params[4]);
+
+	switch(size)
+	{
+	case NumberType_Int8:
+		if (params[5])
+		{
+			SourceHook::SetMemAccess(addr, len * sizeof(int8_t), SH_MEM_READ|SH_MEM_WRITE|SH_MEM_EXEC);
+		}
+		AddressMemcpy<int8_t, cell_t>(reinterpret_cast<int8_t*>(addr), chunks, len);
+		break;
+	case NumberType_Int16:
+		if (params[5])
+		{
+			SourceHook::SetMemAccess(addr, len * sizeof(int16_t), SH_MEM_READ|SH_MEM_WRITE|SH_MEM_EXEC);
+		}
+		AddressMemcpy<int16_t, cell_t>(reinterpret_cast<int16_t*>(addr), chunks, len);
+		break;
+	case NumberType_Int32:
+		if (params[5])
+		{
+			SourceHook::SetMemAccess(addr, len * sizeof(int32_t), SH_MEM_READ|SH_MEM_WRITE|SH_MEM_EXEC);
+		}
+		AddressMemcpy<int32_t, cell_t>(reinterpret_cast<int32_t*>(addr), chunks, len);
+		break;
+	default:
+		return pContext->ThrowNativeError("Invalid number types %d", size);
+	}
+
 	return 0;
 }
 
@@ -1322,8 +1430,10 @@ REGISTER_NATIVES(coreNatives)
 	{"StoreToAddress",          StoreToAddress},
 	{"LoadAddressFromAddress",  LoadAddressFromAddress},
 	{"StoreAddressToAddress",   StoreAddressToAddress},
-	{"LoadChunksFromAddress",   LoadChunksFromAddress},
-	{"StoreChunksToAddress",    StoreChunksToAddress},
+	{"LoadBytesFromAddress ",   LoadBytesFromAddress},
+	{"StoreBytesToAddress",     StoreBytesToAddress},
+	{"LoadSpanFromAddress ",    LoadSpanFromAddress},
+	{"StoreSpanToAddress",      StoreSpanToAddress},
 	{"OffsetAddress",           OffsetAddress},
 	{"IsNullVector",			IsNullVector},
 	{"IsNullString",			IsNullString},
