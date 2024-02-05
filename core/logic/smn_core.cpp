@@ -863,10 +863,17 @@ enum NumberType
 
 static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
 {
+	// new parameter added after SM 1.12; defaults to 0 for backwards compatibility
+	cell_t offset = 0;
+	if (params[0] >= 3)
+	{
+		offset = params[3];
+	}
+
 #ifdef PLATFORM_X86
-	void *addr = reinterpret_cast<void*>(params[1]);
+	void *addr = reinterpret_cast<void*>(reinterpret_cast<int8_t*>(params[1]) + offset);
 #else
-	void *addr = pseudoAddr.FromPseudoAddress(params[1]);
+	void *addr = reinterpret_cast<void*>(reinterpret_cast<int8_t*>(pseudoAddr.FromPseudoAddress(params[1])) + offset);
 #endif
 
 	if (addr == NULL)
@@ -895,10 +902,17 @@ static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
 
 static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 {
+	// new parameter added after SM 1.12; defaults to 0 for backwards compatibility
+	cell_t offset = 0;
+	if (params[0] >= 5)
+	{
+		offset = params[5];
+	}
+
 #ifdef PLATFORM_X86
-	void *addr = reinterpret_cast<void*>(params[1]);
+	void *addr = reinterpret_cast<void*>(reinterpret_cast<int8_t*>(params[1]) + offset);
 #else
-	void *addr = pseudoAddr.FromPseudoAddress(params[1]);
+	void *addr = reinterpret_cast<void*>(reinterpret_cast<int8_t*>(pseudoAddr.FromPseudoAddress(params[1])) + offset);
 #endif
 
 	if (addr == NULL)
@@ -948,6 +962,155 @@ static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 	}
 
 	return 0;
+}
+
+static cell_t LoadAddressFromAddress(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t offset = params[2];
+
+#ifdef PLATFORM_X86
+	void **addr = reinterpret_cast<void**>(reinterpret_cast<int8_t*>(params[1]) + offset);
+#else
+	void **addr = reinterpret_cast<void**>(reinterpret_cast<int8_t*>(pseudoAddr.FromPseudoAddress(params[1])) + offset);
+#endif
+
+	if (addr == NULL)
+	{
+		return pContext->ThrowNativeError("Address cannot be null");
+	}
+	else if (reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
+	{
+		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory.", addr);
+	}
+
+#ifdef PLATFORM_X86
+	return reinterpret_cast<cell_t>(*addr);
+#else
+	return pseudoAddr.ToPseudoAddress(*addr);
+#endif
+}
+
+static cell_t StoreAddressToAddress(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t offset = params[4];
+
+#ifdef PLATFORM_X86
+	void **addr = reinterpret_cast<void**>(reinterpret_cast<int8_t*>(params[1]) + offset);
+#else
+	void **addr = reinterpret_cast<void**>(reinterpret_cast<int8_t*>(pseudoAddr.FromPseudoAddress(params[1])) + offset);
+#endif
+
+	if (addr == NULL)
+	{
+		return pContext->ThrowNativeError("Address cannot be null");
+	}
+	else if (reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
+	{
+		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory.", addr);
+	}
+
+#ifdef PLATFORM_X86
+	void *store = reinterpret_cast<void*>(params[2]);
+#else
+	void *store = pseudoAddr.FromPseudoAddress(params[2]);
+#endif
+
+	if (params[3])
+	{
+		SourceHook::SetMemAccess(addr, sizeof(addr), SH_MEM_READ|SH_MEM_WRITE|SH_MEM_EXEC);
+	}
+
+	*addr = store;
+	return 0;
+}
+
+static cell_t LoadChunksFromAddress(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t offset = params[4];
+
+#ifdef PLATFORM_X86
+	int8_t *addr = reinterpret_cast<int8_t*>(params[1]) + offset;
+#else
+	int8_t *addr = reinterpret_cast<int8_t*>(pseudoAddr.FromPseudoAddress(params[1])) + offset;
+#endif
+
+	if (addr == NULL)
+	{
+		return pContext->ThrowNativeError("Address cannot be null");
+	}
+	else if (reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
+	{
+		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory.", addr);
+	}
+
+	cell_t* chunks = nullptr;
+	pContext->LocalToPhysAddr(params[2], &chunks);
+	cell_t len = params[3];
+	if (len <= 0)
+	{
+		return pContext->ThrowNativeError("Chunks array length must be positive!");
+	}
+
+	for (; len; chunks++, addr++, len--)
+	{
+		*chunks = *addr;
+	}
+	return 0;
+}
+
+static cell_t StoreChunksToAddress(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t offset = params[5];
+
+#ifdef PLATFORM_X86
+	int8_t *addr = reinterpret_cast<int8_t*>(params[1]) + offset;
+#else
+	int8_t *addr = reinterpret_cast<int8_t*>(pseudoAddr.FromPseudoAddress(params[1])) + offset;
+#endif
+
+	if (addr == NULL)
+	{
+		return pContext->ThrowNativeError("Address cannot be null");
+	}
+	else if (reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
+	{
+		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory.", addr);
+	}
+
+	cell_t* chunks = nullptr;
+	pContext->LocalToPhysAddr(params[2], &chunks);
+	cell_t len = params[3];
+	if (len <= 0)
+	{
+		return pContext->ThrowNativeError("Chunks array length must be positive!");
+	}
+
+	if (params[4])
+	{
+		SourceHook::SetMemAccess(addr, len, SH_MEM_READ|SH_MEM_WRITE|SH_MEM_EXEC);
+	}
+
+	for (; len; chunks++, addr++, len--)
+	{
+		*addr = *chunks;
+	}
+	return 0;
+}
+
+static cell_t OffsetAddress(IPluginContext *pContext, const cell_t *params)
+{
+#ifdef PLATFORM_X86
+	int8_t *addr = reinterpret_cast<int8_t*>(params[1]);
+#else
+	int8_t *addr = reinterpret_cast<int8_t*>(pseudoAddr.FromPseudoAddress(params[1]));
+#endif
+
+	cell_t offset = params[2];
+#ifdef PLATFORM_X86
+	return reinterpret_cast<cell_t>(addr + offset);
+#else
+	return pseudoAddr.ToPseudoAddress(addr + offset);
+#endif
 }
 
 static cell_t IsNullVector(IPluginContext *pContext, const cell_t *params)
@@ -1157,6 +1320,11 @@ REGISTER_NATIVES(coreNatives)
 	{"RequireFeature",          RequireFeature},
 	{"LoadFromAddress",         LoadFromAddress},
 	{"StoreToAddress",          StoreToAddress},
+	{"LoadAddressFromAddress",  LoadAddressFromAddress},
+	{"StoreAddressToAddress",   StoreAddressToAddress},
+	{"LoadChunksFromAddress",   LoadChunksFromAddress},
+	{"StoreChunksToAddress",    StoreChunksToAddress},
+	{"OffsetAddress",           OffsetAddress},
 	{"IsNullVector",			IsNullVector},
 	{"IsNullString",			IsNullString},
 	{"LogStackTrace",           LogStackTrace},
