@@ -20,13 +20,13 @@
 			{
 				"windows"	"4"
 				"linux"		"4"
-				"linux64"	"4"
+				"linux64"	"8"
 			}
 			"GetTENext"
 			{
 				"windows"	"8"
 				"linux"		"8"
-				"linux64"	"8"
+				"linux64"	"16"
 			}
 			"TE_GetServerClass"
 			{
