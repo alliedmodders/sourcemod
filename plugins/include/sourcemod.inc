@@ -736,7 +736,7 @@ enum Address
  * @param addr          Address to a memory location.
  * @param size          How many bytes should be read.
  *                      If loading a floating-point value, use NumberType_Int32.
- * @param offset        Amount of bytes the addr parameter needs to be offsetted by.
+ * @param offset        Amount of bytes the base address needs to be offsetted by before loading.
  * @return              The value that is stored at that address.
  * @error               Address is null or pointing to reserved memory.
  */
@@ -751,7 +751,7 @@ native any LoadFromAddress(Address addr, NumberType size, int offset = 0);
  *                                 If storing a floating-point value, use NumberType_Int32.
  * @param updateMemAccess          If true, SourceMod will set read / write / exec permissions
  *                                 on the memory page being written to.
- * @param offset                   Amount of bytes the addr parameter needs to be offsetted by.
+ * @param offset                   Amount of bytes the base address needs to be offsetted by before storing.
  * @error                          Address is null or pointing to reserved memory.
  */
 native void StoreToAddress(Address addr, any data, NumberType size, bool updateMemAccess = true, int offset = 0);
@@ -760,8 +760,8 @@ native void StoreToAddress(Address addr, any data, NumberType size, bool updateM
  * Load an address value from a memory address.
  *
  * @param addr          Address to a memory location.
+ * @param offset        Amount of bytes the base address needs to be offsetted by before loading.
  * @return              The address value that is stored at that address.
- * @param offset        Amount of bytes the addr parameter needs to be offsetted by.
  * @error               Address is null or pointing to reserved memory.
  */
 native Address LoadAddressFromAddress(Address addr, int offset = 0);
@@ -773,69 +773,10 @@ native Address LoadAddressFromAddress(Address addr, int offset = 0);
  * @param data                     Address value to store at the address.
  * @param updateMemAccess          If true, SourceMod will set read / write / exec permissions
  *                                 on the memory page being written to.
- * @param offset                   Amount of bytes the addr parameter needs to be offsetted by.
+ * @param offset                   Amount of bytes the base address needs to be offsetted by before storing.
  * @error                          Address is null or pointing to reserved memory.
  */
 native void StoreAddressToAddress(Address addr, Address data, bool updateMemAccess = true, int offset = 0);
-
-/**
- * Load up to (len) bytes from a memory address.
- *
- * @param addr         Address to a memory location.
- * @param bytes        Array bytes to load.
- * @param len          How many bytes should be read.	
- * @param offset       Amount of bytes the addr parameter needs to be offsetted by.
- * @error              Address is null or pointing to reserved memory. Bytes array length is null or negative.
- */
-native void LoadBytesFromAddress(Address addr, char[] bytes, int len, int offset = 0);
-
-/**
- * Store up to (len) bytes to a memory address.
- *
- * @param addr             Address to a memory location.
- * @param bytes            Array of bytes to store.
- * @param len              How many bytes should be written.
- * @param updateMemAccess  If true, SourceMod will set read / write / exec permissions
- *                         on the memory page being written to.
- * @param offset           Amount of bytes the addr parameter needs to be offsetted by.
- * @error                  Address is null or pointing to reserved memory. Bytes array length is null or negative.
- */
-native void StoreBytesToAddress(Address addr, char[] bytes, int len, bool updateMemAccess = true, int offset = 0);
-
-/**
- * Load a sized span from a memory address.
- *
- * @param addr         Address to a memory location.
- * @param span         Array of NumberType sized values that constitute the span.
- * @param len          Size of the span.
- * @param size         Size of each element.
- * @param offset       Amount of bytes the addr parameter needs to be offsetted by.
- * @error              Address is null or pointing to reserved memory. Span length is null or negative.
- */
-native void LoadSpanFromAddress(Address addr, any[] span, int len, NumberType size, int offset = 0);
-
-/**
- * Store a given sized span to the given address.
- *
- * @param addr             Address to a memory location.
- * @param span             Array of NumberType sized values that constitute the span.
- * @param len              Size of the span.
- * @param size             Size of each element.
- * @param updateMemAccess  If true, SourceMod will set read / write / exec permissions
- *                         on the memory page being written to.
- * @param offset           Amount of bytes the addr parameter needs to be offsetted by.
- * @error                  Address is null or pointing to reserved memory. Span length is null or negative.
- */
-native void StoreSpanToAddress(Address addr, any[] span, int len, NumberType size, bool updateMemAccess = true, int offset = 0);
-
-/**
- * Offsets the given memory address.
- *
- * @param address       Address to a memory location.
- * @param offset        How many bytes we should offset the address parameter by.
- * @return              The offsetted memory address.
- */
-native Address OffsetAddress(Address addr, int offset);
 
 methodmap FrameIterator < Handle {
 	// Creates a stack frame iterator to build your own stack traces.
