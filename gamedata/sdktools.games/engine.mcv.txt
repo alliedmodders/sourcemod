@@ -30,7 +30,7 @@
             "CreateGameRulesObject"
             {
                 "library"       "server"
-                "windows64"     "\x55\x8B\xEC\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x6A\x01"
+                "windows64"     "\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x30\x48\x8B\xF9\x48\x8B\x0D\x2A\x2A\x2A\x2A\x48\x85\xC9"
             }
             "g_pGameRules"
             {
@@ -98,18 +98,16 @@
             /**
              * Offset into CBaseClient - Used by CBaseServer::UpdateUserSettings to determine when changes have been made.
              * Find CBaseClient::UpdateUserSettings (strings "net_maxroutable", "cl_updaterate" etc) and the offset is set to 0 near the end.
-             * linux64:   mov     byte ptr [esi+0B0h], 0
-             * Win:     mov     byte ptr [esi+0B0h], 0
-             *
+             * linux64:   mov     byte ptr [rbx+258h], 0
+             * Win64:     mov     byte ptr [rsi+278h], 0
+             * In this example, offset is 278h = 632
              * MCV: This has been moved into CBaseClient::UpdateUserSettings(), rest of the details are still relevant.
              */
             "InfoChanged"
             {
-                "linux64"     "59"
-                // "windows64"    "46" <-- ??
+                "linux64"      "600"
+                "windows64"    "632"
             }
-
-
             // "[L0/W0]             L20     W20     CBaseEntity::SetOwnerEntity(CBaseEntity*)",
             "SetOwnerEntity"
             {
@@ -140,8 +138,7 @@
                 "linux64"     "230"
                 "windows64"   "229"
             }
-            // This might be broken, CZombie is the only instance i could find!
-            // "[L0/W0]             L233    W232    CZombie::Extinguish(void)",
+            // "[L0/W0]             L233    W232    CBaseAnimating::Extinguish()",
             "Extinguish"
             {
                 "linux64"     "233"
@@ -216,49 +213,47 @@
                 "windows64"   "223"
             }
         }
-
-
         "Signatures"
         {
             "CBaseTempEntity"
             {
                 "library"   "server"
-                "windows64"   "\x48\x8D\x05\x51\xFD\x3C\x00"
+                "windows64"   "\x48\x8D\x05\x2A\x2A\x2A\x2A\x48\x89\x51\x08\x48\x89\x01\x48\x8B\x05"
                 "linux64"     "@_ZN15CBaseTempEntityC2EPKc"
             }
-
             // "NULL entity in global entity list!\n"
             "FindEntityByClassname"
             {
                 "library"   "server"
-                "windows64"   "\x55\x8B\xEC\x53\x56\x8B\xF1\x8B\x4D\x08\x57\x85\xC9\x74\x2A\x8B\x01\xFF\x50\x08\x8B\x00\x83\xF8\xFF\x75\x2A\xB8\xFF\x1F\x00\x00\x8D\x04\x40\x8B\x74\xC6\x10\xEB\x2A\x0F\xB7\xC0\x8D\x04\x40\x8B\x74\xC6\x10\xEB\x2A\x8B\xB6\x04\x00\x03\x00\x85\xF6\x74\x2A\x8B\x7D\x0C"
+                "windows64"   "\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x49\x8B\xF0\x48\x8B\xF9\x48\x85\xD2"
                 "linux64"     "@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
             }
-
+			// const CEntityFactoryDictionary::`vftable'
             "EntityFactory"
             {
                 "library"   "server"
-                "windows64"   "\x48\x83\xEC\x28\x8B\x05\xCE\xA9\x7F\x00"
+                "windows64"   "\x48\x83\xEC\x28\x8B\x2A\x2A\x2A\x82\x00\xA8\x01"
                 "linux64"     "@_ZN24CEntityFactoryDictionary14InstallFactoryEP14IEntityFactoryPKc"
             }
-
             "FireOutput"
             {
                 "library"   "server"
-                "windows64"   "\x4C\x8B\xDC\x55\x41\x56\x41\x57\x49\x8D\xAB\xE8\xFE\xFF\xFF"
+                "windows64"   "\x4C\x8B\xDC\x41\x54\x41\x55"
                 "linux64"     "@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
             }
+			// Fuction calls between strings "eyes"(1st xref), "chest"(1st xref), "forward"(3rd xref) - CAI_BaseActor::UpdateHeadControl(CAI_BaseActor *this, const Vector *a2, float a3, float a4)
             "LookupAttachment"
             {
                 "library"   "server"
-                "windows64"   "\x55\x8B\xEC\x56\x8B\xF1\x83\xBE\xF4\x04\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x86\xF4\x04\x00\x00\x5E\x85\xC0\x74\x2A\x83\x38\x00\x74\x2A\xFF\x75\x08\x50\xE8\x2A\x2A\x2A\x2A\x83\xC4\x08\x40"
+                "windows64"   "\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x48\x83\xB9\x38\x06\x00\x00\x00\x48\x8B\xFA\x48\x8B\xD9\x75\x2A\xE8\x2A\x2A\x2A\x2A\x48\x85\xC0\x74\x2A\x48\x8B\xCB\xE8\x2A\x2A\x2A\x2A\x48\x8B\x8B\x38\x06\x00\x00\x48\x85\xC9\x74\x2A\x48\x83\x39\x00\x74\x2A\x48\x8B\xD7\xE8\x2A\x2A\x2A\x2A"
                 "linux64"     "@_ZN14CBaseAnimating16LookupAttachmentEPKc"
             }
-
+			// "Index error writing string table baseline"
             "WriteBaselines"
             {
                 "library"   "engine"
-                "windows64"   "\x4C\x8B\xDC\x53\x57\x41\x55"
+				// This signature seems to be right, but causes server hangs when player joining it.
+                //"windows64"   "\x4C\x8B\xDC\x53\x41\x55\x48\x81\xEC\xF8\x00\x00\x00"
                 "linux64"     "@_ZN28CNetworkStringTableContainer14WriteBaselinesEPKcR8bf_writei"
             }
         }

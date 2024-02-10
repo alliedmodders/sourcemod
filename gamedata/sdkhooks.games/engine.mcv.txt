@@ -34,14 +34,12 @@
                 "linux64"       "69"
                 "windows64"     "70"
             }
-            // Only seems to exist on bot functions??
-            // "[L0/W0]             L307    W306    CAI_BaseNPC::OnTakeDamage_Alive(CTakeDamageInfo const&)",
-            // "OnTakeDamage_Alive"
-            // {
-            //     "windows"   "306"
-            // }
-
-
+            "[L0/W0]             L307    W306    CBasePlayer::OnTakeDamage_Alive(CTakeDamageInfo const&)",
+            "OnTakeDamage_Alive"
+            {
+				"linux64"   	"307"
+				"windows64"     "306"
+            }
             // "[L0/W0]             L376    W375    CBasePlayer::PreThink(void)",
             "PreThink"
             {
@@ -147,7 +145,6 @@
                 "windows64"     "296"
             }
         }
-
     }
     
     "#default"
@@ -158,9 +155,33 @@
             {
                 // 49159
                 // 98322
-                "windows"   "196644"
+                //"windows"   "196644"
+				"windows64" "393272" // wild guess based on Ins2 Win offsets.
+				//"windows64" "98318"
                 "linux64"   "49159"
             }
         }
+		
+		"Addresses"
+		{
+			"EntityListenersPtr"
+			{
+				"windows64"
+				{
+					"signature"	"EntityListenersFinder"
+					"read"		"18"
+				}
+			}
+		}
+		
+		"Signatures"
+		{
+			// CGlobalEntityList::AddListenerEntity has symbols in windows64 binaries
+			"EntityListenersFinder"
+			{
+				"library"	"server"
+				"windows64"	"\x48\x89\x54\x24\x10\x48\x83\xEC\x28\x4C\x8D\x91\x38\x00\x06\x00"
+			}
+		}
     }
 }

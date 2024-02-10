@@ -6,7 +6,19 @@
 
     "#default"
     {
-        "Signatures"
+        "Addresses"
+		{
+			"EntInfosPtr"
+			{
+				"windows64"
+				{
+					"signature"	"EntInfosFinder"
+					"read"	"19"
+				}
+			}
+		}
+		
+		"Signatures"
         {
             /* gEntList symbol */
             "gEntList"
@@ -18,8 +30,16 @@
             "LevelShutdown"
             {
                 "library"       "server"
-                "windows64"     "IDK"
+                "windows64"     "\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x48\x8D\x0D\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8"
             }
+			
+			// Found from FindEntityByClassname.
+			"EntInfosFinder"
+			{
+				"library"	"server"
+				// EB 18 0F B7 C1 48 8D 1C 40 48 03 DB 48 8B 5C DF 20 EB 07 48 8B 
+				"windows64"	"\xEB\x18\x0F\xB7\xC1\x48\x8D\x1C\x40\x48\x03\xDB\x2A\x2A\x2A\x2A\x2A\xEB\x07\x48\x8B"
+			}
         }
 
         "Offsets"
@@ -27,7 +47,7 @@
             /* Offset into LevelShutdown of gEntList */
             "gEntList"
             {
-                "windows64"     "IDK"
+                "windows64"     "13"
             }
 
             /* gEntList->m_EntPtrArray[] offset */
