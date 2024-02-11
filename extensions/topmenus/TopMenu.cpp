@@ -1239,6 +1239,18 @@ unsigned int TopMenu::FindCategory(const char *name)
 	return obj->object_id;
 }
 
+unsigned int TopMenu::FindItem(const char *name)
+{
+	topmenu_object_t *obj;
+	if (!m_ObjLookup.retrieve(name, &obj))
+		return 0;
+
+	if (obj->type != TopMenuObject_Item)
+		return 0;
+
+	return obj->object_id;
+}
+
 void TopMenu::OnMaxPlayersChanged( int newvalue )
 {
 	m_max_clients = newvalue;
