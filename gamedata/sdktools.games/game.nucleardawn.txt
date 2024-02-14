@@ -102,19 +102,19 @@
 	}
 	
 	/* CBaseAnimating::LookupAttachment */
-        "#default"
-        {
-                "Signatures"
-                {
-                        "LookupAttachment"
-                        {
-                                "library"       "server"
-				"windows"       "\x55\x8B\xEC\x56\x8B\xF1\x83\xBE\x2A\x2A\x2A\x2A\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x86\x2A\x2A\x2A\x2A\x5E\x85\xC0\x74\x2A\x83\x38\x00\x74\x2A\xFF\x75"
-                                "linux"         "@_ZN14CBaseAnimating16LookupAttachmentEPKc"
-                                "mac"           "@_ZN14CBaseAnimating16LookupAttachmentEPKc"
-                        }
-                }
-        }
+	"#default"
+	{
+		"Signatures"
+		{
+			"LookupAttachment"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x83\xBE\x2A\x2A\x2A\x2A\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x86\x2A\x2A\x2A\x2A\x5E\x85\xC0\x74\x2A\x83\x38\x00\x74\x2A\xFF\x75"
+				"linux"		"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
+				"mac"		"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
+			}
+		}
+	}
 	
 	/* SetUserInfo data */
 	"#default"
@@ -249,6 +249,12 @@
 				"windows"	"466"
 				"linux"		"467"
 				"mac"		"467"
+			}
+			"GetAttachment"
+			{
+				"windows"	"230"
+				"linux"		"231"
+				"mac"		"231"
 			}
 		}
 		
