@@ -38,14 +38,14 @@ HandleType_t hTopMenuType;
 class TopMenuHandle : public IHandleTypeDispatch
 {
 public: 
-	void OnHandleDestroy(HandleType_t type, void *object)
+	void OnHandleDestroy(HandleType_t type, void *object) override
 	{
 		ITopMenu *pTopMenu = (ITopMenu *)object;
 		g_TopMenus.DestroyTopMenu(pTopMenu);
 	}
-	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize) override
 	{
-		*pSize = (unsigned int)(((TopMenu *)object)->CalcMemUsage());
+		*pSize = (((TopMenu *)object)->CalcMemUsage());
 		return true;
 	}
 } s_TopMenuHandle;
