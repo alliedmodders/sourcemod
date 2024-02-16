@@ -50,7 +50,7 @@ class ForwardNativeHelpers :
 	public IHandleTypeDispatch
 {
 public:
-	void OnSourceModAllInitialized()
+	void OnSourceModAllInitialized() override
 	{
 		HandleAccess sec;
 
@@ -69,20 +69,20 @@ public:
 		g_PrivateFwdType = handlesys->CreateType("PrivateFwd", this, g_GlobalFwdType, NULL, &sec, g_pCoreIdent, NULL);
 	}
 
-	void OnSourceModShutdown()
+	void OnSourceModShutdown() override
 	{
 		handlesys->RemoveType(g_PrivateFwdType, g_pCoreIdent);
 		handlesys->RemoveType(g_GlobalFwdType, g_pCoreIdent);
 	}
 
-	void OnHandleDestroy(HandleType_t type, void *object)
+	void OnHandleDestroy(HandleType_t type, void *object) override
 	{
 		IForward *pForward = static_cast<IForward *>(object);
 
 		forwardsys->ReleaseForward(pForward);
 	}
 
-	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize)
+	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize) override
 	{
 		*pSize = sizeof(IForward*) + (((IForward *)object)->GetFunctionCount() * 12);
 		return true;

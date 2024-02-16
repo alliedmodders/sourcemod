@@ -108,20 +108,20 @@ public:
 	ConVarManager();
 	~ConVarManager();
 public: // SMGlobalClass
-	void OnSourceModStartup(bool late);
-	void OnSourceModAllInitialized();
-	void OnSourceModShutdown();
+	void OnSourceModStartup(bool late) override;
+	void OnSourceModAllInitialized() override;
+	void OnSourceModShutdown() override;
 public: // IHandleTypeDispatch
-	void OnHandleDestroy(HandleType_t type, void *object);
-	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize);
+	void OnHandleDestroy(HandleType_t type, void *object) override;
+	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize) override;
 public: // IPluginsListener
-	void OnPluginUnloaded(IPlugin *plugin);
+	void OnPluginUnloaded(IPlugin *plugin) override;
 public: //IRootConsoleCommand
 	void OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command) override;
 public: //IConCommandTracker
 	void OnUnlinkConCommandBase(ConCommandBase *pBase, const char *name) override;
 public: //IClientListener
-	void OnClientDisconnected(int client);
+	void OnClientDisconnected(int client) override;
 public:
 	/**
 	 * Create a convar and return a handle to it.

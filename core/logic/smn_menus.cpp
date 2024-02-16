@@ -160,14 +160,14 @@ class MenuNativeHelpers :
 	public IPluginsListener
 {
 public:
-	virtual void OnSourceModAllInitialized()
+	virtual void OnSourceModAllInitialized() override
 	{
 		m_PanelType = handlesys->CreateType("IMenuPanel", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 		m_TempPanelType = handlesys->CreateType("TempIMenuPanel", this, m_PanelType, NULL, NULL, g_pCoreIdent, NULL);
 		scripts->AddPluginsListener(this);
 	}
 
-	virtual void OnSourceModShutdown()
+	virtual void OnSourceModShutdown() override
 	{
 		scripts->RemovePluginsListener(this);
 		handlesys->RemoveType(m_TempPanelType, g_pCoreIdent);
@@ -186,7 +186,7 @@ public:
 		}
 	}
 
-	virtual void OnHandleDestroy(HandleType_t type, void *object)
+	virtual void OnHandleDestroy(HandleType_t type, void *object) override
 	{
 		if (type == m_TempPanelType)
 		{
@@ -197,7 +197,7 @@ public:
 		panel->DeleteThis();
 	}
 
-	virtual bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize)
+	virtual bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize) override
 	{
 		*pSize = ((IMenuPanel *)object)->GetApproxMemUsage();
 		return true;
@@ -211,7 +211,7 @@ public:
 	 * ones), but when push comes to shove, we have to scan them all
 	 * in case any of them are active.
 	 */
-	virtual void OnPluginUnloaded(IPlugin *plugin)
+	virtual void OnPluginUnloaded(IPlugin *plugin) override
 	{
 		for (size_t i = 0; i < m_PanelHandlers.size(); i++)
 		{

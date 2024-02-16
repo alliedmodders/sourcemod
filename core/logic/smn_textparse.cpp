@@ -148,7 +148,7 @@ class TextParseGlobals :
 	public IHandleTypeDispatch
 {
 public:
-	void OnSourceModAllInitialized()
+	void OnSourceModAllInitialized() override
 	{
 		HandleAccess sec;
 
@@ -162,18 +162,18 @@ public:
 		g_TypeSMC = handlesys->CreateType("SMCParser", this, 0, NULL, &sec, g_pCoreIdent, NULL);
 	}
 
-	void OnSourceModShutdown()
+	void OnSourceModShutdown() override
 	{
 		handlesys->RemoveType(g_TypeSMC, g_pCoreIdent);
 	}
 
-	void OnHandleDestroy(HandleType_t type, void *object)
+	void OnHandleDestroy(HandleType_t type, void *object) override
 	{
 		ParseInfo *parse = (ParseInfo *)object;
 		delete parse;
 	}
 
-	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize) override
 	{
 		*pSize = sizeof(ParseInfo);
 		return true;

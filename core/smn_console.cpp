@@ -87,7 +87,7 @@ class ConsoleHelpers :
 	public IHandleTypeDispatch
 {
 public:
-	virtual void OnSourceModAllInitialized()
+	virtual void OnSourceModAllInitialized() override
 	{
 		HandleAccess access;
 
@@ -99,7 +99,7 @@ public:
 
 		hCmdIterType = handlesys->CreateType("CmdIter", this, 0, NULL, &access, g_pCoreIdent, NULL);
 	}
-	virtual void OnHandleDestroy(HandleType_t type, void *object)
+	virtual void OnHandleDestroy(HandleType_t type, void *object) override
 	{
 		if (type == hCmdIterType)
 		{
@@ -112,7 +112,7 @@ public:
 			delete iter;
 		}
 	}
-	virtual bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+	virtual bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize) override
 	{
 		if (type == htConCmdIter)
 		{

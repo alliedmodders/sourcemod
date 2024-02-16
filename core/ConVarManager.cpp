@@ -276,7 +276,7 @@ void ConVarManager::OnHandleDestroy(HandleType_t type, void *object)
 {
 }
 
-bool ConVarManager::GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+bool ConVarManager::GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize)
 {
 	*pSize = sizeof(ConVar) + sizeof(ConVarInfo);
 	return true;

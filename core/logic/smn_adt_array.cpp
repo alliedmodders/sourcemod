@@ -42,21 +42,21 @@ class CellArrayHelpers :
 	public IHandleTypeDispatch
 {
 public: //SMGlobalClass
-	void OnSourceModAllInitialized()
+	void OnSourceModAllInitialized() override
 	{
 		htCellArray = handlesys->CreateType("CellArray", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 	}
-	void OnSourceModShutdown()
+	void OnSourceModShutdown() override
 	{
 		handlesys->RemoveType(htCellArray, g_pCoreIdent);
 	}
 public: //IHandleTypeDispatch
-	void OnHandleDestroy(HandleType_t type, void *object)
+	void OnHandleDestroy(HandleType_t type, void *object) override
 	{
 		CellArray *array = (CellArray *)object;
 		delete array;
 	}
-	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize)
+	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize) override
 	{
 		CellArray *pArray = (CellArray *)object;
 		*pSize = sizeof(CellArray) + pArray->mem_usage();

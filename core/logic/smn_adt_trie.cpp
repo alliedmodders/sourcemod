@@ -192,18 +192,18 @@ class TrieHelpers :
 	public IHandleTypeDispatch
 {
 public: //SMGlobalClass
-	void OnSourceModAllInitialized()
+	void OnSourceModAllInitialized() override
 	{
 		htCellTrie = handlesys->CreateType("Trie", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 		htSnapshot = handlesys->CreateType("TrieSnapshot", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 	}
-	void OnSourceModShutdown()
+	void OnSourceModShutdown() override
 	{
 		handlesys->RemoveType(htSnapshot, g_pCoreIdent);
 		handlesys->RemoveType(htCellTrie, g_pCoreIdent);
 	}
 public: //IHandleTypeDispatch
-	void OnHandleDestroy(HandleType_t type, void *object)
+	void OnHandleDestroy(HandleType_t type, void *object) override
 	{
 		if (type == htCellTrie)
 		{
@@ -213,7 +213,7 @@ public: //IHandleTypeDispatch
 			delete snapshot;
 		}
 	}
-	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize)
+	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize) override
 	{
 		if (type == htCellTrie)
 		{

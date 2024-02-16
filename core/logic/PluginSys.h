@@ -325,47 +325,39 @@ public:
 	};
 	friend class CPluginManager::CPluginIterator;
 public: //IScriptManager
-	IPlugin *LoadPlugin(const char *path, 
-								bool debug,
-								PluginType type,
-								char error[],
-								size_t maxlength,
-								bool *wasloaded);
-	bool UnloadPlugin(IPlugin *plugin);
-	IPlugin *FindPluginByContext(const sp_context_t *ctx);
-	size_t GetPluginCount();
-	IPluginIterator *GetPluginIterator();
-	void AddPluginsListener(IPluginsListener *listener);
-	void RemovePluginsListener(IPluginsListener *listener);
-	void LoadAll(const char *config_path, const char *plugins_path);
-	void RefreshAll();
-	SMPlugin *FindPluginByOrder(unsigned num) {
+	bool UnloadPlugin(IPlugin *plugin) override;
+	IPluginIterator *GetPluginIterator() override;
+	void AddPluginsListener(IPluginsListener *listener) override;
+	void RemovePluginsListener(IPluginsListener *listener) override;
+	void LoadAll(const char *config_path, const char *plugins_path) override;
+	void RefreshAll() override;
+	SMPlugin *FindPluginByOrder(unsigned num) override {
 		return GetPluginByOrder(num);
 	}
-	SMPlugin *FindPluginByIdentity(IdentityToken_t *ident) {
+	SMPlugin *FindPluginByIdentity(IdentityToken_t *ident) override {
 		return GetPluginFromIdentity(ident);
 	}
-	SMPlugin *FindPluginByContext(IPluginContext *ctx) {
+	SMPlugin *FindPluginByContext(IPluginContext *ctx) override {
 		return GetPluginByCtx(ctx->GetContext());
 	}
-	SMPlugin *FindPluginByContext(sp_context_t *ctx) {
+	SMPlugin *FindPluginByContext(sp_context_t *ctx) override {
 		return GetPluginByCtx(ctx);
 	}
-	SMPlugin *FindPluginByConsoleArg(const char *text);
-	SMPlugin *FindPluginByHandle(Handle_t hndl, HandleError *errp) {
+	SMPlugin *FindPluginByConsoleArg(const char *text) override;
+	SMPlugin *FindPluginByHandle(Handle_t hndl, HandleError *errp) override {
 		return static_cast<SMPlugin *>(PluginFromHandle(hndl, errp));
 	}
-	const CVector<SMPlugin *> *ListPlugins();
-	void FreePluginList(const CVector<SMPlugin *> *plugins);
+	const CVector<SMPlugin *> *ListPlugins() override;
+	void FreePluginList(const CVector<SMPlugin *> *plugins) override;
 
 public: //SMGlobalClass
-	void OnSourceModAllInitialized();
-	void OnSourceModShutdown();
-	ConfigResult OnSourceModConfigChanged(const char *key, const char *value, ConfigSource source, char *error, size_t maxlength);
-	void OnSourceModMaxPlayersChanged(int newvalue);
+	void OnSourceModAllInitialized() override;
+	void OnSourceModShutdown() override;
+	ConfigResult OnSourceModConfigChanged(const char *key, const char *value, ConfigSource source, char *error, size_t maxlength) override;
+	void OnSourceModMaxPlayersChanged(int newvalue) override;
 public: //IHandleTypeDispatch
-	void OnHandleDestroy(HandleType_t type, void *object);
-	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize);
+	void OnHandleDestroy(HandleType_t type, void *object) override;
+	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize) override;
 public: //IRootConsoleCommand
 	void OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command) override;
 public:
@@ -437,7 +429,20 @@ public:
 
 	void ForEachPlugin(ke::Function<void(CPlugin *)> callback);
 private:
+	friend class OldPluginAPI;
+
+	IPlugin *FindPluginByContext(const sp_context_t *ctx);
+
+	IPlugin *LoadPlugin(const char *path, 
+						bool debug,
+						PluginType type,
+						char error[],
+						size_t maxlength,
+						bool *wasloaded);
+
 	LoadRes LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type);
+
+	size_t GetPluginCount();
 
 	void LoadAutoPlugin(const char *plugin);
 

@@ -41,7 +41,7 @@ class DataPackNatives :
 	public IHandleTypeDispatch
 {
 public:
-	void OnSourceModAllInitialized()
+	void OnSourceModAllInitialized() override
 	{
 		HandleAccess hacc;
 		TypeAccess tacc;
@@ -54,16 +54,16 @@ public:
 
 		g_DataPackType = handlesys->CreateType("DataPack", this, 0, &tacc, &hacc, g_pCoreIdent, NULL);
 	}
-	void OnSourceModShutdown()
+	void OnSourceModShutdown() override
 	{
 		handlesys->RemoveType(g_DataPackType, g_pCoreIdent);
 		g_DataPackType = 0;
 	}
-	void OnHandleDestroy(HandleType_t type, void *object)
+	void OnHandleDestroy(HandleType_t type, void *object) override
 	{
 		delete reinterpret_cast<CDataPack *>(object);
 	}
-	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize)
+	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize) override
 	{
 		CDataPack *pack = reinterpret_cast<CDataPack *>(object);
 		*pSize = sizeof(CDataPack) + pack->GetCapacity();

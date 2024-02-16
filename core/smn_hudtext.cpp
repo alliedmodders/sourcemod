@@ -86,7 +86,7 @@ public:
 		return (g_HudMsgNum != -1);
 	}
 
-	virtual void OnSourceModAllInitialized_Post()
+	virtual void OnSourceModAllInitialized_Post() override
 	{
 		const char *key;
 
@@ -109,7 +109,7 @@ public:
 		g_Players.AddClientListener(this);
 	}
 
-	virtual void OnSourceModShutdown()
+	virtual void OnSourceModShutdown() override
 	{
 		if (!IsSupported())
 		{
@@ -122,20 +122,20 @@ public:
 		g_Players.RemoveClientListener(this);
 	}
 
-	virtual void OnHandleDestroy(HandleType_t type, void *object)
+	virtual void OnHandleDestroy(HandleType_t type, void *object) override
 	{
 		hud_syncobj_t *obj = (hud_syncobj_t *)object;
 
 		delete obj;
 	}
 
-	virtual bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+	virtual bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize) override
 	{
 		*pSize = sizeof(unsigned int) * g_Players.GetMaxClients();
 		return true;
 	}
 
-	virtual void OnClientConnected(int client)
+	virtual void OnClientConnected(int client) override
 	{
 		player_chaninfo_t *player;
 

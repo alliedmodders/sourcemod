@@ -62,11 +62,11 @@ class UsrMessageNatives :
 public:
 	~UsrMessageNatives();
 public: //SMGlobalClass, IHandleTypeDispatch, IPluginListener
-	void OnSourceModAllInitialized();
-	void OnSourceModShutdown();
-	void OnHandleDestroy(HandleType_t type, void *object);
-	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize);
-	void OnPluginUnloaded(IPlugin *plugin);
+	void OnSourceModAllInitialized() override;
+	void OnSourceModShutdown() override;
+	void OnHandleDestroy(HandleType_t type, void *object) override;
+	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize) override;
+	void OnPluginUnloaded(IPlugin *plugin) override;
 public:
 	MsgListenerWrapper *CreateListener(IPluginContext *pCtx);
 	bool FindListener(int msgid, IPluginContext *pCtx, IPluginFunction *pHook, bool intercept, MsgWrapperIter *iter);
@@ -131,7 +131,7 @@ void UsrMessageNatives::OnHandleDestroy(HandleType_t type, void *object)
 #endif
 }
 
-bool UsrMessageNatives::GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+bool UsrMessageNatives::GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize)
 {
 #ifdef USE_PROTOBUF_USERMESSAGES
 	// Different messages have different sizes, but this works as an approximate

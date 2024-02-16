@@ -46,16 +46,16 @@ class KeyValueNatives :
 	public IHandleTypeDispatch
 {
 public:
-	void OnSourceModAllInitialized()
+	void OnSourceModAllInitialized() override
 	{
 		g_KeyValueType = handlesys->CreateType("KeyValues", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 	}
-	void OnSourceModShutdown()
+	void OnSourceModShutdown() override
 	{
 		handlesys->RemoveType(g_KeyValueType, g_pCoreIdent);
 		g_KeyValueType = 0;
 	}
-	void OnHandleDestroy(HandleType_t type, void *object)
+	void OnHandleDestroy(HandleType_t type, void *object) override
 	{
 		KeyValueStack *pStk = reinterpret_cast<KeyValueStack *>(object);
 		if (pStk->m_bDeleteOnDestroy)
@@ -77,7 +77,7 @@ public:
 
 		return size;
 	}
-	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize)
+	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize) override
 	{
 		KeyValueStack *pStk = (KeyValueStack *)object;
 		size_t size = sizeof(KeyValueStack) + (pStk->pCurRoot.size() * sizeof(KeyValues *));
