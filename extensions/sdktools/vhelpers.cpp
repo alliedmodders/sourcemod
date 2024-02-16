@@ -322,7 +322,7 @@ bool CollisionRulesChanged(CBaseEntity *pEntity)
 	// In order to keep consitent behaviour across all entities, including CNodeEnt and potential source games that have entity classes overriding this function.
 	// We are going to fetch the world entity, which doesn't have this function overriden (on all source games hopefully), and obtain the function address
 	static void *func = nullptr;
-	static size_t offsethOwnerEntity = -1;
+	static size_t offsethOwnerEntity = INVALID_OFFSET;
 	if (func == nullptr)
 	{
 		int offset = -1;
@@ -354,7 +354,7 @@ bool CollisionRulesChanged(CBaseEntity *pEntity)
 			offsethOwnerEntity = offset_data_info.actual_offset;
 		}
 
-		if (offsethOwnerEntity == -1)
+		if (offsethOwnerEntity == INVALID_OFFSET)
 		{
 			// Well...
 			return false;
@@ -1006,7 +1006,7 @@ CON_COMMAND(sm_dump_datamaps, "Dumps the data map list as a text file")
 
 	fprintf(fp, "//\n\n");
 
-	static size_t offsEFlags = -1;
+	static size_t offsEFlags = INVALID_OFFSET;
 	for ( int i = dict->m_Factories.First(); i != dict->m_Factories.InvalidIndex(); i = dict->m_Factories.Next( i ) )
 	{
 		IServerNetworkable *entity = dict->Create(dict->m_Factories.GetElementName(i));
@@ -1017,7 +1017,7 @@ CON_COMMAND(sm_dump_datamaps, "Dumps the data map list as a text file")
 
 		UTIL_DrawDataTable(fp, pMap, 0);
 
-		if (offsEFlags == -1)
+		if (offsEFlags == INVALID_OFFSET)
 		{
 			sm_datatable_info_t info;
 			if (!gamehelpers->FindDataMapInfo(pMap, "m_iEFlags", &info))
@@ -1154,7 +1154,7 @@ CON_COMMAND(sm_dump_datamaps_xml, "Dumps the data map list as an XML file")
 
 	fprintf(fp, "<datamaps>\n");
 
-	static size_t offsEFlags = -1;
+	static size_t offsEFlags = INVALID_OFFSET;
 	for (int i = dict->m_Factories.First(); i != dict->m_Factories.InvalidIndex(); i = dict->m_Factories.Next(i))
 	{
 		IServerNetworkable *entity = dict->Create(dict->m_Factories.GetElementName(i));
@@ -1167,7 +1167,7 @@ CON_COMMAND(sm_dump_datamaps_xml, "Dumps the data map list as an XML file")
 
 		fprintf(fp, " </serverclass>\n");
 
-		if (offsEFlags == -1)
+		if (offsEFlags == INVALID_OFFSET)
 		{
 			sm_datatable_info_t info;
 			if (!gamehelpers->FindDataMapInfo(pMap, "m_iEFlags", &info))

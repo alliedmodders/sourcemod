@@ -33,6 +33,7 @@
 #define _INCLUDE_SOURCEMOD_GAMEHELPERS_H_
 
 #include <IShareSys.h>
+#include <limits>
 
 /**
  * @file IGameHelpers.h
@@ -40,7 +41,7 @@
  */
 
 #define SMINTERFACE_GAMEHELPERS_NAME		"IGameHelpers"
-#define SMINTERFACE_GAMEHELPERS_VERSION		11
+#define SMINTERFACE_GAMEHELPERS_VERSION		13
 
 class CBaseEntity;
 class CBaseHandle;
@@ -56,8 +57,18 @@ struct typedescription_t;
 #define TEXTMSG_DEST_CHAT    3
 #define TEXTMSG_DEST_CENTER  4
 
+// Macros can messup the call to std::numeric_limits<T>::max();
+#ifdef max
+#undef max
+#endif
+
 namespace SourceMod
 {
+	/**
+	 * @brief Constant to refer to an invalid offset, useful to default initiliase an offset variable.
+	 */
+	constexpr const size_t INVALID_OFFSET = std::numeric_limits<size_t>::max();
+
 	/**
 	 * @brief Maps the heirarchy of a SendProp.
 	 */
@@ -353,5 +364,10 @@ namespace SourceMod
 		virtual uint64_t GetServerSteamId64() const =0;
 	};
 }
+
+#ifdef old_max
+#define max old_max
+#undef old_max
+#endif
 
 #endif //_INCLUDE_SOURCEMOD_GAMEHELPERS_H_

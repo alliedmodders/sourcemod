@@ -42,7 +42,6 @@
 #include "logic_bridge.h"
 #include <tier0/mem.h>
 #include <bridge/include/ILogger.h>
-#include <limits>
 
 #if SOURCE_ENGINE == SE_CSGO
 #include <cstrike15_usermessages.pb.h>
@@ -56,15 +55,6 @@ typedef ICommandLine *(*FakeGetCommandLine)();
 
 #define TIER0_NAME			FORMAT_SOURCE_BIN_NAME("tier0")
 #define VSTDLIB_NAME		FORMAT_SOURCE_BIN_NAME("vstdlib")
-
-#ifdef max
-#define old_max max
-#undef max
-#endif
-constexpr const size_t INVALID_OFFSET = std::numeric_limits<size_t>::max();
-#ifdef old_max
-#define max old_max
-#endif
 
 CHalfLife2 g_HL2;
 ConVar *sv_lan = NULL;

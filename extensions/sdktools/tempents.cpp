@@ -32,8 +32,6 @@
 #include "tempents.h"
 #include <basehandle.h>
 
-constexpr const size_t INVALID_OFFSET = -1;
-
 TempEntityManager g_TEManager;
 ICallWrapper *g_GetServerClass = NULL;
 

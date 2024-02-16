@@ -34,9 +34,15 @@
 
 #include <IShareSys.h>
 #include <IHandleSys.h>
+#include <limits>
 
 #define SMINTERFACE_MENUMANAGER_NAME		"IMenuManager"
 #define SMINTERFACE_MENUMANAGER_VERSION		18
+
+// Macros can messup the call to std::numeric_limits<T>::max();
+#ifdef max
+#undef max
+#endif
 
 /**
  * @file IMenuManager.h
@@ -116,6 +122,9 @@ namespace SourceMod
 		unsigned int style;				/**< ITEMDRAW style flags */
 	};
 
+	constexpr const size_t VOTE_PENDING = std::numeric_limits<size_t>::max();
+	constexpr const size_t VOTE_NOT_VOTING = std::numeric_limits<size_t>::max() - 1;
+
 	/**
 	 * @brief Contains information about a vote result.
 	 */
@@ -126,7 +135,7 @@ namespace SourceMod
 		struct menu_client_vote_t
 		{
 			int client;					/**< Client index */
-			size_t item;				/**< Item # (or -1 for none) */
+			size_t item;				/**< Item # (or VOTE_PENDING/VOTE_NOT_VOTING for none) */
 		} *client_list;					/**< Array of size num_clients */
 		unsigned int num_items;			/**< Number of items voted for */
 		struct menu_item_vote_t
@@ -975,4 +984,3 @@ namespace SourceMod
 }
 
 #endif //_INCLUDE_SOURCEMOD_MENU_SYSTEM_H_
-
