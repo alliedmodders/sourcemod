@@ -1248,7 +1248,7 @@ void HandleSystem::Dump(const HandleReporter &fn)
 		else
 		{
 			char buffer[32];
-			ke::SafeSprintf(buffer, sizeof(buffer), "%d", size);
+			ke::SafeSprintf(buffer, sizeof(buffer), "%zu", size);
 			rep(fn, "0x%08x\t%-20.20s\t%-20.20s\t%-10.10s\t%-30.30s", index, owner, type, buffer, date);
 			total_size += size;
 		}

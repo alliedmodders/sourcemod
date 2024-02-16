@@ -1718,7 +1718,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 			unsigned int id = 1;
 			size_t plnum = GetPluginCount();
 			char plstr[10];
-			ke::SafeSprintf(plstr, sizeof(plstr), "%d", plnum);
+			ke::SafeSprintf(plstr, sizeof(plstr), "%zu", plnum);
 			size_t plpadding = strlen(plstr);
 
 			if (!plnum)
@@ -1740,14 +1740,14 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 				const sm_plugininfo_t *info = pl->GetPublicInfo();
 				if (pl->GetStatus() != Plugin_Running && !pl->IsSilentlyFailed())
 				{
-					len += ke::SafeSprintf(buffer, sizeof(buffer), "  %0*d <%s>", plpadding, id, GetStatusText(pl->GetDisplayStatus()));
+					len += ke::SafeSprintf(buffer, sizeof(buffer), "  %0*d <%s>", (int)plpadding, id, GetStatusText(pl->GetDisplayStatus()));
 
 					/* Plugin has failed to load. */
 					fail_list.push_back(pl);
 				}
 				else
 				{
-					len += ke::SafeSprintf(buffer, sizeof(buffer), "  %0*d", plpadding, id);
+					len += ke::SafeSprintf(buffer, sizeof(buffer), "  %0*d", (int)plpadding, id);
 				}
 				if (pl->GetStatus() < Plugin_Created || pl->GetStatus() == Plugin_Evicted)
 				{

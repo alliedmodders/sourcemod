@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stddef.h>
+
 #define OP_JMP				0xE9
 #define OP_JMP_SIZE			5
 #define X64_ABS_SIZE		14
