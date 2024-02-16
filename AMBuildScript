@@ -267,8 +267,6 @@ class SMConfig(object):
       cxx.cxxflags += ['-Wno-inconsistent-missing-override']
     if cxx.version >= 'clang-2.9' or cxx.version >= 'apple-clang-3.0':
       cxx.cxxflags += ['-Wno-null-dereference']
-    if have_clang or (cxx.version >= 'gcc-4.6'):
-      cxx.cflags += ['-Wno-narrowing']
     if have_clang or (cxx.version >= 'gcc-4.7'):
       cxx.cxxflags += ['-Wno-delete-non-virtual-dtor']
     if cxx.version >= 'gcc-4.8':
