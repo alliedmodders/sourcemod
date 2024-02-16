@@ -88,8 +88,8 @@ public: //IMenuStyle
 	const char *GetStyleName();
 	IMenuPanel *CreatePanel();
 	IBaseMenu *CreateMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner);
-	unsigned int GetMaxPageItems();
-	unsigned int GetApproxMemUsage();
+	size_t GetMaxPageItems();
+	size_t GetApproxMemUsage();
 public: //IUserMessageListener
 #ifdef USE_PROTOBUF_USERMESSAGES
 	void OnUserMessage(int msg_id, protobuf::Message &msg, IRecipientFilter *pFilter);
@@ -130,7 +130,7 @@ public: //IMenuPanel
 	unsigned int GetCurrentKey();
 	bool SetCurrentKey(unsigned int key);
 	int GetAmountRemaining();
-	unsigned int GetApproxMemUsage();
+	size_t GetApproxMemUsage();
 	bool DirectSet(const char *str);
 private:
 	String m_BufferText;
@@ -149,11 +149,11 @@ public:
 	bool Display(int client, unsigned int time, IMenuHandler *alt_handler=NULL);
 	bool DisplayAtItem(int client,
 		unsigned int time,
-		unsigned int start_item,
+		size_t start_item,
 		IMenuHandler *alt_handler/* =NULL */);
 	bool SetPagination(unsigned int itemsPerPage);
 	void Cancel_Finally();
-	unsigned int GetApproxMemUsage();
+	size_t GetApproxMemUsage();
 };
 
 extern CRadioStyle g_RadioMenuStyle;

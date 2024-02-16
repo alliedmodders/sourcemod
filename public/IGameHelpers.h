@@ -63,14 +63,14 @@ namespace SourceMod
 	 */
 	struct sm_sendprop_info_t
 	{
-		SendProp *prop;					/**< Property instance. */
-		unsigned int actual_offset;		/**< Actual computed offset. */
+		SendProp *prop;				/**< Property instance. */
+		size_t actual_offset;		/**< Actual computed offset. */
 	};
 	
 	struct sm_datatable_info_t
 	{
-		typedescription_t *prop;			/**< Property instance. */
-		unsigned int actual_offset;		/**< Actual computed offset. */
+		typedescription_t *prop;	/**< Property instance. */
+		size_t actual_offset;		/**< Actual computed offset. */
 	};
 
 	class IGameHelpers : public SMInterface

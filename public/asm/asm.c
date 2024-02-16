@@ -89,7 +89,7 @@ void check_thunks(unsigned char *dest, unsigned char *pc)
 #endif
 }
 
-int copy_bytes(unsigned char *func, unsigned char *dest, unsigned int required_len)
+size_t copy_bytes(unsigned char *func, unsigned char *dest, size_t required_len)
 {
 	ud_t ud_obj;
 	ud_init(&ud_obj);
@@ -101,11 +101,11 @@ int copy_bytes(unsigned char *func, unsigned char *dest, unsigned int required_l
 #endif
 
 	ud_set_input_buffer(&ud_obj, func, 20);
-	unsigned int bytecount = 0;
+	size_t bytecount = 0;
 	
 	while (bytecount < required_len && ud_disassemble(&ud_obj))
 	{
-		unsigned int insn_len = ud_insn_len(&ud_obj);
+		size_t insn_len = ud_insn_len(&ud_obj);
 		bytecount += insn_len;
 		
 		if (dest)
@@ -117,13 +117,13 @@ int copy_bytes(unsigned char *func, unsigned char *dest, unsigned int required_l
 				dest++; func++;
 				if (ud_insn_opr(&ud_obj, 0)->size == 32)
 				{
-					*(int32_t *)dest = func + *(int32_t *)func - dest;
+					*(int32_t *)dest = (int32_t)(func + *(int32_t *)func - dest);
 					check_thunks(dest+4, func+4);
 					dest += sizeof(int32_t);
 				}
 				else
 				{
-					*(int16_t *)dest = func + *(int16_t *)func - dest;
+					*(int16_t *)dest = (int16_t)(func + *(int16_t *)func - dest);
 					dest += sizeof(int16_t);
 				}
 				func--;

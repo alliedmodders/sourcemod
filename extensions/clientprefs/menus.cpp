@@ -40,7 +40,11 @@ void ClientMenuHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int i
 
 	const char *info = menu->GetItemInfo(item, &draw);
 
+#if defined(PLATFORM_X86)
 	AutoMenuData *data = (AutoMenuData *)strtoul(info, NULL, 16);
+#elif defined(PLATFORM_X64)
+	AutoMenuData *data = (AutoMenuData *)strtoull(info, NULL, 16);
+#endif
 
 	if (data->handler->forward != NULL)
 	{
@@ -94,7 +98,11 @@ unsigned int ClientMenuHandler::OnMenuDisplayItem(IBaseMenu *menu,
 
 	const char *info = menu->GetItemInfo(item, &draw);
 
+#if defined(PLATFORM_X86)
 	AutoMenuData *data = (AutoMenuData *)strtoul(info, NULL, 16);
+#elif defined(PLATFORM_X64)
+	AutoMenuData *data = (AutoMenuData *)strtoull(info, NULL, 16);
+#endif
 
 	if (data->handler->forward != NULL)
 	{
@@ -123,7 +131,11 @@ void AutoMenuHandler::OnMenuSelect(SourceMod::IBaseMenu *menu, int client, unsig
 
 	const char *info = menu->GetItemInfo(item, &draw);
 
+#if defined(PLATFORM_X86)
 	AutoMenuData *data = (AutoMenuData *)strtoul(info, NULL, 16);
+#elif defined(PLATFORM_X64)
+	AutoMenuData *data = (AutoMenuData *)strtoull(info, NULL, 16);
+#endif
 
 	g_CookieManager.SetCookieValue(data->pCookie, client, settings[data->type][item]);
 	

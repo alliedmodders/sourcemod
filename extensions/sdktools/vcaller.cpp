@@ -396,7 +396,9 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 				//note: varargs pawn args are passed by-ref
 				cell_t *cell;
 				pContext->LocalToPhysAddr(params[startparam], &cell);
-				void *thisptr = reinterpret_cast<void*>(*cell);
+				// To-Do: this really needs to be addressed for 64bits, a cell_t cannot hold an address
+				// void *thisptr = reinterpret_cast<void*>(*cell);
+				void *thisptr = *(void**)cell;
 
 				if (thisptr == nullptr)
 				{

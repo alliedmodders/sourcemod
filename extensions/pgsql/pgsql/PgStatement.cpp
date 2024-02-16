@@ -243,14 +243,14 @@ bool PgStatement::Execute()
 			case DBType_String:
 				{
 					paramValues[i] = (char *)m_pushinfo[i].blob;
-					paramLengths[i] = m_pushinfo[i].length;
+					paramLengths[i] = (int)m_pushinfo[i].length;
 					paramFormats[i] = 0;
 					break;
 				}
 			case DBType_Blob:
 				{
 					paramValues[i] = (char *)m_pushinfo[i].blob;
-					paramLengths[i] = m_pushinfo[i].length;
+					paramLengths[i] = (int)m_pushinfo[i].length;
 					paramFormats[i] = 1;
 					break;
 				}

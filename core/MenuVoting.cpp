@@ -163,12 +163,12 @@ void VoteMenuHandler::OnClientDisconnected(int client)
 	/* Wipe out their vote if they had one.  We have to make sure the the the
 	 * newly connected client is not allowed to vote. 
 	 */
-	int item;
-	if ((item = m_ClientVotes[client]) >= VOTE_PENDING)
+	size_t item = m_ClientVotes[client];
+	if (m_ClientVotes[client] != VOTE_NOT_VOTING)
 	{
-		if (item >= 0)
+		if (item != VOTE_PENDING)
 		{
-			assert((unsigned)item < m_Items);
+			assert(item < m_Items);
 			assert(m_Votes[item] > 0);
 			m_Votes[item]--;
 		}
@@ -239,7 +239,7 @@ bool VoteMenuHandler::IsClientInVotePool(int client)
 	return (m_ClientVotes[client] > VOTE_NOT_VOTING);
 }
 
-bool VoteMenuHandler::GetClientVoteChoice(int client, unsigned int *pItem)
+bool VoteMenuHandler::GetClientVoteChoice(int client, size_t *pItem)
 {
 	if (!IsClientInVotePool(client)
 		|| m_ClientVotes[client] == VOTE_PENDING)
@@ -514,7 +514,7 @@ void VoteMenuHandler::OnMenuSelect(IBaseMenu *menu, int client, unsigned int ite
 	/* Check by our item count, NOT the vote array size */
 	if (item < m_Items)
 	{
-		unsigned int index = menu->GetRealItemIndex(client, item);
+		size_t index = menu->GetRealItemIndex(client, item);
 		m_ClientVotes[client] = index;
 		m_Votes[index]++;
 		m_NumVotes++;
@@ -679,7 +679,7 @@ void VoteMenuHandler::BuildVoteLeaders()
 		SortVoteItems);
 
 	/* Take the top 3 (if applicable) and draw them */
-	int len = 0;
+	size_t len = 0;
 	for (unsigned int i=0; i<vote.num_items && i<3; i++)
 	{
 		int curItem = vote.item_list[i].item;

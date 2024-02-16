@@ -82,7 +82,7 @@ public:
 		forwardsys->ReleaseForward(pForward);
 	}
 
-	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize)
 	{
 		*pSize = sizeof(IForward*) + (((IForward *)object)->GetFunctionCount() * 12);
 		return true;
@@ -198,7 +198,7 @@ static cell_t sm_GetForwardFunctionCount(IPluginContext *pContext, const cell_t 
 		return pContext->ThrowNativeError("Invalid forward handle %x (error %d)", hndl, err);
 	}
 
-	return pForward->GetFunctionCount();
+	return (cell_t)pForward->GetFunctionCount();
 }
 
 static cell_t sm_AddToForward(IPluginContext *pContext, const cell_t *params)

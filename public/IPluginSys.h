@@ -38,7 +38,7 @@
 #include <sp_vm_api.h>
 
 #define SMINTERFACE_PLUGINSYSTEM_NAME		"IPluginManager"
-#define SMINTERFACE_PLUGINSYSTEM_VERSION	8
+#define SMINTERFACE_PLUGINSYSTEM_VERSION	9
 
 /** Context user slot 3 is used Core for holding an IPluginContext pointer. */
 #define SM_CONTEXTVAR_USER		3
@@ -398,7 +398,7 @@ namespace SourceMod
 		 *
 		 * @return			The number of internally cached plugins.
 		 */
-		virtual unsigned int GetPluginCount() =0;
+		virtual size_t GetPluginCount() =0;
 
 		/**
 		 * @brief Returns a pointer that can be used to iterate through plugins.

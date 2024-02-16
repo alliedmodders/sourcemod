@@ -63,7 +63,7 @@ public:
 	{
 		delete reinterpret_cast<CDataPack *>(object);
 	}
-	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize)
 	{
 		CDataPack *pack = reinterpret_cast<CDataPack *>(object);
 		*pSize = sizeof(CDataPack) + pack->GetCapacity();

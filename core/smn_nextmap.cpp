@@ -69,7 +69,7 @@ static cell_t sm_ForceChangeLevel(IPluginContext *pCtx, const cell_t *params)
 
 static cell_t sm_GetMapHistorySize(IPluginContext *pCtx, const cell_t *params)
 {
-	return g_NextMap.m_mapHistory.size();
+	return (cell_t)g_NextMap.m_mapHistory.size();
 }
 
 static cell_t sm_GetMapHistory(IPluginContext *pCtx, const cell_t *params)

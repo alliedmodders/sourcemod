@@ -76,7 +76,7 @@ inline bool CellRecipientFilter::IsInitMessage() const
 
 inline int CellRecipientFilter::GetRecipientCount() const
 {
-	return m_Size;
+	return (int)m_Size;
 }
 
 inline int CellRecipientFilter::GetRecipientIndex(int slot) const

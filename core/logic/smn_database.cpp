@@ -1297,7 +1297,7 @@ static cell_t SQL_FetchSize(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid field index %d", params[2]);
 	}
 
-	return row->GetDataSize(params[2]);
+	return (cell_t)row->GetDataSize(params[2]);
 }
 
 static cell_t SQL_BindParamInt(IPluginContext *pContext, const cell_t *params)
@@ -1698,7 +1698,7 @@ private:
 		{
 			success_->PushCell(dbh);
 			success_->PushCell(data_);
-			success_->PushCell(txn_->entries.size());
+			success_->PushCell((cell_t)txn_->entries.size());
 			success_->PushArray(handles.get(), results_.size());
 			success_->PushArray(data.get(), results_.size());
 			success_->Execute(NULL);
@@ -1745,7 +1745,7 @@ public:
 			{
 				failure_->PushCell(dbh);
 				failure_->PushCell(data_);
-				failure_->PushCell(txn_->entries.size());
+				failure_->PushCell((cell_t)txn_->entries.size());
 				failure_->PushString(error_.c_str());
 				failure_->PushCell(failIndex_);
 				failure_->PushArray(data.get(), txn_->entries.size());

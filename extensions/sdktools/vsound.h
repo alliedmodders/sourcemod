@@ -95,7 +95,7 @@ public:
 #endif // SOURCE_ENGINE == SE_CSS, SE_HL2DM, SE_DODS, SE_SDK2013, SE_BMS, SE_TF2, SE_PVKII
 #endif // SOURCE_ENGINE >= SE_PORTAL2
 private:
-	size_t _FillInPlayers(int *pl_array, IRecipientFilter *pFilter);
+	int _FillInPlayers(int *pl_array, IRecipientFilter *pFilter);
 	void _IncRefCounter(int type);
 	void _DecRefCounter(int type);
 private:

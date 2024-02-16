@@ -97,7 +97,7 @@ static cell_t GetStringTableName(IPluginContext *pContext, const cell_t *params)
 
 	pContext->StringToLocalUTF8(params[2], params[3], pTable->GetTableName(), &numBytes);
 
-	return numBytes;
+	return (cell_t)numBytes;
 }
 
 static cell_t FindStringIndex(IPluginContext *pContext, const cell_t *params)
@@ -121,7 +121,7 @@ static cell_t FindStringIndex(IPluginContext *pContext, const cell_t *params)
 		return -1;
 	}
 
-	return strindex;
+	return (cell_t)strindex;
 }
 
 static cell_t ReadStringTable(IPluginContext *pContext, const cell_t *params)
@@ -147,7 +147,7 @@ static cell_t ReadStringTable(IPluginContext *pContext, const cell_t *params)
 
 	pContext->StringToLocalUTF8(params[3], params[4], value, &numBytes);
 
-	return numBytes;
+	return (cell_t)numBytes;
 }
 
 static cell_t GetStringTableDataLength(IPluginContext *pContext, const cell_t *params)
@@ -215,7 +215,7 @@ static cell_t GetStringTableData(IPluginContext *pContext, const cell_t *params)
 		numBytes = 0;
 	}
 
-	return numBytes;
+	return (cell_t)numBytes;
 }
 
 static cell_t SetStringTableData(IPluginContext *pContext, const cell_t *params)

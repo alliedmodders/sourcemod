@@ -37,7 +37,7 @@
 
 SqDriver g_SqDriver;
 
-unsigned int strncopy(char *dest, const char *src, size_t count)
+size_t strncopy(char *dest, const char *src, size_t count)
 {
 	if (!count)
 	{

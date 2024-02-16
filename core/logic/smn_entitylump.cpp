@@ -114,11 +114,11 @@ cell_t sm_LumpManagerAppend(IPluginContext *pContext, const cell_t *params) {
 	if (!g_bLumpAvailableForWriting) {
 		return pContext->ThrowNativeError("Cannot use EntityLump.Append() outside of OnMapInit");
 	}
-	return lumpmanager->Append();
+	return (cell_t)lumpmanager->Append();
 }
 
 cell_t sm_LumpManagerLength(IPluginContext *pContext, const cell_t *params) {
-	return lumpmanager->Length();
+	return (cell_t)lumpmanager->Length();
 }
 
 cell_t sm_LumpEntryGet(IPluginContext *pContext, const cell_t *params) {
@@ -325,7 +325,7 @@ cell_t sm_LumpEntryFindKey(IPluginContext *pContext, const cell_t *params) {
 	if (result == entry->end()) {
 		return -1;
 	}
-	return std::distance(entry->begin(), result);
+	return (cell_t)std::distance(entry->begin(), result);
 }
 
 cell_t sm_LumpEntryLength(IPluginContext *pContext, const cell_t *params) {
@@ -344,7 +344,7 @@ cell_t sm_LumpEntryLength(IPluginContext *pContext, const cell_t *params) {
 	}
 	
 	auto entry = entryref->lock();
-	return entry->size();
+	return (cell_t)entry->size();
 }
 
 REGISTER_NATIVES(entityLumpNatives)

@@ -310,9 +310,9 @@ static int ParseTime(IPluginContext *pContext, const cell_t *params)
 	}
 
 #if defined PLATFORM_WINDOWS
-	return _mkgmtime(&t);
+	return (int)_mkgmtime(&t);
 #elif defined PLATFORM_LINUX || defined PLATFORM_APPLE
-	return timegm(&t);
+	return (int)timegm(&t);
 #else
 	return pContext->ThrowNativeError("Platform has no implemented UTC conversion for std::tm to std::time_t");
 #endif

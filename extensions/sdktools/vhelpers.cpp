@@ -322,7 +322,7 @@ bool CollisionRulesChanged(CBaseEntity *pEntity)
 	// In order to keep consitent behaviour across all entities, including CNodeEnt and potential source games that have entity classes overriding this function.
 	// We are going to fetch the world entity, which doesn't have this function overriden (on all source games hopefully), and obtain the function address
 	static void *func = nullptr;
-	static int offsethOwnerEntity = -1;
+	static size_t offsethOwnerEntity = -1;
 	if (func == nullptr)
 	{
 		int offset = -1;
@@ -482,7 +482,7 @@ char *UTIL_SendFlagsToString(int flags, int type)
 	}
 #endif
 
-	int len = strlen(str) - 1;
+	size_t len = strlen(str) - 1;
 	if (len > 0)
 	{
 		str[len] = 0; // Strip the final '|'
@@ -886,7 +886,7 @@ char *UTIL_DataFlagsToString(int flags)
 		strcat(str,	"Override|");
 	}
 
-	int len = strlen(str) - 1;
+	size_t len = strlen(str) - 1;
 	if (len > 0)
 	{
 		str[len] = 0; // Strip the final '|'
@@ -1006,7 +1006,7 @@ CON_COMMAND(sm_dump_datamaps, "Dumps the data map list as a text file")
 
 	fprintf(fp, "//\n\n");
 
-	static int offsEFlags = -1;
+	static size_t offsEFlags = -1;
 	for ( int i = dict->m_Factories.First(); i != dict->m_Factories.InvalidIndex(); i = dict->m_Factories.Next( i ) )
 	{
 		IServerNetworkable *entity = dict->Create(dict->m_Factories.GetElementName(i));
@@ -1154,7 +1154,7 @@ CON_COMMAND(sm_dump_datamaps_xml, "Dumps the data map list as an XML file")
 
 	fprintf(fp, "<datamaps>\n");
 
-	static int offsEFlags = -1;
+	static size_t offsEFlags = -1;
 	for (int i = dict->m_Factories.First(); i != dict->m_Factories.InvalidIndex(); i = dict->m_Factories.Next(i))
 	{
 		IServerNetworkable *entity = dict->Create(dict->m_Factories.GetElementName(i));

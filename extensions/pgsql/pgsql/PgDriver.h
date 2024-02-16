@@ -77,6 +77,6 @@ private:
 
 extern PgDriver g_PgDriver;
 
-unsigned int strncopy(char *dest, const char *src, size_t count);
+size_t strncopy(char *dest, const char *src, size_t count);
 
 #endif //_INCLUDE_SM_PGSQL_DRIVER_H_

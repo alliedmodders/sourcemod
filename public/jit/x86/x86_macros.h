@@ -302,10 +302,10 @@ inline void IA32_Write_Jump32_Abs(JitWriter *jit, jitoffs_t jmp, void *target)
 	//save old ptr
 	jitcode_t oldptr = jit->outptr;
 	//get relative difference
-	long diff = ((long)target - ((long)jit->outbase + jmp + 4));
+	intptr_t diff = ((intptr_t)target - ((intptr_t)jit->outbase + jmp + 4));
 	//overwrite old value
 	jit->outptr = jit->outbase + jmp;
-	jit->write_int32(diff);
+	jit->write_int32((int)diff);
 	//restore old ptr
 	jit->outptr = oldptr;
 }

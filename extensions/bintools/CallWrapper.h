@@ -60,7 +60,7 @@ public: //ICallWrapper
 	const SourceHook::PassInfo *GetSHReturnInfo();
 	SourceHook::ProtoInfo::CallConvention GetSHCallConvention();
 	const SourceHook::PassInfo *GetSHParamInfo(unsigned int num);
-	unsigned int GetParamOffset(unsigned int num);
+	size_t GetParamOffset(unsigned int num);
 	unsigned int GetFunctionFlags();
 public:
 	void SetCalleeAddr(void *addr);

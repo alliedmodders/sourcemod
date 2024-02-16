@@ -188,7 +188,7 @@ static cell_t GetGameDescription(IPluginContext *pContext, const cell_t *params)
 	
 	pContext->StringToLocalUTF8(params[1], params[2], description, &numBytes);
 
-	return numBytes;
+	return (cell_t)numBytes;
 }
 
 static cell_t GetGameFolderName(IPluginContext *pContext, const cell_t *params)
@@ -198,7 +198,7 @@ static cell_t GetGameFolderName(IPluginContext *pContext, const cell_t *params)
 
 	pContext->StringToLocalUTF8(params[1], params[2], name, &numBytes);
 
-	return numBytes;
+	return (cell_t)numBytes;
 }
 
 /* Useless comment to bump the build */
@@ -206,7 +206,7 @@ static cell_t GetCurrentMap(IPluginContext *pContext, const cell_t *params)
 {
 	size_t bytes;
 	pContext->StringToLocalUTF8(params[1], params[2], STRING(gpGlobals->mapname), &bytes);
-	return bytes;
+	return (cell_t)bytes;
 }
 
 static cell_t PrecacheModel(IPluginContext *pContext, const cell_t *params)

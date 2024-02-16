@@ -33,14 +33,14 @@
 #define _INCLUDE_SOURCEMOD_COMMON_STRINGUTIL_H_
 
 const char *stristr(const char *str, const char *substr);
-unsigned int strncopy(char *dest, const char *src, size_t count);
-unsigned int UTIL_ReplaceAll(char *subject, size_t maxlength, const char *search,
+size_t strncopy(char *dest, const char *src, size_t count);
+size_t UTIL_ReplaceAll(char *subject, size_t maxlength, const char *search,
                              const char *replace, bool caseSensitive = true);
 char *UTIL_ReplaceEx(char *subject, size_t maxLen, const char *search, size_t searchLen,
                      const char *replace, size_t replaceLen, bool caseSensitive = true);
 size_t UTIL_DecodeHexString(unsigned char *buffer, size_t maxlength, const char *hexstr);
 
-void UTIL_StripExtension(const char *in, char *out, int outSize);
+void UTIL_StripExtension(const char *in, char *out, size_t outSize);
 char *UTIL_TrimWhitespace(char *str, size_t &len);
 
 // Internal copying Format helper, expects (char[] buffer, int maxlength, const char[] format, any ...) starting at |start|

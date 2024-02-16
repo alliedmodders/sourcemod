@@ -53,7 +53,7 @@ typedef unsigned __int64 jit_uint64_t;
 #endif
 
 typedef char * jitcode_t;
-typedef unsigned int jitoffs_t;
+typedef size_t jitoffs_t;
 typedef signed int jitrel_t;
 
 class JitWriter

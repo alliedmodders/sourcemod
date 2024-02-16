@@ -1084,7 +1084,7 @@ static CURLcode easy_connection(struct SessionHandle *data,
                                 struct connectdata **connp)
 {
   CURLcode ret;
-  long sockfd;
+  curl_socket_t sockfd;
 
   if(data == NULL)
     return CURLE_BAD_FUNCTION_ARGUMENT;
@@ -1104,8 +1104,8 @@ static CURLcode easy_connection(struct SessionHandle *data,
     return CURLE_UNSUPPORTED_PROTOCOL;
   }
 
-  *sfd = (curl_socket_t)sockfd; /* we know that this is actually a socket
-                                   descriptor so the typecast is fine here */
+  *sfd = sockfd; /* we know that this is actually a socket
+                descriptor so the typecast is fine here */
 
   return CURLE_OK;
 }

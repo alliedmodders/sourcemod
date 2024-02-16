@@ -646,7 +646,7 @@ static cell_t SlapPlayer(IPluginContext *pContext, const cell_t *params)
 	static ICallWrapper *s_teleport = NULL;
 	static int s_health_offs = 0;
 	static int s_sound_count = 0;
-	static int s_frag_offs = 0;
+	static size_t s_frag_offs = 0;
 
 	if (!s_slap_setup)
 	{
@@ -900,9 +900,9 @@ static cell_t NativeFindEntityByClassname(IPluginContext *pContext, const cell_t
 	pContext->LocalToString(params[2], &searchname);
 
 	const char *classname;
-	int lastletterpos;
+	size_t lastletterpos;
 
-	static int offset = -1;
+	static size_t offset = -1;
 	if (offset == -1)
 	{
 		sm_datatable_info_t info;
@@ -1615,7 +1615,7 @@ static cell_t SetEntityCollisionGroup(IPluginContext *pContext, const cell_t *pa
 	CBaseEntity *pEntity;
 	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
 
-	int offsetCollisionGroup = -1;
+	size_t offsetCollisionGroup = -1;
 	// Retrieve m_hOwnerEntity offset
 	sm_datatable_info_t offset_data_info;
 	datamap_t *offsetMap = gamehelpers->GetDataMap(pEntity);

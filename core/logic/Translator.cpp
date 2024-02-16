@@ -61,7 +61,7 @@ struct phrase_t
 {
 	int fmt_list;
 	unsigned int fmt_count;
-	unsigned int fmt_bytes;
+	size_t fmt_bytes;
 	int trans_tbl;
 	unsigned int translations;
 };
@@ -937,8 +937,13 @@ bool Translator::AddLanguage(const char *langcode, const char *description)
 	unsigned int idx;
 	if (!m_LCodeLookup.retrieve(langcode, &idx))
 	{
+		size_t len = m_Languages.size();
+		if (len == UINT_MAX)
+		{
+			return false;
+		}
+		idx = (unsigned int)len;
 		Language *pLanguage = new Language;
-		idx = m_Languages.size();
 
 		ke::SafeStrcpy(pLanguage->m_code2, sizeof(pLanguage->m_code2), langcode);
 		pLanguage->m_CanonicalName = m_pStringTab->AddString(lower);

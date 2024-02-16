@@ -36,7 +36,7 @@
 #include <IHandleSys.h>
 
 #define SMINTERFACE_MENUMANAGER_NAME		"IMenuManager"
-#define SMINTERFACE_MENUMANAGER_VERSION		17
+#define SMINTERFACE_MENUMANAGER_VERSION		18
 
 /**
  * @file IMenuManager.h
@@ -72,8 +72,8 @@ namespace SourceMod
 	 */
 	struct menu_slots_t
 	{
-		ItemSelection type;				/**< Item selection type */
-		unsigned int item;				/**< Item position, if applicable */
+		ItemSelection type;			/**< Item selection type */
+		size_t item;				/**< Item position, if applicable */
 	};
 
 	class IBaseMenu;
@@ -88,9 +88,9 @@ namespace SourceMod
 		unsigned int apiVers;			/**< Must be filled with the API version */
 		IBaseMenu *menu;				/**< Menu pointer, or NULL if there is only a display */
 		IMenuHandler *mh;				/**< Menu callbacks handler */
-		unsigned int firstItem;			/**< MENU ONLY: First item displayed on the last page */
-		unsigned int lastItem;			/**< MENU ONLY: Last item displayed on the last page */
-		unsigned int item_on_page;		/**< MENU ONLY: First item on page */
+		size_t firstItem;				/**< MENU ONLY: First item displayed on the last page */
+		size_t lastItem;				/**< MENU ONLY: Last item displayed on the last page */
+		size_t item_on_page;			/**< MENU ONLY: First item on page */
 		menu_slots_t slots[11];			/**< MENU ONLY: Item selection table (first index is 1) */
 	};
 
@@ -126,7 +126,7 @@ namespace SourceMod
 		struct menu_client_vote_t
 		{
 			int client;					/**< Client index */
-			int item;					/**< Item # (or -1 for none) */
+			size_t item;				/**< Item # (or -1 for none) */
 		} *client_list;					/**< Array of size num_clients */
 		unsigned int num_items;			/**< Number of items voted for */
 		struct menu_item_vote_t
@@ -332,7 +332,7 @@ namespace SourceMod
 		 *
 		 * @return				Approximate number of bytes being used.
 		 */
-		virtual unsigned int GetApproxMemUsage() =0;
+		virtual size_t GetApproxMemUsage() =0;
 		
 		/**
 		 * @brief Sets panel content directly
@@ -396,7 +396,7 @@ namespace SourceMod
 		 *
 		 * @return				Number of items per page.
 		 */
-		virtual unsigned int GetMaxPageItems() =0;
+		virtual size_t GetMaxPageItems() =0;
 
 		/**
 		 * @brief Returns whether or not a client is viewing a menu.
@@ -430,7 +430,7 @@ namespace SourceMod
 		 *
 		 * @return				Approximate number of bytes being used.
 		 */
-		virtual unsigned int GetApproxMemUsage() =0;
+		virtual size_t GetApproxMemUsage() =0;
 		
 		/**
 		 * @brief Returns whether or not this style is supported by the current game.
@@ -465,7 +465,7 @@ namespace SourceMod
 		 * @param draw			Default item draw info.
 		 * @return				True on success, false on invalid menu position
 		 */
-		virtual bool InsertItem(unsigned int position, const char *info, const ItemDrawInfo &draw) =0;
+		virtual bool InsertItem(size_t position, const char *info, const ItemDrawInfo &draw) =0;
 
 		/**
 		 * @brief Removes an item from the menu.
@@ -473,7 +473,7 @@ namespace SourceMod
 		 * @param position		Position, starting from 0.
 		 * @return				True on success, false on invalid menu position.
 		 */
-		virtual bool RemoveItem(unsigned int position) =0;
+		virtual bool RemoveItem(size_t position) =0;
 
 		/**
 		 * @brief Removes all items from the menu.
@@ -488,14 +488,14 @@ namespace SourceMod
 		 * @param client		Client index. (Important for randomized menus.)
 		 * @return				Info string pointer, or NULL if position was invalid.
 		 */
-		virtual const char *GetItemInfo(unsigned int position, ItemDrawInfo *draw, int client=0) =0;
+		virtual const char *GetItemInfo(size_t position, ItemDrawInfo *draw, int client=0) =0;
 
 		/**
 		 * @brief Returns the number of items.
 		 *
 		 * @return				Number of items in the menu.
 		 */
-		virtual unsigned int GetItemCount() =0;
+		virtual size_t GetItemCount() =0;
 
 		/** 
 		 * @brief Sets the menu's pagination,.
@@ -628,7 +628,7 @@ namespace SourceMod
 		 */
 		virtual bool DisplayAtItem(int client,
 			unsigned int time,
-			unsigned int start_item,
+			size_t start_item,
 			IMenuHandler *alt_handler=NULL) =0;
 
 		/**
@@ -636,7 +636,7 @@ namespace SourceMod
 		 *
 		 * @return				Approximate number of bytes being used.
 		 */
-		virtual unsigned int GetApproxMemUsage() =0;
+		virtual size_t GetApproxMemUsage() =0;
 
 		/**
 		 * @brief Generates a per-client random mapping for the current vote options.
@@ -665,7 +665,7 @@ namespace SourceMod
 		 * @param position		Position, starting from 0.
 		 * @return				Actual item index in menu.
 		 */
-		virtual unsigned int GetRealItemIndex(int client, unsigned int position) =0;
+		virtual size_t GetRealItemIndex(int client, size_t position) =0;
 	};
 
 	/** 
@@ -712,7 +712,7 @@ namespace SourceMod
 		 * @param client		Client that selected the item.
 		 * @param item			Item number.
 		 */
-		virtual void OnMenuSelect(IBaseMenu *menu, int client, unsigned int item)
+		virtual void OnMenuSelect(IBaseMenu *menu, int client, size_t item)
 		{
 		}
 
@@ -754,7 +754,7 @@ namespace SourceMod
 		 * @param item			Item number in the menu.
 		 * @param style			ITEMSTYLE flags, by reference for modification.
 		 */
-		virtual void OnMenuDrawItem(IBaseMenu *menu, int client, unsigned int item, unsigned int &style)
+		virtual void OnMenuDrawItem(IBaseMenu *menu, int client, size_t item, unsigned int &style)
 		{
 		}
 
@@ -772,7 +772,7 @@ namespace SourceMod
 		virtual unsigned int OnMenuDisplayItem(IBaseMenu *menu, 
 											   int client, 
 											   IMenuPanel *panel,
-											   unsigned int item, 
+											   size_t item, 
 											   const ItemDrawInfo &dr)
 		{
 			return 0;
@@ -841,8 +841,8 @@ namespace SourceMod
 		 */
 		virtual void OnMenuSelect2(IBaseMenu *menu,
 			int client,
-			unsigned int item,
-			unsigned int item_on_page)
+			size_t item,
+			size_t item_on_page)
 		{
 		}
 	};

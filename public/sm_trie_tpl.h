@@ -159,13 +159,13 @@ public:
 	 */
 	bool insert(const char *key, const K & obj)
 	{
-		unsigned int lastidx = 1;		/* the last node index */
-		unsigned int curidx;			/* current node index */
+		size_t lastidx = 1;				/* the last node index */
+		size_t curidx;					/* current node index */
 		const char *keyptr = key;		/* input stream at current token */
 		KTrieNode *node = NULL;			/* current node being processed */
 		KTrieNode *basenode = NULL;		/* current base node being processed */
-		unsigned int q;					/* temporary var for x_check results */
-		unsigned int curoffs;			/* current offset */
+		size_t q;						/* temporary var for x_check results */
+		size_t curoffs;					/* current offset */
 
 		/**
 		 * Empty strings are a special case, since there are no productions.  We could 
@@ -253,18 +253,18 @@ public:
 				 * The arcs leaving A will be C and D, but our current node is B -> *.
 				 * Thus, we use the last index (A) to find the base for arcs leaving A.
 				 */
-				unsigned int outgoing_base = m_base[lastidx].idx;
-				unsigned int outgoing_list[256];
-				unsigned int outgoing_count = 0;	/* count the current index here */
+				size_t outgoing_base = m_base[lastidx].idx;
+				size_t outgoing_list[256];
+				size_t outgoing_count = 0;	/* count the current index here */
 				cur = &m_base[outgoing_base] + 1;
-				unsigned int outgoing_limit = 255;
+				size_t outgoing_limit = 255;
 
 				if (outgoing_base + outgoing_limit > m_baseSize)
 				{
 					outgoing_limit = m_baseSize - outgoing_base;
 				}
 
-				for (unsigned int i=1; i<=outgoing_limit; i++,cur++)
+				for (size_t i=1; i<=outgoing_limit; i++,cur++)
 				{
 					if (cur->mode == Node_Unused || cur->parent != lastidx)
 					{
@@ -278,10 +278,10 @@ public:
 				 * Note: the inconsistency is the base of our parent.  
 				 */
 				assert(m_base[node->parent].mode == Node_Arc);
-				unsigned int incoming_list[256];
-				unsigned int incoming_base = m_base[node->parent].idx;
-				unsigned int incoming_count = 0;
-				unsigned int incoming_limit = 255;
+				size_t incoming_list[256];
+				size_t incoming_base = m_base[node->parent].idx;
+				size_t incoming_count = 0;
+				size_t incoming_limit = 255;
 				cur = &m_base[incoming_base] + 1;
 
 				if (incoming_base + incoming_limit > m_baseSize)
@@ -291,7 +291,7 @@ public:
 
 				assert(incoming_limit > 0 && incoming_limit <= 255);
 
-				for (unsigned int i=1; i<=incoming_limit; i++,cur++)
+				for (size_t i=1; i<=incoming_limit; i++,cur++)
 				{
 					if (cur->mode == Node_Arc || cur->mode == Node_Term)
 					{
@@ -304,7 +304,7 @@ public:
 
 				if (incoming_count < outgoing_count + 1)
 				{
-					unsigned int q = x_check_multi(incoming_list, incoming_count);
+					size_t q = x_check_multi(incoming_list, incoming_count);
 
 					node = &m_base[curidx];
 
@@ -314,8 +314,8 @@ public:
 					/* For each node in the "to move" list,
 					 * Relocate the node's info to the new position.
 					 */
-					unsigned int idx, newidx, oldidx;
-					for (unsigned int i=0; i<incoming_count; i++)
+					size_t idx, newidx, oldidx;
+					for (size_t i=0; i<incoming_count; i++)
 					{
 						idx = incoming_list[i];
 						newidx = q + idx;
@@ -356,7 +356,7 @@ public:
 				}
 				else
 				{
-					unsigned int q = x_check_multi(outgoing_list, outgoing_count);
+					size_t q = x_check_multi(outgoing_list, outgoing_count);
 
 					node = &m_base[curidx];
 
@@ -371,8 +371,8 @@ public:
 					/* For each node in the "to move" list,
 					 * Relocate the node's info to the new position.
 					 */
-					unsigned int idx, newidx, oldidx;
-					for (unsigned int i=0; i<outgoing_count; i++)
+					size_t idx, newidx, oldidx;
+					for (size_t i=0; i<outgoing_count; i++)
 					{
 						idx = outgoing_list[i];
 						newidx = q + idx;
@@ -401,7 +401,7 @@ public:
 							{
 								outgoing_limit = 255;
 							}
-							for (unsigned int j=1; j<=outgoing_limit; j++, check_base++)
+							for (size_t j=1; j<=outgoing_limit; j++, check_base++)
 							{
 								if (check_base->parent == oldidx)
 								{
@@ -701,10 +701,10 @@ private:
 		size_t buf_pos,
 		void *data,
 		void (*func)(KTrie *, const char *, K & obj, void *data),
-		unsigned int root)
+		size_t root)
 	{
 		char *term;
-		unsigned int idx, limit, start;
+		size_t idx, limit, start;
 
 		limit = 255;
 		start = m_base[root].idx;
@@ -824,14 +824,14 @@ private:
 		 *   I.e. to jump from this arc to character C, it will be at base[idx+C].
 		 * For Node_Term, this is an index into the string table.
 		 */
-		unsigned int idx;	
+		size_t idx;	
 
 		/**
 		 * This contains the prior arc that we must have come from.
 		 * For example, if arc 63 has a base jump of index 12, and we want to see if
 		 * there is a valid character C, the parent of 12+C must be 63.
 		 */
-		unsigned int parent;
+		size_t parent;
 		K value;				/* Value associated with this node */
 		NodeType mode;			/* Current usage type of the node */
 		bool valset;			/* Whether or not a value is set */
@@ -839,8 +839,8 @@ private:
 private:
 	KTrieNode *internal_retrieve(const char *key)
 	{
-		unsigned int lastidx = 1;		/* the last node index */
-		unsigned int curidx;			/* current node index */
+		size_t lastidx = 1;				/* the last node index */
+		size_t curidx;					/* current node index */
 		const char *keyptr = key;		/* input stream at current token */
 		KTrieNode *node = NULL;			/* current node being processed */
 
@@ -884,8 +884,8 @@ private:
 	bool grow()
 	{
 		/* The current # of nodes in the tree is trie->baseSize + 1 */
-		unsigned int cur_size = m_baseSize;
-		unsigned int new_size = cur_size * 2;
+		size_t cur_size = m_baseSize;
+		size_t new_size = cur_size * 2;
 
 		KTrieNode *new_base = (KTrieNode *)malloc((new_size + 1) * sizeof(KTrieNode));
 		if (!new_base)
@@ -939,7 +939,7 @@ private:
 			}
 		}
 	}
-	unsigned int x_addstring(const char *ptr)
+	size_t x_addstring(const char *ptr)
 	{
 		size_t len = strlen(ptr) + 1;
 
@@ -952,17 +952,17 @@ private:
 			m_stringtab = (char *)realloc(m_stringtab,m_stSize);
 		}
 
-		unsigned int tail = m_tail;
+		size_t tail = m_tail;
 		strcpy(&m_stringtab[tail], ptr);
 		m_tail += len;
 
 		return tail;
 	}
-	unsigned int x_check(char c, unsigned int start=1)
+	size_t x_check(char c, size_t start=1)
 	{
 		unsigned char _c = charval(c);
-		unsigned int to_check = m_baseSize - _c;
-		for (unsigned int i=start; i<=to_check; i++)
+		size_t to_check = m_baseSize - _c;
+		for (size_t i=start; i<=to_check; i++)
 		{
 			if (m_base[i+_c].mode == Node_Unused)
 			{
@@ -974,12 +974,12 @@ private:
 
 		return x_check(c, to_check+1);
 	}
-	unsigned int x_check2(char c1, char c2, unsigned int start=1)
+	size_t x_check2(char c1, char c2, size_t start=1)
 	{
 		unsigned char _c1 = charval(c1);
 		unsigned char _c2 = charval(c2);
-		unsigned int to_check = m_baseSize - (_c1 > _c2 ? _c1 : _c2);
-		for (unsigned int i=start; i<=to_check; i++)
+		size_t to_check = m_baseSize - (_c1 > _c2 ? _c1 : _c2);
+		for (size_t i=start; i<=to_check; i++)
 		{
 			if (m_base[i+_c1].mode == Node_Unused
 				&& m_base[i+_c2].mode == Node_Unused)
@@ -992,16 +992,16 @@ private:
 
 		return x_check2(c1, c2, to_check+1);
 	}
-	unsigned int x_check_multi(
-		unsigned int offsets[], 
-		unsigned int count,
-		unsigned int start=1)
+	size_t x_check_multi(
+		size_t offsets[], 
+		size_t count,
+		size_t start=1)
 	{
 		KTrieNode *cur;
-		unsigned int to_check = m_baseSize;
-		unsigned int highest = 0;
+		size_t to_check = m_baseSize;
+		size_t highest = 0;
 
-		for (unsigned int i=0; i<count; i++)
+		for (size_t i=0; i<count; i++)
 		{
 			if (offsets[i] > highest)
 			{
@@ -1011,10 +1011,10 @@ private:
 
 		to_check -= highest;
 
-		for (unsigned int i=start; i<=to_check; i++)
+		for (size_t i=start; i<=to_check; i++)
 		{
 			bool okay = true;
-			for (unsigned int j=0; j<count; j++)
+			for (size_t j=0; j<count; j++)
 			{
 				cur = &m_base[i+offsets[j]];
 				if (cur->mode != Node_Unused)
@@ -1048,9 +1048,9 @@ private:
 	KTrieNode *m_base;			/* Base array for the sparse tables */
 	KTrieNode *m_empty;			/* Special case for empty strings */
 	char *m_stringtab;			/* String table pointer */
-	unsigned int m_baseSize;	/* Size of the base array, in members */
-	unsigned int m_stSize;		/* Size of the string table, in bytes */
-	unsigned int m_tail;		/* Current unused offset into the string table */
+	size_t m_baseSize;			/* Size of the base array, in members */
+	size_t m_stSize;			/* Size of the string table, in bytes */
+	size_t m_tail;				/* Current unused offset into the string table */
 	size_t m_numElements;		/* Number of elements in use */
 };
 

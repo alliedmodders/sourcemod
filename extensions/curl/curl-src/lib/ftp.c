@@ -460,7 +460,7 @@ static CURLcode ftp_readresp(curl_socket_t sockfd,
       ssize_t clipamount = 0;
       bool restart = FALSE;
 
-      data->req.headerbytecount += gotbytes;
+      data->req.headerbytecount += (long)gotbytes;
 
       ftpc->nread_resp += gotbytes;
       for(i = 0; i < gotbytes; ptr++, i++) {
@@ -4018,7 +4018,7 @@ CURLcode ftp_parse_url_path(struct connectdata *conn)
       return CURLE_OUT_OF_MEMORY;
     }
 
-    dlen -= ftpc->file?strlen(ftpc->file):0;
+    dlen -= (int)(ftpc->file?strlen(ftpc->file):0);
     if((dlen == (int)strlen(ftpc->prevpath)) &&
        strnequal(path, ftpc->prevpath, dlen)) {
       infof(data, "Request has same path as previous transfer\n");

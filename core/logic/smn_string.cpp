@@ -58,7 +58,7 @@ static cell_t sm_strlen(IPluginContext *pCtx, const cell_t *params)
 	char *str;
 	pCtx->LocalToString(params[1], &str);
 
-	return strlen(str);
+	return (cell_t)strlen(str);
 }
 
 static cell_t sm_contain(IPluginContext *pCtx, const cell_t *params)
@@ -74,7 +74,7 @@ static cell_t sm_contain(IPluginContext *pCtx, const cell_t *params)
 	const char *pos = func(str, substr);
 	if (pos)
 	{
-		return (pos - str);
+		return (cell_t)(pos - str);
 	}
 
 	return -1;
@@ -116,7 +116,7 @@ static cell_t sm_strcopy(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToString(params[1], &dest);
 	pCtx->LocalToString(params[3], &src);
 
-	return strncopy(dest, src, params[2]);
+	return (cell_t)strncopy(dest, src, params[2]);
 }
 
 static cell_t sm_strconvint(IPluginContext *pCtx, const cell_t *params)
@@ -136,7 +136,7 @@ static cell_t StringToIntEx(IPluginContext *pCtx, const cell_t *params)
 
 	*addr = static_cast<cell_t>(strtoul(str, &dummy, params[3]));
 
-	return dummy - str;
+	return (cell_t)(dummy - str);
 }
 
 static cell_t StringToInt64(IPluginContext *pCtx, const cell_t *params)
@@ -152,7 +152,7 @@ static cell_t StringToInt64(IPluginContext *pCtx, const cell_t *params)
 	addr[0] = (cell_t)(number & 0xFFFFFFFFull);
 	addr[1] = (cell_t)(number >> 32ull);
 
-	return dummy - str;
+	return (cell_t)(dummy - str);
 }
 
 static cell_t sm_numtostr(IPluginContext *pCtx, const cell_t *params)
@@ -196,7 +196,7 @@ static cell_t StringToFloatEx(IPluginContext *pCtx, const cell_t *params)
 
 	*addr = sp_ftoc(val);
 
-	return dummy - str;
+	return (cell_t)(dummy - str);
 }
 
 static cell_t sm_floattostr(IPluginContext *pCtx, const cell_t *params)
@@ -275,7 +275,7 @@ static cell_t sm_vformat(IPluginContext *pContext, const cell_t *params)
 		pContext->StringToLocal(params[1], maxlen, g_vformatbuf);
 	}
 
-	return total;
+	return (cell_t)total;
 }
 
 /* :TODO: make this UTF8 safe */
@@ -364,7 +364,7 @@ static cell_t BreakString(IPluginContext *pContext, const cell_t *params)
 		return -1;
 	}
 
-	return inptr - input;
+	return (cell_t)(inptr - input);
 }
 
 static cell_t GetCharBytes(IPluginContext *pContext, const cell_t *params)
@@ -474,7 +474,7 @@ static cell_t ReplaceString(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Cannot replace searches of empty strings");
 	}
 
-	return UTIL_ReplaceAll(text, maxlength, search, replace, caseSensitive);
+	return (cell_t)UTIL_ReplaceAll(text, maxlength, search, replace, caseSensitive);
 }
 
 static cell_t ReplaceStringEx(IPluginContext *pContext, const cell_t *params)
@@ -513,7 +513,7 @@ static cell_t ReplaceStringEx(IPluginContext *pContext, const cell_t *params)
 		return -1;
 	}
 
-	return ptr - text;
+	return (cell_t)(ptr - text);
 }
 
 static cell_t TrimString(IPluginContext *pContext, const cell_t *params)
@@ -548,7 +548,7 @@ static cell_t TrimString(IPluginContext *pContext, const cell_t *params)
 	size_t bytes;
 	pContext->StringToLocalUTF8(params[1], chars + 1, str, &bytes);
 
-	return bytes;
+	return (cell_t)bytes;
 }
 
 static cell_t SplitString(IPluginContext *pContext, const cell_t *params)

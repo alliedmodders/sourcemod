@@ -265,7 +265,7 @@ static cell_t sm_SortStrings_Legacy(IPluginContext *pContext, const cell_t *para
 		/* Compute the final address of the old array and subtract the new location.
 		 * This is the fixed up distance.
 		 */
-		array[i] = ((char *)&array[array[i]] + phys_addr[array[i]]) - (char *)&array[i];
+		array[i] = (cell_t)(((char *)&array[array[i]] + phys_addr[array[i]]) - (char *)&array[i]);
 	}
 
 	pContext->HeapPop(amx_addr);
@@ -473,7 +473,7 @@ static cell_t sm_SortCustom2D_Legacy(IPluginContext *pContext, const cell_t *par
 		/* Compute the final address of the old array and subtract the new location.
 		 * This is the fixed up distance.
 		 */
-		array[i] = ((char *)&array[array[i]] + phys_addr[array[i]]) - (char *)&array[i];
+		array[i] = (cell_t)(((char *)&array[array[i]] + phys_addr[array[i]]) - (char *)&array[i]);
 	}
 
 	pContext->HeapPop(amx_addr);
@@ -552,8 +552,11 @@ int sort_adtarray_strings_desc(const void *str1, const void *str2)
 void sort_adt_random(CellArray *cArray)
 {
 	size_t arraysize = cArray->size();
+	if (arraysize == 0) {
+		return;
+	}
 
-	for (int i = arraysize-1; i > 0; i--)
+	for (size_t i = arraysize-1; i > 0; i--)
 	{
         int n = rand() % (i + 1);
 

@@ -537,7 +537,7 @@ struct conncache *Curl_mk_connc(int type,
     return NULL;
 
   if((size_t)(default_amount) > ((size_t)-1) / sizeof(struct connectdata *))
-    default_amount = ((size_t)-1) / sizeof(struct connectdata *);
+    default_amount = (long)(((size_t)-1) / sizeof(struct connectdata *));
 
   c->connects = calloc(sizeof(struct connectdata *), (size_t)default_amount);
   if(!c->connects) {

@@ -216,7 +216,7 @@ void UpdateReader::HandleFile()
 		return;
 	}
 
-	md5.update((unsigned char *)mdl.GetBuffer(), mdl.GetSize());
+	md5.update((unsigned char *)mdl.GetBuffer(), (unsigned int)mdl.GetSize());
 	md5.finalize();
 	md5.hex_digest(real_checksum);
 

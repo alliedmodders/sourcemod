@@ -75,18 +75,18 @@ const char *stristr(const char *str, const char *substr)
 	return NULL;
 }
 
-unsigned int strncopy(char *dest, const char *src, size_t count)
+size_t strncopy(char *dest, const char *src, size_t count)
 {
 	return ke::SafeStrcpy(dest, count, src);
 }
 
-unsigned int UTIL_ReplaceAll(char *subject, size_t maxlength, const char *search, const char *replace, bool caseSensitive)
+size_t UTIL_ReplaceAll(char *subject, size_t maxlength, const char *search, const char *replace, bool caseSensitive)
 {
 	size_t searchLen = strlen(search);
 	size_t replaceLen = strlen(replace);
 
 	char *newptr, *ptr = subject;
-	unsigned int total = 0;
+	size_t total = 0;
 	while ((newptr = UTIL_ReplaceEx(ptr, maxlength, search, searchLen, replace, replaceLen, caseSensitive)) != NULL)
 	{
 		total++;
@@ -304,13 +304,13 @@ size_t UTIL_DecodeHexString(unsigned char *buffer, size_t maxlength, const char 
 
 #define PATHSEPARATOR(c) ((c) == '\\' || (c) == '/')
 
-void UTIL_StripExtension(const char *in, char *out, int outSize)
+void UTIL_StripExtension(const char *in, char *out, size_t outSize)
 {
 	// Find the last dot. If it's followed by a dot or a slash, then it's part of a 
 	// directory specifier like ../../somedir/./blah.
 
 	// scan backward for '.'
-	int end = strlen(in) - 1;
+	size_t end = strlen(in) - 1;
 	while (end > 0 && in[end] != '.' && !PATHSEPARATOR(in[end]))
 	{
 		--end;
@@ -318,7 +318,7 @@ void UTIL_StripExtension(const char *in, char *out, int outSize)
 
 	if (end > 0 && !PATHSEPARATOR(in[end]) && end < outSize)
 	{
-		int nChars = MIN(end, outSize-1);
+		size_t nChars = MIN(end, outSize-1);
 		if (out != in)
 		{
 			memcpy(out, in, nChars);
@@ -408,7 +408,7 @@ cell_t InternalFormat(IPluginContext *pCtx, const cell_t *params, int start)
 
 	maxlen = static_cast<size_t>(params[start + 2]);
 	start_addr = params[start + 1];
-	end_addr = params[start + 1] + maxlen;
+	end_addr = params[start + 1] + (cell_t)maxlen;
 	maxparam = params[0];
 
 	for (cell_t i = (start + 3); i <= maxparam; i++)

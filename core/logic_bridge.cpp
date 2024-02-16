@@ -138,17 +138,17 @@ public:
 	{
 		return filesystem->FileExists(pFileName, pPathID);
 	}
-	unsigned int Size(const char *pFileName, const char *pPathID = 0) override
+	size_t Size(const char *pFileName, const char *pPathID = 0) override
 	{
 		return filesystem->Size(pFileName, pPathID);
 	}
-	int Read(void* pOutput, int size, FileHandle_t file) override
+	size_t Read(void* pOutput, size_t size, FileHandle_t file) override
 	{
-		return filesystem->Read(pOutput, size, file);
+		return filesystem->Read(pOutput, (int)size, file);
 	}
-	int Write(void const* pInput, int size, FileHandle_t file) override
+	size_t Write(void const* pInput, size_t size, FileHandle_t file) override
 	{
-		return filesystem->Write(pInput, size, file);
+		return filesystem->Write(pInput, (int)size, file);
 	}
 	void Seek(FileHandle_t file, int pos, int seekType) override
 	{

@@ -197,7 +197,7 @@ public:
 		panel->DeleteThis();
 	}
 
-	virtual bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+	virtual bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize)
 	{
 		*pSize = ((IMenuPanel *)object)->GetApproxMemUsage();
 		return true;
@@ -504,7 +504,7 @@ void CMenuHandler::OnMenuVoteResults(IBaseMenu *menu, const menu_vote_result_t *
 		auto init = std::make_unique<cell_t[]>(client_array_size);
 		for (unsigned int i = 0; i < results->num_clients; i++) {
 			init[i * 2] = results->client_list[i].client;
-			init[i * 2 + 1] = results->client_list[i].item;
+			init[i * 2 + 1] = (cell_t)results->client_list[i].item;
 		}
 
 		if (!pContext->HeapAlloc2dArray(results->num_clients, 2, &client_array_address, init.get())) {
@@ -875,7 +875,7 @@ static cell_t GetMenuItemCount(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Menu handle %x is invalid (error %d)", hndl, err);
 	}
 
-	return menu->GetItemCount();
+	return (cell_t)menu->GetItemCount();
 }
 
 static cell_t SetMenuTitle(IPluginContext *pContext, const cell_t *params)
@@ -1205,7 +1205,7 @@ static cell_t GetMaxPageItems(IPluginContext *pContext, const cell_t *params)
 		style = menus->GetDefaultStyle();
 	}
 
-	return style->GetMaxPageItems();
+	return (cell_t)style->GetMaxPageItems();
 }
 
 static cell_t GetPanelStyle(IPluginContext *pContext, const cell_t *params)

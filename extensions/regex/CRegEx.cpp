@@ -94,7 +94,7 @@ int RegEx::Compile(const char *pattern, int iFlags)
 	return 1;
 }
 
-int RegEx::Match(const char *const str, const size_t offset)
+int RegEx::Match(const char *const str, const int offset)
 {
 	int rc = 0;
 
@@ -106,7 +106,7 @@ int RegEx::Match(const char *const str, const size_t offset)
 	//save str
 	subject = strdup(str);
 
-	rc = pcre_exec(re, nullptr, subject, strlen(subject), offset, 0, mMatches[0].mVector, MAX_CAPTURES);
+	rc = pcre_exec(re, nullptr, subject, (int)strlen(subject), offset, 0, mMatches[0].mVector, MAX_CAPTURES);
 
 	if (rc < 0)
 	{
@@ -138,10 +138,10 @@ int RegEx::MatchAll(const char *str)
 	subject = strdup(str);
 	size_t len = strlen(subject);
 
-	size_t offset = 0;
+	int offset = 0;
 	unsigned int matches = 0;
 
-	while (matches < MAX_MATCHES && offset < len && (rc = pcre_exec(re, 0, subject, len, offset, 0, mMatches[matches].mVector, MAX_CAPTURES)) >= 0)
+	while (matches < MAX_MATCHES && offset < len && (rc = pcre_exec(re, 0, subject, (int)len, offset, 0, mMatches[matches].mVector, MAX_CAPTURES)) >= 0)
 	{
 		offset = mMatches[matches].mVector[1];
 		mMatches[matches].mSubStringCount = rc;

@@ -1062,7 +1062,7 @@ CURLcode add_buffer_send(send_buffer *in,
          accordingly */
       http->writebytecount += bodylen;
 
-    *bytes_written += amount;
+    *bytes_written += (long)amount;
 
     if(http) {
       if((size_t)amount != size) {

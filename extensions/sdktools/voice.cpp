@@ -51,7 +51,7 @@ enum ListenOverride
 	Listen_Yes,			/**< Can hear */
 };
 
-size_t g_VoiceFlags[SM_MAXPLAYERS+1];
+unsigned int g_VoiceFlags[SM_MAXPLAYERS+1];
 size_t g_VoiceHookCount = 0;
 ListenOverride g_VoiceMap[SM_MAXPLAYERS+1][SM_MAXPLAYERS+1];
 bool g_ClientMutes[SM_MAXPLAYERS+1][SM_MAXPLAYERS+1];

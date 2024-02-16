@@ -73,7 +73,7 @@ bool CritManager::TryEnable()
 		m_hooksSetup = true;
 	}
 
-	for (size_t i = playerhelpers->GetMaxClients() + 1; i < MAX_EDICTS; ++i)
+	for (int i = playerhelpers->GetMaxClients() + 1; i < MAX_EDICTS; ++i)
 	{
 		CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(i);
 		if (pEntity == NULL)

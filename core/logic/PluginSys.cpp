@@ -160,15 +160,15 @@ void CPlugin::FinishEviction()
 	m_FileVersion = 0;
 }
 
-unsigned int CPlugin::CalcMemUsage()
+size_t CPlugin::CalcMemUsage()
 {
-	unsigned int base_size =
+	size_t base_size =
 		sizeof(CPlugin)
 		+ sizeof(IdentityToken_t)
 		+ (m_configs.size() * (sizeof(AutoConfig *) + sizeof(AutoConfig)))
 		+ m_Props.mem_usage();
 
-	for (unsigned int i = 0; i < m_configs.size(); i++) {
+	for (size_t i = 0; i < m_configs.size(); i++) {
 		base_size += m_configs[i]->autocfg.size();
 		base_size += m_configs[i]->folder.size();
 	}
@@ -1548,7 +1548,7 @@ CPlugin *CPluginManager::GetPluginByCtx(const sp_context_t *ctx)
 	return (CPlugin *)FindPluginByContext(ctx);
 }
 
-unsigned int CPluginManager::GetPluginCount()
+size_t CPluginManager::GetPluginCount()
 {
 	return m_plugins.size();
 }
@@ -1636,7 +1636,7 @@ void CPluginManager::OnHandleDestroy(HandleType_t type, void *object)
 	/* We don't care about the internal object, actually */
 }
 
-bool CPluginManager::GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+bool CPluginManager::GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize)
 {
 	*pSize = ((CPlugin *)object)->CalcMemUsage();
 	return true;
@@ -1716,10 +1716,10 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 		{
 			char buffer[256];
 			unsigned int id = 1;
-			int plnum = GetPluginCount();
+			size_t plnum = GetPluginCount();
 			char plstr[10];
 			ke::SafeSprintf(plstr, sizeof(plstr), "%d", plnum);
-			int plpadding = strlen(plstr);
+			size_t plpadding = strlen(plstr);
 
 			if (!plnum)
 			{
@@ -1736,7 +1736,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 			for (PluginIter iter(m_plugins); !iter.done(); iter.next(), id++) {
 				CPlugin *pl = (*iter);
 				assert(pl->GetStatus() != Plugin_Created);
-				int len = 0;
+				size_t len = 0;
 				const sm_plugininfo_t *info = pl->GetPublicInfo();
 				if (pl->GetStatus() != Plugin_Running && !pl->IsSilentlyFailed())
 				{
@@ -2353,7 +2353,7 @@ public:
 		return g_PluginSys.FindPluginByContext(ctx);
 	}
 
-	unsigned int GetPluginCount() override
+	size_t GetPluginCount() override
 	{
 		return g_PluginSys.GetPluginCount();
 	}

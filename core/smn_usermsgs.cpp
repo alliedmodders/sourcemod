@@ -267,7 +267,7 @@ size_t MsgListenerWrapper::_FillInPlayers(int *pl_array, IRecipientFilter *pFilt
 {
 	size_t size = static_cast<size_t>(pFilter->GetRecipientCount());
 
-	for (size_t i=0; i<size; i++)
+	for (int i=0; i<size; i++)
 	{
 		pl_array[i] = pFilter->GetRecipientIndex(i);
 	}
@@ -320,7 +320,7 @@ void MsgListenerWrapper::OnUserMessage(int msg_id, bf_write *bf, IRecipientFilte
 	m_Hook->PushCell(msg_id);
 	m_Hook->PushCell(hndl);
 	m_Hook->PushArray(g_MsgPlayers, size);
-	m_Hook->PushCell(size);
+	m_Hook->PushCell((cell_t)size);
 	m_Hook->PushCell(pFilter->IsReliable());
 	m_Hook->PushCell(pFilter->IsInitMessage());
 	m_Hook->Execute(&res);
@@ -352,7 +352,7 @@ ResultType MsgListenerWrapper::InterceptUserMessage(int msg_id, bf_write *bf, IR
 	m_Intercept->PushCell(msg_id);
 	m_Intercept->PushCell(hndl);
 	m_Intercept->PushArray(g_MsgPlayers, size);
-	m_Intercept->PushCell(size);
+	m_Intercept->PushCell((cell_t)size);
 	m_Intercept->PushCell(pFilter->IsReliable());
 	m_Intercept->PushCell(pFilter->IsInitMessage());
 	m_Intercept->Execute(&res);

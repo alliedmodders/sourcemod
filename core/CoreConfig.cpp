@@ -516,7 +516,7 @@ void SM_ExecuteForPlugin(IPluginContext *ctx)
 {
 	SMPlugin *plugin = scripts->FindPluginByContext(ctx->GetContext());
 
-	unsigned int num = plugin->GetConfigCount();
+	size_t num = plugin->GetConfigCount();
 	if (!num)
 	{
 		SM_DoSingleExecFwds(ctx);
@@ -547,7 +547,7 @@ void SM_ExecuteAllConfigs()
 	for (size_t i = 0; i < plugins->size(); i++)
 	{
 		SMPlugin *plugin = plugins->at(i);
-		unsigned int num = plugin->GetConfigCount();
+		size_t num = plugin->GetConfigCount();
 		bool can_create = true;
 		for (unsigned int i=0; i<num; i++)
 		{

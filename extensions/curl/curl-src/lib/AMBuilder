@@ -21,6 +21,7 @@ for cxx in builder.targets:
       'BUILDING_LIBCURL',
       'CURL_STATICLIB',
       'CURL_DISABLE_LDAP',
+      '_WINSOCK_DEPRECATED_NO_WARNINGS'
     ]
   elif binary.compiler.target.platform == 'linux':
     binary.compiler.defines += ['_GNU_SOURCE']

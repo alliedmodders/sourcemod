@@ -54,7 +54,7 @@ public:
 	void GenerateCodeError(IPluginContext *ctx, uint32_t code_addr, int err, const char *message, ...);
 	std::vector<std::string> GetStackTrace(IFrameIterator *iter);
 private:
-	int _GetPluginIndex(IPluginContext *ctx);
+	size_t _GetPluginIndex(IPluginContext *ctx);
 };
 
 extern DebugReport g_DbgReporter;

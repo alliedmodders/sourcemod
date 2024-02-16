@@ -479,7 +479,7 @@ CURLcode Curl_SOCKS5(const char *proxy_name,
   else if(socksreq[1] == 2) {
     /* Needs user name and password */
     size_t userlen, pwlen;
-    int len;
+    size_t len;
     if(proxy_name && proxy_password) {
       userlen = strlen(proxy_name);
       pwlen = strlen(proxy_password);

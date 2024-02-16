@@ -211,7 +211,7 @@ CURLcode Curl_getinfo(struct SessionHandle *data, CURLINFO info, ...)
     *param_charp = data->state.most_recent_ftp_entrypath;
     break;
   case CURLINFO_LASTSOCKET:
-    (void)Curl_getconnectinfo(data, param_longp, NULL);
+    (void)Curl_getconnectinfo(data, (curl_socket_t*)param_longp, NULL);
     break;
   case CURLINFO_REDIRECT_URL:
     /* Return the URL this request would have been redirected to if that

@@ -116,7 +116,7 @@ public:
 	bool SetPauseState(bool paused);
 	unsigned int GetSerial();
 	IdentityToken_t *GetIdentity();
-	unsigned int CalcMemUsage();
+	size_t CalcMemUsage();
 	bool SetProperty(const char *prop, void *ptr);
 	bool GetProperty(const char *prop, void **ptr, bool remove=false);
 	void DropEverything();
@@ -333,7 +333,7 @@ public: //IScriptManager
 								bool *wasloaded);
 	bool UnloadPlugin(IPlugin *plugin);
 	IPlugin *FindPluginByContext(const sp_context_t *ctx);
-	unsigned int GetPluginCount();
+	size_t GetPluginCount();
 	IPluginIterator *GetPluginIterator();
 	void AddPluginsListener(IPluginsListener *listener);
 	void RemovePluginsListener(IPluginsListener *listener);
@@ -365,7 +365,7 @@ public: //SMGlobalClass
 	void OnSourceModMaxPlayersChanged(int newvalue);
 public: //IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
-	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize);
+	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize);
 public: //IRootConsoleCommand
 	void OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command) override;
 public:

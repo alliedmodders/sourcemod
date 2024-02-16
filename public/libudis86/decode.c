@@ -440,7 +440,7 @@ decode_imm(struct ud* u, unsigned int size, struct ud_operand *op)
  *    Decode mem address displacement.
  */
 static void 
-decode_mem_disp(struct ud* u, unsigned int size, struct ud_operand *op)
+decode_mem_disp(struct ud* u, size_t size, struct ud_operand *op)
 {
   switch (size) {
   case 8:
@@ -1073,7 +1073,7 @@ decode_opcode(struct ud *u)
  * ud_decode() - Instruction decoder. Returns the number of bytes decoded.
  * =============================================================================
  */
-unsigned int
+size_t
 ud_decode(struct ud *u)
 {
   inp_start(u);

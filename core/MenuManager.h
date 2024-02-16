@@ -89,7 +89,7 @@ public:
 	bool RedrawClientVoteMenu2(int client, bool revote);
 public: //IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
-	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize);
+	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize);
 public:
 	HandleError ReadMenuHandle(Handle_t handle, IBaseMenu **menu);
 	HandleError ReadStyleHandle(Handle_t handle, IMenuStyle **style);

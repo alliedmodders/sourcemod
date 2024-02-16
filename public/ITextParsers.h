@@ -113,7 +113,7 @@ namespace SourceMod
 										bool invalid_tokens,
 										bool close_bracket,
 										bool extra_tokens,
-										unsigned int *curtok)
+										size_t *curtok)
 		{
 			return true;
 		}
@@ -135,7 +135,7 @@ namespace SourceMod
 									  bool invalid_tokens,
 									  bool equal_token,
 									  bool quotes,
-									  unsigned int *curtok)
+									  size_t *curtok)
 		{
 			return true;
 		}
@@ -147,7 +147,7 @@ namespace SourceMod
 		 * @param curtok		Pointer to optionally store failed position in string.
 		 * @return				True to keep parsing, false otherwise.
 		 */
-		virtual bool ReadINI_RawLine(const char *line, unsigned int *curtok)
+		virtual bool ReadINI_RawLine(const char *line, size_t *curtok)
 		{
 			return true;
 		}
@@ -346,8 +346,8 @@ namespace SourceMod
 		 */
 		virtual bool ParseFile_INI(const char *file, 
 									ITextListener_INI *ini_listener,
-									unsigned int *line,
-									unsigned int *col) =0;
+									size_t *line,
+									size_t *col) =0;
 
 		/**
 		 * @brief Parses an SMC-format text file.

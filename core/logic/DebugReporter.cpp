@@ -133,7 +133,7 @@ void DebugReport::GenerateCodeError(IPluginContext *pContext, uint32_t code_addr
 	}
 }
 
-int DebugReport::_GetPluginIndex(IPluginContext *ctx)
+size_t DebugReport::_GetPluginIndex(IPluginContext *ctx)
 {
 	int id = 1;
 	IPluginIterator *iter = pluginsys->GetPluginIterator();

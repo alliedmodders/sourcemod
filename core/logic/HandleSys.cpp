@@ -253,7 +253,7 @@ bool HandleSystem::FindHandleType(const char *name, HandleType_t *aResult)
 		return false;
 
 	if (aResult)
-		*aResult = type - m_Types;
+		*aResult = (int32_t)(type - m_Types);
 
 	return true;
 }
@@ -1046,7 +1046,7 @@ bool HandleSystem::TryAndFreeSomeHandles()
 	HANDLE_LOG_VERY_BAD("--------------------------------------------------------------------------");
 
 	const IdentityToken_t *pIdentity = highest_owner->GetIdentity();
-	unsigned int total = 0, highest_index = 0, total_size = 0, size;
+	size_t total = 0, highest_index = 0, total_size = 0, size;
 	unsigned int * pCount = new unsigned int[HANDLESYS_TYPEARRAY_SIZE+1];
 	memset(pCount, 0, ((HANDLESYS_TYPEARRAY_SIZE + 1) * sizeof(unsigned int)));
 
@@ -1153,7 +1153,7 @@ static void rep(const HandleReporter &fn, const char *fmt, ...)
 
 void HandleSystem::Dump(const HandleReporter &fn)
 {
-	unsigned int total_size = 0;
+	size_t total_size = 0;
 	rep(fn, "%-10.10s\t%-20.20s\t%-20.20s\t%-10.10s\t%-30.30s", "Handle", "Owner", "Type", "Memory", "Time Created");
 	rep(fn, "---------------------------------------------------------------------------------------------");
 	
@@ -1202,7 +1202,7 @@ void HandleSystem::Dump(const HandleReporter &fn)
 		}
 		const char *type = "ANON";
 		QHandleType *pType = &m_Types[m_Handles[i].type];
-		unsigned int size = 0;
+		size_t size = 0;
 		unsigned int parentIdx;
 		bool bresult;
 		if (pType->name)

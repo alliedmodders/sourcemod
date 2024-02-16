@@ -1015,7 +1015,7 @@ CURLcode Curl_connecthost(struct connectdata *conn,  /* context */
  * The socket 'long' will be -1 in case of failure!
  */
 CURLcode Curl_getconnectinfo(struct SessionHandle *data,
-                             long *param_longp,
+                             curl_socket_t *param_longp,
                              struct connectdata **connp)
 {
   if((data->state.lastconnect != -1) &&

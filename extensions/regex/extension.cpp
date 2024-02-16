@@ -125,10 +125,10 @@ static cell_t MatchRegex(IPluginContext *pCtx, const cell_t *params)
 		return 0;
 	}
 
-	size_t offset = 0;
+	int offset = 0;
 	if (params[0] >= 4)
 	{
-		offset = static_cast<size_t>(params[4]);
+		offset = params[4];
 	}
 
 	char *str;

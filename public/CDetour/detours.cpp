@@ -203,7 +203,7 @@ bool CDetour::CreateDetour()
 	}
 
 #if defined(_WIN64) || defined(__x86_64__)
-	int shortBytes = copy_bytes((unsigned char *)detour_address, NULL, OP_JMP_SIZE);
+	size_t shortBytes = copy_bytes((unsigned char *)detour_address, NULL, OP_JMP_SIZE);
 	detour_restore.bytes = copy_bytes((unsigned char *)detour_address, NULL, X64_ABS_SIZE);
 #else
 	detour_restore.bytes = copy_bytes((unsigned char *)detour_address, NULL, OP_JMP_SIZE);
@@ -211,7 +211,7 @@ bool CDetour::CreateDetour()
 
 	JitWriter wr;
 	JitWriter *jit = &wr;
-	jit_uint32_t CodeSize = 0;
+	size_t CodeSize = 0;
 
 	wr.outbase = NULL;
 	wr.outptr = NULL;

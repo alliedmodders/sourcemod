@@ -150,9 +150,9 @@ error_out:
 	return 0;
 }
 
-bool AddString(char **buf_p, size_t &maxlen, const char *string, int width, int prec, int flags)
+bool AddString(char **buf_p, size_t &maxlen, const char *string, size_t width, size_t prec, size_t flags)
 {
-	int size = 0;
+	size_t size = 0;
 	char *buf;
 	static char nlstr[] = {'(','n','u','l','l',')','\0'};
 
@@ -181,7 +181,7 @@ bool AddString(char **buf_p, size_t &maxlen, const char *string, int width, int 
 		size--;
 	}
 
-	if (size > (int)maxlen)
+	if (size > maxlen)
 	{
 		size = maxlen;
 	}

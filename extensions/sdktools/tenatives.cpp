@@ -132,11 +132,11 @@ void TempEntHooks::_DecRefCounter()
 	}
 }
 
-size_t TempEntHooks::_FillInPlayers(int *pl_array, IRecipientFilter *pFilter)
+int TempEntHooks::_FillInPlayers(int *pl_array, IRecipientFilter *pFilter)
 {
-	size_t size = static_cast<size_t>(pFilter->GetRecipientCount());
+	int size = pFilter->GetRecipientCount();
 
-	for (size_t i=0; i<size; i++)
+	for (int i=0; i<size; i++)
 	{
 		pl_array[i] = pFilter->GetRecipientIndex(i);
 	}
@@ -207,7 +207,7 @@ void TempEntHooks::OnPlaybackTempEntity(IRecipientFilter &filter, float delay, c
 	{
 		SourceHook::List<IPluginFunction *>::iterator iter;
 		IPluginFunction *pFunc;
-		size_t size;
+		int size;
 		cell_t res = static_cast<ResultType>(Pl_Continue);
 
 		TempEntityInfo *oldinfo = g_CurrentTE;

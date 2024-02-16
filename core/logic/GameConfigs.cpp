@@ -915,7 +915,7 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 		const char *curFile = customDir->GetEntryName();
 
 		/* Only allow .txt files */
-		int len = strlen(curFile);
+		size_t len = strlen(curFile);
 		if (len > 4 && strcmp(&curFile[len-4], ".txt") != 0)
 		{
 			customDir->NextEntry();

@@ -1080,7 +1080,7 @@ bool AdminCache::GetMethodIndex(const char *name, unsigned int *_index)
  */
 bool AdminCache::GetUnifiedSteamIdentity(const char *ident, char *out, size_t maxlen)
 {
-	int len = strlen(ident);
+	size_t len = strlen(ident);
 	if (!strcmp(ident, "BOT"))
 	{
 		// Bots

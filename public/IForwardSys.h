@@ -50,7 +50,7 @@
 using namespace SourcePawn;
 
 #define SMINTERFACE_FORWARDMANAGER_NAME		"IForwardManager"
-#define SMINTERFACE_FORWARDMANAGER_VERSION	4
+#define SMINTERFACE_FORWARDMANAGER_VERSION	5
 
 /*
  * There is some very important documentation at the bottom of this file.
@@ -107,7 +107,7 @@ namespace SourceMod
 	
 	struct ByrefInfo
 	{
-		unsigned int cells;
+		size_t cells;
 		cell_t *orig_addr;
 		int flags;
 		int sz_flags;
@@ -156,7 +156,7 @@ namespace SourceMod
 		 *
 		 * @return			Number of functions in forward.
 		 */
-		virtual unsigned int GetFunctionCount() =0;
+		virtual size_t GetFunctionCount() =0;
 
 		/**
 		 * @brief Returns the method of multi-calling this forward has.
@@ -184,7 +184,7 @@ namespace SourceMod
 		 * @param flags		Whether or not changes should be copied back to the input array.
 		 * @return			Error code, if any.
 		 */
-		virtual int PushArray(cell_t *inarray, unsigned int cells, int flags=0) =0;
+		virtual int PushArray(cell_t *inarray, size_t cells, int flags=0) =0;
 
 		/**
 		* @brief Pushes a string onto the current call.

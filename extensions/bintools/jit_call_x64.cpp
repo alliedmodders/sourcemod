@@ -273,7 +273,7 @@ inline void Write_Function_Epilogue(JitWriter *jit, bool is_void, bool has_param
 	X64_Return(jit);
 }
 
-inline jit_uint8_t Write_PushPOD(JitWriter *jit, const SourceHook::PassInfo *info, unsigned int offset)
+inline jit_uint8_t Write_PushPOD(JitWriter *jit, const SourceHook::PassInfo *info, size_t offset)
 {
 	bool needStack = false;
 	jit_uint8_t reg = NextPODReg(info->size);
@@ -297,7 +297,7 @@ inline jit_uint8_t Write_PushPOD(JitWriter *jit, const SourceHook::PassInfo *inf
 				else if (offset < SCHAR_MAX)
 					X64_Movzx_Reg64_Rm8_Disp8(jit, reg, kREG_RBX, (jit_int8_t)offset);
 				else
-					X64_Movzx_Reg64_Rm8_Disp32(jit, reg, kREG_RBX, offset);
+					X64_Movzx_Reg64_Rm8_Disp32(jit, reg, kREG_RBX, (jit_int32_t)offset);
 
 				break;
 			}
@@ -309,7 +309,7 @@ inline jit_uint8_t Write_PushPOD(JitWriter *jit, const SourceHook::PassInfo *inf
 				else if (offset < SCHAR_MAX)
 					X64_Movzx_Reg64_Rm16_Disp8(jit, reg, kREG_RBX, (jit_int8_t)offset);
 				else
-					X64_Movzx_Reg64_Rm16_Disp32(jit, reg, kREG_RBX, offset);
+					X64_Movzx_Reg64_Rm16_Disp32(jit, reg, kREG_RBX, (jit_int32_t)offset);
 
 				break;
 			}
@@ -321,7 +321,7 @@ inline jit_uint8_t Write_PushPOD(JitWriter *jit, const SourceHook::PassInfo *inf
 				else if (offset < SCHAR_MAX)
 					X64_Mov_Reg32_Rm_Disp8(jit, reg, kREG_EBX, (jit_int8_t)offset);
 				else
-					X64_Mov_Reg32_Rm_Disp32(jit, reg, kREG_RBX, offset);
+					X64_Mov_Reg32_Rm_Disp32(jit, reg, kREG_RBX, (jit_int32_t)offset);
 
 				break;
 			}
@@ -333,7 +333,7 @@ inline jit_uint8_t Write_PushPOD(JitWriter *jit, const SourceHook::PassInfo *inf
 				else if (offset < SCHAR_MAX)
 					X64_Mov_Reg_Rm_Disp8(jit, reg, kREG_EBX, (jit_int8_t)offset);
 				else
-					X64_Mov_Reg_Rm_Disp32(jit, reg, kREG_RBX, offset);
+					X64_Mov_Reg_Rm_Disp32(jit, reg, kREG_RBX, (jit_int32_t)offset);
 
 				break;
 			}
@@ -348,12 +348,12 @@ inline jit_uint8_t Write_PushPOD(JitWriter *jit, const SourceHook::PassInfo *inf
 				else if (offset < SCHAR_MAX)
 					X64_Mov_Reg_Rm_Disp8(jit, reg, kREG_RBX, (jit_int8_t)offset);
 				else
-					X64_Mov_Reg_Rm_Disp32(jit, reg, kREG_RBX, offset);
+					X64_Mov_Reg_Rm_Disp32(jit, reg, kREG_RBX, (jit_int32_t)offset);
 					
 				if (offset+8 < SCHAR_MAX)
 					X64_Mov_Reg_Rm_Disp8(jit, reg2, kREG_RBX, (jit_int8_t)(offset+8));
 				else
-					X64_Mov_Reg_Rm_Disp32(jit, reg2, kREG_RBX, offset+8);
+					X64_Mov_Reg_Rm_Disp32(jit, reg2, kREG_RBX, (jit_int32_t)(offset+8));
 
 				break;
 			}
@@ -365,7 +365,7 @@ inline jit_uint8_t Write_PushPOD(JitWriter *jit, const SourceHook::PassInfo *inf
 		else if (offset < SCHAR_MAX)
 			X64_Lea_DispRegImm8(jit, reg, kREG_RBX, (jit_int8_t)offset);
 		else
-			X64_Lea_DispRegImm32(jit, reg, kREG_RBX, offset);
+			X64_Lea_DispRegImm32(jit, reg, kREG_RBX, (jit_int32_t)offset);
 	}
 	
 	if (needStack)
@@ -399,7 +399,7 @@ inline jit_uint8_t Write_PushPOD(JitWriter *jit, const SourceHook::PassInfo *inf
 	return reg;
 }
 
-inline void Write_PushFloat(JitWriter *jit, const SourceHook::PassInfo *info, unsigned int offset, uint8_t *floatRegs)
+inline void Write_PushFloat(JitWriter *jit, const SourceHook::PassInfo *info, size_t offset, uint8_t *floatRegs)
 {
 	bool needStack = false;
 	jit_uint8_t floatReg = NextFloatReg(info->size);
@@ -430,9 +430,9 @@ inline void Write_PushFloat(JitWriter *jit, const SourceHook::PassInfo *info, un
 						X64_Movups_Rm_Disp8(jit, floatReg, kREG_EBX, (jit_int8_t)offset);
 				} else {
 					if (offset % 16 == 0)
-						X64_Movaps_Rm_Disp32(jit, floatReg, kREG_EBX, offset);
+						X64_Movaps_Rm_Disp32(jit, floatReg, kREG_EBX, (jit_int32_t)offset);
 					else
-						X64_Movups_Rm_Disp32(jit, floatReg, kREG_EBX, offset);
+						X64_Movups_Rm_Disp32(jit, floatReg, kREG_EBX, (jit_int32_t)offset);
 				}
 				break;
 			}
@@ -451,9 +451,9 @@ inline void Write_PushFloat(JitWriter *jit, const SourceHook::PassInfo *info, un
 						X64_Movupd_Rm_Disp8(jit, floatReg, kREG_EBX, (jit_int8_t)offset);
 				} else {
 					if (offset % 16 == 0)
-						X64_Movapd_Rm_Disp32(jit, floatReg, kREG_EBX, offset);
+						X64_Movapd_Rm_Disp32(jit, floatReg, kREG_EBX, (jit_int32_t)offset);
 					else
-						X64_Movupd_Rm_Disp32(jit, floatReg, kREG_EBX, offset);
+						X64_Movupd_Rm_Disp32(jit, floatReg, kREG_EBX, (jit_int32_t)offset);
 				}
 				break;
 			}
@@ -470,25 +470,25 @@ inline void Write_PushFloat(JitWriter *jit, const SourceHook::PassInfo *info, un
 
 				if (!offset) {
 					X64_Movaps_Rm(jit, floatReg, kREG_EBX);
-					X64_Movups_Rm_Disp8(jit, floatReg2, kREG_EBX, offset+8);
+					X64_Movups_Rm_Disp8(jit, floatReg2, kREG_EBX, (jit_int8_t)(offset+8));
 				} else if (offset < SCHAR_MAX) {
 					if (offset % 16 == 0)
 						X64_Movaps_Rm_Disp8(jit, floatReg, kREG_EBX, (jit_int8_t)offset);
 					else
 						X64_Movups_Rm_Disp8(jit, floatReg, kREG_EBX, (jit_int8_t)offset);
 					if ((offset + 8) % 16 == 0)
-						X64_Movaps_Rm_Disp8(jit, floatReg2, kREG_EBX, (jit_int8_t)offset+8);
+						X64_Movaps_Rm_Disp8(jit, floatReg2, kREG_EBX, (jit_int8_t)(offset+8));
 					else
-						X64_Movups_Rm_Disp8(jit, floatReg2, kREG_EBX, (jit_int8_t)offset+8);
+						X64_Movups_Rm_Disp8(jit, floatReg2, kREG_EBX, (jit_int8_t)(offset+8));
 				} else {
 					if (offset % 16 == 0)
-						X64_Movaps_Rm_Disp32(jit, floatReg, kREG_EBX, offset);
+						X64_Movaps_Rm_Disp32(jit, floatReg, kREG_EBX, (jit_int32_t)offset);
 					else
-						X64_Movups_Rm_Disp32(jit, floatReg, kREG_EBX, offset);
+						X64_Movups_Rm_Disp32(jit, floatReg, kREG_EBX, (jit_int32_t)offset);
 					if ((offset + 8) % 16 == 0)
-						X64_Movaps_Rm_Disp32(jit, floatReg2, kREG_EBX, offset+8);
+						X64_Movaps_Rm_Disp32(jit, floatReg2, kREG_EBX, (jit_int32_t)(offset+8));
 					else
-						X64_Movups_Rm_Disp32(jit, floatReg2, kREG_EBX, offset+8);
+						X64_Movups_Rm_Disp32(jit, floatReg2, kREG_EBX, (jit_int32_t)(offset+8));
 				}
 		}
 	} else if (info->flags & PASSFLAG_BYREF) {
@@ -716,7 +716,7 @@ inline int ClassifyObject(const PassInfo *info, ObjectClass *classes)
 	return numWords;
 }
 
-inline void Write_PushObject(JitWriter *jit, const SourceHook::PassInfo *info, unsigned int offset,
+inline void Write_PushObject(JitWriter *jit, const SourceHook::PassInfo *info, size_t offset,
                              const PassInfo *smInfo)
 {
 	if (info->flags & PASSFLAG_BYVAL)
@@ -800,7 +800,7 @@ inline void Write_PushObject(JitWriter *jit, const SourceHook::PassInfo *info, u
 		return;
 #endif
 
-		jit_uint32_t qwords = info->size >> 3;
+		jit_uint32_t qwords = (jit_uint32_t)(info->size >> 3);
 		jit_uint32_t bytes = info->size & 0x7;
 
 		//sub rsp, <size>
@@ -837,7 +837,7 @@ inline void Write_PushObject(JitWriter *jit, const SourceHook::PassInfo *info, u
 		else if (offset < SCHAR_MAX)
 			X64_Lea_DispRegImm8(jit, kREG_RSI, kREG_RBX, (jit_int8_t)offset);
 		else
-			X64_Lea_DispRegImm32(jit, kREG_RSI, kREG_RBX, offset);
+			X64_Lea_DispRegImm32(jit, kREG_RSI, kREG_RBX, (jit_int32_t)offset);
 
 		if (qwords)
 		{
@@ -854,7 +854,7 @@ inline void Write_PushObject(JitWriter *jit, const SourceHook::PassInfo *info, u
 		X64_Pop_Reg(jit, kREG_RSI);
 		X64_Pop_Reg(jit, kREG_RDI);
 
-		g_StackUsage += info->size;
+		g_StackUsage += (jit_uint32_t)info->size;
 	} else if (info->flags & PASSFLAG_BYREF) {
 push_byref:
 		//lea reg, [ebx+<offset>]
@@ -1044,7 +1044,7 @@ void *JIT_CallCompile(CallWrapper *pWrapper, FuncAddrMethod method)
 	JitWriter writer;
 	JitWriter *jit = &writer;
 
-	jit_uint32_t CodeSize = 0;
+	size_t CodeSize = 0;
 	bool Needs_Retbuf = false;
 	CallConvention Convention = pWrapper->GetCallConvention();
 	jit_uint32_t ParamCount = pWrapper->GetParamCount();
@@ -1110,7 +1110,7 @@ skip_retbuffer:
 	/* Write parameter push code */
 	for (jit_uint32_t i = 0; i < ParamCount; i++)
 	{
-		unsigned int offset = pWrapper->GetParamOffset(i);
+		size_t offset = pWrapper->GetParamOffset(i);
 		const SourceHook::PassInfo *info = pWrapper->GetSHParamInfo(i);
 		assert(info != NULL);
 

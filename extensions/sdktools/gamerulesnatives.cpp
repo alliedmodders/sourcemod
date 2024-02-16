@@ -195,7 +195,7 @@ static cell_t GameRules_GetProp(IPluginContext *pContext, const cell_t *params)
 {
 	char *prop;
 	int element = params[3];
-	int offset;
+	size_t offset;
 	int bit_count;
 	bool is_unsigned;
 
@@ -264,7 +264,7 @@ static cell_t GameRules_SetProp(IPluginContext *pContext, const cell_t *params)
 {
 	char *prop;
 	int element = params[4];
-	int offset;
+	size_t offset;
 	int bit_count;
 
 	void *pGameRules = GameRules();
@@ -320,7 +320,7 @@ static cell_t GameRules_SetProp(IPluginContext *pContext, const cell_t *params)
 
 	edict_t *proxyEdict = gamehelpers->EdictOfIndex(gamehelpers->EntityToBCompatRef(pProxy));
 	if (proxyEdict != NULL)
-		gamehelpers->SetEdictStateChanged(proxyEdict, offset);
+		gamehelpers->SetEdictStateChanged(proxyEdict, (unsigned short)offset);
 
 	return 0;
 }
@@ -329,7 +329,7 @@ static cell_t GameRules_GetPropFloat(IPluginContext *pContext, const cell_t *par
 {
 	char *prop;
 	int element = params[2];
-	int offset;
+	size_t offset;
 	int bit_count;
 
 	void *pGameRules = GameRules();
@@ -350,7 +350,7 @@ static cell_t GameRules_SetPropFloat(IPluginContext *pContext, const cell_t *par
 {
 	char *prop;
 	int element = params[3];
-	int offset;
+	size_t offset;
 	int bit_count;
 
 	void *pGameRules = GameRules();
@@ -379,7 +379,7 @@ static cell_t GameRules_SetPropFloat(IPluginContext *pContext, const cell_t *par
 
 	edict_t *proxyEdict = gamehelpers->EdictOfIndex(gamehelpers->EntityToBCompatRef(pProxy));
 	if (proxyEdict != NULL)
-		gamehelpers->SetEdictStateChanged(proxyEdict, offset);
+		gamehelpers->SetEdictStateChanged(proxyEdict, (unsigned short)offset);
 
 	return 0;
 }
@@ -388,7 +388,7 @@ static cell_t GameRules_GetPropEnt(IPluginContext *pContext, const cell_t *param
 {
 	char *prop;
 	int element = params[2];
-	int offset;
+	size_t offset;
 	int bit_count;
 
 	void *pGameRules = GameRules();
@@ -415,7 +415,7 @@ static cell_t GameRules_SetPropEnt(IPluginContext *pContext, const cell_t *param
 {
 	char *prop;
 	int element = params[3];
-	int offset;
+	size_t offset;
 	int bit_count;
 
 	void *pGameRules = GameRules();
@@ -460,7 +460,7 @@ static cell_t GameRules_SetPropEnt(IPluginContext *pContext, const cell_t *param
 
 	edict_t *proxyEdict = gamehelpers->EdictOfIndex(gamehelpers->EntityToBCompatRef(pProxy));
 	if (proxyEdict != NULL)
-		gamehelpers->SetEdictStateChanged(proxyEdict, offset);
+		gamehelpers->SetEdictStateChanged(proxyEdict, (unsigned short)offset);
 
 	return 0;
 }
@@ -469,7 +469,7 @@ static cell_t GameRules_GetPropVector(IPluginContext *pContext, const cell_t *pa
 {
 	char *prop;
 	int element = params[3];
-	int offset;
+	size_t offset;
 	int bit_count;
 
 	void *pGameRules = GameRules();
@@ -497,7 +497,7 @@ static cell_t GameRules_SetPropVector(IPluginContext *pContext, const cell_t *pa
 {
 	char *prop;
 	int element = params[3];
-	int offset;
+	size_t offset;
 	int bit_count;
 
 	void *pGameRules = GameRules();
@@ -531,7 +531,7 @@ static cell_t GameRules_SetPropVector(IPluginContext *pContext, const cell_t *pa
 
 	edict_t *proxyEdict = gamehelpers->EdictOfIndex(gamehelpers->EntityToBCompatRef(pProxy));
 	if (proxyEdict != NULL)
-		gamehelpers->SetEdictStateChanged(proxyEdict, offset);
+		gamehelpers->SetEdictStateChanged(proxyEdict, (unsigned short)offset);
 
 	return 1;
 }
@@ -539,7 +539,7 @@ static cell_t GameRules_SetPropVector(IPluginContext *pContext, const cell_t *pa
 static cell_t GameRules_GetPropString(IPluginContext *pContext, const cell_t *params)
 {
 	char *prop;
-	int offset;
+	size_t offset;
 	int bit_count;
 
 	int element = 0;
@@ -573,7 +573,7 @@ static cell_t GameRules_GetPropString(IPluginContext *pContext, const cell_t *pa
 	{
 		size_t len;
 		pContext->StringToLocalUTF8(params[2], params[3], src, &len);
-		return len;
+		return (cell_t)len;
 	}
 
 	pContext->StringToLocal(params[2], params[3], "");
@@ -583,7 +583,7 @@ static cell_t GameRules_GetPropString(IPluginContext *pContext, const cell_t *pa
 static cell_t GameRules_SetPropString(IPluginContext *pContext, const cell_t *params)
 {
 	char *prop;
-	int offset;
+	size_t offset;
 	int maxlen;
 	int bit_count;
 
@@ -647,9 +647,9 @@ static cell_t GameRules_SetPropString(IPluginContext *pContext, const cell_t *pa
 
 	edict_t *proxyEdict = gamehelpers->EdictOfIndex(gamehelpers->EntityToBCompatRef(pProxy));
 	if (proxyEdict != NULL)
-		gamehelpers->SetEdictStateChanged(proxyEdict, offset);
+		gamehelpers->SetEdictStateChanged(proxyEdict, (unsigned short)offset);
 
-	return len;
+	return (cell_t)len;
 }
 
 sp_nativeinfo_t g_GameRulesNatives[] = 

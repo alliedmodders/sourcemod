@@ -57,7 +57,7 @@ public: //IHandleTypeDispatch
 		CellArray *array = (CellArray *)object;
 		delete array;
 	}
-	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize)
 	{
 		CellArray *pArray = (CellArray *)object;
 		*pSize = sizeof(CellArray) + pArray->mem_usage();
@@ -315,7 +315,7 @@ static cell_t PopStackArray(IPluginContext *pContext, const cell_t *params)
 	memcpy(addr, blk, sizeof(cell_t) * indexes);
 	array->remove(idx);
 
-	return indexes;
+	return (cell_t)indexes;
 }
 
 static cell_t IsStackEmpty(IPluginContext *pContext, const cell_t *params)
@@ -493,7 +493,7 @@ static cell_t GetStackBlockSize(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
 	}
 
-	return array->blocksize();
+	return (cell_t)array->blocksize();
 }
 
 static cell_t GetStackSize(IPluginContext *pContext, const cell_t *params)
@@ -508,7 +508,7 @@ static cell_t GetStackSize(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
 	}
 
-	return array->size();
+	return (cell_t)array->size();
 }
 
 REGISTER_NATIVES(cellStackNatives)

@@ -86,7 +86,7 @@ void InitTeamNatives()
 
 static cell_t GetTeamCount(IPluginContext *pContext, const cell_t *params)
 {
-	return g_Teams.size();
+	return (cell_t)g_Teams.size();
 }
 
 static int g_teamname_offset = -1;

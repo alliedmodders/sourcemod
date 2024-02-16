@@ -46,13 +46,13 @@ public: //ICallable
 	virtual int PushCellByRef(cell_t *cell, int flags);
 	virtual int PushFloat(float number);
 	virtual int PushFloatByRef(float *number, int flags);
-	virtual int PushArray(cell_t *inarray, unsigned int cells, int flags);
+	virtual int PushArray(cell_t *inarray, size_t cells, int flags);
 	virtual int PushString(const char *string);
 	virtual int PushStringEx(char *buffer, size_t length, int sz_flags, int cp_flags);
 	virtual void Cancel();
 public: //IForward
 	virtual const char *GetForwardName();
-	virtual unsigned int GetFunctionCount();
+	virtual size_t GetFunctionCount();
 	virtual ExecType GetExecType();
 	virtual int Execute(cell_t *result, IForwardFilter *filter);
 public: //IChangeableForward
@@ -75,8 +75,8 @@ private:
 	int PushNullString();
 	int PushNullVector();
 	int _ExecutePushRef(IPluginFunction *func, ParamType type, FwdParamInfo *param);
-	void _Int_PushArray(cell_t *inarray, unsigned int cells, int flags);
-	void _Int_PushString(cell_t *inarray, unsigned int cells, int sz_flags, int cp_flags);
+	void _Int_PushArray(cell_t *inarray, size_t cells, int flags);
+	void _Int_PushString(cell_t *inarray, size_t cells, int sz_flags, int cp_flags);
 	inline int SetError(int err)
 	{
 		m_errstate = err;

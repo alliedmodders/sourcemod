@@ -83,10 +83,9 @@ cell_t FindClientPrefCookie(IPluginContext *pContext, const cell_t *params)
 		NULL);
 }
 
-size_t IsAuthIdConnected(char *authID)
+int IsAuthIdConnected(char *authID)
 {
 	IGamePlayer *player;
-	const char *authString;
 	
 	for (int playerIndex = playerhelpers->GetMaxClients()+1; --playerIndex > 0;)
 	{
@@ -468,7 +467,7 @@ cell_t GetClientCookieTime(IPluginContext *pContext, const cell_t *params)
 		return 0;
 	}
 
-	return value;
+	return (cell_t)value;
 }
 
 static cell_t Cookie_Set(IPluginContext *pContext, const cell_t *params)

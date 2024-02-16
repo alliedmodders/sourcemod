@@ -380,7 +380,7 @@ static cell_t sm_Geoip_Latitude(IPluginContext *pCtx, const cell_t *params)
 	StripPort(ip);
 
 	const char *path[] = {"location", "latitude", NULL};
-	double latitude = lookupDouble(ip, path);
+	float latitude = (float)lookupDouble(ip, path);
 
 	return sp_ftoc(latitude);
 }
@@ -392,19 +392,19 @@ static cell_t sm_Geoip_Longitude(IPluginContext *pCtx, const cell_t *params)
 	StripPort(ip);
 
 	const char *path[] = {"location", "longitude", NULL};
-	double longitude = lookupDouble(ip, path);
+	float longitude = (float)lookupDouble(ip, path);
 
 	return sp_ftoc(longitude);
 }
 
 static cell_t sm_Geoip_Distance(IPluginContext *pCtx, const cell_t *params)
 {
-	float earthRadius = params[5] ? 3958.0 : 6370.997; // miles / km
+	float earthRadius = params[5] ? 3958.0f : 6370.997f; // miles / km
 
-	float lat1 = sp_ctof(params[1]) * (M_PI / 180);
-	float lon1 = sp_ctof(params[2]) * (M_PI / 180);
-	float lat2 = sp_ctof(params[3]) * (M_PI / 180);
-	float lon2 = sp_ctof(params[4]) * (M_PI / 180);
+	float lat1 = sp_ctof(params[1]) * ((float)M_PI / 180);
+	float lon1 = sp_ctof(params[2]) * ((float)M_PI / 180);
+	float lat2 = sp_ctof(params[3]) * ((float)M_PI / 180);
+	float lon2 = sp_ctof(params[4]) * ((float)M_PI / 180);
 
 	return sp_ftoc(earthRadius * acos(sin(lat1) * sin(lat2) + cos(lat1) * cos(lat2) * cos(lon2 - lon1)));
 }

@@ -177,13 +177,13 @@ void NextMapManager::OnSourceModLevelChange( const char *mapName )
 			m_mapHistory.push_back(new MapChangeData(lastMap, newReason, m_tempChangeInfo.startTime));
 		}
 
-		int historydiff = sm_maphistory_size.GetInt();
+		long historydiff = sm_maphistory_size.GetInt();
 		if (historydiff > 0)
 		{
-			historydiff -= m_mapHistory.size();
+			historydiff -= (long)m_mapHistory.size();
 		} else if (historydiff < 0)
 		{
-			historydiff = (m_mapHistory.size() * -1);
+			historydiff = (long)(m_mapHistory.size() * -1);
 		}
 
 		for (SourceHook::List<MapChangeData *>::iterator iter = m_mapHistory.begin(); historydiff++ < 0; iter = m_mapHistory.erase(iter))

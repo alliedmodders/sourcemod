@@ -429,7 +429,7 @@ static CURLcode file_do(struct connectdata *conn, bool *done)
   curl_off_t expected_size=0;
   bool fstated=FALSE;
   ssize_t nread;
-  size_t bytestoread;
+  unsigned int bytestoread;
   struct SessionHandle *data = conn->data;
   char *buf = data->state.buffer;
   curl_off_t bytecount = 0;
@@ -541,7 +541,7 @@ static CURLcode file_do(struct connectdata *conn, bool *done)
 
   while(res == CURLE_OK) {
     /* Don't fill a whole buffer if we want less than all data */
-    bytestoread = (expected_size < BUFSIZE-1)?(size_t)expected_size:BUFSIZE-1;
+    bytestoread = (expected_size < BUFSIZE-1)?(unsigned int)expected_size:BUFSIZE-1;
     nread = read(fd, buf, bytestoread);
 
     if( nread > 0)

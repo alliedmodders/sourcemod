@@ -56,7 +56,7 @@ public: //IHandleTypeDispatch
 		CellArray *array = (CellArray *)object;
 		delete array;
 	}
-	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize)
 	{
 		CellArray *pArray = (CellArray *)object;
 		*pSize = sizeof(CellArray) + pArray->mem_usage();
@@ -298,7 +298,7 @@ static cell_t GetArrayString(IPluginContext *pContext, const cell_t *params)
 
 	pContext->StringToLocalUTF8(params[3], params[4], (char *)blk, &numWritten);
 
-	return numWritten;
+	return (cell_t)numWritten;
 }
 
 static cell_t GetArrayArray(IPluginContext *pContext, const cell_t *params)
@@ -343,7 +343,7 @@ static cell_t GetArrayArray(IPluginContext *pContext, const cell_t *params)
 
 	memcpy(addr, blk, sizeof(cell_t) * indexes);
 
-	return indexes;
+	return (cell_t)indexes;
 }
 
 static cell_t SetArrayCell(IPluginContext *pContext, const cell_t *params)
@@ -426,7 +426,7 @@ static cell_t SetArrayString(IPluginContext *pContext, const cell_t *params)
 		maxlength = (size_t)params[4];
 	}
 
-	return strncopy((char*)blk, str, maxlength);
+	return (cell_t)strncopy((char*)blk, str, maxlength);
 }
 
 static cell_t SetArrayArray(IPluginContext *pContext, const cell_t *params)
@@ -471,7 +471,7 @@ static cell_t SetArrayArray(IPluginContext *pContext, const cell_t *params)
 
 	memcpy(blk, addr, sizeof(cell_t) * indexes);
 
-	return indexes;
+	return (cell_t)indexes;
 }
 
 static cell_t ShiftArrayUp(IPluginContext *pContext, const cell_t *params)
@@ -662,7 +662,7 @@ static cell_t GetArrayBlockSize(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
 	}
 
-	return array->blocksize();
+	return (cell_t)array->blocksize();
 }
 
 REGISTER_NATIVES(cellArrayNatives)

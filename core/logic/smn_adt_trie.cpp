@@ -213,7 +213,7 @@ public: //IHandleTypeDispatch
 			delete snapshot;
 		}
 	}
-	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize)
 	{
 		if (type == htCellTrie)
 		{
@@ -503,7 +503,7 @@ static cell_t GetTrieArray(IPluginContext *pContext, const cell_t *params)
 	if (length > size_t(params[4]))
 		*pSize = params[4];
 	else
-		*pSize = length;
+		*pSize = (cell_t)length;
 
 	memcpy(pValue, base, sizeof(cell_t) * pSize[0]);
 	return 1;
@@ -560,7 +560,7 @@ static cell_t GetTrieSize(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
 	}
 
-	return pTrie->map.elements();
+	return (cell_t)pTrie->map.elements();
 }
 
 static cell_t CreateTrieSnapshot(IPluginContext *pContext, const cell_t *params)
@@ -609,7 +609,7 @@ static cell_t TrieSnapshotLength(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", hndl, err);
 	}
 
-	return snapshot->length;
+	return (cell_t)snapshot->length;
 }
 
 static cell_t TrieSnapshotKeyBufferSize(IPluginContext *pContext, const cell_t *params)
@@ -630,7 +630,7 @@ static cell_t TrieSnapshotKeyBufferSize(IPluginContext *pContext, const cell_t *
 	if (index >= snapshot->length)
 		return pContext->ThrowNativeError("Invalid index %d", index);
 
-	return strlen(snapshot->strings.GetString(snapshot->keys[index])) + 1;
+	return (cell_t)strlen(snapshot->strings.GetString(snapshot->keys[index])) + 1;
 }
 
 static cell_t GetTrieSnapshotKey(IPluginContext *pContext, const cell_t *params)
@@ -654,7 +654,7 @@ static cell_t GetTrieSnapshotKey(IPluginContext *pContext, const cell_t *params)
 	size_t written;
 	const char *str = snapshot->strings.GetString(snapshot->keys[index]);
 	pContext->StringToLocalUTF8(params[3], params[4], str, &written);
-	return written;
+	return (cell_t)written;
 }
 
 static cell_t CloneTrie(IPluginContext *pContext, const cell_t *params)

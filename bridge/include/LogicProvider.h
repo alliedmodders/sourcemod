@@ -61,7 +61,7 @@ struct sm_logic_t
 	size_t			(*atcprintf)(char *, size_t, const char *, IPluginContext *, const cell_t *, int *);
 	bool			(*CoreTranslate)(char *,  size_t, const char *, unsigned int, size_t *, ...);
 	void            (*AddCorePhraseFile)(const char *filename);
-	unsigned int	(*ReplaceAll)(char*, size_t, const char *, const char *, bool);
+	size_t			(*ReplaceAll)(char*, size_t, const char *, const char *, bool);
 	char            *(*ReplaceEx)(char *, size_t, const char *, size_t, const char *, size_t, bool);
 	size_t          (*DecodeHexString)(unsigned char *, size_t, const char *);
 	IGameConfig *   (*GetCoreGameConfig)();

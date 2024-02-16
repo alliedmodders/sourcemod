@@ -91,7 +91,7 @@ uint32_t PseudoAddressManager::ToPseudoAddress(void *addr)
 	if (diff > (UINT32_MAX >> PSEUDO_INDEX_BITS))
 		return 0;
 
-	return (index << PSEUDO_OFFSET_BITS) | diff;
+	return (uint32_t)((index << PSEUDO_OFFSET_BITS) | diff);
 #else
 	return 0;
 #endif

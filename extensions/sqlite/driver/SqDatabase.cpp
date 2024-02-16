@@ -208,7 +208,7 @@ IPreparedQuery *SqDatabase::PrepareQueryEx(const char *query,
 										   int *errCode/* =NULL */)
 {
 	sqlite3_stmt *stmt = NULL;
-	if ((m_LastErrorCode = sqlite3_prepare_v2(m_sq3, query, len, &stmt, NULL)) != SQLITE_OK
+	if ((m_LastErrorCode = sqlite3_prepare_v2(m_sq3, query, (int)len, &stmt, NULL)) != SQLITE_OK
 		|| !stmt)
 	{
 		const char *msg;

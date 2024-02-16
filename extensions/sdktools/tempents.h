@@ -57,7 +57,7 @@ public:
 	bool TE_GetEntDataVector(const char *name, float vector[3]);
 	void Send(IRecipientFilter &filter, float delay);
 private:
-	int _FindOffset(const char *name, int *size=NULL);
+	size_t _FindOffset(const char *name, int *size=NULL);
 private:
 	void *m_Me;
 	ServerClass *m_Sc;
@@ -107,7 +107,7 @@ public:
 private:
 	void _IncRefCounter();
 	void _DecRefCounter();
-	size_t _FillInPlayers(int *pl_array, IRecipientFilter *pFilter);
+	int _FillInPlayers(int *pl_array, IRecipientFilter *pFilter);
 private:
 	IBasicTrie *m_TEHooks;
 	SourceHook::List<TEHookInfo *> m_HookInfo;

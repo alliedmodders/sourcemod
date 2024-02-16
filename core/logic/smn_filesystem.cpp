@@ -73,9 +73,9 @@ class FileObject
 public:
 	virtual ~FileObject()
 	{}
-	virtual size_t Read(void *pOut, int size) = 0;
+	virtual size_t Read(void *pOut, size_t size) = 0;
 	virtual char *ReadLine(char *pOut, int size) = 0;
-	virtual size_t Write(const void *pData, int size) = 0;
+	virtual size_t Write(const void *pData, size_t size) = 0;
 	virtual bool Seek(int pos, int seek_type) = 0;
 	virtual int Tell() = 0;
 	virtual bool Flush() = 0;
@@ -119,14 +119,14 @@ public:
 		return true;
 	}
 
-	size_t Read(void *pOut, int size) override {
-		return (size_t)bridge->filesystem->Read(pOut, size, handle_);
+	size_t Read(void *pOut, size_t size) override {
+		return bridge->filesystem->Read(pOut, size, handle_);
 	}
 	char *ReadLine(char *pOut, int size) override {
 		return bridge->filesystem->ReadLine(pOut, size, handle_);
 	}
-	size_t Write(const void *pData, int size) override {
-		return (size_t)bridge->filesystem->Write(pData, size, handle_);
+	size_t Write(const void *pData, size_t size) override {
+		return bridge->filesystem->Write(pData, size, handle_);
 	}
 	bool Seek(int pos, int seek_type) override  {
 		bridge->filesystem->Seek(handle_, pos, seek_type);
@@ -183,13 +183,13 @@ public:
 		return unlink(path) == 0;
 	}
 
-	size_t Read(void *pOut, int size) override {
+	size_t Read(void *pOut, size_t size) override {
 		return fread(pOut, 1, size, fp_);
 	}
 	char *ReadLine(char *pOut, int size) override {
 		return fgets(pOut, size, fp_);
 	}
-	size_t Write(const void *pData, int size) override {
+	size_t Write(const void *pData, size_t size) override {
 		return fwrite(pData, 1, size, fp_);
 	}
 	bool Seek(int pos, int seek_type) override  {
@@ -675,7 +675,7 @@ static cell_t sm_FileSize(IPluginContext *pContext, const cell_t *params)
 		
 		if (!bridge->filesystem->FileExists(name, pathID))
 			return -1;
-		return bridge->filesystem->Size(name, pathID);
+		return (cell_t)bridge->filesystem->Size(name, pathID);
 	}
 
 	char realpath[PLATFORM_MAX_PATH];
@@ -817,7 +817,7 @@ static cell_t sm_BuildPath(IPluginContext *pContext, const cell_t *params)
 			return 0;
 	}
 
-	return g_pSM->BuildPath(Path_SM_Rel, buffer, params[3], "%s", path);
+	return (cell_t)g_pSM->BuildPath(Path_SM_Rel, buffer, params[3], "%s", path);
 }
 
 static cell_t sm_LogToGame(IPluginContext *pContext, const cell_t *params)
@@ -995,7 +995,7 @@ static cell_t sm_ReadFile(IPluginContext *pContext, const cell_t *params)
 	if ((read != size_t(params[3] * params[4])) && file->HasError())
 		return -1;
 
-	return read / params[4];
+	return (cell_t)read / params[4];
 }
 
 static cell_t sm_ReadFileString(IPluginContext *pContext, const cell_t *params)

@@ -127,7 +127,7 @@ const char *ValveMenuStyle::GetStyleName()
 	return "valve";
 }
 
-unsigned int ValveMenuStyle::GetMaxPageItems()
+size_t ValveMenuStyle::GetMaxPageItems()
 {
 	return 8;
 }
@@ -149,7 +149,7 @@ bool ValveMenuStyle::DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh
 	return BaseMenuStyle::DoClientMenu(client, menu, mh, time);
 }
 
-bool ValveMenuStyle::DoClientMenu(int client, CBaseMenu *menu, unsigned int first_item, IMenuHandler *mh, unsigned int time)
+bool ValveMenuStyle::DoClientMenu(int client, CBaseMenu *menu, size_t first_item, IMenuHandler *mh, unsigned int time)
 {
 	if (vsp_interface == NULL)
 	{
@@ -162,7 +162,7 @@ bool ValveMenuStyle::DoClientMenu(int client, CBaseMenu *menu, unsigned int firs
 	return BaseMenuStyle::DoClientMenu(client, menu, first_item, mh, time);
 }
 
-unsigned int ValveMenuStyle::GetApproxMemUsage()
+size_t ValveMenuStyle::GetApproxMemUsage()
 {
 	return sizeof(ValveMenuStyle) + (sizeof(CValveMenuPlayer) * 257);
 }
@@ -346,7 +346,7 @@ int CValveMenuDisplay::GetAmountRemaining()
 	return -1;
 }
 
-unsigned int CValveMenuDisplay::GetApproxMemUsage()
+size_t CValveMenuDisplay::GetApproxMemUsage()
 {
 	return sizeof(CValveMenuDisplay) + (sizeof(KeyValues) * m_NextPos * 10);
 }
@@ -396,7 +396,7 @@ bool CValveMenu::Display(int client, unsigned int time, IMenuHandler *alt_handle
 
 bool CValveMenu::DisplayAtItem(int client,
 							   unsigned int time,
-							   unsigned int start_item,
+							   size_t start_item,
 							   IMenuHandler *alt_handler/* =NULL */)
 {
 	if (m_bCancelling)
@@ -419,7 +419,7 @@ void CValveMenu::SetMenuOptionFlags(unsigned int flags)
 	CBaseMenu::SetMenuOptionFlags(flags);
 }
 
-unsigned int CValveMenu::GetApproxMemUsage()
+size_t CValveMenu::GetApproxMemUsage()
 {
 	return sizeof(CValveMenu) + GetBaseMemUsage();
 }

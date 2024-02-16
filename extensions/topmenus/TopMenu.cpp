@@ -40,7 +40,6 @@ struct obj_by_name_t
 };
 
 int _SortObjectNamesDescending(const void *ptr1, const void *ptr2);
-unsigned int strncopy(char *dest, const char *src, size_t count);
 size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...);
 
 TopMenu::TopMenu(ITopMenuObjectCallbacks *callbacks)
@@ -91,9 +90,9 @@ TopMenu::~TopMenu()
 	}
 }
 
-unsigned int TopMenu::CalcMemUsage()
+size_t TopMenu::CalcMemUsage()
 {
-	unsigned int size = sizeof(TopMenu);
+	size_t size = sizeof(TopMenu);
 
 	size += m_Config.strings.GetMemTable()->GetMemUsage();
 	size += (m_Config.cats.size() * sizeof(int));
@@ -519,7 +518,7 @@ bool TopMenu::FindCategoryByObject(unsigned int obj_id, size_t *index)
 	return false;
 }
 
-bool TopMenu::DisplayCategory(int client, unsigned int category, unsigned int hold_time, bool last_position)
+bool TopMenu::DisplayCategory(int client, size_t category, unsigned int hold_time, bool last_position)
 {
 	UpdateClientCategory(client, category);
 
@@ -797,7 +796,7 @@ void TopMenu::UpdateClientRoot(int client, IGamePlayer *pGamePlayer)
 	pClient->last_root_pos = 0;
 }
 
-void TopMenu::UpdateClientCategory(int client, unsigned int category, bool bSkipRootCheck)
+void TopMenu::UpdateClientCategory(int client, size_t category, bool bSkipRootCheck)
 {
 	bool has_access = false;
 
@@ -919,7 +918,7 @@ void TopMenu::UpdateClientCategory(int client, unsigned int category, bool bSkip
 	player_cat->serial = cat->serial;
 }
 
-void TopMenu::SortCategoryIfNeeded(unsigned int category)
+void TopMenu::SortCategoryIfNeeded(size_t category)
 {
 	topmenu_category_t *cat = m_Categories[category];
 	if (!cat->reorder)
@@ -936,7 +935,7 @@ void TopMenu::SortCategoryIfNeeded(unsigned int category)
 		return;
 	}
 
-	CVector<unsigned int> to_sort;
+	CVector<size_t> to_sort;
 	for (size_t i = 0; i < cat->obj_list.size(); i++)
 	{
 		to_sort.push_back(i);
@@ -1251,7 +1250,7 @@ int _SortObjectNamesDescending(const void *ptr1, const void *ptr2)
 	return strcmp(obj1->name, obj2->name);
 }
 
-unsigned int strncopy(char *dest, const char *src, size_t count)
+size_t strncopy(char *dest, const char *src, size_t count)
 {
 	if (!count)
 	{

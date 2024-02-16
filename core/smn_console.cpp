@@ -535,7 +535,7 @@ static cell_t GetConVarDefault(IPluginContext *pContext, const cell_t *params)
 	size_t bytes;
 	pContext->StringToLocalUTF8(params[2], params[3], pConVar->GetDefault(), &bytes);
 
-	return bytes;
+	return (cell_t)bytes;
 }
 
 static cell_t sm_GetConVarFlags(IPluginContext *pContext, const cell_t *params)

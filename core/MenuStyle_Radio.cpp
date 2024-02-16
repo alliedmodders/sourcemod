@@ -68,7 +68,7 @@ static bool s_RadioClosesOnInvalidSlot = false;
 CRadioStyle::CRadioStyle()
 {
 	m_players = new CRadioMenuPlayer[256+1];
-	for (size_t i = 0; i < 256+1; i++)
+	for (unsigned int i = 0; i < 256+1; i++)
 	{
 		m_players[i].Radio_SetIndex(i);
 	}
@@ -237,7 +237,7 @@ IBaseMenu *CRadioStyle::CreateMenu(IMenuHandler *pHandler, IdentityToken_t *pOwn
 	return new CRadioMenu(pHandler, pOwner);
 }
 
-unsigned int CRadioStyle::GetMaxPageItems()
+size_t CRadioStyle::GetMaxPageItems()
 {
 	return s_RadioMaxPageItems;
 }
@@ -304,7 +304,7 @@ void CRadioStyle::ProcessWatchList()
 	}
 }
 
-unsigned int CRadioStyle::GetApproxMemUsage()
+size_t CRadioStyle::GetApproxMemUsage()
 {
 	return sizeof(CRadioStyle) + (sizeof(CRadioMenuPlayer) * 257);
 }
@@ -565,7 +565,7 @@ bool CRadioDisplay::SetSelectableKeys(unsigned int keymap)
 	return true;
 }
 
-unsigned int CRadioDisplay::GetApproxMemUsage()
+size_t CRadioDisplay::GetApproxMemUsage()
 {
 	return sizeof(CRadioDisplay)
 		+ m_BufferText.size()
@@ -595,7 +595,7 @@ bool CRadioMenu::Display(int client, unsigned int time, IMenuHandler *alt_handle
 
 bool CRadioMenu::DisplayAtItem(int client,
 							   unsigned int time,
-							   unsigned int start_item,
+							   size_t start_item,
 							   IMenuHandler *alt_handler)
 {
 #if defined MENU_DEBUG
@@ -633,7 +633,7 @@ void CRadioMenu::Cancel_Finally()
 	g_RadioMenuStyle.CancelMenu(this);
 }
 
-unsigned int CRadioMenu::GetApproxMemUsage()
+size_t CRadioMenu::GetApproxMemUsage()
 {
 	return sizeof(CRadioMenu) + GetBaseMemUsage();
 }

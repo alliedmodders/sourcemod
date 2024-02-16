@@ -919,7 +919,7 @@ static cell_t FindSendPropInfo(IPluginContext *pContext, const cell_t *params)
 	}
 
 	SendProp *pProp = info.prop;
-	unsigned int actual_offset = info.actual_offset;
+	size_t actual_offset = info.actual_offset;
 
 	// SendPropArray / SendPropArray2
 	if (pProp->GetType() == DPT_Array && pProp->GetArrayProp())
@@ -982,7 +982,7 @@ static cell_t FindSendPropInfo(IPluginContext *pContext, const cell_t *params)
 
 	*pBits = pProp->m_nBits;
 
-	return actual_offset;
+	return (cell_t)actual_offset;
 }
 
 static void GuessDataPropTypes(typedescription_t *td, cell_t * pSize, cell_t * pType)
@@ -1154,7 +1154,7 @@ static cell_t FindDataMapInfo(IPluginContext *pContext, const cell_t *params)
 		}
 	}
 
-	return info.actual_offset;
+	return (cell_t)info.actual_offset;
 }
 
 static cell_t GetEntDataString(IPluginContext *pContext, const cell_t *params)
@@ -1176,7 +1176,7 @@ static cell_t GetEntDataString(IPluginContext *pContext, const cell_t *params)
 	char *src = (char *)((uint8_t *)pEntity + offset);
 	pContext->StringToLocalUTF8(params[3], params[4], src, &len);
 
-	return len;
+	return (cell_t)len;
 }
 
 static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
@@ -1206,7 +1206,7 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 		g_HL2.SetEdictStateChanged(pEdict, offset);
 	}
 
-	return len;
+	return (cell_t)len;
 }
 
 #define FIND_PROP_DATA(td) \
@@ -1470,7 +1470,7 @@ static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
 	char *prop;
-	int offset;
+	size_t offset;
 	edict_t *pEdict;
 	int bit_count;
 	bool is_unsigned = false;
@@ -1584,7 +1584,7 @@ static cell_t SetEntProp(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
 	char *prop;
-	int offset;
+	size_t offset;
 	edict_t *pEdict;
 	int bit_count;
 
@@ -1685,7 +1685,7 @@ static cell_t SetEntProp(IPluginContext *pContext, const cell_t *params)
 	
 	if (params[2] == Prop_Send && (pEdict != NULL))
 	{
-		g_HL2.SetEdictStateChanged(pEdict, offset);
+		g_HL2.SetEdictStateChanged(pEdict, (unsigned short)offset);
 	}
 
 	return 0;
@@ -1695,7 +1695,7 @@ static cell_t GetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
 	char *prop;
-	int offset;
+	size_t offset;
 	int bit_count;
 	edict_t *pEdict;
 
@@ -1758,7 +1758,7 @@ static cell_t SetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
 	char *prop;
-	int offset;
+	size_t offset;
 	int bit_count;
 	edict_t *pEdict;
 
@@ -1820,7 +1820,7 @@ static cell_t SetEntPropFloat(IPluginContext *pContext, const cell_t *params)
 
 	if (params[2] == Prop_Send && (pEdict != NULL))
 	{
-		g_HL2.SetEdictStateChanged(pEdict, offset);
+		g_HL2.SetEdictStateChanged(pEdict, (unsigned short)offset);
 	}
 
 	return 1;
@@ -1839,7 +1839,7 @@ static cell_t GetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
 	char *prop;
-	int offset;
+	size_t offset;
 	int bit_count;
 	edict_t *pEdict;
 	PropEntType type = PropEnt_Unknown;
@@ -1954,7 +1954,7 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
 	char *prop;
-	int offset;
+	size_t offset;
 	int bit_count;
 	edict_t *pEdict;
 	PropEntType type = PropEnt_Unknown;
@@ -2052,7 +2052,7 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 
 			if (params[2] == Prop_Send && (pEdict != NULL))
 			{
-				g_HL2.SetEdictStateChanged(pEdict, offset);
+				g_HL2.SetEdictStateChanged(pEdict, (unsigned short)offset);
 			}
 		}
 
@@ -2094,7 +2094,7 @@ static cell_t GetEntPropVector(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
 	char *prop;
-	int offset;
+	size_t offset;
 	int bit_count;
 	edict_t *pEdict;
 
@@ -2171,7 +2171,7 @@ static cell_t SetEntPropVector(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
 	char *prop;
-	int offset;
+	size_t offset;
 	int bit_count;
 	edict_t *pEdict;
 
@@ -2243,7 +2243,7 @@ static cell_t SetEntPropVector(IPluginContext *pContext, const cell_t *params)
 
 	if (params[2] == Prop_Send && (pEdict != NULL))
 	{
-		g_HL2.SetEdictStateChanged(pEdict, offset);
+		g_HL2.SetEdictStateChanged(pEdict, (unsigned short)offset);
 	}
 
 	return 1;
@@ -2253,7 +2253,7 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
 	char *prop;
-	int offset;
+	size_t offset;
 	int bit_count;
 	edict_t *pEdict;
 
@@ -2358,7 +2358,7 @@ static cell_t GetEntPropString(IPluginContext *pContext, const cell_t *params)
 	{
 		size_t len;
 		pContext->StringToLocalUTF8(params[4], params[5], src, &len);
-		return len;
+		return (cell_t)len;
 	}
 
 	pContext->StringToLocal(params[4], params[5], "");
@@ -2369,7 +2369,7 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
 	char *prop;
-	int offset;
+	size_t offset;
 	int maxlen;
 	int bit_count;
 	edict_t *pEdict;
@@ -2502,10 +2502,10 @@ static cell_t SetEntPropString(IPluginContext *pContext, const cell_t *params)
 
 	if (params[2] == Prop_Send && (pEdict != NULL))
 	{
-		g_HL2.SetEdictStateChanged(pEdict, offset);
+		g_HL2.SetEdictStateChanged(pEdict, (unsigned short)offset);
 	}
 
-	return len;
+	return (cell_t)len;
 }
 
 static int32_t SDKEntFlagToSMEntFlag(int flag)
@@ -2695,7 +2695,7 @@ static cell_t GetEntityFlags(IPluginContext *pContext, const cell_t *params)
 			params[1]);
 	}
 
-	int offset = info.actual_offset;
+	size_t offset = info.actual_offset;
 
 	int32_t actual_flags = *(int32_t *)((uint8_t *)pEntity + offset);
 	int32_t sm_flags = 0;
@@ -2741,7 +2741,7 @@ static cell_t SetEntityFlags(IPluginContext *pContext, const cell_t *params)
 			params[1]);
 	}
 
-	int offset = info.actual_offset;
+	size_t offset = info.actual_offset;
 
 	int32_t sm_flags = params[2];
 	int32_t actual_flags = 0;

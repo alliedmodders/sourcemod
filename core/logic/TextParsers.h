@@ -44,7 +44,7 @@ using namespace SourceMod;
  * @param unsigned int *	OUT: Number of bytes read (0 = end of stream)
  * @return					True on success, false on failure
  */
-typedef bool (*STREAMREADER)(void *, char *, size_t, unsigned int *);
+typedef bool (*STREAMREADER)(void *, char *, size_t, size_t *);
 
 class TextParsers : 
 	public ITextParsers,
@@ -57,8 +57,8 @@ public: //SMGlobalClass
 public:
 	bool ParseFile_INI(const char *file, 
 		ITextListener_INI *ini_listener,
-		unsigned int *line,
-		unsigned int *col);
+		size_t *line,
+		size_t *col);
 
 	SMCError ParseFile_SMC(const char *file, 
 		ITextListener_SMC *smc_listener, 

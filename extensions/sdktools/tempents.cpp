@@ -32,6 +32,8 @@
 #include "tempents.h"
 #include <basehandle.h>
 
+constexpr const size_t INVALID_OFFSET = -1;
+
 TempEntityManager g_TEManager;
 ICallWrapper *g_GetServerClass = NULL;
 
@@ -115,14 +117,14 @@ bool TempEntityInfo::IsValidProp(const char *name)
 	return (g_pGameHelpers->FindInSendTable(m_Sc->GetName(), name)) ? true : false;
 }
 
-int TempEntityInfo::_FindOffset(const char *name, int *size)
+size_t TempEntityInfo::_FindOffset(const char *name, int *size)
 {
-	int offset;
+	size_t offset;
 
 	sm_sendprop_info_t info;
 	if (!g_pGameHelpers->FindSendPropInfo(m_Sc->GetName(), name, &info))
 	{
-		return -1;
+		return INVALID_OFFSET;
 	}
 
 	offset = info.actual_offset;
@@ -138,9 +140,9 @@ bool TempEntityInfo::TE_SetEntData(const char *name, int value)
 {
 	/* Search for our offset */
 	int size;
-	int offset = _FindOffset(name, &size);
+	size_t offset = _FindOffset(name, &size);
 
-	if (offset < 0)
+	if (offset == INVALID_OFFSET)
 	{
 		return false;
 	}
@@ -163,9 +165,9 @@ bool TempEntityInfo::TE_GetEntData(const char *name, int *value)
 {
 	/* Search for our offset */
 	int size;
-	int offset = _FindOffset(name, &size);
+	size_t offset = _FindOffset(name, &size);
 
-	if (offset < 0)
+	if (offset == INVALID_OFFSET)
 	{
 		return false;
 	}
@@ -187,9 +189,9 @@ bool TempEntityInfo::TE_GetEntData(const char *name, int *value)
 bool TempEntityInfo::TE_SetEntDataEnt(const char *name, IHandleEntity *value)
 {
 	/* Search for our offset */
-	int offset = _FindOffset(name);
+	size_t offset = _FindOffset(name);
 
-	if (offset < 0)
+	if (offset == INVALID_OFFSET)
 	{
 		return false;
 	}
@@ -204,9 +206,9 @@ bool TempEntityInfo::TE_SetEntDataEnt(const char *name, IHandleEntity *value)
 bool TempEntityInfo::TE_GetEntDataEnt(const char *name, IHandleEntity **value)
 {
 	/* Search for our offset */
-	int offset = _FindOffset(name);
+	size_t offset = _FindOffset(name);
 
-	if (offset < 0)
+	if (offset == INVALID_OFFSET)
 	{
 		return false;
 	}
@@ -224,9 +226,9 @@ bool TempEntityInfo::TE_GetEntDataEnt(const char *name, IHandleEntity **value)
 bool TempEntityInfo::TE_SetEntDataFloat(const char *name, float value)
 {
 	/* Search for our offset */
-	int offset = _FindOffset(name);
+	size_t offset = _FindOffset(name);
 
-	if (offset < 0)
+	if (offset == INVALID_OFFSET)
 	{
 		return false;
 	}
@@ -239,9 +241,9 @@ bool TempEntityInfo::TE_SetEntDataFloat(const char *name, float value)
 bool TempEntityInfo::TE_GetEntDataFloat(const char *name, float *value)
 {
 	/* Search for our offset */
-	int offset = _FindOffset(name);
+	size_t offset = _FindOffset(name);
 
-	if (offset < 0)
+	if (offset == INVALID_OFFSET)
 	{
 		return false;
 	}
@@ -254,9 +256,9 @@ bool TempEntityInfo::TE_GetEntDataFloat(const char *name, float *value)
 bool TempEntityInfo::TE_SetEntDataVector(const char *name, float vector[3])
 {
 	/* Search for our offset */
-	int offset = _FindOffset(name);
+	size_t offset = _FindOffset(name);
 
-	if (offset < 0)
+	if (offset == INVALID_OFFSET)
 	{
 		return false;
 	}
@@ -272,9 +274,9 @@ bool TempEntityInfo::TE_SetEntDataVector(const char *name, float vector[3])
 bool TempEntityInfo::TE_GetEntDataVector(const char *name, float vector[3])
 {
 	/* Search for our offset */
-	int offset = _FindOffset(name);
+	size_t offset = _FindOffset(name);
 
-	if (offset < 0)
+	if (offset == INVALID_OFFSET)
 	{
 		return false;
 	}
@@ -290,9 +292,9 @@ bool TempEntityInfo::TE_GetEntDataVector(const char *name, float vector[3])
 bool TempEntityInfo::TE_SetEntDataFloatArray(const char *name, cell_t *array, int size)
 {
 	/* Search for our offset */
-	int offset = _FindOffset(name);
+	size_t offset = _FindOffset(name);
 
-	if (offset < 0)
+	if (offset == INVALID_OFFSET)
 	{
 		return false;
 	}

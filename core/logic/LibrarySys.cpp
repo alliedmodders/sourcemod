@@ -221,7 +221,7 @@ void LibrarySystem::GetPlatformErrorEx(int code, char *error, size_t maxlength)
 						   (DWORD)code,
 						   MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 						   (LPSTR)error,
-						   maxlength,
+						   (DWORD)maxlength,
 						   NULL) == 0)
 		{
 			ke::SafeSprintf(error, maxlength, "error code %08x", code);

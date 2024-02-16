@@ -325,6 +325,7 @@ class SMConfig(object):
     ]
     cxx.cflags += [
       '/W3',
+      '/WX'
     ]
     cxx.cxxflags += [
       '/EHsc',
@@ -401,7 +402,7 @@ class SMConfig(object):
     cxx.cxxflags += ['-stdlib=libc++']
 
   def configure_windows(self, cxx):
-    cxx.defines += ['WIN32', '_WINDOWS']
+    cxx.defines += ['WIN32', '_WINDOWS', '_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING']
 
   def add_libamtl(self):
     # Add libamtl.

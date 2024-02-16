@@ -82,7 +82,7 @@ unsigned int TextParsers::GetUTF8CharBytes(const char *stream)
  * File streams
  */
 
-bool FileStreamReader(void *stream, char *buffer, size_t maxlength, unsigned int *read)
+bool FileStreamReader(void *stream, char *buffer, size_t maxlength, size_t *read)
 {
 	size_t num = fread(buffer, 1, maxlength, (FILE *)stream);
 
@@ -156,7 +156,7 @@ struct RawStream
 	size_t pos;
 };
 
-bool RawStreamReader(void *stream, char *buffer, size_t maxlength, unsigned int *read)
+bool RawStreamReader(void *stream, char *buffer, size_t maxlength, size_t *read)
 {
 	RawStream *rs = (RawStream *)stream;
 
@@ -297,7 +297,7 @@ void scrap(StringInfo info[3])
 	info[0] = StringInfo();
 }
 
-void reloc(StringInfo &data, unsigned int bytes)
+void reloc(StringInfo &data, size_t bytes)
 {
 	if (data.ptr)
 	{
@@ -331,7 +331,7 @@ SMCError TextParsers::ParseStream_SMC(void *stream,
 	char in_buf[4096];
 	char *parse_point = in_buf;
 	char *line_begin = in_buf;
-	unsigned int read;
+	size_t read;
 	unsigned int curlevel = 0;
 	bool in_quote = false;
 	bool ignoring = false;
@@ -707,7 +707,7 @@ SMCError TextParsers::ParseStream_SMC(void *stream,
 			{
 				stage = line_begin;
 			}
-			unsigned int bytes = read - (stage - parse_point);
+			size_t bytes = read - (stage - parse_point);
 
 			/* It is now safe to delete everything before the staged point */
 			memmove(in_buf, stage, bytes);
@@ -773,11 +773,11 @@ failed:
  * INI parser 
  */
 
-bool TextParsers::ParseFile_INI(const char *file, ITextListener_INI *ini_listener, unsigned int *line, unsigned int *col)
+bool TextParsers::ParseFile_INI(const char *file, ITextListener_INI *ini_listener, size_t *line, size_t *col)
 {
 	FILE *fp = fopen(file, "rt");
 	unsigned int curline = 0;
-	unsigned int curtok;
+	size_t curtok;
 	size_t len;
 
 	if (!fp)

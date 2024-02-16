@@ -1181,7 +1181,7 @@ const char *CHalfLife2::GetEntityClassname(edict_t * pEdict)
 
 const char *CHalfLife2::GetEntityClassname(CBaseEntity *pEntity)
 {
-	static int offset = -1;
+	static size_t offset = -1;
 	if (offset == -1)
 	{
 		CBaseEntity *pGetterEnt = ReferenceToEntity(0);
@@ -1468,7 +1468,7 @@ string_t CHalfLife2::AllocPooledString(const char *pszValue)
 	auto *pDataMap = GetDataMap(pEntity);
 	assert(pDataMap);
 
-	static int iNameOffset = -1;
+	static size_t iNameOffset = -1;
 	if (iNameOffset == -1)
 	{
 		sm_datatable_info_t info;

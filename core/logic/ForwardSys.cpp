@@ -518,7 +518,7 @@ int CForward::PushFloatByRef(float *num, int flags)
 	return SP_ERROR_NONE;
 }
 
-void CForward::_Int_PushArray(cell_t *inarray, unsigned int cells, int flags)
+void CForward::_Int_PushArray(cell_t *inarray, size_t cells, int flags)
 {
 	m_params[m_curparam].byref.cells = cells;
 	m_params[m_curparam].byref.flags = flags;
@@ -526,7 +526,7 @@ void CForward::_Int_PushArray(cell_t *inarray, unsigned int cells, int flags)
 	m_params[m_curparam].isnull = false;
 }
 
-int CForward::PushArray(cell_t *inarray, unsigned int cells, int flags)
+int CForward::PushArray(cell_t *inarray, size_t cells, int flags)
 {
 	/* Push a reference to the NULL_VECTOR pubvar if NULL was passed. */
 	if (!inarray)
@@ -564,7 +564,7 @@ int CForward::PushArray(cell_t *inarray, unsigned int cells, int flags)
 	return SP_ERROR_NONE;
 }
 
-void CForward::_Int_PushString(cell_t *inarray, unsigned int cells, int sz_flags, int cp_flags)
+void CForward::_Int_PushString(cell_t *inarray, size_t cells, int sz_flags, int cp_flags)
 {
 	m_params[m_curparam].byref.cells = cells;	/* Notice this contains the char count not cell count */
 	m_params[m_curparam].byref.flags = cp_flags;
@@ -778,7 +778,7 @@ const char *CForward::GetForwardName()
 	return m_name;
 }
 
-unsigned int CForward::GetFunctionCount()
+size_t CForward::GetFunctionCount()
 {
 	return m_functions.size();
 }

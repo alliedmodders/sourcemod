@@ -60,7 +60,7 @@ public:
 	void OnConVarChange(CondVar var, const SendProp *pProp, const void *pStructBase, const void *pData, DVariant *pOut, int iElement, int objectID);
 	void ProcessCondChange(CondChangeData_t *pCondData);
 private:
-	inline unsigned int GetPropOffs(CondVar var)
+	inline size_t GetPropOffs(CondVar var)
 	{
 		return m_CondVarProps[var].actual_offset;
 	}

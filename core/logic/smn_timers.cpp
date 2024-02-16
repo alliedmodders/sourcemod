@@ -291,7 +291,7 @@ static cell_t smn_TriggerTimer(IPluginContext *pCtx, const cell_t *params)
 
 static cell_t smn_GetTickedTime(IPluginContext *pContext, const cell_t *params)
 {
-	return sp_ftoc(*serverGlobals.universalTime);
+	return sp_ftoc((float)*serverGlobals.universalTime);
 }
 
 static cell_t smn_GetMapTimeLeft(IPluginContext *pContext, const cell_t *params)

@@ -111,7 +111,7 @@ void MenuManager::OnHandleDestroy(HandleType_t type, void *object)
 	}
 }
 
-bool MenuManager::GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+bool MenuManager::GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize)
 {
 	if (type == m_MenuType)
 	{
@@ -244,14 +244,14 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 
 	struct
 	{
-		unsigned int position;
+		size_t position;
 		ItemDrawInfo draw;
 	} drawItems[10];
 
 	/* Figure out how many items to draw */
 	IMenuStyle *style = menu->GetDrawStyle();
 	unsigned int pgn = menu->GetPagination();
-	unsigned int maxItems = style->GetMaxPageItems();
+	size_t maxItems = style->GetMaxPageItems();
 	bool exitButton = (menu->GetMenuOptionFlags() & MENUFLAG_BUTTON_EXIT) == MENUFLAG_BUTTON_EXIT;
 	bool novoteButton = (menu->GetMenuOptionFlags() & MENUFLAG_BUTTON_NOVOTE) == MENUFLAG_BUTTON_NOVOTE;
 
@@ -275,8 +275,8 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 		return NULL;
 	}
 
-	unsigned int totalItems = menu->GetItemCount();
-	unsigned int startItem = 0;
+	size_t totalItems = menu->GetItemCount();
+	size_t startItem = 0;
 
 	/* For pagination, find the starting point. */
 	if (pgn != MENU_NO_PAGINATION)
@@ -313,7 +313,7 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 	IMenuPanel *panel = menu->CreatePanel();
 	IMenuHandler *mh = md.mh;
 	bool foundExtra = false;
-	unsigned int extraItem = 0;
+	size_t extraItem = 0;
 
 	if (panel == NULL)
 	{
@@ -326,8 +326,8 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 	 * 2) We reach one OVER the maximum number of slot items
 	 * 3) We have reached maxItems and pagination is MENU_NO_PAGINATION
 	 */
-	unsigned int i = startItem;
-	unsigned int foundItems = 0;
+	size_t i = startItem;
+	size_t foundItems = 0;
 	while (totalItems)
 	{
 		ItemDrawInfo &dr = drawItems[foundItems].draw;
@@ -410,7 +410,7 @@ IMenuPanel *MenuManager::RenderMenu(int client, menu_states_t &md, ItemOrder ord
 			}
 		}
 
-		unsigned int lastItem = 0;
+		size_t lastItem = 0;
 		ItemDrawInfo dr;
 		/* Find the last feasible item to search from. */
 		if (order == ItemOrder_Descending)
@@ -463,7 +463,7 @@ skip_search:
 
 	/* Draw the item according to the order */
 	menu_slots_t *slots = md.slots;
-	unsigned int position = 0;			/* Keep track of the last position */
+	size_t position = 0;			/* Keep track of the last position */
 
 	if (novoteButton)
 	{
@@ -504,7 +504,7 @@ skip_search:
 	}
 	else if (order == ItemOrder_Descending)
 	{
-		unsigned int i = foundItems;
+		size_t i = foundItems;
 		/* NOTE: There will always be at least one item because
 		 * of the check earlier.
 		 */
@@ -545,7 +545,7 @@ skip_search:
 		}
 
 		/* Calculate how many items we are allowed for control stuff */
-		unsigned int padding = style->GetMaxPageItems() - maxItems;
+		size_t padding = style->GetMaxPageItems() - maxItems;
 		
 		/* Add the number of available slots */
 		padding += (maxItems - foundItems);
@@ -701,7 +701,7 @@ skip_search:
 	}
 
 	/* Lastly, fill in any slots we could have missed */
-	for (unsigned int i = position + 1; i < 10; i++)
+	for (size_t i = position + 1; i < 10; i++)
 	{
 		slots[i].type = ItemSel_None;
 	}

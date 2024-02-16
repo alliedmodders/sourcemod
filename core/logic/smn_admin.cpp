@@ -239,7 +239,7 @@ static cell_t GetAdminUsername(IPluginContext *pContext, const cell_t *params)
 
 	pContext->StringToLocalUTF8(params[2], params[3], name, &written);
 
-	return written;
+	return (cell_t)written;
 }
 
 static cell_t BindAdminIdentity(IPluginContext *pContext, const cell_t *params)
@@ -534,7 +534,7 @@ static cell_t ReadFlagString(IPluginContext *pContext, const cell_t *params)
 	const char *end = flag;
 	FlagBits bits = adminsys->ReadFlagString(flag, &end);
 
-	*addr = end - flag;
+	*addr = (cell_t)(end - flag);
 
 	return bits;
 }

@@ -78,7 +78,7 @@ public:
 	bool IsCancelling();
 	unsigned int GetRemainingVoteDelay();
 	bool IsClientInVotePool(int client);
-	bool GetClientVoteChoice(int client, unsigned int *pItem);
+	bool GetClientVoteChoice(int client, size_t *pItem);
 	bool RedrawToClient(int client, bool revote);
 private:
 	void Reset(IMenuHandler *mh);
@@ -96,7 +96,7 @@ private:
 	IMenuHandler *m_pHandler;
 	unsigned int m_Clients;
 	unsigned int m_TotalClients;
-	unsigned int m_Items;
+	size_t m_Items;
 	CVector<unsigned int> m_Votes;
 	IBaseMenu *m_pCurMenu;
 	bool m_bStarted;
@@ -106,7 +106,7 @@ private:
 	unsigned int m_VoteFlags;
 	float m_fStartTime;
 	unsigned int m_nMenuTime;
-	int m_ClientVotes[256+1];
+	size_t m_ClientVotes[256+1];
 	bool m_Revoting[256+1];
 	char m_leaderList[1024];
 	ITimer *m_displayTimer;

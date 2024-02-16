@@ -46,7 +46,7 @@ using namespace SourceMod;
 class CItem
 {
 public:
-	CItem(unsigned int index)
+	CItem(size_t index)
 	{
 		this->index = index;
 		style = 0;
@@ -71,7 +71,7 @@ public:
 	}
 
 public:
-	unsigned int index;
+	size_t index;
 	std::string info;
 	std::unique_ptr<std::string> display;
 	unsigned int style;
@@ -116,7 +116,7 @@ public: //what derived must implement
 public: //what derived may implement 
 	virtual bool DoClientMenu(int client, 
 		CBaseMenu *menu, 
-		unsigned int first_item,
+		size_t first_item,
 		IMenuHandler *mh, 
 		unsigned int time);
 	virtual bool DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh, unsigned int time);
@@ -141,11 +141,11 @@ public:
 	virtual ~CBaseMenu();
 public:
 	virtual bool AppendItem(const char *info, const ItemDrawInfo &draw);
-	virtual bool InsertItem(unsigned int position, const char *info, const ItemDrawInfo &draw);
-	virtual bool RemoveItem(unsigned int position);
+	virtual bool InsertItem(size_t position, const char *info, const ItemDrawInfo &draw);
+	virtual bool RemoveItem(size_t position);
 	virtual void RemoveAllItems();
-	virtual const char *GetItemInfo(unsigned int position, ItemDrawInfo *draw=NULL, int client=0);
-	virtual unsigned int GetItemCount();
+	virtual const char *GetItemInfo(size_t position, ItemDrawInfo *draw=NULL, int client=0);
+	virtual size_t GetItemCount();
 	virtual bool SetPagination(unsigned int itemsPerPage);
 	virtual unsigned int GetPagination();
 	virtual IMenuStyle *GetDrawStyle();
@@ -161,8 +161,8 @@ public:
 	virtual void ShufflePerClient(int start, int stop);
 	virtual void SetClientMapping(int client, int *array, int length);
 	virtual bool IsPerClientShuffled();
-	virtual unsigned int GetRealItemIndex(int client, unsigned int position);
-	unsigned int GetBaseMemUsage();
+	virtual size_t GetRealItemIndex(int client, size_t position);
+	size_t GetBaseMemUsage();
 private:
 	void InternalDelete();
 protected:

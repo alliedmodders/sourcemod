@@ -22,7 +22,7 @@ void check_thunks(unsigned char *dest, unsigned char *pc);
 //if dest is NULL, returns minimum number of bytes needed to be copied
 //if dest is not NULL, it will copy the bytes to dest as well as fix CALLs and JMPs
 //http://www.devmaster.net/forums/showthread.php?t=2311
-int copy_bytes(unsigned char *func, unsigned char* dest, unsigned int required_len);
+size_t copy_bytes(unsigned char *func, unsigned char* dest, size_t required_len);
 
 //insert a specific JMP instruction at the given location
 void inject_jmp(void* src, void* dest);

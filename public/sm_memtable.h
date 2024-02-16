@@ -38,7 +38,7 @@
 class BaseMemTable
 {
 public:
-	BaseMemTable(unsigned int init_size)
+	BaseMemTable(size_t init_size)
 	{
 		membase = (unsigned char *)malloc(init_size);
 		size = init_size;
@@ -55,7 +55,7 @@ public:
 	 * Optionally outputs the address through 'addr'.
 	 * Returns an index >= 0 on success, < 0 on failure.
 	 */
-	int CreateMem(unsigned int addsize, void **addr)
+	int CreateMem(size_t addsize, void **addr)
 	{
 		int idx = (int)tail;
 
@@ -92,20 +92,20 @@ public:
 		tail = 0;
 	}
 
-	inline unsigned int GetMemUsage()
+	inline size_t GetMemUsage()
 	{
 		return size;
 	}
 
-	inline unsigned int GetActualMemUsed()
+	inline size_t GetActualMemUsed()
 	{
 		return tail;
 	}
 
 private:
 	unsigned char *membase;
-	unsigned int size;
-	unsigned int tail;
+	size_t size;
+	size_t tail;
 };
 
 class BaseStringTable

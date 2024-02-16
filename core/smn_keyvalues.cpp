@@ -77,10 +77,10 @@ public:
 
 		return size;
 	}
-	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+	bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize)
 	{
 		KeyValueStack *pStk = (KeyValueStack *)object;
-		unsigned int size = sizeof(KeyValueStack) + (pStk->pCurRoot.size() * sizeof(KeyValues *));
+		size_t size = sizeof(KeyValueStack) + (pStk->pCurRoot.size() * sizeof(KeyValues *));
 
 		/* Check how much memory the actual thing takes up */		
 		size += CalcKVSizeR(pStk->pBase);
@@ -872,7 +872,7 @@ static cell_t smn_KvNodesInStack(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
 	}
 
-	return pStk->pCurRoot.size() - 1;
+	return (cell_t)pStk->pCurRoot.size() - 1;
 }
 
 static cell_t smn_KvDeleteThis(IPluginContext *pContext, const cell_t *params)
@@ -1151,8 +1151,8 @@ static cell_t smn_KeyValuesToString(IPluginContext *pContext, const cell_t *para
 	pContext->LocalToString(params[2], &outStr);
 	size_t maxlen = static_cast<size_t>(params[3]);
 	
-	buffer.GetString(outStr, maxlen);
-	return buffer.TellPut();
+	buffer.GetString(outStr, (int)maxlen);
+	return (cell_t)buffer.TellPut();
 }
 
 static cell_t smn_KeyValuesExportLength(IPluginContext *pContext, const cell_t *params)

@@ -52,7 +52,7 @@
 #include <sp_vm_types.h>
 
 #define SMINTERFACE_HANDLESYSTEM_NAME			"IHandleSys"
-#define SMINTERFACE_HANDLESYSTEM_VERSION		5
+#define SMINTERFACE_HANDLESYSTEM_VERSION		6
 
 /** Specifies no Identity */
 #define DEFAULT_IDENTITY			NULL
@@ -210,7 +210,7 @@ namespace SourceMod
 		 * @param pSize		Pointer to store the approximate memory usage in bytes.
 		 * @return			True on success, false if not implemented.
 		 */
-		virtual bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
+		virtual bool GetHandleApproxSize(HandleType_t type, void *object, size_t *pSize)
 		{
 			return false;
 		}

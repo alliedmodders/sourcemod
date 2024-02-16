@@ -45,7 +45,7 @@ public:
 	}
 	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
 	{
-		*pSize = ((TopMenu *)object)->CalcMemUsage();
+		*pSize = (unsigned int)(((TopMenu *)object)->CalcMemUsage());
 		return true;
 	}
 } s_TopMenuHandle;
@@ -108,7 +108,7 @@ public:
 		m_pFunction->PushCell(object_id);
 		m_pFunction->PushCell(client);
 		m_pFunction->PushStringEx(buffer, maxlength, 0, SM_PARAM_COPYBACK);
-		m_pFunction->PushCell(maxlength);
+		m_pFunction->PushCell((cell_t)maxlength);
 		m_pFunction->Execute(NULL);
 	}
 
@@ -123,7 +123,7 @@ public:
 		m_pFunction->PushCell(object_id);
 		m_pFunction->PushCell(client);
 		m_pFunction->PushStringEx(buffer, maxlength, 0, SM_PARAM_COPYBACK);
-		m_pFunction->PushCell(maxlength);
+		m_pFunction->PushCell((cell_t)maxlength);
 		m_pFunction->Execute(NULL);
 	}
 
@@ -373,7 +373,7 @@ static cell_t GetTopMenuInfoString(IPluginContext *pContext, const cell_t *param
 	char *buffer;
 	pContext->LocalToString(params[3], &buffer);
 
-	return strncopy(buffer, str, params[4]);
+	return (cell_t)strncopy(buffer, str, params[4]);
 }
 
 static cell_t GetTopMenuName(IPluginContext *pContext, const cell_t *params)
@@ -397,7 +397,7 @@ static cell_t GetTopMenuName(IPluginContext *pContext, const cell_t *params)
 	char *buffer;
 	pContext->LocalToString(params[3], &buffer);
 
-	return strncopy(buffer, str, params[4]);
+	return (cell_t)strncopy(buffer, str, params[4]);
 }
 
 static cell_t SetTopMenuTitleCaching(IPluginContext *pContext, const cell_t *params)

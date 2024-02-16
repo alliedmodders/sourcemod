@@ -66,7 +66,7 @@ public:
 public: //BaseMenuStyle
 	CBaseMenuPlayer *GetMenuPlayer(int client);
 	void SendDisplay(int client, IMenuPanel *display);
-	bool DoClientMenu(int client, CBaseMenu *menu, unsigned int first_item, IMenuHandler *mh, unsigned int time);
+	bool DoClientMenu(int client, CBaseMenu *menu, size_t first_item, IMenuHandler *mh, unsigned int time);
 	bool DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh, unsigned int time);
 public: //SMGlobalClass
 	void OnSourceModAllInitialized();
@@ -75,8 +75,8 @@ public: //IMenuStyle
 	const char *GetStyleName();
 	IMenuPanel *CreatePanel();
 	IBaseMenu *CreateMenu(IMenuHandler *pHandler, IdentityToken_t *pOwner);
-	unsigned int GetMaxPageItems();
-	unsigned int GetApproxMemUsage();
+	size_t GetMaxPageItems();
+	size_t GetApproxMemUsage();
 	bool IsSupported() { return true; }
 private:
 	void HookCreateMessage(edict_t *pEdict, DIALOG_TYPE type, KeyValues *kv, IServerPluginCallbacks *plugin);
@@ -107,7 +107,7 @@ public:
 	unsigned int GetCurrentKey();
 	bool SetCurrentKey(unsigned int key);
 	int GetAmountRemaining();
-	unsigned int GetApproxMemUsage();
+	size_t GetApproxMemUsage();
 	bool DirectSet(const char *str) { return false; }
 private:
 	KeyValues *m_pKv;
@@ -129,10 +129,10 @@ public: //IBaseMenu
 	bool Display(int client, unsigned int time, IMenuHandler *alt_handler=NULL);
 	bool DisplayAtItem(int client,
 		unsigned int time,
-		unsigned int start_item,
+		size_t start_item,
 		IMenuHandler *alt_handler/* =NULL */);
 	void SetMenuOptionFlags(unsigned int flags);
-	unsigned int GetApproxMemUsage();
+	size_t GetApproxMemUsage();
 public: //CBaseMenu
 	void Cancel_Finally();
 private:

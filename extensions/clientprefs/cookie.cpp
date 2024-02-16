@@ -326,7 +326,7 @@ void CookieManager::OnPluginDestroyed(IPlugin *plugin)
 		ItemDrawInfo draw;
 		const char *info;
 		AutoMenuData * data;
-		unsigned itemcount;
+		size_t itemcount;
 		
 		for (size_t p_iter = 0; p_iter < menuitems.size(); ++p_iter)
 		{
@@ -344,8 +344,11 @@ void CookieManager::OnPluginDestroyed(IPlugin *plugin)
 
 				if (strcmp(draw.display, name) == 0)
 				{
+#if defined(PLATFORM_X86)
 					data = (AutoMenuData *)strtoul(info, NULL, 16);
-
+#elif defined(PLATFORM_X64)
+					data = (AutoMenuData *)strtoull(info, NULL, 16);
+#endif
 					if (data->handler->forward != NULL)
 					{
 						forwards->ReleaseForward(data->handler->forward);

@@ -72,7 +72,7 @@ extern uint64_t ud_insn_off(const struct ud*);
 
 extern const char* ud_insn_hex(struct ud*);
 
-extern unsigned int ud_insn_len(const struct ud* u);
+extern size_t ud_insn_len(const struct ud* u);
 
 extern const struct ud_operand* ud_insn_opr(const struct ud *u, unsigned int n);
 

@@ -197,7 +197,7 @@ ud_insn_ptr(const struct ud* u)
  *    Returns the count of bytes disassembled.
  * =============================================================================
  */
-extern unsigned int 
+extern size_t 
 ud_insn_len(const struct ud* u) 
 {
   return u->inp_ctr;

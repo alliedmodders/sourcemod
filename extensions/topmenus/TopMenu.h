@@ -71,7 +71,7 @@ struct topmenu_object_t
 	TopMenuObjectType type;				/** Object Type */
 	bool is_free;						/** Free or not? */
 	char info[255];						/** Info string */
-	unsigned int cat_id;				/** Set if a category */
+	size_t cat_id;				/** Set if a category */
 
 	static inline bool matches(const char *name, const topmenu_object_t *topmenu)
 	{
@@ -106,7 +106,7 @@ struct topmenu_player_t
 	IBaseMenu *root;					/** root menu display */
 	topmenu_player_category_t *cats;	/** category display */
 	unsigned int cat_count;				/** number of categories */
-	unsigned int last_category;			/** last category they selected */
+	size_t last_category;				/** last category they selected */
 	unsigned int last_position;			/** last position in that category */
 	unsigned int last_root_pos;			/** last page in the root menu */
 };
@@ -159,17 +159,17 @@ public: //ITextListener_SMC
 	SMCResult ReadSMC_KeyValue(const SMCStates *states, const char *key, const char *value);
 	SMCResult ReadSMC_LeavingSection(const SMCStates *states);
 public:
-	unsigned int CalcMemUsage();
+	size_t CalcMemUsage();
 	void SetTitleCaching(bool cache_titles);
 	bool DisplayMenuAtCategory(int client, unsigned int object_id);
 private:
 	void SortCategoriesIfNeeded();
-	void SortCategoryIfNeeded(unsigned int category);
+	void SortCategoryIfNeeded(size_t category);
 private:
-	bool DisplayCategory(int client, unsigned int category, unsigned int hold_time, bool last_position);
+	bool DisplayCategory(int client, size_t category, unsigned int hold_time, bool last_position);
 	void CreatePlayers(int max_clients);
 	void UpdateClientRoot(int client, IGamePlayer *pGamePlayer=NULL);
-	void UpdateClientCategory(int client, unsigned int category, bool bSkipRootCheck=false);
+	void UpdateClientCategory(int client, size_t category, bool bSkipRootCheck=false);
 	void TearDownClient(topmenu_player_t *player);
 	bool FindCategoryByObject(unsigned int obj_id, size_t *index);
 private:
@@ -193,6 +193,6 @@ private:
 	bool m_bCacheTitles;						/* True if the categorie titles should be cached */
 };
 
-unsigned int strncopy(char *dest, const char *src, size_t count);
+size_t strncopy(char *dest, const char *src, size_t count);
 
 #endif //_INCLUDE_SOURCEMOD_TOP_MENU_H_

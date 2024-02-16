@@ -280,7 +280,7 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 	}
 
 	bool cancel = false;
-	unsigned int item = 0;
+	size_t item = 0;
 	MenuCancelReason reason = MenuCancel_Exit;
 	MenuEndReason end_reason = MenuEnd_Selected;
 	menu_states_t &states = player->states;
@@ -289,7 +289,7 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 	IMenuHandler *mh = states.mh;
 	IBaseMenu *menu = states.menu;
 
-	unsigned int item_on_page = states.item_on_page;
+	size_t item_on_page = states.item_on_page;
 
 	assert(mh != NULL);
 
@@ -470,7 +470,7 @@ bool BaseMenuStyle::DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh,
 
 bool BaseMenuStyle::DoClientMenu(int client,
 								 CBaseMenu *menu,
-								 unsigned int first_item,
+								 size_t first_item,
 								 IMenuHandler *mh,
 								 unsigned int time)
 {
@@ -644,7 +644,7 @@ bool CBaseMenu::AppendItem(const char *info, const ItemDrawInfo &draw)
 	return true;
 }
 
-bool CBaseMenu::InsertItem(unsigned int position, const char *info, const ItemDrawInfo &draw)
+bool CBaseMenu::InsertItem(size_t position, const char *info, const ItemDrawInfo &draw)
 {
 	if (m_Pagination == (unsigned)MENU_NO_PAGINATION &&
 	    m_items.size() >= m_pStyle->GetMaxPageItems())
@@ -665,7 +665,7 @@ bool CBaseMenu::InsertItem(unsigned int position, const char *info, const ItemDr
 	return true;
 }
 
-bool CBaseMenu::RemoveItem(unsigned int position)
+bool CBaseMenu::RemoveItem(size_t position)
 {
 	if (position >= m_items.size())
 		return false;
@@ -679,7 +679,7 @@ void CBaseMenu::RemoveAllItems()
 	m_items.clear();
 }
 
-const char *CBaseMenu::GetItemInfo(unsigned int position, ItemDrawInfo *draw/* =NULL */, int client/* =0 */)
+const char *CBaseMenu::GetItemInfo(size_t position, ItemDrawInfo *draw/* =NULL */, int client/* =0 */)
 {
 	if (position >= m_items.size())
 		return NULL;
@@ -701,9 +701,14 @@ const char *CBaseMenu::GetItemInfo(unsigned int position, ItemDrawInfo *draw/* =
 void CBaseMenu::ShufflePerClient(int start, int stop)
 {
 	// limit map len to 255 items since it's using uint8
-	int length = MIN(GetItemCount(), 255);
+	size_t length = MIN(GetItemCount(), 255);
 	if (stop >= 0)
 		length = MIN(length, stop);
+
+	if (length == 0)
+	{
+		return;
+	}
 
 	for (int i = 1; i <= SM_MAXPLAYERS; i++)
 	{
@@ -713,7 +718,7 @@ void CBaseMenu::ShufflePerClient(int start, int stop)
 			m_RandomMaps[i][j] = j;
 
 		// ... and random shuffle it
-		for (int j = length - 1; j > start; j--)
+		for (size_t j = length - 1; j > start; j--)
 		{
 			int x = rand() % (j - start + 1) + start;
 			uint8_t tmp = m_RandomMaps[i][x];
@@ -743,7 +748,7 @@ bool CBaseMenu::IsPerClientShuffled()
 	return false;
 }
 
-unsigned int CBaseMenu::GetRealItemIndex(int client, unsigned int position)
+size_t CBaseMenu::GetRealItemIndex(int client, size_t position)
 {
 	if (client > 0 && position < m_RandomMaps[client].size())
 	{
@@ -754,7 +759,7 @@ unsigned int CBaseMenu::GetRealItemIndex(int client, unsigned int position)
 	return position;
 }
 
-unsigned int CBaseMenu::GetItemCount()
+size_t CBaseMenu::GetItemCount()
 {
 	return m_items.size();
 }
@@ -884,7 +889,7 @@ IMenuHandler *CBaseMenu::GetHandler()
 	return m_pHandler;
 }
 
-unsigned int CBaseMenu::GetBaseMemUsage()
+size_t CBaseMenu::GetBaseMemUsage()
 {
 	return m_Title.size() + (m_items.size() * sizeof(CItem));
 }

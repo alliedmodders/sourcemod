@@ -122,7 +122,7 @@ bool SqQuery::BindParamBlob(unsigned int param, const void *data, size_t length,
 		return false;
 	}
 
-	return (sqlite3_bind_blob(m_pStmt, param, data, length, copy ? SQLITE_TRANSIENT : SQLITE_STATIC) == SQLITE_OK);
+	return (sqlite3_bind_blob(m_pStmt, param, data, (int)length, copy ? SQLITE_TRANSIENT : SQLITE_STATIC) == SQLITE_OK);
 }
 
 sqlite3_stmt *SqQuery::GetStmt()

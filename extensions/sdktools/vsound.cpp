@@ -67,11 +67,11 @@ cell_t SoundReferenceToIndex(cell_t ref)
 	return gamehelpers->ReferenceToIndex(ref);
 }
 
-size_t SoundHooks::_FillInPlayers(int *pl_array, IRecipientFilter *pFilter)
+int SoundHooks::_FillInPlayers(int *pl_array, IRecipientFilter *pFilter)
 {
-	size_t size = static_cast<size_t>(pFilter->GetRecipientCount());
+	int size = pFilter->GetRecipientCount();
 
-	for (size_t i=0; i<size; i++)
+	for (int i=0; i<size; i++)
 	{
 		pl_array[i] = pFilter->GetRecipientIndex(i);
 	}
