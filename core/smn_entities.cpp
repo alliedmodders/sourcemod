@@ -285,6 +285,11 @@ static cell_t RemoveEdict(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Edict %d (%d) is not a valid edict", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
+	if (g_HL2.ReferenceToIndex(params[1]) == 0)
+	{
+		return pContext->ThrowNativeError("Cannot remove worldspawn (edict 0)");
+	}
+
 	engine->RemoveEdict(pEdict);
 
 	return 1;
@@ -296,6 +301,11 @@ static cell_t RemoveEntity(IPluginContext *pContext, const cell_t *params)
 	if (!pEntity)
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is not a valid entity", g_HL2.ReferenceToIndex(params[1]), params[1]);
+	}
+
+	if (g_HL2.ReferenceToIndex(params[1]) == 0)
+	{
+		return pContext->ThrowNativeError("Cannot remove worldspawn (entity 0)");
 	}
 
 	// Some games have UTIL_Remove exposed on IServerTools, but for consistence, we'll
