@@ -57,7 +57,7 @@ static cell_t SetVariantBool(IPluginContext *pContext, const cell_t *params)
 	unsigned char *vptr = g_Variant_t;
 
 	*(bool *)vptr = (params[1]) ? true : false;
-	vptr += sizeof(int)*3 + sizeof(unsigned long);
+	vptr += sizeof(int)*3 + sizeof(size_t);
 	*(fieldtype_t *)vptr = FIELD_BOOLEAN;
 
 	return 1;
@@ -71,7 +71,7 @@ static cell_t SetVariantString(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[1], &str);
 
 	*(string_t *)vptr = MAKE_STRING(str);
-	vptr += sizeof(int)*3 + sizeof(unsigned long);
+	vptr += sizeof(int)*3 + sizeof(size_t);
 	*(fieldtype_t *)vptr = FIELD_STRING;
 
 	return 1;
@@ -82,7 +82,7 @@ static cell_t SetVariantInt(IPluginContext *pContext, const cell_t *params)
 	unsigned char *vptr = g_Variant_t;
 
 	*(int *)vptr = params[1];
-	vptr += sizeof(int)*3 + sizeof(unsigned long);
+	vptr += sizeof(int)*3 + sizeof(size_t);
 	*(fieldtype_t *)vptr = FIELD_INTEGER;
 
 	return 1;
@@ -93,7 +93,7 @@ static cell_t SetVariantFloat(IPluginContext *pContext, const cell_t *params)
 	unsigned char *vptr = g_Variant_t;
 
 	*(float *)vptr = sp_ctof(params[1]);
-	vptr += sizeof(int)*3 + sizeof(unsigned long);
+	vptr += sizeof(int)*3 + sizeof(size_t);
 	*(fieldtype_t *)vptr = FIELD_FLOAT;
 
 	return 1;
@@ -111,7 +111,7 @@ static cell_t SetVariantVector3D(IPluginContext *pContext, const cell_t *params)
 	*(float *)vptr = sp_ctof(val[1]);
 	vptr += sizeof(float);
 	*(float *)vptr = sp_ctof(val[2]);
-	vptr += sizeof(float) + sizeof(unsigned long);
+	vptr += sizeof(float) + sizeof(size_t);
 	*(fieldtype_t *)vptr = FIELD_VECTOR;
 
 	return 1;
@@ -129,7 +129,7 @@ static cell_t SetVariantPosVector3D(IPluginContext *pContext, const cell_t *para
 	*(float *)vptr = sp_ctof(val[1]);
 	vptr += sizeof(float);
 	*(float *)vptr = sp_ctof(val[2]);
-	vptr += sizeof(float) + sizeof(unsigned long);
+	vptr += sizeof(float) + sizeof(size_t);
 	*(fieldtype_t *)vptr = FIELD_POSITION_VECTOR;
 
 	return 1;
@@ -149,7 +149,7 @@ static cell_t SetVariantColor(IPluginContext *pContext, const cell_t *params)
 	*(unsigned char *)vptr = val[2];
 	vptr += sizeof(unsigned char);
 	*(unsigned char *)vptr = val[3];
-	vptr += sizeof(unsigned char) + sizeof(int)*2 + sizeof(unsigned long);
+	vptr += sizeof(unsigned char) + sizeof(int)*2 + sizeof(size_t);
 	*(fieldtype_t *)vptr = FIELD_COLOR32;
 
 	return 1;
@@ -165,8 +165,8 @@ static cell_t SetVariantEntity(IPluginContext *pContext, const cell_t *params)
 	bHandle = reinterpret_cast<IHandleEntity *>(pEntity)->GetRefEHandle();
 
 	vptr += sizeof(int)*3;
-	*(unsigned long *)vptr = (unsigned long)(bHandle.ToInt());
-	vptr += sizeof(unsigned long);
+	*(size_t *)vptr = (size_t)(bHandle.ToInt());
+	vptr += sizeof(size_t);
 	*(fieldtype_t *)vptr = FIELD_EHANDLE;
 
 	return 1;
