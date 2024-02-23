@@ -50,10 +50,10 @@ inline void _init_variant_t()
 {
 	unsigned char *vptr = g_Variant_t;
 
-	*(int32_t *)vptr = 0;
-	vptr += sizeof(int32_t)*3;
-	*(size_t *)vptr = INVALID_EHANDLE_INDEX;
-	vptr += sizeof(size_t);
+	*(size_t *)vptr = 0;
+	vptr += sizeof(int)*2 + sizeof(size_t); //Variant_t's union is padded from 12 bytes to 16 on 64-bit
+	*(uint32_t *)vptr = INVALID_EHANDLE_INDEX;
+	vptr += sizeof(uint32_t);
 	*(fieldtype_t *)vptr = FIELD_VOID;
 }
 

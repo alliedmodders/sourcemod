@@ -164,9 +164,9 @@ static cell_t SetVariantEntity(IPluginContext *pContext, const cell_t *params)
 	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
 	bHandle = reinterpret_cast<IHandleEntity *>(pEntity)->GetRefEHandle();
 
-	vptr += sizeof(int)*3;
-	*(size_t *)vptr = (size_t)(bHandle.ToInt());
-	vptr += sizeof(size_t);
+	vptr += sizeof(int)*2 + sizeof(size_t);
+	*(uint32_t *)vptr = (uint32_t)(bHandle.ToInt());
+	vptr += sizeof(uint32_t);
 	*(fieldtype_t *)vptr = FIELD_EHANDLE;
 
 	return 1;
