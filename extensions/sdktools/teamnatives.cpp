@@ -58,7 +58,7 @@ void InitTeamNatives()
 			continue;
 		}
 
-		ServerClass *pClass = gamehelpers->FindServerClass(pEntity);
+		ServerClass *pClass = gamehelpers->FindEntityServerClass(pEntity);
 		if (pClass == nullptr)
 		{
 			continue;

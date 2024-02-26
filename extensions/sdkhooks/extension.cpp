@@ -591,7 +591,7 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 
 	if (!!strcmp(g_HookTypes[type].dtReq, ""))
 	{
-		ServerClass *pServerClass = gamehelpers->FindServerClass(pEnt);
+		ServerClass *pServerClass = gamehelpers->FindEntityServerClass(pEnt);
 		if (pServerClass == nullptr)
 		{
 			return HookRet_BadEntForHookType;

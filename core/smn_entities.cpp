@@ -430,7 +430,7 @@ static cell_t GetEntityNetClass(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid entity (%d - %d)", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
-	ServerClass *pClass = g_HL2.FindServerClass(pEntity);
+	ServerClass *pClass = g_HL2.FindEntityServerClass(pEntity);
 	if (!pClass)
 	{
 		return 0;
@@ -1262,7 +1262,7 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 #define FIND_PROP_SEND(type, type_name) \
 	sm_sendprop_info_t info;\
 	SendProp *pProp; \
-	ServerClass *pServerClass = g_HL2.FindServerClass(pEntity); \
+	ServerClass *pServerClass = g_HL2.FindEntityServerClass(pEntity); \
 	if (pServerClass == nullptr) { \
 		pContext->ThrowNativeError("Failed to retrieve entity %d (%d) server class!", g_HL2.ReferenceToIndex(params[1]), params[1]); \
 	} \
@@ -1424,7 +1424,7 @@ static cell_t GetEntPropArraySize(IPluginContext *pContext, const cell_t *params
 		{
 			sm_sendprop_info_t info;
 			
-			ServerClass *pServerClass = g_HL2.FindServerClass(pEntity);
+			ServerClass *pServerClass = g_HL2.FindEntityServerClass(pEntity);
 			if (pServerClass == nullptr)
 			{
 				return pContext->ThrowNativeError("Failed to retrieve entity %d (%d) server class!", g_HL2.ReferenceToIndex(params[1]), params[1]);

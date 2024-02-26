@@ -1672,7 +1672,7 @@ static cell_t LookupEntityAttachment(IPluginContext* pContext, const cell_t* par
 	CBaseEntity* pEntity;
 	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
 
-	ServerClass* pClass = gamehelpers->FindServerClass(pEntity);
+	ServerClass* pClass = gamehelpers->FindEntityServerClass(pEntity);
 	if (pClass == nullptr)
 	{
 		return pContext->ThrowNativeError("Failed to retrieve entity %d (%d) server class!", gamehelpers->ReferenceToIndex(params[1]), params[1]);
@@ -1723,7 +1723,7 @@ static cell_t GetEntityAttachment(IPluginContext* pContext, const cell_t* params
 	CBaseEntity* pEntity;
 	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
 
-	ServerClass* pClass = gamehelpers->FindServerClass(pEntity);
+	ServerClass* pClass = gamehelpers->FindEntityServerClass(pEntity);
 	if (pClass == nullptr)
 	{
 		return pContext->ThrowNativeError("Failed to retrieve entity %d (%d) server class!", gamehelpers->ReferenceToIndex(params[1]), params[1]);

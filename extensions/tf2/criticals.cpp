@@ -81,7 +81,7 @@ bool CritManager::TryEnable()
 			continue;
 		}
 
-		ServerClass *pServerClass = gamehelpers->FindServerClass(pEntity);
+		ServerClass *pServerClass = gamehelpers->FindEntityServerClass(pEntity);
 		if (pServerClass == nullptr)
 		{
 			continue;
@@ -125,7 +125,7 @@ void CritManager::OnEntityCreated(CBaseEntity *pEntity, const char *classname)
 		return;
 	}
 
-	ServerClass *pServerClass = gamehelpers->FindServerClass(pEntity);
+	ServerClass *pServerClass = gamehelpers->FindEntityServerClass(pEntity);
 	if (pServerClass == nullptr)
 	{
 		return;
@@ -175,7 +175,7 @@ bool CritManager::Hook_CalcIsAttackCriticalHelpers(bool noCrits)
 	CBaseEntity *pWeapon = META_IFACEPTR(CBaseEntity);
 	
 	// If there's an invalid ent or invalid server class here, we've got issues elsewhere.
-	ServerClass *pServerClass = gamehelpers->FindServerClass(pWeapon);
+	ServerClass *pServerClass = gamehelpers->FindEntityServerClass(pWeapon);
 	if (pServerClass == nullptr)
 	{
 		g_pSM->LogError(myself, "Invalid server class on weapon.");

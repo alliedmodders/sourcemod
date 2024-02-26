@@ -254,7 +254,7 @@ static cell_t CS_DropWeapon(IPluginContext *pContext, const cell_t *params)
 
 	//Psychonic is awesome for this
 	sm_sendprop_info_t spi;
-	ServerClass *pServerClass = gamehelpers->FindServerClass(pWeapon);
+	ServerClass *pServerClass = gamehelpers->FindEntityServerClass(pWeapon);
 	if (pServerClass == nullptr)
 	{
 		return pContext->ThrowNativeError("Failed to retrieve entity %d server class!", params[2]);

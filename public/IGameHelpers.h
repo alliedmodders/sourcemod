@@ -357,7 +357,7 @@ namespace SourceMod
 		 *
 		 * @return				ServerClass pointer on success, nullptr on failure.
 		 */
-		virtual ServerClass *FindServerClass(CBaseEntity *pEntity) = 0;
+		virtual ServerClass *FindEntityServerClass(CBaseEntity *pEntity) = 0;
 	};
 }
 

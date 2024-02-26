@@ -441,7 +441,7 @@ int FindEntityByNetClass(int start, const char *classname)
 			continue;
 		}
 
-		ServerClass *pServerClass = gamehelpers->FindServerClass(pEntity);
+		ServerClass *pServerClass = gamehelpers->FindEntityServerClass(pEntity);
 		if (pServerClass == nullptr)
 		{
 			continue;
