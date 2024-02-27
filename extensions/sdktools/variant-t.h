@@ -33,8 +33,10 @@
 #define _INCLUDE_SOURCEMOD_EXTENSION_VARIANT_T_H_
 #if defined(_WIN64) || defined(__x86_64__)
 #define SIZEOF_VARIANT_T		24
+#define VARIANT_T_PADDING 		4
 #else
 #define SIZEOF_VARIANT_T		20
+#define VARIANT_T_PADDING 		0
 #endif
 
 /**
@@ -51,9 +53,9 @@ inline void _init_variant_t()
 	unsigned char *vptr = g_Variant_t;
 
 	*(size_t *)vptr = 0;
-	vptr += sizeof(int)*2 + sizeof(size_t); //Variant_t's union is padded from 12 bytes to 16 on 64-bit
+	vptr += sizeof(int32_t)*3 + VARIANT_T_PADDING;
 	*(uint32_t *)vptr = INVALID_EHANDLE_INDEX;
-	vptr += sizeof(uint32_t);
+	vptr += sizeof(CBaseHandle);
 	*(fieldtype_t *)vptr = FIELD_VOID;
 }
 
