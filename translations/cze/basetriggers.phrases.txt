@@ -20,6 +20,11 @@
 		"cze"		"Friendly Fire je vypnut."
 	}
 
+	"Friendly Fire Percent"
+	{
+		"cze"		"Friendly Fire je {1}%."
+	}
+
 	"Current Map"
 	{
 		"cze"		"Aktualni mapa je {1}."
