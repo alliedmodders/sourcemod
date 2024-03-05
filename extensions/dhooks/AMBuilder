@@ -54,6 +54,7 @@ for cxx in builder.targets:
     os.path.join('DynamicHooks', 'conventions', 'x86MsCdecl.cpp'),
     os.path.join('DynamicHooks', 'conventions', 'x86MsStdcall.cpp'),
     os.path.join('DynamicHooks', 'conventions', 'x86MsFastcall.cpp'),
+    os.path.join('DynamicHooks', 'conventions', 'x86Instruction.cpp'),
   ]
 
   if binary.compiler.target.platform == 'windows':

@@ -59,6 +59,18 @@ public:
 	HookType hookType;
 	ReturnType retType;
 	ThisPointerType thisType;
+
+	SignatureWrapper()
+	{
+		signature = "";
+		address = "";
+		offset = "";
+		args = std::vector<ArgumentInfo>();
+		callConv = CallConv_UNKNOWN;
+		hookType = HookType_Unknown;
+		retType = ReturnType_Unknown;
+		thisType = ThisPointer_Ignore;
+	}
 };
 
 class SignatureGameConfig : public ITextListener_SMC {

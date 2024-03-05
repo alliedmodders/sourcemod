@@ -89,6 +89,22 @@ void check_thunks(unsigned char *dest, unsigned char *pc)
 #endif
 }
 
+int instruction_length(void *addr)
+{
+	ud_t ud_obj;
+	ud_init(&ud_obj);
+
+#if defined(_WIN64) || defined(__x86_64__)
+	ud_set_mode(&ud_obj, 64);
+#else
+	ud_set_mode(&ud_obj, 32);
+#endif
+
+	ud_set_input_buffer(&ud_obj, addr, 20);
+
+	return ud_disassemble(&ud_obj) ? ud_insn_len(&ud_obj) : -1;
+}
+
 int copy_bytes(unsigned char *func, unsigned char *dest, unsigned int required_len)
 {
 	ud_t ud_obj;

@@ -122,6 +122,15 @@ cell_t Native_CreateHook(IPluginContext *pContext, const cell_t *params)
 //native Handle:DHookCreateDetour(Address:funcaddr, CallingConvention:callConv, ReturnType:returntype, ThisPointerType:thistype);
 cell_t Native_CreateDetour(IPluginContext *pContext, const cell_t *params)
 {
+	if ((CallingConvention)params[2] == CallConv_INSTRUCTION)
+	{
+		if ((ReturnType)params[3] != ReturnType_Void)
+			return pContext->ThrowNativeError("Return type must be void for an instruction hook.");
+
+		if ((ThisPointerType)params[4] != ThisPointer_Ignore)
+			return pContext->ThrowNativeError("This pointer must be ignored for an instruction hook.");
+	}
+
 	HookSetup *setup = new HookSetup((ReturnType)params[3], PASSFLAG_BYVAL, (CallingConvention)params[2], (ThisPointerType)params[4], (void *)params[1]);
 
 	Handle_t hndl = handlesys->CreateHandle(g_HookSetupHandle, setup, pContext->GetIdentity(), myself->GetIdentity(), NULL);
@@ -315,6 +324,9 @@ cell_t Native_AddParam(IPluginContext *pContext, const cell_t *params)
 		info.custom_register = None;
 	}
 
+	if (setup->callConv == CallConv_INSTRUCTION && info.custom_register == None)
+		return pContext->ThrowNativeError("Must specify registers for parameters in an instruction hook.");
+
 	if(params[0] >= 3 && params[3] != -1)
 	{
 		info.size = params[3];
@@ -358,6 +370,9 @@ cell_t Native_EnableDetour(IPluginContext *pContext, const cell_t *params)
 
 	bool post = params[2] != 0;
 	HookType_t hookType = post ? HOOKTYPE_POST : HOOKTYPE_PRE;
+
+	if (setup->callConv == CallConv_INSTRUCTION && hookType == HOOKTYPE_POST)
+		return pContext->ThrowNativeError("Can't create a post hook for instruction hooks.");
 
 	// Check if we already detoured that function.
 	CHookManager *pDetourManager = GetHookManager();

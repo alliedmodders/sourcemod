@@ -173,7 +173,7 @@ public:
 	}
 
 private:
-	void* CreateBridge();
+	void* CreateBridge(bool createPostHook);
 
 	void Write_ModifyReturnAddress(sp::MacroAssembler& masm);
 	void Write_CallHandler(sp::MacroAssembler& masm, HookType_t type);
