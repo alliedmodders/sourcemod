@@ -48,7 +48,7 @@ class VariantFirstTimeInit
 public:
 	VariantFirstTimeInit()
 	{
-		*(uint32_t *)(&g_Variant_t[12 + VARIANT_T_PADDING]) = INVALID_EHANDLE_INDEX;
+		((CBaseHandle *)(&g_Variant_t[sizeof(int32_t)*3 + VARIANT_T_PADDING]))->Set(nullptr);
 	}
 } g_VariantFirstTimeInit;
 
@@ -159,13 +159,11 @@ static cell_t SetVariantEntity(IPluginContext *pContext, const cell_t *params)
 {
 	CBaseEntity *pEntity;
 	unsigned char *vptr = g_Variant_t;
-	CBaseHandle bHandle;
 
 	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
-	bHandle = reinterpret_cast<IHandleEntity *>(pEntity)->GetRefEHandle();
 
 	vptr += sizeof(int32_t)*3 + VARIANT_T_PADDING;
-	*(uint32_t *)vptr = (uint32_t)(bHandle.ToInt());
+	((CBaseHandle*)vptr)->Set(reinterpret_cast<IHandleEntity*>(pEntity));
 	vptr += sizeof(CBaseHandle);
 	*(fieldtype_t *)vptr = FIELD_EHANDLE;
 
