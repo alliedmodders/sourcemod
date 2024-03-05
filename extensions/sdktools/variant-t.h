@@ -54,7 +54,7 @@ inline void _init_variant_t()
 
 	*(size_t *)vptr = 0;
 	vptr += sizeof(int32_t)*3 + VARIANT_T_PADDING;
-	*(uint32_t *)vptr = INVALID_EHANDLE_INDEX;
+	((CBaseHandle *)vptr)->Set(nullptr);
 	vptr += sizeof(CBaseHandle);
 	*(fieldtype_t *)vptr = FIELD_VOID;
 }
