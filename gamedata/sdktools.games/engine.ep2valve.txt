@@ -19,18 +19,21 @@
 			"GetTEName"
 			{
 				"windows"	"4"
+				"windows64"	"4"
 				"linux"		"4"
 				"linux64"	"8"
 			}
 			"GetTENext"
 			{
 				"windows"	"8"
+				"windows64"	"8"
 				"linux"		"8"
 				"linux64"	"16"
 			}
 			"TE_GetServerClass"
 			{
 				"windows"	"0"
+				"windows64"	"0"
 				"linux"		"0"
 				"linux64"	"0"
 			}
