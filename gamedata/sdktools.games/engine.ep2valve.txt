@@ -19,14 +19,14 @@
 			"GetTEName"
 			{
 				"windows"	"4"
-				"windows64"	"4"
+				"windows64"	"8"
 				"linux"		"4"
 				"linux64"	"8"
 			}
 			"GetTENext"
 			{
 				"windows"	"8"
-				"windows64"	"8"
+				"windows64"	"16"
 				"linux"		"8"
 				"linux64"	"16"
 			}
@@ -119,6 +119,7 @@
 			"SetUserCvar"
 			{
 				"windows"	"18"
+				"windows64"	"18"
 				"linux"		"58"
 				"linux64"	"58"
 			}
@@ -130,6 +131,7 @@
 			"SetClientName"
 			{
 				"windows"	"17"
+				"windows64"	"17"
 				"linux"		"57"
 				"linux64"	"57"
 			}
@@ -142,6 +144,7 @@
 			"InfoChanged"
 			{
 				"windows"	"140"
+				"windows64"	"140"
 				"linux"		"140"
 				"linux64"	"160"
 			}

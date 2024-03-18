@@ -18,10 +18,10 @@
 			"Burn"
 			{
 				/* CTFPlayerShared::Burn (No clone.)*/
-				/* String : -> "afterburn_immunity" -> main call Xdef -> Many functions, pick the one that is relatively small with no additional calls, at most 1, its a guessing game. */
+				/* String : -> "afterburn_immunity"*/
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x56\x8B\xF1\x8B\x8E\x8C\x01\x00\x00\x8B\x01"
-				"windows64"	"\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x48\x8D\x99\x60\x28\x00\x00"
+				"windows64"	"\x40\x53\x41\x54\x41\x56\x48\x83\xEC\x60"
 				"linux"		"@_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef"
 				"linux64"	"@_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef"
 			}
@@ -49,10 +49,10 @@
 			"Regenerate"
 			{
 				/* CTFPlayer::Regenerate */
-				/* String : "add_maxhealth_nonbuffed" -> massive function*/
+				/* String : "item_meter_resupply_denied" ->  guessing game on which one, should be tghe one with "player_regenerate"*/
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\xEC\x24\x53\x56\x57\x8B\xF9\x8B\x07\xFF\x90"
-				"windows64"	"\x40\x53\x55\x56\x57\x41\x54\x48\x83\xEC\x50"
+				"windows64"	"\x48\x8B\xC4\x88\x50\x10\x48\x81\xEC\xE8\x00\x00\x00"
 				"linux"		"@_ZN9CTFPlayer10RegenerateEb"
 				"linux64"	"@_ZN9CTFPlayer10RegenerateEb"
 			}
@@ -130,7 +130,11 @@
 				/* String: "bidirectional_teleport" Only string in function, go up 2 functions, xref of that function, find function that is extreamly small., but it seems to be unfindable in windows?*/
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x53\x57\x8B\x7D\x08\x8B\xD9\x85\xFF\x75\x2A\x5F\x32\xC0\x5B\x5D\xC2\x04\x00"
-				"windows64"	"\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\xFA\x48\x8B\xF1\x48\x85\xD2\x0F\x84\x2A\x2A\x2A\x2A\x45\x33\xC0" //This might be wrong due to [copy] and _part_0 decompiler issues.
+				
+				//This might be wrong due to [copy] and _part_0 decompiler issues.
+				"windows64"	"\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\xFA\x48\x8B\xF1\x48\x85\xD2\x0F\x84\x2A\x2A\x2A\x2A\x45\x33\xC0" 
+				
+				
 				"linux"		"@_ZN17CObjectTeleporter21PlayerCanBeTeleportedEP9CTFPlayer"
 				"linux64"	"@_ZN17CObjectTeleporter21PlayerCanBeTeleportedEP9CTFPlayer"
 			}
@@ -149,7 +153,7 @@
 			"ForceRespawn"
 			{
 				"windows"	"336"
-				"windows64"	"336"
+		//		"windows64"	"338"
 				"linux"		"337"
 				"linux64"	"337"
 			}
@@ -180,7 +184,7 @@
 			"RemoveWearable"
 			{
 				"windows"	"439"
-				"windows64"	"439"
+		//		"windows64"	"439"
 				"linux"		"440"
 				"linux64"	"440"
 			}
