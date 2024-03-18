@@ -153,7 +153,7 @@
 			"ForceRespawn"
 			{
 				"windows"	"336"
-		//		"windows64"	"338"
+				"windows64"	"336"
 				"linux"		"337"
 				"linux64"	"337"
 			}
@@ -184,7 +184,7 @@
 			"RemoveWearable"
 			{
 				"windows"	"439"
-		//		"windows64"	"439"
+				"windows64"	"439"
 				"linux"		"440"
 				"linux64"	"440"
 			}

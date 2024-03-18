@@ -26,6 +26,7 @@
 			"EntInfo"
 			{
 				"windows"	"4"	
+				"windows64"	"4"	
 				"linux"		"4"
 				"linux64"	"8"
 			}
@@ -35,7 +36,8 @@
 		{
 			"LevelShutdown"
 			{
-				/* CServerGameDLL:: LevelShutdown */
+				/* not confirmed to be : CServerGameDLL:: LevelShutdown */
+				/* if you know the exact level shutdown function, please comment.*/
 				/* String : "VDebugOverlay003" -> one call up.*/
 				/* it only needs to know when the server shuts down, not the absolute correct signature.*/
 				/* incase it needs the exact function, please notify.*/
