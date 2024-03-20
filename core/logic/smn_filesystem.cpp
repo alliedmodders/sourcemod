@@ -610,7 +610,7 @@ static cell_t sm_RenameFile(IPluginContext *pContext, const cell_t *params)
 	g_pSM->BuildPath(Path_Game, old_realpath, sizeof(old_realpath), "%s", oldpath);
 
 #ifdef PLATFORM_WINDOWS
-	return (MoveFileA(old_realpath, new_realpath)) ? 1 : 0;
+	return (MoveFileExA(old_realpath, new_realpath, MOVEFILE_REPLACE_EXISTING)) ? 1 : 0;
 #elif defined PLATFORM_POSIX
 	return (rename(old_realpath, new_realpath)) ? 0 : 1;
 #endif
