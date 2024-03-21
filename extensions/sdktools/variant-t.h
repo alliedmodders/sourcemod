@@ -31,8 +31,13 @@
 
 #ifndef _INCLUDE_SOURCEMOD_EXTENSION_VARIANT_T_H_
 #define _INCLUDE_SOURCEMOD_EXTENSION_VARIANT_T_H_
-
+#if defined(_WIN64) || defined(__x86_64__)
+#define SIZEOF_VARIANT_T		24
+#define VARIANT_T_PADDING 		4
+#else
 #define SIZEOF_VARIANT_T		20
+#define VARIANT_T_PADDING 		0
+#endif
 
 /**
  * @file variant-t.h
@@ -47,10 +52,10 @@ inline void _init_variant_t()
 {
 	unsigned char *vptr = g_Variant_t;
 
-	*(int *)vptr = 0;
-	vptr += sizeof(int)*3;
-	*(unsigned long *)vptr = INVALID_EHANDLE_INDEX;
-	vptr += sizeof(unsigned long);
+	*(size_t *)vptr = 0;
+	vptr += sizeof(int32_t)*3 + VARIANT_T_PADDING;
+	((CBaseHandle *)vptr)->Set(nullptr);
+	vptr += sizeof(CBaseHandle);
 	*(fieldtype_t *)vptr = FIELD_VOID;
 }
 
