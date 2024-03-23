@@ -38,7 +38,7 @@
 #include <am-inlinelist.h>
 #include <am-refcounting.h>
 #include <am-utility.h>
-#include <sm_stringhashmap.h>
+#include <sm_hashmap.h>
 
 #include "sm_globals.h"
 #include "sourcemm_api.h"
