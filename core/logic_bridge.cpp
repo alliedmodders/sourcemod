@@ -138,6 +138,10 @@ public:
 	{
 		return filesystem->FileExists(pFileName, pPathID);
 	}
+	unsigned int Size(FileHandle_t file) override
+	{
+		return filesystem->Size(file);
+	}
 	unsigned int Size(const char *pFileName, const char *pPathID = 0) override
 	{
 		return filesystem->Size(pFileName, pPathID);

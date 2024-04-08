@@ -73,6 +73,7 @@ class FileObject
 public:
 	virtual ~FileObject()
 	{}
+	virtual size_t Size() = 0;
 	virtual size_t Read(void *pOut, int size) = 0;
 	virtual char *ReadLine(char *pOut, int size) = 0;
 	virtual size_t Write(const void *pData, int size) = 0;
@@ -117,6 +118,10 @@ public:
 			return false;
 
 		return true;
+	}
+
+	size_t Size() override {
+		return (size_t)bridge->filesystem->Size(handle_);
 	}
 
 	size_t Read(void *pOut, int size) override {
@@ -181,6 +186,19 @@ public:
 
 	static bool Delete(const char *path) {
 		return unlink(path) == 0;
+	}
+
+	size_t Size() override {
+		// Preserve current location
+		size_t curpos = ftell(fp_);
+
+		fseek(fp_, 0L, SEEK_END);
+		size_t size = ftell(fp_);
+
+		//Restore previous location
+		fseek(fp_, curpos, SEEK_SET);
+
+		return size;
 	}
 
 	size_t Read(void *pOut, int size) override {
@@ -1125,6 +1143,15 @@ static cell_t sm_RemoveGameLogHook(IPluginContext *pContext, const cell_t *param
 	return 1;
 }
 
+static cell_t File_Size(IPluginContext *pContext, const cell_t *params)
+{
+	OpenHandle<FileObject> file(pContext, params[1], g_FileType);
+	if (!file.Ok())
+		return -1;
+
+	return file->Size();
+}
+
 template <typename T>
 static cell_t File_ReadTyped(IPluginContext *pContext, const cell_t *params)
 {
@@ -1197,6 +1224,7 @@ REGISTER_NATIVES(filesystem)
 	{"File.Seek",				sm_FileSeek},
 	{"File.Flush",				sm_FlushFile},
 	{"File.Position.get",		sm_FilePosition},
+	{"File.Size",				File_Size},
 	{"File.ReadInt8",			File_ReadTyped<int8_t>},
 	{"File.ReadUint8",			File_ReadTyped<uint8_t>},
 	{"File.ReadInt16",			File_ReadTyped<int16_t>},
