@@ -189,16 +189,27 @@ public:
 	}
 
 	size_t Size() override {
-		// Preserve current location
-		size_t curpos = ftell(fp_);
-
-		fseek(fp_, 0L, SEEK_END);
-		size_t size = ftell(fp_);
-
-		//Restore previous location
-		fseek(fp_, curpos, SEEK_SET);
-
-		return size;
+#ifdef PLATFORM_WINDOWS
+		struct _stat s;
+		int fd = _fileno(fp_);
+		if (fd == -1)
+			return -1;
+		if (_fstat(fd, &s) != 0)
+			return -1;
+		if (s.st_mode & S_IFREG)
+			return static_cast<size_t>(s.st_size);
+		return -1;
+#elif defined PLATFORM_POSIX
+		struct stat s;
+		int fd = fileno(fp_);
+		if (fd == -1)
+			return -1;
+		if (fstat(fd, &s) != 0)
+			return -1;
+		if (S_ISREG(s.st_mode))
+			return static_cast<size_t>(s.st_size);
+		return -1;
+#endif
 	}
 
 	size_t Read(void *pOut, int size) override {
