@@ -2,7 +2,7 @@
 import os, sys
 
 projectName = 'sample'
-extName = projectName + '.ext'
+extName = projectName + '.ext.'
 
 # smsdk_ext.cpp will be automatically added later
 sourceFiles = [
