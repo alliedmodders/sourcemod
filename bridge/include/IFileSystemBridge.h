@@ -44,6 +44,7 @@ public:
 	virtual char *ReadLine(char *pOutput, int maxChars, FileHandle_t file) = 0;
 	virtual bool EndOfFile(FileHandle_t file) = 0;
 	virtual bool FileExists(const char *pFileName, const char *pPathID = 0) = 0;
+	virtual unsigned int Size(FileHandle_t file) = 0;
 	virtual unsigned int Size(const char *pFileName, const char *pPathID = 0) = 0;
 	virtual int Read(void* pOutput, int size, FileHandle_t file) = 0;
 	virtual int Write(void const* pInput, int size, FileHandle_t file) = 0;
