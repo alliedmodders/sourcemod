@@ -984,8 +984,7 @@ static cell_t sm_ServerCommandEx(IPluginContext *pContext, const cell_t *params)
 		engine->ServerCommand("sm_conhook_start\n");
 		engine->ServerCommand(buffer);
 		engine->ServerCommand("sm_conhook_stop\n");
-	}
-	else {
+	} else {
 		engine->ServerCommand(buffer);
 	}
 
