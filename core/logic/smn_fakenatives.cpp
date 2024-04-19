@@ -36,7 +36,6 @@
 #include "ShareSys.h"
 #include "PluginSys.h"
 #include "sprintf.h"
-#include "LegacyPluginCompat.h"
 
 using namespace SourceHook;
 
@@ -387,11 +386,9 @@ static cell_t GetNativeFunction(IPluginContext *pContext, const cell_t *params)
 		// convert null function to receiver's expected value so equality checks against INVALID_FUNCTION pass
 		return pContext->GetNullFunctionValue();
 	}
-	else if (funcid == 0 && pContext->GetNullFunctionValue() == 0)
+	else if (funcid <= 0)
 	{
-		// convert 0th function on legacy plugin to a special value representation on newer plugins
-		// 0th function between legacy plugins are unchanged
-		return LEGACY_FIRST_FUNCTION_ID;
+		return pContext->ThrowNativeError("Invalid function id (%X)", funcid);
 	}
 	return funcid;
 }

@@ -36,7 +36,6 @@
 #include <IHandleSys.h>
 #include <IForwardSys.h>
 #include <ISourceMod.h>
-#include "LegacyPluginCompat.h"
 
 HandleType_t g_GlobalFwdType = 0;
 HandleType_t g_PrivateFwdType = 0;
@@ -230,20 +229,14 @@ static cell_t sm_AddToForward(IPluginContext *pContext, const cell_t *params)
 	}
 
 	cell_t funcid = params[3];
-	IPluginFunction *pFunction;
-	if (!pContext->IsNullFunctionId(funcid))
+	if (funcid <= 0)
 	{
-		IPluginContext *pTargetContext = pPlugin->GetBaseContext();
-		if (funcid == LEGACY_FIRST_FUNCTION_ID && pTargetContext->GetNullFunctionValue() != 0)
-		{
-			funcid = 0;
-		}
-		pPlugin->GetBaseContext()->GetFunctionByIdOrNull(funcid, &pFunction);
+		return pContext->ThrowNativeError("Invalid function id (%X)", funcid);
 	}
-
+	IPluginFunction *pFunction = pPlugin->GetBaseContext()->GetFunctionById(funcid);
 	if (!pFunction)
 	{
-		return pContext->ThrowNativeError("Invalid function id (%X)", params[3]);
+		return pContext->ThrowNativeError("Invalid function id (%X)", funcid);
 	}
 
 	return pForward->AddFunction(pFunction);
@@ -277,20 +270,14 @@ static cell_t sm_RemoveFromForward(IPluginContext *pContext, const cell_t *param
 	}
 
 	cell_t funcid = params[3];
-	IPluginFunction *pFunction;
-	if (!pContext->IsNullFunctionId(funcid))
+	if (funcid <= 0)
 	{
-		IPluginContext *pTargetContext = pPlugin->GetBaseContext();
-		if (funcid == LEGACY_FIRST_FUNCTION_ID && pTargetContext->GetNullFunctionValue() != 0)
-		{
-			funcid = 0;
-		}
-		pPlugin->GetBaseContext()->GetFunctionByIdOrNull(funcid, &pFunction);
+		return pContext->ThrowNativeError("Invalid function id (%X)", funcid);
 	}
-
+	IPluginFunction *pFunction = pPlugin->GetBaseContext()->GetFunctionById(funcid);
 	if (!pFunction)
 	{
-		return pContext->ThrowNativeError("Invalid function id (%X)", params[3]);
+		return pContext->ThrowNativeError("Invalid function id (%X)", funcid);
 	}
 
 	return pForward->RemoveFunction(pFunction);
@@ -349,20 +336,14 @@ static cell_t sm_CallStartFunction(IPluginContext *pContext, const cell_t *param
 	}
 
 	cell_t funcid = params[2];
-
-	if (!pContext->IsNullFunctionId(funcid))
+	if (funcid <= 0)
 	{
-		IPluginContext *pTargetContext = pPlugin->GetBaseContext();
-		if (funcid == LEGACY_FIRST_FUNCTION_ID && pTargetContext->GetNullFunctionValue() != 0)
-		{
-			funcid = 0;
-		}
-		pTargetContext->GetFunctionByIdOrNull(funcid, &s_pFunction);
+		return pContext->ThrowNativeError("Invalid function id (%X)", funcid);
 	}
-
+	s_pFunction = pPlugin->GetBaseContext()->GetFunctionById(funcid);
 	if (!s_pFunction)
 	{
-		return pContext->ThrowNativeError("Invalid function id (%X)", params[2]);
+		return pContext->ThrowNativeError("Invalid function id (%X)", funcid);
 	}
 
 	s_pCallable = static_cast<ICallable *>(s_pFunction);

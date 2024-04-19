@@ -33,7 +33,6 @@
 #include <IHandleSys.h>
 #include <ISourceMod.h>
 #include "CDataPack.h"
-#include "LegacyPluginCompat.h"
 
 HandleType_t g_DataPackType;
 
@@ -249,12 +248,16 @@ static cell_t smn_WritePackFunction(IPluginContext *pContext, const cell_t *para
 	if (pContext->IsNullFunctionId(funcid))
 	{
 		pDataPack->PackFunction(0);
+	} 
+	else if (funcid <= 0)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", funcid);
 	}
 	else
 	{
-		// translate non-null 0th function
-		pDataPack->PackFunction(funcid == 0 ? LEGACY_FIRST_FUNCTION_ID : funcid);
+		pDataPack->PackFunction(funcid);
 	}
+
 	return 1;
 }
 
@@ -378,11 +381,6 @@ static cell_t smn_ReadPackFunction(IPluginContext *pContext, const cell_t *param
 	if (!funcid)
 	{
 		return pContext->GetNullFunctionValue();
-	}
-	else if (funcid == LEGACY_FIRST_FUNCTION_ID && pContext->GetNullFunctionValue() != 0)
-	{
-		// non-null 0th function being read by a legacy plugin
-		return 0;
 	}
 	return funcid;
 }
