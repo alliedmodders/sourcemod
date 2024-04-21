@@ -139,11 +139,15 @@ class IEntityListener
 {
 public:
 #if SOURCE_ENGINE == SE_BMS
+	virtual ~IEntityListener() {};
 	virtual void OnEntityPreSpawned( CBaseEntity *pEntity ) {};
 #endif
 	virtual void OnEntityCreated( CBaseEntity *pEntity ) {};
 	virtual void OnEntitySpawned( CBaseEntity *pEntity ) {};
 	virtual void OnEntityDeleted( CBaseEntity *pEntity ) {};
+#if SOURCE_ENGINE == SE_BMS
+    virtual void OnEntityFlagsChanged( CBaseEntity *pEntity, int nAddedFlags, int nRemovedFlags ) {};
+#endif
 };
 
 class SDKHooks :
