@@ -32,26 +32,22 @@
 #ifndef _INCLUDE_SOURCEMOD_EXTENSION_VARIANT_T_H_
 #define _INCLUDE_SOURCEMOD_EXTENSION_VARIANT_T_H_
 
-#define SIZEOF_VARIANT_T		20
+#include "variant_t.h"
+
+#define SIZEOF_VARIANT_T		sizeof(variant_t)
 
 /**
  * @file variant-t.h
  * @brief SDK Tools extension gamerules natives header.
  */
 
-extern unsigned char g_Variant_t[SIZEOF_VARIANT_T];
+extern variant_t g_Variant_t;
 
 extern sp_nativeinfo_t g_VariantTNatives[];
 
 inline void _init_variant_t()
 {
-	unsigned char *vptr = g_Variant_t;
-
-	*(int *)vptr = 0;
-	vptr += sizeof(int)*3;
-	*(unsigned long *)vptr = INVALID_EHANDLE_INDEX;
-	vptr += sizeof(unsigned long);
-	*(fieldtype_t *)vptr = FIELD_VOID;
+	memset(&g_Variant_t, 0, sizeof(g_Variant_t));
 }
 
 #endif //_INCLUDE_SOURCEMOD_EXTENSION_VARIANT_T_H_

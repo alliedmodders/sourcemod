@@ -48,7 +48,12 @@ for sdk_name in SM.sdks:
     binary.compiler.cxxincludes += [
       os.path.join(builder.sourcePath, 'public', 'jit'),
       os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
+      os.path.join(builder.options.hl2sdk_root, sdk['path'], 'game', 'server'),
+      os.path.join(builder.options.hl2sdk_root, sdk['path'], 'game', 'shared'),      
     ]
+
+    #binary.sources += [os.path.join(builder.options.hl2sdk_root, sdk['path'], 'game', 'server', 'variant_t.cpp')]
+
     binary.compiler.defines += ['HAVE_STRING_H']
 
     if sdk['name'] != 'episode1':
