@@ -725,7 +725,7 @@ inline void Write_PushObject(JitWriter *jit, const SourceHook::PassInfo *info, u
 		ObjectClass classes[MAX_CLASSES];
 		int numWords = ClassifyObject(smInfo, classes);
 
-		if (classes[0] == ObjectClass::Pointer)
+		if (classes[0] == ObjectClass::Pointer || classes[0] == ObjectClass::Memory)
 			goto push_byref;
 
 		int neededIntRegs = 0;
