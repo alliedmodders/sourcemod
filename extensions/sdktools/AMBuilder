@@ -48,9 +48,16 @@ for sdk_name in SM.sdks:
     binary.compiler.cxxincludes += [
       os.path.join(builder.sourcePath, 'public', 'jit'),
       os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
-      os.path.join(builder.options.hl2sdk_root, sdk['path'], 'game', 'server'),
-      os.path.join(builder.options.hl2sdk_root, sdk['path'], 'game', 'shared'),      
     ]
+
+    if sdk['name'] in ('episode1', 'darkm'):
+      binary.compiler.cxxincludes += [os.path.join(builder.options.hl2sdk_root, sdk['path'], 'game_shared')]
+      binary.compiler.cxxincludes += [os.path.join(builder.options.hl2sdk_root, sdk['path'], 'dlls')]
+    else:
+      binary.compiler.cxxincludes += [
+        os.path.join(builder.options.hl2sdk_root, sdk['path'], 'game', 'shared'),
+        os.path.join(builder.options.hl2sdk_root, sdk['path'], 'game', 'server'),
+      ]
 
     #binary.sources += [os.path.join(builder.options.hl2sdk_root, sdk['path'], 'game', 'server', 'variant_t.cpp')]
 

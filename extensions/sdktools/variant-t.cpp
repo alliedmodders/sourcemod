@@ -110,19 +110,6 @@ static cell_t SetVariantEntity(IPluginContext *pContext, const cell_t *params)
 	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
 	g_Variant_t.SetEntity(pEntity);
 
-	/*
-	unsigned char *vptr = g_Variant_t;
-	CBaseHandle bHandle;
-
-	ENTINDEX_TO_CBASEENTITY(params[1], pEntity);
-	bHandle = reinterpret_cast<IHandleEntity *>(pEntity)->GetRefEHandle();
-
-	vptr += sizeof(int)*3;
-	*(unsigned long *)vptr = (unsigned long)(bHandle.ToInt());
-	vptr += sizeof(unsigned long);
-	*(fieldtype_t *)vptr = FIELD_EHANDLE;
-	*/
-
 	return 1;
 }
 
