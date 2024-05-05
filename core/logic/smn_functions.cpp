@@ -228,11 +228,15 @@ static cell_t sm_AddToForward(IPluginContext *pContext, const cell_t *params)
 		}
 	}
 
-	IPluginFunction *pFunction = pPlugin->GetBaseContext()->GetFunctionById(params[3]);
-
+	cell_t funcid = params[3];
+	if (funcid <= 0)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", funcid);
+	}
+	IPluginFunction *pFunction = pPlugin->GetBaseContext()->GetFunctionById(funcid);
 	if (!pFunction)
 	{
-		return pContext->ThrowNativeError("Invalid function id (%X)", params[3]);
+		return pContext->ThrowNativeError("Invalid function id (%X)", funcid);
 	}
 
 	return pForward->AddFunction(pFunction);
@@ -265,11 +269,15 @@ static cell_t sm_RemoveFromForward(IPluginContext *pContext, const cell_t *param
 		}
 	}
 
-	IPluginFunction *pFunction = pPlugin->GetBaseContext()->GetFunctionById(params[3]);
-
+	cell_t funcid = params[3];
+	if (funcid <= 0)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", funcid);
+	}
+	IPluginFunction *pFunction = pPlugin->GetBaseContext()->GetFunctionById(funcid);
 	if (!pFunction)
 	{
-		return pContext->ThrowNativeError("Invalid function id (%X)", params[3]);
+		return pContext->ThrowNativeError("Invalid function id (%X)", funcid);
 	}
 
 	return pForward->RemoveFunction(pFunction);
@@ -327,11 +335,15 @@ static cell_t sm_CallStartFunction(IPluginContext *pContext, const cell_t *param
 		}
 	}
 
-	s_pFunction = pPlugin->GetBaseContext()->GetFunctionById(params[2]);
-
+	cell_t funcid = params[2];
+	if (funcid <= 0)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", funcid);
+	}
+	s_pFunction = pPlugin->GetBaseContext()->GetFunctionById(funcid);
 	if (!s_pFunction)
 	{
-		return pContext->ThrowNativeError("Invalid function id (%X)", params[2]);
+		return pContext->ThrowNativeError("Invalid function id (%X)", funcid);
 	}
 
 	s_pCallable = static_cast<ICallable *>(s_pFunction);

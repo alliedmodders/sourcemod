@@ -366,6 +366,33 @@ static cell_t SetNativeArray(IPluginContext *pContext, const cell_t *params)
 	return SP_ERROR_NONE;
 }
 
+static cell_t GetNativeFunction(IPluginContext *pContext, const cell_t *params)
+{
+	if (!s_curnative || (s_curnative->ctx != pContext))
+	{
+		return pContext->ThrowNativeError("Not called from inside a native function");
+	}
+
+	cell_t param = params[1];
+	if (param < 1 || param > s_curparams[0])
+	{
+		return pContext->ThrowNativeErrorEx(SP_ERROR_PARAM, "Invalid parameter number: %d", param);
+	}
+	
+	cell_t funcid = s_curparams[param];
+	if (s_curcaller->IsNullFunctionId(funcid))
+	{
+		// see alliedmodders/sourcepawn#912, alliedmodders/sourcemod#2068
+		// convert null function to receiver's expected value so equality checks against INVALID_FUNCTION pass
+		return pContext->GetNullFunctionValue();
+	}
+	else if (funcid <= 0)
+	{
+		return pContext->ThrowNativeError("Invalid function id (%X)", funcid);
+	}
+	return funcid;
+}
+
 static cell_t FormatNativeString(IPluginContext *pContext, const cell_t *params)
 {
 	if (!s_curnative || (s_curnative->ctx != pContext))
@@ -483,7 +510,7 @@ REGISTER_NATIVES(nativeNatives)
 	{"GetNativeArray",			GetNativeArray},
 	{"GetNativeCell",			GetNativeCell},
 	{"GetNativeCellRef",		GetNativeCellRef},
-	{"GetNativeFunction",       GetNativeCell},
+	{"GetNativeFunction",       GetNativeFunction},
 	{"GetNativeString",			GetNativeString},
 	{"GetNativeStringLength",	GetNativeStringLength},
 	{"FormatNativeString",		FormatNativeString},

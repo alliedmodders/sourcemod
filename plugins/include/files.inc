@@ -112,6 +112,11 @@ methodmap File < Handle
 		CloseHandle(this);
 	}
 
+	// Get the file size in bytes.
+	//
+	// @return                File size in bytes, -1 on error.
+	public native int Size();
+
 	// Reads a line of text from a file.
 	//
 	// @param buffer          String buffer to hold the line.

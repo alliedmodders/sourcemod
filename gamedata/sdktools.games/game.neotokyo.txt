@@ -76,6 +76,10 @@
 			{
 				"windows"	"185"
 			}
+			"SetOwnerEntity"
+			{
+				"windows"	"18"
+			}
 		}
 		"Signatures"
 		{
