@@ -5,159 +5,186 @@
 	{
 		"Offsets"
 		{
+			//This sucks, this comment HAS to stay, if you remove it, sourcemod WILl crash, why? Ask god.
 			"EntityListeners"
 			{
 				"windows"	"131108"
+				"windows64"	"262200"
 				"linux"		"131108"
-				"linux64"	"524432"
+				"linux64"	"262200"
 			}
 			"CanBeAutobalanced"
 			{
 				"windows"	"473"
+				"windows64"	"473"
 				"linux"		"474"
 				"linux64"	"474"
 			}
 			"EndTouch"
 			{
 				"windows"	"105"
+				"windows64"	"105"
 				"linux"		"106"
 				"linux64"	"106"
 			}
 			"FireBullets"
 			{
 				"windows"	"117"
+				"windows64"	"117"
 				"linux"		"118"
 				"linux64"	"118"
 			}
 			"GetMaxHealth"
 			{
 				"windows"	"122"
+				"windows64"	"123"
 				"linux"		"123"
 				"linux64"	"123"
 			}
 			"GroundEntChanged"
 			{
 				"windows"	"183"
+				"windows64"	"183"
 				"linux"		"185"
 				"linux64"	"185"
 			}
 			"OnTakeDamage"
 			{
 				"windows"	"64"
+				"windows64"	"64"
 				"linux"		"65"
 				"linux64"	"65"
 			}
 			"OnTakeDamage_Alive"
 			{
 				"windows"	"282"
+				"windows64"	"282"
 				"linux"		"283"
 				"linux64"	"283"
 			}
 			"PreThink"
 			{
 				"windows"	"343"
+				"windows64"	"343"
 				"linux"		"344"
 				"linux64"	"344"
 			}
 			"PostThink"
 			{
 				"windows"	"344"
+				"windows64"	"344"
 				"linux"		"345"
 				"linux64"	"345"
 			}
 			"Reload"
 			{
 				"windows"	"283"
+				"windows64"	"283"
 				"linux"		"289"
 				"linux64"	"289"
 			}
 			"SetTransmit"
 			{
 				"windows"	"22"
+				"windows64"	"22"
 				"linux"		"23"
 				"linux64"	"23"
 			}
 			"ShouldCollide"
 			{
 				"windows"	"17"
+				"windows64"	"17"
 				"linux"		"18"
 				"linux64"	"18"
 			}
 			"Spawn"
 			{
 				"windows"	"24"
+				"windows64"	"24"
 				"linux"		"25"
 				"linux64"	"25"
 			}
 			"StartTouch"
 			{
 				"windows"	"103"
+				"windows64"	"103"
 				"linux"		"104"
 				"linux64"	"104"
 			}
 			"Think"
 			{
 				"windows"	"49"
+				"windows64"	"49"
 				"linux"		"50"
 				"linux64"	"50"
 			}
 			"Touch"
 			{
 				"windows"	"104"
+				"windows64"	"104"
 				"linux"		"105"
 				"linux64"	"105"
 			}
 			"TraceAttack"
 			{
 				"windows"	"62"
+				"windows64"	"62"
 				"linux"		"63"
 				"linux64"	"63"
 			}
 			"Use"
 			{
 				"windows"	"102"
+				"windows64"	"102"
 				"linux"		"103"
 				"linux64"	"103"
 			}
 			"VPhysicsUpdate"
 			{
 				"windows"	"163"
+				"windows64"	"163"
 				"linux"		"164"
 				"linux64"	"164"
 			}
 			"Blocked"
 			{
 				"windows"	"107"
+				"windows64"	"107"
 				"linux"		"108"
 				"linux64"	"108"
 			}
 			"Weapon_CanSwitchTo"
 			{
 				"windows"	"276"
+				"windows64"	"276"
 				"linux"		"277"
 				"linux64"	"277"
 			}
 			"Weapon_CanUse"
 			{
 				"windows"	"270"
+				"windows64"	"270"
 				"linux"		"271"
 				"linux64"	"271"
 			}
 			"Weapon_Drop"
 			{
 				"windows"	"273"
+				"windows64"	"273"
 				"linux"		"274"
 				"linux64"	"274"
 			}
 			"Weapon_Equip"
 			{
 				"windows"	"271"
+				"windows64"	"271"
 				"linux"		"272"
 				"linux64"	"272"
 			}
 			"Weapon_Switch"
 			{
 				"windows"	"274"
+				"windows64"	"274"
 				"linux"		"275"
 				"linux64"	"275"
 			}
