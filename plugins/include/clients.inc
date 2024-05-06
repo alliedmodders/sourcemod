@@ -216,13 +216,16 @@ forward Action OnClientPreAdminCheck(int client);
 forward void OnClientPostAdminFilter(int client);
 
 /**
- * Called directly before the server hibernation state changes.
+ * Called directly before the server enters hibernation.
  * This is your last chance to do anything in the plugin before
  * hibernation occurs, as SV_Frame will no longer be called.
- *
- * @param state         The new hibernation state.
  */
-forward void OnServerHibernationUpdate(bool state);
+forward void OnServerEnterHibernation();
+
+/**
+ * Called directly before the server leaves hibernation.
+ */
+forward void OnServerExitHibernation();
 
 /**
  * Called once a client is authorized and fully in-game, and 

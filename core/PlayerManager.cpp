@@ -59,7 +59,8 @@ bool g_OnMapStarted = false;
 IForward *PreAdminCheck = NULL;
 IForward *PostAdminCheck = NULL;
 IForward *PostAdminFilter = NULL;
-IForward *ServerHibernationUpdate = NULL;
+IForward *ServerEnterHibernation = NULL;
+IForward *ServerExitHibernation = NULL;
 
 const unsigned int *g_NumPlayersToAuth = NULL;
 int lifestate_offset = -1;
@@ -204,7 +205,8 @@ void PlayerManager::OnSourceModAllInitialized()
 	PreAdminCheck = forwardsys->CreateForward("OnClientPreAdminCheck", ET_Event, 1, p1);
 	PostAdminCheck = forwardsys->CreateForward("OnClientPostAdminCheck", ET_Ignore, 1, p1);
 	PostAdminFilter = forwardsys->CreateForward("OnClientPostAdminFilter", ET_Ignore, 1, p1);
-	ServerHibernationUpdate = forwardsys->CreateForward("OnServerHibernationUpdate", ET_Ignore, 1, NULL, Param_Cell);
+	ServerEnterHibernation = forwardsys->CreateForward("OnServerEnterHibernation", ET_Ignore, 0, NULL);
+	ServerExitHibernation = forwardsys->CreateForward("OnServerExitHibernation", ET_Ignore, 0, NULL);
 
 	m_bIsListenServer = !engine->IsDedicatedServer();
 	m_ListenClient = 0;
@@ -256,7 +258,8 @@ void PlayerManager::OnSourceModShutdown()
 	forwardsys->ReleaseForward(PreAdminCheck);
 	forwardsys->ReleaseForward(PostAdminCheck);
 	forwardsys->ReleaseForward(PostAdminFilter);
-	forwardsys->ReleaseForward(ServerHibernationUpdate);
+	forwardsys->ReleaseForward(ServerEnterHibernation);
+	forwardsys->ReleaseForward(ServerExitHibernation);
 
 	delete [] m_Players;
 
@@ -782,9 +785,10 @@ void PlayerManager::OnSourceModLevelEnd()
 void PlayerManager::OnServerHibernationUpdate(bool bHibernating)
 {
 	cell_t res;
-	cell_t data = static_cast<cell_t>(bHibernating);
-	ServerHibernationUpdate->PushCell(data);
-	ServerHibernationUpdate->Execute(&res);
+	if (bHibernating)
+		ServerEnterHibernation->Execute(&res);
+	else
+		ServerExitHibernation->Execute(&res);
 	/* If bots were added at map start, but not fully inited before hibernation, there will
 	 * be no OnClientDisconnect for them, despite them getting booted right before this.
 	 */
