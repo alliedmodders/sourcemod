@@ -220,7 +220,7 @@ forward void OnClientPostAdminFilter(int client);
  * This is your last chance to do anything in the plugin before
  * hibernation occurs, as SV_Frame will no longer be called.
  *
- * @param state         The new hibernation state.
+ * @param state         The new hibernation state (true for hibernating, false for not).
  */
 forward void OnServerHibernationUpdate(bool state);
 
