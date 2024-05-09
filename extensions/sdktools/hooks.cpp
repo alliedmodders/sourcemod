@@ -584,7 +584,7 @@ bool CHookManager::SendFile(const char *filename, unsigned int transferID)
 #if !defined CLIENTVOICE_HOOK_SUPPORT
 bool CHookManager::ProcessVoiceData(CLC_VoiceData *msg)
 {
-	IClient *pClient = (IClient *)((intptr_t)(META_IFACEPTR(IClient)) - 4);
+	IClient *pClient = (IClient *)((intptr_t)(META_IFACEPTR(IClient)) - sizeof(intptr_t));
 	if (pClient == NULL)
 	{
 		return true;
