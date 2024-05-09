@@ -754,7 +754,7 @@ CEntityFactoryDictionary *GetEntityFactoryDictionary()
 
 			// Get real address of function
 			// Address of signature + offset of relative offset + sizeof(int32_t) offset + relative offset
-			addr = (void *)((intptr_t)addr + offset + 4 + funcOffset);
+			addr = (void *)((intptr_t)addr + offset + sizeof(intptr_t) + funcOffset);
 		}
 
 		pWrapper = g_pBinTools->CreateCall(addr, CallConv_Cdecl, &retData, NULL, 0);
