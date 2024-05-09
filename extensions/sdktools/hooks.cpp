@@ -234,7 +234,7 @@ void CHookManager::OnClientConnected(int client)
 		}
 	}
 	
-	int hookid = SH_ADD_VPHOOK(IClientMessageHandler, ProcessVoiceData, (IClientMessageHandler *)((intptr_t)(pClient) + 4), SH_MEMBER(this, &CHookManager::ProcessVoiceData), true);
+	int hookid = SH_ADD_VPHOOK(IClientMessageHandler, ProcessVoiceData, (IClientMessageHandler *)((intptr_t)(pClient) + sizeof(intptr_t)), SH_MEMBER(this, &CHookManager::ProcessVoiceData), true);
 	hook.SetHookID(hookid);
 	netProcessVoiceData.push_back(new CVTableHook(hook));
 }
