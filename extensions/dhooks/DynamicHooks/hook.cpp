@@ -36,7 +36,10 @@
 // ============================================================================
 #include "hook.h"
 #include <asm/asm.h>
+#ifdef PLATFORM_X64
+#else
 #include <macro-assembler-x86.h>
+#endif
 #include "extension.h"
 #include <jit/jit_helpers.h>
 #include <CDetour/detourhelpers.h>
@@ -231,6 +234,9 @@ void __cdecl CHook::SetReturnAddress(void* pRetAddr, void* pESP)
 
 void* CHook::CreateBridge()
 {
+#ifdef PLATFORM_X64
+	return nullptr;
+#else
 	sp::MacroAssembler masm;
 	Label label_supercede;
 
@@ -259,10 +265,13 @@ void* CHook::CreateBridge()
 	void *base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.length());
 	masm.emitToExecutableMemory(base);
 	return base;
+#endif
 }
 
 void CHook::Write_ModifyReturnAddress(sp::MacroAssembler& masm)
 {
+#ifdef PLATFORM_X64
+#else
 	// Save scratch registers that are used by SetReturnAddress
 	static void* pEAX = NULL;
 	static void* pECX = NULL;
@@ -292,10 +301,14 @@ void CHook::Write_ModifyReturnAddress(sp::MacroAssembler& masm)
 	// Override the return address. This is a redirect to our post-hook code
 	m_pNewRetAddr = CreatePostCallback();
 	masm.movl(Operand(esp, 0), intptr_t(m_pNewRetAddr));
+#endif
 }
 
 void* CHook::CreatePostCallback()
 {
+#ifdef PLATFORM_X64
+	return nullptr;
+#else
 	sp::MacroAssembler masm;
 
 	int iPopSize = m_pCallingConvention->GetPopSize();
@@ -345,10 +358,13 @@ void* CHook::CreatePostCallback()
 	void *base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.length());
 	masm.emitToExecutableMemory(base);
 	return base;
+#endif
 }
 
 void CHook::Write_CallHandler(sp::MacroAssembler& masm, HookType_t type)
 {
+#ifdef PLATFORM_X64
+#else
 	ReturnAction_t (__cdecl CHook::*HookHandler)(HookType_t) = &CHook::HookHandler;
 
 	// Save the registers so that we can access them in our handlers
@@ -362,10 +378,13 @@ void CHook::Write_CallHandler(sp::MacroAssembler& masm, HookType_t type)
 	masm.push(intptr_t(this));
 	masm.call(ExternalAddress((void *&)HookHandler));
 	masm.addl(esp, 12);
+#endif
 }
 
 void CHook::Write_SaveRegisters(sp::MacroAssembler& masm, HookType_t type)
 {
+#ifdef PLATFORM_X64
+#else
 	std::vector<Register_t> vecRegistersToSave = m_pCallingConvention->GetRegisters();
 	for(size_t i = 0; i < vecRegistersToSave.size(); i++)
 	{
@@ -429,10 +448,13 @@ void CHook::Write_SaveRegisters(sp::MacroAssembler& masm, HookType_t type)
 		default: puts("Unsupported register.");
 		}
 	}
+#endif
 }
 
 void CHook::Write_RestoreRegisters(sp::MacroAssembler& masm, HookType_t type)
 {
+#ifdef PLATFORM_X64
+#else
 	std::vector<Register_t> vecRegistersToSave = m_pCallingConvention->GetRegisters();
 	for (size_t i = 0; i < vecRegistersToSave.size(); i++)
 	{
@@ -501,4 +523,5 @@ void CHook::Write_RestoreRegisters(sp::MacroAssembler& masm, HookType_t type)
 		default: puts("Unsupported register.");
 		}
 	}
+#endif
 }

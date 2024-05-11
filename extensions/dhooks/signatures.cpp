@@ -43,7 +43,7 @@ enum ParseState
 };
 
 ParseState g_ParseState;
-unsigned int g_IgnoreLevel;
+unsigned int g_IgnoreLevel = 0;
 // The parent section type of a platform specific "windows" or "linux" section.
 ParseState g_PlatformOnlyState;
 

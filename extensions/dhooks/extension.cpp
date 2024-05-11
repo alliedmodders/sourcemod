@@ -118,7 +118,7 @@ void DHooks::SDK_OnAllLoaded()
 	SM_GET_LATE_IFACE(SDKTOOLS, g_pSDKTools);
 	SM_GET_LATE_IFACE(BINTOOLS, g_pBinTools);
 	SM_GET_LATE_IFACE(SDKHOOKS, g_pSDKHooks);
-
+	
 	if (g_pSDKHooks)
 	{
 		g_pSDKHooks->AddEntityListener(g_pEntityListener);
@@ -174,6 +174,7 @@ bool DHooks::QueryRunning(char *error, size_t maxlength)
 	SM_CHECK_IFACE(SDKTOOLS, g_pSDKTools);
 	SM_CHECK_IFACE(BINTOOLS, g_pBinTools);
 	SM_CHECK_IFACE(SDKHOOKS, g_pSDKHooks);
+
 	return true;
 }
 void DHooks::NotifyInterfaceDrop(SMInterface *pInterface)

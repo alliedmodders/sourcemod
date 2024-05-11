@@ -212,6 +212,10 @@ public:
 
 	// Save the last return action of the pre HookHandler for use in the post handler.
 	std::vector<ReturnAction_t> m_LastPreReturnAction;
+
+#ifdef PLATFORM_X64
+	
+#endif
 };
 
 #endif // _HOOK_H

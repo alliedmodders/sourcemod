@@ -44,8 +44,8 @@ enum ListenType
 class DHooksEntityListener : public ISMEntityListener
 {
 public:
-	virtual void OnEntityCreated(CBaseEntity *pEntity, const char *classname);
-	virtual void OnEntityDestroyed(CBaseEntity *pEntity);
+	virtual void OnEntityCreated(CBaseEntity *pEntity, const char *classname) override;
+	virtual void OnEntityDestroyed(CBaseEntity *pEntity) override;
 	void CleanupListeners(IPluginContext *func = NULL);
 	void CleanupRemoveList();
 	bool AddPluginEntityListener(ListenType type, IPluginFunction *callback);
