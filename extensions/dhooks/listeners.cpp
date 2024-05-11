@@ -138,7 +138,6 @@ void DHooksEntityListener::OnEntityDestroyed(CBaseEntity *pEntity)
 		}
 	}
 }
-
 bool DHooksEntityListener::AddPluginEntityListener(ListenType type, IPluginFunction *callback)
 {
 	for(int i = g_EntityListeners.size() -1; i >= 0; i--)
@@ -155,7 +154,6 @@ bool DHooksEntityListener::AddPluginEntityListener(ListenType type, IPluginFunct
 	g_EntityListeners.push_back(listener);
 	return true;
 }
-
 bool DHooksEntityListener::RemovePluginEntityListener(ListenType type, IPluginFunction *callback)
 {
 	for(int i = g_EntityListeners.size() -1; i >= 0; i--)
