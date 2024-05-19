@@ -8,6 +8,7 @@ if 'tf2' in SM.sdks:
     if not cxx.target.arch in sdk['platforms'][cxx.target.platform]:
       continue
     binary = SM.HL2Library(builder, cxx, 'game.tf2.ext.' + sdk['extension'], sdk)
+    SM.AddCDetour(binary)
     binary.sources += [
       'extension.cpp',
       'natives.cpp',
@@ -18,15 +19,7 @@ if 'tf2' in SM.sdks:
       'teleporter.cpp',
       'gameplayrules.cpp',
       'conditions.cpp',
-      '../../public/smsdk_ext.cpp',
-      '../../public/CDetour/detours.cpp',
-      '../../public/asm/asm.c',
-      '../../public/libudis86/decode.c',
-      '../../public/libudis86/itab.c',
-      '../../public/libudis86/syn-att.c',
-      '../../public/libudis86/syn-intel.c',
-      '../../public/libudis86/syn.c',
-      '../../public/libudis86/udis86.c',
+      '../../public/smsdk_ext.cpp'
     ]
     binary.compiler.defines += ['HAVE_STRING_H']
     SM.extensions += [builder.Add(binary)]

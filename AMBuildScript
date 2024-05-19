@@ -180,14 +180,14 @@ class SMConfig(object):
 
   def configure_cxx(self, cxx):
     if cxx.family == 'msvc':
-      if cxx.version < 1914 and builder.options.generator != 'vs':
-        raise Exception(f'Only MSVC 2017 15.7 and later are supported, full C++17 support is required. ({str(cxx.version)} < 1914)')
+      if cxx.version < 1929 and builder.options.generator != 'vs':
+        raise Exception(f'Only MSVC 2019 16.11 and later are supported, full C++20 support is required. ({str(cxx.version)} < 1929)')
     elif cxx.family == 'gcc':
       if cxx.version < 'gcc-9':
-        raise Exception('Only GCC versions 9 or later are supported, full C++17 support is required.')
+        raise Exception('Only GCC versions 9 or later are supported, partial C++20 support is required.')
     elif cxx.family == 'clang':
-      if cxx.version < 'clang-5':
-        raise Exception('Only clang versions 5 or later are supported, full C++17 support is required.')
+      if cxx.version < 'clang-6':
+        raise Exception('Only clang versions 6 or later are supported, partial C++20 support is required.')
 
     if cxx.like('gcc'):
       self.configure_gcc(cxx)
@@ -247,7 +247,7 @@ class SMConfig(object):
     if cxx.target.arch in ['x86', 'x86_64']:
       cxx.cflags += ['-msse']
 
-    cxx.cxxflags += ['-std=c++17']
+    cxx.cxxflags += ['-std=c++20']
 
     cxx.cxxflags += [
       '-fno-threadsafe-statics',
@@ -330,7 +330,7 @@ class SMConfig(object):
       '/EHsc',
       '/GR-',
       '/TP',
-      '/std:c++17',
+      '/std:c++20',
     ]
     cxx.linkflags += [
       'kernel32.lib',
@@ -520,6 +520,16 @@ class SMConfig(object):
 
     return binary
 
+  def AddCDetour(self, binary):
+    public_path = os.path.join(builder.sourcePath, 'public')
+    binary.sources += [
+      os.path.join(public_path, 'CDetour', 'detours.cpp'),
+      os.path.join(public_path, 'safetyhook', 'safetyhook.cpp'),
+      os.path.join(public_path, 'safetyhook', 'Zydis.c')
+    ]
+    binary.compiler.cxxincludes += [ os.path.join(public_path, 'safetyhook') ]
+    binary.compiler.includes += [ os.path.join(public_path, 'safetyhook') ]
+
   def HL2Library(self, context, compiler, name, sdk):
     binary = self.Library(context, compiler, name)
     self.ConfigureForExtension(context, binary.compiler)
@@ -630,24 +640,24 @@ if getattr(builder.options, 'scripting_only', False):
   ]
 else:
   BuildScripts = [
-    'loader/AMBuilder',
-    'core/AMBuilder',
-    'core/logic/AMBuilder',
-    'extensions/bintools/AMBuilder',
-    'extensions/clientprefs/AMBuilder',
-    'extensions/curl/AMBuilder',
-    'extensions/cstrike/AMBuilder',
-    'extensions/dhooks/AMBuilder',
-    'extensions/geoip/AMBuilder',
-    'extensions/mysql/AMBuilder',
-    'extensions/pgsql/AMBuilder',
-    'extensions/regex/AMBuilder',
-    'extensions/sdkhooks/AMBuilder',
-    'extensions/sdktools/AMBuilder',
-    'extensions/sqlite/AMBuilder',
+    #'loader/AMBuilder',
+    #'core/AMBuilder',
+    #'core/logic/AMBuilder',
+    #'extensions/bintools/AMBuilder',
+    #'extensions/clientprefs/AMBuilder',
+    #'extensions/curl/AMBuilder',
+    #'extensions/cstrike/AMBuilder',
+    #'extensions/dhooks/AMBuilder',
+    #'extensions/geoip/AMBuilder',
+    #'extensions/mysql/AMBuilder',
+    #'extensions/pgsql/AMBuilder',
+    #'extensions/regex/AMBuilder',
+    #'extensions/sdkhooks/AMBuilder',
+    #'extensions/sdktools/AMBuilder',
+    #'extensions/sqlite/AMBuilder',
     'extensions/tf2/AMBuilder',
-    'extensions/topmenus/AMBuilder',
-    'extensions/updater/AMBuilder',
+    #'extensions/topmenus/AMBuilder',
+    #'extensions/updater/AMBuilder',
   ]
 
   if builder.backend == 'amb2':
