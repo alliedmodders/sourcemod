@@ -180,14 +180,14 @@ class SMConfig(object):
 
   def configure_cxx(self, cxx):
     if cxx.family == 'msvc':
-      if cxx.version < 1929 and builder.options.generator != 'vs':
-        raise Exception(f'Only MSVC 2019 16.11 and later are supported, full C++20 support is required. ({str(cxx.version)} < 1929)')
+      if cxx.version < 1914 and builder.options.generator != 'vs':
+        raise Exception(f'Only MSVC 2017 15.7 and later are supported, full C++17 support is required. ({str(cxx.version)} < 1914)')
     elif cxx.family == 'gcc':
       if cxx.version < 'gcc-9':
-        raise Exception('Only GCC versions 9 or later are supported, partial C++20 support is required.')
+        raise Exception('Only GCC versions 9 or later are supported, full C++17 support is required.')
     elif cxx.family == 'clang':
-      if cxx.version < 'clang-6':
-        raise Exception('Only clang versions 6 or later are supported, partial C++20 support is required.')
+      if cxx.version < 'clang-5':
+        raise Exception('Only clang versions 5 or later are supported, full C++17 support is required.')
 
     if cxx.like('gcc'):
       self.configure_gcc(cxx)
