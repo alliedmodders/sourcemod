@@ -54,21 +54,25 @@ struct VmAccess {
     bool write : 1;
     bool execute : 1;
 
+    constexpr VmAccess(bool pread, bool pwrite, bool pexecute) : read(pread), write(pwrite), execute(pexecute) {};
+
     constexpr bool operator==(const VmAccess& other) const {
         return read == other.read && write == other.write && execute == other.execute;
     }
 };
 
-constexpr VmAccess VM_ACCESS_R{.read = true, .write = false, .execute = false};
-constexpr VmAccess VM_ACCESS_RW{.read = true, .write = true, .execute = false};
-constexpr VmAccess VM_ACCESS_RX{.read = true, .write = false, .execute = true};
-constexpr VmAccess VM_ACCESS_RWX{.read = true, .write = true, .execute = true};
+constexpr VmAccess VM_ACCESS_R(true, false,  false);
+constexpr VmAccess VM_ACCESS_RW(true, true,  false);
+constexpr VmAccess VM_ACCESS_RX(true, false,  true);
+constexpr VmAccess VM_ACCESS_RWX(true, true,  true);
 
 struct VmBasicInfo {
     uint8_t* address;
     size_t size;
     VmAccess access;
     bool is_free;
+
+    constexpr VmBasicInfo() : address(nullptr), size(0), access(VM_ACCESS_RWX), is_free(false) {}
 };
 
 tl::expected<uint8_t*, OsError> vm_allocate(uint8_t* address, size_t size, VmAccess access);
@@ -1357,10 +1361,14 @@ tl::expected<uint8_t*, Allocator::Error> Allocator::allocate_nearby_memory(
 }
 
 bool Allocator::in_range(uint8_t* address, const std::vector<uint8_t*>& desired_addresses, size_t max_distance) {
-    return std::ranges::all_of(desired_addresses, [&](const auto& desired_address) {
-        const size_t delta = (address > desired_address) ? address - desired_address : desired_address - address;
-        return delta <= max_distance;
-    });
+    bool ret = true;
+    for (auto& desired_address = desired_addresses.begin(); desired_address != desired_addresses.end(); desired_address++) {
+        auto& value = *desired_address;
+
+        const size_t delta = (address > value) ? address - value : value - address;
+        ret &= (delta <= max_distance);
+    }
+    return ret;
 }
 
 Allocator::Memory::~Memory() {
@@ -1454,18 +1462,18 @@ tl::expected<VmBasicInfo, OsError> vm_query(uint8_t* address) {
         return tl::unexpected{OsError::FAILED_TO_QUERY};
     }
 
-    VmAccess access{
-        .read = (mbi.Protect & (PAGE_READONLY | PAGE_READWRITE | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE)) != 0,
-        .write = (mbi.Protect & (PAGE_READWRITE | PAGE_EXECUTE_READWRITE)) != 0,
-        .execute = (mbi.Protect & (PAGE_EXECUTE | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE)) != 0,
-    };
+    VmAccess access(
+        (mbi.Protect & (PAGE_READONLY | PAGE_READWRITE | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE)) != 0,
+        (mbi.Protect & (PAGE_READWRITE | PAGE_EXECUTE_READWRITE)) != 0,
+        (mbi.Protect & (PAGE_EXECUTE | PAGE_EXECUTE_READ | PAGE_EXECUTE_READWRITE)) != 0
+    );
 
-    return VmBasicInfo{
-        .address = static_cast<uint8_t*>(mbi.AllocationBase),
-        .size = mbi.RegionSize,
-        .access = access,
-        .is_free = mbi.State == MEM_FREE,
-    };
+    VmBasicInfo retInfo;
+    retInfo.address = static_cast<uint8_t*>(mbi.AllocationBase);
+    retInfo.size = mbi.RegionSize;
+    retInfo.access = access;
+    retInfo.is_free = (mbi.State == MEM_FREE);
+    return retInfo;
 }
 
 bool vm_is_readable(uint8_t* address, size_t size) {
@@ -1578,13 +1586,15 @@ public:
     }
 
     void add_trap(uint8_t* from, uint8_t* to, size_t len) {
-        m_traps.insert_or_assign(from, TrapInfo{.from_page_start = align_down(from, 0x1000),
-                                           .from_page_end = align_up(from + len, 0x1000),
-                                           .from = from,
-                                           .to_page_start = align_down(to, 0x1000),
-                                           .to_page_end = align_up(to + len, 0x1000),
-                                           .to = to,
-                                           .len = len});
+        TrapInfo info;
+        info.from_page_start = align_down(from, 0x1000);
+        info.from_page_end = align_up(from + len, 0x1000);
+        info.from = from;
+        info.to_page_start = align_down(to, 0x1000);
+        info.to_page_end = align_up(to + len, 0x1000);
+        info.to = to;
+        info.len = len;
+        m_traps.insert_or_assign(from, info);
     }
 
 private:

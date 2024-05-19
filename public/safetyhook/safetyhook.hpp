@@ -297,8 +297,9 @@ template <typename T> constexpr void store(uint8_t* address, const T& value) {
     std::copy_n(reinterpret_cast<const uint8_t*>(&value), sizeof(T), address);
 }
 
-template <typename T>
-concept FnPtr = requires(T f) { std::is_pointer_v<T>&& std::is_function_v<std::remove_pointer_t<T>>; };
+//template <typename T>
+//concept FnPtr = requires(T f) { std::is_pointer_v<T>&& std::is_function_v<std::remove_pointer_t<T>>; };
+typedef void* FnPtr;
 
 bool is_executable(uint8_t* address);
 
@@ -364,46 +365,71 @@ public:
         /// @param err The Allocator::Error that failed.
         /// @return The new BAD_ALLOCATION error.
         [[nodiscard]] static Error bad_allocation(Allocator::Error err) {
-            return {.type = BAD_ALLOCATION, .allocator_error = err};
+            Error retErr;
+            retErr.type = BAD_ALLOCATION;
+            retErr.allocator_error = err;
+            return retErr;
         }
 
         /// @brief Create a FAILED_TO_DECODE_INSTRUCTION error.
         /// @param ip The IP of the problematic instruction.
         /// @return The new FAILED_TO_DECODE_INSTRUCTION error.
         [[nodiscard]] static Error failed_to_decode_instruction(uint8_t* ip) {
-            return {.type = FAILED_TO_DECODE_INSTRUCTION, .ip = ip};
+            Error retErr;
+            retErr.type = FAILED_TO_DECODE_INSTRUCTION;
+            retErr.ip = ip;
+            return retErr;
         }
 
         /// @brief Create a SHORT_JUMP_IN_TRAMPOLINE error.
         /// @param ip The IP of the problematic instruction.
         /// @return The new SHORT_JUMP_IN_TRAMPOLINE error.
         [[nodiscard]] static Error short_jump_in_trampoline(uint8_t* ip) {
-            return {.type = SHORT_JUMP_IN_TRAMPOLINE, .ip = ip};
+            Error retErr;
+            retErr.type = SHORT_JUMP_IN_TRAMPOLINE;
+            retErr.ip = ip;
+            return retErr;
         }
 
         /// @brief Create a IP_RELATIVE_INSTRUCTION_OUT_OF_RANGE error.
         /// @param ip The IP of the problematic instruction.
         /// @return The new IP_RELATIVE_INSTRUCTION_OUT_OF_RANGE error.
         [[nodiscard]] static Error ip_relative_instruction_out_of_range(uint8_t* ip) {
-            return {.type = IP_RELATIVE_INSTRUCTION_OUT_OF_RANGE, .ip = ip};
+            Error retErr;
+            retErr.type = IP_RELATIVE_INSTRUCTION_OUT_OF_RANGE;
+            retErr.ip = ip;
+            return retErr;
         }
 
         /// @brief Create a UNSUPPORTED_INSTRUCTION_IN_TRAMPOLINE error.
         /// @param ip The IP of the problematic instruction.
         /// @return The new UNSUPPORTED_INSTRUCTION_IN_TRAMPOLINE error.
         [[nodiscard]] static Error unsupported_instruction_in_trampoline(uint8_t* ip) {
-            return {.type = UNSUPPORTED_INSTRUCTION_IN_TRAMPOLINE, .ip = ip};
+            Error retErr;
+            retErr.type = UNSUPPORTED_INSTRUCTION_IN_TRAMPOLINE;
+            retErr.ip = ip;
+            return retErr;
         }
 
         /// @brief Create a FAILED_TO_UNPROTECT error.
         /// @param ip The IP of the problematic instruction.
         /// @return The new FAILED_TO_UNPROTECT error.
-        [[nodiscard]] static Error failed_to_unprotect(uint8_t* ip) { return {.type = FAILED_TO_UNPROTECT, .ip = ip}; }
+        [[nodiscard]] static Error failed_to_unprotect(uint8_t* ip) {
+            Error retErr;
+            retErr.type = FAILED_TO_UNPROTECT;
+            retErr.ip = ip;
+            return retErr;
+        }
 
         /// @brief Create a NOT_ENOUGH_SPACE error.
         /// @param ip The IP of the problematic instruction.
         /// @return The new NOT_ENOUGH_SPACE error.
-        [[nodiscard]] static Error not_enough_space(uint8_t* ip) { return {.type = NOT_ENOUGH_SPACE, .ip = ip}; }
+        [[nodiscard]] static Error not_enough_space(uint8_t* ip) {
+            Error retErr;
+            retErr.type = NOT_ENOUGH_SPACE;
+            retErr.ip = ip;
+            return retErr;
+        }
     };
 
     /// @brief Flags for InlineHook.
@@ -429,10 +455,10 @@ public:
     /// @return The InlineHook or an InlineHook::Error if an error occurred.
     /// @note This will use the default global Allocator.
     /// @note If you don't care about error handling, use the easy API (safetyhook::create_inline).
-    [[nodiscard]] static tl::expected<InlineHook, Error> create(
+    /*[[nodiscard]] static tl::expected<InlineHook, Error> create(
         FnPtr auto target, FnPtr auto destination, Flags flags = Default) {
         return create(reinterpret_cast<void*>(target), reinterpret_cast<void*>(destination), flags);
-    }
+    }*/
 
     /// @brief Create an inline hook with a given Allocator.
     /// @param allocator The allocator to use.
@@ -451,10 +477,10 @@ public:
     /// @param flags The flags to use.
     /// @return The InlineHook or an InlineHook::Error if an error occurred.
     /// @note If you don't care about error handling, use the easy API (safetyhook::create_inline).
-    [[nodiscard]] static tl::expected<InlineHook, Error> create(
+    /*[[nodiscard]] static tl::expected<InlineHook, Error> create(
         const std::shared_ptr<Allocator>& allocator, FnPtr auto target, FnPtr auto destination, Flags flags = Default) {
         return create(allocator, reinterpret_cast<void*>(target), reinterpret_cast<void*>(destination), flags);
-    }
+    }*/
 
     InlineHook() = default;
     InlineHook(const InlineHook&) = delete;
@@ -768,14 +794,20 @@ public:
         /// @param err The Allocator::Error that failed.
         /// @return The new BAD_ALLOCATION error.
         [[nodiscard]] static Error bad_allocation(Allocator::Error err) {
-            return {.type = BAD_ALLOCATION, .allocator_error = err};
+            Error retErr;
+            retErr.type = BAD_ALLOCATION;
+            retErr.allocator_error = err;
+            return retErr;
         }
 
         /// @brief Create a BAD_INLINE_HOOK error.
         /// @param err The InlineHook::Error that failed.
         /// @return The new BAD_INLINE_HOOK error.
         [[nodiscard]] static Error bad_inline_hook(InlineHook::Error err) {
-            return {.type = BAD_INLINE_HOOK, .inline_hook_error = err};
+            Error retErr;
+            retErr.type = BAD_INLINE_HOOK;
+            retErr.inline_hook_error = err;
+            return retErr;
         }
     };
 
@@ -802,10 +834,10 @@ public:
     /// @return The MidHook object or a MidHook::Error if an error occurred.
     /// @note This will use the default global Allocator.
     /// @note If you don't care about error handling, use the easy API (safetyhook::create_mid).
-    [[nodiscard]] static tl::expected<MidHook, Error> create(
+    /*[[nodiscard]] static tl::expected<MidHook, Error> create(
         FnPtr auto target, MidHookFn destination_fn, Flags flags = Default) {
         return create(reinterpret_cast<void*>(target), destination_fn, flags);
-    }
+    }*/
 
     /// @brief Creates a new MidHook object with a given Allocator.
     /// @param allocator The Allocator to use.
@@ -825,10 +857,10 @@ public:
     /// @param flags The flags to use.
     /// @return The MidHook object or a MidHook::Error if an error occurred.
     /// @note If you don't care about error handling, use the easy API (safetyhook::create_mid).
-    [[nodiscard]] static tl::expected<MidHook, Error> create(const std::shared_ptr<Allocator>& allocator,
+    /*[[nodiscard]] static tl::expected<MidHook, Error> create(const std::shared_ptr<Allocator>& allocator,
         FnPtr auto target, MidHookFn destination_fn, Flags flags = Default) {
         return create(allocator, reinterpret_cast<void*>(target), destination_fn, flags);
-    }
+    }*/
 
     MidHook() = default;
     MidHook(const MidHook&) = delete;
@@ -999,7 +1031,10 @@ public:
         /// @param err The Allocator::Error that failed.
         /// @return The new BAD_ALLOCATION error.
         [[nodiscard]] static Error bad_allocation(Allocator::Error err) {
-            return {.type = BAD_ALLOCATION, .allocator_error = err};
+            Error retErr;
+            retErr.type = BAD_ALLOCATION;
+            retErr.allocator_error = err;
+            return retErr;
         }
     };
 
@@ -1030,7 +1065,7 @@ public:
     /// @brief Hooks a method in the VMT.
     /// @param index The index of the method to hook.
     /// @param new_function The new function to use.
-    [[nodiscard]] tl::expected<VmHook, Error> hook_method(size_t index, FnPtr auto new_function) {
+    [[nodiscard]] tl::expected<VmHook, Error> hook_method(size_t index, FnPtr new_function) {
         VmHook hook{};
 
         ++index; // Skip RTTI pointer.
@@ -1068,10 +1103,10 @@ namespace safetyhook {
 /// @param destination The address of the destination function.
 /// @param flags The flags to use.
 /// @return The InlineHook object.
-[[nodiscard]] InlineHook create_inline(
+/*[[nodiscard]] InlineHook create_inline(
     FnPtr auto target, FnPtr auto destination, InlineHook::Flags flags = InlineHook::Default) {
     return create_inline(reinterpret_cast<void*>(target), reinterpret_cast<void*>(destination), flags);
-}
+}*/
 
 /// @brief Easy to use API for creating a MidHook.
 /// @param target the address of the function to hook.
@@ -1085,9 +1120,9 @@ namespace safetyhook {
 /// @param destination The destination function.
 /// @param flags The flags to use.
 /// @return The MidHook object.
-[[nodiscard]] MidHook create_mid(FnPtr auto target, MidHookFn destination, MidHook::Flags flags = MidHook::Default) {
+/*[[nodiscard]] MidHook create_mid(FnPtr auto target, MidHookFn destination, MidHook::Flags flags = MidHook::Default) {
     return create_mid(reinterpret_cast<void*>(target), destination, flags);
-}
+}*/
 
 /// @brief Easy to use API for creating a VmtHook.
 /// @param object The object to hook.
@@ -1099,7 +1134,7 @@ namespace safetyhook {
 /// @param index The index of the method to hook.
 /// @param destination The destination function.
 /// @return The VmHook object.
-[[nodiscard]] VmHook create_vm(VmtHook& vmt, size_t index, FnPtr auto destination) {
+[[nodiscard]] inline VmHook create_vm(VmtHook& vmt, size_t index, FnPtr destination) {
     if (auto hook = vmt.hook_method(index, destination)) {
         return std::move(*hook);
     } else {

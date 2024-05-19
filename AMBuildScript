@@ -247,7 +247,7 @@ class SMConfig(object):
     if cxx.target.arch in ['x86', 'x86_64']:
       cxx.cflags += ['-msse']
 
-    cxx.cxxflags += ['-std=c++20']
+    cxx.cxxflags += ['-std=c++17']
 
     cxx.cxxflags += [
       '-fno-threadsafe-statics',
@@ -330,7 +330,7 @@ class SMConfig(object):
       '/EHsc',
       '/GR-',
       '/TP',
-      '/std:c++20',
+      '/std:c++17',
     ]
     cxx.linkflags += [
       'kernel32.lib',
