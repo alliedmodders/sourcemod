@@ -54,13 +54,13 @@ enum ObjectValueType
 	ObjectValueType_Vector,
 	ObjectValueType_VectorPtr,
 	ObjectValueType_CharPtr,
-	ObjectValueType_String
+	ObjectValueType_String,
 };
 
 enum ListenType
 {
 	ListenType_Created,
-	ListenType_Deleted
+	ListenType_Deleted,
 };
 
 enum ReturnType
@@ -76,7 +76,7 @@ enum ReturnType
 	ReturnType_Vector,
 	ReturnType_VectorPtr,
 	ReturnType_CBaseEntity,
-	ReturnType_Edict
+	ReturnType_Edict,
 };
 
 enum HookParamType
@@ -92,21 +92,21 @@ enum HookParamType
 	HookParamType_CBaseEntity,
 	HookParamType_ObjectPtr,
 	HookParamType_Edict,
-	HookParamType_Object
+	HookParamType_Object,
 };
 
 enum ThisPointerType
 {
 	ThisPointer_Ignore,
 	ThisPointer_CBaseEntity,
-	ThisPointer_Address
+	ThisPointer_Address,
 };
 
 enum HookType
 {
 	HookType_Entity,
 	HookType_GameRules,
-	HookType_Raw
+	HookType_Raw,
 };
 
 enum CallingConvention
@@ -115,12 +115,16 @@ enum CallingConvention
 	CallConv_THISCALL,
 	CallConv_STDCALL,
 	CallConv_FASTCALL,
+	CallConv_INSTRUCTION, /**< Single instruction pre-hook. Be careful with instructions that are less than 5 bytes in length.
+							   If the instruction length is less than 5 bytes, then the next instruction(s) will be modified too.
+							   If any instruction within 5 bytes (excluding the hooked instruction) is a jump target, then don't hook.
+							   In the graph view of IDA/Ghidra (default colors) there shouldn't be a blue or red line that leads to a node that is labeled (loc_/LAB_). */
 };
 
 enum HookMode
 {
 	Hook_Pre,                   /**< Callback will be executed BEFORE the original function. */
-	Hook_Post                   /**< Callback will be executed AFTER the original function. */
+	Hook_Post,                  /**< Callback will be executed AFTER the original function. */
 };
 
 enum MRESReturn
@@ -130,7 +134,7 @@ enum MRESReturn
 	MRES_Ignored,               /**< plugin didn't take any action */
 	MRES_Handled,               /**< plugin did something, but real function should still be called */
 	MRES_Override,              /**< call real function, but use my return value */
-	MRES_Supercede              /**< skip real function; use my return value */
+	MRES_Supercede,             /**< skip real function; use my return value */
 };
 
 enum DHookPassFlag
@@ -178,7 +182,7 @@ enum DHookRegister
 	DHookRegister_XMM7,
 
 	// 80-bit FPU registers
-	DHookRegister_ST0
+	DHookRegister_ST0,
 };
 
 typeset ListenCB
@@ -567,8 +571,9 @@ methodmap DynamicHook < DHookSetup
 // with a jump to our own code. This means that the signature used to find
 // the function address in the first place might not match anymore after a detour.
 // If you need to detour the same function in different plugins make sure to
-// wildcard \x2a the first 6 bytes of the signature to accommodate for the patched
-// jump introduced by the detour.
+// wildcard \x2a the first 5 bytes of the signature to accommodate for the patched
+// jump introduced by the detour. This is not necessary for plugins that use GameConfigs
+// because a cached copy of the libraries will be used for finding signatures instead.
 methodmap DynamicDetour < DHookSetup
 {
 	// Creates a detour.
