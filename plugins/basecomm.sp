@@ -275,7 +275,7 @@ public void OnClientSpeaking(int client)
 
 		g_iLastUsed[client] = iNow;
 
-		PrintToChat(client, "[SM] You are muted and cannot speak right now.");
+		PrintToChat(client, "[SM] %t", "Player Is Muted");
 	}
 }
 
@@ -288,7 +288,7 @@ public Action cmd_say(int client, const char[] cmd, int argc)
 
 	if (gag)
 	{
-		PrintToChat(client, "[SM] You are gagged and cannot send messages in chat.");
+		PrintToChat(client, "[SM] %t", "Player Is Gagged");
 		return Plugin_Handled;
 	}
 
