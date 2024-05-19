@@ -64,7 +64,22 @@ CHook::CHook(void* pFunc, ICallingConvention* pConvention)
 	if (!m_RetAddr.init())
 		return;
 
-	unsigned char* pTarget = (unsigned char *) pFunc;
+	m_pTrampoline = new void*;
+
+	m_pBridge = CreateBridge();
+	if (!m_pBridge)
+		return;
+
+	auto result = safetyhook::InlineHook::create(pFunc, m_pBridge, safetyhook::InlineHook::Flags::StartDisabled);
+	if (!result) {
+		return;
+	}
+
+	m_Hook = std::move(result.value());
+	*m_pTrampoline = m_Hook.original<void*>();
+
+	m_Hook.enable();
+	/*unsigned char* pTarget = (unsigned char *) pFunc;
 
 	// Determine the number of bytes we need to copy
 	int iBytesToCopy = copy_bytes(pTarget, NULL, JMP_SIZE);
@@ -89,11 +104,27 @@ CHook::CHook(void* pFunc, ICallingConvention* pConvention)
 	m_pBridge = CreateBridge();
 
 	// Write a jump to the bridge
-	DoGatePatch((unsigned char *) pFunc, m_pBridge);
+	DoGatePatch((unsigned char *) pFunc, m_pBridge);*/
 }
 
 CHook::~CHook()
 {
+	if (m_pTrampoline) {
+		delete m_pTrampoline;
+	}
+
+	if (m_Hook.enabled()) {
+		m_Hook.disable();
+	}
+
+	if (m_pBridge) {
+		smutils->GetScriptingEngine()->FreePageMemory(m_pBridge);
+		smutils->GetScriptingEngine()->FreePageMemory(m_pNewRetAddr);
+	}
+
+	delete m_pRegisters;
+	delete m_pCallingConvention;
+	/*
 	// Copy back the previously copied bytes
 	copy_bytes((unsigned char *) m_pTrampoline, (unsigned char *) m_pFunc, JMP_SIZE);
 
@@ -105,7 +136,7 @@ CHook::~CHook()
 	smutils->GetScriptingEngine()->FreePageMemory(m_pNewRetAddr);
 
 	delete m_pRegisters;
-	delete m_pCallingConvention;
+	delete m_pCallingConvention;*/
 }
 
 void CHook::AddCallback(HookType_t eHookType, HookHandlerFn* pCallback)
@@ -247,7 +278,9 @@ void* CHook::CreateBridge()
 	masm.j(equal, &label_supercede);
 
 	// Jump to the trampoline
-	masm.jmp(ExternalAddress(m_pTrampoline));
+	masm.movl(eax, Operand(ExternalAddress(m_pTrampoline)));
+	masm.movl(eax, Operand(eax, 0));
+	masm.jmp(eax);
 
 	// This code will be executed if a pre-hook returns ReturnAction_Supercede
 	masm.bind(&label_supercede);
