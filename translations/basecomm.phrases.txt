@@ -83,6 +83,6 @@
 
 	"Player Is Muted"
 	{
-		"en"			"You are muted.
+		"en"			"You are muted."
 	}
 }
