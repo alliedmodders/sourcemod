@@ -32,18 +32,8 @@
 #ifndef _INCLUDE_SOURCEMOD_DETOURS_H_
 #define _INCLUDE_SOURCEMOD_DETOURS_H_
 
-#include "extension.h"
-#include <jit/jit_helpers.h>
-#include <jit/x86/x86_macros.h>
-#include "detourhelpers.h"
-
-/**
- * CDetours class for SourceMod Extensions by pRED*
- * detourhelpers.h entirely stolen from CSS:DM and were written by BAILOPAN (I assume).
- * asm.h/c from devmaster.net (thanks cybermind) edited by pRED* to handle gcc -fPIC thunks correctly
- * Concept by Nephyrin Zey (http://www.doublezen.net/) and Windows Detour Library (http://research.microsoft.com/sn/detours/)
- * Member function pointer ideas by Don Clugston (http://www.codeproject.com/cpp/FastDelegate.asp)
- */
+#include <safetyhook.hpp>
+#include <smsdk_ext.h>
 
 #define DETOUR_MEMBER_CALL(name) (this->*name##_Actual)
 #define DETOUR_STATIC_CALL(name) (name##_Actual)
@@ -220,32 +210,9 @@ public:
 	friend class CDetourManager;
 
 protected:
-	CDetour(void *callbackfunction, void **trampoline, const char *signame);
 	CDetour(void*callbackfunction, void **trampoline, void *pAddress);
-
-	bool Init(ISourcePawnEngine *spengine, IGameConfig *gameconf);
 private:
-
-	/* These create/delete the allocated memory */
-	bool CreateDetour();
-	void DeleteDetour();
-
-	bool enabled;
-	bool detoured;
-
-	patch_t detour_restore;
-	/* Address of the detoured function */
-	void *detour_address;
-	/* Address of the allocated trampoline function */
-	void *detour_trampoline;
-	/* Address of the callback handler */
-	void *detour_callback;
-	/* The function pointer used to call our trampoline */
-	void **trampoline;
-	
-	const char *signame;
-	ISourcePawnEngine *spengine;
-	IGameConfig *gameconf;
+	SafetyHookInline m_hook{};
 };
 
 class CDetourManager
@@ -293,10 +260,9 @@ public:
 	 *
 	 * Note we changed the netadr_s reference into a void* to avoid needing to define the type
 	 */
-	static CDetour *CreateDetour(void *callbackfunction, void **trampoline, const char *signame);
-	static CDetour *CreateDetour(void *callbackfunction, void **trampoline, void *pAddress);
+	static CDetour *CreateDetour(void *callbackFunction, void **trampoline, const char *signame);
+	static CDetour *CreateDetour(void *callbackFunction, void **trampoline, void *pAddress);
 
-	friend class CBlocker;
 	friend class CDetour;
 
 private:
