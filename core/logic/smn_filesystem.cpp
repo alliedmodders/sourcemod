@@ -326,7 +326,6 @@ public:
 		g_pLogHook->Execute(&result);
 		return result >= Pl_Handled;
 	}
-	bool m_initialised;
 } s_FileNatives;
 
 bool OnLogPrint(const char *msg)
