@@ -75,4 +75,14 @@
 	{
 		"en"			"UnSilence Player"
 	}
+
+	"Player Is Gagged"
+	{
+		"en"			"You are gagged."
+	}
+
+	"Player Is Muted"
+	{
+		"en"			"You are muted.
+	}
 }
