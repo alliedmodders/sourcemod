@@ -640,9 +640,9 @@ if getattr(builder.options, 'scripting_only', False):
   ]
 else:
   BuildScripts = [
-    #'loader/AMBuilder',
-    #'core/AMBuilder',
-    #'core/logic/AMBuilder',
+    'loader/AMBuilder',
+    'core/AMBuilder',
+    'core/logic/AMBuilder',
     #'extensions/bintools/AMBuilder',
     #'extensions/clientprefs/AMBuilder',
     #'extensions/curl/AMBuilder',

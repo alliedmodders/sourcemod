@@ -395,11 +395,6 @@ void CExtension::AddDependency(const IfaceInfo *pInfo)
 	}
 }
 
-bool operator ==(const IfaceInfo &i1, const IfaceInfo &i2)
-{
-	return (i1.iface == i2.iface) && (i1.owner == i2.owner);
-}
-
 void CExtension::AddChildDependent(CExtension *pOther, SMInterface *iface)
 {
 	IfaceInfo info;
