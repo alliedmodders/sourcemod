@@ -266,7 +266,7 @@ class FileNatives :
 	public IPluginsListener
 {
 public:
-	FileNatives() : m_initialised(false)
+	FileNatives()
 	{
 	}
 	virtual void OnSourceModAllInitialized()
@@ -276,7 +276,6 @@ public:
 		g_ValveDirType = handlesys->CreateType("ValveDirectory", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 		g_pLogHook = forwardsys->CreateForwardEx(NULL, ET_Hook, 1, NULL, Param_String);
 		pluginsys->AddPluginsListener(this);
-		m_initialised = true;
 	}
 	virtual void OnSourceModShutdown()
 	{
@@ -291,10 +290,6 @@ public:
 	}
 	virtual void OnHandleDestroy(HandleType_t type, void *object)
 	{
-		if (!m_initialised) {
-			return;
-		}
-
 		if (type == g_FileType)
 		{
 			FileObject *file = (FileObject *)object;
@@ -314,23 +309,15 @@ public:
 	}
 	virtual void AddLogHook(IPluginFunction *pFunc)
 	{
-		if (!m_initialised) {
-			return;
-		}
-		
 		g_pLogHook->AddFunction(pFunc);
 	}
 	virtual void RemoveLogHook(IPluginFunction *pFunc)
 	{
-		if (!m_initialised) {
-			return;
-		}
-
 		g_pLogHook->RemoveFunction(pFunc);
 	}
 	virtual bool LogPrint(const char *msg)
 	{
-		if (!m_initialised) {
+		if (!g_pLogHook) {
 			return false;
 		}
 
