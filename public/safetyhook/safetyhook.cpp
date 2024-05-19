@@ -25,7 +25,7 @@
 //
 
 // This is the OS abstraction layer.
-#pragma once
+//#pragma once
 
 #ifndef SAFETYHOOK_USE_CXXMODULES
 #include <cstdint>
@@ -54,6 +54,7 @@ struct VmAccess {
     bool write : 1;
     bool execute : 1;
 
+    constexpr VmAccess() : read(true), write(true), execute(true) {};
     constexpr VmAccess(bool pread, bool pwrite, bool pexecute) : read(pread), write(pwrite), execute(pexecute) {};
 
     constexpr bool operator==(const VmAccess& other) const {
@@ -1016,12 +1017,10 @@ tl::expected<VmBasicInfo, OsError> vm_query(uint8_t* address) {
             &inode, path);
 
         if (last_end < start && addr >= last_end && addr < start) {
-            info = {
-                .address = reinterpret_cast<uint8_t*>(last_end),
-                .size = start - last_end,
-                .access = VmAccess{},
-                .is_free = true,
-            };
+            info->address = reinterpret_cast<uint8_t*>(last_end);
+            info->size = start - last_end;
+            info->access = VmAccess();
+            info->is_free = true;
 
             break;
         }
@@ -1029,12 +1028,10 @@ tl::expected<VmBasicInfo, OsError> vm_query(uint8_t* address) {
         last_end = end;
 
         if (addr >= start && addr < end) {
-            info = {
-                .address = reinterpret_cast<uint8_t*>(start),
-                .size = end - start,
-                .access = VmAccess{},
-                .is_free = false,
-            };
+            info->address = reinterpret_cast<uint8_t*>(start);
+            info->size = end - start,
+            info->access = VmAccess();
+            info->is_free = false;
 
             if (perms[0] == 'r') {
                 info->access.read = true;
