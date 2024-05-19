@@ -9,15 +9,7 @@ project.sources += [
   'timeleft.cpp',
   'forwards.cpp',
   'util_cstrike.cpp',
-  '../../public/smsdk_ext.cpp',
-  '../../public/CDetour/detours.cpp',
-  '../../public/asm/asm.c',
-  '../../public/libudis86/decode.c',
-  '../../public/libudis86/itab.c',
-  '../../public/libudis86/syn-att.c',
-  '../../public/libudis86/syn-intel.c',
-  '../../public/libudis86/syn.c',
-  '../../public/libudis86/udis86.c',
+  '../../public/smsdk_ext.cpp'
 ]
 
 for sdk_name in ['css', 'csgo']:
@@ -34,6 +26,8 @@ for sdk_name in ['css', 'csgo']:
 
     cxx.defines += ['HAVE_STRING_H']
     binary = SM.HL2ExtConfig(project, builder, cxx, 'game.cstrike.ext.' + sdk['extension'], sdk)
+    SM.AddCDetour(binary)
+
     if sdk_name == 'csgo':
       compiler = binary.compiler
       compiler.cxxincludes += [os.path.join(sdk['path'], 'public', 'steam')]
