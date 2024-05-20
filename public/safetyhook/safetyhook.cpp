@@ -1017,21 +1017,26 @@ tl::expected<VmBasicInfo, OsError> vm_query(uint8_t* address) {
             &inode, path);
 
         if (last_end < start && addr >= last_end && addr < start) {
-            info->address = reinterpret_cast<uint8_t*>(last_end);
-            info->size = start - last_end;
-            info->access = VmAccess();
-            info->is_free = true;
+            VmBasicInfo newInfo;
+            newInfo.address = reinterpret_cast<uint8_t*>(last_end);
+            newInfo.size = start - last_end;
+            newInfo.access = VmAccess();
+            newInfo.is_free = true;
 
+            info = newInfo;
             break;
         }
 
         last_end = end;
 
         if (addr >= start && addr < end) {
-            info->address = reinterpret_cast<uint8_t*>(start);
-            info->size = end - start,
-            info->access = VmAccess();
-            info->is_free = false;
+            VmBasicInfo newInfo;
+            newInfo.address = reinterpret_cast<uint8_t*>(start);
+            newInfo.size = end - start,
+            newInfo.access = VmAccess();
+            newInfo.is_free = false;
+
+            info = newInfo;
 
             if (perms[0] == 'r') {
                 info->access.read = true;
