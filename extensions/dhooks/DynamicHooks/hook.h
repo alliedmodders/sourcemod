@@ -41,7 +41,6 @@
 #include "convention.h"
 #include <am-hashmap.h>
 #include <am-hashset.h>
-#include <safetyhook.hpp>
 
 // ============================================================================
 // >> HookType_t
@@ -197,14 +196,11 @@ public:
 
 	ICallingConvention* m_pCallingConvention;
 
-	// SafetyHook
-	SafetyHookInline m_Hook{};
-
 	// Address of the bridge
 	void* m_pBridge;
 
 	// Address of the trampoline
-	void** m_pTrampoline;
+	void* m_pTrampoline;
 
 	// Register storage
 	CRegisters* m_pRegisters;
