@@ -1,0 +1,161 @@
+# Reference: https://build-cpp.github.io/cmkr/cmake-toml
+[project]
+name = "safetyhook"
+
+[options]
+SAFETYHOOK_BUILD_DOCS = false
+SAFETYHOOK_BUILD_TEST = false
+SAFETYHOOK_BUILD_EXAMPLES = false
+SAFETYHOOK_AMALGAMATE = false
+SAFETYHOOK_FETCH_ZYDIS = false
+SAFETYHOOK_USE_CXXMODULES = false
+
+[conditions]
+build-docs = "SAFETYHOOK_BUILD_DOCS"
+build-test = "SAFETYHOOK_BUILD_TEST"
+build-examples = "SAFETYHOOK_BUILD_EXAMPLES"
+windows-only-example = "SAFETYHOOK_BUILD_EXAMPLES AND WIN32"
+amalgamate = "SAFETYHOOK_AMALGAMATE"
+build-amalgamate-test = "SAFETYHOOK_BUILD_TEST AND SAFETYHOOK_AMALGAMATE"
+fetch-zydis = "SAFETYHOOK_FETCH_ZYDIS"
+
+[fetch-content.ut]
+condition = "build-test"
+git = "https://github.com/boost-ext/ut.git"
+tag = "v2.0.1"
+shallow = true
+
+[fetch-content.xbyak]
+condition = "build-test"
+git = "https://github.com/herumi/xbyak.git"
+tag = "v6.69"
+shallow = true
+
+[fetch-content.Zydis]
+condition = "fetch-zydis"
+git = "https://github.com/zyantific/zydis.git"
+tag = "v4.0.0"
+shallow = true
+cmake-before = """
+option(ZYDIS_BUILD_EXAMPLES "" OFF)
+option(ZYDIS_BUILD_TOOLS "" OFF)
+option(ZYDIS_BUILD_DOXYGEN "" OFF)
+"""
+
+[find-package.Doxygen]
+condition = "build-docs"
+required = true
+
+[find-package.Python3]
+condition = "amalgamate"
+required = true
+
+[target.safetyhook]
+type = "static"
+sources = ["src/*.cpp"]
+include-directories = ["include/"]
+compile-features = ["cxx_std_23"]
+alias = "safetyhook::safetyhook"
+link-libraries = ["Zydis"]
+msvc.private-compile-options = ["/permissive-", "/W4", "/w14640"]
+clang.private-compile-options = ["-Wall", "-Wextra", "-Wshadow", "-Wnon-virtual-dtor", "-pedantic"]
+gcc.private-compile-options = ["-Wall", "-Wextra", "-Wshadow", "-Wnon-virtual-dtor", "-pedantic"]
+cmake-after = """
+if(SAFETYHOOK_USE_CXXMODULES)
+    target_compile_definitions(safetyhook INTERFACE SAFETYHOOK_USE_CXXMODULES)
+endif()
+"""
+
+[target.docs]
+condition = "build-docs"
+type = "custom"
+cmake-before = """
+file(GLOB_RECURSE HEADER_FILES include/*.hpp)
+set(DOXYGEN_INDEX_FILE ${CMAKE_CURRENT_SOURCE_DIR}/docs/html/index.html)
+set(DOXYFILE_IN ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile.in)
+set(DOXYFILE_OUT ${CMAKE_CURRENT_SOURCE_DIR}/docs/Doxyfile)
+configure_file(${DOXYFILE_IN} ${DOXYFILE_OUT})
+add_custom_command(
+    OUTPUT ${DOXYGEN_INDEX_FILE}
+    DEPENDS ${HEADER_FILES}
+    COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYFILE_OUT}
+    MAIN_DEPENDENCY ${DOXYFILE_OUT} ${DOXYFILE_IN}
+    COMMENT "Generating docs"
+)
+add_custom_target(Doxygen ALL DEPENDS ${DOXYGEN_INDEX_FILE})
+"""
+
+[target.amalgamation]
+condition = "amalgamate"
+type = "custom"
+cmake-before = """
+file(GLOB_RECURSE HEADER_FILES include/*.hpp)
+file(GLOB_RECURSE SOURCE_FILES src/*.cpp)
+set(AMALGAMATED_FILE ${CMAKE_CURRENT_SOURCE_DIR}/amalgamated-dist/safetyhook.cpp)
+set(AMALGAMATED_HEADER ${CMAKE_CURRENT_SOURCE_DIR}/amalgamated-dist/safetyhook.hpp)
+set(AMALGAMATE_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/amalgamate.py)
+add_custom_command(
+    OUTPUT ${AMALGAMATED_FILE} ${AMALGAMATED_HEADER}
+    DEPENDS ${HEADER_FILES} ${SOURCE_FILES} ${AMALGAMATE_SCRIPT}
+    COMMAND ${Python3_EXECUTABLE} ${AMALGAMATE_SCRIPT}
+    MAIN_DEPENDENCY ${AMALGAMATE_SCRIPT}
+    COMMENT "Amalgamating"
+)
+add_custom_target(Amalgamate ALL DEPENDS ${AMALGAMATED_FILE} ${AMALGAMATED_HEADER})
+"""
+
+[template.example]
+condition = "build-examples"
+type = "executable"
+link-libraries = ["safetyhook::safetyhook"]
+compile-features = ["cxx_std_23"]
+
+[template.example-dll]
+condition = "windows-only-example"
+type = "shared"
+link-libraries = ["safetyhook::safetyhook"]
+compile-features = ["cxx_std_23"]
+
+[target.example-minimal]
+type = "example"
+sources = ["example/minimal.cpp"]
+
+[target.example-multiple]
+type = "example"
+sources = ["example/multiple.cpp"]
+
+[target.example-midhook]
+type = "example"
+sources = ["example/midhook.cpp"]
+
+[target.example-threadsafe]
+type = "example"
+sources = ["example/threadsafe.cpp"]
+
+[target.example-dll]
+type = "example-dll"
+sources = ["example/dll.cpp"]
+
+[target.example-vmthook]
+type = "example"
+sources = ["example/vmthook.cpp"]
+
+[target.test]
+condition = "build-test"
+type = "executable"
+sources = ["test/*.cpp"]
+link-libraries = ["Boost::ut", "safetyhook::safetyhook", "xbyak::xbyak"]
+compile-definitions = ["BOOST_UT_DISABLE_MODULE"]
+compile-features = ["cxx_std_23"]
+
+[target.test-amalgamated]
+condition = "build-amalgamate-test"
+type = "executable"
+sources = ["test/*.cpp", "amalgamated-dist/safetyhook.cpp"]
+include-directories = ["amalgamated-dist/"]
+link-libraries = ["Zydis", "Boost::ut", "xbyak::xbyak"]
+compile-definitions = ["BOOST_UT_DISABLE_MODULE"]
+compile-features = ["cxx_std_23"]
+cmake-after = """
+add_dependencies(test-amalgamated Amalgamate)
+"""
