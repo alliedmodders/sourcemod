@@ -520,6 +520,16 @@ class SMConfig(object):
 
     return binary
 
+  def AddCDetour(self, binary):
+    public_path = os.path.join(builder.sourcePath, 'public')
+    binary.sources += [
+      os.path.join(public_path, 'CDetour', 'detours.cpp'),
+      os.path.join(public_path, 'safetyhook', 'safetyhook.cpp'),
+      os.path.join(public_path, 'safetyhook', 'Zydis.c')
+    ]
+    binary.compiler.cxxincludes += [ os.path.join(public_path, 'safetyhook') ]
+    binary.compiler.includes += [ os.path.join(public_path, 'safetyhook') ]
+
   def HL2Library(self, context, compiler, name, sdk):
     binary = self.Library(context, compiler, name)
     self.ConfigureForExtension(context, binary.compiler)

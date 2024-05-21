@@ -24,15 +24,7 @@ project.sources += [
   'hooks.cpp',
   'gamerulesnatives.cpp',
   'vstringtable.cpp',
-  '../../public/smsdk_ext.cpp',
-  '../../public/CDetour/detours.cpp',
-  '../../public/asm/asm.c',
-  '../../public/libudis86/decode.c',
-  '../../public/libudis86/itab.c',
-  '../../public/libudis86/syn-att.c',
-  '../../public/libudis86/syn-intel.c',
-  '../../public/libudis86/syn.c',
-  '../../public/libudis86/udis86.c',
+  '../../public/smsdk_ext.cpp'
 ]
 
 for sdk_name in SM.sdks:
@@ -45,18 +37,20 @@ for sdk_name in SM.sdks:
       continue
 
     binary = SM.HL2ExtConfig(project, builder, cxx, 'sdktools.ext.' + sdk['extension'], sdk)
+    SM.AddCDetour(binary)
+    
     binary.compiler.cxxincludes += [
       os.path.join(builder.sourcePath, 'public', 'jit'),
       os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
     ]
 
     if sdk['name'] in ('episode1', 'darkm'):
-      binary.compiler.cxxincludes += [os.path.join(builder.options.hl2sdk_root, sdk['path'], 'game_shared')]
-      binary.compiler.cxxincludes += [os.path.join(builder.options.hl2sdk_root, sdk['path'], 'dlls')]
+      binary.compiler.cxxincludes += [os.path.join(sdk['path'], 'game_shared')]
+      binary.compiler.cxxincludes += [os.path.join(sdk['path'], 'dlls')]
     else:
       binary.compiler.cxxincludes += [
-        os.path.join(builder.options.hl2sdk_root, sdk['path'], 'game', 'shared'),
-        os.path.join(builder.options.hl2sdk_root, sdk['path'], 'game', 'server'),
+        os.path.join(sdk['path'], 'game', 'shared'),
+        os.path.join(sdk['path'], 'game', 'server'),
       ]
 
     #binary.sources += [os.path.join(builder.options.hl2sdk_root, sdk['path'], 'game', 'server', 'variant_t.cpp')]

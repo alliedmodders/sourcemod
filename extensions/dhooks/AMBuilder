@@ -19,12 +19,17 @@ for cxx in builder.targets:
   binary.compiler.cxxincludes += [
     os.path.join(SM.mms_root, 'core'),
     os.path.join(SM.mms_root, 'core', 'sourcehook'),
+    os.path.join(builder.sourcePath, 'extensions', 'dhooks'),
     os.path.join(builder.sourcePath, 'public', 'jit'),
     os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
     os.path.join(builder.sourcePath, 'sourcepawn', 'include'),
     os.path.join(builder.sourcePath, 'sourcepawn', 'vm'),
     os.path.join(builder.sourcePath, 'sourcepawn', 'vm', 'x86'),
     os.path.join(builder.sourcePath, 'extensions', 'dhooks', 'DynamicHooks'),
+  ]
+
+  binary.compiler.includes += [
+    os.path.join(builder.sourcePath, 'extensions', 'dhooks')
   ]
 
   binary.sources += [
@@ -36,13 +41,13 @@ for cxx in builder.targets:
     'util.cpp',
     'dynhooks_sourcepawn.cpp',
     '../../public/smsdk_ext.cpp',
-    '../../public/asm/asm.c',
-    '../../public/libudis86/decode.c',
-    '../../public/libudis86/itab.c',
-    '../../public/libudis86/syn-att.c',
-    '../../public/libudis86/syn-intel.c',
-    '../../public/libudis86/syn.c',
-    '../../public/libudis86/udis86.c',
+    'asm/asm.c',
+    'libudis86/decode.c',
+    'libudis86/itab.c',
+    'libudis86/syn-att.c',
+    'libudis86/syn-intel.c',
+    'libudis86/syn.c',
+    'libudis86/udis86.c',
     '../../sourcepawn/vm/x86/assembler-x86.cpp',
   ]
 
