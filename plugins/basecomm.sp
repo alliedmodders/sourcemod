@@ -33,6 +33,7 @@
 
 #include <sourcemod>
 #include <sdktools>
+#include <basecomm>
 #undef REQUIRE_PLUGIN
 #include <adminmenu>
 
@@ -41,26 +42,29 @@
 
 public Plugin myinfo =
 {
-	name = "Basic Comm Control",
-	author = "AlliedModders LLC",
+	name		= "Basic Comm Control",
+	author		= "AlliedModders LLC",
 	description = "Provides methods of controlling communication.",
-	version = SOURCEMOD_VERSION,
-	url = "http://www.sourcemod.net/"
+	version		= SOURCEMOD_VERSION,
+	url			= "http://www.sourcemod.net/"
 };
 
-enum struct PlayerState {
-	bool isMuted; // Is the player muted?
-	bool isGagged; // Is the player gagged?
-	int gagTarget;
+enum struct PlayerState
+{
+	bool isMuted;	  // Is the player muted?
+	bool isGagged;	  // Is the player gagged?
+	int	 gagTarget;
 }
 
-PlayerState playerstate[MAXPLAYERS+1];
+PlayerState playerstate[MAXPLAYERS + 1];
 
-ConVar g_Cvar_Deadtalk;				// Holds the handle for sm_deadtalk
-ConVar g_Cvar_Alltalk;				// Holds the handle for sv_alltalk
-bool g_Hooked = false;				// Tracks if we've hooked events for deadtalk
+ConVar		g_Cvar_Deadtalk;				// Holds the handle for sm_deadtalk
+ConVar		g_Cvar_Alltalk;					// Holds the handle for sv_alltalk
+ConVar		g_Cvar_Muted_Cooldown;			// If muted and tries to talk, wait this many seconds to remind player of an active mute
+bool		g_Hooked = false;				// Tracks if we've hooked events for deadtalk
+int			g_iLastUsed[MAXPLAYERS + 1];	// Prevents chat spam if muted
 
-TopMenu hTopMenu;
+TopMenu		hTopMenu;
 
 #include "basecomm/gag.sp"
 #include "basecomm/natives.sp"
@@ -69,11 +73,11 @@ TopMenu hTopMenu;
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
 	CreateNative("BaseComm_IsClientGagged", Native_IsClientGagged);
-	CreateNative("BaseComm_IsClientMuted",  Native_IsClientMuted);
-	CreateNative("BaseComm_SetClientGag",   Native_SetClientGag);
-	CreateNative("BaseComm_SetClientMute",  Native_SetClientMute);
+	CreateNative("BaseComm_IsClientMuted", Native_IsClientMuted);
+	CreateNative("BaseComm_SetClientGag", Native_SetClientGag);
+	CreateNative("BaseComm_SetClientMute", Native_SetClientMute);
 	RegPluginLibrary("basecomm");
-	
+
 	return APLRes_Success;
 }
 
@@ -81,24 +85,31 @@ public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	LoadTranslations("basecomm.phrases");
-	
-	g_Cvar_Deadtalk = CreateConVar("sm_deadtalk", "0", "Controls how dead communicate. 0 - Off. 1 - Dead players ignore teams. 2 - Dead players talk to living teammates.", 0, true, 0.0, true, 2.0);
-	g_Cvar_Alltalk = FindConVar("sv_alltalk");
-	
+
+	g_Cvar_Muted_Cooldown = CreateConVar("sm_mute_reminder", "30", "How long to wait before displaying another reminder to the client that they are muted.", 0, true, 10.0, true, 60.0);
+	g_Cvar_Deadtalk		  = CreateConVar("sm_deadtalk", "0", "Controls how dead communicate. 0 - Off. 1 - Dead players ignore teams. 2 - Dead players talk to living teammates.", 0, true, 0.0, true, 2.0);
+	g_Cvar_Alltalk		  = FindConVar("sv_alltalk");
+
+	HookConVarChange(g_Cvar_Muted_Cooldown, Muted_Cooldown);
+
 	RegAdminCmd("sm_mute", Command_Mute, ADMFLAG_CHAT, "sm_mute <player> - Removes a player's ability to use voice.");
 	RegAdminCmd("sm_gag", Command_Gag, ADMFLAG_CHAT, "sm_gag <player> - Removes a player's ability to use chat.");
 	RegAdminCmd("sm_silence", Command_Silence, ADMFLAG_CHAT, "sm_silence <player> - Removes a player's ability to use voice or chat.");
-	
+
 	RegAdminCmd("sm_unmute", Command_Unmute, ADMFLAG_CHAT, "sm_unmute <player> - Restores a player's ability to use voice.");
 	RegAdminCmd("sm_ungag", Command_Ungag, ADMFLAG_CHAT, "sm_ungag <player> - Restores a player's ability to use chat.");
-	RegAdminCmd("sm_unsilence", Command_Unsilence, ADMFLAG_CHAT, "sm_unsilence <player> - Restores a player's ability to use voice and chat.");	
-	
+	RegAdminCmd("sm_unsilence", Command_Unsilence, ADMFLAG_CHAT, "sm_unsilence <player> - Restores a player's ability to use voice and chat.");
+
+	AddCommandListener(cmd_say, "say");
+	AddCommandListener(cmd_say, "say_team");
+
 	g_Cvar_Deadtalk.AddChangeHook(ConVarChange_Deadtalk);
 
-	if (g_Cvar_Alltalk) {
+	if (g_Cvar_Alltalk)
+	{
 		g_Cvar_Alltalk.AddChangeHook(ConVarChange_Alltalk);
 	}
-	
+
 	/* Account for late loading */
 	TopMenu topmenu;
 	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != null))
@@ -116,13 +127,13 @@ public void OnAdminMenuReady(Handle aTopMenu)
 	{
 		return;
 	}
-	
+
 	/* Save the Handle */
-	hTopMenu = topmenu;
-	
+	hTopMenu					  = topmenu;
+
 	/* Build the "Player Commands" category */
 	TopMenuObject player_commands = hTopMenu.FindCategory(ADMINMENU_PLAYERCOMMANDS);
-	
+
 	if (player_commands != INVALID_TOPMENUOBJECT)
 	{
 		hTopMenu.AddItem("sm_gag", AdminMenu_Gag, player_commands, "sm_gag", ADMFLAG_CHAT);
@@ -140,7 +151,7 @@ public void ConVarChange_Deadtalk(ConVar convar, const char[] oldValue, const ch
 	else if (g_Hooked)
 	{
 		UnhookEvent("player_spawn", Event_PlayerSpawn);
-		UnhookEvent("player_death", Event_PlayerDeath);		
+		UnhookEvent("player_death", Event_PlayerDeath);
 		g_Hooked = false;
 	}
 }
@@ -148,8 +159,8 @@ public void ConVarChange_Deadtalk(ConVar convar, const char[] oldValue, const ch
 public bool OnClientConnect(int client, char[] rejectmsg, int maxlen)
 {
 	playerstate[client].isGagged = false;
-	playerstate[client].isMuted = false;
-	
+	playerstate[client].isMuted	 = false;
+
 	return true;
 }
 
@@ -159,21 +170,21 @@ public Action OnClientSayCommand(int client, const char[] command, const char[] 
 	{
 		return Plugin_Stop;
 	}
-	
+
 	return Plugin_Continue;
 }
 
 public void ConVarChange_Alltalk(ConVar convar, const char[] oldValue, const char[] newValue)
 {
 	int mode = g_Cvar_Deadtalk.IntValue;
-	
+
 	for (int i = 1; i <= MaxClients; i++)
 	{
 		if (!IsClientInGame(i))
 		{
 			continue;
 		}
-		
+
 		if (playerstate[i].isMuted)
 		{
 			SetClientListeningFlags(i, VOICE_MUTED);
@@ -199,12 +210,12 @@ public void ConVarChange_Alltalk(ConVar convar, const char[] oldValue, const cha
 public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(event.GetInt("userid"));
-	
+
 	if (!client)
 	{
-		return;	
+		return;
 	}
-	
+
 	if (playerstate[client].isMuted)
 	{
 		SetClientListeningFlags(client, VOICE_MUTED);
@@ -218,24 +229,24 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast)
 {
 	int client = GetClientOfUserId(event.GetInt("userid"));
-	
+
 	if (!client)
 	{
-		return;	
+		return;
 	}
-	
+
 	if (playerstate[client].isMuted)
 	{
 		SetClientListeningFlags(client, VOICE_MUTED);
 		return;
 	}
-	
+
 	if (g_Cvar_Alltalk && g_Cvar_Alltalk.BoolValue)
 	{
 		SetClientListeningFlags(client, VOICE_NORMAL);
 		return;
 	}
-	
+
 	int mode = g_Cvar_Deadtalk.IntValue;
 	if (mode == 1)
 	{
@@ -245,4 +256,56 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 	{
 		SetClientListeningFlags(client, VOICE_TEAM);
 	}
+}
+
+public void OnClientSpeaking(int client)
+{
+	bool muted = BaseComm_IsClientMuted(client);
+
+	if (muted)
+	{
+		int iNow = GetTime(), iCooldown = GetConVarInt(g_Cvar_Muted_Cooldown);
+
+		if (iCooldown > 0)
+		{
+			int iTimeLeft = g_iLastUsed[client] + iCooldown - iNow;
+			if (iTimeLeft > 0)
+				return;
+		}
+
+		g_iLastUsed[client] = iNow;
+
+		PrintToChat(client, "[SM] %t", "Player Is Muted");
+	}
+}
+
+public Action cmd_say(int client, const char[] cmd, int argc)
+{
+	if (!client)
+		return Plugin_Continue;
+
+	bool gag = BaseComm_IsClientGagged(client);
+
+	if (gag)
+	{
+		PrintToChat(client, "[SM] %t", "Player Is Gagged");
+		return Plugin_Handled;
+	}
+
+	return Plugin_Continue;
+}
+
+void Muted_Cooldown(ConVar convar, const char[] oldValue, const char[] newValue)
+{
+	int timeleft = GetConVarInt(g_Cvar_Muted_Cooldown);
+	int mins, secs;
+	if (timeleft > 0)
+	{
+		mins = timeleft / 60;
+		secs = timeleft % 60;
+		PrintToServer("[SM] Rename cooldown changed to %d:%02d.", mins, secs);
+		PrintToChatAll("[SM] Rename cooldown changed to %d:%02d.", mins, secs);
+	}
+
+	return;
 }
