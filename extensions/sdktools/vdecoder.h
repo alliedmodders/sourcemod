@@ -54,6 +54,7 @@ enum ValveType
 	Valve_String,			/**< String */
 	Valve_Bool,				/**< Boolean */
 	Valve_Object,			/**< Object, not matching one of the above types */
+	Valve_Pointer,			/**< 64 bit or 32 bit array */
 };
 
 enum DataStatus
