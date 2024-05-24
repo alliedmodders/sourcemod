@@ -317,6 +317,10 @@ public:
 	}
 	virtual bool LogPrint(const char *msg)
 	{
+		if (!g_pLogHook) {
+			return false;
+		}
+
 		cell_t result = 0;
 		g_pLogHook->PushString(msg);
 		g_pLogHook->Execute(&result);
