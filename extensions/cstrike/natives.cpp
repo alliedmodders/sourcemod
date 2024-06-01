@@ -254,10 +254,13 @@ static cell_t CS_DropWeapon(IPluginContext *pContext, const cell_t *params)
 
 	//Psychonic is awesome for this
 	sm_sendprop_info_t spi;
-	IServerUnknown *pUnk = (IServerUnknown *)pWeapon;
-	IServerNetworkable *pNet = pUnk->GetNetworkable();
+	ServerClass *pServerClass = gamehelpers->FindEntityServerClass(pWeapon);
+	if (pServerClass == nullptr)
+	{
+		return pContext->ThrowNativeError("Failed to retrieve entity %d server class!", params[2]);
+	}
 
-	if (!UTIL_FindDataTable(pNet->GetServerClass()->m_pTable, "DT_WeaponCSBase", &spi, 0))
+	if (!UTIL_FindDataTable(pServerClass->m_pTable, "DT_WeaponCSBase", &spi, 0))
 		return pContext->ThrowNativeError("Entity index %d is not a weapon", params[2]);
 
 	if (!gamehelpers->FindSendPropInfo("CBaseCombatWeapon", "m_hOwnerEntity", &spi))
