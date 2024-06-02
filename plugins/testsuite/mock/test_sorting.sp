@@ -105,7 +105,7 @@ void Test_Sort1D() {
     AssertArrayEq("SortCustom1D Integers Ascending", intArray, {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, sizeof(intArray));
 
     float floatArray[10] = {6.3, 7.6, 3.2, 2.1, 8.5, 5.2, 0.4, 1.7, 4.8, 8.2};
-    SortCustom1D(view_as<int>(floatArray), sizeof(floatArray), Custom1DSortFloat);
+    SortCustom1D(floatArray, sizeof(floatArray), Custom1DSortFloat);
     AssertArrayEq("SortCustom1D Floats Ascending", floatArray, {0.4, 1.7, 2.1, 3.2, 4.8, 5.2, 6.3, 7.6, 8.2, 8.5}, sizeof(floatArray));
 }
 
