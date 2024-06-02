@@ -140,6 +140,18 @@ namespace SourceMod
 		 * @return          Amount of memory used in bytes.
 		 */
 		virtual size_t mem_usage() = 0;
+
+		/**
+		 * @brief Retrieve the implementation size of this array in bytes.
+		 *
+		 * @return          Amount of memory used in bytes.
+		 */
+		virtual size_t size_of() = 0;
+
+		/**
+		 * @brief Delete the array object.
+		 */
+		virtual void delete_this() = 0;
 	};
 }
 

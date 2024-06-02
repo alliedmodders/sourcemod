@@ -207,6 +207,16 @@ public:
 		return m_AllocSize * m_BlockSize * sizeof(cell_t);
 	}
 
+	size_t size_of()
+	{
+		return sizeof(CellArray);
+	}
+
+	void delete_this()
+	{
+		delete this;
+	}
+	
 private:
 	bool GrowIfNeeded(size_t count)
 	{

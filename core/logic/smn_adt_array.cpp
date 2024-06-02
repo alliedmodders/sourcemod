@@ -53,13 +53,13 @@ public: //SMGlobalClass
 public: //IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object)
 	{
-		CellArray *array = (CellArray *)object;
-		delete array;
+		ICellArray *array = (ICellArray *)object;
+		array->delete_this();
 	}
 	bool GetHandleApproxSize(HandleType_t type, void *object, unsigned int *pSize)
 	{
-		CellArray *pArray = (CellArray *)object;
-		*pSize = sizeof(CellArray) + pArray->mem_usage();
+		ICellArray *pArray = (ICellArray*)object;
+		*pSize = pArray->size_of() + pArray->mem_usage();
 		return true;
 	}
 } s_CellArrayHelpers;
@@ -77,7 +77,7 @@ static cell_t CreateArray(IPluginContext *pContext, const cell_t *params)
 	{
 		if (!array->resize(params[2]))
 		{
-			delete array;
+			array->delete_this();
 			return pContext->ThrowNativeError("Failed to resize array to startsize \"%u\".", params[2]);
 		}
 	}
@@ -85,7 +85,7 @@ static cell_t CreateArray(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = handlesys->CreateHandle(htCellArray, array, pContext->GetIdentity(), g_pCoreIdent, NULL);
 	if (!hndl)
 	{
-		delete array;
+		array->delete_this();
 	}
 
 	return hndl;
@@ -569,7 +569,7 @@ static cell_t CloneArray(IPluginContext *pContext, const cell_t *params)
 	Handle_t hndl = handlesys->CreateHandle(htCellArray, array, pContext->GetIdentity(), g_pCoreIdent, NULL);
 	if (!hndl)
 	{
-		delete array;
+		array->delete_this();
 	}
 
 	return hndl;

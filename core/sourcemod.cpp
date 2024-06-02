@@ -72,6 +72,7 @@ bool sm_show_debug_spew = false;
 bool sm_disable_jit = false;
 int jit_metadata_flags = JIT_DEBUG_DELETE_ON_EXIT | JIT_DEBUG_PERF_BASIC;
 SMGlobalClass *SMGlobalClass::head = nullptr;
+HandleType_t htCellArray;
 
 #ifdef PLATFORM_WINDOWS
 ConVar sm_basepath("sm_basepath", "addons\\sourcemod", 0, "SourceMod base path (set via command line)");
@@ -329,6 +330,9 @@ void SourceModBase::StartSourceMod(bool late)
 		pBase->OnSourceModAllInitialized_Post();
 		pBase = pBase->m_pGlobalClassNext;
 	}
+
+	htCellArray = 0;
+	logicore.handlesys->FindHandleType("CellArray", &htCellArray);
 
 	/* Add us now... */
 	sharesys->AddInterface(NULL, this);
@@ -834,6 +838,38 @@ void *SourceModBase::FromPseudoAddress(uint32_t pseudoAddr)
 uint32_t SourceModBase::ToPseudoAddress(void *addr)
 {
 	return logicore.ToPseudoAddress(addr);
+}
+
+Handle_t SourceModBase::CreateCellArrayHandle(SourcePawn::IPluginContext *context, ICellArray* array, HandleError *err)
+{
+	if (htCellArray == 0)
+	{
+		return 0;
+	}
+
+	return logicore.handlesys->CreateHandle(htCellArray, array, context->GetIdentity(), g_pCoreIdent, err);
+}
+
+ICellArray* SourceModBase::ReadCellArrayHandle(SourcePawn::IPluginContext *context, Handle_t hndl, HandleError *pErr)
+{
+	if (htCellArray == 0)
+	{
+		return nullptr;
+	}
+
+	HandleSecurity security(context->GetIdentity(), g_pCoreIdent);
+	ICellArray* array = nullptr;
+
+	HandleError error;
+	if ((error = logicore.handlesys->ReadHandle(hndl, htCellArray, &security, (void**)&array)) != HandleError::HandleError_None)
+	{
+		if (pErr)
+		{
+			*pErr = error;
+		}
+		return nullptr;
+	}
+	return array;
 }
 
 class ConVarRegistrar :

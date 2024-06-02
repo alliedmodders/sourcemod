@@ -38,6 +38,7 @@
  */
 
 #include <IHandleSys.h>
+#include <ICellArray.h>
 #include <sp_vm_api.h>
 #include <time.h>
 
@@ -331,6 +332,28 @@ namespace SourceMod
 		 * @return			Pseudo address, or 0 if memory address could not be converted.
 		 */
 		virtual uint32_t ToPseudoAddress(void *addr) = 0;
+
+		/**
+		 * @brief Wraps the given ICellArray object into an handle.
+		 *
+		 * @param context The plugin context that should own the handle.
+		 * @param array   The cell array object to wrap into the handle.
+		 * @param err     Optional address to store a possible handle error.
+		 *
+		 * @return        The Handle wrapping the ICellArray, or NULL otherwise.
+		 */
+		virtual Handle_t CreateCellArrayHandle(SourcePawn::IPluginContext *context, ICellArray* array, HandleError *err = nullptr) = 0;
+
+		/**
+		 * @brief Retrieves a ICellArray pointer from a handle.
+		 *
+		 * @param context   Plugin context owning the handle.
+		 * @param hndl      Handle from which to retrieve contents.
+		 * @param err       Optional address to store a possible handle error.
+		 *
+		 * @return          The ICellArray object pointer, or nullptr for any error encountered.
+		 */
+		virtual ICellArray* ReadCellArrayHandle(SourcePawn::IPluginContext *context, Handle_t hndl, HandleError *err = nullptr) = 0;
 	};
 }
 
