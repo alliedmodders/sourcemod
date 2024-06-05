@@ -38,7 +38,7 @@
 #include <version>
 
 /** If this gets changed, you need to update Core's check. */
-#define SOURCEMOD_PLUGINAPI_VERSION     5
+#define SOURCEMOD_PLUGINAPI_VERSION     7
 
 struct PlVers
 {

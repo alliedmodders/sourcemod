@@ -52,7 +52,7 @@ static bool PVD_used = false;
 
 SH_DECL_MANUALHOOK2_void(PlayerRunCmdHook, 0, 0, 0, CUserCmd *, IMoveHelper *);
 SH_DECL_HOOK2(IBaseFileSystem, FileExists, SH_NOATTRIB, 0, bool, const char*, const char *);
-#if SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2
+#if (SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2)
 SH_DECL_HOOK3(INetChannel, SendFile, SH_NOATTRIB, 0, bool, const char *, unsigned int, bool);
 #else
 SH_DECL_HOOK2(INetChannel, SendFile, SH_NOATTRIB, 0, bool, const char *, unsigned int);
@@ -65,10 +65,8 @@ SH_DECL_HOOK2_void(INetChannel, ProcessPacket, SH_NOATTRIB, 0, struct netpacket_
 SourceHook::CallClass<IBaseFileSystem> *basefilesystemPatch = NULL; 
 
 CHookManager::CHookManager()
-#if SOURCE_ENGINE == SE_TF2
-	: replay_enabled("replay_enabled", false)
-#endif
 {
+	m_usercmdsPreFwd = NULL;
 	m_usercmdsFwd = NULL;
 	m_usercmdsPostFwd = NULL;
 	m_netFileSendFwd = NULL;
@@ -97,6 +95,19 @@ void CHookManager::Initialize()
 
 	plsys->AddPluginsListener(this);
 	sharesys->AddCapabilityProvider(myself, this, FEATURECAP_PLAYERRUNCMD_11PARAMS);
+	
+	m_usercmdsPreFwd = forwards->CreateForward("OnPlayerRunCmdPre", ET_Ignore, 11, NULL,
+		Param_Cell,			// int client
+		Param_Cell,			// int buttons
+		Param_Cell,			// int impulse
+		Param_Array,		// float vel[3]
+		Param_Array,		// float angles[3]
+		Param_Cell,			// int weapon
+		Param_Cell,			// int subtype
+		Param_Cell,			// int cmdnum
+		Param_Cell,			// int tickcount
+		Param_Cell,			// int seed
+		Param_Array);		// int mouse[2]
 
 	m_usercmdsFwd = forwards->CreateForward("OnPlayerRunCmd", ET_Event, 11, NULL,
 		Param_Cell,			// client
@@ -179,6 +190,7 @@ void CHookManager::Shutdown()
 	}
 #endif
 
+	forwards->ReleaseForward(m_usercmdsPreFwd);
 	forwards->ReleaseForward(m_usercmdsFwd);
 	forwards->ReleaseForward(m_usercmdsPostFwd);
 	forwards->ReleaseForward(m_netFileSendFwd);
@@ -283,7 +295,10 @@ void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 		RETURN_META(MRES_IGNORED);
 	}
 
-	if (m_usercmdsFwd->GetFunctionCount() == 0)
+	bool hasUsercmdsPreFwds = (m_usercmdsPreFwd->GetFunctionCount() > 0);
+	bool hasUsercmdsFwds = (m_usercmdsFwd->GetFunctionCount() > 0);
+
+	if (!hasUsercmdsPreFwds && !hasUsercmdsFwds)
 	{
 		RETURN_META(MRES_IGNORED);
 	}
@@ -311,34 +326,53 @@ void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 	cell_t vel[3] = {sp_ftoc(ucmd->forwardmove), sp_ftoc(ucmd->sidemove), sp_ftoc(ucmd->upmove)};
 	cell_t angles[3] = {sp_ftoc(ucmd->viewangles.x), sp_ftoc(ucmd->viewangles.y), sp_ftoc(ucmd->viewangles.z)};
 	cell_t mouse[2] = {ucmd->mousedx, ucmd->mousedy};
-
-	m_usercmdsFwd->PushCell(client);
-	m_usercmdsFwd->PushCellByRef(&ucmd->buttons);
-	m_usercmdsFwd->PushCellByRef(&impulse);
-	m_usercmdsFwd->PushArray(vel, 3, SM_PARAM_COPYBACK);
-	m_usercmdsFwd->PushArray(angles, 3, SM_PARAM_COPYBACK);
-	m_usercmdsFwd->PushCellByRef(&ucmd->weaponselect);
-	m_usercmdsFwd->PushCellByRef(&ucmd->weaponsubtype);
-	m_usercmdsFwd->PushCellByRef(&ucmd->command_number);
-	m_usercmdsFwd->PushCellByRef(&ucmd->tick_count);
-	m_usercmdsFwd->PushCellByRef(&ucmd->random_seed);
-	m_usercmdsFwd->PushArray(mouse, 2, SM_PARAM_COPYBACK);
-	m_usercmdsFwd->Execute(&result);
-
-	ucmd->impulse = impulse;
-	ucmd->forwardmove = sp_ctof(vel[0]);
-	ucmd->sidemove = sp_ctof(vel[1]);
-	ucmd->upmove = sp_ctof(vel[2]);
-	ucmd->viewangles.x = sp_ctof(angles[0]);
-	ucmd->viewangles.y = sp_ctof(angles[1]);
-	ucmd->viewangles.z = sp_ctof(angles[2]);
-	ucmd->mousedx = mouse[0];
-	ucmd->mousedy = mouse[1];
-
-
-	if (result == Pl_Handled)
+	
+	if (hasUsercmdsPreFwds)
 	{
-		RETURN_META(MRES_SUPERCEDE);
+		m_usercmdsPreFwd->PushCell(client);
+		m_usercmdsPreFwd->PushCell(ucmd->buttons);
+		m_usercmdsPreFwd->PushCell(ucmd->impulse);
+		m_usercmdsPreFwd->PushArray(vel, 3);
+		m_usercmdsPreFwd->PushArray(angles, 3);
+		m_usercmdsPreFwd->PushCell(ucmd->weaponselect);
+		m_usercmdsPreFwd->PushCell(ucmd->weaponsubtype);
+		m_usercmdsPreFwd->PushCell(ucmd->command_number);
+		m_usercmdsPreFwd->PushCell(ucmd->tick_count);
+		m_usercmdsPreFwd->PushCell(ucmd->random_seed);
+		m_usercmdsPreFwd->PushArray(mouse, 2);
+		m_usercmdsPreFwd->Execute();
+	}
+
+	if (hasUsercmdsFwds)
+	{
+		m_usercmdsFwd->PushCell(client);
+		m_usercmdsFwd->PushCellByRef(&ucmd->buttons);
+		m_usercmdsFwd->PushCellByRef(&impulse);
+		m_usercmdsFwd->PushArray(vel, 3, SM_PARAM_COPYBACK);
+		m_usercmdsFwd->PushArray(angles, 3, SM_PARAM_COPYBACK);
+		m_usercmdsFwd->PushCellByRef(&ucmd->weaponselect);
+		m_usercmdsFwd->PushCellByRef(&ucmd->weaponsubtype);
+		m_usercmdsFwd->PushCellByRef(&ucmd->command_number);
+		m_usercmdsFwd->PushCellByRef(&ucmd->tick_count);
+		m_usercmdsFwd->PushCellByRef(&ucmd->random_seed);
+		m_usercmdsFwd->PushArray(mouse, 2, SM_PARAM_COPYBACK);
+		m_usercmdsFwd->Execute(&result);
+
+		ucmd->impulse = impulse;
+		ucmd->forwardmove = sp_ctof(vel[0]);
+		ucmd->sidemove = sp_ctof(vel[1]);
+		ucmd->upmove = sp_ctof(vel[2]);
+		ucmd->viewangles.x = sp_ctof(angles[0]);
+		ucmd->viewangles.y = sp_ctof(angles[1]);
+		ucmd->viewangles.z = sp_ctof(angles[2]);
+		ucmd->mousedx = mouse[0];
+		ucmd->mousedy = mouse[1];
+
+
+		if (result == Pl_Handled)
+		{
+			RETURN_META(MRES_SUPERCEDE);
+		}
 	}
 
 	RETURN_META(MRES_IGNORED);
@@ -409,7 +443,8 @@ void CHookManager::NetChannelHook(int client)
 
 		/* Initial Hook */
 #if SOURCE_ENGINE == SE_TF2
-		if (replay_enabled.GetBool())
+		ConVarRef replay_enable("replay_enable", false);
+		if (replay_enable.GetBool())
 		{
 			if (!m_bFSTranHookWarned)
 			{
@@ -503,7 +538,7 @@ void CHookManager::ProcessPacket_Post(struct netpacket_s* packet, bool bHasHeade
 	RETURN_META(MRES_IGNORED);
 }
 
-#if SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2
+#if (SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2)
 bool CHookManager::SendFile(const char *filename, unsigned int transferID, bool isReplayDemo)
 #else
 bool CHookManager::SendFile(const char *filename, unsigned int transferID)
@@ -535,7 +570,7 @@ bool CHookManager::SendFile(const char *filename, unsigned int transferID)
 	if (res != Pl_Continue)
 	{
 		/* Mimic the Engine. */
-#if SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2
+#if (SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2)
 		pNetChannel->DenyFile(filename, transferID, isReplayDemo);
 #else
 		pNetChannel->DenyFile(filename, transferID);
@@ -576,7 +611,7 @@ void CHookManager::OnPluginLoaded(IPlugin *plugin)
 	if (PRCH_enabled)
 	{
 		bool changed = false;
-		if (!PRCH_used && (m_usercmdsFwd->GetFunctionCount() > 0))
+		if (!PRCH_used && ((m_usercmdsFwd->GetFunctionCount() > 0) || (m_usercmdsPreFwd->GetFunctionCount() > 0)))
 		{
 			PRCH_used = true;
 			changed = true;
@@ -634,7 +669,7 @@ void CHookManager::OnPluginLoaded(IPlugin *plugin)
 
 void CHookManager::OnPluginUnloaded(IPlugin *plugin)
 {
-	if (PRCH_used && !m_usercmdsFwd->GetFunctionCount())
+	if (PRCH_used && (!m_usercmdsFwd->GetFunctionCount() && !m_usercmdsPreFwd->GetFunctionCount()))
 	{
 		for (size_t i = 0; i < m_runUserCmdHooks.size(); ++i)
 		{

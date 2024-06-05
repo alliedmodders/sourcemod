@@ -144,6 +144,18 @@ static cell_t sm_SetClientLanguage(IPluginContext *pContext, const cell_t *param
 	return 1;
 }
 
+static cell_t sm_GetClientOriginalLanguage(IPluginContext *pContext, const cell_t *params)
+{
+	IGamePlayer *player = playerhelpers->GetGamePlayer(params[1]);
+
+	if (!player || !player->IsConnected())
+	{
+		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
+	}
+
+	return player->GetOriginalLanguageId();
+}
+
 static cell_t sm_GetLanguageByCode(IPluginContext *pContext, const cell_t *params)
 {
 	char *code;
@@ -181,6 +193,7 @@ REGISTER_NATIVES(langNatives)
 	{"GetLanguageCount",			sm_GetLanguageCount},
 	{"GetLanguageInfo",				sm_GetLanguageInfo},
 	{"SetClientLanguage",			sm_SetClientLanguage},
+	{"GetClientOriginalLanguage",	sm_GetClientOriginalLanguage},
 	{"GetLanguageByCode",			sm_GetLanguageByCode},
 	{"GetLanguageByName",			sm_GetLanguageByName},
 	{NULL,							NULL},

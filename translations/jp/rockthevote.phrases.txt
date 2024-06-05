@@ -1,0 +1,68 @@
+"Phrases"
+{
+	"Rock The Vote"
+	{
+		"jp"		"Rock The Vote:"
+	}
+
+	"RTV Not Allowed"
+	{
+		"jp"		"Rock the Voteは許可されていません。"
+	}
+
+	"RTV Started"
+	{
+		"jp"		"Rock the Voteは既に開始されています。"
+	}
+
+	"RTV Ended"
+	{
+		"jp"		"RTVは既に終了しています。もう一度スタート、マップをノミネートすることは出来ません。"
+	}
+
+	"Already Voted"
+	{
+		"jp"		"すでにRock the Voteに投票しています。({1}投票、残り{2}必要)"
+	}
+
+	"Minimal Players Not Met"
+	{
+		"jp"		"投票に必要な最小プレイヤー数に到達しませんでした。"
+	}
+
+	"RTV Requested"
+	{
+		"jp"		"{1}がRock the Voteを希望しています。({2}投票、残り{3}必要)"
+	}
+
+	"RTV Vote Ready"
+	{
+		"jp"		"Rocking the Vote! "
+	}
+
+	"Don't Change"
+	{
+		"jp"		"現在のマップを維持"
+	}
+
+	"Selected Map"
+	{
+		"jp"		"{1}は{2}を選択しました。"
+	}
+
+	"No Votes"
+	{
+		"jp"		"Rock the Voteに投票がなかったため現在のマップを継続します。"
+	}
+
+	"Current Map Stays"
+	{
+		"jp"		"Rock the Voteによって現在のマップを継続します！"
+	}
+
+	"Changing Maps"
+	{
+		"jp"		"Rock the Voteによってマップを{1}に変更します！"
+	}
+
+}

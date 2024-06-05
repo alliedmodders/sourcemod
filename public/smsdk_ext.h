@@ -153,6 +153,15 @@ public:
 
 #if defined SMEXT_CONF_METAMOD
 	/**
+	 * @brief Called when Metamod is requesting the extension (ISmmPlugin) interface.
+	 *
+	 * @param mvi			Struct that contains Metamod version, SourceHook version, Plugin version and Source Engine version.
+	 * @param mli			Struct that contains the library file name and path being loaded.
+	 * @return				The ISmmPlugin interface.
+	 */
+	virtual METAMOD_PLUGIN *SDK_OnMetamodCreateInterface(const MetamodVersionInfo *mvi, const MetamodLoaderInfo *mli);
+
+	/**
 	 * @brief Called when Metamod is attached, before the extension version is called.
 	 *
 	 * @param error			Error buffer.

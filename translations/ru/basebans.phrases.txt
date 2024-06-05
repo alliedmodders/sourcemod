@@ -1,0 +1,63 @@
+"Phrases"
+{
+	"Ban player"
+	{
+		"ru"		"Забанить игрока"
+	}
+
+	"Ban reason"
+	{
+		"ru"		"Причина бана"
+	}
+
+	"Permabanned player"
+	{
+		"ru"		"Игрок \"{1}\" забанен навсегда."
+	}
+
+	"Permabanned player reason"
+	{
+		"ru"		"Игрок \"{1}\" забанен навсегда (причина: {2})."
+	}
+
+	"Banned player"
+	{
+		"ru"		"Игрок \"{1}\" забанен на {2} минут."
+	}
+
+	"Banned player reason"
+	{
+		"ru"		"Игрок \"{1}\" забанен на {2} минут (причина: {3})."
+	}
+
+	"Removed bans matching"
+	{
+		"ru"		"Удалены баны по фильтру: {1}"
+	}
+
+	"Ban added"
+	{
+		"ru"		"Бан добавлен"
+	}
+
+	"Cannot ban that IP"
+	{
+		"ru"		"Вы не можете забанить этот IP адрес."
+	}
+
+	"Custom ban reason explanation"
+	{
+		"ru"		"Введите в чате причину бана или {1} чтобы отменить бан"
+	}
+
+	"AbortBan applied successfully"
+	{
+		"ru"		"Бан отменен"
+	}
+
+	"AbortBan not waiting for custom reason"
+	{
+		"ru"		"Не ожидается ввод причины бана, отмена бана не выполнена"
+	}
+
+}

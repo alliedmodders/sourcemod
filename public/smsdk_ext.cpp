@@ -297,6 +297,12 @@ void SDKExtension::SDK_OnDependenciesDropped()
 
 #if defined SMEXT_CONF_METAMOD
 
+#if defined _MSC_VER
+#define SMEXT_DLL_EXPORT				extern "C" __declspec(dllexport)
+#else
+#define SMEXT_DLL_EXPORT				extern "C" __attribute__((visibility("default")))
+#endif
+
 PluginId g_PLID = 0;						/**< Metamod plugin ID */
 ISmmPlugin *g_PLAPI = NULL;					/**< Metamod plugin API */
 SourceHook::ISourceHook *g_SHPtr = NULL;	/**< SourceHook pointer */
@@ -308,27 +314,9 @@ IServerGameDLL *gamedll = NULL;				/**< IServerGameDLL pointer */
 #endif
 
 /** Exposes the extension to Metamod */
-SMM_API void *PL_EXPOSURE(const char *name, int *code)
+SMEXT_DLL_EXPORT METAMOD_PLUGIN *CreateInterface_MMS(const MetamodVersionInfo *mvi, const MetamodLoaderInfo *mli)
 {
-#if defined METAMOD_PLAPI_VERSION
-	if (name && !strcmp(name, METAMOD_PLAPI_NAME))
-#else
-	if (name && !strcmp(name, PLAPI_NAME))
-#endif
-	{
-		if (code)
-		{
-			*code = META_IFACE_OK;
-		}
-		return static_cast<void *>(g_pExtensionIface);
-	}
-
-	if (code)
-	{
-		*code = META_IFACE_FAILED;
-	}
-
-	return NULL;
+	return g_pExtensionIface->SDK_OnMetamodCreateInterface(mvi, mli);
 }
 
 bool SDKExtension::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bool late)
@@ -341,7 +329,7 @@ bool SDKExtension::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, 
 	GET_V_IFACE_CURRENT(engineFactory, engine, IVEngineServer, INTERFACEVERSION_VENGINESERVER);
 #else
 	GET_V_IFACE_ANY(GetServerFactory, gamedll, IServerGameDLL, INTERFACEVERSION_SERVERGAMEDLL);
-#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_SDK2013
+#if SOURCE_ENGINE == SE_SDK2013
 	// Shim to avoid hooking shims
 	engine = (IVEngineServer *) ismm->GetEngineFactory()("VEngineServer023", nullptr);
 	if (!engine)
@@ -455,6 +443,11 @@ const char *SDKExtension::GetURL()
 const char *SDKExtension::GetVersion()
 {
 	return GetExtensionVerString();
+}
+
+METAMOD_PLUGIN *SDKExtension::SDK_OnMetamodCreateInterface(const MetamodVersionInfo *mvi, const MetamodLoaderInfo *mli)
+{
+	return this;
 }
 
 bool SDKExtension::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlength, bool late)

@@ -1,0 +1,7 @@
+{
+    "debian11": {
+        "CC": "clang-14",
+        "CXX": "clang++-14"
+    }
+}
+

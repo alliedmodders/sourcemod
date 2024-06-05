@@ -140,6 +140,7 @@ public: // ISourceMod
 private:
 	void ShutdownServices();
 private:
+	const char* GetMapEntitiesString();
 	char m_SMBaseDir[PLATFORM_MAX_PATH];
 	char m_SMRelDir[PLATFORM_MAX_PATH];
 	char m_ModDir[32];

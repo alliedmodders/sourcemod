@@ -99,6 +99,24 @@ native void TE_WriteNum(const char[] prop, int value);
 native int TE_ReadNum(const char[] prop);
 
 /**
+ * Sets an entity value in the current temp entity.
+ *
+ * @param prop          Property to use.
+ * @param value         Entity reference or index value to set.
+ * @error               Property not found.
+ */
+native void TE_WriteEnt(const char[] prop, int value);
+
+/**
+ * Reads an entity value in the current temp entity.
+ *
+ * @param prop          Property to use.
+ * @return              Property value as backwards compatible entity reference.
+ * @error               Property not found.
+ */
+native int TE_ReadEnt(const char[] prop);
+
+/**
  * Sets a floating point number in the current temp entity.
  *
  * @param prop          Property to use.

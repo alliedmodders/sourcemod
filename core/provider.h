@@ -38,7 +38,6 @@ public:
 
 	// Local functions.
 	void InitializeBridge();
-	bool LoadProtobufProxy(char *error, size_t maxlength);
 	bool LoadBridge(char *error, size_t maxlength);
 	void ShutdownBridge();
 
@@ -67,6 +66,7 @@ public:
 	int QueryClientConVar(int client, const char *cvar) override;
 	bool IsClientConVarQueryingSupported() override;
 	void DefineCommand(const char *cmd, const char *help, const SourceMod::CommandFunc &callback) override;
+	void FormatSourceBinaryName(const char *basename, char *buffer, size_t maxlength) override;
 
 	ke::RefPtr<CommandHook> AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
 	ke::RefPtr<CommandHook> AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &callback);
@@ -76,7 +76,6 @@ public:
 	}
 
 private:
-	ke::RefPtr<ke::SharedLib> pbproxy_;
 	ke::RefPtr<ke::SharedLib> logic_;
 	LogicInitFunction logic_init_;
 	GameHooks hooks_;

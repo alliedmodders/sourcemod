@@ -1,0 +1,88 @@
+"Phrases"
+{
+	"No Access"
+	{
+		"es"		"No tienes acceso a este comando"
+	}
+
+	"Back"
+	{
+		"es"		"Volver"
+	}
+
+	"Next"
+	{
+		"es"		"Siguiente"
+	}
+
+	"Exit"
+	{
+		"es"		"Salir"
+	}
+
+	"Previous"
+	{
+		"es"		"Anterior"
+	}
+
+	"all players"
+	{
+		"es"		"todos los jugadores"
+	}
+
+	"all humans"
+	{
+		"es"		"todos los humanos"
+	}
+
+	"all bots"
+	{
+		"es"		"todos los bots"
+	}
+
+	"all dead players"
+	{
+		"es"		"todos los jugadores muertos"
+	}
+
+	"all alive players"
+	{
+		"es"		"todos los jugadores vivos"
+	}
+
+	"_s"
+	{
+		"es"		"{1}"
+	}
+
+	"all spectators"
+	{
+		"es"		"todos los espectadores"
+	}
+
+	"Vote Count"
+	{
+		"es"		"Votos: {1}/{2}, {3} restante(s)"
+	}
+
+	"Voted For"
+	{
+		"es"		"{1} votó por {2}"
+	}
+
+	"Changed Vote"
+	{
+		"es"		"{1} cambió su voto a {2}"
+	}
+
+	"No Vote"
+	{
+		"es"		"No hay votos"
+	}
+
+	"Name Reserved"
+	{
+		"es"		"Tu nombre esta reservado por SourceMod; establece una contraseña para usarlo."
+	}
+
+}

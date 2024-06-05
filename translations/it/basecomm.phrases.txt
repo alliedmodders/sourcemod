@@ -1,0 +1,73 @@
+"Phrases"
+{
+	"Gag/Mute player"
+	{
+		"it"		"Imbavaglia/Ammutolisci un giocatore "
+	}
+
+	"Choose Type"
+	{
+		"it"		"Scegli un tipo per"
+	}
+
+	"Gagged target"
+	{
+		"it"		"{1} è stato imbavagliato."
+	}
+
+	"Ungagged target"
+	{
+		"it"		"La chat vocale di {1} è stata riattivata."
+	}
+
+	"Muted target"
+	{
+		"it"		"{1} è stato ammutolito."
+	}
+
+	"Unmuted target"
+	{
+		"it"		"La chat testuale di {1} è stata riattivata."
+	}
+
+	"Silenced target"
+	{
+		"it"		"{1} è stato silenziato."
+	}
+
+	"Unsilenced target"
+	{
+		"it"		"Le comunicazioni di {1} sono state riattivate."
+	}
+
+	"Mute Player"
+	{
+		"it"		"Ammutolisci il giocatore "
+	}
+
+	"UnMute Player"
+	{
+		"it"		"Riattiva chat testuale del giocatore"
+	}
+
+	"Gag Player"
+	{
+		"it"		"Imbavaglia il giocatore"
+	}
+
+	"UnGag Player"
+	{
+		"it"		"Riattiva chat vocale del giocatore"
+	}
+
+	"Silence Player"
+	{
+		"it"		"Silenzia il giocatore "
+	}
+
+	"UnSilence Player"
+	{
+		"it"		"Riattiva le comunicazioni del giocatore"
+	}
+
+}

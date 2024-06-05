@@ -74,7 +74,7 @@ using namespace SourceMod;
 	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_INSURGENCY || SOURCE_ENGINE == SE_DOI
 #define SOURCE_BIN_PREFIX "lib"
 #define SOURCE_BIN_SUFFIX "_srv"
-#elif SOURCE_ENGINE >= SE_LEFT4DEAD
+#elif SOURCE_ENGINE >= SE_LEFT4DEAD || SOURCE_ENGINE == SE_PVKII
 #define SOURCE_BIN_PREFIX "lib"
 #define SOURCE_BIN_SUFFIX ""
 #else
@@ -89,16 +89,24 @@ using namespace SourceMod;
 
 struct DataTableInfo
 {
-	struct SendPropPolicy
+	struct SendPropInfo
 	{
-		static inline bool matches(const char *name, const sm_sendprop_info_t &info)
+		static inline bool matches(const char *name, const SendPropInfo &info)
 		{
-			return strcmp(name, info.prop->GetName()) == 0;
+			return strcmp(name, info.name.c_str()) == 0;
 		}
 		static inline uint32_t hash(const detail::CharsAndLength &key)
 		{
 			return key.hash();
 		}
+
+		SendPropInfo()
+			: name(), info{nullptr, 0}
+		{
+		}
+
+		std::string name;
+		sm_sendprop_info_t info;
 	};
 
 	static inline bool matches(const char *name, const DataTableInfo *info)
@@ -116,22 +124,30 @@ struct DataTableInfo
 	}
 
 	ServerClass *sc;
-	NameHashSet<sm_sendprop_info_t, SendPropPolicy> lookup;
+	NameHashSet<SendPropInfo> lookup;
 };
 
-struct DataMapCachePolicy
+struct DataMapCacheInfo
 {
-	static inline bool matches(const char *name, const sm_datatable_info_t &info)
+	static inline bool matches(const char *name, const DataMapCacheInfo &info)
 	{
-		return strcmp(name, info.prop->fieldName) == 0;
+		return strcmp(name, info.name.c_str()) == 0;
 	}
 	static inline uint32_t hash(const detail::CharsAndLength &key)
 	{
 		return key.hash();
 	}
+
+	DataMapCacheInfo()
+		: name(), info{nullptr, 0}
+	{
+	}
+
+	std::string name;
+	sm_datatable_info_t info;
 };
 
-typedef NameHashSet<sm_datatable_info_t, DataMapCachePolicy> DataMapCache;
+typedef NameHashSet<DataMapCacheInfo> DataMapCache;
 
 struct DelayedFakeCliCmd
 {
@@ -205,6 +221,7 @@ public: //IGameHelpers
 	bool FindSendPropInfo(const char *classname, const char *offset, sm_sendprop_info_t *info);
 	datamap_t *GetDataMap(CBaseEntity *pEntity);
 	ServerClass *FindServerClass(const char *classname);
+	ServerClass *FindEntityServerClass(CBaseEntity *pEntity);
 	typedescription_t *FindInDataMap(datamap_t *pMap, const char *offset);
 	bool FindDataMapInfo(datamap_t *pMap, const char *offset, sm_datatable_info_t *pDataTable);
 	void SetEdictStateChanged(edict_t *pEdict, unsigned short offset);
@@ -235,7 +252,7 @@ public: //IGameHelpers
 	bool IsMapValid(const char *map);
 	SMFindMapResult FindMap(char *pMapName, size_t nMapNameMax);
 	SMFindMapResult FindMap(const char *pMapName, char *pFoundMap = NULL, size_t nMapNameMax = 0);
-#if SOURCE_ENGINE >= SE_LEFT4DEAD && defined PLATFORM_WINDOWS
+#if SOURCE_ENGINE >= SE_LEFT4DEAD && defined PLATFORM_WINDOWS && SOURCE_ENGINE != SE_MOCK
 	void FreeUtlVectorUtlString(CUtlVector<CUtlString, CUtlMemoryGlobalMalloc<CUtlString>> &vec);
 #endif
 	bool GetMapDisplayName(const char *pMapName, char *pDisplayname, size_t nMapNameMax);

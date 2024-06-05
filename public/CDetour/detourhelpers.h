@@ -39,6 +39,8 @@
 
 #include <amtl/am-bits.h>
 #include <jit/x86/x86_macros.h>
+#include <amtl/os/am-system-errors.h>
+#include <cstdio>
 
 struct patch_t
 {
@@ -53,14 +55,21 @@ struct patch_t
 
 inline void ProtectMemory(void *addr, int length, int prot)
 {
+	char error[256];
 #if defined PLATFORM_POSIX
 	long pageSize = sysconf(_SC_PAGESIZE);
 	void *startPage = ke::AlignedBase(addr, pageSize);
 	void *endPage = ke::AlignedBase((void *)((intptr_t)addr + length), pageSize);
-	mprotect(startPage, ((intptr_t)endPage - (intptr_t)startPage) + pageSize, prot);
+	if (mprotect(startPage, ((intptr_t)endPage - (intptr_t)startPage) + pageSize, prot) == -1) {
+		ke::FormatSystemError(error, sizeof(error));
+		fprintf(stderr, "mprotect: %s\n", error);
+	}
 #elif defined PLATFORM_WINDOWS
 	DWORD old_prot;
-	VirtualProtect(addr, length, prot, &old_prot);
+	if (!VirtualProtect(addr, length, prot, &old_prot)) {
+		ke::FormatSystemError(error, sizeof(error));
+		fprintf(stderr, "VirtualProtect: %s\n", error);
+	}
 #endif
 }
 

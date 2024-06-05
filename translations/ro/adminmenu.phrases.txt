@@ -1,0 +1,23 @@
+"Phrases"
+{
+	"Admin Menu"
+	{
+		"ro"		"Menu Admin"
+	}
+
+	"Player Commands"
+	{
+		"ro"		"Comenzi Jucător"
+	}
+
+	"Server Commands"
+	{
+		"ro"		"Comenzi Server"
+	}
+
+	"Voting Commands"
+	{
+		"ro"		"Comenzi Vot"
+	}
+
+}

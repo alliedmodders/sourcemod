@@ -44,6 +44,7 @@ public:
 	virtual char *ReadLine(char *pOutput, int maxChars, FileHandle_t file) = 0;
 	virtual bool EndOfFile(FileHandle_t file) = 0;
 	virtual bool FileExists(const char *pFileName, const char *pPathID = 0) = 0;
+	virtual unsigned int Size(FileHandle_t file) = 0;
 	virtual unsigned int Size(const char *pFileName, const char *pPathID = 0) = 0;
 	virtual int Read(void* pOutput, int size, FileHandle_t file) = 0;
 	virtual int Write(void const* pInput, int size, FileHandle_t file) = 0;
@@ -56,6 +57,7 @@ public:
 	virtual void RenameFile(char const *pOldPath, char const *pNewPath, const char *pathID = 0) = 0;
 	virtual bool IsDirectory(const char *pFileName, const char *pathID = 0) = 0;
 	virtual void CreateDirHierarchy(const char *path, const char *pathID = 0) = 0;
+	virtual int GetSearchPath(const char* pathID, bool bGetPackFiles, char* pPath, int nMaxLen) = 0;
 };
 
 } // namespace SourceMod

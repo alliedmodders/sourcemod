@@ -128,7 +128,6 @@ private:
 
 	int HookCount;
 
-	patch_t info_restore;
 	void *info_address;
 	void *info_callback;
 };

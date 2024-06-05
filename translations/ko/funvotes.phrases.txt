@@ -1,0 +1,98 @@
+"Phrases"
+{
+	"Initiated Vote Gravity"
+	{
+		"ko"		"중력 설정 투표를 시작했습니다."
+	}
+
+	"Initiated Vote Burn"
+	{
+		"ko"		"{1} 님에 대한 불태우기 투표를 시작했습니다."
+	}
+
+	"Initiated Vote Slay"
+	{
+		"ko"		"{1} 님에 대한 죽이기 투표가 시작되었습니다."
+	}
+
+	"Initiated Vote Alltalk"
+	{
+		"ko"		"팀 구분 없는 음성대화 설정 투표를 시작했습니다."
+	}
+
+	"Initiated Vote FF"
+	{
+		"ko"		"아군 공격 설정 투표를 시작했습니다."
+	}
+
+	"Gravity Vote"
+	{
+		"ko"		"중력 투표 : {1}"
+	}
+
+	"Change Gravity To"
+	{
+		"ko"		"중력을 {1} 로 바꿀까요?"
+	}
+
+	"Voteburn player"
+	{
+		"ko"		"{1} 님을 태울까요?"
+	}
+
+	"Voteslay Player"
+	{
+		"ko"		"{1} 님을 죽일까요?"
+	}
+
+	"Votealltalk Off"
+	{
+		"ko"		"팀 구분 없는 음성통신을 끌까요? {1}"
+	}
+
+	"Votealltalk On"
+	{
+		"ko"		"팀 구분 없는 음성통신을 켤까요? {1} "
+	}
+
+	"Voteff Off"
+	{
+		"ko"		"아군 공격 설정을 끌까요? {1}"
+	}
+
+	"Voteff On"
+	{
+		"ko"		"아군 공격 설정을 켤까요? {1}"
+	}
+
+	"Gravity vote"
+	{
+		"ko"		"중력 투표"
+	}
+
+	"Vote FF"
+	{
+		"ko"		"아군 공격 설정 투표"
+	}
+
+	"Burn vote"
+	{
+		"ko"		"불태우기 투표"
+	}
+
+	"Alltalk vote"
+	{
+		"ko"		"팀 구분 없는 음성통신 설정 투표"
+	}
+
+	"Slay vote"
+	{
+		"ko"		"죽이기 투표"
+	}
+
+	"Slayed player"
+	{
+		"ko"		"'{1}' 님을 죽였습니다"
+	}
+
+}

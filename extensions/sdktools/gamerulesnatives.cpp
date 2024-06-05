@@ -45,26 +45,27 @@ static CBaseEntity *FindEntityByNetClass(int start, const char *classname)
 	int maxEntities = gpGlobals->maxEntities;
 	for (int i = start; i < maxEntities; i++)
 	{
-		edict_t *current = gamehelpers->EdictOfIndex(i);
-		if (current == NULL || current->IsFree())
+		CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(i);
+		if (pEntity == nullptr)
+		{
 			continue;
+		}
 
-		IServerNetworkable *network = current->GetNetworkable();
-		if (network == NULL)
+		ServerClass *pServerClass = gamehelpers->FindEntityServerClass(pEntity);
+		if (pServerClass == nullptr)
+		{
 			continue;
+		}
+		
 
-		IHandleEntity *pHandleEnt = network->GetEntityHandle();
-		if (pHandleEnt == NULL)
-			continue;
-
-		ServerClass *sClass = network->GetServerClass();
-		const char *name = sClass->GetName();
-
+		const char *name = pServerClass->GetName();
 		if (!strcmp(name, classname))
-			return gamehelpers->ReferenceToEntity(gamehelpers->IndexOfEdict(current));		
+		{
+			return pEntity;
+		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 static CBaseEntity* GetGameRulesProxyEnt()
@@ -213,7 +214,8 @@ static cell_t GameRules_GetProp(IPluginContext *pContext, const cell_t *params)
 
 	// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE \
+	|| SOURCE_ENGINE == SE_PVKII || SOURCE_ENGINE == SE_MCV
 	if (pProp->GetFlags() & SPROP_VARINT)
 	{
 		bit_count = sizeof(int) * 8;
@@ -287,7 +289,8 @@ static cell_t GameRules_SetProp(IPluginContext *pContext, const cell_t *params)
 	FIND_PROP_SEND(DPT_Int, "integer");
 
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+	|| SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE \
+	|| SOURCE_ENGINE == SE_PVKII || SOURCE_ENGINE == SE_MCV
 	if (pProp->GetFlags() & SPROP_VARINT)
 	{
 		bit_count = sizeof(int) * 8;

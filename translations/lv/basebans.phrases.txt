@@ -1,0 +1,63 @@
+"Phrases"
+{
+	"Ban player"
+	{
+		"lv"		"Banot spēlētāju"
+	}
+
+	"Ban reason"
+	{
+		"lv"		"Bana iemesls"
+	}
+
+	"Permabanned player"
+	{
+		"lv"		"Neatgriezeniski nobanoja spēlētāju \"{1}\"."
+	}
+
+	"Permabanned player reason"
+	{
+		"lv"		"Neatgriezeniski nobanoja spēlētāju \"{1}\" (iemesls: {2})."
+	}
+
+	"Banned player"
+	{
+		"lv"		"Nobanoja spēlētāju \"{1}\" uz {2} minūtēm. "
+	}
+
+	"Banned player reason"
+	{
+		"lv"		"Nobanoja spēlētāju \"{1}\" uz {2} minūtēm (iemesls: {3})."
+	}
+
+	"Removed bans matching"
+	{
+		"lv"		"Noņēma banus kas atbilst filtram: {1}"
+	}
+
+	"Ban added"
+	{
+		"lv"		"Bans ir pievienots"
+	}
+
+	"Cannot ban that IP"
+	{
+		"lv"		"Tu nevari banot 0 IP"
+	}
+
+	"Custom ban reason explanation"
+	{
+		"lv"		"Ievadi iemeslu kā čata ziņu. Izmanto {1} lai atcletu šo."
+	}
+
+	"AbortBan applied successfully"
+	{
+		"lv"		"Bans atcelts."
+	}
+
+	"AbortBan not waiting for custom reason"
+	{
+		"lv"		"Negaida uz bana iemesla ievadi, abns atclets."
+	}
+
+}

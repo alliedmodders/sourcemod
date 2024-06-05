@@ -1,0 +1,138 @@
+"Phrases"
+{
+	"Unable to find cvar"
+	{
+		"las"		"No se encontró la cvar: {1}"
+	}
+
+	"No access to cvar"
+	{
+		"las"		"No tienes acceso a esta cvar."
+	}
+
+	"Value of cvar"
+	{
+		"las"		"Valor de cvar \"{1}\": \"{2}\""
+	}
+
+	"Cvar changed"
+	{
+		"las"		"Cvar \"{1}\" cambiada a \"{2}\"."
+	}
+
+	"Config not found"
+	{
+		"las"		"Archivo de configuración \"{1}\" no encontrado."
+	}
+
+	"Executed config"
+	{
+		"las"		"Configuración \"{1}\" ejecutada."
+	}
+
+	"Permabanned player"
+	{
+		"las"		"\"{1}\" baneado permanentemente."
+	}
+
+	"Permabanned player reason"
+	{
+		"las"		"\"{1}\" baneado permanentemente (razón: {2})."
+	}
+
+	"Banned player"
+	{
+		"las"		"\"{1}\" baneado por {2} minutos."
+	}
+
+	"Banned player reason"
+	{
+		"las"		"\"{1}\" baneado por {2} minutos. (razón: {3})."
+	}
+
+	"Removed bans matching"
+	{
+		"las"		"Se eliminaron los bans coincidentes con: {1}"
+	}
+
+	"Ban added"
+	{
+		"las"		"Se añadió el ban."
+	}
+
+	"Admin cache refreshed"
+	{
+		"las"		"La caché de admins se actualizó."
+	}
+
+	"Identify player"
+	{
+		"las"		"Identificar a jugador"
+	}
+
+	"Choose Map"
+	{
+		"las"		"Cambiar Mapa"
+	}
+
+	"Exec CFG"
+	{
+		"las"		"Ejecutar CFG"
+	}
+
+	"Admin logged in as"
+	{
+		"las"		"\"{1}\" está logueado como \"{2}\" con accesos: {3}"
+	}
+
+	"Admin logged in anon"
+	{
+		"las"		"\"{1}\" tiene accesos: {2}"
+	}
+
+	"Player is not an admin"
+	{
+		"las"		"\"{1}\" no es un admin."
+	}
+
+	"Player is an admin"
+	{
+		"las"		"\"{1}\" es un admin."
+	}
+
+	"Username"
+	{
+		"las"		"Nombre del jugador"
+	}
+
+	"Kicked target"
+	{
+		"las"		"{1} expulsado"
+	}
+
+	"Admin access"
+	{
+		"las"		"Acceso de admin"
+	}
+
+	"Cvar is now protected"
+	{
+		"las"		"La cvar {1} esta ahora protegida."
+	}
+
+	"Kicked target reason"
+	{
+		"las"		"{1} expulsado (Razón: {2})"
+	}
+
+	"Please select a map"
+	{
+		"las"		"Por favor elige un mapa"
+	}
+
+	"Choose Config"
+	{
+		"las"		"Elegir Config"
+	}
+
+}

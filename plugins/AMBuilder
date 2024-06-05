@@ -24,7 +24,8 @@ files = [
   'basecommands.sp',
   'mapchooser.sp',
   'randomcycle.sp',
-  'sql-admin-manager.sp'
+  'sql-admin-manager.sp',
+  'admin-flatfile.sp'
 ]
 
 spcomp_argv = [
@@ -60,7 +61,3 @@ for script_file in files:
   script_path = os.path.join(builder.currentSourcePath, script_file)
   smx_file = os.path.splitext(script_file)[0] + '.smx'
   build_plugin(script_path, smx_file)
-
-# This one has to be special.
-build_plugin(os.path.join(builder.currentSourcePath, 'admin-flatfile', 'admin-flatfile.sp'),
-             'admin-flatfile.smx')

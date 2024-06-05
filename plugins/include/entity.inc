@@ -767,3 +767,19 @@ stock bool GetEntityClassname(int entity, char[] clsname, int maxlength)
 {
 	return !!GetEntPropString(entity, Prop_Data, "m_iClassname", clsname, maxlength);
 }
+
+/**
+ * Interprets the address as an entity handle and returns the associated entity.
+ *
+ * @param addr          Address to a memory location.
+ * @return              Entity index at the given location.  If there is no entity, or the stored entity is invalid, then -1 is returned.
+ */
+native int LoadEntityFromHandleAddress(Address addr);
+
+/**
+ * Interprets the address as an entity handle and sets the entity.
+ *
+ * @param addr          Address to a memory location.
+ * @param entity        Entity index to set, or -1 to clear.
+ */
+native void StoreEntityToHandleAddress(Address addr, int entity);

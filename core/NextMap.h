@@ -96,7 +96,7 @@ public:
 
 private:
 	MapChangeData m_tempChangeInfo;
-	char lastMap[32];
+	char lastMap[PLATFORM_MAX_PATH];
 };
 
 extern NextMapManager g_NextMap;

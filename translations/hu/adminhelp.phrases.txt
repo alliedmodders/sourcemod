@@ -1,0 +1,33 @@
+"Phrases"
+{
+	"SM help commands"
+	{
+		"hu"		"SM segitség: Parancs információ"
+	}
+
+	"No description available"
+	{
+		"hu"		"Nincs elérhető leirás"
+	}
+
+	"No commands available"
+	{
+		"hu"		"Nincs elérhető parancs"
+	}
+
+	"Type sm_help to see more"
+	{
+		"hu"		"Ird be, hogy sm_help {1} a további parancsokért"
+	}
+
+	"Entries n - m in page k"
+	{
+		"hu"		"Valtozók {1} -től {2} -ig a {3}. oldalon"
+	}
+
+	"No matching results found"
+	{
+		"hu"		"Nincs megfelelő eredmény"
+	}
+
+}

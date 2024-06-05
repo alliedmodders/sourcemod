@@ -1,0 +1,33 @@
+"Phrases"
+{
+	"SM help commands"
+	{
+		"ro"		"Ajutor SourceMod: Informaţii despre Comandă"
+	}
+
+	"No description available"
+	{
+		"ro"		"Nici o descriere disponibilă"
+	}
+
+	"No commands available"
+	{
+		"ro"		"Nu există comenzi disponibile"
+	}
+
+	"Type sm_help to see more"
+	{
+		"ro"		"Scrie sm_help {1} pentru a vedea mai multe comenzi"
+	}
+
+	"Entries n - m in page k"
+	{
+		"ro"		"Afişările {1} - {2} din pagina {3}"
+	}
+
+	"No matching results found"
+	{
+		"ro"		"Nici un rezultat nu a fost găsit"
+	}
+
+}

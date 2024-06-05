@@ -1,0 +1,78 @@
+"Phrases"
+{
+	"Invalid authtype"
+	{
+		"ro"		"Tipul de autentificare trebuie să fie 'steam', 'name' sau 'ip'"
+	}
+
+	"Invalid immunity"
+	{
+		"ro"		"Imunitatea trebuie să fie un număr întreg pozitiv."
+	}
+
+	"SQL Admin already exists"
+	{
+		"ro"		"Un administrator cu nivelul de încredere indicat există deja."
+	}
+
+	"SQL Admin added"
+	{
+		"ro"		"Administrator adăugat cu succes la baza de date."
+	}
+
+	"SQL Admin deleted"
+	{
+		"ro"		"Administrator şters cu succes din baza de date."
+	}
+
+	"SQL Admin not found"
+	{
+		"ro"		"Nu există nici un administrator cu nivelul de încredere indicat."
+	}
+
+	"SQL Group already exists"
+	{
+		"ro"		"Un grup cu acest nume există deja."
+	}
+
+	"SQL Group added"
+	{
+		"ro"		"Grup adăugat cu succes la baza de date."
+	}
+
+	"SQL Group deleted"
+	{
+		"ro"		"Grup şters cu succes din baza de date."
+	}
+
+	"SQL Group not found"
+	{
+		"ro"		"Nici un grup cu numele indicat nu a fost găsit."
+	}
+
+	"SQL Admin groups reset"
+	{
+		"ro"		"Grupurile administratorului au fost resetate cu succes."
+	}
+
+	"SQL Group X not found"
+	{
+		"ro"		"Nu poate fi găsit grupul: \"{1}\""
+	}
+
+	"SQL Group X failed to bind"
+	{
+		"ro"		"Grupul nu a putut face bind: \"{1}\""
+	}
+
+	"Added group to user"
+	{
+		"ro"		"Adăugare cu succes a unui grup la administratorul indicat."
+	}
+
+	"Added groups to user"
+	{
+		"ro"		"Adăugare cu succes a {1} grupuri la administratorul indicat."
+	}
+
+}

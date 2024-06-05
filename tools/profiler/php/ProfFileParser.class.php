@@ -4,24 +4,23 @@ class ProfReport
 {
 	public $time;
 	public $uptime;
-	public $items = array();
+	public array $items = [];
 }
 
 class ProfReportParser
 {
-	private $report;
-	private $curtype;
-	public $last_error;
+	private bool|ProfReport $report = false;
+	private bool|string $curtype = false;
+	public string $last_error;
 
-	public function Parse($file)
+	public function Parse(string $file): bool|ProfReport
 	{
-		$this->report = FALSE;
-		$this->curtype = FALSE;
+		$this->report = false;
+		$this->curtype = false;
 
-		if (($contents = file_get_contents($file)) === FALSE)
-		{
+		if (($contents = file_get_contents($file)) === false) {
 			$this->last_error = 'File not found';
-			return FALSE;
+			return false;
 		}
 		
 		$xml = xml_parser_create();
@@ -29,45 +28,36 @@ class ProfReportParser
 		xml_set_element_handler($xml, 'tag_open', 'tag_close');
 		xml_parser_set_option($xml, XML_OPTION_CASE_FOLDING, false);
 
-		if (!xml_parse($xml, $contents))
-		{
+		if (!xml_parse($xml, $contents)) {
 			$this->last_error = 'Line: ' . xml_get_current_line_number($xml) . ' -- ' . xml_error_string(xml_get_error_code($xml));
-			return FALSE;
+			return false;
 		}
 
 		return $this->report;
 	}
 
-	public function tag_open($parser, $tag, $attrs)
+	public function tag_open($parser, string $tag, array $attrs): void
 	{
-		if ($tag == 'profile')
-		{
+		if ($tag === 'profile') {
 			$this->report = new ProfReport();
 			$this->report->time = $attrs['time'];
 			$this->report->uptime = $attrs['uptime'];
-		}
-		else if ($tag == 'report')
-		{
+		} elseif ($tag === 'report') {
 			$this->curtype = $attrs['name'];
-		}
-		else if ($tag == 'item')
-		{
-			if ($this->report === FALSE || $this->curtype === FALSE)
-			{
+		} elseif ($tag === 'item') {
+			if ($this->report === false || $this->curtype === false) {
 				return;
 			}
+
 			$attrs['type'] = $this->curtype;
 			$this->report->items[] = $attrs;
 		}
 	}
 
-	public function tag_close($parser, $tag)
+	public function tag_close($parser, string $tag): void
 	{
-		if ($tag == 'report')
-		{
-			$this->curtype = FALSE;
+		if ($tag === 'report') {
+			$this->curtype = false;
 		}
 	}
 }
-
-?>

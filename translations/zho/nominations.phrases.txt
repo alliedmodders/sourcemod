@@ -1,0 +1,68 @@
+"Phrases"
+{
+	"Already Nominated"
+	{
+		"zho"		"你已經提名了一幅地圖."
+	}
+
+	"Max Nominations"
+	{
+		"zho"		"達到最大提名數"
+	}
+
+	"Map Already In Vote"
+	{
+		"zho"		"地圖 \"{1}\" 己在提名列表中"
+	}
+
+	"Map Inserted"
+	{
+		"zho"		"地圖 \"{1}\" 加入提名列表"
+	}
+
+	"Map Already Nominated"
+	{
+		"zho"		"你選擇的地圖已被提名"
+	}
+
+	"Map Nominated"
+	{
+		"zho"		"{1} 提名了 {2}"
+	}
+
+	"Map Nomination Changed"
+	{
+		"zho"		"{1} 更改他 / 她的提名為 {2}"
+	}
+
+	"Nominate Title"
+	{
+		"zho"		"提名地圖:"
+	}
+
+	"Can't Nominate Current Map"
+	{
+		"zho"		"你所選的地圖為當前地圖，無法提名"
+	}
+
+	"Map in Exclude List"
+	{
+		"zho"		"你所選的地圖最近已玩過了，無法提名"
+	}
+
+	"Current Map"
+	{
+		"zho"		"當前地圖"
+	}
+
+	"Recently Played"
+	{
+		"zho"		"最近已玩"
+	}
+
+	"Nominated"
+	{
+		"zho"		"已提名"
+	}
+
+}

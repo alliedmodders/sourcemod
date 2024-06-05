@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"ua"		"Підпалити"
+	}
+
+	"FireBomb player"
+	{
+		"ua"		"Запальна бомба"
+	}
+
+	"Freeze player"
+	{
+		"ua"		"Заморозити"
+	}
+
+	"FreezeBomb player"
+	{
+		"ua"		" Заморожувальна бомба"
+	}
+
+	"TimeBomb player"
+	{
+		"ua"		"Часова бомба"
+	}
+
+	"Beacon player"
+	{
+		"ua"		"Маяк"
+	}
+
+	"NoClip player"
+	{
+		"ua"		"Режим польоту"
+	}
+
+	"Blind player"
+	{
+		"ua"		"Засліпити"
+	}
+
+	"Drug player"
+	{
+		"ua"		"Сп'янити"
+	}
+
+	"Gravity player"
+	{
+		"ua"		"Гравітація"
+	}
+
+	"Blind amount"
+	{
+		"ua"		"Наскільки засліпити?"
+	}
+
+	"Fully blind"
+	{
+		"ua"		"Осліпити повністю."
+	}
+
+	"Half blind"
+	{
+		"ua"		"Осліпити на половину"
+	}
+
+	"No blind"
+	{
+		"ua"		"Без осліплення"
+	}
+
+	"Gravity amount"
+	{
+		"ua"		"Яка гравітація?"
+	}
+
+	"Gravity Very High"
+	{
+		"ua"		"Дуже висока гравітація"
+	}
+
+	"Gravity High"
+	{
+		"ua"		"Висока гравітація"
+	}
+
+	"Gravity Normal"
+	{
+		"ua"		"Нормальна гравітація"
+	}
+
+	"Gravity Low"
+	{
+		"ua"		"Низька гравітація"
+	}
+
+	"Gravity Very Low"
+	{
+		"ua"		"Дуже низька гравітація"
+	}
+
+	"Set target on fire"
+	{
+		"ua"		"підпалив гравця {1}."
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"ua"		"встановив запальну бомбу на {1}."
+	}
+
+	"Froze target"
+	{
+		"ua"		"Заморозив гравця {1}."
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"ua"		"встановив заморожувальну бомбу на {1}."
+	}
+
+	"Toggled beacon on target"
+	{
+		"ua"		"встановив маяк на {1}."
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"ua"		"встановив часову бомбу на {1}."
+	}
+
+	"Toggled noclip on target"
+	{
+		"ua"		"встановив режим польоту для {1}."
+	}
+
+	"Toggled drug on target"
+	{
+		"ua"		"сп'янив гравця {1}."
+	}
+
+	"Set blind on target"
+	{
+		"ua"		"осліпив гравця {1}."
+	}
+
+	"Set gravity on target"
+	{
+		"ua"		"змінив гравітацію для гравця {1}."
+	}
+
+	"Till Explodes"
+	{
+		"ua"		"{2} секунд до вибуху гравця {1}."
+	}
+
+	"Unfrozen"
+	{
+		"ua"		"Ви були розморожені."
+	}
+
+	"You will be unfrozen"
+	{
+		"ua"		"Ви будете розморожені через {1} секунд."
+	}
+
+}

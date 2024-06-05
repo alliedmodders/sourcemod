@@ -1,0 +1,7 @@
+"Phrases"
+{
+	"Flooding the server"
+	{
+		"pt"		"Você está enviando mensagens demais!"
+	}
+}

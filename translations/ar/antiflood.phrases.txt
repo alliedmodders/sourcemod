@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Flooding the server"
+	{
+		"ar"		"انت تفيض السيرفر!"
+	}
+
+}

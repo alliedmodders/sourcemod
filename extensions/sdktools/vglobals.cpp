@@ -151,6 +151,11 @@ void UpdateValveGlobals()
 	}
 }
 
+void ClearValveGlobals()
+{
+	s_pGameRules = nullptr;
+}
+
 size_t UTIL_StringToSignature(const char *str, char buffer[], size_t maxlength)
 {
 	size_t real_bytes = 0;
@@ -230,7 +235,8 @@ void GetIServer()
 	|| SOURCE_ENGINE == SE_BMS     \
 	|| SOURCE_ENGINE == SE_DOI     \
 	|| SOURCE_ENGINE == SE_BLADE   \
-	|| SOURCE_ENGINE == SE_INSURGENCY
+	|| SOURCE_ENGINE == SE_INSURGENCY \
+	|| SOURCE_ENGINE == SE_PVKII
 
 #if SOURCE_ENGINE == SE_SDK2013
 	if (g_SMAPI->GetEngineFactory(false)("VEngineServer022", nullptr))
@@ -315,28 +321,23 @@ void GetResourceEntity()
 	{
 		int edictCount = gpGlobals->maxEntities;
 
-		for (int i=0; i<edictCount; i++)
+		for (int i = 0; i < edictCount; i++)
 		{
-			edict_t *pEdict = PEntityOfEntIndex(i);
-			if (!pEdict || pEdict->IsFree())
-			{
-				continue;
-			}
-			if (!pEdict->GetNetworkable())
+			CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(i);
+			if (pEntity == nullptr)
 			{
 				continue;
 			}
 
-			IHandleEntity *pHandleEnt = pEdict->GetNetworkable()->GetEntityHandle();
-			if (!pHandleEnt)
+			ServerClass *pClass = gamehelpers->FindEntityServerClass(pEntity);
+			if (pClass == nullptr)
 			{
 				continue;
 			}
-
-			ServerClass *pClass = pEdict->GetNetworkable()->GetServerClass();
+			
 			if (FindNestedDataTable(pClass->m_pTable, "DT_PlayerResource"))
 			{
-				g_ResourceEntity = pHandleEnt->GetRefEHandle();
+				g_ResourceEntity = ((IHandleEntity *)pEntity)->GetRefEHandle();
 				break;
 			}
 		}

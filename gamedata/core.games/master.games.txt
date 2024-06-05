@@ -95,12 +95,27 @@
 		"engine"	"insurgency"
 		"engine"	"doi" // #cheating #yolo
 	}
+
+	"engine.pvkii.txt"
+	{
+		"engine"	"pvkii"
+	}
+
+	"engine.mcv.txt"
+	{
+		"engine"	"mcv"
+	}
 	
 	"game.dinodday.txt"
 	{
 		"game"		"dinodday"
 	}
-
+	
+	"game.gmod9.txt"
+	{
+		"game"		"gmod9"
+	}
+	
 	"blocklist.plugins.txt"
 	{
 	}

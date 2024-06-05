@@ -151,6 +151,7 @@ CUtlVector<IEntityListener *> *EntListeners()
 /**
  * IServerGameDLL & IVEngineServer Hooks
  */
+SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, 0, bool, const char *, const char *, const char *, const char *, bool, bool);
 #ifdef GAMEDESC_CAN_CHANGE
 SH_DECL_HOOK0(IServerGameDLL, GetGameDescription, SH_NOATTRIB, 0, const char *);
@@ -177,7 +178,7 @@ SH_DECL_MANUALHOOK1_void(StartTouch, 0, 0, 0, CBaseEntity *);
 SH_DECL_MANUALHOOK0_void(Think, 0, 0, 0);
 SH_DECL_MANUALHOOK1_void(Touch, 0, 0, 0, CBaseEntity *);
 #if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_PVKII
 SH_DECL_MANUALHOOK4_void(TraceAttack, 0, 0, 0, CTakeDamageInfoHack &, const Vector &, CGameTrace *, CDmgAccumulator *);
 #else
 SH_DECL_MANUALHOOK3_void(TraceAttack, 0, 0, 0, CTakeDamageInfoHack &, const Vector &, CGameTrace *);
@@ -230,10 +231,15 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	if (!entListeners)
 	{
 		g_pSM->Format(error, maxlength, "Failed to setup entity listeners");
+#if SOURCE_ENGINE != SE_MOCK
 		return false;
+#endif
+	}
+	else
+	{
+		entListeners->AddToTail(this);
 	}
 
-	entListeners->AddToTail(this);
 
 	sharesys->AddDependency(myself, "bintools.ext", true, true);
 	sharesys->AddNatives(myself, g_Natives);
@@ -241,6 +247,8 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	sharesys->AddInterface(myself, &g_Interface);
 	sharesys->AddCapabilityProvider(myself, this, "SDKHook_DmgCustomInOTD");
 	sharesys->AddCapabilityProvider(myself, this, "SDKHook_LogicalEntSupport");
+
+	SH_ADD_HOOK(IServerGameDLL, LevelShutdown, gamedll, SH_MEMBER(this, &SDKHooks::LevelShutdown), false);
 
 	playerhelpers->AddClientListener(&g_Interface);
 	
@@ -360,14 +368,19 @@ void SDKHooks::SDK_OnUnload()
 	forwards->ReleaseForward(g_pOnLevelInit);
 
 	plsys->RemovePluginsListener(&g_Interface);
-
+	
+	SH_REMOVE_HOOK(IServerGameDLL, LevelShutdown, gamedll, SH_MEMBER(this, &SDKHooks::LevelShutdown), true);
+	
 	playerhelpers->RemoveClientListener(&g_Interface);
 
 	sharesys->DropCapabilityProvider(myself, this, "SDKHook_DmgCustomInOTD");
 	sharesys->DropCapabilityProvider(myself, this, "SDKHook_LogicalEntSupport");
 
 	CUtlVector<IEntityListener *> *entListeners = EntListeners();
-	entListeners->FindAndRemove(this);
+	if (entListeners)
+	{
+		entListeners->FindAndRemove(this);
+	}
 
 	gameconfs->CloseGameConfigFile(g_pGameConf);
 }
@@ -435,6 +448,24 @@ void SDKHooks::OnClientDisconnecting(int client)
 	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(client);
 	
 	HandleEntityDeleted(pEntity);
+}
+
+void SDKHooks::LevelShutdown()
+{
+#if defined PLATFORM_LINUX
+	for (size_t type = 0; type < SDKHook_MAXHOOKS; ++type)
+	{
+		std::vector<CVTableList *> &vtablehooklist = g_HookList[type];
+		for (size_t listentry = 0; listentry < vtablehooklist.size(); ++listentry)
+		{
+			std::vector<HookList> &pawnhooks = vtablehooklist[listentry]->hooks;
+			pawnhooks.clear();
+			
+			delete vtablehooklist[listentry];
+		}
+		vtablehooklist.clear();
+	}
+#endif
 }
 
 void SDKHooks::AddEntityListener(ISMEntityListener *listener)
@@ -583,11 +614,16 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 
 	if (!!strcmp(g_HookTypes[type].dtReq, ""))
 	{
-		IServerUnknown *pUnk = (IServerUnknown *)pEnt;
-
-		IServerNetworkable *pNet = pUnk->GetNetworkable();
-		if (pNet && !UTIL_ContainsDataTable(pNet->GetServerClass()->m_pTable, g_HookTypes[type].dtReq))
+		ServerClass *pServerClass = gamehelpers->FindEntityServerClass(pEnt);
+		if (pServerClass == nullptr)
+		{
 			return HookRet_BadEntForHookType;
+		}
+
+		if (!UTIL_ContainsDataTable(pServerClass->m_pTable, g_HookTypes[type].dtReq))
+		{
+			return HookRet_BadEntForHookType;
+		}
 	}
 
 	size_t entry;
@@ -729,7 +765,7 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 				hookid = SH_ADD_MANUALVPHOOK(Weapon_Switch, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_WeaponSwitchPost), true);
 				break;
 			case SDKHook_ShouldCollide:
-				hookid = SH_ADD_MANUALVPHOOK(ShouldCollide, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_ShouldCollide), false);
+				hookid = SH_ADD_MANUALVPHOOK(ShouldCollide, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_ShouldCollide), true);
 				break;
 			case SDKHook_Blocked:
 				hookid = SH_ADD_MANUALVPHOOK(Blocked, pEnt, SH_MEMBER(&g_Interface, &SDKHooks::Hook_Blocked), false);
@@ -783,12 +819,14 @@ void SDKHooks::Unhook(CBaseEntity *pEntity)
 				entry--;
 			}
 
+#if !defined PLATFORM_LINUX
 			if (pawnhooks.size() == 0)
 			{
 				delete vtablehooklist[listentry];
 				vtablehooklist.erase(vtablehooklist.begin() + listentry);
 				listentry--;
 			}
+#endif
 		}
 	}
 }
@@ -812,12 +850,14 @@ void SDKHooks::Unhook(IPluginContext *pContext)
 				entry--;
 			}
 
+#if !defined PLATFORM_LINUX
 			if (pawnhooks.size() == 0)
 			{
 				delete vtablehooklist[listentry];
 				vtablehooklist.erase(vtablehooklist.begin() + listentry);
 				listentry--;
 			}
+#endif
 		}
 	}
 }
@@ -854,12 +894,14 @@ void SDKHooks::Unhook(int entity, SDKHookType type, IPluginFunction *pCallback)
 			entry--;
 		}
 
+#if !defined PLATFORM_LINUX
 		if (pawnhooks.size() == 0)
 		{
 			delete vtablehooklist[listentry];
 			vtablehooklist.erase(vtablehooklist.begin() + listentry);
 			listentry--;
 		}
+#endif
 
 		break;
 	}
@@ -1046,7 +1088,7 @@ int SDKHooks::Hook_GetMaxHealth()
 
 		int new_max = original_max;
 
-		cell_t res = Pl_Continue;
+		cell_t ret = Pl_Continue;
 
 		std::vector<IPluginFunction *> callbackList;
 		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
@@ -1055,10 +1097,20 @@ int SDKHooks::Hook_GetMaxHealth()
 			IPluginFunction *callback = callbackList[entry];
 			callback->PushCell(entity);
 			callback->PushCellByRef(&new_max);
+
+			cell_t res;
 			callback->Execute(&res);
+
+			if (res > ret)
+			{
+				ret = res;
+			}
 		}
 
-		if (res >= Pl_Changed)
+		if (ret >= Pl_Handled)
+			RETURN_META_VALUE(MRES_SUPERCEDE, original_max);
+
+		if (ret >= Pl_Changed)
 			RETURN_META_VALUE(MRES_SUPERCEDE, new_max);
 
 		break;
@@ -1383,7 +1435,7 @@ void SDKHooks::Hook_Spawn()
 		}
 
 		int entity = gamehelpers->EntityToBCompatRef(pEntity);
-		cell_t res = Pl_Continue;
+		cell_t ret = Pl_Continue;
 
 		std::vector<IPluginFunction *> callbackList;
 		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
@@ -1391,10 +1443,17 @@ void SDKHooks::Hook_Spawn()
 		{
 			IPluginFunction *callback = callbackList[entry];
 			callback->PushCell(entity);
+
+			cell_t res;
 			callback->Execute(&res);
+
+			if (res > ret)
+			{
+				ret = res;
+			}
 		}
 
-		if (res >= Pl_Handled)
+		if (ret >= Pl_Handled)
 			RETURN_META(MRES_SUPERCEDE);
 
 		break;
@@ -1455,7 +1514,7 @@ void SDKHooks::Hook_TouchPost(CBaseEntity *pOther)
 }
 
 #if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_PVKII
 void SDKHooks::Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator)
 #else
 void SDKHooks::Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr)
@@ -1536,7 +1595,7 @@ void SDKHooks::Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir,
 }
 
 #if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_PVKII
 void SDKHooks::Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator)
 #else
 void SDKHooks::Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr)
@@ -1605,7 +1664,14 @@ void SDKHooks::Hook_Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE 
 			callback->PushCell(caller);
 			callback->PushCell(useType);
 			callback->PushFloat(value);
-			callback->Execute(&ret);
+
+			cell_t res;
+			callback->Execute(&res);
+
+			if (res > ret)
+			{
+				ret = res;
+			}
 		}
 
 		if (ret >= Pl_Handled)

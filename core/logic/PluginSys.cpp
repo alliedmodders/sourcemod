@@ -48,6 +48,8 @@
 #include <bridge/include/IVEngineServerBridge.h>
 #include <bridge/include/CoreProvider.h>
 
+#define SOURCEMOD_PLUGINAPI_VERSION     7
+
 CPluginManager g_PluginSys;
 HandleType_t g_PluginType = 0;
 IdentityType_t g_PluginIdent = 0;
@@ -309,12 +311,12 @@ bool CPlugin::ReadInfo()
 
 		base->GetPubvarAddrs(idx, &local_addr, (cell_t **)&info);
 		m_FileVersion = info->version;
-		if (m_FileVersion >= 4) {
+		if (m_FileVersion >= 5) {
 			base->LocalToString(info->date, (char **)&pDate);
 			base->LocalToString(info->time, (char **)&pTime);
 			ke::SafeSprintf(m_DateTime, sizeof(m_DateTime), "%s %s", pDate, pTime);
 		}
-		if (m_FileVersion > 5) {
+		if (m_FileVersion > SOURCEMOD_PLUGINAPI_VERSION) {
 			base->LocalToString(info->filevers, (char **)&pFileVers);
 			EvictWithError(Plugin_Failed, "Newer SourceMod required (%s or higher)", pFileVers);
 			return false;

@@ -72,15 +72,18 @@ enum
  */
 enum
 {
-	SND_NOFLAGS= 0,             /**< Nothing */
-	SND_CHANGEVOL = 1,          /**< Change sound volume */
-	SND_CHANGEPITCH = 2,        /**< Change sound pitch */
-	SND_STOP = 3,               /**< Stop the sound */
-	SND_SPAWNING = 4,           /**< Used in some cases for ambients */
-	SND_DELAY = 5,              /**< Sound has an initial delay */
-	SND_STOPLOOPING = 6,        /**< Stop looping all sounds on the entity */
-	SND_SPEAKER = 7,            /**< Being played by a mic through a speaker */
-	SND_SHOULDPAUSE = 8         /**< Pause if game is paused */
+	SND_NOFLAGS = 0,                                         /** Nothing */
+	SND_CHANGEVOL = (1 << 0),                                /** Change sound volume */
+	SND_CHANGEPITCH = (1 << 1),                              /** Change sound pitch */
+	SND_STOP = (1 << 2),                                     /** Stop the sound */
+	SND_SPAWNING = (1 << 3),                                 /** Used in some cases for ambients */
+	SND_DELAY = (1 << 4),                                    /** Sound has an initial delay */
+	SND_STOPLOOPING = (1 << 5),                              /** Stop looping all sounds on the entity */
+	SND_SPEAKER = (1 << 6),                                  /** Being played by a mic through a speaker */
+	SND_SHOULDPAUSE = (1 << 7),                              /** Pause if game is paused */
+	SND_IGNORE_PHONEMES = (1 << 8),                          /** Prevents flex animation from being driven by this sound */
+	SND_IGNORE_NAME = (1 << 9),                              /** Changes all sounds emitted on the entity, regardless of actual name */
+	SND_DO_NOT_OVERWRITE_EXISTING_ON_CHANNEL = (1 << 10)     /** If an existing sound is found on the channel, the sound will not play instead of overwriting it */
 };
 
 /**

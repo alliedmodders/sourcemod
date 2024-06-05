@@ -1,0 +1,23 @@
+"Phrases"
+{
+	"Admin Menu"
+	{
+		"vi"		"Menu quản trị viên"
+	}
+
+	"Player Commands"
+	{
+		"vi"		"Các câu lệnh của người chơi"
+	}
+
+	"Server Commands"
+	{
+		"vi"		"Các câu lệnh của máy chủ"
+	}
+
+	"Voting Commands"
+	{
+		"vi"		"Các câu lệnh bầu chọn"
+	}
+
+}

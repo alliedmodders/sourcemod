@@ -1,0 +1,108 @@
+"Phrases"
+{
+	"Timeleft"
+	{
+		"lt"		"Liko žaisti šio žemėlapio:"
+	}
+
+	"Thetime"
+	{
+		"lt"		"Šiuo metu serverio laikas {1}"
+	}
+
+	"Friendly Fire On"
+	{
+		"lt"		"Komandos narių šaudymas yra įjungtas."
+	}
+
+	"Friendly Fire Off"
+	{
+		"lt"		"Komandos narių šaudymas yra išjungtas."
+	}
+
+	"Current Map"
+	{
+		"lt"		"Šiuo metu žaidžiamas žemėlapis {1}."
+	}
+
+	"LastRound"
+	{
+		"lt"		"Tai paskutinis raundas!"
+	}
+
+	"NoTimelimit"
+	{
+		"lt"		"Žemėlapiui nėra laiko limito"
+	}
+
+	"Next Map"
+	{
+		"lt"		"Sekantis žemėlapis: {1}"
+	}
+
+	"Pending Vote"
+	{
+		"lt"		"Laukiamas balsavimas"
+	}
+
+	"WinLimitAppend"
+	{
+		"lt"		", arba pakeisti žemėlapį, kai komanda laimės vieną raundą"
+	}
+
+	"WinLimit"
+	{
+		"lt"		"Žemėlapis pasikeis, kai komanda laimės vieną raundą"
+	}
+
+	"MaxRoundsAppend"
+	{
+		"lt"		", arba pakeisti žemėlapį po dar vieno raundo"
+	}
+
+	"MaxRounds"
+	{
+		"lt"		"Žemėlapis pasikeis po dar vieno raundo"
+	}
+
+	"FragLimitAppend"
+	{
+		"lt"		", arba pakeisti žemėlapį, kai žaidėjas nušaus vieną priešininką"
+	}
+
+	"FragLimit"
+	{
+		"lt"		"Žemėlapis pasikeis, kai žaidėjas nušaus vieną priešininką"
+	}
+
+	"WinLimitAppendPlural"
+	{
+		"lt"		", arba pakeisti žemėlapį, kai komanda laimės {1} raundą(ų)"
+	}
+
+	"WinLimitPlural"
+	{
+		"lt"		"Žemėlapis pasikeis, kai komanda laimės {1} raundą(us)"
+	}
+
+	"MaxRoundsAppendPlural"
+	{
+		"lt"		", arba pakeisti žemėlapį po {1} raundo(ų)"
+	}
+
+	"MaxRoundsPlural"
+	{
+		"lt"		"Žemėlapis pasikeis po {1} raundo(ų)"
+	}
+
+	"FragLimitAppendPlural"
+	{
+		"lt"		", arba pakeisti žemėlapį, kai žaidėjas nušaus {1} priešininką(ų)"
+	}
+
+	"FragLimitPlural"
+	{
+		"lt"		"Žemėlapis pasikeis, kai žaidėjas nušaus {1} priešininką(ų)"
+	}
+
+}

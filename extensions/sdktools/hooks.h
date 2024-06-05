@@ -56,7 +56,7 @@ public:
 	void OnMapStart();
 public: /* NetChannel/Related Hooks */
 	bool FileExists(const char *filename, const char *pathID);
-#if SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2
+#if (SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2)
 	bool SendFile(const char *filename, unsigned int transferID, bool isReplayDemo);
 #else
 	bool SendFile(const char *filename, unsigned int transferID);
@@ -77,6 +77,7 @@ private:
 	void NetChannelHook(int client);
 
 private:
+	IForward *m_usercmdsPreFwd;
 	IForward *m_usercmdsFwd;
 	IForward *m_usercmdsPostFwd;
 	IForward *m_netFileSendFwd;
@@ -89,9 +90,6 @@ private:
 #endif
 	INetChannel *m_pActiveNetChannel;
 	bool m_bFSTranHookWarned = false;
-#if SOURCE_ENGINE == SE_TF2
-	ConVarRef replay_enabled;
-#endif
 };
 
 extern CHookManager g_Hooks;

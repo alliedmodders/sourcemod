@@ -1,5 +1,6 @@
 # vim: set ts=8 sts=2 sw=2 tw=99 et ft=python:
 import os
+import re
 
 builder.SetBuildFolder('package')
 
@@ -67,14 +68,16 @@ for cxx_task in SM.spvm:
                              'sourcepawn.jit.x86' + os.path.splitext(cxx_task.binary.path)[1])
     builder.AddCopy(cxx_task.binary, dest_path)
   elif cxx_task.target.arch == 'x86_64':
-    builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/bin/x64'])
+    dest_path = os.path.join('addons/sourcemod/bin/x64',
+                             'sourcepawn.vm' + os.path.splitext(cxx_task.binary.path)[1])
+    builder.AddCopy(cxx_task.binary, dest_path)
 
 helpers.CopySpcomp('addons/sourcemod/scripting')
 
 # Export PDB files. We write to a file in the build folder which is pretty
 # verboten, but it's okay if it's in the root since AMBuild will never try
 # to rmdir the root.
-full_binary_list = SM.binaries + SM.extensions + SM.spcomp_bins
+full_binary_list = SM.binaries + SM.extensions + SM.spvm + SM.spcomp_bins
 with open(os.path.join(builder.buildPath, 'pdblog.txt'), 'w') as fp:
   for task in full_binary_list:
     fp.write(task.debug.path + '\n')
@@ -124,3 +127,17 @@ helpers.CopyFiles('plugins/basevotes', 'addons/sourcemod/scripting/basevotes')
 helpers.CopyFiles('plugins/basebans', 'addons/sourcemod/scripting/basebans')
 helpers.CopyFiles('plugins/funcommands', 'addons/sourcemod/scripting/funcommands')
 helpers.CopyFiles('plugins/playercommands', 'addons/sourcemod/scripting/playercommands')
+
+with open(os.path.join(builder.sourcePath, 'configs/languages.cfg'), 'r') as f:
+  language_re = re.compile(r'^\s*"([^"]+)"\s+"[^"]+"')
+  added_languages = set(["en"])
+  for line in f.read().splitlines():
+    match = language_re.match(line)
+    if match:
+      lang_code = match.group(1)
+      if lang_code in added_languages:
+        continue
+      output_path = os.path.join('addons/sourcemod/translations', lang_code)
+      helpers.CreateFolders([output_path])
+      helpers.CopyFiles(os.path.join('translations', lang_code), output_path)
+      added_languages.add(lang_code)
