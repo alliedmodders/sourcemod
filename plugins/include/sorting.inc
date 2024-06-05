@@ -127,6 +127,8 @@ typeset SortFunc2D
 {
 	function int (any[] elem1, any[] elem2, const any[][] array);
 	function int (any[] elem1, any[] elem2, const any[][] array, any data);
+	function int (char[] elem1, char[] elem2, const char[][] array);
+	function int (char[] elem1, char[] elem2, const char[][] array, any data);
 };
 
 /**
