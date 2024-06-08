@@ -32,7 +32,7 @@
 #ifndef _INCLUDE_SOURCEMOD_DETOURS_H_
 #define _INCLUDE_SOURCEMOD_DETOURS_H_
 
-#include "../safetyhook/safetyhook.hpp"
+#include "safetyhook.hpp"
 #include <smsdk_ext.h>
 
 #define DETOUR_MEMBER_CALL(name) (this->*name##_Actual)
