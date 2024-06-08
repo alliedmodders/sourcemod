@@ -602,6 +602,15 @@ native bool CreateDirectory(const char[] path, int mode=FPERM_O_READ|FPERM_O_EXE
 native bool SetFilePermissions(const char[] path, int mode);
 
 /**
+ * Retrieves a file or directories permissions.
+ *
+ * @param path          Path to the file.
+ * @param mode          Variable to store the permissions in.
+ * @return              True on success, false otherwise.
+ */
+native bool GetFilePermissions(const char[] path, int &mode);
+
+/**
  * Returns a file timestamp as a unix timestamp.
  *
  * @param file          File name.
