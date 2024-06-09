@@ -152,9 +152,10 @@ SourceHook::Asm::x64JitWriter* GenerateThunk(HookSetup* hook)
 	masm->SetRE();
 	return masm;
 }
-#elif !define( WIN32 )
-void *GenerateThunk(ReturnType type)
+#elif !defined( WIN32 )
+void *GenerateThunk(HookSetup* hook)
 {
+	auto type = hook->returnType;
 	sp::MacroAssembler masm;
 	static const size_t kStackNeeded = (2) * 4; // 2 args max
 	static const size_t kReserve = ke::Align(kStackNeeded + 8, 16) - 8;
@@ -202,8 +203,9 @@ void *GenerateThunk(ReturnType type)
 }
 #else
 // HUGE THANKS TO BAILOPAN (dvander)!
-void *GenerateThunk(ReturnType type)
+void *GenerateThunk(HookSetup* hook)
 {
+	auto type = hook->returnType;
 	sp::MacroAssembler masm;
 	static const size_t kStackNeeded = (3 + 1) * 4; // 3 args max, 1 locals max
 	static const size_t kReserve = ke::Align(kStackNeeded + 8, 16) - 8;
