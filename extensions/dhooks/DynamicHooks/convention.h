@@ -111,7 +111,7 @@ The data type you would like to get the size of.
 @param <alignment>:
 The alignment that should be used.
 */
-inline int GetDataTypeSize(DataTypeSized_t type, int iAlignment=4)
+inline size_t GetDataTypeSize(DataTypeSized_t type, int iAlignment=4)
 {
 	switch(type.type)
 	{
@@ -257,9 +257,9 @@ public:
 		int size = GetArgStackSize() + GetArgRegisterSize();
 		std::unique_ptr<uint8_t[]> pSavedCallArguments = std::make_unique<uint8_t[]>(size);
 		size_t offset = 0;
-		for (size_t i = 0; i < m_vecArgTypes.size(); i++) {
+		for (unsigned int i = 0; i < m_vecArgTypes.size(); i++) {
 			DataTypeSized_t &type = m_vecArgTypes[i];
-			memcpy((void *)((unsigned long)pSavedCallArguments.get() + offset), GetArgumentPtr(i, pRegisters), type.size);
+			memcpy((void *)((uintptr_t)pSavedCallArguments.get() + offset), GetArgumentPtr(i, pRegisters), type.size);
 			offset += type.size;
 		}
 		m_pSavedCallArguments.push_back(std::move(pSavedCallArguments));
@@ -271,7 +271,7 @@ public:
 		size_t offset = 0;
 		for (size_t i = 0; i < m_vecArgTypes.size(); i++) {
 			DataTypeSized_t &type = m_vecArgTypes[i];
-			memcpy(GetArgumentPtr(i, pRegisters), (void *)((unsigned long)pSavedCallArguments + offset), type.size);
+			memcpy(GetArgumentPtr((unsigned int)i, pRegisters), (void *)((uintptr_t)pSavedCallArguments + offset), type.size);
 			offset += type.size;
 		}
 		m_pSavedCallArguments.pop_back();
