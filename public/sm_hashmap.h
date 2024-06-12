@@ -98,16 +98,25 @@ namespace detail
 			return key.hash();
 		}
 	};
+
+	struct IntHashMapPolicy
+	{
+		static inline bool matches(const int32_t lookup, const int32_t compare) {
+			return lookup == compare;
+		}
+		static inline uint32_t hash(const int32_t key) {
+			return ke::HashInt32(key);
+		}
+	};
 }
 
-template <typename T>
-class StringHashMap
+template <typename T, typename KeyStoreType, typename Policy, typename ContainerType, typename KeyLookupType>
+class HashMap
 {
-	typedef detail::CharsAndLength CharsAndLength;
-	typedef ke::HashMap<std::string, T, detail::StringHashMapPolicy> Internal;
+	typedef ke::HashMap<KeyStoreType, T, Policy> Internal;
 
 public:
-	StringHashMap()
+	HashMap()
 		: internal_(ke::SystemAllocatorPolicy()),
 		  memory_used_(0)
 	{
@@ -120,9 +129,9 @@ public:
 	typedef typename Internal::iterator iterator;
 
 	// Some KTrie-like helper functions.
-	bool retrieve(const char *aKey, T *aResult = NULL)
+	bool retrieve(const KeyLookupType &aKey, T *aResult = NULL)
 	{
-		CharsAndLength key(aKey);
+		ContainerType key(aKey);
 		Result r = internal_.find(key);
 		if (!r.found())
 			return false;
@@ -131,9 +140,9 @@ public:
 		return true;
 	}
 
-	bool retrieve(const char *aKey, T **aResult)
+	bool retrieve(const KeyLookupType &aKey, T **aResult)
 	{
-		CharsAndLength key(aKey);
+		ContainerType key(aKey);
 		Result r = internal_.find(key);
 		if (!r.found())
 			return false;
@@ -141,23 +150,23 @@ public:
 		return true;
 	}
 
-	Result find(const char *aKey)
+	Result find(const KeyLookupType &aKey)
 	{
-		CharsAndLength key(aKey);
+		ContainerType key(aKey);
 		return internal_.find(key);
 	}
 
-	bool contains(const char *aKey)
+	bool contains(const KeyLookupType &aKey)
 	{
-		CharsAndLength key(aKey);
+		ContainerType key(aKey);
 		Result r = internal_.find(key);
 		return r.found();
 	}
 
 	template <typename UV>
-	bool replace(const char *aKey, UV &&value)
+	bool replace(const KeyLookupType &aKey, UV &&value)
 	{
-		CharsAndLength key(aKey);
+		ContainerType key(aKey);
 		Insert i = internal_.findForAdd(key);
 		if (!i.found())
 		{
@@ -170,9 +179,9 @@ public:
 	}
 
 	template <typename UV>
-	bool insert(const char *aKey, UV &&value)
+	bool insert(const KeyLookupType &aKey, UV &&value)
 	{
-		CharsAndLength key(aKey);
+		ContainerType key(aKey);
 		Insert i = internal_.findForAdd(key);
 		if (i.found())
 			return false;
@@ -182,9 +191,9 @@ public:
 		return true;
 	}
 
-	bool remove(const char *aKey)
+	bool remove(const KeyLookupType &aKey)
 	{
-		CharsAndLength key(aKey);
+		ContainerType key(aKey);
 		Result r = internal_.find(key);
 		if (!r.found())
 			return false;
@@ -219,9 +228,9 @@ public:
 	}
 
 
-	Insert findForAdd(const char *aKey)
+	Insert findForAdd(const KeyLookupType &aKey)
 	{
-		CharsAndLength key(aKey);
+		ContainerType key(aKey);
 		return internal_.findForAdd(key);
 	}
 
@@ -234,7 +243,7 @@ public:
 	}
 
 	// Only value needs to be set after.
-	bool add(Insert &i, const char *aKey)
+	bool add(Insert &i, const KeyLookupType &aKey)
 	{
 		if (!internal_.add(i, aKey))
 			return false;
@@ -245,6 +254,12 @@ private:
 	Internal internal_;
 	size_t memory_used_;
 };
+
+template <typename T>
+using StringHashMap = HashMap<T, std::string, detail::StringHashMapPolicy, detail::CharsAndLength, const char *>;
+
+template <typename T>
+using IntHashMap = HashMap<T, int32_t, detail::IntHashMapPolicy, const int32_t, int32_t>;
 
 }
 
