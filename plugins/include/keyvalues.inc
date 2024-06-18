@@ -334,6 +334,12 @@ methodmap KeyValues < Handle
 	// @param id            Id of the current section.
 	// @return              True on success, false on failure.
 	public native bool GetSectionSymbol(int &id);
+
+	// Merge from the current position of another KeyValues into the current
+	// position of this one.
+	//
+	// @param other         KeyValues Handle to merge from.
+	public native void Merge(KeyValues other);
 };
 
 /**

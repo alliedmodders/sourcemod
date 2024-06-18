@@ -1113,6 +1113,34 @@ static cell_t smn_KvGetSectionSymbol(IPluginContext *pCtx, const cell_t *params)
 	return 1;
 }
 
+static cell_t KeyValues_Merge(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl_this = static_cast<Handle_t>(params[1]);
+	Handle_t hndl_other = static_cast<Handle_t>(params[2]);
+	HandleError herr;
+	HandleSecurity sec;
+	KeyValueStack *pStk_this, *pStk_other;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=handlesys->ReadHandle(hndl_this, g_KeyValueType, &sec, (void **)&pStk_this))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl_this, herr);
+	}
+	if ((herr=handlesys->ReadHandle(hndl_other, g_KeyValueType, &sec, (void **)&pStk_other))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl_other, herr);
+	}
+
+	pStk_this->pCurRoot.front()->RecursiveMergeKeyValues(pStk_other->pCurRoot.front());
+
+	return 1;
+
+}
+
 static cell_t KeyValues_Import(IPluginContext *pContext, const cell_t *params)
 {
 	// This version takes (dest, src). The original is (src, dest).
@@ -1256,6 +1284,7 @@ REGISTER_NATIVES(keyvaluenatives)
 	{"KeyValues.ExportToFile",			smn_KeyValuesToFile},
 	{"KeyValues.ExportToString",		smn_KeyValuesToString},
 	{"KeyValues.ExportLength.get",		smn_KeyValuesExportLength},
+	{"KeyValues.Merge",					KeyValues_Merge},
 
 	{NULL,						NULL}
 };
