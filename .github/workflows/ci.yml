@@ -12,7 +12,7 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-latest, windows-latest]
+        os: [ubuntu-20.04, ubuntu-latest, windows-latest]
         include:
           - os: windows-latest
             os_short: win
@@ -21,7 +21,7 @@ jobs:
             os_short: linux
             compiler_cc: clang
             compiler_cxx: clang++
-          - os: ubuntu-18.04
+          - os: ubuntu-20.04
             os_short: linux
             compiler_cc: clang-8
             compiler_cxx: clang++-8
@@ -36,7 +36,7 @@ jobs:
       MYSQL_VERSION: '5.5'
       MMSOURCE_VERSION: '1.10'
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
           path: sourcemod
