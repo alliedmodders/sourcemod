@@ -612,10 +612,10 @@ stock bool IsStringInteger(const char[] str, int nBase=10)
 	return StringToIntStrict(str, dummy, nBase);
 }
 
-stock bool IsStringDecimal(const char[] str, int nBase=10)
+stock bool IsStringDecimal(const char[] str)
 {
-	int dummy;
-	return StringToFloatStrict(str, dummy, nBase);
+	float dummy;
+	return StringToFloatStrict(str, dummy);
 }
 
 stock void StringToLower(char[] str)
@@ -753,7 +753,7 @@ stock bool IsStringAlpha(const char[] str, bool allowSpace=false)   // <<<<<<<<<
 			return false;
 		}
 		
-		if (!IsCharAlpha(str[i])
+		if (!IsCharAlpha(str[i]))
 		{
 			return false;
 		}
@@ -947,7 +947,7 @@ stock int TrimStringEx(char[] str, const char[] charset)            // <<<<<<<<<
 	if (start == len)
 	{
 		str[0] = '\0';
-		return;
+		return 0;
 	}
 	
 	// Trim right
@@ -968,6 +968,7 @@ stock int TrimStringEx(char[] str, const char[] charset)            // <<<<<<<<<
 	}
 	
 	str[len] = '\0';
+	return len;
 }
 
 stock int TrimStringLeft(char[] str)
@@ -1160,7 +1161,6 @@ stock void StringToTitle(char[] str)
 	}
 
 	bool wasLastCharSpace = true;
-	bool isStartOfWord = true;
 
 	for (int i = 0; str[i] != '\0'; ++i)
 	{
@@ -1214,7 +1214,6 @@ stock void StringCenterPad(char[] str, int maxlength, char padding=' ')
 
 	int available = maxlength - len;
 	int left = available / 2;
-	int right = available - left;
 	
 	strcopy(str[left], len, str);
 	
@@ -1271,7 +1270,7 @@ stock int strncopy(char[] dest, int destLen, const char[] source, int n)  // <<<
 {
 	if (destLen <= 0 || n <= 0)
 	{
-		return;
+		return 0;
 	}
 	
 	if (n >= destLen)
@@ -1292,6 +1291,7 @@ stock int strncopy(char[] dest, int destLen, const char[] source, int n)  // <<<
 	}
 	
 	dest[i] = '\0';
+	return i;
 }
 
 stock bool StringToIntStrict(const char[] str, int &result, int nBase=10)
@@ -1311,7 +1311,7 @@ stock bool StringToIntStrict(const char[] str, int &result, int nBase=10)
 	return true;
 }
 
-stock bool StringToFloatStrict(const char[] str, int &result)
+stock bool StringToFloatStrict(const char[] str, float &result)
 {
 	int len = strlen(str);
 	if (len == 0)
@@ -1319,7 +1319,7 @@ stock bool StringToFloatStrict(const char[] str, int &result)
 		return false;
 	}
 
-	int temp;
+	float temp;
 	if (StringToFloatEx(str, temp) != len)
 	{
 		return false;
@@ -1397,12 +1397,12 @@ stock int SubstringToIntEx(const char[] str, int length, int &result, int nBase=
 	return StringToIntEx(substring, result, nBase);
 }
 
-stock int SubstringToFloat(const char[] str, int length)
+stock float SubstringToFloat(const char[] str, int length)
 {
 	int len = strlen(str);
 	if (length <= 0 || len == 0)
 	{
-		return 0;
+		return 0.0;
 	}
 	
 	if (length > len)
