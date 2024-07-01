@@ -614,11 +614,16 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 
 	if (!!strcmp(g_HookTypes[type].dtReq, ""))
 	{
-		IServerUnknown *pUnk = (IServerUnknown *)pEnt;
-
-		IServerNetworkable *pNet = pUnk->GetNetworkable();
-		if (pNet && !UTIL_ContainsDataTable(pNet->GetServerClass()->m_pTable, g_HookTypes[type].dtReq))
+		ServerClass *pServerClass = gamehelpers->FindEntityServerClass(pEnt);
+		if (pServerClass == nullptr)
+		{
 			return HookRet_BadEntForHookType;
+		}
+
+		if (!UTIL_ContainsDataTable(pServerClass->m_pTable, g_HookTypes[type].dtReq))
+		{
+			return HookRet_BadEntForHookType;
+		}
 	}
 
 	size_t entry;

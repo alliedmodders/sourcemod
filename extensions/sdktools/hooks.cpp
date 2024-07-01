@@ -234,7 +234,8 @@ void CHookManager::OnClientConnected(int client)
 		}
 	}
 	
-	int hookid = SH_ADD_VPHOOK(IClientMessageHandler, ProcessVoiceData, (IClientMessageHandler *)((intptr_t)(pClient) + sizeof(intptr_t)), SH_MEMBER(this, &CHookManager::ProcessVoiceData), true);
+
+	int hookid = SH_ADD_VPHOOK(IClientMessageHandler, ProcessVoiceData, (IClientMessageHandler *)((intptr_t)(pClient) + sizeof(void *)), SH_MEMBER(this, &CHookManager::ProcessVoiceData), true);
 	hook.SetHookID(hookid);
 	netProcessVoiceData.push_back(new CVTableHook(hook));
 }
@@ -584,7 +585,7 @@ bool CHookManager::SendFile(const char *filename, unsigned int transferID)
 #if !defined CLIENTVOICE_HOOK_SUPPORT
 bool CHookManager::ProcessVoiceData(CLC_VoiceData *msg)
 {
-	IClient *pClient = (IClient *)((intptr_t)(META_IFACEPTR(IClient)) - sizeof(intptr_t));
+	IClient *pClient = (IClient *)((intptr_t)(META_IFACEPTR(IClient)) - sizeof(void *));
 	if (pClient == NULL)
 	{
 		return true;
