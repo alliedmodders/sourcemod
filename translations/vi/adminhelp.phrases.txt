@@ -17,7 +17,7 @@
 
 	"Type sm_help to see more"
 	{
-		"vi"		"Gõ sm_help để xem thêm câu lệnh"
+		"vi"		"Gõ sm_help {1} để xem thêm câu lệnh"
 	}
 
 	"Entries n - m in page k"

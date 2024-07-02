@@ -20,6 +20,11 @@
 		"vi"		"Hỏa lực thân thiện bị vô hiệu hóa."
 	}
 
+	"Friendly Fire Percent"
+	{
+		"vi"		"Phe ta bắn đồng đội chiếm {1}%."
+	}
+
 	"Current Map"
 	{
 		"vi"		"Bản đồ hiện tại là {1}."
