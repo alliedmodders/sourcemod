@@ -45,9 +45,9 @@ getmysql ()
 {
   if [ ! -d $mysqlfolder ]; then
     if [ `command -v wget` ]; then
-      wget $mysqlurl -O $mysqlfolder.$archive_ext
+      wget -q $mysqlurl -O $mysqlfolder.$archive_ext
     elif [ `command -v curl` ]; then
-      curl -o $mysqlfolder.$archive_ext $mysqlurl
+      curl -sS -o $mysqlfolder.$archive_ext $mysqlurl
     else
       echo "Failed to locate wget or curl. Install one of these programs to download MySQL."
       exit 1
