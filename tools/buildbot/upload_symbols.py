@@ -1,4 +1,5 @@
 # vim: ts=8 sts=2 sw=2 tw=99 et ft=python: 
+import shutil
 import sys
 import subprocess
 import os
@@ -14,6 +15,9 @@ if len(sys.argv) < 3:
 SYMBOL_SERVER = os.environ['BREAKPAD_SYMBOL_SERVER']
 symbol_file = sys.argv[1]
 cmd_argv = sys.argv[2:]
+
+# Find the dump_syms executable. (On Windows, subprocess.Popen doesn't use PATH unless shell=True.)
+cmd_argv[0] = shutil.which(cmd_argv[0])
 
 sys.stdout.write(' '.join(cmd_argv))
 sys.stdout.write('\n')
