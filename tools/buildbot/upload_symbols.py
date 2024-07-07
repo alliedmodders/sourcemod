@@ -104,15 +104,17 @@ for i, line in enumerate(lines):
 
 index = 1
 while lines[index].split(None, 1)[0] == 'INFO':
-  index += 1;
+  index += 1
 
 for root, info in roots.items():
   lines.insert(index, 'INFO REPO ' + ' '.join([info[1], info[0], root]))
-  index += 1;
+  index += 1
 
 out = os.linesep.join(lines).encode('utf8')
 
 request = urllib.Request(SYMBOL_SERVER, out)
 request.add_header('Content-Type', 'text/plain')
+if 'BREAKPAD_SYMBOL_SERVER_TOKEN' in os.environ:
+  request.add_header('X-Auth', os.environ['BREAKPAD_SYMBOL_SERVER_TOKEN'])
 server_response = urllib.urlopen(request).read().decode('utf8').strip()
 print(server_response)
