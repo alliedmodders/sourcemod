@@ -14,8 +14,6 @@ jobs:
     permissions:
       # For release creation, at the end
       contents: write
-      # Can remove this after the image builds are moved to AM org on public project
-      packages: read
     strategy:
       matrix:
         include:
@@ -25,15 +23,12 @@ jobs:
           - platform: linux
             os: ubuntu-latest
             os_short: linux
-            container_image: ghcr.io/psychonic/build-containers/debian11:latest
+            container_image: ghcr.io/alliedmodders/build-containers/debian11:latest
       fail-fast: false
     name: ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
     container:
       image: ${{ matrix.container_image }}
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GHCR_PAT }}
     steps:
       - name: Checkout SourceMod
         uses: actions/checkout@v4
