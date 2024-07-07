@@ -144,8 +144,13 @@ else
   cd ..
 fi
 
+want_mock_sdk=0
 for sdk in "${sdks[@]}"
 do
+  if [ "$sdk" == "mock" ]; then
+    want_mock_sdk=1
+    continue
+  fi
   repo=hl2sdk-proxy-repo
   origin="https://github.com/alliedmodders/hl2sdk"
   name=hl2sdk-$sdk
@@ -153,11 +158,13 @@ do
   checkout
 done
 
+if [ $want_mock_sdk -eq 1 ]; then
 name=hl2sdk-mock
 branch=master
 repo="https://github.com/alliedmodders/hl2sdk-mock"
 origin=
 checkout
+fi
 
 python_cmd=`command -v python3`
 if [ -z "$python_cmd" ]; then
