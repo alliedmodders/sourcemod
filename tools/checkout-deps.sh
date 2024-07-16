@@ -85,7 +85,7 @@ elif [ $iswin -eq 1 ]; then
   mysqlver=mysql-5.5.62-winx64
   mysqlurl=https://cdn.mysql.com/archives/mysql-5.5/$mysqlver.$archive_ext
 else
-  mysqlver=mysql-5.7.44-linux-glibc2.12-i686
+  mysqlver=mysql-5.7.44-linux-glibc2.12-x86_64
   mysqlurl=https://cdn.mysql.com/archives/mysql-5.7/$mysqlver.$archive_ext
 fi
 if [ $download_mysql -eq 1 ]; then
