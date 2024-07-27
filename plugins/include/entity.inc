@@ -751,7 +751,17 @@ stock void SetEntDataArray(int entity, int offset, const any[] array, int arrayS
  * @return              Address of the entity.
  * @error               Invalid entity.
  */
+#pragma deprecated Use GetEntityMemoryPointer instead
 native Address GetEntityAddress(int entity);
+
+/**
+ * Gets the memory address of an entity and wraps into a new MemoryPointer handle.
+ *
+ * @param entity        Entity index.
+ * @return              New MemoryPointer handle.
+ * @error               Invalid entity.
+ */
+native MemoryPointer GetEntityMemoryPointer(int entity);
 
 /**
  * Retrieves the classname of an entity.
@@ -774,6 +784,7 @@ stock bool GetEntityClassname(int entity, char[] clsname, int maxlength)
  * @param addr          Address to a memory location.
  * @return              Entity index at the given location.  If there is no entity, or the stored entity is invalid, then -1 is returned.
  */
+#pragma deprecated Use MemoryPointer.LoadEntityFromHandle instead
 native int LoadEntityFromHandleAddress(Address addr);
 
 /**
@@ -782,4 +793,5 @@ native int LoadEntityFromHandleAddress(Address addr);
  * @param addr          Address to a memory location.
  * @param entity        Entity index to set, or -1 to clear.
  */
+#pragma deprecated Use MemoryPointer.StoreEntityToHandle instead
 native void StoreEntityToHandleAddress(Address addr, int entity);

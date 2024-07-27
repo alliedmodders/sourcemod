@@ -113,13 +113,28 @@ methodmap GameData < Handle
 	//
 	// @param name          Name of the property to find.
 	// @return              An address calculated on success, or 0 on failure.
+	#pragma deprecated Use GameData.GetAddressEx instead
 	public native Address GetAddress(const char[] name);
+
+	// Finds an address calculation in a GameConfig file,
+	// performs LoadFromAddress on it as appropriate, then returns the final address as a new MemoryPointer handle.
+	//
+	// @param name          Name of the property to find.
+	// @return              New MemoryPointer handle containing the address calculated on success, or null on failure.
+	public native Address GetAddressEx(const char[] name);
 
 	// Returns a function address calculated from a signature.
 	//
 	// @param name          Name of the property to find.
 	// @return              An address calculated on success, or 0 on failure.
+	#pragma deprecated Use GameData.GetMemSigEx instead
 	public native Address GetMemSig(const char[] name);
+
+	// Returns a function address calculated from a signature as new MemoryPointer handle.
+	//
+	// @param name          Name of the property to find.
+	// @return              New MemoryPointer handle containing the address calculated on success, or null on failure.
+	public native Address GetMemSigEx(const char[] name);
 };
 
 /**
@@ -467,6 +482,7 @@ native bool GameConfGetKeyValue(Handle gc, const char[] key, char[] buffer, int 
  * @param name          Name of the property to find.
  * @return              An address calculated on success, or 0 on failure.
  */
+#pragma deprecated Use GameData.GetAddressEx instead
 native Address GameConfGetAddress(Handle gameconf, const char[] name);
 
 /**
@@ -739,6 +755,7 @@ enum Address
  * @return              The value that is stored at that address.
  * @error               Address is null or pointing to reserved memory.
  */
+#pragma deprecated Use MemoryPointer.Load instead
 native any LoadFromAddress(Address addr, NumberType size);
 
 /**
@@ -752,6 +769,7 @@ native any LoadFromAddress(Address addr, NumberType size);
  *                                 on the memory page being written to.
  * @error                          Address is null or pointing to reserved memory.
  */
+#pragma deprecated Use MemoryPointer.Store instead
 native void StoreToAddress(Address addr, any data, NumberType size, bool updateMemAccess = true);
 
 methodmap MemoryPointer < Handle {
@@ -761,9 +779,11 @@ methodmap MemoryPointer < Handle {
 	public native MemoryPointer(int size);
 	
 	// Stores the given data at the provided offset.
-	// @param data          The data to store.
-	// @param size          Size of the data to store.
-	// @param offset        Offset in bytes from the start.
+	// @param data            The data to store.
+	// @param size            Size of the data to store.
+	// @param offset          Offset in bytes from the start.
+	// @param updateMemAccess If true, SourceMod will set read / write / exec permissions
+    //                        on the memory page being written to.
 	public native void Store(any data, NumberType size, int offset = 0, bool updateMemAccess = true);
 
 	// Retrieves the data at the provided offset.
@@ -771,6 +791,33 @@ methodmap MemoryPointer < Handle {
 	// @param offset        Offset in bytes from the start.
 	// @return              The data that was stored.
 	public native any Load(NumberType size, int offset = 0);
+
+	// Stores the given entity index into a CHandle at the provided offset.
+	// @param entity          Entity index to store, -1 to clear.
+	// @param offset          Offset in bytes from the start.
+	public native void StoreEntityToHandle(int entity, int offset = 0);
+
+	// Retrieves the entity index from the CHandle at the provided offset.
+	// @param offset        Offset in bytes from the start.
+	// @return              Entity index at the given location.  If there is no entity, or the stored entity is invalid, then -1 is returned.
+	public native int LoadEntityFromHandle(int offset = 0);
+
+	// Stores a memory pointer at the provided offset.
+	// @param handle          Handle to the memory pointer to store.
+	// @param offset          Offset in bytes from the start.
+	// @param updateMemAccess If true, SourceMod will set read / write / exec permissions
+	//                        on the memory page being written to.
+	public native void StoreMemoryPointer(MemoryPointer handle, int offset = 0, bool updateMemAccess = true);
+
+	// Wraps the data loaded at the provided offset into a new MemoryPointer handle.
+	// @param offset          Offset in bytes from the start.
+	// @return                New Handle to a memory pointer.
+	public native MemoryPointer LoadMemoryPointer(int offset = 0);
+
+	// Creates a new MemoryPointer handle by offsetting the base pointer.
+	// @param size          Offset from base pointer in bytes.
+	// @return              New Handle to a memory pointer.
+	public native MemoryPointer Offset(int offset);
 };
 
 methodmap FrameIterator < Handle {

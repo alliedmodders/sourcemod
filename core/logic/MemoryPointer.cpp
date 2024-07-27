@@ -50,6 +50,11 @@ MemoryPointer::~MemoryPointer()
 	}
 }
 
+void MemoryPointer::Delete()
+{
+	delete this;
+}
+
 void* MemoryPointer::Get()
 {
 	return m_ptr;

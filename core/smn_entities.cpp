@@ -35,6 +35,7 @@
 #include "PlayerManager.h"
 #include "HalfLife2.h"
 #include <IGameConfigs.h>
+#include <IMemoryPointer.h>
 #include "sm_stringutil.h"
 #include "logic_bridge.h"
 
@@ -75,6 +76,44 @@
 
 // Not defined in the sdk as we have no clue what it is
 #define FL_EP2V_UNKNOWN			(1 << 2)
+
+HandleType_t g_MemoryPtr = 0;
+
+class SimpleMemoryPointer : IMemoryPointer
+{
+public:
+	SimpleMemoryPointer(void* ptr) : m_ptr(ptr)
+	{
+	}
+
+	virtual void Delete()
+	{
+		delete this;
+	}
+
+	virtual cell_t GetSize() override
+	{
+		return 0;
+	}
+
+	virtual void* Get() override
+	{
+		return m_ptr;
+	}
+protected:
+	void* m_ptr;
+};
+
+class EntitiesHelpers : 
+	public SMGlobalClass
+{
+public:
+	virtual void OnSourceModAllInitialized_Post()
+	{
+		// This should never fail
+		handlesys->FindHandleType("MemoryPointer", &g_MemoryPtr);
+	}
+} s_ConsoleHelpers;
 
 enum PropType
 {
@@ -2779,6 +2818,87 @@ static cell_t GetEntityAddress(IPluginContext *pContext, const cell_t *params)
 #endif
 }
 
+static cell_t GetEntityMemoryPointer(IPluginContext *pContext, const cell_t *params)
+{
+	CBaseEntity * pEntity = GetEntity(params[1]);
+	if (!pEntity)
+	{
+		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
+	}
+
+
+	auto newPtr = new SimpleMemoryPointer(pEntity);
+	Handle_t newHandle = handlesys->CreateHandle(g_MemoryPtr, newPtr, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	if (newHandle == BAD_HANDLE)
+	{
+		delete newPtr;
+		return BAD_HANDLE;
+	}
+	return newHandle;
+}
+
+static cell_t MemoryPointer_StoreEntityToHandle(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IMemoryPointer *ptr;
+
+	HandleSecurity sec;
+	sec.pIdentity = g_pCoreIdent;
+	sec.pOwner = pContext->GetIdentity();
+
+	if ((err=handlesys->ReadHandle(hndl, g_MemoryPtr, &sec, (void **)&ptr)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
+	}
+
+	CBaseHandle &entityHandle = *reinterpret_cast<CBaseHandle*>(((intptr_t)ptr->Get()) + params[3]);
+
+	if ((unsigned)params[2] == INVALID_EHANDLE_INDEX)
+	{
+		entityHandle.Set(NULL);
+	}
+	else
+	{
+		CBaseEntity *pOther = GetEntity(params[2]);
+
+		if (!pOther)
+		{
+			return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[2]), params[2]);
+		}
+
+		IHandleEntity *pHandleEnt = (IHandleEntity *)pOther;
+		entityHandle.Set(pHandleEnt);
+	}
+	return 0;
+}
+
+static cell_t MemoryPointer_LoadEntityFromHandle(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IMemoryPointer *ptr;
+
+	HandleSecurity sec;
+	sec.pIdentity = g_pCoreIdent;
+	sec.pOwner = pContext->GetIdentity();
+
+	if ((err=handlesys->ReadHandle(hndl, g_MemoryPtr, &sec, (void **)&ptr)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
+	}
+
+	CBaseHandle &entityHandle = *reinterpret_cast<CBaseHandle*>(((intptr_t)ptr->Get()) + params[2]);
+	CBaseEntity *pHandleEntity = g_HL2.ReferenceToEntity(entityHandle.GetEntryIndex());
+
+	if (!pHandleEntity || entityHandle != reinterpret_cast<IHandleEntity *>(pHandleEntity)->GetRefEHandle())
+	{
+		return -1;
+	}
+
+	return g_HL2.EntityToBCompatRef(pHandleEntity);
+}
+
 REGISTER_NATIVES(entityNatives)
 {
 	{"ChangeEdictState",		ChangeEdictState},
@@ -2823,8 +2943,11 @@ REGISTER_NATIVES(entityNatives)
 	{"SetEntPropString",		SetEntPropString},
 	{"SetEntPropVector",		SetEntPropVector},
 	{"GetEntityAddress",		GetEntityAddress},
+	{"GetEntityMemoryPointer",	GetEntityMemoryPointer},
 	{"FindDataMapInfo",		FindDataMapInfo},
 	{"LoadEntityFromHandleAddress",	LoadEntityFromHandleAddress},
 	{"StoreEntityToHandleAddress",	StoreEntityToHandleAddress},
+	{"MemoryPointer.StoreEntityToHandle", MemoryPointer_StoreEntityToHandle},
+	{"MemoryPointer.LoadEntityFromHandle", MemoryPointer_LoadEntityFromHandle},
 	{NULL,						NULL}
 };

@@ -44,6 +44,7 @@ public:
 
 // SourceMod::IMemoryPointer
 	virtual ~MemoryPointer();
+	virtual void Delete() override;
 	virtual void* Get() override;
 	virtual cell_t GetSize() override;
 protected:

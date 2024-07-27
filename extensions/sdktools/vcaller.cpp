@@ -183,6 +183,25 @@ static cell_t PrepSDKCall_SetAddress(IPluginContext *pContext, const cell_t *par
 	return (s_call_addr != NULL) ? 1 : 0;
 }
 
+static cell_t PrepSDKCall_SetAddressFromMemoryPointer(IPluginContext *pContext, const cell_t *params)
+{
+	IMemoryPointer* memPtr = nullptr;
+
+	HandleSecurity security;
+	security.pIdentity = myself->GetIdentity();
+	security.pOwner = pContext->GetIdentity();
+
+	HandleError err = HandleError_None;
+	Handle_t hndl = (Handle_t)params[1];
+	if ((err = handlesys->ReadHandle(hndl, g_MemPtrHandle, &security, (void **)&memPtr)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Could not read MemoryPointer Handle %x (error %d)", hndl, err);
+	}
+
+	s_call_addr = memPtr->Get();
+	return (s_call_addr != NULL) ? 1 : 0;
+}
+
 // Must match same enum in sdktools.inc
 enum SDKFuncConfSource
 {
@@ -597,6 +616,7 @@ sp_nativeinfo_t g_CallNatives[] =
 	{"PrepSDKCall_SetVirtual",		PrepSDKCall_SetVirtual},
 	{"PrepSDKCall_SetSignature",	PrepSDKCall_SetSignature},
 	{"PrepSDKCall_SetAddress",		PrepSDKCall_SetAddress},
+	{"PrepSDKCall_SetAddressFromMemoryPointer",		PrepSDKCall_SetAddressFromMemoryPointer},
 	{"PrepSDKCall_SetFromConf",		PrepSDKCall_SetFromConf},
 	{"PrepSDKCall_SetReturnInfo",	PrepSDKCall_SetReturnInfo},
 	{"PrepSDKCall_AddParameter",	PrepSDKCall_AddParameter},

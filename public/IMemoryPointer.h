@@ -44,6 +44,11 @@ namespace SourceMod
 		virtual ~IMemoryPointer() = default;
 
 		/**
+		 * @brief Deletes the Memory pointer.
+		 */
+		virtual void Delete() = 0;
+
+		/**
 		 * @brief Retrieves the underlying pointer.
 		 *
 		 * @return			The underlying pointer.
@@ -65,7 +70,7 @@ namespace SourceMod
 		 * @param offset                Offset in bytes to store the data at.
 		 * @param updateMemAccess       Whether or not to update the memory access before writing.
 		 */
-		virtual void Store(cell_t data, unsigned int byteSize, cell_t offset, bool updateMemAccess);
+		void Store(cell_t data, unsigned int byteSize, cell_t offset, bool updateMemAccess);
 
 		/**
 		 * @brief Loads data at the given offset.
@@ -74,8 +79,43 @@ namespace SourceMod
 		 * @param offset                Offset in bytes to read the data at.
 		 * @return                      The data stored at the given offset.
 		 */
-		virtual cell_t Load(unsigned int byteSize, cell_t offset);
+		cell_t Load(unsigned int byteSize, cell_t offset);
+
+		/**
+		 * @brief Stores a pointer at the given offset.
+		 *
+		 * @param data                  The pointer to store.
+		 * @param offset                Offset in bytes to store the data at.
+		 * @param updateMemAccess       Whether or not to update the memory access before writing.
+		 */
+		void StorePtr(void* data, cell_t offset, bool updateMemAccess);
+
+		/**
+		 * @brief Loads pointer at the given offset.
+		 *
+		 * @param offset                Offset in bytes to read the data at.
+		 * @return                      The pointer stored at the given offset.
+		 */
+		void* LoadPtr(cell_t offset);
 	};
+
+	inline void IMemoryPointer::StorePtr(void* data, cell_t offset, bool updateMemAccess)
+	{
+		auto ptr = &(((std::int8_t*)this->Get())[offset]);
+		if (updateMemAccess)
+		{
+			SourceHook::SetMemAccess(ptr, sizeof(void*), SH_MEM_READ|SH_MEM_WRITE|SH_MEM_EXEC);
+		}
+
+		*(void**)ptr = data;
+	}
+
+	inline void* IMemoryPointer::LoadPtr(cell_t offset)
+	{
+		auto ptr = &(((std::int8_t*)this->Get())[offset]);
+
+		return *(void**)ptr;
+	}
 
 	inline void IMemoryPointer::Store(cell_t data, unsigned int byteSize, cell_t offset, bool updateMemAccess)
 	{

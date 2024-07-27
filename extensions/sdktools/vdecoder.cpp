@@ -46,6 +46,11 @@ public:
 	{
 	}
 
+	virtual void Delete() override
+	{
+		delete this;
+	}
+
 	virtual void* Get() override
 	{
 		return m_ptr;

@@ -140,7 +140,17 @@ native bool PrepSDKCall_SetSignature(SDKLibrary lib, const char[] signature, int
  * @param addr          Address of function to use.
  * @return              True on success, false on failure.
  */
+#pragma deprecated Use PrepSDKCall_SetAddressFromMemoryPointer instead
 native bool PrepSDKCall_SetAddress(Address addr);
+
+/**
+ * Uses the given pointer value as function address for the SDK call.
+ *
+ * @param handle        Handle to a MemoryPointer.
+ * @return              True on success, false on failure.
+ * @error               Invalid handle.
+ */
+native bool PrepSDKCall_SetAddressFromMemoryPointer(MemoryPointer handle);
 
 /**
  * Finds an address or virtual function index in a GameConfig file and sets it as

@@ -110,7 +110,7 @@ public:
 	{
 		if (type == g_MemoryPtr)
 		{
-			delete (IMemoryPointer *) object;
+			((IMemoryPointer *)object)->Delete();
 		}
 		else if (type == g_FrameIter)
 		{
@@ -1068,6 +1068,84 @@ static cell_t MemoryPointer_Load(IPluginContext *pContext, const cell_t *params)
 	return ptr->Load(bytesSize, params[3]);
 }
 
+static cell_t MemoryPointer_StoreMemoryPointer(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IMemoryPointer *ptr;
+
+	HandleSecurity sec;
+	sec.pIdentity = g_pCoreIdent;
+	sec.pOwner = pContext->GetIdentity();
+
+	if ((err=handlesys->ReadHandle(hndl, g_MemoryPtr, &sec, (void **)&ptr)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
+	}
+
+	hndl = (Handle_t)params[2];
+	IMemoryPointer *store;
+	if ((err=handlesys->ReadHandle(hndl, g_MemoryPtr, &sec, (void **)&store)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
+	}
+
+	ptr->StorePtr(store->Get(), params[3], params[4] != 0);
+}
+
+static cell_t MemoryPointer_LoadMemoryPointer(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IMemoryPointer *ptr;
+
+	HandleSecurity sec;
+	sec.pIdentity = g_pCoreIdent;
+	sec.pOwner = pContext->GetIdentity();
+
+	if ((err=handlesys->ReadHandle(hndl, g_MemoryPtr, &sec, (void **)&ptr)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
+	}
+
+	auto newPtr = new MemoryPointer(ptr->LoadPtr(params[2]), 0);
+
+	Handle_t newHandle = handlesys->CreateHandle(g_MemoryPtr, newPtr, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	if (newHandle == BAD_HANDLE)
+	{
+		delete newPtr;
+		return BAD_HANDLE;
+	}
+	
+	return newHandle;
+}
+
+static cell_t MemoryPointer_Offset(IPluginContext *pContext, const cell_t *params)
+{
+	Handle_t hndl = (Handle_t)params[1];
+	HandleError err;
+	IMemoryPointer *ptr;
+
+	HandleSecurity sec;
+	sec.pIdentity = g_pCoreIdent;
+	sec.pOwner = pContext->GetIdentity();
+
+	if ((err=handlesys->ReadHandle(hndl, g_MemoryPtr, &sec, (void **)&ptr)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
+	}
+
+	auto newPtr = new MemoryPointer((void*)(((intptr_t)ptr->Get()) + params[2]), 0);
+	Handle_t newHandle = handlesys->CreateHandle(g_MemoryPtr, newPtr, pContext->GetIdentity(), g_pCoreIdent, NULL);
+	if (newHandle == BAD_HANDLE)
+	{
+		delete newPtr;
+		return BAD_HANDLE;
+	}
+	
+	return newHandle;
+}
+
 static cell_t FrameIterator_Create(IPluginContext *pContext, const cell_t *params)
 {
 	IFrameIterator *it = pContext->CreateFrameIterator();
@@ -1261,6 +1339,9 @@ REGISTER_NATIVES(coreNatives)
 	{"MemoryPointer.MemoryPointer",				MemoryPointer_Create},
 	{"MemoryPointer.Store",						MemoryPointer_Store},
 	{"MemoryPointer.Load",						MemoryPointer_Load},
+	{"MemoryPointer.StoreMemoryPointer",		MemoryPointer_StoreMemoryPointer},
+	{"MemoryPointer.LoadMemoryPointer",			MemoryPointer_LoadMemoryPointer},
+	{"MemoryPointer.Offset",					MemoryPointer_Offset},
 	
 	{"FrameIterator.FrameIterator",				FrameIterator_Create},
 	{"FrameIterator.Next",						FrameIterator_Next},
