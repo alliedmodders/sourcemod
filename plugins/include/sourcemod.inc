@@ -754,6 +754,25 @@ native any LoadFromAddress(Address addr, NumberType size);
  */
 native void StoreToAddress(Address addr, any data, NumberType size, bool updateMemAccess = true);
 
+methodmap MemoryPointer < Handle {
+	// Creates a memory block of the given bytes size.
+	// And wrap its pointer into a MemoryPointer handle.
+	// @return              New Handle to a memory pointer.
+	public native MemoryPointer(int size);
+	
+	// Stores the given data at the provided offset.
+	// @param data          The data to store.
+	// @param size          Size of the data to store.
+	// @param offset        Offset in bytes from the start.
+	public native void Store(any data, NumberType size, int offset = 0, bool updateMemAccess = true);
+
+	// Retrieves the data at the provided offset.
+	// @param size          Size of the data to store.
+	// @param offset        Offset in bytes from the start.
+	// @return              The data that was stored.
+	public native any Load(NumberType size, int offset = 0);
+};
+
 methodmap FrameIterator < Handle {
 	// Creates a stack frame iterator to build your own stack traces.
 	// @return              New handle to a FrameIterator.

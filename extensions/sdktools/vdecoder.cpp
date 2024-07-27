@@ -34,8 +34,30 @@
 #include "vdecoder.h"
 #include "vcallbuilder.h"
 
+#include <IMemoryPointer.h>
+
 using namespace SourceMod;
 using namespace SourcePawn;
+
+class ForeignMemoryPointer : public IMemoryPointer
+{
+public:
+	ForeignMemoryPointer(void* ptr) : m_ptr(ptr)
+	{
+	}
+
+	virtual void* Get() override
+	{
+		return m_ptr;
+	}
+
+	virtual cell_t GetSize() override
+	{
+		return 0;
+	}
+protected:
+	void* m_ptr;
+};
 
 /**
  * For object pointers, the data looks like this instead:
@@ -164,6 +186,21 @@ size_t ValveParamToBinParam(ValveType type,
 				return sizeof(float);
 			}
 		}
+	case Valve_MemoryPointer:
+		{
+			info->flags = flags;
+			if (flags & PASSFLAG_ASPOINTER)
+			{
+				needs_extra = true;
+				info->type = PassType_Basic;
+				info->size = sizeof(void**);
+				return sizeof(void**) + sizeof(void*);
+			} else {
+				info->type = PassType_Basic;
+				info->size = sizeof(void*);
+				return sizeof(void*);
+			}
+		}
 	}
 
 	return 0;
@@ -275,6 +312,37 @@ DataStatus EncodeValveParam(IPluginContext *pContext,
 			}
 
 			*addr = *(bool *)buffer ? 1 : 0;
+
+			return Data_Okay;
+		}
+	case Valve_MemoryPointer:
+		{
+			cell_t *addr;
+			pContext->LocalToPhysAddr(param, &addr);
+
+			if (data->flags & PASSFLAG_ASPOINTER)
+			{
+				buffer = *(void ***)buffer;
+			}
+
+			auto ptr = *(void **)buffer;
+
+			if (ptr == nullptr)
+			{
+				*addr = 0;
+				return Data_Okay;
+			}
+
+			HandleError err = HandleError_None;
+			Handle_t hndl = handlesys->CreateHandle(g_MemPtrHandle, new ForeignMemoryPointer(ptr), pContext->GetIdentity(), myself->GetIdentity(), &err);
+
+			if (err != HandleError_None)
+			{
+				pContext->ThrowNativeError("Failed to create MemoryPointer while decoding (error: %d)", err);
+				return Data_Fail;
+			}
+
+			*addr = hndl;
 
 			return Data_Okay;
 		}
@@ -577,6 +645,37 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			char *addr;
 			pContext->LocalToString(param, &addr);
 			*(char **)buffer = addr;
+			return Data_Okay;
+		}
+	case Valve_MemoryPointer:
+		{
+			IMemoryPointer* ptr = nullptr;
+
+			HandleSecurity security;
+			security.pIdentity = myself->GetIdentity();
+			security.pOwner = pContext->GetIdentity();
+
+			Handle_t hndl = (Handle_t)param;
+
+			if (hndl == 0)
+			{
+				if (data->decflags & VDECODE_FLAG_ALLOWNULL)
+				{
+					*(void **)buffer = nullptr;
+					return Data_Okay;
+				}
+				pContext->ThrowNativeError("Null/Invalid Handle MemoryPointer isn't allowed");
+				return Data_Fail;
+			}
+
+			HandleError err = HandleError_None;
+			if ((err = handlesys->ReadHandle(hndl, g_MemPtrHandle, &security, (void **)&ptr)) != HandleError_None)
+			{
+				pContext->ThrowNativeError("Could not read MemoryPointer Handle %x (error %d)", hndl, err);
+				return Data_Fail;
+			}
+
+			*(void **)buffer = ptr->Get();
 			return Data_Okay;
 		}
 	}

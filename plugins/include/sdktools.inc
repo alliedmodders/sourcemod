@@ -62,7 +62,8 @@ enum SDKCallType
 	SDKCall_EntityList,     /**< CGlobalEntityList call */
 	SDKCall_Raw,            /**< |this| pointer with an arbitrary address */
 	SDKCall_Server,         /**< CBaseServer call */
-	SDKCall_Engine          /**< CVEngineServer call */
+	SDKCall_Engine,         /**< CVEngineServer call */
+	SDKCall_MemoryPointer   /**< |this| pointer retrieved from a MemoryPointer handle */
 };
 
 enum SDKLibrary
@@ -88,7 +89,8 @@ enum SDKType
 	SDKType_Float,          /**< Float (any) */
 	SDKType_Edict,          /**< edict_t (always as pointer) */
 	SDKType_String,         /**< NULL-terminated string (always as pointer) */
-	SDKType_Bool            /**< Boolean (any) */
+	SDKType_Bool,           /**< Boolean (any) */
+	SDKType_MemoryPointer   /**< Sourcemod MemoryPointer handle */
 };
 
 enum SDKPassMethod
