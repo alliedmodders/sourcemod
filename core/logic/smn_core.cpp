@@ -1091,6 +1091,7 @@ static cell_t MemoryPointer_StoreMemoryPointer(IPluginContext *pContext, const c
 	}
 
 	ptr->StorePtr(store->Get(), params[3], params[4] != 0);
+	return 0;
 }
 
 static cell_t MemoryPointer_LoadMemoryPointer(IPluginContext *pContext, const cell_t *params)

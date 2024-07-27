@@ -113,7 +113,7 @@ public:
 		// This should never fail
 		handlesys->FindHandleType("MemoryPointer", &g_MemoryPtr);
 	}
-} s_ConsoleHelpers;
+} s_EntitiesHelpers;
 
 enum PropType
 {
