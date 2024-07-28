@@ -36,8 +36,6 @@
 #include "ConVarManager.h"
 #include "logic_bridge.h"
 
-#define TIMER_MIN_ACCURACY		0.1
-
 TimerSystem g_Timers;
 double g_fUniversalTime = 0.0f;
 float g_fGameStartTime = 0.0f;	/* Game game start time, non-universal */
@@ -146,7 +144,7 @@ private:
  */
 inline double CalcNextThink(double last, float interval)
 {
-	if (g_fUniversalTime - last - interval <= TIMER_MIN_ACCURACY)
+	if (g_fUniversalTime - last - interval <= gpGlobals->interval_per_tick)
 	{
 		return last + interval;
 	}
@@ -238,7 +236,7 @@ void TimerSystem::GameFrame(bool simulating)
 	{
 		RunFrame();
 
-		g_fTimerThink = CalcNextThink(g_fTimerThink, TIMER_MIN_ACCURACY);
+		g_fTimerThink = CalcNextThink(g_fTimerThink, gpGlobals->interval_per_tick);
 	}
 
 	RunFrameHooks(simulating);
