@@ -63,15 +63,18 @@ DetourMap g_pPostDetours;
 
 void UnhookFunction(HookType_t hookType, CHook *pDetour)
 {
+#if defined( DHOOKS_DYNAMIC_DETOUR )
 	CHookManager *pDetourManager = GetHookManager();
 	pDetour->RemoveCallback(hookType, (HookHandlerFn *)(void *)&HandleDetour);
 	// Only disable the detour if there are no more listeners.
 	if (!pDetour->AreCallbacksRegistered())
 		pDetourManager->UnhookFunction(pDetour->m_pFunc);
+#endif
 }
 
 bool AddDetourPluginHook(HookType_t hookType, CHook *pDetour, HookSetup *setup, IPluginFunction *pCallback)
 {
+#if defined( DHOOKS_DYNAMIC_DETOUR )
 	DetourMap *map;
 	if (hookType == HOOKTYPE_PRE)
 		map = &g_pPreDetours;
@@ -102,10 +105,14 @@ bool AddDetourPluginHook(HookType_t hookType, CHook *pDetour, HookSetup *setup, 
 	wrappers->push_back(pWrapper);
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 bool RemoveDetourPluginHook(HookType_t hookType, CHook *pDetour, IPluginFunction *pCallback)
 {
+#if defined( DHOOKS_DYNAMIC_DETOUR )
 	DetourMap *map;
 	if (hookType == HOOKTYPE_PRE)
 		map = &g_pPreDetours;
@@ -139,10 +146,14 @@ bool RemoveDetourPluginHook(HookType_t hookType, CHook *pDetour, IPluginFunction
 	}
 
 	return bRemoved;
+#else
+	return false;
+#endif
 }
 
 void RemoveAllCallbacksForContext(HookType_t hookType, DetourMap *map, IPluginContext *pContext)
 {
+#if defined( DHOOKS_DYNAMIC_DETOUR )
 	PluginCallbackList *wrappers;
 	CDynamicHooksSourcePawn *pWrapper;
 	DetourMap::iterator it = map->iter();
@@ -170,16 +181,20 @@ void RemoveAllCallbacksForContext(HookType_t hookType, DetourMap *map, IPluginCo
 			it.erase();
 		}
 	}
+#endif
 }
 
 void RemoveAllCallbacksForContext(IPluginContext *pContext)
 {
+#if defined( DHOOKS_DYNAMIC_DETOUR )
 	RemoveAllCallbacksForContext(HOOKTYPE_PRE, &g_pPreDetours, pContext);
 	RemoveAllCallbacksForContext(HOOKTYPE_POST, &g_pPostDetours, pContext);
+#endif
 }
 
 void CleanupDetours(HookType_t hookType, DetourMap *map)
 {
+#if defined( DHOOKS_DYNAMIC_DETOUR )
 	PluginCallbackList *wrappers;
 	CDynamicHooksSourcePawn *pWrapper;
 	DetourMap::iterator it = map->iter();
@@ -199,14 +214,18 @@ void CleanupDetours(HookType_t hookType, DetourMap *map)
 		UnhookFunction(hookType, it->key);
 	}
 	map->clear();
+#endif
 }
 
 void CleanupDetours()
 {
+#if defined( DHOOKS_DYNAMIC_DETOUR )
 	CleanupDetours(HOOKTYPE_PRE, &g_pPreDetours);
 	CleanupDetours(HOOKTYPE_POST, &g_pPostDetours);
+#endif
 }
 
+#if defined( DHOOKS_DYNAMIC_DETOUR )
 ICallingConvention *ConstructCallingConvention(HookSetup *setup)
 {
 	// Convert function parameter types into DynamicHooks structures.
@@ -249,6 +268,7 @@ ICallingConvention *ConstructCallingConvention(HookSetup *setup)
 
 	return pCallConv;
 }
+#endif
 
 // Some arguments might be optimized to be passed in registers instead of the stack.
 bool UpdateRegisterArgumentSizes(CHook* pDetour, HookSetup *setup)
