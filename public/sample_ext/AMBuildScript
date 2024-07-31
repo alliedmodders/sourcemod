@@ -1,5 +1,5 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
-import os, shutil
+import os
 
 def ResolveEnvPath(env, folder):
   if env in os.environ:
@@ -30,22 +30,17 @@ def SetArchFlags(compiler):
     if compiler.target.arch == 'x86_64':
       compiler.defines += ['WIN64']
 
-hl2sdk_manifests_root = None
-hl2sdk_manifests_dest = Normalize(builder.sourcePath + '/hl2sdk-manifests/')
+hl2sdk_manifests_path = None
 
 if not builder.options.hl2sdk_manifest:
-  if not os.path.exists(hl2sdk_manifests_dest): # if no root was specified and an hl2sdk-manifests folder does not exists in the source folder
-    raise Exception('HL2SDK Manifests directory not found! Set --hl2sdk-manifest-path or manually copy the hl2sdk manifests folder to the current source folder.')
+  raise Exception('HL2SDK Manifest root path not set! (--hl2sdk-manifest-path)')
 else:
-  # The HL2SDK Manifest looks for the manifest file based on the current sourcePath, so we need to copy it to our sourcePath first
-  hl2sdk_manifests_root = Normalize(builder.options.hl2sdk_manifest + '/')
+  hl2sdk_manifests_path = os.path.join(builder.options.hl2sdk_manifest, 'SdkHelpers.ambuild')
 
-  if not os.path.exists(hl2sdk_manifests_dest):
-    shutil.copytree(hl2sdk_manifests_root, hl2sdk_manifests_dest)
-  else:
-    print('HL2SDK Manifests folder already exists, not copying.')
+  if not os.path.exists(hl2sdk_manifests_path):
+    raise Exception('Could not find SdkHelpers.ambuild in the given HL2SDK Manifest path!')
 
-SdkHelpers = builder.Eval('hl2sdk-manifests/SdkHelpers.ambuild', {
+SdkHelpers = builder.Eval(hl2sdk_manifests_path, {
     'Project': 'sm-extension'
 })
 

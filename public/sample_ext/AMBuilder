@@ -1,15 +1,15 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
+# Name of your extesion, this will also be it's file name.
 projectName = 'sample'
-extName = projectName + '.ext.'
 
 # smsdk_ext.cpp will be automatically added later
 sourceFiles = [
   'extension.cpp',
 ]
 
-project = builder.LibraryProject(extName)
+project = builder.LibraryProject(projectName)
 
 if os.path.isfile(os.path.join(builder.currentSourcePath, 'sdk', 'smsdk_ext.cpp')):
   # Use the copy included in the project
@@ -29,6 +29,6 @@ for sdk_name in Extension.sdks:
     if not cxx.target.arch in sdk['platforms'][cxx.target.platform]:
       continue
 
-    binary = Extension.HL2ExtConfig(project, builder, cxx, extName + sdk['extension'], sdk)
+    binary = Extension.HL2ExtConfig(project, builder, cxx, projectName + '.ext.' + sdk['extension'], sdk)
 
 Extension.extensions += builder.Add(project)
