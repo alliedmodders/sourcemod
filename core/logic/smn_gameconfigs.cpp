@@ -214,7 +214,7 @@ static cell_t smn_GameConfGetAddressEx(IPluginContext *pCtx, const cell_t *param
 	}
 
 	char *key;
-	void* val;
+	void* val = nullptr;
 	pCtx->LocalToString(params[2], &key);
 
 	if (!gc->GetAddress(key, &val) || val == nullptr)
@@ -248,7 +248,7 @@ static cell_t smn_GameConfGetMemSigEx(IPluginContext *pCtx, const cell_t *params
 	}
 
 	char *key;
-	void *val;
+	void *val = nullptr;
 	pCtx->LocalToString(params[2], &key);
 
 	if (!gc->GetMemSig(key, &val) || val == nullptr)

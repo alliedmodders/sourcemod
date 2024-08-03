@@ -121,7 +121,7 @@ methodmap GameData < Handle
 	//
 	// @param name          Name of the property to find.
 	// @return              New MemoryPointer handle containing the address calculated on success, or null on failure.
-	public native Address GetAddressEx(const char[] name);
+	public native MemoryPointer GetAddressEx(const char[] name);
 
 	// Returns a function address calculated from a signature.
 	//
@@ -134,7 +134,7 @@ methodmap GameData < Handle
 	//
 	// @param name          Name of the property to find.
 	// @return              New MemoryPointer handle containing the address calculated on success, or null on failure.
-	public native Address GetMemSigEx(const char[] name);
+	public native MemoryPointer GetMemSigEx(const char[] name);
 };
 
 /**

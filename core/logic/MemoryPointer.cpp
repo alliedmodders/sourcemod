@@ -44,9 +44,10 @@ MemoryPointer::MemoryPointer(void* ptr, cell_t size) : m_ptr(ptr), m_owned(false
 
 MemoryPointer::~MemoryPointer()
 {
-	if (m_owned)
+	if (m_owned && m_ptr)
 	{
 		free(m_ptr);
+		m_ptr = nullptr;
 	}
 }
 
