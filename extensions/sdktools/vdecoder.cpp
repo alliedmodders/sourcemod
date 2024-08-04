@@ -575,7 +575,13 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 	case Valve_String:
 		{
 			char *addr;
-			pContext->LocalToString(param, &addr);
+			pContext->LocalToStringNULL(param, &addr);
+			if (addr == NULL && (data->decflags & VDECODE_FLAG_ALLOWNULL) == 0)
+			{
+				pContext->ThrowNativeError("NULL not allowed");
+				return Data_Fail;
+			}
+			
 			*(char **)buffer = addr;
 			return Data_Okay;
 		}
