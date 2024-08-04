@@ -30,6 +30,7 @@
 #include "extension.h"
 #include "vcallbuilder.h"
 #include "vglobals.h"
+#include "IMemoryPointer.h"
 
 enum SDKLibrary
 {
@@ -63,7 +64,8 @@ inline void DecodePassMethod(ValveType vtype, SDKPassMethod method, PassType &ty
 		type = PassType_Basic;
 		if (vtype == Valve_POD
 			|| vtype == Valve_Float
-			|| vtype == Valve_Bool)
+			|| vtype == Valve_Bool
+			|| vtype == Valve_MemoryPointer)
 		{
 			flags = PASSFLAG_BYVAL | PASSFLAG_ASPOINTER;
 		} else {
@@ -178,6 +180,25 @@ static cell_t PrepSDKCall_SetAddress(IPluginContext *pContext, const cell_t *par
 	s_call_addr = g_pSM->FromPseudoAddress(params[1]);
 #endif
 
+	return (s_call_addr != NULL) ? 1 : 0;
+}
+
+static cell_t PrepSDKCall_SetAddressFromMemoryPointer(IPluginContext *pContext, const cell_t *params)
+{
+	IMemoryPointer* memPtr = nullptr;
+
+	HandleSecurity security;
+	security.pIdentity = myself->GetIdentity();
+	security.pOwner = pContext->GetIdentity();
+
+	HandleError err = HandleError_None;
+	Handle_t hndl = (Handle_t)params[1];
+	if ((err = handlesys->ReadHandle(hndl, g_MemPtrHandle, &security, (void **)&memPtr)) != HandleError_None)
+	{
+		return pContext->ThrowNativeError("Could not read MemoryPointer Handle %x (error %d)", hndl, err);
+	}
+
+	s_call_addr = memPtr->Get();
 	return (s_call_addr != NULL) ? 1 : 0;
 }
 
@@ -413,6 +434,44 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 				startparam++;
 			}
 			break;
+		case ValveCall_MemoryPointer:
+			{
+				//params[startparam] is an address to a pointer to THIS
+				//params following this are params to the method we will invoke later
+				if (startparam > numparams)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("Expected a ThisPtr address, it wasn't found");
+				}
+
+				//note: varargs pawn args are passed by-ref
+				cell_t *cell;
+				pContext->LocalToPhysAddr(params[startparam], &cell);
+				Handle_t hndl = (Handle_t)(*cell);
+
+				if (hndl == 0)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("MemoryPointer handle cannot be null");
+				}
+
+				IMemoryPointer* memPtr = nullptr;
+
+				HandleSecurity security;
+				security.pIdentity = myself->GetIdentity();
+				security.pOwner = pContext->GetIdentity();
+
+				HandleError err = HandleError_None;
+				if ((err = handlesys->ReadHandle(hndl, g_MemPtrHandle, &security, (void **)&memPtr)) != HandleError_None)
+				{
+					pContext->ThrowNativeError("Could not read MemoryPointer Handle %x (error %d)", hndl, err);
+					return Data_Fail;
+				}
+
+				*(void **)ptr = memPtr->Get();
+				startparam++;
+			}
+			break;
 		default:
 			{
 				vc->stk_put(ptr);
@@ -429,7 +488,8 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 		{
 			startparam += 2;
 		} else if (vc->retinfo->vtype == Valve_Vector
-					|| vc->retinfo->vtype == Valve_QAngle)
+					|| vc->retinfo->vtype == Valve_QAngle
+					|| vc->retinfo->vtype == Valve_MemoryPointer)
 		{
 			startparam += 1;
 		}
@@ -506,11 +566,12 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 			pContext->StringToLocalUTF8(params[retparam], *addr, *(char **)vc->retbuf, &written);
 			return (cell_t)written;
 		} else if (vc->retinfo->vtype == Valve_Vector
-					|| vc->retinfo->vtype == Valve_QAngle)
+					|| vc->retinfo->vtype == Valve_QAngle
+					|| vc->retinfo->vtype == Valve_MemoryPointer)
 		{
 			if (numparams < 2)
 			{
-				return pContext->ThrowNativeError("Expected argument (2) for Float[3] storage");
+				return pContext->ThrowNativeError("Expected argument (2) for return storage");
 			}
 			if (EncodeValveParam(pContext, params[retparam], vc, vc->retinfo, vc->retbuf)
 				== Data_Fail)
@@ -555,6 +616,7 @@ sp_nativeinfo_t g_CallNatives[] =
 	{"PrepSDKCall_SetVirtual",		PrepSDKCall_SetVirtual},
 	{"PrepSDKCall_SetSignature",	PrepSDKCall_SetSignature},
 	{"PrepSDKCall_SetAddress",		PrepSDKCall_SetAddress},
+	{"PrepSDKCall_SetAddressFromMemoryPointer",		PrepSDKCall_SetAddressFromMemoryPointer},
 	{"PrepSDKCall_SetFromConf",		PrepSDKCall_SetFromConf},
 	{"PrepSDKCall_SetReturnInfo",	PrepSDKCall_SetReturnInfo},
 	{"PrepSDKCall_AddParameter",	PrepSDKCall_AddParameter},

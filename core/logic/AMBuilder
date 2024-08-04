@@ -86,6 +86,7 @@ for cxx in builder.targets:
     'DatabaseConfBuilder.cpp',
     'LumpManager.cpp',
     'smn_entitylump.cpp',
+    'MemoryPointer.cpp'
   ]
 
   if binary.compiler.target.arch == 'x86_64':
