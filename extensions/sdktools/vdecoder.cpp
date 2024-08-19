@@ -660,7 +660,9 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			security.pIdentity = myself->GetIdentity();
 			security.pOwner = pContext->GetIdentity();
 
-			Handle_t hndl = (Handle_t)param;
+			cell_t* addr;
+			pContext->LocalToPhysAddr(param, &addr);
+			Handle_t hndl = (Handle_t)*addr;
 
 			if (hndl == 0)
 			{

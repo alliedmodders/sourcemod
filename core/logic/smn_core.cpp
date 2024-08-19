@@ -88,11 +88,13 @@ public:
 		g_PlIter = handlesys->CreateType("PluginIterator", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 		g_FrameIter = handlesys->CreateType("FrameIterator", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 
-		HandleAccess security;
-		security.access[HandleAccess_Read] = 0;
-		security.access[HandleAccess_Delete] = HANDLE_RESTRICT_OWNER;
-		security.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY | HANDLE_RESTRICT_OWNER;
-		g_MemoryPtr = handlesys->CreateType("MemoryPointer", this, 0, NULL, &security, g_pCoreIdent, NULL);
+		HandleAccess mp_hacc;
+		TypeAccess mp_tacc;
+		mp_hacc.access[HandleAccess_Read] = 0;
+		mp_hacc.access[HandleAccess_Delete] = HANDLE_RESTRICT_OWNER;
+		mp_hacc.access[HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY | HANDLE_RESTRICT_OWNER;
+		mp_tacc.access[HTypeAccess_Create] = true;
+		g_MemoryPtr = handlesys->CreateType("MemoryPointer", this, 0, &mp_tacc, &mp_hacc, g_pCoreIdent, NULL);
 
 		g_OnLogAction = forwardsys->CreateForward("OnLogAction", 
 			ET_Hook, 
