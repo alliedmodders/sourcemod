@@ -37,7 +37,7 @@
 			"GetMaxHealth"
 			{
 				"windows"	"122"
-				"windows64"	"123"
+				"windows64"	"122"
 				"linux"		"123"
 				"linux64"	"123"
 			}
