@@ -32,7 +32,11 @@
 #include "vhook.h"
 #include "vfunc_call.h"
 #include "util.h"
+#ifdef PLATFORM_X64
+#include "sh_asm_x86_64.h"
+#else
 #include <macro-assembler-x86.h>
+#endif
 
 SourceHook::IHookManagerAutoGen *g_pHookManager = NULL;
 
@@ -47,9 +51,111 @@ using namespace sp;
 #define OBJECT_OFFSET (sizeof(void *)*2)
 #endif
 
-#ifndef  WIN32
-void *GenerateThunk(ReturnType type)
+#ifdef PLATFORM_X64
+using namespace SourceHook::Asm;
+SourceHook::CPageAlloc GenBuffer::ms_Allocator(16);
+
+void test_func(void* rcx, void* rdx, SDKVector* r8, bool r9)
 {
+	//g_pSM->LogMessage(myself, "rcx(%p) - rdx(%p) - r8(%p) - r9(%p)", rcx, rdx, r8, r9);
+}
+
+SourceHook::Asm::x64JitWriter* GenerateThunk(HookSetup* hook)
+{
+	auto masm = new x64JitWriter();
+	auto type = hook->returnType;
+
+	/*if (type == ReturnType_Vector)
+	{
+		masm->push(rcx);
+		masm->push(rdx);
+		masm->push(r8);
+		masm->push(r9);
+		masm->sub(rsp, 40);
+		masm->mov(rax, (uintptr_t)test_func);
+		masm->call(rax);
+		masm->add(rsp, 40);
+		masm->pop(r9);
+		masm->pop(r8);
+		masm->pop(rdx);
+		masm->pop(rcx);
+	}*/
+
+	// We're going to transform rbp into our stack
+	masm->push(rbp);
+
+	// Copy all the arguments into the stack
+	// 8 bytes per parameter + 8 bytes for potential return value
+	int32_t fakeStackSize = ke::Align((int32_t)hook->params.size() * 8 + 8, 16) + 8; // Add another +8 bytes to realign on 16 bytes, due to 'push rbp' earlier
+	int32_t parameterOffset = fakeStackSize + 8 /* push rbp */ + 8 /* return address */ + 32 /* shadow space */;
+	masm->sub(rsp, fakeStackSize);
+	masm->mov(rbp, rsp);
+
+	static x86_64_Reg arg_reg[] = { rcx, rdx, r8, r9 };
+	static x86_64_FloatReg  arg_reg_float[] = { xmm0, xmm1, xmm2, xmm3 };
+
+	int stack_index = 0;
+	int fake_stack_index = 0;
+	int reg_index = 1; // Account |this| right away
+	if (type == ReturnType_Vector) { // Special return types occupy another register
+		masm->mov(rbp(8 * fake_stack_index), rdx); // Store return ptr at the bottom of the stack
+		reg_index++;
+		fake_stack_index++;
+	}
+
+	for (int i = 0; i < hook->params.size(); i++, fake_stack_index++) {
+		if (reg_index < 4) {
+			if (hook->params[i].type == HookParamType_Float && hook->params[i].flags == PASSFLAG_BYVAL) {
+				masm->movsd(rbp(8 * fake_stack_index), arg_reg_float[reg_index]);
+			} else {
+				masm->mov(rax, arg_reg[reg_index]);
+				masm->mov(rbp(8 * fake_stack_index), rax);
+			}
+			reg_index++;
+		} else {
+			masm->mov(rax, rbp(parameterOffset + 8 * stack_index));
+			masm->mov(rbp(8 * fake_stack_index), rax);
+			stack_index++;
+		}
+	}
+
+	//masm->mov(rbp(8 * 2), 0x7777777777777777);
+	//masm->mov(rbp(8 * 1), 0xDEADBEEFDEADBEEF);
+
+	// Setup 2nd parameter (our fake stack)
+	masm->mov(rdx, rbp);
+
+	if (type == ReturnType_Float)
+	{
+		masm->mov(rax, (uintptr_t)Callback_float);
+	}
+	else if (type == ReturnType_Vector)
+	{
+		masm->mov(rax, (uintptr_t)Callback_vector);
+	}
+	/*else if (type == ReturnType_String)
+	{
+		masm->mov(rax, (uintptr_t)Callback_stringt);
+	}*/
+	else
+	{
+		masm->mov(rax, (uintptr_t)Callback);
+	}
+	masm->sub(rsp, 40);
+	masm->call(rax);
+	masm->add(rsp, 40);
+
+	masm->add(rsp, fakeStackSize);
+	masm->pop(rbp);
+	masm->retn();
+
+	masm->SetRE();
+	return masm;
+}
+#elif !defined( WIN32 )
+void *GenerateThunk(HookSetup* hook)
+{
+	auto type = hook->returnType;
 	sp::MacroAssembler masm;
 	static const size_t kStackNeeded = (2) * 4; // 2 args max
 	static const size_t kReserve = ke::Align(kStackNeeded + 8, 16) - 8;
@@ -97,8 +203,9 @@ void *GenerateThunk(ReturnType type)
 }
 #else
 // HUGE THANKS TO BAILOPAN (dvander)!
-void *GenerateThunk(ReturnType type)
+void *GenerateThunk(HookSetup* hook)
 {
+	auto type = hook->returnType;
 	sp::MacroAssembler masm;
 	static const size_t kStackNeeded = (3 + 1) * 4; // 3 args max, 1 locals max
 	static const size_t kReserve = ke::Align(kStackNeeded + 8, 16) - 8;
@@ -138,7 +245,7 @@ void *GenerateThunk(ReturnType type)
 
 DHooksManager::DHooksManager(HookSetup *setup, void *iface, IPluginFunction *remove_callback, IPluginFunction *plugincb, bool post)
 {
-	this->callback = MakeHandler(setup->returnType);
+	this->callback = MakeHandler(setup);
 	this->hookid = 0;
 	this->remove_callback = remove_callback;
 	this->callback->offset = setup->offset;
@@ -232,11 +339,11 @@ SourceHook::PassInfo::PassType GetParamTypePassType(HookParamType type)
 size_t GetStackArgsSize(DHooksCallback *dg)
 {
 	size_t res = GetParamsSize(dg);
-	#ifdef  WIN32
+#ifdef  WIN32
 	if(dg->returnType == ReturnType_Vector)//Account for result vector ptr.
-	#else
+#else
 	if(dg->returnType == ReturnType_Vector || dg->returnType == ReturnType_String)
-	#endif
+#endif
 	{
 		res += OBJECT_OFFSET;
 	}
@@ -272,11 +379,11 @@ HookParamsStruct *GetParamStruct(DHooksCallback *dg, void **argStack, size_t arg
 {
 	HookParamsStruct *params = new HookParamsStruct();
 	params->dg = dg;
-	#ifdef  WIN32
+#ifdef  WIN32
 	if(dg->returnType != ReturnType_Vector)
-	#else
+#else
 	if(dg->returnType != ReturnType_Vector && dg->returnType != ReturnType_String)
-	#endif
+#endif
 	{
 		params->orgParams = (void **)malloc(argStackSize);
 		memcpy(params->orgParams, argStack, argStackSize);
@@ -284,7 +391,7 @@ HookParamsStruct *GetParamStruct(DHooksCallback *dg, void **argStack, size_t arg
 	else //Offset result ptr
 	{
 		params->orgParams = (void **)malloc(argStackSize-OBJECT_OFFSET);
-		memcpy(params->orgParams, argStack+OBJECT_OFFSET, argStackSize-OBJECT_OFFSET);
+		memcpy(params->orgParams, (void*)((uintptr_t)argStack + OBJECT_OFFSET), argStackSize - OBJECT_OFFSET);
 	}
 	size_t paramsSize = GetParamsSize(dg);
 
@@ -388,11 +495,14 @@ cell_t GetThisPtr(void *iface, ThisPointerType type)
 			return -1;
 		return gamehelpers->EntityToBCompatRef((CBaseEntity *)iface);
 	}
-
+#ifdef PLATFORM_X64
+	return g_pSM->ToPseudoAddress(iface);
+#else
 	return (cell_t)iface;
+#endif
 }
 
-#ifdef  WIN32
+#if defined( WIN32 ) && !defined( PLATFORM_X64 )
 void *Callback(DHooksCallback *dg, void **argStack, size_t *argsizep)
 #else
 void *Callback(DHooksCallback *dg, void **argStack)
@@ -403,11 +513,12 @@ void *Callback(DHooksCallback *dg, void **argStack)
 	Handle_t rHndl;
 	Handle_t pHndl;
 
-	#ifdef  WIN32
+#if defined( WIN32 ) && !defined( PLATFORM_X64 )
 	*argsizep = GetStackArgsSize(dg);
-	#else
+#else
 	size_t argsize = GetStackArgsSize(dg);
-	#endif
+#endif
+	//g_pSM->LogMessage(myself, "[DEFAULT]DHooksCallback(%p) argStack(%p) - argsize(%d)", dg, argStack, argsize);
 
 	if(dg->thisType == ThisPointer_CBaseEntity || dg->thisType == ThisPointer_Address)
 	{
@@ -430,15 +541,15 @@ void *Callback(DHooksCallback *dg, void **argStack)
 		dg->plugin_callback->PushCell(rHndl);
 	}
 
-	#ifdef  WIN32
+#if defined( WIN32 ) && !defined( PLATFORM_X64 )
 	if(*argsizep > 0)
 	{
 		paramStruct = GetParamStruct(dg, argStack, *argsizep);
-	#else
+#else
 	if(argsize > 0)
 	{
 		paramStruct = GetParamStruct(dg, argStack, argsize);
-	#endif
+#endif
 		pHndl = handlesys->CreateHandle(g_HookParamsHandle, paramStruct, dg->plugin_callback->GetParentRuntime()->GetDefaultContext()->GetIdentity(), myself->GetIdentity(), NULL);
 		if(!pHndl)
 		{
@@ -575,7 +686,7 @@ void *Callback(DHooksCallback *dg, void **argStack)
 	}
 	return ret;
 }
-#ifdef  WIN32
+#if defined( WIN32 ) && !defined( PLATFORM_X64 )
 float Callback_float(DHooksCallback *dg, void **argStack, size_t *argsizep)
 #else
 float Callback_float(DHooksCallback *dg, void **argStack)
@@ -586,11 +697,12 @@ float Callback_float(DHooksCallback *dg, void **argStack)
 	Handle_t rHndl;
 	Handle_t pHndl;
 
-	#ifdef  WIN32
+#if defined( WIN32 ) && !defined( PLATFORM_X64 )
 	*argsizep = GetStackArgsSize(dg);
-	#else
+#else
 	size_t argsize = GetStackArgsSize(dg);
-	#endif
+#endif
+	//g_pSM->LogMessage(myself, "[FLOAT]DHooksCallback(%p) argStack(%p) - argsize(%d)", dg, argStack, argsize);
 
 	if(dg->thisType == ThisPointer_CBaseEntity || dg->thisType == ThisPointer_Address)
 	{
@@ -612,7 +724,7 @@ float Callback_float(DHooksCallback *dg, void **argStack)
 	}
 	dg->plugin_callback->PushCell(rHndl);
 
-	#ifdef  WIN32
+	#if defined( WIN32 ) && !defined( PLATFORM_X64 )
 	if(*argsizep > 0)
 	{
 		paramStruct = GetParamStruct(dg, argStack, *argsizep);
@@ -729,24 +841,25 @@ float Callback_float(DHooksCallback *dg, void **argStack)
 	}
 	return *(float *)ret;
 }
-#ifdef  WIN32
+#if defined( WIN32 ) && !defined( PLATFORM_X64 )
 SDKVector *Callback_vector(DHooksCallback *dg, void **argStack, size_t *argsizep)
 #else
 SDKVector *Callback_vector(DHooksCallback *dg, void **argStack)
 #endif
 {
-	SDKVector *vec_result = (SDKVector *)argStack[0]; // Save the result
+	SDKVector *vec_result = (SDKVector *)argStack[0];
 
 	HookReturnStruct *returnStruct = NULL;
 	HookParamsStruct *paramStruct = NULL;
 	Handle_t rHndl;
 	Handle_t pHndl;
 
-	#ifdef  WIN32
+#if defined( WIN32 ) && !defined( PLATFORM_X64 )
 	*argsizep = GetStackArgsSize(dg);
-	#else
+#else
 	size_t argsize = GetStackArgsSize(dg);
-	#endif
+#endif
+	//g_pSM->LogMessage(myself, "[VECTOR]DHooksCallback(%p) argStack(%p) - argsize(%d) - params count %d", dg, argStack, argsize, dg->params.size());
 
 	if(dg->thisType == ThisPointer_CBaseEntity || dg->thisType == ThisPointer_Address)
 	{
@@ -768,7 +881,7 @@ SDKVector *Callback_vector(DHooksCallback *dg, void **argStack)
 	}
 	dg->plugin_callback->PushCell(rHndl);
 
-	#ifdef  WIN32
+	#if defined( WIN32 ) && !defined( PLATFORM_X64 )
 	if(*argsizep > 0)
 	{
 		paramStruct = GetParamStruct(dg, argStack, *argsizep);
