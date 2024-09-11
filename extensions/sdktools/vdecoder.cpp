@@ -164,6 +164,20 @@ size_t ValveParamToBinParam(ValveType type,
 				return sizeof(float);
 			}
 		}
+	case Valve_Pointer:
+		{
+			info->type = PassType_Basic;
+			info->flags = flags;
+			if (flags & PASSFLAG_ASPOINTER)
+			{
+				needs_extra = true;
+				info->size = sizeof(void*);
+				return sizeof(void*) * 2;
+			} else {
+				info->size = sizeof(void*);
+				return sizeof(void*);
+			}
+		}
 	}
 
 	return 0;
@@ -278,6 +292,20 @@ DataStatus EncodeValveParam(IPluginContext *pContext,
 
 			return Data_Okay;
 		}
+	case Valve_Pointer: // buffer -> sourcepawn
+		{
+			intptr_t *addr;
+			pContext->LocalToPhysAddr(param, reinterpret_cast<cell_t**>(&addr));
+
+			if (data->flags & PASSFLAG_ASPOINTER)
+			{
+				buffer = *(intptr_t **)buffer;
+			}
+
+			*addr = *(intptr_t *)buffer;
+
+			return Data_Okay;
+		}		
 	}
 
 	return Data_Fail;
@@ -579,6 +607,23 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			*(char **)buffer = addr;
 			return Data_Okay;
 		}
+	case Valve_Pointer: // sourcepawn -> buffer
+		{
+			intptr_t *addr;
+			pContext->LocalToPhysAddr(param, reinterpret_cast<cell_t**>(&addr));
+
+			if (data->decflags & VDECODE_FLAG_BYREF)
+			{
+				addr = reinterpret_cast<intptr_t*>(*addr);
+			}
+			if (data->flags & PASSFLAG_ASPOINTER)
+			{
+				*(void **)buffer = (unsigned char *)_buffer + pCall->stackEnd + data->obj_offset;
+				buffer = *(void **)buffer;
+			}
+			*(intptr_t *)buffer = *addr;
+			return Data_Okay;
+		}		
 	}
 
 	return Data_Fail;
