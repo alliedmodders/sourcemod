@@ -63,8 +63,6 @@ CHook::CHook(void* pFunc, ICallingConvention* pConvention)
 	if (!m_RetAddr.init())
 		return;
 
-	m_pTrampoline = new void*;
-
 	m_pBridge = CreateBridge();
 	if (!m_pBridge)
 		return;
