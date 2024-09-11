@@ -42,19 +42,14 @@ for cxx in builder.targets:
     'util.cpp',
     'dynhooks_sourcepawn.cpp',
     '../../public/smsdk_ext.cpp',
-    'asm/asm.c',
-    'libudis86/decode.c',
-    'libudis86/itab.c',
-    'libudis86/syn-att.c',
-    'libudis86/syn-intel.c',
-    'libudis86/syn.c',
-    'libudis86/udis86.c',
     # Dynamic Hooks
     os.path.join('DynamicHooks', 'registers.cpp')
   ]
+  SM.AddCDetour(binary)
 
   if binary.compiler.target.arch == 'x86':
     binary.sources += ['../../sourcepawn/vm/x86/assembler-x86.cpp']
+    
     binary.compiler.cxxincludes += [
       os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
       os.path.join(builder.sourcePath, 'sourcepawn', 'vm', 'x86')

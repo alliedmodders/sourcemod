@@ -35,7 +35,6 @@
 // >> INCLUDES
 // ============================================================================
 #include "hook.h"
-#include <asm/asm.h>
 #include <macro-assembler-x86.h>
 #include "extension.h"
 #include <jit/jit_helpers.h>
@@ -64,45 +63,33 @@ CHook::CHook(void* pFunc, ICallingConvention* pConvention)
 	if (!m_RetAddr.init())
 		return;
 
-	unsigned char* pTarget = (unsigned char *) pFunc;
+	m_pTrampoline = new void*;
 
-	// Determine the number of bytes we need to copy
-	int iBytesToCopy = copy_bytes(pTarget, NULL, JMP_SIZE);
-
-	// Create a buffer for the bytes to copy + a jump to the rest of the
-	// function.
-	unsigned char* pCopiedBytes = (unsigned char *) smutils->GetScriptingEngine()->AllocatePageMemory(iBytesToCopy + JMP_SIZE);
-
-	// Fill the array with NOP instructions
-	memset(pCopiedBytes, 0x90, iBytesToCopy + JMP_SIZE);
-
-	// Copy the required bytes to our array
-	copy_bytes(pTarget, pCopiedBytes, JMP_SIZE);
-
-	// Write a jump after the copied bytes to the function/bridge + number of bytes to copy
-	DoGatePatch(pCopiedBytes + iBytesToCopy, pTarget + iBytesToCopy);
-
-	// Save the trampoline
-	m_pTrampoline = (void *) pCopiedBytes;
-
-	// Create the bridge function
 	m_pBridge = CreateBridge();
+	if (!m_pBridge)
+		return;
 
-	// Write a jump to the bridge
-	DoGatePatch((unsigned char *) pFunc, m_pBridge);
+	auto result = safetyhook::InlineHook::create(pFunc, m_pBridge, safetyhook::InlineHook::Flags::StartDisabled);
+	if (!result) {
+		return;
+	}
+
+	m_Hook = std::move(result.value());
+	m_pTrampoline = m_Hook.original<void*>();
+
+	m_Hook.enable();
 }
 
 CHook::~CHook()
 {
-	// Copy back the previously copied bytes
-	copy_bytes((unsigned char *) m_pTrampoline, (unsigned char *) m_pFunc, JMP_SIZE);
+	if (m_Hook.enabled()) {
+		m_Hook.disable();
+	}
 
-	// Free the trampoline buffer
-	smutils->GetScriptingEngine()->FreePageMemory(m_pTrampoline);
-
-	// Free the asm bridge and new return address
-	smutils->GetScriptingEngine()->FreePageMemory(m_pBridge);
-	smutils->GetScriptingEngine()->FreePageMemory(m_pNewRetAddr);
+	if (m_pBridge) {
+		smutils->GetScriptingEngine()->FreePageMemory(m_pBridge);
+		smutils->GetScriptingEngine()->FreePageMemory(m_pNewRetAddr);
+	}
 
 	delete m_pRegisters;
 	delete m_pCallingConvention;

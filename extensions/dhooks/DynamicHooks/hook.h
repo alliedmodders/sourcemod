@@ -41,6 +41,7 @@
 #include "convention.h"
 #include <am-hashmap.h>
 #include <am-hashset.h>
+#include <safetyhook.hpp>
 
 // ============================================================================
 // >> HookType_t
@@ -195,6 +196,9 @@ public:
 	void* m_pFunc;
 
 	ICallingConvention* m_pCallingConvention;
+
+	// SafetyHook
+	SafetyHookInline m_Hook{};
 
 	// Address of the bridge
 	void* m_pBridge;
