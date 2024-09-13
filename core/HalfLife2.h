@@ -38,7 +38,7 @@
 #include <am-utility.h>
 #include <am-hashset.h>
 #include <am-hashmap.h>
-#include <sm_stringhashmap.h>
+#include <sm_hashmap.h>
 #include <sm_namehashset.h>
 #include "sm_globals.h"
 #include "sm_queue.h"

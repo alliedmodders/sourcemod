@@ -41,7 +41,7 @@
 #include <am-allocator-policies.h>
 #include <am-hashmap.h>
 #include <am-string.h>
-#include "sm_stringhashmap.h"
+#include "sm_hashmap.h"
 
 namespace SourceMod
 {
