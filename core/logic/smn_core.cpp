@@ -861,6 +861,143 @@ enum NumberType
 //memory addresses below 0x10000 are automatically considered invalid for dereferencing
 #define VALID_MINIMUM_MEMORY_ADDRESS 0x10000
 
+static inline void *GetAddress(cell_t caddr, cell_t coffset)
+{
+#ifdef PLATFORM_X86
+	return reinterpret_cast<void *>(caddr + coffset);
+#else
+	return pseudoAddr.FromPseudoAddress((uint32_t)caddr, (uint32_t)coffset);
+#endif
+}
+
+static inline bool IsAddressValidRange(void *addr)
+{
+	return addr != NULL && reinterpret_cast<uintptr_t>(addr) >= VALID_MINIMUM_MEMORY_ADDRESS;
+}
+
+static inline int GetAddressAccess(void *addr)
+{
+	int bits;
+
+	return SourceHook::GetPageBits(addr, &bits) ? bits : 0;
+}
+
+static inline bool SetAddressAccess(void *addr, size_t len, int access)
+{
+	return SourceHook::SetMemAccess(addr, len, access);
+}
+
+// Very slowly if iterate by each address cell.
+template <int A /* By SH_MEM_* defines. */>
+static inline bool HasAddressAccess(void *addr)
+{
+	return (GetAddressAccess(addr) & A) == A;
+}
+
+template <typename T>
+static inline cell_t ReadSecureAddressCell(IPluginContext *pContext, cell_t caddr, cell_t coffset)
+{
+	void *addr = GetAddress(caddr, coffset);
+
+	if (!IsAddressValidRange(addr))
+	{
+	#ifdef _DEBUG
+		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory (base is 0x%x, offset is 0x%x, read block size is %d)", addr, caddr, coffset, sizeof(T));
+	#else
+		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory", addr);
+	#endif
+	}
+
+#ifdef _DEBUG
+	if (!HasAddressAccess<SH_MEM_READ>(addr))
+	{
+		return pContext->ThrowNativeError("Invalid address access by 0x%x to read memory (base is 0x%x, offset is 0x%x, read block size is %d)", addr, caddr, coffset, sizeof(T));
+	}
+#endif
+
+	// If you have crash, enable _DEBUG for profiling which plugin the address is not valid.
+	return (cell_t)*reinterpret_cast<T *>(addr);
+}
+
+template <typename T>
+static inline cell_t WriteSecureAddressCell(IPluginContext *pContext, cell_t caddr, cell_t coffset, cell_t cvalue)
+{
+	void *addr = GetAddress(caddr, coffset);
+
+	if (!IsAddressValidRange(addr))
+	{
+	#ifdef _DEBUG
+		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory (base is 0x%x, offset is 0x%x, read block size is %d)", addr, caddr, coffset, sizeof(T));
+	#else
+		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory", addr);
+	#endif
+	}
+
+#ifdef _DEBUG
+	if (!HasAddressAccess<SH_MEM_READ /* Old value is being read */ | SH_MEM_WRITE>(addr))
+	{
+		return pContext->ThrowNativeError("Invalid address access by 0x%x to write memory (base is 0x%x, offset is 0x%x, read block size is %d)", addr, caddr, coffset, sizeof(T));
+	}
+#endif
+
+	// If you have crash, enable _DEBUG for profiling which plugin the address is not valid.
+	cell_t old_cvalue = (cell_t)*reinterpret_cast<T *>(addr);
+
+	*reinterpret_cast<T *>(addr) = (T)cvalue;
+
+	return old_cvalue;
+}
+
+static inline int GetSecureAddressAccessCell(IPluginContext *pContext, cell_t caddr, cell_t coffset)
+{
+	return GetAddressAccess(GetAddress(caddr, coffset));
+}
+
+static inline cell_t SetSecureAddressAccessCell(IPluginContext *pContext, cell_t caddr, cell_t coffset, cell_t size, cell_t access)
+{
+	return (cell_t)SetAddressAccess(GetAddress(caddr, coffset), (size_t)size, (int)access);
+}
+
+static cell_t Address_ReadInt8(IPluginContext *pContext, const cell_t *params)
+{
+	return ReadSecureAddressCell<uint8_t>(pContext, params[1], params[2]);
+}
+
+static cell_t Address_ReadInt16(IPluginContext *pContext, const cell_t *params)
+{
+	return ReadSecureAddressCell<uint16_t>(pContext, params[1], params[2]);
+}
+
+static cell_t Address_ReadInt32(IPluginContext *pContext, const cell_t *params)
+{
+	return ReadSecureAddressCell<uint32_t>(pContext, params[1], params[2]);
+}
+
+static cell_t Address_WriteInt8(IPluginContext *pContext, const cell_t *params)
+{
+	return WriteSecureAddressCell<uint8_t>(pContext, params[1], params[3], params[2]);
+}
+
+static cell_t Address_WriteInt16(IPluginContext *pContext, const cell_t *params)
+{
+	return WriteSecureAddressCell<uint16_t>(pContext, params[1], params[3], params[2]);
+}
+
+static cell_t Address_WriteInt32(IPluginContext *pContext, const cell_t *params)
+{
+	return WriteSecureAddressCell<uint32_t>(pContext, params[1], params[3], params[2]);
+}
+
+static cell_t Address_GetAccess(IPluginContext *pContext, const cell_t *params)
+{
+	return (cell_t)GetSecureAddressAccessCell(pContext, params[1], params[2]);
+}
+
+static cell_t Address_SetAccess(IPluginContext *pContext, const cell_t *params)
+{
+	return SetSecureAddressAccessCell(pContext, params[1], params[4], params[3], params[2]);
+}
+
 static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
 {
 #ifdef PLATFORM_X86
@@ -1160,6 +1297,15 @@ REGISTER_NATIVES(coreNatives)
 	{"IsNullVector",			IsNullVector},
 	{"IsNullString",			IsNullString},
 	{"LogStackTrace",           LogStackTrace},
+
+	{"Address.ReadInt8",						Address_ReadInt8},
+	{"Address.ReadInt16",						Address_ReadInt16},
+	{"Address.ReadInt32",						Address_ReadInt32},
+	{"Address.WriteInt8",						Address_WriteInt8},
+	{"Address.WriteInt16",						Address_WriteInt16},
+	{"Address.WriteInt32",						Address_WriteInt32},
+	{"Address.GetAccess",						Address_GetAccess},
+	{"Address.SetAccess",						Address_SetAccess},
 	
 	{"FrameIterator.FrameIterator",				FrameIterator_Create},
 	{"FrameIterator.Next",						FrameIterator_Next},
