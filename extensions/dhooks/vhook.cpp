@@ -53,33 +53,11 @@ using namespace sp;
 
 #ifdef PLATFORM_X64
 using namespace SourceHook::Asm;
-SourceHook::CPageAlloc GenBuffer::ms_Allocator(16);
-
-void test_func(void* rcx, void* rdx, SDKVector* r8, bool r9)
-{
-	//g_pSM->LogMessage(myself, "rcx(%p) - rdx(%p) - r8(%p) - r9(%p)", rcx, rdx, r8, r9);
-}
 
 SourceHook::Asm::x64JitWriter* GenerateThunk(HookSetup* hook)
 {
 	auto masm = new x64JitWriter();
 	auto type = hook->returnType;
-
-	/*if (type == ReturnType_Vector)
-	{
-		masm->push(rcx);
-		masm->push(rdx);
-		masm->push(r8);
-		masm->push(r9);
-		masm->sub(rsp, 40);
-		masm->mov(rax, (uintptr_t)test_func);
-		masm->call(rax);
-		masm->add(rsp, 40);
-		masm->pop(r9);
-		masm->pop(r8);
-		masm->pop(rdx);
-		masm->pop(rcx);
-	}*/
 
 	// We're going to transform rbp into our stack
 	masm->push(rbp);
