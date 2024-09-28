@@ -116,7 +116,7 @@ CRegisters::CRegisters(std::vector<Register_t> registers)
 	// >> 64-bit General purpose registers
 	// ========================================================================
 	// 64-bit mode only
-#ifdef PLATFORM_X64
+#ifdef DYNAMICHOOKS_x86_64
 	m_rax = CreateRegister(registers, RAX, 8);
 	m_rcx = CreateRegister(registers, RCX, 8);
 	m_rdx = CreateRegister(registers, RDX, 8);
@@ -279,7 +279,7 @@ CRegisters::~CRegisters()
 	// >> 64-bit General purpose registers
 	// ========================================================================
 	// 64-bit mode only
-#ifdef PLATFORM_X64
+#ifdef DYNAMICHOOKS_x86_64
 	DeleteRegister(m_rax);
 	DeleteRegister(m_rcx);
 	DeleteRegister(m_rdx);
@@ -325,7 +325,7 @@ CRegisters::~CRegisters()
 	DeleteRegister(m_xmm7);
 
 	// 64-bit mode only
-#ifdef PLATFORM_X64
+#ifdef DYNAMICHOOKS_x86_64
 	DeleteRegister(m_xmm8);
 	DeleteRegister(m_xmm9);
 	DeleteRegister(m_xmm10);
@@ -434,6 +434,42 @@ CRegister* CRegisters::GetRegister(Register_t reg)
 	case EDI:
 		return m_edi;
 
+#ifdef DYNAMICHOOKS_x86_64
+	case RAX:
+		return m_rax;
+	case RCX:
+		return m_rcx;
+	case RDX:
+		return m_rdx;
+	case RBX:
+		return m_rbx;
+	case RSP:
+		return m_rsp;
+	case RBP:
+		return m_rbp;
+	case RSI:
+		return m_rsi;
+	case RDI:
+		return m_rdi;
+
+	case R8:
+		return m_r8;
+	case R9:
+		return m_r9;
+	case R10:
+		return m_r10;
+	case R11:
+		return m_r11;
+	case R12:
+		return m_r12;
+	case R13:
+		return m_r13;
+	case R14:
+		return m_r14;
+	case R15:
+		return m_r15;
+#endif
+
 	case MM0:
 		return m_mm0;
 	case MM1:
@@ -468,6 +504,25 @@ CRegister* CRegisters::GetRegister(Register_t reg)
 	case XMM7:
 		return m_xmm7;
 
+#ifdef DYNAMICHOOKS_x86_64
+	case XMM8:
+		return m_xmm8;
+	case XMM9:
+		return m_xmm9;
+	case XMM10:
+		return m_xmm10;
+	case XMM11:
+		return m_xmm11;
+	case XMM12:
+		return m_xmm12;
+	case XMM13:
+		return m_xmm13;
+	case XMM14:
+		return m_xmm14;
+	case XMM15:
+		return m_xmm15;
+#endif
+
 	case CS:
 		return m_cs;
 	case SS:
@@ -499,6 +554,6 @@ CRegister* CRegisters::GetRegister(Register_t reg)
 		return m_st7;
 
 	default:
-		return NULL;
+		return nullptr;
 	}
 }

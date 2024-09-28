@@ -34,6 +34,10 @@
 #include <memory>
 
 #ifdef KE_WINDOWS
+#ifdef DYNAMICHOOKS_x86_64
+#include "conventions/x86_64MicrosoftDefault.h"
+typedef x86_64MicrosoftDefault x86_64DetourCall;
+#else
 #include "conventions/x86MsCdecl.h"
 #include "conventions/x86MsThiscall.h"
 #include "conventions/x86MsStdcall.h"
@@ -42,7 +46,10 @@ typedef x86MsCdecl x86DetourCdecl;
 typedef x86MsThiscall x86DetourThisCall;
 typedef x86MsStdcall x86DetourStdCall;
 typedef x86MsFastcall x86DetourFastCall;
+#endif
 #elif defined KE_LINUX
+#ifdef DYNAMICHOOKS_x86_64
+#else
 #include "conventions/x86GccCdecl.h"
 #include "conventions/x86GccThiscall.h"
 #include "conventions/x86MsStdcall.h"
@@ -53,6 +60,7 @@ typedef x86GccThiscall x86DetourThisCall;
 typedef x86MsStdcall x86DetourStdCall;
 // Uhumm, fastcall on linux?
 typedef x86MsFastcall x86DetourFastCall;
+#endif
 #else
 #error "Unsupported platform."
 #endif
@@ -246,9 +254,29 @@ ICallingConvention *ConstructCallingConvention(HookSetup *setup)
 	// TODO: Add support for a custom return register.
 	returnType.custom_register = None;
 
+#ifdef DYNAMICHOOKS_x86_64
+#ifdef WIN32
+	if (setup->callConv == CallConv_THISCALL) {
+		DataTypeSized_t type;
+		type.type = DATA_TYPE_POINTER;
+		type.size = GetDataTypeSize(type, sizeof(void*));
+		type.custom_register = RCX;
+		vecArgTypes.insert(vecArgTypes.begin(), type);
+	}
+#endif
+#endif
+
 	ICallingConvention *pCallConv = nullptr;
 	switch (setup->callConv)
 	{
+#ifdef DYNAMICHOOKS_x86_64
+	case CallConv_THISCALL:
+	case CallConv_CDECL:
+	case CallConv_STDCALL:
+	case CallConv_FASTCALL:
+		pCallConv = new x86_64DetourCall(vecArgTypes, returnType);
+		break;
+#else
 	case CallConv_CDECL:
 		pCallConv = new x86DetourCdecl(vecArgTypes, returnType);
 		break;
@@ -261,6 +289,7 @@ ICallingConvention *ConstructCallingConvention(HookSetup *setup)
 	case CallConv_FASTCALL:
 		pCallConv = new x86DetourFastCall(vecArgTypes, returnType);
 		break;
+#endif
 	default:
 		smutils->LogError(myself, "Unknown calling convention %d.", setup->callConv);
 		break;
@@ -624,7 +653,7 @@ HookParamsStruct *CDynamicHooksSourcePawn::GetParamStruct()
 
 	// Save the old parameters passed in a register.
 	size_t offset = stackSize;
-	for (size_t i = 0; i < numArgs; i++)
+	for (size_t i = firstArg; i < numArgs; i++)
 	{
 		// We already saved the stack arguments.
 		if (argTypes[i].custom_register == None)
@@ -633,7 +662,7 @@ HookParamsStruct *CDynamicHooksSourcePawn::GetParamStruct()
 		size_t size = argTypes[i].size;
 		// Register argument values are saved after all stack arguments in this buffer.
 		void *paramAddr = (void *)((intptr_t)params->orgParams + offset);
-		void *regAddr = callingConvention->GetArgumentPtr(i + firstArg, m_pDetour->m_pRegisters);
+		void *regAddr = callingConvention->GetArgumentPtr(i, m_pDetour->m_pRegisters);
 		memcpy(paramAddr, regAddr, size);
 		offset += size;
 	}
@@ -656,7 +685,6 @@ void CDynamicHooksSourcePawn::UpdateParamsFromStruct(HookParamsStruct *params)
 	// TODO: Support custom register for this ptr.
 	if (callConv == CallConv_THISCALL)
 		firstArg = 1;
-
 	size_t stackOffset = 0;
 	// Values of arguments stored in registers are saved after the stack arguments.
 	size_t registerOffset = stackSize;
@@ -676,9 +704,15 @@ void CDynamicHooksSourcePawn::UpdateParamsFromStruct(HookParamsStruct *params)
 		}
 
 		// Keep track of the seperate stack and register arguments.
-		if (argTypes[i].custom_register == None)
+		if (argTypes[i].custom_register == None) {
+#ifdef DYNAMICHOOKS_x86_64
+			stackOffset += 8;
+#else
 			stackOffset += size;
-		else
+#endif
+		}
+		else {
 			registerOffset += size;
+		}
 	}
 }
