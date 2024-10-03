@@ -73,12 +73,22 @@ SMCResult SignatureGameConfig::ReadSMC_NewSection(const SMCStates *states, const
 	}
 
 	// Handle platform specific sections first.
+#ifdef DYNAMICHOOKS_x86_64
+#if defined WIN32
+	if (!strcmp(name, "windows64"))
+#elif defined _LINUX
+	if (!strcmp(name, "linux64"))
+#elif defined _OSX
+	if (!strcmp(name, "mac64"))
+#endif
+#else
 #if defined WIN32
 	if (!strcmp(name, "windows"))
 #elif defined _LINUX
 	if (!strcmp(name, "linux"))
 #elif defined _OSX
 	if (!strcmp(name, "mac"))
+#endif
 #endif
 	{
 		// We're already in a section for a different OS that we're ignoring. Can't have a section for our OS in here.
@@ -99,13 +109,8 @@ SMCResult SignatureGameConfig::ReadSMC_NewSection(const SMCStates *states, const
 		g_PlatformOnlyState = g_ParseState;
 		return SMCResult_Continue;
 	}
-#if defined WIN32
-	else if (!strcmp(name, "linux") || !strcmp(name, "mac"))
-#elif defined _LINUX
-	else if (!strcmp(name, "windows") || !strcmp(name, "mac"))
-#elif defined _OSX
-	else if (!strcmp(name, "windows") || !strcmp(name, "linux"))
-#endif
+	else if (!strcmp(name, "windows") || !strcmp(name, "linux") || !strcmp(name, "mac")
+	|| !strcmp(name, "windows64") || !strcmp(name, "linux64") || !strcmp(name, "mac64"))
 	{
 		if (g_PlatformOnlyState != PState_None)
 		{
