@@ -174,6 +174,7 @@ extern IGameHelpers *g_pGameHelpers;
 /* Handle types */
 extern HandleType_t g_CallHandle;
 extern HandleType_t g_TraceHandle;
+extern HandleType_t g_MemPtrHandle;
 /* Call Wrappers */
 extern ICallWrapper *g_pAcceptInput;
 /* Timers */

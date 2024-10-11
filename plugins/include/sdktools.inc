@@ -62,7 +62,8 @@ enum SDKCallType
 	SDKCall_EntityList,     /**< CGlobalEntityList call */
 	SDKCall_Raw,            /**< |this| pointer with an arbitrary address */
 	SDKCall_Server,         /**< CBaseServer call */
-	SDKCall_Engine          /**< CVEngineServer call */
+	SDKCall_Engine,         /**< CVEngineServer call */
+	SDKCall_MemoryPointer   /**< |this| pointer retrieved from a MemoryPointer handle */
 };
 
 enum SDKLibrary
@@ -88,7 +89,8 @@ enum SDKType
 	SDKType_Float,          /**< Float (any) */
 	SDKType_Edict,          /**< edict_t (always as pointer) */
 	SDKType_String,         /**< NULL-terminated string (always as pointer) */
-	SDKType_Bool            /**< Boolean (any) */
+	SDKType_Bool,           /**< Boolean (any) */
+	SDKType_MemoryPointer   /**< Sourcemod MemoryPointer handle */
 };
 
 enum SDKPassMethod
@@ -138,7 +140,17 @@ native bool PrepSDKCall_SetSignature(SDKLibrary lib, const char[] signature, int
  * @param addr          Address of function to use.
  * @return              True on success, false on failure.
  */
+#pragma deprecated Use PrepSDKCall_SetAddressFromMemoryPointer instead
 native bool PrepSDKCall_SetAddress(Address addr);
+
+/**
+ * Uses the given pointer value as function address for the SDK call.
+ *
+ * @param handle        Handle to a MemoryPointer.
+ * @return              True on success, false on failure.
+ * @error               Invalid handle.
+ */
+native bool PrepSDKCall_SetAddressFromMemoryPointer(MemoryPointer handle);
 
 /**
  * Finds an address or virtual function index in a GameConfig file and sets it as
