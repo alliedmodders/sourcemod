@@ -53,7 +53,7 @@
 #include <cdll_int.h>
 #if SOURCE_ENGINE == SE_CSGO
 #include <am-hashset.h>
-#include <sm_stringhashmap.h>
+#include <sm_hashmap.h>
 #endif
 #include "SoundEmitterSystem/isoundemittersystembase.h"
 
