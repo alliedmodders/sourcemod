@@ -44,9 +44,14 @@ PseudoAddressManager::PseudoAddressManager() : m_NumEntries(0)
 // lower 26 bits. The table consists of memory allocation base addresses.
 void *PseudoAddressManager::FromPseudoAddress(uint32_t paddr)
 {
+	return FromPseudoAddress(paddr, 0);
+}
+
+void *PseudoAddressManager::FromPseudoAddress(uint32_t paddr, uint32_t offset)
+{
 #ifdef PLATFORM_X64
 	uint8_t index = paddr >> PSEUDO_OFFSET_BITS;
-	uint32_t offset = paddr & ((1 << PSEUDO_OFFSET_BITS) - 1);
+	offset += paddr & ((1 << PSEUDO_OFFSET_BITS) - 1);
 
 	if (index >= m_NumEntries)
 		return nullptr;
