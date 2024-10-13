@@ -42,27 +42,22 @@ for cxx in builder.targets:
     'util.cpp',
     'dynhooks_sourcepawn.cpp',
     '../../public/smsdk_ext.cpp',
-    'asm/asm.c',
-    'libudis86/decode.c',
-    'libudis86/itab.c',
-    'libudis86/syn-att.c',
-    'libudis86/syn-intel.c',
-    'libudis86/syn.c',
-    'libudis86/udis86.c',
     # Dynamic Hooks
-    os.path.join('DynamicHooks', 'registers.cpp')
+    os.path.join('DynamicHooks', 'registers.cpp'),
+    os.path.join('DynamicHooks', 'hook.cpp'),
+    os.path.join('DynamicHooks', 'manager.cpp')
   ]
+  SM.AddCDetour(binary)
 
   if binary.compiler.target.arch == 'x86':
     binary.sources += ['../../sourcepawn/vm/x86/assembler-x86.cpp']
+    
     binary.compiler.cxxincludes += [
       os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
       os.path.join(builder.sourcePath, 'sourcepawn', 'vm', 'x86')
     ]
     # DynamicHooks
     binary.sources += [
-      os.path.join('DynamicHooks', 'hook.cpp'),
-      os.path.join('DynamicHooks', 'manager.cpp'),
       os.path.join('DynamicHooks', 'conventions', 'x86MsCdecl.cpp'),
       os.path.join('DynamicHooks', 'conventions', 'x86MsStdcall.cpp'),
       os.path.join('DynamicHooks', 'conventions', 'x86MsFastcall.cpp'),
@@ -77,6 +72,16 @@ for cxx in builder.targets:
     binary.compiler.defines += ['DHOOKS_DYNAMIC_DETOUR']
 
   elif binary.compiler.target.arch == 'x86_64':
-    binary.compiler.defines += ['PLATFORM_X64']
+    binary.compiler.defines += ['DYNAMICHOOKS_x86_64', 'DHOOKS_DYNAMIC_DETOUR']
+
+    if binary.compiler.target.platform == 'windows':
+      binary.sources += [
+        os.path.join('DynamicHooks', 'conventions', 'x86_64MicrosoftDefault.cpp')
+      ]
+    # Linux follows System V definition
+    elif binary.compiler.target.platform == 'linux':
+      binary.sources += [
+        os.path.join('DynamicHooks', 'conventions', 'x86_64SystemVDefault.cpp')
+      ]
   
   SM.extensions += [builder.Add(binary)]
