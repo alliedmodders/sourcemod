@@ -92,6 +92,7 @@ SourceHook::CallClass<IVEngineServer> *enginePatch = NULL;
 SourceHook::CallClass<IEngineSound> *enginesoundPatch = NULL;
 HandleType_t g_CallHandle = 0;
 HandleType_t g_TraceHandle = 0;
+HandleType_t g_MemPtrHandle = 0;
 ISDKTools *g_pSDKTools;
 
 SMEXT_LINK(&g_SdkTools);
@@ -166,6 +167,12 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		handlesys->RemoveType(g_CallHandle, myself->GetIdentity());
 		g_CallHandle = 0;
 		ke::SafeSprintf(error, maxlength, "Could not create traceray handle type (err: %d)", err);
+		return false;
+	}
+
+	if (!handlesys->FindHandleType("MemoryPointer", &g_MemPtrHandle))
+	{
+		ke::SafeSprintf(error, maxlength, "Could not find MemoryPointer handle type");
 		return false;
 	}
 
