@@ -45,9 +45,7 @@ class ExtensionConfig(object):
     if builder.options.targets:
       target_archs = builder.options.targets.split(',')
     else:
-      target_archs = ['x86']
-      if builder.backend != 'amb2':
-        target_archs.append('x86_64')
+      target_archs = ['x86', 'x86_64']
 
     for arch in target_archs:
         try:
@@ -112,8 +110,8 @@ class ExtensionConfig(object):
       if cxx.version < 1914 and builder.options.generator != 'vs':
         raise Exception(f'Only MSVC 2017 15.7 and later are supported, full C++17 support is required. ({str(cxx.version)} < 1914)')
     elif cxx.family == 'gcc':
-      if cxx.version < 'gcc-9':
-        raise Exception('Only GCC versions 9 or later are supported, full C++17 support is required.')
+      if cxx.version < 'gcc-8':
+        raise Exception('Only GCC versions 8 or later are supported, full C++17 support is required.')
     elif cxx.family == 'clang':
       if cxx.version < 'clang-5':
         raise Exception('Only clang versions 5 or later are supported, full C++17 support is required.')
@@ -123,7 +121,7 @@ class ExtensionConfig(object):
     elif cxx.family == 'msvc':
       self.configure_msvc(cxx)
 
-    # Optimizaiton
+    # Optimization
     if builder.options.opt == '1':
       cxx.defines += ['NDEBUG']
 
@@ -138,10 +136,6 @@ class ExtensionConfig(object):
       self.configure_mac(cxx)
     elif cxx.target.platform == 'windows':
       self.configure_windows(cxx)
-
-    cxx.includes += [
-      os.path.join(builder.sourcePath, 'public'),
-    ]
 
   def configure_gcc(self, cxx):
     cxx.defines += [
@@ -162,10 +156,9 @@ class ExtensionConfig(object):
       '-Wno-array-bounds',
       '-fvisibility=hidden',
     ]
+  
     if cxx.target.arch in ['x86', 'x86_64']:
       cxx.cflags += ['-msse']
-
-    cxx.cxxflags += ['-std=c++17']
 
     cxx.cxxflags += [
       '-fno-threadsafe-statics',
@@ -173,33 +166,15 @@ class ExtensionConfig(object):
       '-Wno-overloaded-virtual',
       '-Wno-register',
       '-fvisibility-inlines-hidden',
+      '-std=c++17',
     ]
 
     have_gcc = cxx.family == 'gcc'
     have_clang = cxx.family == 'clang'
-    if cxx.version >= 'clang-3.9' or cxx.version == 'clang-3.4' or cxx.version > 'apple-clang-6.0':
-      cxx.cxxflags += ['-Wno-expansion-to-defined']
-    if cxx.version == 'clang-3.9' or cxx.version == 'apple-clang-8.0':
-      cxx.cflags += ['-Wno-varargs']
-    if cxx.version >= 'clang-3.4' or cxx.version >= 'apple-clang-7.0':
-      cxx.cxxflags += ['-Wno-inconsistent-missing-override']
-    if cxx.version >= 'clang-2.9' or cxx.version >= 'apple-clang-3.0':
-      cxx.cxxflags += ['-Wno-null-dereference']
-    if have_clang or (cxx.version >= 'gcc-4.6'):
-      cxx.cflags += ['-Wno-narrowing']
-    if have_clang or (cxx.version >= 'gcc-4.7'):
-      cxx.cxxflags += ['-Wno-delete-non-virtual-dtor']
-    if cxx.version >= 'gcc-4.8':
-      cxx.cflags += ['-Wno-unused-result']
-    if cxx.version >= 'gcc-9.0':
-      cxx.cxxflags += ['-Wno-class-memaccess', '-Wno-packed-not-aligned']
+
+    # Work around errors from smsdk_ext.cpp
     if have_clang:
       cxx.cxxflags += ['-Wno-implicit-exception-spec-mismatch']
-      if cxx.version >= 'apple-clang-5.1' or cxx.version >= 'clang-3.4':
-        cxx.cxxflags += ['-Wno-deprecated-register']
-      else:
-        cxx.cxxflags += ['-Wno-deprecated']
-      cxx.cflags += ['-Wno-sometimes-uninitialized']
 
     # Work around SDK warnings.
     if cxx.version >= 'clang-10.0' or cxx.version >= 'apple-clang-12.0':
@@ -337,11 +312,7 @@ builder.targets = builder.CloneableList(Extension.all_targets)
 # Add additional buildscripts here
 BuildScripts = [
   'AMBuilder',
+  'PackageScript',
 ]
-
-if builder.backend == 'amb2':
-  BuildScripts += [
-    'PackageScript',
-  ]
 
 builder.Build(BuildScripts, { 'Extension': Extension })
