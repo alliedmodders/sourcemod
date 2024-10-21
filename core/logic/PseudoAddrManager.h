@@ -38,6 +38,7 @@ public:
 	PseudoAddressManager();
 public:
 	void *FromPseudoAddress(uint32_t paddr);
+	void *FromPseudoAddress(uint32_t paddr, uint32_t offset);
 	uint32_t ToPseudoAddress(void *addr);
 private:
 	void *GetAllocationBase(void *ptr);
