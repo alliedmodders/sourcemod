@@ -42,7 +42,7 @@
 
 	"Pending Vote"
 	{
-		"jp"		"ペンディング投票"
+		"jp"		"投票待ち"
 	}
 
 	"WinLimitAppend"
