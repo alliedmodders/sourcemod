@@ -13,6 +13,11 @@ folder_list = [
   #'addons/sourcemod/configs',
 ]
 
+if 'x86_64' in Extension.target_archs:
+  folder_list.extend([
+    'addons/sourcemod/extensions/x64',
+  ])
+
 # Create the distribution folder hierarchy.
 folder_map = {}
 for folder in folder_list:
@@ -49,4 +54,8 @@ def CopyFiles(src, dest, files):
 
 # Copy binaries.
 for cxx_task in Extension.extensions:
-  builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/extensions'])
+  if cxx_task.target.arch == 'x86_64':
+    builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/extensions/x64'])
+  else:
+    builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/extensions'])
+
