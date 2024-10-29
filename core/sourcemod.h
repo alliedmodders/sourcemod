@@ -137,6 +137,10 @@ public: // ISourceMod
 	bool IsMapRunning();
 	void *FromPseudoAddress(uint32_t pseudoAddr);
 	uint32_t ToPseudoAddress(void *addr);
+	virtual bool IsUsingPluginAddress(IPluginContext* context) override;
+	virtual bool ToPluginAddress(IPluginContext* context, cell_t reference, void* addr) override;
+	virtual bool FromPluginAddress(IPluginContext* context, cell_t reference, void** addr) override;
+	virtual bool PushPluginAddress(IPluginFunction* function, void* addr, int flags = 0) override;
 private:
 	void ShutdownServices();
 private:

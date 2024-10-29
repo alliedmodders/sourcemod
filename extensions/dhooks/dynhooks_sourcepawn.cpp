@@ -376,8 +376,7 @@ ReturnAction_t HandleDetour(HookType_t hookType, CHook* pDetour)
 		{
 			// The this pointer is implicitly always the first argument.
 			void *thisPtr = pDetour->GetArgument<void *>(0);
-			cell_t thisAddr = GetThisPtr(thisPtr, pWrapper->thisType);
-			pCallback->PushCell(thisAddr);
+			PushThisPtr(pCallback, thisPtr, pWrapper->thisType);
 		}
 
 		// Create the structure for plugins to change/get the return value if the function returns something.

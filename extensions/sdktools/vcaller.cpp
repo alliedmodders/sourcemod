@@ -172,12 +172,21 @@ static cell_t PrepSDKCall_SetSignature(IPluginContext *pContext, const cell_t *p
 
 static cell_t PrepSDKCall_SetAddress(IPluginContext *pContext, const cell_t *params)
 {
+	if (g_pSM->IsUsingPluginAddress(pContext))
+	{
+		if (!g_pSM->FromPluginAddress(pContext, params[1], &s_call_addr))
+		{
+			return pContext->ThrowNativeError("Couldn't read addr!");
+		}
+	}
+	else
+	{
 #ifdef PLATFORM_X86
-	s_call_addr = reinterpret_cast<void *>(params[1]);
+		s_call_addr = reinterpret_cast<void *>(params[1]);
 #else
-	s_call_addr = g_pSM->FromPseudoAddress(params[1]);
+		s_call_addr = g_pSM->FromPseudoAddress(params[1]);
 #endif
-
+	}
 	return (s_call_addr != NULL) ? 1 : 0;
 }
 
@@ -413,6 +422,39 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 				startparam++;
 			}
 			break;
+		case ValveCall_SMAddress:
+			{
+				//params[startparam] is an address to a pointer to THIS
+				//params following this are params to the method we will invoke later
+				if (startparam > numparams)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("Expected a ThisPtr address, it wasn't found");
+				}
+
+				//note: varargs pawn args are passed by-ref
+				void *thisptr = nullptr;
+				if (!g_pSM->ToPluginAddress(pContext, params[startparam], &thisptr))
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("Failed to read ThisPtr address!");
+				}
+
+				if (thisptr == nullptr)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("ThisPtr address cannot be null");
+				}
+				else if (reinterpret_cast<uintptr_t>(thisptr) < VALID_MINIMUM_MEMORY_ADDRESS)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("Invalid ThisPtr address 0x%x is pointing to reserved memory.", thisptr);
+				}
+
+				*(void **)ptr = thisptr;
+				startparam++;
+			}
+			break;
 		default:
 			{
 				vc->stk_put(ptr);
@@ -429,7 +471,8 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 		{
 			startparam += 2;
 		} else if (vc->retinfo->vtype == Valve_Vector
-					|| vc->retinfo->vtype == Valve_QAngle)
+					|| vc->retinfo->vtype == Valve_QAngle
+					|| vc->retinfo->vtype == Valve_SMAddress)
 		{
 			startparam += 1;
 		}
@@ -506,11 +549,12 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 			pContext->StringToLocalUTF8(params[retparam], *addr, *(char **)vc->retbuf, &written);
 			return (cell_t)written;
 		} else if (vc->retinfo->vtype == Valve_Vector
-					|| vc->retinfo->vtype == Valve_QAngle)
+					|| vc->retinfo->vtype == Valve_QAngle
+					|| vc->retinfo->vtype == Valve_SMAddress)
 		{
 			if (numparams < 2)
 			{
-				return pContext->ThrowNativeError("Expected argument (2) for Float[3] storage");
+				return pContext->ThrowNativeError("Expected argument (2) for return storage");
 			}
 			if (EncodeValveParam(pContext, params[retparam], vc, vc->retinfo, vc->retbuf)
 				== Data_Fail)

@@ -164,6 +164,23 @@ size_t ValveParamToBinParam(ValveType type,
 				return sizeof(float);
 			}
 		}
+		break;
+	case Valve_SMAddress:
+		{
+			info->flags = flags;
+			if (flags & PASSFLAG_ASPOINTER)
+			{
+				needs_extra = true;
+				info->type = PassType_Basic;
+				info->size = sizeof(void**);
+				return sizeof(void**) + sizeof(void*);
+			} else {
+				info->type = PassType_Basic;
+				info->size = sizeof(void*);
+				return sizeof(void*);
+			}
+		}
+		break;
 	}
 
 	return 0;
@@ -278,6 +295,21 @@ DataStatus EncodeValveParam(IPluginContext *pContext,
 
 			return Data_Okay;
 		}
+	case Valve_SMAddress:
+		{
+			if (data->flags & PASSFLAG_ASPOINTER)
+			{
+				buffer = *(void ***)buffer;
+			}
+
+			if (!g_pSM->ToPluginAddress(pContext, param, *(void **)buffer))
+			{
+				pContext->ThrowNativeError("Failed to store address!");
+				return Data_Fail;
+			}
+			return Data_Okay;
+		}
+		break;
 	}
 
 	return Data_Fail;
@@ -579,6 +611,34 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			*(char **)buffer = addr;
 			return Data_Okay;
 		}
+		break;
+	case Valve_SMAddress:
+		{
+			if (data->flags & PASSFLAG_ASPOINTER)
+			{
+				*(void ***)buffer = (void **)((unsigned char *)_buffer + pCall->stackEnd + data->obj_offset);
+				buffer = *(void ***)buffer;
+			}
+			void* thisPtr = nullptr;
+			if (!g_pSM->FromPluginAddress(pContext, param, &thisPtr))
+			{
+				pContext->ThrowNativeError("Failed to read address!");
+				return Data_Fail;
+			}
+			if (thisPtr == nullptr)
+			{
+				if (data->decflags & VDECODE_FLAG_ALLOWNULL)
+				{
+					*(void **)buffer = nullptr;
+					return Data_Okay;
+				}
+				pContext->ThrowNativeError("Null Address isn't allowed!");
+				return Data_Fail;
+			}
+			*(void **)buffer = thisPtr;
+			return Data_Okay;
+		}
+		break;
 	}
 
 	return Data_Fail;

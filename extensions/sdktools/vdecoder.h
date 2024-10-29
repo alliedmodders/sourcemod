@@ -53,6 +53,7 @@ enum ValveType
 	Valve_Edict,			/**< Edict */
 	Valve_String,			/**< String */
 	Valve_Bool,				/**< Boolean */
+	Valve_SMAddress,        /**< SourceMod-Address */
 	Valve_Object,			/**< Object, not matching one of the above types */
 };
 
@@ -76,14 +77,15 @@ enum DataStatus
  */
 enum ValveCallType
 {
-	ValveCall_Static,		/**< Static call */
-	ValveCall_Entity,		/**< Thiscall (CBaseEntity implicit first parameter) */
-	ValveCall_Player,		/**< Thiscall (CBasePlayer implicit first parameter) */
-	ValveCall_GameRules,	/**< Thiscall (CGameRules implicit first paramater) */
-	ValveCall_EntityList,	/**< Thiscall (CGlobalEntityList implicit first paramater) */
-	ValveCall_Raw, 		/**< Thiscall (address explicit first parameter) */
+	ValveCall_Static,       /**< Static call */
+	ValveCall_Entity,       /**< Thiscall (CBaseEntity implicit first parameter) */
+	ValveCall_Player,       /**< Thiscall (CBasePlayer implicit first parameter) */
+	ValveCall_GameRules,    /**< Thiscall (CGameRules implicit first paramater) */
+	ValveCall_EntityList,   /**< Thiscall (CGlobalEntityList implicit first paramater) */
+	ValveCall_Raw,          /**< Thiscall (address explicit first parameter) */
 	ValveCall_Server,       /**< Thiscall (CBaseServer implicit first parameter) */
 	ValveCall_Engine,       /**< Thiscall (CVEngineServer implicit first parameter) */
+	ValveCall_SMAddress     /**< Thiscall (SourceMod-Address explicit first parameter) */
 };
 
 /**

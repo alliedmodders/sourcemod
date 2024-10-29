@@ -725,10 +725,169 @@ enum NumberType
     NumberType_Int32
 };
 
-enum Address
+/**
+ * Represents a memory address. I.e sizeof(void*)
+ */
+enum struct Address
 {
-    Address_Null = 0               // a typical invalid result when an address lookup fails
-};
+	/**
+	 * Do no manipulate the bits array directly.
+	 * SourceMod makes no guarantee in which way the array is filled.
+	 * Always go through the provided methods to update the Address value.
+	 */
+	int bits[8];
+
+	/**
+	 * Offsets the address by the amount of bytes.
+	 *
+	 * @param offset          Amount of bytes.
+	 */
+	/*void Offset(int offset) {
+		if ((offset & 0x80000000) != 0x0) {
+			this.Sub(~offset + 0x1);
+		} else {
+			this.Add(offset);
+		}
+	}*/
+
+	/**
+	 * Adds the given amount of bytes to the address.
+	 *
+	 * @param offset          Amount of bytes.
+	 */
+	/*void Add(int offset) {
+		// Subtract if number is negative
+		if ((offset & 0x80000000) != 0x0) {
+			this.Sub(~offset + 0x1);
+		} else {
+			this.__Add(offset, 0);
+		}
+	}*/
+
+	/**
+	 * Subtracts the address by the given amount of bytes.
+	 *
+	 * @param offset          Amount of bytes.
+	 */
+	/*void Sub(int offset) {
+		// Addition if number is negative
+		if ((offset & 0x80000000) != 0x0) {
+			this.Add(~offset + 0x1);
+		} else {
+			this.__Sub(offset, 0);
+		}
+	}*/
+
+	/**
+	 * Checks whether or not the address would be a nullptr in C++.
+	 *
+	 * @return              True if nullptr, false otherwise.
+	 */
+	bool IsNull() {
+		return (
+		   this.bits[0] == 0x0
+		&& this.bits[1] == 0x0
+		&& this.bits[2] == 0x0
+		&& this.bits[3] == 0x0
+		&& this.bits[4] == 0x0
+		&& this.bits[5] == 0x0
+		&& this.bits[6] == 0x0
+		&& this.bits[7] == 0x0)
+	}
+
+	/**
+	 * Mutiplies the address by the given value in bytes.
+	 */
+	void Mul(int value) {
+		AddressRefMultInt(this, value);
+	}
+
+	/**
+	 * Divides the address by the given value in bytes.
+	 * @error          Value is 0 or negative.
+	 */
+	void Div(int value) {
+		AddressRefDivInt(this, value);
+	}
+
+	/**
+	 * Increases the address value by the given amount of bytes.
+	 */
+	void Add(int value) {
+		AddressRefDivInt(this, value);
+	}
+
+	/**
+	 * Decreases the address value by the given amount of bytes.
+	 */
+	void Sub(int value) {
+		AddressRefSubInt(this, value);
+	}
+
+	/**
+	 * Performs a modulo on the address with the given value in bytes.
+	 * @error          Value is negative.
+	 */
+	void Mod(int value) {
+		AddressRefModInt(this, value);
+	}
+}
+public const Address Address_Null;
+
+native Address IntAddressMult(int a, Address b);
+//stock Address operator*(int oper1, Address oper2) { return IntAddressMult(oper1, oper2); }
+
+native void AddressRefMultInt(Address a, int b);
+native void AddressRefDivInt(Address a, int b);
+native void AddressRefAddInt(Address a, int b);
+native void AddressRefSubInt(Address a, int b);
+native void AddressRefModInt(Address a, int b);
+
+native Address AddressMultInt(Address a, int b);
+native Address AddressDivInt(Address a, int b);
+native Address AddressAddInt(Address a, int b);
+native Address AddressSubInt(Address a, int b);
+native Address AddressModInt(Address a, int b);
+
+//stock Address operator*(Address oper1, int oper2) { return AddressMultInt(oper1, oper2); }
+//stock Address operator/(Address oper1, int oper2) { return AddressDivInt(oper1, oper2); }
+//stock Address operator+(Address oper1, int oper2) { return AddressAddInt(oper1, oper2); }
+//stock Address operator-(Address oper1, int oper2) { return AddressSubInt(oper1, oper2); }
+//stock Address operator%(Address oper1, int oper2) { return AddressModInt(oper1, oper2); }
+
+native Address AddressMul(Address a, Address b);
+native Address AddressDiv(Address a, Address b);
+native Address AddressAdd(Address a, Address b);
+native Address AddressSub(Address a, Address b);
+native Address AddressMod(Address a, Address b);
+
+//stock Address operator*(Address oper1, Address oper2) { return AddressMul(oper1, oper2); }
+//stock Address operator/(Address oper1, Address oper2) { return AddressDiv(oper1, oper2); }
+//stock Address operator+(Address oper1, Address oper2) { return AddressAdd(oper1, oper2); }
+//stock Address operator-(Address oper1, Address oper2) { return AddressSub(oper1, oper2); }
+//stock Address operator%(Address oper1, Address oper2) { return AddressMod(oper1, oper2); }
+
+native bool AddressGreaterThan(Address a, Address b);
+native bool AddressGreaterEqual(Address a, Address b);
+native bool AddressLowerThan(Address a, Address b);
+native bool AddressLowerEqual(Address a, Address b);
+native bool AddressEqual(Address a, Address b);
+native bool AddressNotEqual(Address a, Address b);
+native bool AddressNot(Address a);
+
+//stock bool operator>(Address oper1, Address oper2) { return AddressGreaterThan(oper1, oper2); }
+//stock bool operator>=(Address oper1, Address oper2) { return AddressGreaterEqual(oper1, oper2); }
+//stock bool operator<(Address oper1, Address oper2) { return AddressLowerThan(oper1, oper2); }
+//stock bool operator<=(Address oper1, Address oper2) { return AddressLowerEqual(oper1, oper2); }
+//stock bool operator==(Address oper1, Address oper2) { return AddressEqual(oper1, oper2); }
+//stock bool operator!=(Address oper1, Address oper2) { return AddressNotEqual(oper1, oper2); }
+//stock bool operator!(Address oper1) { return AddressNot(oper1); }
+
+native Address AddressInc(Address a);
+native Address AddressDec(Address a, Address b);
+
+//stock Address operator++(Address oper) { return AddressInc(oper); }
+//stock Address operator--(Address oper) { return AddressDec(oper); }
 
 /**
  * Load up to 4 bytes from a memory address.
@@ -753,6 +912,28 @@ native any LoadFromAddress(Address addr, NumberType size);
  * @error                          Address is null or pointing to reserved memory.
  */
 native void StoreToAddress(Address addr, any data, NumberType size, bool updateMemAccess = true);
+
+/**
+ * Loads an Address value from a memory address.
+ * The amount of bytes read will be the sizeof(void*) in C++
+ *
+ * @param addr          Address to a memory location.
+ * @return              The new address value that is stored at that address.
+ * @error               Address location is null or pointing to reserved memory.
+ */
+native Address LoadAddressFromAddress(Address addr);
+
+/**
+ * Store an Address value to a memory address.
+ * The amount of bytes written will be the sizeof(void*) in C++
+ *
+ * @param addr                     Address to a memory location.
+ * @param data                     Value to store at the address.
+ * @param updateMemAccess          If true, SourceMod will set read / write / exec permissions
+ *                                 on the memory page being written to.
+ * @error                          Address is null or pointing to reserved memory.
+ */
+native void StoreAddressToAddress(Address addr, Address data, bool updateMemAccess = true);
 
 methodmap FrameIterator < Handle {
 	// Creates a stack frame iterator to build your own stack traces.

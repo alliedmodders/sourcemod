@@ -338,7 +338,7 @@ public:
 };
 
 size_t GetStackArgsSize(DHooksCallback *dg);
-cell_t GetThisPtr(void *iface, ThisPointerType type);
+void PushThisPtr(IPluginFunction* func, void *iface, ThisPointerType type);
 
 extern IBinTools *g_pBinTools;
 extern HandleType_t g_HookParamsHandle;

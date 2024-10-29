@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include <ISourceMod.h>
 #include "common_logic.h"
 #include <IHandleSys.h>
 #include "GameConfigs.h"
@@ -134,7 +135,13 @@ static cell_t smn_GameConfGetKeyValue(IPluginContext *pCtx, const cell_t *params
 
 static cell_t smn_GameConfGetAddress(IPluginContext *pCtx, const cell_t *params)
 {
-	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	int startparam = 1;
+	if (g_pSM->IsUsingPluginAddress(pCtx))
+	{
+		startparam++;
+	}
+
+	Handle_t hndl = static_cast<Handle_t>(params[startparam]);
 	HandleError herr;
 	HandleSecurity sec;
 	IGameConfig *gc;
@@ -150,21 +157,39 @@ static cell_t smn_GameConfGetAddress(IPluginContext *pCtx, const cell_t *params)
 
 	char *key;
 	void* val;
-	pCtx->LocalToString(params[2], &key);
+	pCtx->LocalToString(params[startparam], &key);
 
 	if (!gc->GetAddress(key, &val))
 		return 0;
 
+	// BCompat Address
+	if (startparam == 1)
+	{
 #ifdef PLATFORM_X86
-	return (cell_t)val;
+		return (cell_t)val;
 #else
-	return pseudoAddr.ToPseudoAddress(val);
+		return pseudoAddr.ToPseudoAddress(val);
 #endif
+	}
+	else
+	{
+		if (!g_pSM->ToPluginAddress(pCtx, params[1], val))
+		{
+			return pCtx->ThrowNativeError("Failed to return Address!");
+		}
+		return 0;
+	}
 }
 
 static cell_t smn_GameConfGetMemSig(IPluginContext *pCtx, const cell_t *params)
 {
-	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	int startparam = 1;
+	if (g_pSM->IsUsingPluginAddress(pCtx))
+	{
+		startparam++;
+	}
+
+	Handle_t hndl = static_cast<Handle_t>(params[startparam]);
 	HandleError herr;
 	HandleSecurity sec;
 	IGameConfig *gc;
@@ -180,18 +205,30 @@ static cell_t smn_GameConfGetMemSig(IPluginContext *pCtx, const cell_t *params)
 
 	char *key;
 	void *val;
-	pCtx->LocalToString(params[2], &key);
+	pCtx->LocalToString(params[startparam + 1], &key);
 
 	if (!gc->GetMemSig(key, &val))
 	{
 		return 0;
 	}
 
+	// BCompat Address
+	if (startparam == 1)
+	{
 #ifdef PLATFORM_X86
-	return (cell_t)val;
+		return (cell_t)val;
 #else
-	return pseudoAddr.ToPseudoAddress(val);
+		return pseudoAddr.ToPseudoAddress(val);
 #endif
+	}
+	else
+	{
+		if (!g_pSM->ToPluginAddress(pCtx, params[1], val))
+		{
+			return pCtx->ThrowNativeError("Failed to return Address!");
+		}
+		return 0;
+	}
 }
 
 static GameConfigsNatives s_GameConfigsNatives;

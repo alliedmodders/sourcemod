@@ -724,11 +724,22 @@ static cell_t GetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 
 static cell_t LoadEntityFromHandleAddress(IPluginContext *pContext, const cell_t *params)
 {
+	void* addr = nullptr;
+	if (g_SourceMod.IsUsingPluginAddress(pContext))
+	{
+		if (!g_SourceMod.FromPluginAddress(pContext, params[1], &addr))
+		{
+			return pContext->ThrowNativeError("Failed to read Address!");
+		}
+	}
+	else
+	{
 #ifdef PLATFORM_X86
-	void *addr = reinterpret_cast<void*>(params[1]);
+		addr = reinterpret_cast<void*>(params[1]);
 #else
-	void *addr = g_SourceMod.FromPseudoAddress(params[1]);
+		addr = pseudoAddr.FromPseudoAddress(params[1]);
 #endif
+	}
 
 	if (addr == NULL)
 	{
@@ -835,11 +846,22 @@ static cell_t SetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 
 static cell_t StoreEntityToHandleAddress(IPluginContext *pContext, const cell_t *params)
 {
+	void* addr = nullptr;
+	if (g_SourceMod.IsUsingPluginAddress(pContext))
+	{
+		if (!g_SourceMod.FromPluginAddress(pContext, params[1], &addr))
+		{
+			return pContext->ThrowNativeError("Failed to read Address!");
+		}
+	}
+	else
+	{
 #ifdef PLATFORM_X86
-	void *addr = reinterpret_cast<void*>(params[1]);
+		addr = reinterpret_cast<void*>(params[1]);
 #else
-	void *addr = g_SourceMod.FromPseudoAddress(params[1]);
+		addr = pseudoAddr.FromPseudoAddress(params[1]);
 #endif
+	}
 
 	if (addr == NULL)
 	{

@@ -122,7 +122,21 @@ cell_t Native_CreateHook(IPluginContext *pContext, const cell_t *params)
 //native Handle:DHookCreateDetour(Address:funcaddr, CallingConvention:callConv, ReturnType:returntype, ThisPointerType:thistype);
 cell_t Native_CreateDetour(IPluginContext *pContext, const cell_t *params)
 {
-	HookSetup *setup = new HookSetup((ReturnType)params[3], PASSFLAG_BYVAL, (CallingConvention)params[2], (ThisPointerType)params[4], (void *)params[1]);
+	void *iface = nullptr;
+	if (g_pSM->IsUsingPluginAddress(pContext))
+	{
+		if (!g_pSM->FromPluginAddress(pContext, params[1], &iface))
+		{
+			return pContext->ThrowNativeError("Failed to retrieve Address!");
+		}
+	}
+	else
+	{
+		iface = (void *)(params[1]);
+	}
+
+
+	HookSetup *setup = new HookSetup((ReturnType)params[3], PASSFLAG_BYVAL, (CallingConvention)params[2], (ThisPointerType)params[4], iface);
 
 	Handle_t hndl = handlesys->CreateHandle(g_HookSetupHandle, setup, pContext->GetIdentity(), myself->GetIdentity(), NULL);
 
@@ -589,7 +603,18 @@ cell_t HookRawImpl(IPluginContext *pContext, const cell_t *params, int callbackI
 	if (removalcbIndex > 0)
 		removalcb = pContext->GetFunctionById(params[removalcbIndex]);
 
-	void *iface = (void *)(params[3]);
+	void *iface = nullptr;
+	if (g_pSM->IsUsingPluginAddress(pContext))
+	{
+		if (!g_pSM->FromPluginAddress(pContext, params[3], &iface))
+		{
+			return pContext->ThrowNativeError("Failed to retrieve Address!");
+		}
+	}
+	else
+	{
+		iface = (void *)(params[3]);
+	}
 
 	for(int i = g_pHooks.size() -1; i >= 0; i--)
 	{
@@ -1489,19 +1514,25 @@ cell_t Native_IsNullParam(IPluginContext *pContext, const cell_t *params)
 //native Address:DHookGetParamAddress(Handle:hParams, num);
 cell_t Native_GetParamAddress(IPluginContext *pContext, const cell_t *params)
 {
+	int startparam = 1;
+	if (g_pSM->IsUsingPluginAddress(pContext))
+	{
+		startparam++;
+	}
+
 	HookParamsStruct *paramStruct;
 
-	if(!GetCallbackArgHandleIfValidOrError(g_HookParamsHandle, g_HookReturnHandle, (void **)&paramStruct, pContext, params[1]))
+	if(!GetCallbackArgHandleIfValidOrError(g_HookParamsHandle, g_HookReturnHandle, (void **)&paramStruct, pContext, params[startparam]))
 	{
 		return 0;
 	}
 
-	if(params[2] <= 0 || params[2] > (int)paramStruct->dg->params.size())
+	if(params[startparam + 1] <= 0 || params[startparam + 1] > (int)paramStruct->dg->params.size())
 	{
-		return pContext->ThrowNativeError("Invalid param number %i max params is %i", params[2], paramStruct->dg->params.size());
+		return pContext->ThrowNativeError("Invalid param number %i max params is %i", params[startparam + 1], paramStruct->dg->params.size());
 	}
 
-	int index = params[2] - 1;
+	int index = params[startparam + 1] - 1;
 
 	HookParamType type = paramStruct->dg->params.at(index).type;
 	if(type != HookParamType_StringPtr && type != HookParamType_CharPtr && type != HookParamType_VectorPtr && type != HookParamType_CBaseEntity && type != HookParamType_ObjectPtr && type != HookParamType_Edict && type != HookParamType_Unknown)
@@ -1510,7 +1541,19 @@ cell_t Native_GetParamAddress(IPluginContext *pContext, const cell_t *params)
 	}
 
 	size_t offset = GetParamOffset(paramStruct, index);
-	return *(cell_t *)((intptr_t)paramStruct->orgParams + offset);
+	// BCompat Address
+	if (startparam == 1)
+	{
+		return *(cell_t *)((intptr_t)paramStruct->orgParams + offset);
+	}
+	else
+	{
+		if (!g_pSM->ToPluginAddress(pContext, params[1], *(void **)((intptr_t)paramStruct->orgParams + offset)))
+		{
+			return pContext->ThrowNativeError("Failed to return Address!");
+		}
+		return 0;
+	}
 }
 
 sp_nativeinfo_t g_Natives[] = 

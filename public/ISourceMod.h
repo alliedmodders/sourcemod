@@ -42,7 +42,7 @@
 #include <time.h>
 
 #define SMINTERFACE_SOURCEMOD_NAME		"ISourceMod"
-#define SMINTERFACE_SOURCEMOD_VERSION	14
+#define SMINTERFACE_SOURCEMOD_VERSION	15
 
 /**
 * @brief Forward declaration of the KeyValues class.
@@ -319,18 +319,44 @@ namespace SourceMod
 		virtual bool IsMapRunning() = 0;
 
 		/**
-		 * @brief Converts 32-bit pseudo address to memory address on 64-bit platforms.
-		 *
-		 * @return 			Memory address, or nullptr if pseudo address could not be converted.
+		 * @brief Deprecated please use FromPluginAddress instead.
 		 */
 		virtual void *FromPseudoAddress(uint32_t pseudoAddr) = 0;
 
 		/**
-		 * @brief Converts memory address to 32-bit pseudo address on 64-bit platforms.
-		 *
-		 * @return			Pseudo address, or 0 if memory address could not be converted.
+		 * @brief Deprecated please use ToPluginAddress instead.
 		 */
 		virtual uint32_t ToPseudoAddress(void *addr) = 0;
+
+		/**
+		 * @brief Whether or not a given plugin uses.
+		 */
+		virtual bool IsUsingPluginAddress(SourcePawn::IPluginContext* context) = 0;
+
+		/**
+		 * @brief Stores a memory address into SM plugin Address.
+		 *
+		 * @param context        The plugin context the reference is from.
+		 * @param reference      SP reference to an Address variable.
+		 * @param addr           The memory address to convert.
+		 * @return               True if successful, False otherwise.
+		 */
+		virtual bool ToPluginAddress(SourcePawn::IPluginContext* context, cell_t reference, void* addr) = 0;
+
+		/**
+		 * @brief Converts SM Plugin Address into a memory address.
+		 *
+		 * @param context        The plugin context the reference is from.
+		 * @param reference      SP reference to an Address variable.
+		 * @param addr           Variable to store the memory address into.
+		 * @return               True if successful, False otherwise.
+		 */
+		virtual bool FromPluginAddress(SourcePawn::IPluginContext* context, cell_t reference, void** addr) = 0;
+
+		/**
+		 * @brief Pushes a memory address as a SM Plugin Address.
+		 */
+		virtual bool PushPluginAddress(SourcePawn::IPluginFunction* function, void* addr, int flags = 0) = 0;
 	};
 }
 

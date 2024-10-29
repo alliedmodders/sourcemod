@@ -836,6 +836,124 @@ uint32_t SourceModBase::ToPseudoAddress(void *addr)
 	return logicore.ToPseudoAddress(addr);
 }
 
+bool SourceModBase::IsUsingPluginAddress(IPluginContext* context)
+{
+	return context->GetRuntime()->FindPubvarByName("Address_Null", nullptr) == SP_ERROR_NONE;
+}
+
+#pragma pack(push, 1)
+struct SMAddress {
+	cell_t bits[8];
+
+	inline void* get_ptr() const {
+		std::int64_t ptr = 0x0;
+
+		if (sizeof(void*) >= 8) {
+			ptr |= (((std::int64_t)bits[1]) << 32);
+		}
+		ptr |= ((std::int32_t)bits[0]);
+
+		return reinterpret_cast<void*>(ptr);
+	}
+
+	inline void set_ptr(void* ptr) {
+		if (ptr == nullptr) {
+			for (int i = 0; i < sizeof(bits) / sizeof(cell_t); i++) {
+				bits[i] = 0x0;
+			}
+		}
+
+		std::int64_t store = 0x0;
+		store = reinterpret_cast<std::intptr_t>(ptr);
+
+		if (sizeof(void*) >= 8) {
+			bits[1] = static_cast<std::int32_t>(store >> 32);
+		}
+		bits[0] = static_cast<std::int32_t>(store);
+	}
+};
+#pragma pack(pop)
+
+bool SourceModBase::ToPluginAddress(IPluginContext* context, cell_t reference, void* addr)
+{
+	// Enum struct Address active ?
+	uint32_t index;
+	auto runtime = context->GetRuntime();
+	if (runtime->FindPubvarByName("Address_Null", &index) == SP_ERROR_NONE) {
+		return false;
+	}
+
+	// Shouldn't happen
+	cell_t null_addr_addr;
+	if (runtime->GetPubvarAddrs(index, &null_addr_addr, nullptr) == SP_ERROR_NONE) {
+		return false;
+	}
+
+	// Local address match, it's null address
+	// Do nothing...
+	if (null_addr_addr == reference) {
+		return true;
+	}
+
+	SMAddress to;
+	context->LocalToPhysAddr(reference, reinterpret_cast<cell_t**>(&to));
+	to.set_ptr(addr);
+	return true;
+}
+
+bool SourceModBase::FromPluginAddress(IPluginContext* context, cell_t reference, void** addr)
+{
+	// Enum struct Address active ?
+	uint32_t index;
+	auto runtime = context->GetRuntime();
+	if (runtime->FindPubvarByName("Address_Null", &index) == SP_ERROR_NONE) {
+		return false;
+	}
+
+	// Shouldn't happen
+	cell_t null_addr_addr;
+	if (runtime->GetPubvarAddrs(index, &null_addr_addr, nullptr) == SP_ERROR_NONE) {
+		return false;
+	}
+
+	// Local address match, it's null address
+	if (null_addr_addr == reference) {
+		*addr = nullptr;
+		return true;
+	}
+
+	SMAddress from;
+	context->LocalToPhysAddr(reference, reinterpret_cast<cell_t**>(&from));
+	*addr = from.get_ptr();
+	return true;
+}
+
+bool SourceModBase::PushPluginAddress(IPluginFunction* function, void* addr, int flags)
+{
+	// Enum struct Address active ?
+	uint32_t index;
+	auto runtime = function->GetParentRuntime();
+	if (runtime->FindPubvarByName("Address_Null", &index) != SP_ERROR_NONE) {
+		return false;
+	}
+
+	// Shouldn't happen
+	cell_t null_addr_addr;
+	if (runtime->GetPubvarAddrs(index, &null_addr_addr, nullptr) != SP_ERROR_NONE) {
+		return false;
+	}
+
+	if (addr == nullptr) {
+		function->PushCell(null_addr_addr);
+	} else {
+		SMAddress sp_addr;
+		sp_addr.set_ptr(addr);
+
+		function->PushArray(sp_addr.bits, sizeof(sp_addr.bits) / sizeof(cell_t));
+	}
+	return true;
+}
+
 class ConVarRegistrar :
 	public IConCommandBaseAccessor,
 	public SMGlobalClass

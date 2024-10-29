@@ -863,11 +863,22 @@ enum NumberType
 
 static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
 {
+	void* addr = nullptr;
+	if (g_pSM->IsUsingPluginAddress(pContext))
+	{
+		if (!g_pSM->FromPluginAddress(pContext, params[1], &addr))
+		{
+			return pContext->ThrowNativeError("Failed to read Address!");
+		}
+	}
+	else
+	{
 #ifdef PLATFORM_X86
-	void *addr = reinterpret_cast<void*>(params[1]);
+		addr = reinterpret_cast<void*>(params[1]);
 #else
-	void *addr = pseudoAddr.FromPseudoAddress(params[1]);
+		addr = pseudoAddr.FromPseudoAddress(params[1]);
 #endif
+	}
 
 	if (addr == NULL)
 	{
@@ -895,11 +906,22 @@ static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
 
 static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 {
+	void* addr = nullptr;
+	if (g_pSM->IsUsingPluginAddress(pContext))
+	{
+		if (!g_pSM->FromPluginAddress(pContext, params[1], &addr))
+		{
+			return pContext->ThrowNativeError("Failed to read Address!");
+		}
+	}
+	else
+	{
 #ifdef PLATFORM_X86
-	void *addr = reinterpret_cast<void*>(params[1]);
+		addr = reinterpret_cast<void*>(params[1]);
 #else
-	void *addr = pseudoAddr.FromPseudoAddress(params[1]);
+		addr = pseudoAddr.FromPseudoAddress(params[1]);
 #endif
+	}
 
 	if (addr == NULL)
 	{
