@@ -45,4 +45,19 @@
 		"he"		"אינך יכול להשעות את האייפי הזה"
 	}
 
+	"Custom ban reason explanation"
+	{
+		"he"		"הזן את הסיבה כהודעת צ'אט. השתמש ב-{1} כדי לבטל זאת."
+	}
+
+	"AbortBan applied successfully"
+	{
+		"he"		"ביטול ההשעייה הוחל בהצלחה"
+	}
+
+	"AbortBan not waiting for custom reason"
+	{
+		"he"		"ביטול ההשעייה לא מחכה לסיבה המותאמת"
+	}
+
 }

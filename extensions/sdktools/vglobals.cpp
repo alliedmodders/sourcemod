@@ -321,28 +321,23 @@ void GetResourceEntity()
 	{
 		int edictCount = gpGlobals->maxEntities;
 
-		for (int i=0; i<edictCount; i++)
+		for (int i = 0; i < edictCount; i++)
 		{
-			edict_t *pEdict = PEntityOfEntIndex(i);
-			if (!pEdict || pEdict->IsFree())
-			{
-				continue;
-			}
-			if (!pEdict->GetNetworkable())
+			CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(i);
+			if (pEntity == nullptr)
 			{
 				continue;
 			}
 
-			IHandleEntity *pHandleEnt = pEdict->GetNetworkable()->GetEntityHandle();
-			if (!pHandleEnt)
+			ServerClass *pClass = gamehelpers->FindEntityServerClass(pEntity);
+			if (pClass == nullptr)
 			{
 				continue;
 			}
-
-			ServerClass *pClass = pEdict->GetNetworkable()->GetServerClass();
+			
 			if (FindNestedDataTable(pClass->m_pTable, "DT_PlayerResource"))
 			{
-				g_ResourceEntity = pHandleEnt->GetRefEHandle();
+				g_ResourceEntity = ((IHandleEntity *)pEntity)->GetRefEHandle();
 				break;
 			}
 		}

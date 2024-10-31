@@ -59,7 +59,7 @@ namespace SourceMod
 
 struct IfaceInfo
 {
-	bool operator ==(const IfaceInfo &info)
+	bool operator ==(const IfaceInfo &info) const
 	{
 		return (info.iface == iface && info.owner == owner);
 	}

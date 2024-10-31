@@ -65,9 +65,6 @@ SH_DECL_HOOK2_void(INetChannel, ProcessPacket, SH_NOATTRIB, 0, struct netpacket_
 SourceHook::CallClass<IBaseFileSystem> *basefilesystemPatch = NULL; 
 
 CHookManager::CHookManager()
-#if SOURCE_ENGINE == SE_TF2
-	: replay_enabled("replay_enabled", false)
-#endif
 {
 	m_usercmdsPreFwd = NULL;
 	m_usercmdsFwd = NULL;
@@ -237,7 +234,7 @@ void CHookManager::OnClientConnected(int client)
 		}
 	}
 	
-	int hookid = SH_ADD_VPHOOK(IClientMessageHandler, ProcessVoiceData, (IClientMessageHandler *)((intptr_t)(pClient) + 4), SH_MEMBER(this, &CHookManager::ProcessVoiceData), true);
+	int hookid = SH_ADD_VPHOOK(IClientMessageHandler, ProcessVoiceData, (IClientMessageHandler *)((intptr_t)(pClient) + sizeof(void *)), SH_MEMBER(this, &CHookManager::ProcessVoiceData), true);
 	hook.SetHookID(hookid);
 	netProcessVoiceData.push_back(new CVTableHook(hook));
 }
@@ -446,7 +443,8 @@ void CHookManager::NetChannelHook(int client)
 
 		/* Initial Hook */
 #if SOURCE_ENGINE == SE_TF2
-		if (replay_enabled.GetBool())
+		ConVarRef replay_enable("replay_enable", false);
+		if (replay_enable.GetBool())
 		{
 			if (!m_bFSTranHookWarned)
 			{
@@ -586,7 +584,7 @@ bool CHookManager::SendFile(const char *filename, unsigned int transferID)
 #if !defined CLIENTVOICE_HOOK_SUPPORT
 bool CHookManager::ProcessVoiceData(CLC_VoiceData *msg)
 {
-	IClient *pClient = (IClient *)((intptr_t)(META_IFACEPTR(IClient)) - 4);
+	IClient *pClient = (IClient *)((intptr_t)(META_IFACEPTR(IClient)) - sizeof(void *));
 	if (pClient == NULL)
 	{
 		return true;

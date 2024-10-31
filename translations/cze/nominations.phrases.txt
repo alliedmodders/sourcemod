@@ -65,4 +65,9 @@
 		"cze"		"Nominovana"
 	}
 
+	"Map Not In Pool"
+	{
+		"cze"		"Mapa '{1}' není v bazénu"
+	}
+
 }

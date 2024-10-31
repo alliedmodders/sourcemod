@@ -65,6 +65,7 @@ ConVar g_Cvar_MaxRounds;
 #define PRINT_TO_ONE			2		/* Print to a single player */
 
 bool mapchooser;
+bool doNextmap;
 
 int g_TotalRounds;
 
@@ -90,16 +91,25 @@ public void OnPluginStart()
 	{
 		g_Cvar_FriendlyFire = FindConVar("mp_friendlyfire");
 	}
-	
-	RegConsoleCmd("timeleft", Command_Timeleft);
-	RegConsoleCmd("nextmap", Command_Nextmap);
-	RegConsoleCmd("motd", Command_Motd);
-	RegConsoleCmd("ff", Command_FriendlyFire);
-	
-	g_Cvar_TimeleftInterval.AddChangeHook(ConVarChange_TimeleftInterval);
 
 	char folder[64];   	 
 	GetGameFolderName(folder, sizeof(folder));
+
+	if (strcmp(folder, "dystopia") == 0)
+	{
+		doNextmap = false;
+	}
+	else
+	{
+		RegConsoleCmd("nextmap", Command_Nextmap);
+		doNextmap = true;
+	}
+
+	RegConsoleCmd("timeleft", Command_Timeleft);
+	RegConsoleCmd("motd", Command_Motd);
+	RegConsoleCmd("ff", Command_FriendlyFire);
+
+	g_Cvar_TimeleftInterval.AddChangeHook(ConVarChange_TimeleftInterval);
 
 	if (strcmp(folder, "insurgency") == 0)
 	{
@@ -300,7 +310,7 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 			PrintToChat(client,"[SM] %t", "Current Map", map);
 		}
 	}
-	else if (strcmp(sArgs, "nextmap", false) == 0)
+	else if (strcmp(sArgs, "nextmap", false) == 0 && doNextmap)
 	{
 		char map[PLATFORM_MAX_PATH];
 		GetNextMap(map, sizeof(map));

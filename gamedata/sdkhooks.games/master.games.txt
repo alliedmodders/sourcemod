@@ -204,4 +204,24 @@
 	{
 		"game"		"reactivedrop"
 	}
+	"game.openfortress.txt"
+	{
+		"game"		"open_fortress"
+	}
+	"game.dystopia.txt"
+	{
+		"game"		"!Dystopia"
+	}
+	"game.tf2classic.txt"
+	{
+		"game"		"tf2classic"
+	}
+	"game.pf2.txt"
+	{
+		"game"		"pf2"
+	}
+	"game.gmod9.txt"
+	{
+		"game"		"gmod9"
+	}
 }

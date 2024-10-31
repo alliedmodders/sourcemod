@@ -413,6 +413,17 @@ ServerClass *CHalfLife2::FindServerClass(const char *classname)
 	return pInfo->sc;
 }
 
+ServerClass *CHalfLife2::FindEntityServerClass(CBaseEntity *pEntity)
+{
+	IServerNetworkable* pNetwork = ((IServerUnknown *)pEntity)->GetNetworkable();
+	if (pNetwork == nullptr)
+	{
+		return nullptr;
+	}
+
+	return pNetwork->GetServerClass();
+}
+
 DataTableInfo *CHalfLife2::_FindServerClass(const char *classname)
 {
 	DataTableInfo *pInfo = NULL;
@@ -1099,8 +1110,26 @@ int CHalfLife2::ReferenceToIndex(cell_t entRef)
 
 		return hndl.GetEntryIndex();
 	}
+	else
+	{
+		CEntInfo *pInfo = LookupEntity(entRef);
+		if (!pInfo)
+		{
+			return INVALID_EHANDLE_INDEX;
+		}
+		IServerUnknown *pUnk = static_cast<IServerUnknown *>(pInfo->m_pEntity);
+		if (!pUnk)
+		{
+			return INVALID_EHANDLE_INDEX;
+		}
+		CBaseEntity *pEntity = pUnk->GetBaseEntity();
+		if (!pEntity)
+		{
+			return INVALID_EHANDLE_INDEX; 
+		}
 
-	return entRef;
+		return entRef;
+	}
 }
 
 cell_t CHalfLife2::EntityToBCompatRef(CBaseEntity *pEntity)

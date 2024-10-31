@@ -28,7 +28,6 @@ LIB-Debug/
 [Tt]humbs.db
 
 # AMBuild build directories
-build*/
 obj-*/
 *~
 *.rej
@@ -37,6 +36,8 @@ obj-*/
 *.swp
 *.gdb_history
 objdir
+# Not standardized, but common name for build directories
+build*/
 
 .vs/*
 .vscode/*

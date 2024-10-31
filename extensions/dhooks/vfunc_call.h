@@ -200,8 +200,8 @@ SDKVector CallVFunction<SDKVector>(DHooksCallback *dg, HookParamsStruct *paramSt
 		{
 			size_t offset = GetParamOffset(paramStruct, i);
 
-			void *orgAddr = *(void **)((intptr_t)paramStruct->orgParams + offset);
-			void *newAddr = *(void **)((intptr_t)paramStruct->newParams + offset);
+			void *orgAddr = (void **)((intptr_t)paramStruct->orgParams + offset);
+			void *newAddr = (void **)((intptr_t)paramStruct->newParams + offset);
 
 			switch (dg->params.at(i).type)
 			{
@@ -291,8 +291,8 @@ string_t CallVFunction<string_t>(DHooksCallback *dg, HookParamsStruct *paramStru
 		{
 			size_t offset = GetParamOffset(paramStruct, i);
 
-			void *orgAddr = *(void **)((intptr_t)paramStruct->orgParams + offset);
-			void *newAddr = *(void **)((intptr_t)paramStruct->newParams + offset);
+			void *orgAddr = (void **)((intptr_t)paramStruct->orgParams + offset);
+			void *newAddr = (void **)((intptr_t)paramStruct->newParams + offset);
 
 			switch (dg->params.at(i).type)
 			{

@@ -10,11 +10,11 @@ jobs:
   update_translations:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         name: Setup Python 3.10
         with:
           python-version: "3.10"
@@ -26,7 +26,7 @@ jobs:
 
       - name: Generate token
         id: generate_token
-        uses: tibdex/github-app-token@b62528385c34dbc9f38e5f4225ac829252d1ea92
+        uses: tibdex/github-app-token@3beb63f4bd073e61482598c45c71c1019b59b73a
         with:
           app_id: ${{ secrets.APP_ID }}
           private_key: ${{ secrets.APP_PEM }}

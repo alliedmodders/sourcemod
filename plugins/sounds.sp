@@ -67,23 +67,27 @@ public Action Command_Play(int client, int args)
  	char Arg[65];
 	int len = BreakString(Arguments, Arg, sizeof(Arg));
 
-	/* Make sure it does not go out of bound by doing "sm_play user  "*/
+	/* Make sure it does not go out of bound by doing "sm_play user  " */
 	if (len == -1)
 	{
 		ReplyToCommand(client, "[SM] Usage: sm_play <#userid|name> <filename>");
 		return Plugin_Handled;
 	}
 
-	/* Incase they put quotes and white spaces after the quotes */
-	if (Arguments[len] == '"')
-	{
-		len++;
-		int FileLen = TrimString(Arguments[len]) + len;
+	char SoundPath[PLATFORM_MAX_PATH];
+	BreakString(Arguments[len], SoundPath, sizeof(SoundPath));
+	
+	/* Remove all double and single quotes out of the path */
+	ReplaceString(SoundPath, sizeof(SoundPath), "\"", "");
+	ReplaceString(SoundPath, sizeof(SoundPath), "'", "");
 
-		if (Arguments[FileLen - 1] == '"')
-		{
-			Arguments[FileLen - 1] = '\0';
-		}
+	TrimString(SoundPath);
+
+	/* Block any attempts of chaining console commands on */
+	if(StrContains(SoundPath, ";") != -1)
+	{
+		ReplyToCommand(client, "[SM] Invalid filename");
+		return Plugin_Handled;
 	}
 	
 	char target_name[MAX_TARGET_LENGTH];
@@ -106,8 +110,8 @@ public Action Command_Play(int client, int args)
 	
 	for (int i = 0; i < target_count; i++)
 	{
-		ClientCommand(target_list[i], "playgamesound \"%s\"", Arguments[len]);
-		LogAction(client, target_list[i], "\"%L\" played sound on \"%L\" (file \"%s\")", client, target_list[i], Arguments[len]);
+		ClientCommand(target_list[i], "playgamesound \"%s\"", SoundPath);
+		LogAction(client, target_list[i], "\"%L\" played sound on \"%L\" (file \"%s\")", client, target_list[i], SoundPath);
 	}
 	
 	if (tn_is_ml)

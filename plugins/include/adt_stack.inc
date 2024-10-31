@@ -99,6 +99,15 @@ methodmap ArrayStack < Handle
 	// @error              The stack is empty.
 	public native any Pop(int block=0, bool asChar=false);
 
+	// Reads a cell value from a stack without removing it.
+	//
+	// @param block        Optionally specify which block to read from
+	//                     (useful if the blocksize > 0).
+	// @param asChar       Optionally read as a byte instead of a cell.
+	// @return             Value read from the stack.
+	// @error              The stack is empty.
+	public native any Top(int block=0, bool asChar=false);
+
 	// Pops a string value from a stack.
 	//
 	// @param buffer       Buffer to store string.
@@ -108,6 +117,15 @@ methodmap ArrayStack < Handle
 	// @error              The stack is empty.
 	public native void PopString(char[] buffer, int maxlength, int &written = 0);
 
+	// Reads a string value from a stack without removing it.
+	//
+	// @param buffer       Buffer to store string.
+	// @param maxlength    Maximum size of the buffer.
+	// @param written      Number of characters written to buffer, not including
+	//                     the null terminator.
+	// @error              The stack is empty.
+	public native void TopString(char[] buffer, int maxlength, int &written = 0);
+
 	// Pops an array of cells from a stack.
 	//
 	// @param buffer       Buffer to store the array in.
@@ -116,6 +134,14 @@ methodmap ArrayStack < Handle
 	// @error              The stack is empty.
 	public native void PopArray(any[] buffer, int size=-1);
 
+	// Reads an array of cells from a stack without removing it.
+	//
+	// @param buffer       Buffer to store the array in.
+	// @param size         If not set, assumes the buffer size is equal to the
+	//                     blocksize.  Otherwise, the size passed is used.
+	// @error              The stack is empty.
+	public native void TopArray(any[] buffer, int size=-1);
+
 	// Returns true if the stack is empty, false otherwise.
 	property bool Empty {
 		public native get();
@@ -123,6 +149,10 @@ methodmap ArrayStack < Handle
 	
 	// Retrieve the blocksize the stack was created with.
 	property int BlockSize {
+		public native get();
+	}
+	
+	property int Length {
 		public native get();
 	}
 };
