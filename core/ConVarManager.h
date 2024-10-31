@@ -43,7 +43,7 @@
 #include <compat_wrappers.h>
 #include "concmd_cleaner.h"
 #include "PlayerManager.h"
-#include <sm_stringhashmap.h>
+#include <sm_hashmap.h>
 
 using namespace SourceHook;
 
