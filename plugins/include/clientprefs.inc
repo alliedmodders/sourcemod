@@ -157,7 +157,6 @@ methodmap Cookie < Handle {
 		this.Set(client, sValue);
 	}
 
-
 	// Retrieve the value of a Client preference cookie.
 	//
 	// @param client        Client index.
@@ -202,6 +201,16 @@ methodmap Cookie < Handle {
 		return value;
 	}
 	
+	// Checks whether a Client preference cookie has been set (is not an empty string).
+	//
+	// @param client        Client index.
+	// @error               Invalid cookie handle or invalid client index.
+	public bool IsSet(int client) {
+		char buffer[2];
+		this.Get(client, buffer, sizeof(buffer));
+		return buffer[0] != '\0';
+	}
+
 	// Set the value of a Client preference cookie based on an authID string.
 	//
 	// @param authID        String Auth/STEAM ID of player to set.
