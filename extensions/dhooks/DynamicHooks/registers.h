@@ -132,7 +132,7 @@ enum Register_t
 	// ========================================================================
 	// >> 64-bit General purpose registers
 	// ========================================================================
-#ifdef PLATFORM_X64
+#ifdef DYNAMICHOOKS_x86_64
 	RAX,
 	RCX,
 	RDX,
@@ -177,7 +177,7 @@ enum Register_t
 	XMM7,
 
 	// 64-bit mode only
-#ifdef PLATFORM_X64
+#ifdef DYNAMICHOOKS_x86_64
 	XMM8,
 	XMM9,
 	XMM10,
@@ -373,7 +373,7 @@ public:
 	// >> 64-bit General purpose registers
 	// ========================================================================
 	// 64-bit mode only
-#ifdef PLATFORM_X64
+#ifdef DYNAMICHOOKS_x86_64
 	CRegister* m_rax;
 	CRegister* m_rcx;
 	CRegister* m_rdx;
@@ -418,7 +418,7 @@ public:
 	CRegister* m_xmm7;
 
 	// 64-bit mode only
-#ifdef PLATFORM_X64
+#ifdef DYNAMICHOOKS_x86_64
 	CRegister* m_xmm8;
 	CRegister* m_xmm9;
 	CRegister* m_xmm10;

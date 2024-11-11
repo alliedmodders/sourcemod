@@ -16,7 +16,7 @@ if SM.mysql_root:
 
     if binary.compiler.target.platform == 'linux' or binary.compiler.target.platform == 'mac':
       binary.compiler.postlink += [
-        os.path.join(SM.mysql_root[arch], 'lib', 'libmysqlclient_r.a'),
+        os.path.join(SM.mysql_root[arch], 'lib', 'libmysqlclient.a'),
         '-lz',
         '-lpthread',
         '-lm',
