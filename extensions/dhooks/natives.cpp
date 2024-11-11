@@ -1117,21 +1117,20 @@ cell_t Native_GetParamObjectPtrVar(IPluginContext *pContext, const cell_t *param
 	}
 	else
 	{
-		HookSetup *setup;
-
+		/*HookSetup* setup;
 		if(!GetHandleIfValidOrError(g_HookSetupHandle, (void **)&setup, pContext, params[1]))
 		{
 			return pContext->ThrowNativeError("Cannot determine calling convention type, parameter 'this' is only available in member functions");
 		}
 
-		if(paramStruct->dg->thisType != ThisPointer_Address)
-		{
-			return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
-		}
-
 		if(setup->callConv != CallConv_THISCALL)
 		{
 			return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
+		}*/
+
+		if(paramStruct->dg->thisType != ThisPointer_Address)
+		{
+			return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
 		}
 
 		addr = g_SHPtr->GetIfacePtr();
@@ -1214,21 +1213,20 @@ cell_t Native_SetParamObjectPtrVar(IPluginContext *pContext, const cell_t *param
 	}
 	else
 	{
-		HookSetup *setup;
-
+		/*HookSetup* setup;
 		if(!GetHandleIfValidOrError(g_HookSetupHandle, (void **)&setup, pContext, params[1]))
 		{
 			return pContext->ThrowNativeError("Cannot determine calling convention type, parameter 'this' is only available in member functions");
 		}
 
-		if(paramStruct->dg->thisType != ThisPointer_Address)
-		{
-			return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
-		}
-
 		if(setup->callConv != CallConv_THISCALL)
 		{
 			return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
+		}*/
+
+		if(paramStruct->dg->thisType != ThisPointer_Address)
+		{
+			return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
 		}
 
 		addr = g_SHPtr->GetIfacePtr();
@@ -1325,21 +1323,20 @@ cell_t Native_GetParamObjectPtrVarVector(IPluginContext *pContext, const cell_t 
 	}
 	else
 	{
-		HookSetup *setup;
-
+		/*HookSetup* setup;
 		if(!GetHandleIfValidOrError(g_HookSetupHandle, (void **)&setup, pContext, params[1]))
 		{
 			return pContext->ThrowNativeError("Cannot determine calling convention type, parameter 'this' is only available in member functions");
 		}
 
-		if(paramStruct->dg->thisType != ThisPointer_Address)
-		{
-			return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
-		}
-
 		if(setup->callConv != CallConv_THISCALL)
 		{
 			return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
+		}*/
+
+		if(paramStruct->dg->thisType != ThisPointer_Address)
+		{
+			return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
 		}
 
 		addr = g_SHPtr->GetIfacePtr();
@@ -1405,21 +1402,20 @@ cell_t Native_SetParamObjectPtrVarVector(IPluginContext *pContext, const cell_t 
 	}
 	else
 	{
-		HookSetup *setup;
-
+		/*HookSetup* setup;
 		if(!GetHandleIfValidOrError(g_HookSetupHandle, (void **)&setup, pContext, params[1]))
 		{
 			return pContext->ThrowNativeError("Cannot determine calling convention type, parameter 'this' is only available in member functions");
 		}
 
-		if(paramStruct->dg->thisType != ThisPointer_Address)
-		{
-			return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
-		}
-
 		if(setup->callConv != CallConv_THISCALL)
 		{
 			return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
+		}*/
+
+		if(paramStruct->dg->thisType != ThisPointer_Address)
+		{
+			return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
 		}
 
 		addr = g_SHPtr->GetIfacePtr();
@@ -1485,21 +1481,20 @@ cell_t Native_GetParamObjectPtrString(IPluginContext *pContext, const cell_t *pa
 	}
 	else
 	{
-		HookSetup *setup;
-
+		/*HookSetup* setup;
 		if(!GetHandleIfValidOrError(g_HookSetupHandle, (void **)&setup, pContext, params[1]))
 		{
 			return pContext->ThrowNativeError("Cannot determine calling convention type, parameter 'this' is only available in member functions");
 		}
 
-		if(paramStruct->dg->thisType != ThisPointer_Address)
-		{
-			return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
-		}
-
 		if(setup->callConv != CallConv_THISCALL)
 		{
 			return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
+		}*/
+
+		if(paramStruct->dg->thisType != ThisPointer_Address)
+		{
+			return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
 		}
 
 		addr = g_SHPtr->GetIfacePtr();
