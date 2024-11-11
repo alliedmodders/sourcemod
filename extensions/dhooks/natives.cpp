@@ -1096,20 +1096,46 @@ cell_t Native_GetParamObjectPtrVar(IPluginContext *pContext, const cell_t *param
 		return 0;
 	}
 
-	if(params[2] <= 0 || params[2] > (int)paramStruct->dg->params.size())
+	void *addr = NULL;
+
+	if(params[2] != 0)
 	{
-		return pContext->ThrowNativeError("Invalid param number %i max params is %i", params[2], paramStruct->dg->params.size());
+		if(params[2] < 0 || params[2] > (int)paramStruct->dg->params.size())
+		{
+			return pContext->ThrowNativeError("Invalid param number %i max params is %i", params[2], paramStruct->dg->params.size());
+		}
+
+		int index = params[2] - 1;
+
+		if(paramStruct->dg->params.at(index).type != HookParamType_ObjectPtr && paramStruct->dg->params.at(index).type != HookParamType_Object)
+		{
+			return pContext->ThrowNativeError("Invalid object value type %i", paramStruct->dg->params.at(index).type);
+		}
+
+		size_t offset = GetParamOffset(paramStruct, index);
+		addr = GetObjectAddr(paramStruct->dg->params.at(index).type, paramStruct->dg->params.at(index).flags, paramStruct->orgParams, offset);
 	}
-
-	int index = params[2] - 1;
-
-	if(paramStruct->dg->params.at(index).type != HookParamType_ObjectPtr && paramStruct->dg->params.at(index).type != HookParamType_Object)
+	else
 	{
-		return pContext->ThrowNativeError("Invalid object value type %i", paramStruct->dg->params.at(index).type);
-	}
+		HookSetup *setup;
 
-	size_t offset = GetParamOffset(paramStruct, index);
-	void *addr = GetObjectAddr(paramStruct->dg->params.at(index).type, paramStruct->dg->params.at(index).flags, paramStruct->orgParams, offset);
+		if(!GetHandleIfValidOrError(g_HookSetupHandle, (void **)&setup, pContext, params[1]))
+		{
+			return pContext->ThrowNativeError("Cannot determine calling convention type, parameter 'this' is only available in member functions");
+		}
+
+		if(paramStruct->dg->thisType != ThisPointer_Address)
+		{
+			return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
+		}
+
+		if(setup->callConv != CallConv_THISCALL)
+		{
+			return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
+		}
+
+		addr = g_SHPtr->GetIfacePtr();
+	}
 
 	switch((ObjectValueType)params[4])
 	{
@@ -1167,20 +1193,46 @@ cell_t Native_SetParamObjectPtrVar(IPluginContext *pContext, const cell_t *param
 		return 0;
 	}
 
-	if(params[2] <= 0 || params[2] > (int)paramStruct->dg->params.size())
-	{
-		return pContext->ThrowNativeError("Invalid param number %i max params is %i", params[2], paramStruct->dg->params.size());
-	}
+	void *addr = NULL;
 
-	int index = params[2] - 1;
-
-	if(paramStruct->dg->params.at(index).type != HookParamType_ObjectPtr && paramStruct->dg->params.at(index).type != HookParamType_Object)
+	if(params[2] != 0)
 	{
-		return pContext->ThrowNativeError("Invalid object value type %i", paramStruct->dg->params.at(index).type);
+		if(params[2] < 0 || params[2] > (int)paramStruct->dg->params.size())
+		{
+			return pContext->ThrowNativeError("Invalid param number %i max params is %i", params[2], paramStruct->dg->params.size());
+		}
+
+		int index = params[2] - 1;
+
+		if(paramStruct->dg->params.at(index).type != HookParamType_ObjectPtr && paramStruct->dg->params.at(index).type != HookParamType_Object)
+		{
+			return pContext->ThrowNativeError("Invalid object value type %i", paramStruct->dg->params.at(index).type);
+		}
+
+		size_t offset = GetParamOffset(paramStruct, index);
+		addr = GetObjectAddr(paramStruct->dg->params.at(index).type, paramStruct->dg->params.at(index).flags, paramStruct->orgParams, offset);
 	}
-	
-	size_t offset = GetParamOffset(paramStruct, index);
-	void *addr = GetObjectAddr(paramStruct->dg->params.at(index).type, paramStruct->dg->params.at(index).flags, paramStruct->orgParams, offset);
+	else
+	{
+		HookSetup *setup;
+
+		if(!GetHandleIfValidOrError(g_HookSetupHandle, (void **)&setup, pContext, params[1]))
+		{
+			return pContext->ThrowNativeError("Cannot determine calling convention type, parameter 'this' is only available in member functions");
+		}
+
+		if(paramStruct->dg->thisType != ThisPointer_Address)
+		{
+			return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
+		}
+
+		if(setup->callConv != CallConv_THISCALL)
+		{
+			return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
+		}
+
+		addr = g_SHPtr->GetIfacePtr();
+	}
 
 	switch((ObjectValueType)params[4])
 	{
@@ -1252,20 +1304,46 @@ cell_t Native_GetParamObjectPtrVarVector(IPluginContext *pContext, const cell_t 
 		return 0;
 	}
 
-	if(params[2] <= 0 || params[2] > (int)paramStruct->dg->params.size())
+	void *addr = NULL;
+
+	if(params[2] != 0)
 	{
-		return pContext->ThrowNativeError("Invalid param number %i max params is %i", params[2], paramStruct->dg->params.size());
+		if(params[2] < 0 || params[2] > (int)paramStruct->dg->params.size())
+		{
+			return pContext->ThrowNativeError("Invalid param number %i max params is %i", params[2], paramStruct->dg->params.size());
+		}
+
+		int index = params[2] - 1;
+
+		if(paramStruct->dg->params.at(index).type != HookParamType_ObjectPtr && paramStruct->dg->params.at(index).type != HookParamType_Object)
+		{
+			return pContext->ThrowNativeError("Invalid object value type %i", paramStruct->dg->params.at(index).type);
+		}
+
+		size_t offset = GetParamOffset(paramStruct, index);
+		addr = GetObjectAddr(paramStruct->dg->params.at(index).type, paramStruct->dg->params.at(index).flags, paramStruct->orgParams, offset);
 	}
-
-	int index = params[2] - 1;
-
-	if(paramStruct->dg->params.at(index).type != HookParamType_ObjectPtr && paramStruct->dg->params.at(index).type != HookParamType_Object)
+	else
 	{
-		return pContext->ThrowNativeError("Invalid object value type %i", paramStruct->dg->params.at(index).type);
-	}
+		HookSetup *setup;
 
-	size_t offset = GetParamOffset(paramStruct, index);
-	void *addr = GetObjectAddr(paramStruct->dg->params.at(index).type, paramStruct->dg->params.at(index).flags, paramStruct->orgParams, offset);
+		if(!GetHandleIfValidOrError(g_HookSetupHandle, (void **)&setup, pContext, params[1]))
+		{
+			return pContext->ThrowNativeError("Cannot determine calling convention type, parameter 'this' is only available in member functions");
+		}
+
+		if(paramStruct->dg->thisType != ThisPointer_Address)
+		{
+			return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
+		}
+
+		if(setup->callConv != CallConv_THISCALL)
+		{
+			return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
+		}
+
+		addr = g_SHPtr->GetIfacePtr();
+	}
 
 	cell_t *buffer;
 	pContext->LocalToPhysAddr(params[5], &buffer);
@@ -1305,21 +1383,47 @@ cell_t Native_SetParamObjectPtrVarVector(IPluginContext *pContext, const cell_t 
 	{
 		return 0;
 	}
+	
+	void *addr = NULL;
 
-	if(params[2] <= 0 || params[2] > (int)paramStruct->dg->params.size())
+	if(params[2] != 0)
 	{
-		return pContext->ThrowNativeError("Invalid param number %i max params is %i", params[2], paramStruct->dg->params.size());
+		if(params[2] < 0 || params[2] > (int)paramStruct->dg->params.size())
+		{
+			return pContext->ThrowNativeError("Invalid param number %i max params is %i", params[2], paramStruct->dg->params.size());
+		}
+
+		int index = params[2] - 1;
+
+		if(paramStruct->dg->params.at(index).type != HookParamType_ObjectPtr && paramStruct->dg->params.at(index).type != HookParamType_Object)
+		{
+			return pContext->ThrowNativeError("Invalid object value type %i", paramStruct->dg->params.at(index).type);
+		}
+
+		size_t offset = GetParamOffset(paramStruct, index);
+		addr = GetObjectAddr(paramStruct->dg->params.at(index).type, paramStruct->dg->params.at(index).flags, paramStruct->orgParams, offset);
 	}
-
-	int index = params[2] - 1;
-
-	if(paramStruct->dg->params.at(index).type != HookParamType_ObjectPtr && paramStruct->dg->params.at(index).type != HookParamType_Object)
+	else
 	{
-		return pContext->ThrowNativeError("Invalid object value type %i", paramStruct->dg->params.at(index).type);
-	}
+		HookSetup *setup;
 
-	size_t offset = GetParamOffset(paramStruct, index);
-	void *addr = GetObjectAddr(paramStruct->dg->params.at(index).type, paramStruct->dg->params.at(index).flags, paramStruct->orgParams, offset);
+		if(!GetHandleIfValidOrError(g_HookSetupHandle, (void **)&setup, pContext, params[1]))
+		{
+			return pContext->ThrowNativeError("Cannot determine calling convention type, parameter 'this' is only available in member functions");
+		}
+
+		if(paramStruct->dg->thisType != ThisPointer_Address)
+		{
+			return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
+		}
+
+		if(setup->callConv != CallConv_THISCALL)
+		{
+			return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
+		}
+
+		addr = g_SHPtr->GetIfacePtr();
+	}
 
 	cell_t *buffer;
 	pContext->LocalToPhysAddr(params[5], &buffer);
@@ -1346,6 +1450,7 @@ cell_t Native_SetParamObjectPtrVarVector(IPluginContext *pContext, const cell_t 
 		vec->z = sp_ctof(buffer[2]);
 		return 1;
 	}
+
 	return pContext->ThrowNativeError("Invalid Object value type (not a type of vector)");
 }
 
@@ -1359,20 +1464,46 @@ cell_t Native_GetParamObjectPtrString(IPluginContext *pContext, const cell_t *pa
 		return 0;
 	}
 
-	if(params[2] <= 0 || params[2] > (int)paramStruct->dg->params.size())
+	void *addr = NULL;
+
+	if(params[2] != 0)
 	{
-		return pContext->ThrowNativeError("Invalid param number %i max params is %i", params[2], paramStruct->dg->params.size());
+		if(params[2] <= 0 || params[2] > (int)paramStruct->dg->params.size())
+		{
+			return pContext->ThrowNativeError("Invalid param number %i max params is %i", params[2], paramStruct->dg->params.size());
+		}
+
+		int index = params[2] - 1;
+
+		if(paramStruct->dg->params.at(index).type != HookParamType_ObjectPtr && paramStruct->dg->params.at(index).type != HookParamType_Object)
+		{
+			return pContext->ThrowNativeError("Invalid object value type %i", paramStruct->dg->params.at(index).type);
+		}
+
+		size_t offset = GetParamOffset(paramStruct, index);
+		addr = GetObjectAddr(paramStruct->dg->params.at(index).type, paramStruct->dg->params.at(index).flags, paramStruct->orgParams, offset);
 	}
-
-	int index = params[2] - 1;
-
-	if(paramStruct->dg->params.at(index).type != HookParamType_ObjectPtr && paramStruct->dg->params.at(index).type != HookParamType_Object)
+	else
 	{
-		return pContext->ThrowNativeError("Invalid object value type %i", paramStruct->dg->params.at(index).type);
-	}
+		HookSetup *setup;
 
-	size_t offset = GetParamOffset(paramStruct, index);
-	void *addr = GetObjectAddr(paramStruct->dg->params.at(index).type, paramStruct->dg->params.at(index).flags, paramStruct->orgParams, offset);
+		if(!GetHandleIfValidOrError(g_HookSetupHandle, (void **)&setup, pContext, params[1]))
+		{
+			return pContext->ThrowNativeError("Cannot determine calling convention type, parameter 'this' is only available in member functions");
+		}
+
+		if(paramStruct->dg->thisType != ThisPointer_Address)
+		{
+			return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
+		}
+
+		if(setup->callConv != CallConv_THISCALL)
+		{
+			return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
+		}
+
+		addr = g_SHPtr->GetIfacePtr();
+	}
 
 	switch((ObjectValueType)params[4])
 	{
