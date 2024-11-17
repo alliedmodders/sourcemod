@@ -5,7 +5,6 @@
 	{
 		"Offsets"
 		{
-			//This sucks, this comment HAS to stay, if you remove it, sourcemod WILl crash, why? Ask god.
 			"EntityListeners"
 			{
 				"windows"	"131108"
@@ -195,6 +194,13 @@
 	{
 		"Offsets"
 		{
+			"EntityListeners"
+			{
+				"windows"	"131108"
+				"windows64"	"262200"
+				"linux"		"131108"
+				"linux64"	"262200"
+			}
 			"EndTouch"
 			{
 				"windows"	"100"
