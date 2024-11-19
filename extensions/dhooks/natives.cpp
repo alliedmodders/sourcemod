@@ -1446,7 +1446,6 @@ cell_t Native_SetParamObjectPtrVarVector(IPluginContext *pContext, const cell_t 
 		vec->z = sp_ctof(buffer[2]);
 		return 1;
 	}
-
 	return pContext->ThrowNativeError("Invalid Object value type (not a type of vector)");
 }
 
