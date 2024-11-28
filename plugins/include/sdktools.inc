@@ -88,7 +88,10 @@ enum SDKType
 	SDKType_Float,          /**< Float (any) */
 	SDKType_Edict,          /**< edict_t (always as pointer) */
 	SDKType_String,         /**< NULL-terminated string (always as pointer) */
-	SDKType_Bool            /**< Boolean (any) */
+	SDKType_Bool,           /**< Boolean (any) */
+#if defined VIRTUAL_ADDRESS
+	SDKType_VirtualAddress, /**< SM Virtual Address */
+#endif
 };
 
 enum SDKPassMethod

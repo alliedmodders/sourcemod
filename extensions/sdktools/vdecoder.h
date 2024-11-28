@@ -53,6 +53,7 @@ enum ValveType
 	Valve_Edict,			/**< Edict */
 	Valve_String,			/**< String */
 	Valve_Bool,				/**< Boolean */
+	Valve_VirtualAddress,   /**< SM Virtual Address */
 	Valve_Object,			/**< Object, not matching one of the above types */
 };
 

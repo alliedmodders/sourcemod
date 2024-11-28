@@ -730,6 +730,10 @@ enum Address
     Address_Null = 0               // a typical invalid result when an address lookup fails
 };
 
+#if defined VIRTUAL_ADDRESS
+public const Address __Virtual_Address__ = 0;
+#endif
+
 /**
  * Load up to 4 bytes from a memory address.
  *
@@ -753,6 +757,28 @@ native any LoadFromAddress(Address addr, NumberType size);
  * @error                          Address is null or pointing to reserved memory.
  */
 native void StoreToAddress(Address addr, any data, NumberType size, bool updateMemAccess = true);
+
+/**
+ * Load sizeof(void*) from a memory address.
+ *
+ * @param addr          Address to a memory location.
+ * @param size          How many bytes should be read.
+ *                      If loading a floating-point value, use NumberType_Int32.
+ * @return              The address that is stored at that address.
+ * @error               Address is null or pointing to reserved memory.
+ */
+native Address LoadAddressFromAddress(Address addr);
+
+/**
+ * Store sizeof(void*) bytes to a memory address.
+ *
+ * @param addr                     Address to a memory location.
+ * @param data                     Address to store at that location.
+ * @param updateMemAccess          If true, SourceMod will set read / write / exec permissions
+ *                                 on the memory page being written to.
+ * @error                          Address is null or pointing to reserved memory.
+ */
+native void StoreAddressToAddress(Address addr, any data, NumberType size, bool updateMemAccess = true);
 
 methodmap FrameIterator < Handle {
 	// Creates a stack frame iterator to build your own stack traces.
