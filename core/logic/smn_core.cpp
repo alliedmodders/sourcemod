@@ -59,6 +59,7 @@
 #include <bridge/include/CoreProvider.h>
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/IExtensionBridge.h>
+#include "PseudoAddrManager.h"
 #include <sh_vector.h>
 
 using namespace SourceMod;
@@ -863,11 +864,10 @@ enum NumberType
 
 static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
 {
-#ifdef KE_ARCH_X86
 	void *addr = reinterpret_cast<void*>(params[1]);
-#else
-	void *addr = pseudoAddr.FromPseudoAddress(params[1]);
-#endif
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) != SP_ERROR_NONE) {
+		addr = pseudoAddr.FromPseudoAddress(params[1]);
+	}
 
 	if (addr == NULL)
 	{
@@ -895,11 +895,10 @@ static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
 
 static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 {
-#ifdef KE_ARCH_X86
 	void *addr = reinterpret_cast<void*>(params[1]);
-#else
-	void *addr = pseudoAddr.FromPseudoAddress(params[1]);
-#endif
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) != SP_ERROR_NONE) {
+		addr = pseudoAddr.FromPseudoAddress(params[1]);
+	}
 
 	if (addr == NULL)
 	{

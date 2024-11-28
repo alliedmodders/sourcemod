@@ -31,6 +31,7 @@
 #define _INCLUDE_SOURCEMOD_PSEUDOADDRESSMANAGER_H_
 
 #include "common_logic.h"
+#include "libaddrz/addrz.h"
 
 class PseudoAddressManager
 {
@@ -39,13 +40,9 @@ public:
 public:
 	void *FromPseudoAddress(uint32_t paddr);
 	uint32_t ToPseudoAddress(void *addr);
+	void Initialize();
 private:
-	void *GetAllocationBase(void *ptr);
-private:
-	static constexpr uint8_t PSEUDO_OFFSET_BITS = 26;
-	static constexpr uint8_t PSEUDO_INDEX_BITS = sizeof(uint32_t) * 8 - PSEUDO_OFFSET_BITS;
-	void *m_AllocBases[1 << PSEUDO_INDEX_BITS];
-	uint8_t m_NumEntries;
+	am::AddressDict m_dictionary;
 };
 
 #endif // _INCLUDE_SOURCEMOD_PSEUDOADDRESSMANAGER_H_

@@ -28,6 +28,7 @@
  */
 
 #include "PseudoAddrManager.h"
+#include <bridge/include/CoreProvider.h>
 #ifdef PLATFORM_APPLE
 #include <mach/mach.h>
 #include <mach/vm_region.h>
@@ -35,135 +36,62 @@
 #ifdef PLATFORM_LINUX
 #include <inttypes.h>
 #endif
+#ifdef PLATFORM_WINDOWS
+#include <Psapi.h>
+#endif
 
-PseudoAddressManager::PseudoAddressManager() : m_NumEntries(0)
+PseudoAddressManager::PseudoAddressManager() : m_dictionary(am::IPlatform::GetDefault())
 {
 }
 
-// A pseudo address consists of a table index in the upper 6 bits and an offset in the
-// lower 26 bits. The table consists of memory allocation base addresses.
+void PseudoAddressManager::Initialize() {
+#ifdef PLATFORM_WINDOWS
+	auto process = GetCurrentProcess();
+	auto get_module_details = [process](const char* name, void*& baseAddress, size_t& moduleSize) {
+		if (process == NULL) {
+			return false;
+		}
+		auto hndl = GetModuleHandle(name);
+		if (hndl == NULL) {
+			return false;
+		}
+		MODULEINFO info;
+		if (!GetModuleInformation(process, hndl, &info, sizeof(info))) {
+			return false;
+		}
+		moduleSize = info.SizeOfImage;
+		baseAddress = info.lpBaseOfDll;
+		return true;
+	};
+#endif
+	// Early map commonly used modules, it's okay if not all of them are here
+	// Everything else will be caught by "ToPseudoAddress" but you risk running out of ranges by then
+	const char* libs[] = { "engine", "server", "tier0", "vstdlib" };
+
+	char formattedName[64];
+	for (int i = 0; i < sizeof(libs) / sizeof(const char*); i++) {
+		bridge->FormatSourceBinaryName(libs[i], formattedName, sizeof(formattedName));
+		void* base_addr = nullptr;
+		size_t module_size = 0;
+		if (get_module_details(formattedName, base_addr, module_size)) {
+			// Create the mapping (hopefully)
+			m_dictionary.Make32bitAddress(base_addr, module_size);
+		}
+	}
+}
+
 void *PseudoAddressManager::FromPseudoAddress(uint32_t paddr)
 {
-#ifdef KE_ARCH_X64
-	uint8_t index = paddr >> PSEUDO_OFFSET_BITS;
-	uint32_t offset = paddr & ((1 << PSEUDO_OFFSET_BITS) - 1);
-
-	if (index >= m_NumEntries)
+	if (paddr == 0) {
 		return nullptr;
-
-	return reinterpret_cast<void *>(uintptr_t(m_AllocBases[index]) + offset);
-#else
-	return nullptr;
-#endif
+	}
+	return m_dictionary.RecoverAddress(paddr).value_or(nullptr);
 }
 
 uint32_t PseudoAddressManager::ToPseudoAddress(void *addr)
 {
-#ifdef KE_ARCH_X64
-	uint8_t index = 0;
-	uint32_t offset = 0;
-	bool hasEntry = false;
-	void *base = GetAllocationBase(addr);
-
-	if (base) {
-		for (int i = 0; i < m_NumEntries; i++) {
-			if (m_AllocBases[i] == base) {
-				index = i;
-				hasEntry = true;
-				break;
-			}
-		}
-	} else {
+	if (addr == nullptr) {
 		return 0;
 	}
-
-	if (!hasEntry) {
-		index = m_NumEntries;
-		if (m_NumEntries < SM_ARRAYSIZE(m_AllocBases))
-			m_AllocBases[m_NumEntries++] = base;
-		else
-			return 0;	// Table is full
-	}
-
-	ptrdiff_t diff = uintptr_t(addr) - uintptr_t(base);
-
-	// Ensure difference fits in 26 bits
-	if (diff > (UINT32_MAX >> PSEUDO_INDEX_BITS))
-		return 0;
-
-	return (index << PSEUDO_OFFSET_BITS) | diff;
-#else
-	return 0;
-#endif
-}
-
-void *PseudoAddressManager::GetAllocationBase(void *ptr)
-{
-#if defined PLATFORM_WINDOWS
-
-	MEMORY_BASIC_INFORMATION info;
-	if (!VirtualQuery(ptr, &info, sizeof(MEMORY_BASIC_INFORMATION)))
-		return nullptr;
-	return info.AllocationBase;
-
-#elif defined PLATFORM_APPLE
-
-#ifdef KE_ARCH_X86
-	typedef vm_region_info_t mach_vm_region_info_t;
-	typedef vm_region_basic_info_data_t mach_vm_region_basic_info_data_t;
-	const vm_region_flavor_t MACH_VM_REGION_BASIC_INFO = VM_REGION_BASIC_INFO;
-	const mach_msg_type_number_t MACH_VM_REGION_BASIC_INFO_COUNT = VM_REGION_BASIC_INFO_COUNT;
-	#define mach_vm_region vm_region
-#elif defined KE_ARCH_X64
-	typedef vm_region_info_64_t mach_vm_region_info_t ;
-	typedef vm_region_basic_info_data_64_t mach_vm_region_basic_info_data_t;
-	const vm_region_flavor_t MACH_VM_REGION_BASIC_INFO = VM_REGION_BASIC_INFO_64;
-	const mach_msg_type_number_t MACH_VM_REGION_BASIC_INFO_COUNT = VM_REGION_BASIC_INFO_COUNT_64;
-	#define mach_vm_region vm_region_64
-#endif
-	vm_size_t size;
-	vm_address_t vmaddr = reinterpret_cast<vm_address_t>(ptr);
-	mach_vm_region_basic_info_data_t info;
-	memory_object_name_t obj;
-	vm_region_flavor_t flavor = MACH_VM_REGION_BASIC_INFO;
-	mach_msg_type_number_t count = MACH_VM_REGION_BASIC_INFO_COUNT;
-	
-	kern_return_t kr = mach_vm_region(mach_task_self(), &vmaddr, &size, flavor,
-	                                  reinterpret_cast<mach_vm_region_info_t>(&info), 
-	                                  &count, &obj);
-
-	if (kr != KERN_SUCCESS)
-		return nullptr;
-
-	return reinterpret_cast<void *>(vmaddr);
-
-#elif defined PLATFORM_LINUX
-
-	uintptr_t addr = reinterpret_cast<uintptr_t>(ptr);
-
-	// Format:
-	// lower    upper    prot     stuff                 path
-	// 08048000-0804c000 r-xp 00000000 03:03 1010107    /bin/cat
-	FILE *fp = fopen("/proc/self/maps", "r");
-	if (fp) {
-		uintptr_t lower, upper;
-		while (fscanf(fp, "%" PRIxPTR "-%" PRIxPTR, &lower, &upper) != EOF) {
-			if (addr >= lower && addr <= upper) {
-				fclose(fp);
-				return reinterpret_cast<void *>(lower);
-			}
-
-			// Read to end of line
-			int c;
-			while ((c = fgetc(fp)) != '\n') {
-				if (c == EOF)
-					break;
-			}
-			if (c == EOF)
-				break;
-		}
-		fclose(fp);
-	}
-	return nullptr;
-#endif
+	return m_dictionary.Make32bitAddress(addr).value_or(0);
 }
