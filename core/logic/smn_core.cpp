@@ -968,7 +968,7 @@ static cell_t LoadAddressFromAddress(IPluginContext *pContext, const cell_t *par
 	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) != SP_ERROR_NONE) {
 		return pseudoAddr.ToPseudoAddress(data);
 	}
-	return (cell_t)data;
+	return reinterpret_cast<uintptr_t>(data);
 }
 
 static cell_t StoreAddressToAddress(IPluginContext *pContext, const cell_t *params)

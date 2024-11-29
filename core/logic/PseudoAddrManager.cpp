@@ -64,6 +64,32 @@ void PseudoAddressManager::Initialize() {
 		return true;
 	};
 #endif
+#ifdef PLATFORM_LINUX
+	auto get_module_details = [](const char* name, void* baseAddress, size_t& moduleSize) {
+		auto hndl = dlopen(name, RTLD_NOLOAD);
+		if (hndl == NULL) {
+			return false;
+		}
+		void* addr = dlsym(hndl, "CreateInterface");
+		dlclose(hndl);
+
+		if (!addr) {
+			return false;
+		}
+
+		Dl_info info;
+		if (dladdr(addr, &info) == 0) {
+			return false;
+		}
+
+		baseAddress = info.dli_fbase;
+		// It doesn't matter much if we figure out the module size
+		// libaddrz coalesce maps on linux
+		moduleSize = 0;
+		return true;
+	};
+#endif
+
 	// Early map commonly used modules, it's okay if not all of them are here
 	// Everything else will be caught by "ToPseudoAddress" but you risk running out of ranges by then
 	const char* libs[] = { "engine", "server", "tier0", "vstdlib" };
