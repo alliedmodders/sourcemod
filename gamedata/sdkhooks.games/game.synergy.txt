@@ -18,19 +18,19 @@
 		{
 			"EndTouch"
 			{
-				"windows"	"100"
-				"linux"		"101"
-				"mac"		"101"
+				"windows"	"101"
+				"linux"		"102"
+				"mac"		"102"
 			}
 			"FireBullets"
 			{
-				"windows"	"112"
-				"linux"		"113"
-				"mac"		"113"
+				"windows"	"113"
+				"linux"		"114"
+				"mac"		"114"
 			}
 			"GroundEntChanged"
 			{
-				"windows"	"177"
+				"windows"	"178"
 				"linux"		"179"
 				"mac"		"179"
 			}
@@ -54,9 +54,9 @@
 			}
 			"Reload"
 			{
-				"windows"	"268"
-				"linux"		"269"
-				"mac"		"269"
+				"windows"	"271"
+				"linux"		"272"
+				"mac"		"272"
 			}
 			"SetTransmit"
 			{
@@ -78,9 +78,9 @@
 			}
 			"StartTouch"
 			{
-				"windows"	"98"
-				"linux"		"99"
-				"mac"		"99"
+				"windows"	"99"
+				"linux"		"100"
+				"mac"		"100"
 			}
 			"Think"
 			{
@@ -90,9 +90,9 @@
 			}
 			"Touch"
 			{
-				"windows"	"99"
-				"linux"		"100"
-				"mac"		"100"
+				"windows"	"100"
+				"linux"		"101"
+				"mac"		"101"
 			}
 			"TraceAttack"
 			{
@@ -102,45 +102,45 @@
 			}
 			"Use"
 			{
-				"windows"	"97"
-				"linux"		"98"
-				"mac"		"98"
+				"windows"	"98"
+				"linux"		"99"
+				"mac"		"99"
 			}
 			"VPhysicsUpdate"
 			{
-				"windows"	"157"
-				"linux"		"158"
-				"mac"		"158"
+				"windows"	"158"
+				"linux"		"159"
+				"mac"		"159"
 			}
 			"Weapon_CanSwitchTo"
 			{
-				"windows"	"265"
-				"linux"		"266"
-				"mac"		"266"
+				"windows"	"267"
+				"linux"		"268"
+				"mac"		"268"
 			}
 			"Weapon_CanUse"
 			{
-				"windows"	"259"
-				"linux"		"260"
-				"mac"		"260"
+				"windows"	"261"
+				"linux"		"262"
+				"mac"		"262"
 			}
 			"Weapon_Drop"
+			{
+				"windows"	"264"
+				"linux"		"265"
+				"mac"		"265"
+			}
+			"Weapon_Equip"
 			{
 				"windows"	"262"
 				"linux"		"263"
 				"mac"		"263"
 			}
-			"Weapon_Equip"
-			{
-				"windows"	"260"
-				"linux"		"261"
-				"mac"		"261"
-			}
 			"Weapon_Switch"
 			{
-				"windows"	"263"
-				"linux"		"264"
-				"mac"		"264"
+				"windows"	"265"
+				"linux"		"266"
+				"mac"		"266"
 			}
 		}
 	}
