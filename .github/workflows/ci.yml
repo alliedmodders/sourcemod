@@ -33,7 +33,7 @@ jobs:
       ARCH: x86,x86_64
       DEPENDENCIES_FOLDER: dependencies
       DEPENDENCIES_ROOT: ${{ github.workspace }}/dependencies
-      MYSQL_VERSION: '5.5'
+      MYSQL_VERSION: '5.7'
       MMSOURCE_VERSION: '1.12'
     steps:
       - uses: actions/checkout@v4
@@ -69,7 +69,7 @@ jobs:
 
           # Satisfy checkout-deps requirement for a "sourcemod" folder.
           mkdir -p sourcemod
-          ../sourcemod/tools/checkout-deps.sh -s ${{ join(fromJSON(env.SDKS)) }}
+          ../sourcemod/tools/checkout-deps.sh -s ${{ join(fromJSON(env.SDKS)) }} -d
 
       - name: Install Linux dependencies
         if: startsWith(runner.os, 'Linux')
