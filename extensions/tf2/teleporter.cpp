@@ -31,7 +31,7 @@
 
 #include "teleporter.h"
 
-CDetour *canPlayerTeleportDetour = NULL;
+CDetour *canPlayerBeTeleportedDetour = NULL;
 
 IForward *g_teleportForward = NULL;
 
@@ -84,11 +84,11 @@ DETOUR_DECL_MEMBER1(CanPlayerBeTeleported, bool, CTFPlayer *, pPlayer)
 
 bool InitialiseTeleporterDetour()
 {
-	canPlayerTeleportDetour = DETOUR_CREATE_MEMBER(CanPlayerBeTeleported, "CanPlayerTeleport");
+	canPlayerBeTeleportedDetour = DETOUR_CREATE_MEMBER(CanPlayerBeTeleported, "CanPlayerBeTeleported");
 
-	if (canPlayerTeleportDetour != NULL)
+	if (canPlayerBeTeleportedDetour != NULL)
 	{
-		canPlayerTeleportDetour->EnableDetour();
+		canPlayerBeTeleportedDetour->EnableDetour();
 		return true;
 	}
 
@@ -99,9 +99,9 @@ bool InitialiseTeleporterDetour()
 
 void RemoveTeleporterDetour()
 {
-	if (canPlayerTeleportDetour != NULL)
+	if (canPlayerBeTeleportedDetour != NULL)
 	{
-		canPlayerTeleportDetour->Destroy();
-		canPlayerTeleportDetour = NULL;
+		canPlayerBeTeleportedDetour->Destroy();
+		canPlayerBeTeleportedDetour = NULL;
 	}
 }
