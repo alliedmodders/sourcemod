@@ -224,4 +224,8 @@
 	{
 		"game"		"gmod9"
 	}
+	"game.hl1mp.txt"
+	{
+		"game"		"hl1mp"
+	}
 }
