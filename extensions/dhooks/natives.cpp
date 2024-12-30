@@ -1117,16 +1117,10 @@ cell_t Native_GetParamObjectPtrVar(IPluginContext *pContext, const cell_t *param
 	}
 	else
 	{
-		/*HookSetup* setup;
-		if(!GetHandleIfValidOrError(g_HookSetupHandle, (void **)&setup, pContext, params[1]))
-		{
-			return pContext->ThrowNativeError("Cannot determine calling convention type, parameter 'this' is only available in member functions");
-		}
-
-		if(setup->callConv != CallConv_THISCALL)
+		if(paramStruct->dg->thisFuncCallConv != CallConv_THISCALL)
 		{
 			return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
-		}*/
+		}
 
 		if(paramStruct->dg->thisType != ThisPointer_Address && paramStruct->dg->thisType != ThisPointer_CBaseEntity)
 		{
@@ -1213,16 +1207,10 @@ cell_t Native_SetParamObjectPtrVar(IPluginContext *pContext, const cell_t *param
 	}
 	else
 	{
-		/*HookSetup* setup;
-		if(!GetHandleIfValidOrError(g_HookSetupHandle, (void **)&setup, pContext, params[1]))
-		{
-			return pContext->ThrowNativeError("Cannot determine calling convention type, parameter 'this' is only available in member functions");
-		}
-
-		if(setup->callConv != CallConv_THISCALL)
+		if(paramStruct->dg->thisFuncCallConv != CallConv_THISCALL)
 		{
 			return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
-		}*/
+		}
 
 		if(paramStruct->dg->thisType != ThisPointer_Address && paramStruct->dg->thisType != ThisPointer_CBaseEntity)
 		{
@@ -1323,16 +1311,10 @@ cell_t Native_GetParamObjectPtrVarVector(IPluginContext *pContext, const cell_t 
 	}
 	else
 	{
-		/*HookSetup* setup;
-		if(!GetHandleIfValidOrError(g_HookSetupHandle, (void **)&setup, pContext, params[1]))
-		{
-			return pContext->ThrowNativeError("Cannot determine calling convention type, parameter 'this' is only available in member functions");
-		}
-
-		if(setup->callConv != CallConv_THISCALL)
+		if(paramStruct->dg->thisFuncCallConv != CallConv_THISCALL)
 		{
 			return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
-		}*/
+		}
 
 		if(paramStruct->dg->thisType != ThisPointer_Address && paramStruct->dg->thisType != ThisPointer_CBaseEntity)
 		{
@@ -1402,16 +1384,10 @@ cell_t Native_SetParamObjectPtrVarVector(IPluginContext *pContext, const cell_t 
 	}
 	else
 	{
-		/*HookSetup* setup;
-		if(!GetHandleIfValidOrError(g_HookSetupHandle, (void **)&setup, pContext, params[1]))
-		{
-			return pContext->ThrowNativeError("Cannot determine calling convention type, parameter 'this' is only available in member functions");
-		}
-
-		if(setup->callConv != CallConv_THISCALL)
+		if(paramStruct->dg->thisFuncCallConv != CallConv_THISCALL)
 		{
 			return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
-		}*/
+		}
 
 		if(paramStruct->dg->thisType != ThisPointer_Address && paramStruct->dg->thisType != ThisPointer_CBaseEntity)
 		{
@@ -1480,16 +1456,10 @@ cell_t Native_GetParamObjectPtrString(IPluginContext *pContext, const cell_t *pa
 	}
 	else
 	{
-		/*HookSetup* setup;
-		if(!GetHandleIfValidOrError(g_HookSetupHandle, (void **)&setup, pContext, params[1]))
-		{
-			return pContext->ThrowNativeError("Cannot determine calling convention type, parameter 'this' is only available in member functions");
-		}
-
-		if(setup->callConv != CallConv_THISCALL)
+		if(paramStruct->dg->thisFuncCallConv != CallConv_THISCALL)
 		{
 			return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
-		}*/
+		}
 
 		if(paramStruct->dg->thisType != ThisPointer_Address && paramStruct->dg->thisType != ThisPointer_CBaseEntity)
 		{
