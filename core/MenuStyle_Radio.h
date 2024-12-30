@@ -132,14 +132,11 @@ public: //IMenuPanel
 	int GetAmountRemaining();
 	unsigned int GetApproxMemUsage();
 	bool DirectSet(const char *str);
-	bool IsAllowSendToSourceTV();
-	void SetSendToSourceTV(bool type);
 private:
 	String m_BufferText;
 	String m_Title;
 	unsigned int m_NextPos;
 	int keys;
-	bool m_SendToSourceTV;
 };
 
 class CRadioMenu : public CBaseMenu

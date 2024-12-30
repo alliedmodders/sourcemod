@@ -419,19 +419,7 @@ bool BaseMenuStyle::DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh,
 		time);
 #endif
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
-	if (!pPlayer || !pPlayer->IsInGame())
-	{
-		return false;
-	}
-
-	if (pPlayer->IsSourceTV())
-	{
-		if (!menu->IsAllowSendToSourceTV())
-		{
-			return false;
-		}
-	}
-	else if (pPlayer->IsFakeClient())
+	if (!pPlayer || pPlayer->IsFakeClient() || !pPlayer->IsInGame())
 	{
 		return false;
 	}
