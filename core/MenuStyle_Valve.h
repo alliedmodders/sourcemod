@@ -109,6 +109,8 @@ public:
 	int GetAmountRemaining();
 	unsigned int GetApproxMemUsage();
 	bool DirectSet(const char *str) { return false; }
+	bool IsAllowSendToSourceTV() { return false; }
+	void SetSendToSourceTV(bool type) {}
 private:
 	KeyValues *m_pKv;
 	unsigned int m_NextPos;

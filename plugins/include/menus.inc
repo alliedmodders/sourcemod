@@ -1061,10 +1061,11 @@ native bool SetPanelKeys(Handle panel, int keys);
  * @param client        A client to draw to.
  * @param handler       The MenuHandler function to catch actions with.
  * @param time          Time to hold the menu for.
+ * @param sendToSTV     Allow this menu to be sent to SourceTV
  * @return              True on success, false on failure.
  * @error               Invalid Handle.
  */
-native bool SendPanelToClient(Handle panel, int client, MenuHandler handler, int time);
+native bool SendPanelToClient(Handle panel, int client, MenuHandler handler, int time, bool sendToSTV = false);
 
 /**
  * @brief Returns the amount of text the menu can still hold.  If this is

@@ -341,6 +341,18 @@ namespace SourceMod
 		 * @return				True if supported, otherwise false.
 		 */
 		virtual bool DirectSet(const char *str) =0;
+
+		/**
+		 * @brief Enabled or disabled sending menus to SourceTV
+		 *
+		 * @return				True if enabled, otherwise false.
+		 */
+		virtual bool IsAllowSendToSourceTV() = 0;
+
+		/**
+		 * @brief Enable or disable sending menus to SourceTV
+		 */
+		virtual void SetSendToSourceTV(bool type) = 0;
 	};
 
 	/**
