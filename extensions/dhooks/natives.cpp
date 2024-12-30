@@ -1121,8 +1121,8 @@ cell_t Native_GetParamObjectPtrVar(IPluginContext *pContext, const cell_t *param
 		{
 			return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
 		}
-
-		if(paramStruct->dg->thisType != ThisPointer_Address && paramStruct->dg->thisType != ThisPointer_CBaseEntity)
+		
+		if(paramStruct->dg->thisType != ThisPointer_Address && paramStruct->dg->thisType != ThisPointer_CBaseEntity && !(paramStruct->dg->thisType == ThisPointer_Ignore && paramStruct->dg->hookType == HookType_GameRules))
 		{
 			return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
 		}
@@ -1212,7 +1212,7 @@ cell_t Native_SetParamObjectPtrVar(IPluginContext *pContext, const cell_t *param
 			return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
 		}
 
-		if(paramStruct->dg->thisType != ThisPointer_Address && paramStruct->dg->thisType != ThisPointer_CBaseEntity)
+		if(paramStruct->dg->thisType != ThisPointer_Address && paramStruct->dg->thisType != ThisPointer_CBaseEntity && !(paramStruct->dg->thisType == ThisPointer_Ignore && paramStruct->dg->hookType == HookType_GameRules))
 		{
 			return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
 		}
@@ -1316,7 +1316,7 @@ cell_t Native_GetParamObjectPtrVarVector(IPluginContext *pContext, const cell_t 
 			return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
 		}
 
-		if(paramStruct->dg->thisType != ThisPointer_Address && paramStruct->dg->thisType != ThisPointer_CBaseEntity)
+		if(paramStruct->dg->thisType != ThisPointer_Address && paramStruct->dg->thisType != ThisPointer_CBaseEntity && !(paramStruct->dg->thisType == ThisPointer_Ignore && paramStruct->dg->hookType == HookType_GameRules))
 		{
 			return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
 		}
@@ -1389,7 +1389,7 @@ cell_t Native_SetParamObjectPtrVarVector(IPluginContext *pContext, const cell_t 
 			return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
 		}
 
-		if(paramStruct->dg->thisType != ThisPointer_Address && paramStruct->dg->thisType != ThisPointer_CBaseEntity)
+		if(paramStruct->dg->thisType != ThisPointer_Address && paramStruct->dg->thisType != ThisPointer_CBaseEntity && !(paramStruct->dg->thisType == ThisPointer_Ignore && paramStruct->dg->hookType == HookType_GameRules))
 		{
 			return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
 		}
@@ -1461,7 +1461,7 @@ cell_t Native_GetParamObjectPtrString(IPluginContext *pContext, const cell_t *pa
 			return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
 		}
 
-		if(paramStruct->dg->thisType != ThisPointer_Address && paramStruct->dg->thisType != ThisPointer_CBaseEntity)
+		if(paramStruct->dg->thisType != ThisPointer_Address && paramStruct->dg->thisType != ThisPointer_CBaseEntity && !(paramStruct->dg->thisType == ThisPointer_Ignore && paramStruct->dg->hookType == HookType_GameRules))
 		{
 			return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
 		}
