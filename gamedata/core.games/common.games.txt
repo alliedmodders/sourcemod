@@ -195,6 +195,7 @@
 			"game"					"open_fortress"
 			"game"					"tf2classic"
 			"game"					"pf2"
+			"game"					"dystopia"
 		}
 
 		"Keys"
@@ -250,6 +251,7 @@
 			"game"					"open_fortress"
 			"game"					"tf2classic"
 			"game"					"pf2"
+			"game"					"dystopia"
 		}
 		
 		"Keys"
@@ -314,6 +316,7 @@
 			"game"					"open_fortress"
 			"game"					"tf2classic"
 			"game"					"pf2"
+			"game"					"dystopia"
 		}
 		
 		"Keys"
