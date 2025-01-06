@@ -365,6 +365,12 @@ void SourceModBase::StartSourceMod(bool late)
 		g_pSourcePawn2->InstallWatchdogTimer(atoi(timeout) * 1000);
 	}
 
+	const char *linedebugger = GetCoreConfigValue("EnableLineDebugging");
+	if (linedebugger != NULL && strcasecmp(linedebugger, "yes") == 0)
+	{
+		g_pPawnEnv->EnableDebugBreak();
+	}
+
 	SH_ADD_HOOK(IServerGameDLL, Think, gamedll, SH_MEMBER(logicore.callbacks, &IProviderCallbacks::OnThink), false);
 }
 
