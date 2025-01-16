@@ -56,7 +56,7 @@ public:
 	bool IsMapLoading() override;
 	bool IsMapRunning() override;
 	int MaxClients() override;
-	bool DescribePlayer(int index, const char **namep, const char **authp, int *useridp) override;
+	bool DescribePlayer(int entRef, const char **namep, const char **authp, int *useridp) override;
 	void LogToGame(const char *message) override;
 	void ConPrint(const char *message) override;
 	void ConsolePrint(const char *fmt, ...) override;
