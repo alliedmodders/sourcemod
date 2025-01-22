@@ -317,9 +317,13 @@ void CHook::CreateBridge()
 	PrintRegisters(jit);
 
 	// Jump to the trampoline
+	jit.sub(rsp, 8);
+	jit.push(rax);
 	jit.mov(rax, reinterpret_cast<std::uint64_t>(&m_pTrampoline));
 	jit.mov(rax, rax());
-	jit.jump(rax);
+	jit.mov(rsp(8), rax);
+	jit.pop(rax);
+	jit.retn();
 
 	// This code will be executed if a pre-hook returns ReturnAction_Supercede
 	jit.rewrite<std::int32_t>(jumpOff - sizeof(std::int32_t), jit.get_outputpos() - jumpOff);
@@ -621,8 +625,12 @@ void CHook::CreateBridge()
 	masm.j(equal, &label_supercede);
 
 	// Jump to the trampoline
+	masm.subl(esp, 4);
+	masm.push(eax);
 	masm.movl(eax, Operand(ExternalAddress(&m_pTrampoline)));
-	masm.jmp(eax);
+	masm.movl(Operand(esp, 4), eax);
+	masm.pop(eax);
+	masm.ret();
 
 	// This code will be executed if a pre-hook returns ReturnAction_Supercede
 	masm.bind(&label_supercede);
