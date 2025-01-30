@@ -64,7 +64,7 @@ static cell_t smn_LoadGameConfigFile(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToString(params[1], &filename);
 	if (!g_GameConfigs.LoadGameConfigFile(filename, &gc, error, sizeof(error)))
 	{
-		return pCtx->ThrowNativeError("Unable to open %s: %s", filename, error);
+		return BAD_HANDLE;
 	}
 
 	Handle_t hndl = handlesys->CreateHandle(g_GameConfigsType, gc, pCtx->GetIdentity(), g_pCoreIdent, NULL);
