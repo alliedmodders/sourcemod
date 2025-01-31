@@ -122,7 +122,12 @@ cell_t Native_CreateHook(IPluginContext *pContext, const cell_t *params)
 //native Handle:DHookCreateDetour(Address:funcaddr, CallingConvention:callConv, ReturnType:returntype, ThisPointerType:thistype);
 cell_t Native_CreateDetour(IPluginContext *pContext, const cell_t *params)
 {
-	HookSetup *setup = new HookSetup((ReturnType)params[3], PASSFLAG_BYVAL, (CallingConvention)params[2], (ThisPointerType)params[4], (void *)params[1]);
+	void* addr = reinterpret_cast<void*>(params[1]);
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) != SP_ERROR_NONE) {
+		addr = g_pSM->FromPseudoAddress(params[1]);
+	}
+
+	HookSetup *setup = new HookSetup((ReturnType)params[3], PASSFLAG_BYVAL, (CallingConvention)params[2], (ThisPointerType)params[4], addr);
 
 	Handle_t hndl = handlesys->CreateHandle(g_HookSetupHandle, setup, pContext->GetIdentity(), myself->GetIdentity(), NULL);
 
@@ -589,7 +594,10 @@ cell_t HookRawImpl(IPluginContext *pContext, const cell_t *params, int callbackI
 	if (removalcbIndex > 0)
 		removalcb = pContext->GetFunctionById(params[removalcbIndex]);
 
-	void *iface = (void *)(params[3]);
+	void* iface = reinterpret_cast<void*>(params[3]);
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) != SP_ERROR_NONE) {
+		iface = g_pSM->FromPseudoAddress(params[3]);
+	}
 
 	for(int i = g_pHooks.size() -1; i >= 0; i--)
 	{
@@ -1510,6 +1518,10 @@ cell_t Native_GetParamAddress(IPluginContext *pContext, const cell_t *params)
 	}
 
 	size_t offset = GetParamOffset(paramStruct, index);
+
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) != SP_ERROR_NONE) {
+		return g_pSM->ToPseudoAddress(*(void**)((intptr_t)paramStruct->orgParams + offset));
+	}
 	return *(cell_t *)((intptr_t)paramStruct->orgParams + offset);
 }
 
