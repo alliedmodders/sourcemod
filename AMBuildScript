@@ -291,6 +291,10 @@ class SMConfig(object):
         raise Exception('--enable-asan only supported when using Clang')
       self.configure_asan(cxx)
 
+    # AMTL uses std::bind
+    if (have_gcc and cxx.version >= 'gcc-10.0') or (have_clang and cxx.version >= 'clang-12.0'):
+        cxx.cxxflags += ['-Wno-deprecated-declarations']
+
     # Work around SDK warnings.
     if cxx.version >= 'clang-10.0' or cxx.version >= 'apple-clang-12.0':
         cxx.cflags += [
