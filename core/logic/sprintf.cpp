@@ -405,7 +405,7 @@ void AddBinary(char **buf_p, size_t &maxlen, unsigned int val, int width, int fl
 
 	if (flags & LADJUST)
 	{
-		while (width-- && maxlen)
+		while ((width-- > 0) && maxlen)
 		{
 			*buf++ = (flags & ZEROPAD) ? '0' : ' ';
 			maxlen--;
@@ -449,7 +449,7 @@ void AddUInt(char **buf_p, size_t &maxlen, unsigned int val, int width, int flag
 
 	if (flags & LADJUST)
 	{
-		while (width-- && maxlen)
+		while ((width-- > 0) && maxlen)
 		{
 			*buf++ = (flags & ZEROPAD) ? '0' : ' ';
 			maxlen--;
@@ -511,7 +511,7 @@ void AddInt(char **buf_p, size_t &maxlen, int val, int width, int flags)
 
 	if (flags & LADJUST)
 	{
-		while (width-- && maxlen)
+		while ((width-- > 0) && maxlen)
 		{
 			*buf++ = (flags & ZEROPAD) ? '0' : ' ';
 			maxlen--;
@@ -572,7 +572,7 @@ void AddHex(char **buf_p, size_t &maxlen, unsigned int val, int width, int flags
 
 	if (flags & LADJUST)
 	{
-		while (width-- && maxlen)
+		while ((width-- > 0) && maxlen)
 		{
 			*buf++ = (flags & ZEROPAD) ? '0' : ' ';
 			maxlen--;
