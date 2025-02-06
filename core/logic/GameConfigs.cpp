@@ -1174,7 +1174,7 @@ bool GameConfigManager::LoadGameConfigFile(const char *file, IGameConfig **_pCon
 	{
 		bool ret = true;
 		time_t modtime = GetFileModTime(file);
-		if (pConfig->m_ModTime != modtime || pConfig->m_ModTime == 0)
+		if (pConfig->m_ModTime != modtime)
 		{
 			pConfig->m_ModTime = modtime;
 			ret = pConfig->Reparse(error, maxlength);
