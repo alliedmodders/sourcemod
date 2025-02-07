@@ -39,7 +39,7 @@ struct TeamInfo
 	CBaseEntity *pEnt;
 };
 
-const char m_iScore[64] = { 0 };
+char m_iScore[64] = { 0 };
 
 SourceHook::CVector<TeamInfo> g_Teams;
 
