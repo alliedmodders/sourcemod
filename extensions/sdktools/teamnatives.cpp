@@ -39,7 +39,7 @@ struct TeamInfo
 	CBaseEntity *pEnt;
 };
 
-const char *m_iScore;
+const char m_iScore[64] = { 0 };
 
 SourceHook::CVector<TeamInfo> g_Teams;
 
@@ -137,13 +137,14 @@ static cell_t GetTeamScore(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Team index %d is invalid", teamindex);
 	}
 
-	if (!m_iScore)
+	if (!m_iScore[0])
 	{
-		m_iScore = g_pGameConf->GetKeyValue("m_iScore");
-		if (!m_iScore)
+		auto key = g_pGameConf->GetKeyValue("m_iScore");
+		if (!m_iScore[0])
 		{
 			return pContext->ThrowNativeError("Failed to get m_iScore key");
 		}
+		strcpy(m_iScore, key);
 	}
 
 	static int offset = -1;
@@ -175,13 +176,14 @@ static cell_t SetTeamScore(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Team index %d is invalid", teamindex);
 	}
 
-	if (m_iScore == NULL)
+	if (!m_iScore[0])
 	{
-		m_iScore = g_pGameConf->GetKeyValue("m_iScore");
-		if (m_iScore == NULL)
+		auto key = g_pGameConf->GetKeyValue("m_iScore");
+		if (!m_iScore[0])
 		{
 			return pContext->ThrowNativeError("Failed to get m_iScore key");
 		}
+		strcpy(m_iScore, key);
 	}
 
 	static int offset = -1;
