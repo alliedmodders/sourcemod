@@ -33,14 +33,15 @@
 #include "gamerulesnatives.h"
 #include "vglobals.h"
 
-char g_szGameRulesProxy[64];
+char g_szGameRulesProxy[64] = { 0 };
 
 void GameRulesNativesInit()
 {
 	auto key = g_pGameConf->GetKeyValue("GameRulesProxy");
 	if (key)
 	{
-		strcpy(g_szGameRulesProxy, key);
+		strncpy(g_szGameRulesProxy, key, sizeof(g_szGameRulesProxy));
+		g_szGameRulesProxy[sizeof(g_szGameRulesProxy) - 1] = '\0';
 	}
 }
 

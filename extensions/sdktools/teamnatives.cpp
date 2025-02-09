@@ -140,11 +140,12 @@ static cell_t GetTeamScore(IPluginContext *pContext, const cell_t *params)
 	if (!m_iScore[0])
 	{
 		auto key = g_pGameConf->GetKeyValue("m_iScore");
-		if (!m_iScore[0])
+		if (!key || !key[0])
 		{
 			return pContext->ThrowNativeError("Failed to get m_iScore key");
 		}
-		strcpy(m_iScore, key);
+		strncpy(m_iScore, key, sizeof(m_iScore));
+		m_iScore[sizeof(m_iScore) - 1] = '\0';
 	}
 
 	static int offset = -1;
@@ -179,11 +180,12 @@ static cell_t SetTeamScore(IPluginContext *pContext, const cell_t *params)
 	if (!m_iScore[0])
 	{
 		auto key = g_pGameConf->GetKeyValue("m_iScore");
-		if (!m_iScore[0])
+		if (!key || !key[0])
 		{
 			return pContext->ThrowNativeError("Failed to get m_iScore key");
 		}
-		strcpy(m_iScore, key);
+		strncpy(m_iScore, key, sizeof(m_iScore));
+		m_iScore[sizeof(m_iScore) - 1] = '\0';
 	}
 
 	static int offset = -1;
