@@ -755,6 +755,39 @@ static cell_t sm_SetFilePermissions(IPluginContext *pContext, const cell_t *para
 #endif
 }
 
+static cell_t sm_GetFilePermissions(IPluginContext *pContext, const cell_t *params)
+{
+	char *name;
+	char realpath[PLATFORM_MAX_PATH];
+
+	pContext->LocalToString(params[1], &name);
+	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
+
+	cell_t *mask;
+	pContext->LocalToPhysAddr(params[2], &mask);
+
+#if defined PLATFORM_WINDOWS
+	struct _stat buffer;
+	cell_t valid = _stat(realpath, &buffer) == 0;
+
+	if ((buffer.st_mode & _S_IREAD) != 0) {
+		*mask |= (FPERM_U_READ|FPERM_G_READ|FPERM_O_READ)|(FPERM_U_EXEC|FPERM_G_EXEC|FPERM_O_EXEC);
+	}
+
+	if ((buffer.st_mode & _S_IWRITE) != 0) {
+		*mask |= (FPERM_U_WRITE|FPERM_G_WRITE|FPERM_O_WRITE);
+	}
+
+	return valid;
+#else
+	struct stat buffer;
+	cell_t valid = stat(realpath, &buffer) == 0;
+
+	*mask = buffer.st_mode;
+	return valid;
+#endif
+}
+
 static cell_t sm_CreateDirectory(IPluginContext *pContext, const cell_t *params)
 {
 	char *name;
@@ -1228,6 +1261,7 @@ REGISTER_NATIVES(filesystem)
 	{"RemoveGameLogHook",		sm_RemoveGameLogHook},
 	{"CreateDirectory",			sm_CreateDirectory},
 	{"SetFilePermissions",		sm_SetFilePermissions},
+	{"GetFilePermissions",		sm_GetFilePermissions},
 
 	{"File.ReadLine",			sm_ReadFileLine},
 	{"File.Read",				sm_ReadFile},

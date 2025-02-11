@@ -14,14 +14,12 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
         include:
           - os: ubuntu-latest
             os_short: linux
           - os: windows-latest
             os_short: win
-          - os: macos-latest
-            os_short: mac
       fail-fast: false
     runs-on: ${{ matrix.os }}
     env:
@@ -41,10 +39,6 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install git+https://github.com/alliedmodders/ambuild
 
-      - name: Build universal x64/arm64 on macOS
-        if: startsWith(runner.os, 'macOS')
-        run: echo "ARCH=x86_64,arm64" >> $GITHUB_ENV
-
       - name: Install Linux dependencies
         if: startsWith(runner.os, 'Linux')
         run: |
@@ -56,7 +50,7 @@ jobs:
             linux-libc-dev:i386 lib32z1-dev ${{ matrix.compiler_cc }}
 
       - name: Select clang compiler
-        if: startsWith(runner.os, 'Linux') || startsWith(runner.os, 'macOS')
+        if: startsWith(runner.os, 'Linux')
         run: |
           echo "CC=clang" >> $GITHUB_ENV
           echo "CXX=clang++" >> $GITHUB_ENV

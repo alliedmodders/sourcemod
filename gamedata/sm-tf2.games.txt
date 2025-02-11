@@ -126,6 +126,19 @@
 				"linux"		"@_Z21DuelMiniGame_IsInDuelP9CTFPlayer"
 				"linux64"	"@_Z21DuelMiniGame_IsInDuelP9CTFPlayer"
 			}
+			"CanPlayerBeTeleported"
+			{
+				/* String: "bidirectional_teleport" follow the xref, pick the function that doesn't involve another attribute, follow the graph view after 2 virtual function call, the first subroutine call is CanPlayerTeleport*/
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x53\x56\x57\x8B\x7D\x08\x8B\xD9\x85\xFF\x0F\x84\x2A\x2A\x2A\x2A"
+				"windows64"	"\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\xFA\x48\x8B\xF1\x48\x85\xD2\x0F\x84\x2A\x2A\x2A\x2A\x45\x33\xC0"
+				
+				// Recent updates altered where the teleport check was called in Linux systems.
+				"linux"		"@_ZN17CObjectTeleporter21PlayerCanBeTeleportedEP9CTFPlayer.part.0"
+				"linux64"	"@_ZN17CObjectTeleporter21PlayerCanBeTeleportedEP9CTFPlayer.part.0"
+			}
+			
+			// Obsolete
 			"CanPlayerTeleport"
 			{
 				/* String: "bidirectional_teleport" follow the xref, pick the function that doesn't involve another attribute, follow the graph view after 2 virtual function call, the first subroutine call is CanPlayerTeleport*/

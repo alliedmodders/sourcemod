@@ -55,6 +55,7 @@ class SMConfig(object):
     self.target_archs = set()
     self.enable_asan = getattr(builder.options, 'enable_asan', False)
     self.asan_libs = {}
+    self.libsafetyhook = {}
 
     if builder.options.targets:
       target_archs = builder.options.targets.split(',')
@@ -129,6 +130,8 @@ class SMConfig(object):
     else:
       self.mms_root = ResolveEnvPath('MMSOURCE112', 'mmsource-1.12')
       if not self.mms_root:
+        self.mms_root = ResolveEnvPath('MMSOURCE', 'metamod-source')
+      if not self.mms_root:
         self.mms_root = ResolveEnvPath('MMSOURCE_DEV', 'metamod-source')
       if not self.mms_root:
         self.mms_root = ResolveEnvPath('MMSOURCE_DEV', 'mmsource-central')
@@ -143,7 +146,7 @@ class SMConfig(object):
           self.mysql_root['x86'] = builder.options.mysql_path
         else:
           for i in range(10):
-            self.mysql_root['x86'] = ResolveEnvPath('MYSQL55', 'mysql-5.' + str(i))
+            self.mysql_root['x86'] = ResolveEnvPath('MYSQL57', 'mysql-5.' + str(i))
             if self.mysql_root['x86']:
               break
         if not self.mysql_root['x86'] or not os.path.isdir(self.mysql_root['x86']):
@@ -155,7 +158,7 @@ class SMConfig(object):
           self.mysql_root['x86_64'] = builder.options.mysql64_path
         else:
           for i in range(10):
-            self.mysql_root['x86_64'] = ResolveEnvPath('MYSQL55_64', 'mysql-5.' + str(i) + '-x86_64')
+            self.mysql_root['x86_64'] = ResolveEnvPath('MYSQL57_64', 'mysql-5.' + str(i) + '-x86_64')
             if self.mysql_root['x86_64']:
               break
         if not self.mysql_root['x86_64'] or not os.path.isdir(self.mysql_root['x86_64']):
@@ -287,6 +290,10 @@ class SMConfig(object):
       if not have_clang:
         raise Exception('--enable-asan only supported when using Clang')
       self.configure_asan(cxx)
+
+    # AMTL uses std::bind
+    if (have_gcc and cxx.version >= 'gcc-10.0') or (have_clang and cxx.version >= 'clang-12.0'):
+        cxx.cxxflags += ['-Wno-deprecated-declarations']
 
     # Work around SDK warnings.
     if cxx.version >= 'clang-10.0' or cxx.version >= 'apple-clang-12.0':
@@ -522,13 +529,14 @@ class SMConfig(object):
 
   def AddCDetour(self, binary):
     public_path = os.path.join(builder.sourcePath, 'public')
-    binary.sources += [
-      os.path.join(public_path, 'CDetour', 'detours.cpp'),
-      os.path.join(public_path, 'safetyhook', 'safetyhook.cpp'),
-      os.path.join(public_path, 'safetyhook', 'Zydis.c')
-    ]
-    binary.compiler.cxxincludes += [ os.path.join(public_path, 'safetyhook') ]
-    binary.compiler.includes += [ os.path.join(public_path, 'safetyhook') ]
+    binary.sources += [ os.path.join(public_path, 'CDetour', 'detours.cpp') ]
+    binary.compiler.cxxincludes += [ os.path.join(public_path, 'safetyhook', 'include') ]
+
+    for task in self.libsafetyhook:
+      if task.target.arch == binary.compiler.target.arch:
+        binary.compiler.linkflags += [task.binary]
+        return
+    raise Exception('No suitable build of safetyhook was found.')
 
   def HL2Library(self, context, compiler, name, sdk):
     binary = self.Library(context, compiler, name)
@@ -577,6 +585,16 @@ if SM.use_auto_versioning():
     'versionlib/AMBuilder',
     { 'SM': SM }
   )
+
+class SafetyHookShim(object):
+  def __init__(self):
+    self.all_targets = {}
+    self.libsafetyhook = {}
+
+SafetyHook = SafetyHookShim()
+SafetyHook.all_targets = SM.all_targets
+builder.Build('public/safetyhook/AMBuilder', {'SafetyHook': SafetyHook })
+SM.libsafetyhook = SafetyHook.libsafetyhook
 
 class SPRoot(object):
   def __init__(self):

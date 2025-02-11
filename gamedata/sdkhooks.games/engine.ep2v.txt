@@ -5,7 +5,6 @@
 	{
 		"Offsets"
 		{
-			//This sucks, this comment HAS to stay, if you remove it, sourcemod WILl crash, why? Ask god.
 			"EntityListeners"
 			{
 				"windows"	"131108"
@@ -37,7 +36,7 @@
 			"GetMaxHealth"
 			{
 				"windows"	"122"
-				"windows64"	"123"
+				"windows64"	"122"
 				"linux"		"123"
 				"linux64"	"123"
 			}
@@ -195,149 +194,132 @@
 	{
 		"Offsets"
 		{
+			"EntityListeners"
+			{
+				"windows"	"131108"
+				"windows64"	"262200"
+				"linux"		"131108"
+				"linux64"	"262200"
+			}
 			"EndTouch"
 			{
-				"windows"	"100"
-				"linux"		"101"
-				"mac"		"101"
+				"windows"	"102"
+				"linux"		"103"
 			}
 			"FireBullets"
 			{
-				"windows"	"112"
-				"linux"		"113"
-				"mac"		"113"
+				"windows"	"114"
+				"linux"		"115"
 			}
 			"GetMaxHealth"
 			{
-				"windows"	"117"
-				"linux"		"118"
-				"mac"		"118"				
+				"windows"	"119"
+				"linux"		"120"			
 			}
 			"GroundEntChanged"
 			{
-				"windows"	"177"
-				"linux"		"179"
-				"mac"		"179"
+				"windows"	"180"
+				"linux"		"182"
 			}
 			"OnTakeDamage"
 			{
-				"windows"	"62"
-				"linux"		"63"
-				"mac"		"63"
+				"windows"	"64"
+				"linux"		"65"
 			}
 			"OnTakeDamage_Alive"
 			{
-				"windows"	"272"
-				"linux"		"273"
-				"mac"		"273"
+				"windows"	"278"
+				"linux"		"279"
 			}
 			"PreThink"
 			{
-				"windows"	"332"
-				"linux"		"333"
-				"mac"		"333"
+				"windows"	"338"
+				"linux"		"339"
 			}
 			"PostThink"
 			{
-				"windows"	"333"
-				"linux"		"334"
-				"mac"		"334"
+				"windows"	"339"
+				"linux"		"340"
 			}
 			"Reload"
 			{
-				"windows"	"270"
-				"linux"		"271"
-				"mac"		"271"
+				"windows"	"276"
+				"linux"		"277"
 			}
 			"SetTransmit"
 			{
 				"windows"	"20"
 				"linux"		"21"
-				"mac"		"21"
 			}
 			"ShouldCollide"
 			{
-				"windows"	"16"
-				"linux"		"17"
-				"mac"		"17"
+				"windows"	"17"
+				"linux"		"18"
 			}
 			"Spawn"
 			{
-				"windows"	"22"
-				"linux"		"23"
-				"mac"		"23"
+				"windows"	"24"
+				"linux"		"25"
 			}
 			"StartTouch"
 			{
-				"windows"	"98"
-				"linux"		"99"
-				"mac"		"99"
+				"windows"	"100"
+				"linux"		"101"
 			}
 			"Think"
 			{
-				"windows"	"47"
-				"linux"		"48"
-				"mac"		"48"
+				"windows"	"49"
+				"linux"		"50"
 			}
 			"Touch"
 			{
-				"windows"	"99"
-				"linux"		"100"
-				"mac"		"100"
+				"windows"	"101"
+				"linux"		"102"
 			}
 			"TraceAttack"
 			{
-				"windows"	"60"
-				"linux"		"61"
-				"mac"		"61"
+				"windows"	"62"
+				"linux"		"63"
 			}
 			"Use"
 			{
-				"windows"	"97"
-				"linux"		"98"
-				"mac"		"98"
+				"windows"	"99"
+				"linux"		"100"
 			}
 			"VPhysicsUpdate"
 			{
-				"windows"	"157"
-				"linux"		"158"
-				"mac"		"158"
+				"windows"	"160"
+				"linux"		"161"
 			}
 			"Blocked"
 			{
-				"windows"	"102"
-				"linux"		"103"
-				"mac"		"103"
+				"windows"	"104"
+				"linux"		"105"
 			}
 			"Weapon_CanSwitchTo"
 			{
-				"windows"	"266"
-				"linux"		"267"
-				"mac"		"267"
+				"windows"	"272"
+				"linux"		"273"
 			}
 			"Weapon_CanUse"
 			{
-				"windows"	"260"
-				"linux"		"261"
-				"mac"		"261"
+				"windows"	"266"
+				"linux"		"267"
 			}
 			"Weapon_Drop"
 			{
-				"windows"	"263"
-				"linux"		"264"
-				"mac"		"264"
+				"windows"	"269"
+				"linux"		"270"
 			}
 			"Weapon_Equip"
 			{
-				"windows"	"261"
-				"linux"		"262"
-				"mac"		"262"
+				"windows"	"267"
+				"linux"		"268"
 			}
 			"Weapon_Switch"
 			{
-				"windows"	"264"
-				"linux"		"265"
-				"mac"		"265"
+				"windows"	"270"
+				"linux"		"271"
 			}
 		}
 	}

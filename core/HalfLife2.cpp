@@ -57,7 +57,6 @@ typedef ICommandLine *(*FakeGetCommandLine)();
 #define VSTDLIB_NAME		FORMAT_SOURCE_BIN_NAME("vstdlib")
 
 CHalfLife2 g_HL2;
-ConVar *sv_lan = NULL;
 
 static void *g_EntList = NULL;
 static void **g_pEntInfoList = NULL;
@@ -787,7 +786,7 @@ void CHalfLife2::ProcessFakeCliCmdQueue()
 
 bool CHalfLife2::IsLANServer()
 {
-	sv_lan = icvar->FindVar("sv_lan");
+	static ConVar *sv_lan = icvar->FindVar("sv_lan");
 
 	if (!sv_lan)
 	{

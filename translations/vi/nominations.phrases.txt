@@ -65,4 +65,9 @@
 		"vi"		"Đã đề cử"
 	}
 
+	"Map Not In Pool"
+	{
+		"vi"		"Bản đồ '{1}' không nằm trong danh sách đề cử."
+	}
+
 }

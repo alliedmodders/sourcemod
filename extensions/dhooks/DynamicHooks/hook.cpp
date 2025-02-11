@@ -35,13 +35,16 @@
 // >> INCLUDES
 // ============================================================================
 #include "hook.h"
-#include <asm/asm.h>
-#include <macro-assembler-x86.h>
 #include "extension.h"
+
+#ifdef DYNAMICHOOKS_x86_64
+
+#else
+#include <macro-assembler-x86.h>
 #include <jit/jit_helpers.h>
 #include <CDetour/detourhelpers.h>
-
 using namespace sp;
+#endif
 
 // ============================================================================
 // >> DEFINITIONS
@@ -64,45 +67,31 @@ CHook::CHook(void* pFunc, ICallingConvention* pConvention)
 	if (!m_RetAddr.init())
 		return;
 
-	unsigned char* pTarget = (unsigned char *) pFunc;
+	CreateBridge();
+	if (!m_pBridge)
+		return;
 
-	// Determine the number of bytes we need to copy
-	int iBytesToCopy = copy_bytes(pTarget, NULL, JMP_SIZE);
+	auto result = safetyhook::InlineHook::create(pFunc, m_pBridge, safetyhook::InlineHook::Flags::StartDisabled);
+	if (!result) {
+		return;
+	}
 
-	// Create a buffer for the bytes to copy + a jump to the rest of the
-	// function.
-	unsigned char* pCopiedBytes = (unsigned char *) smutils->GetScriptingEngine()->AllocatePageMemory(iBytesToCopy + JMP_SIZE);
+	m_Hook = std::move(result.value());
+	m_pTrampoline = m_Hook.original<void*>();
 
-	// Fill the array with NOP instructions
-	memset(pCopiedBytes, 0x90, iBytesToCopy + JMP_SIZE);
-
-	// Copy the required bytes to our array
-	copy_bytes(pTarget, pCopiedBytes, JMP_SIZE);
-
-	// Write a jump after the copied bytes to the function/bridge + number of bytes to copy
-	DoGatePatch(pCopiedBytes + iBytesToCopy, pTarget + iBytesToCopy);
-
-	// Save the trampoline
-	m_pTrampoline = (void *) pCopiedBytes;
-
-	// Create the bridge function
-	m_pBridge = CreateBridge();
-
-	// Write a jump to the bridge
-	DoGatePatch((unsigned char *) pFunc, m_pBridge);
+	m_Hook.enable();
 }
 
 CHook::~CHook()
 {
-	// Copy back the previously copied bytes
-	copy_bytes((unsigned char *) m_pTrampoline, (unsigned char *) m_pFunc, JMP_SIZE);
+	if (m_Hook.enabled()) {
+		m_Hook.disable();
+	}
 
-	// Free the trampoline buffer
-	smutils->GetScriptingEngine()->FreePageMemory(m_pTrampoline);
-
-	// Free the asm bridge and new return address
-	smutils->GetScriptingEngine()->FreePageMemory(m_pBridge);
-	smutils->GetScriptingEngine()->FreePageMemory(m_pNewRetAddr);
+	if (m_pBridge) {
+		smutils->GetScriptingEngine()->FreePageMemory(m_pBridge);
+		smutils->GetScriptingEngine()->FreePageMemory(m_pNewRetAddr);
+	}
 
 	delete m_pRegisters;
 	delete m_pCallingConvention;
@@ -229,7 +218,396 @@ void __cdecl CHook::SetReturnAddress(void* pRetAddr, void* pESP)
 	i->value.push_back(pRetAddr);
 }
 
-void* CHook::CreateBridge()
+#ifdef DYNAMICHOOKS_x86_64
+using namespace SourceHook::Asm;
+SourceHook::CPageAlloc SourceHook::Asm::GenBuffer::ms_Allocator(16);
+
+void PrintFunc(const char* message) {
+	g_pSM->LogMessage(myself, message);
+}
+
+void PrintDebug(x64JitWriter& jit, const char* message) {
+	// LogMessage has variadic parameters, this shouldn't be problem on x86_64
+	// but paranoia calls for safety
+	/*
+	union {
+		void (*PrintFunc)(const char* message);
+		std::uint64_t address;
+	} func;
+
+	func.PrintFunc = &PrintFunc;
+
+	// Shadow space
+	MSVC_ONLY(jit.sub(rsp, 40));
+
+	MSVC_ONLY(jit.mov(rcx, reinterpret_cast<std::uint64_t>(message)));
+	GCC_ONLY(jit.mov(rdi, reinterpret_cast<std::uint64_t>(message)));
+
+	jit.mov(rax, func.address);
+	jit.call(rax);
+
+	// Free shadow space
+	MSVC_ONLY(jit.add(rsp, 40));*/
+}
+
+void _PrintRegs(std::uint64_t* rsp, int numregs) {
+	g_pSM->LogMessage(myself, "RSP - %p", rsp);
+
+	for (int i = 0; i < numregs; i++) {
+		g_pSM->LogMessage(myself, "RSP[%d] - %llu", i, rsp[i]);
+	}
+}
+
+void PrintRegisters(x64JitWriter& jit) {
+	/*
+	union {
+		void (*PrintRegs)(std::uint64_t* rsp, int numregs);
+		std::uint64_t address;
+	} func;
+	func.PrintRegs = &_PrintRegs;
+	// Rax is pushed twice to keep the stack aligned
+	jit.push(rax);
+	jit.push(rax);
+	jit.push(rcx);
+	jit.push(rdx);
+	jit.push(r8);
+	jit.push(r9);
+
+	jit.mov(rcx, rsp);
+	jit.mov(rdx, 5);
+	jit.sub(rsp, 40);
+	jit.mov(rax, func.address);
+	jit.call(rax);
+	jit.add(rsp, 40);
+
+	jit.pop(r9);
+	jit.pop(r8);
+	jit.pop(rdx);
+	jit.pop(rcx);
+	jit.pop(rax);
+	jit.pop(rax);*/
+}
+
+void CHook::CreateBridge()
+{
+	auto& jit = m_bridge;
+
+	//jit.breakpoint();
+	PrintRegisters(jit);
+
+	// Save registers right away
+	Write_SaveRegisters(jit, HOOKTYPE_PRE);
+
+	PrintDebug(jit, "Hook Called");
+
+	Write_ModifyReturnAddress(jit);
+
+	// Call the pre-hook handler and jump to label_supercede if ReturnAction_Supercede was returned
+	Write_CallHandler(jit, HOOKTYPE_PRE);
+
+	jit.cmp(rax, ReturnAction_Supercede);
+	
+	// Restore the previously saved registers, so any changes will be applied
+	Write_RestoreRegisters(jit, HOOKTYPE_PRE);
+
+	jit.je(0x0);
+	std::int32_t jumpOff = jit.get_outputpos();
+
+	// Dump regs
+	PrintRegisters(jit);
+
+	// Jump to the trampoline
+	jit.sub(rsp, 8);
+	jit.push(rax);
+	jit.mov(rax, reinterpret_cast<std::uint64_t>(&m_pTrampoline));
+	jit.mov(rax, rax());
+	jit.mov(rsp(8), rax);
+	jit.pop(rax);
+	jit.retn();
+
+	// This code will be executed if a pre-hook returns ReturnAction_Supercede
+	jit.rewrite<std::int32_t>(jumpOff - sizeof(std::int32_t), jit.get_outputpos() - jumpOff);
+
+	PrintDebug(jit, "Hook leave");
+
+	// Finally, return to the caller
+	// This will still call post hooks, but will skip the original function.
+	jit.retn();
+
+	// It's very important to only finalise the jit code creation here
+	// setting the memory to ReadExecute too early can create crashes
+	// as it changes the permissions of the whole memory page
+	m_pBridge = m_bridge.GetData();
+	m_pNewRetAddr = m_postCallback.GetData();
+
+	m_bridge.SetRE();
+	m_postCallback.SetRE();
+}
+
+void CHook::Write_ModifyReturnAddress(x64JitWriter& jit)
+{
+	// Store the return address in rax
+	jit.mov(rax, rsp());
+	
+	// Save the original return address by using the current esp as the key.
+	// This should be unique until we have returned to the original caller.
+	union
+	{
+		void (__cdecl CHook::*SetReturnAddress)(void*, void*);
+		std::uint64_t address;
+	} func;
+	func.SetReturnAddress = &CHook::SetReturnAddress;
+
+	// Shadow space 32 bytes + 8 bytes to keep it aligned on 16 bytes
+	MSVC_ONLY(jit.sub(rsp, 40));
+
+	// 1st param (this)
+	GCC_ONLY(jit.mov(rdi, reinterpret_cast<std::uint64_t>(this)));
+	MSVC_ONLY(jit.mov(rcx, reinterpret_cast<std::uint64_t>(this)));
+
+	// 2nd parameter (return address)
+	GCC_ONLY(jit.mov(rsi, rax));
+	MSVC_ONLY(jit.mov(rdx, rax));
+
+	// 3rd parameter (rsp)
+	GCC_ONLY(jit.lea(rdx, rsp()));
+	MSVC_ONLY(jit.lea(r8, rsp(40)));
+
+	// Call SetReturnAddress
+	jit.mov(rax, func.address);
+	jit.call(rax);
+
+	// Free shadow space
+	MSVC_ONLY(jit.add(rsp, 40));
+	
+	// Override the return address. This is a redirect to our post-hook code
+	CreatePostCallback();
+	jit.mov(rax, reinterpret_cast<std::uint64_t>(&m_pNewRetAddr));
+	jit.mov(rax, rax());
+	jit.mov(rsp(), rax);
+}
+
+void CHook::CreatePostCallback()
+{
+	auto& jit = m_postCallback;
+
+	jit.sub(rsp, 8);
+	PrintRegisters(jit);
+
+	// Save registers right away
+	Write_SaveRegisters(jit, HOOKTYPE_POST);
+
+	PrintDebug(jit, "Hook post");
+	PrintRegisters(jit);
+
+	// Call the post-hook handler
+	Write_CallHandler(jit, HOOKTYPE_POST);
+
+	// Restore the previously saved registers, so any changes will be applied
+	Write_RestoreRegisters(jit, HOOKTYPE_POST);
+
+	// Get return address
+	union
+	{
+		void* (__cdecl CHook::*GetReturnAddress)(void*);
+		std::uint64_t address;
+	} func;
+	func.GetReturnAddress = &CHook::GetReturnAddress;
+
+	// Shadow space 32 bytes + 8 bytes to keep it aligned on 16 bytes
+	MSVC_ONLY(jit.sub(rsp, 40));
+
+	// 1st param (this)
+	GCC_ONLY(jit.mov(rdi, reinterpret_cast<std::uint64_t>(this)));
+	MSVC_ONLY(jit.mov(rcx, reinterpret_cast<std::uint64_t>(this)));
+
+	// 2n parameter (rsp)
+	GCC_ONLY(jit.lea(rsi, rsp()));
+	MSVC_ONLY(jit.lea(rdx, rsp(40)));
+
+	// Call GetReturnAddress
+	jit.mov(rax, func.address);
+	jit.call(rax);
+
+	// Free shadow space
+	MSVC_ONLY(jit.add(rsp, 40));
+
+	// Jump to the original return address
+	jit.add(rsp, 8);
+	jit.jump(rax);
+}
+
+void CHook::Write_CallHandler(x64JitWriter& jit, HookType_t type)
+{
+	union
+	{
+		ReturnAction_t (__cdecl CHook::*HookHandler)(HookType_t);
+		std::uint64_t address;
+	} func;
+
+	func.HookHandler = &CHook::HookHandler;
+
+	// Shadow space 32 bytes + 8 bytes to keep it aligned on 16 bytes
+	MSVC_ONLY(jit.sub(rsp, 40));
+
+	// Call the global hook handler
+
+	// 1st param (this)
+	GCC_ONLY(jit.mov(rdi, reinterpret_cast<std::uint64_t>(this)));
+	MSVC_ONLY(jit.mov(rcx, reinterpret_cast<std::uint64_t>(this)));
+
+	// 2nd parameter (type)
+	GCC_ONLY(jit.mov(rsi, type));
+	MSVC_ONLY(jit.mov(rdx, type));
+
+	jit.mov(rax, func.address);
+	jit.call(rax);
+	
+	// Free shadow space
+	MSVC_ONLY(jit.add(rsp, 40));
+}
+
+void CHook::Write_SaveRegisters(x64JitWriter& jit, HookType_t type)
+{
+	// Save RAX
+	jit.push(rax);
+	bool saveRAX = false;
+
+	std::vector<Register_t> vecRegistersToSave = m_pCallingConvention->GetRegisters();
+	for(size_t i = 0; i < vecRegistersToSave.size(); i++)
+	{
+		switch(vecRegistersToSave[i])
+		{
+		// ========================================================================
+		// >> 64-bit General purpose registers
+		// ========================================================================
+		// RAX is saved by default (see above)
+		case Register_t::RAX: saveRAX = true; break;
+		case Register_t::RCX: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_rcx->m_pAddress)); jit.mov(rax(), rcx); break;
+		case Register_t::RDX: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_rdx->m_pAddress)); jit.mov(rax(), rdx); break;
+		case Register_t::RBX: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_rbx->m_pAddress)); jit.mov(rax(), rbx); break;
+		// BEWARE BECAUSE WE PUSHED TO STACK ABOVE, RSP NEEDS TO BE HANDLED DIFFERENTLY
+		case Register_t::RSP:
+			jit.push(r8);
+			// Add +push(rax) & +push(r8)
+			jit.lea(r8, rsp(16));
+			jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_rsp->m_pAddress)); jit.mov(rax(), r8);
+			jit.pop(r8);
+			break;
+		case Register_t::RBP: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_rbp->m_pAddress)); jit.mov(rax(), rbp); break;
+		case Register_t::RSI: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_rsi->m_pAddress)); jit.mov(rax(), rsi); break;
+		case Register_t::RDI: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_rdi->m_pAddress)); jit.mov(rax(), rdi); break;
+
+		case Register_t::R8: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_r8->m_pAddress)); jit.mov(rax(), r8); break;
+		case Register_t::R9: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_r9->m_pAddress)); jit.mov(rax(), r9); break;
+		case Register_t::R10: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_r10->m_pAddress)); jit.mov(rax(), r10); break;
+		case Register_t::R11: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_r11->m_pAddress)); jit.mov(rax(), r11); break;
+		case Register_t::R12: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_r12->m_pAddress)); jit.mov(rax(), r12); break;
+		case Register_t::R13: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_r13->m_pAddress)); jit.mov(rax(), r13); break;
+		case Register_t::R14: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_r14->m_pAddress)); jit.mov(rax(), r14); break;
+		case Register_t::R15: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_r15->m_pAddress)); jit.mov(rax(), r15); break;
+
+		// ========================================================================
+		// >> 128-bit XMM registers
+		// ========================================================================
+		case Register_t::XMM0: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm0->m_pAddress)); jit.movsd(rax(), xmm0); break;
+		case Register_t::XMM1: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm1->m_pAddress)); jit.movsd(rax(), xmm1); break;
+		case Register_t::XMM2: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm2->m_pAddress)); jit.movsd(rax(), xmm2); break;
+		case Register_t::XMM3: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm3->m_pAddress)); jit.movsd(rax(), xmm3); break;
+		case Register_t::XMM4: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm4->m_pAddress)); jit.movsd(rax(), xmm4); break;
+		case Register_t::XMM5: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm5->m_pAddress)); jit.movsd(rax(), xmm5); break;
+		case Register_t::XMM6: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm6->m_pAddress)); jit.movsd(rax(), xmm6); break;
+		case Register_t::XMM7: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm7->m_pAddress)); jit.movsd(rax(), xmm7); break;
+
+		case Register_t::XMM8: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm8->m_pAddress)); jit.movsd(rax(), xmm8); break;
+		case Register_t::XMM9: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm9->m_pAddress)); jit.movsd(rax(), xmm9); break;
+		case Register_t::XMM10: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm10->m_pAddress)); jit.movsd(rax(), xmm10); break;
+		case Register_t::XMM11: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm11->m_pAddress)); jit.movsd(rax(), xmm11); break;
+		case Register_t::XMM12: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm12->m_pAddress)); jit.movsd(rax(), xmm12); break;
+		case Register_t::XMM13: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm13->m_pAddress)); jit.movsd(rax(), xmm13); break;
+		case Register_t::XMM14: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm14->m_pAddress)); jit.movsd(rax(), xmm14); break;
+		case Register_t::XMM15: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm15->m_pAddress)); jit.movsd(rax(), xmm15); break;
+
+		default: puts("Unsupported register.");
+		}
+	}
+
+	jit.pop(rax);
+	if (saveRAX) {
+		jit.push(r8);
+		jit.mov(r8, reinterpret_cast<std::uint64_t>(m_pRegisters->m_rax->m_pAddress)); jit.mov(r8(), rax);
+		jit.pop(r8);
+	}
+}
+
+void CHook::Write_RestoreRegisters(x64JitWriter& jit, HookType_t type)
+{
+	// RAX & RSP will be restored last
+	bool restoreRAX = false, restoreRSP = false;
+	
+	const auto& vecRegistersToRestore = m_pCallingConvention->GetRegisters();
+	for(size_t i = 0; i < vecRegistersToRestore.size(); i++)
+	{
+		switch(vecRegistersToRestore[i])
+		{
+		// ========================================================================
+		// >> 64-bit General purpose registers
+		// ========================================================================
+		// RAX is handled differently (see below)
+		case Register_t::RAX: restoreRAX = true; break;
+		case Register_t::RCX: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_rcx->m_pAddress)); jit.mov(rcx, rax()); break;
+		case Register_t::RDX: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_rdx->m_pAddress)); jit.mov(rdx, rax()); break;
+		case Register_t::RBX: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_rbx->m_pAddress)); jit.mov(rbx, rax()); break;
+		// This could be very troublesome, but oh well...
+		case Register_t::RSP: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_rsp->m_pAddress)); jit.mov(rsp, rax()); break;
+		case Register_t::RBP: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_rbp->m_pAddress)); jit.mov(rbp, rax()); break;
+		case Register_t::RSI: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_rsi->m_pAddress)); jit.mov(rsi, rax()); break;
+		case Register_t::RDI: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_rdi->m_pAddress)); jit.mov(rdi, rax()); break;
+
+		case Register_t::R8: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_r8->m_pAddress)); jit.mov(r8, rax()); break;
+		case Register_t::R9: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_r9->m_pAddress)); jit.mov(r9, rax()); break;
+		case Register_t::R10: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_r10->m_pAddress)); jit.mov(r10, rax()); break;
+		case Register_t::R11: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_r11->m_pAddress)); jit.mov(r11, rax()); break;
+		case Register_t::R12: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_r12->m_pAddress)); jit.mov(r12, rax()); break;
+		case Register_t::R13: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_r13->m_pAddress)); jit.mov(r13, rax()); break;
+		case Register_t::R14: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_r14->m_pAddress)); jit.mov(r14, rax()); break;
+		case Register_t::R15: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_r15->m_pAddress)); jit.mov(r15, rax()); break;
+
+		// ========================================================================
+		// >> 128-bit XMM registers
+		// ========================================================================
+		case Register_t::XMM0: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm0->m_pAddress)); jit.movsd(xmm0, rax()); break;
+		case Register_t::XMM1: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm1->m_pAddress)); jit.movsd(xmm1, rax()); break;
+		case Register_t::XMM2: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm2->m_pAddress)); jit.movsd(xmm2, rax()); break;
+		case Register_t::XMM3: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm3->m_pAddress)); jit.movsd(xmm3, rax()); break;
+		case Register_t::XMM4: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm4->m_pAddress)); jit.movsd(xmm4, rax()); break;
+		case Register_t::XMM5: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm5->m_pAddress)); jit.movsd(xmm5, rax()); break;
+		case Register_t::XMM6: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm6->m_pAddress)); jit.movsd(xmm6, rax()); break;
+		case Register_t::XMM7: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm7->m_pAddress)); jit.movsd(xmm7, rax()); break;
+
+		case Register_t::XMM8: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm8->m_pAddress)); jit.movsd(xmm8, rax()); break;
+		case Register_t::XMM9: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm9->m_pAddress)); jit.movsd(xmm9, rax()); break;
+		case Register_t::XMM10: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm10->m_pAddress)); jit.movsd(xmm10, rax()); break;
+		case Register_t::XMM11: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm11->m_pAddress)); jit.movsd(xmm11, rax()); break;
+		case Register_t::XMM12: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm12->m_pAddress)); jit.movsd(xmm12, rax()); break;
+		case Register_t::XMM13: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm13->m_pAddress)); jit.movsd(xmm13, rax()); break;
+		case Register_t::XMM14: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm14->m_pAddress)); jit.movsd(xmm14, rax()); break;
+		case Register_t::XMM15: jit.mov(rax, reinterpret_cast<std::uint64_t>(m_pRegisters->m_xmm15->m_pAddress)); jit.movsd(xmm15, rax()); break;
+
+		default: puts("Unsupported register.");
+		}
+	}
+
+	if (restoreRAX) {
+		jit.push(r8);
+		jit.mov(r8, reinterpret_cast<std::uint64_t>(m_pRegisters->m_rax->m_pAddress));
+		jit.mov(rax, r8());
+		jit.pop(r8);
+	}
+}
+
+#else
+void CHook::CreateBridge()
 {
 	sp::MacroAssembler masm;
 	Label label_supercede;
@@ -247,7 +625,12 @@ void* CHook::CreateBridge()
 	masm.j(equal, &label_supercede);
 
 	// Jump to the trampoline
-	masm.jmp(ExternalAddress(m_pTrampoline));
+	masm.subl(esp, 4);
+	masm.push(eax);
+	masm.movl(eax, Operand(ExternalAddress(&m_pTrampoline)));
+	masm.movl(Operand(esp, 4), eax);
+	masm.pop(eax);
+	masm.ret();
 
 	// This code will be executed if a pre-hook returns ReturnAction_Supercede
 	masm.bind(&label_supercede);
@@ -256,9 +639,9 @@ void* CHook::CreateBridge()
 	// This will still call post hooks, but will skip the original function.
 	masm.ret(m_pCallingConvention->GetPopSize());
 
-	void *base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.length());
+	void* base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.length());
 	masm.emitToExecutableMemory(base);
-	return base;
+	m_pBridge = base;
 }
 
 void CHook::Write_ModifyReturnAddress(sp::MacroAssembler& masm)
@@ -290,11 +673,11 @@ void CHook::Write_ModifyReturnAddress(sp::MacroAssembler& masm)
 	masm.movl(edx, Operand(ExternalAddress(&pEDX)));
 
 	// Override the return address. This is a redirect to our post-hook code
-	m_pNewRetAddr = CreatePostCallback();
+	CreatePostCallback();
 	masm.movl(Operand(esp, 0), intptr_t(m_pNewRetAddr));
 }
 
-void* CHook::CreatePostCallback()
+void CHook::CreatePostCallback()
 {
 	sp::MacroAssembler masm;
 
@@ -342,9 +725,9 @@ void* CHook::CreatePostCallback()
 	masm.jmp(Operand(ExternalAddress(&pRetAddr)));
 
 	// Generate the code
-	void *base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.length());
+	void* base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.length());
 	masm.emitToExecutableMemory(base);
-	return base;
+	m_pNewRetAddr = base;
 }
 
 void CHook::Write_CallHandler(sp::MacroAssembler& masm, HookType_t type)
@@ -502,3 +885,4 @@ void CHook::Write_RestoreRegisters(sp::MacroAssembler& masm, HookType_t type)
 		}
 	}
 }
+#endif
