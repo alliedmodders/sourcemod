@@ -978,7 +978,7 @@ cell_t CHalfLife2::EntityToReference(CBaseEntity *pEntity)
 {
 	IServerUnknown *pUnknown = (IServerUnknown *)pEntity;
 	CBaseHandle hndl = pUnknown->GetRefEHandle();
-	return (hndl.ToInt() | (1<<31));
+	return (hndl.ToInt() | ENTREF_MASK);
 }
 
 CBaseEntity *CHalfLife2::ReferenceToEntity(cell_t entRef)
@@ -990,10 +990,10 @@ CBaseEntity *CHalfLife2::ReferenceToEntity(cell_t entRef)
 
 	CEntInfo *pInfo = NULL;
 
-	if (entRef & (1<<31))
+	if (entRef & ENTREF_MASK)
 	{
 		/* Proper ent reference */
-		int hndlValue = entRef & ~(1<<31);
+		int hndlValue = entRef & ~ENTREF_MASK;
 		CBaseHandle hndl(hndlValue);
 
 		pInfo = LookupEntity(hndl.GetEntryIndex());
@@ -1094,10 +1094,10 @@ int CHalfLife2::ReferenceToIndex(cell_t entRef)
 		return INVALID_EHANDLE_INDEX;
 	}
 
-	if (entRef & (1<<31))
+	if (entRef & ENTREF_MASK)
 	{
 		/* Proper ent reference */
-		int hndlValue = entRef & ~(1<<31);
+		int hndlValue = entRef & ~ENTREF_MASK;
 		CBaseHandle hndl(hndlValue);
 
 		CEntInfo *pInfo = LookupEntity(hndl.GetEntryIndex());
@@ -1148,7 +1148,7 @@ cell_t CHalfLife2::EntityToBCompatRef(CBaseEntity *pEntity)
 	
 	if (hndl.GetEntryIndex() >= MAX_EDICTS)
 	{
-		return (hndl.ToInt() | (1<<31));
+		return (hndl.ToInt() | ENTREF_MASK);
 	}
 	else
 	{
@@ -1163,7 +1163,7 @@ cell_t CHalfLife2::ReferenceToBCompatRef(cell_t entRef)
 		return INVALID_EHANDLE_INDEX;
 	}
 
-	int hndlValue = entRef & ~(1<<31);
+	int hndlValue = entRef & ~ENTREF_MASK;
 	CBaseHandle hndl(hndlValue);
 
 	if (hndl.GetEntryIndex() < MAX_EDICTS)

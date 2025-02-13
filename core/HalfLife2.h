@@ -57,6 +57,8 @@ class ICommandArgs;
 using namespace SourceHook;
 using namespace SourceMod;
 
+static const int ENTREF_MASK = (1 << 31);
+
 #define HUD_PRINTTALK		3
 #define HUD_PRINTCENTER		4
 
