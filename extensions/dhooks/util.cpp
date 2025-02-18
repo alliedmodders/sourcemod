@@ -62,7 +62,7 @@ size_t GetStackParamOffset(HookParamsStruct *paramStruct, unsigned int index)
 			continue;
 		}
 #endif
-#ifdef PLATFORM_X64
+#ifdef SOURCEMOD_X64
 		offset += 8;
 #else
 		offset += paramStruct->dg->params[i].size;

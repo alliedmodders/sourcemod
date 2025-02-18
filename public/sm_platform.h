@@ -43,12 +43,12 @@
 #endif
 
 #if defined WIN64 || defined _WIN64
-#ifndef PLATFORM_X64
-# define PLATFORM_X64           1
+#ifndef SOURCEMOD_X64
+# define SOURCEMOD_X64           1
 #endif
 #else
-#ifndef PLATFORM_X86
-# define PLATFORM_X86           1
+#ifndef SOURCEMOD_X86
+# define SOURCEMOD_X86           1
 #endif
 #endif // defined WIN64 || defined _WIN64
 
@@ -84,12 +84,12 @@
 #endif
 
 #if defined __x86_64__
-#ifndef PLATFORM_X64
-# define PLATFORM_X64           1
+#ifndef SOURCEMOD_X64
+# define SOURCEMOD_X64           1
 #endif
 #else
-#ifndef PLATFORM_X86
-# define PLATFORM_X86           1
+#ifndef SOURCEMOD_X86
+# define SOURCEMOD_X86           1
 #endif
 #endif // defined __x86_64__
 
@@ -116,7 +116,7 @@
 #define SM_ARRAYSIZE(x) ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
 #endif
 
-#if defined PLATFORM_X64
+#if defined SOURCEMOD_X64
 #define PLATFORM_ARCH_FOLDER	"x64" PLATFORM_SEP
 #ifdef PLATFORM_WINDOWS
 #define PLATFORM_FOLDER 		"win64" PLATFORM_SEP
@@ -134,7 +134,7 @@
 #elif defined PLATFORM_APPLE
 #define PLATFORM_FOLDER 		"osx32"	PLATFORM_SEP
 #endif
-#endif // defined PLATFORM_X64
+#endif // defined SOURCEMOD_X64
 
 #endif //_INCLUDE_SOURCEMOD_PLATFORM_H_
 
