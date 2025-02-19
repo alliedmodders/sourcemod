@@ -34,6 +34,7 @@
 #include <datamap.h>
 
 variant_t g_Variant_t;
+char g_Variant_str_Value[128];
 
 // copy this definition as the original file includes cbase.h which explodes in a shower of compile errors
 void variant_t::SetEntity( CBaseEntity *val ) 
@@ -59,7 +60,9 @@ static cell_t SetVariantString(IPluginContext *pContext, const cell_t *params)
 {
 	char *str;
 	pContext->LocalToString(params[1], &str);
-	g_Variant_t.SetString(MAKE_STRING(str));
+	strncpy(g_Variant_str_Value, str, sizeof(g_Variant_str_Value));
+	g_Variant_str_Value[sizeof(g_Variant_str_Value) - 1] = '\0';
+	g_Variant_t.SetString(MAKE_STRING(g_Variant_str_Value));
 	return 1;
 }
 
