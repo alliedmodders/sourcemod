@@ -81,12 +81,6 @@
 	/* CBaseEntityOutput::FireOutput */
 	"#default"
 	{
-		"#supported"
-		{
-			"game"		"dod"
-			"game"		"tf"
-			"game"		"hl2mp"
-		}
 		"Signatures"
 		{
 			"FireOutput"
@@ -104,13 +98,6 @@
 	/* SetUserInfo data */
 	"#default"
 	{
-		"#supported"
-		{
-			"game"		"dod"
-			"game"		"tf"
-			"game"		"hl2mp"
-		}
-		
 		"Offsets"
 		{
 			/**
