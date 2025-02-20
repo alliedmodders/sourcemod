@@ -31,8 +31,8 @@
 				/* String : "reveal_disguised_victim_on_hit", follow the xref, RemoveDisguise is the subroutine that's called if the return value of CALL_ATTRIB_HOOK_INT( iRevealDisguisedSpyOnHit, reveal_disguised_victim_on_hit ); was true */
 				
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x81\xEC\x10\x01\x00\x00\x53\x56\x57\x8B\x7D\x0C\x8B\xF1"
-				"windows64"	"\x4D\x85\xC0\x0F\x84\x2A\x2A\x2A\x2A\x48\x8B\xC4\x55\x53"
+				"windows"	"\x55\x8B\xEC\x51\x53\x56\x8B\xF1\x57\x6A\x03"
+				"windows64"	"\x48\x89\x5C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x20\x48\x8B\xD9\xBA\x03\x00\x00\x00"
 				"linux"		"@_ZN15CTFPlayerShared14RemoveDisguiseEv"
 				"linux64"	"@_ZN15CTFPlayerShared14RemoveDisguiseEv"
 			}
