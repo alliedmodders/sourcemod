@@ -74,6 +74,7 @@
 				"linux"		"340"
 				"linux64"	"340"
 			}
+			/* CBaseCombatWeapon::Reload */
 			"Reload"
 			{
 				"windows"	"276"
@@ -97,10 +98,10 @@
 			}
 			"Spawn"
 			{
-				"windows"	"29"
-				"windows64"	"29"
-				"linux"		"30"
-				"linux64"	"30"
+				"windows"	"24"
+				"windows64"	"24"
+				"linux"		"25"
+				"linux64"	"25"
 			}
 			"StartTouch"
 			{
