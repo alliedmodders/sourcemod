@@ -55,11 +55,6 @@
 		"engine"	"bms"
 	}
 	
-	"engine.css.txt"
-	{
-		"engine"	"css"
-	}
-	
 	"engine.ep1.txt"
 	{
 		"engine"	"original"
