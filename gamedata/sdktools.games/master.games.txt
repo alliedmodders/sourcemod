@@ -50,11 +50,6 @@
 		"engine"	"sdk2013"
 	}
 	
-	"engine.css.txt"
-	{
-		"engine"	"css"
-	}
-	
 	"engine.ep1.txt"
 	{
 		"engine"	"original"
