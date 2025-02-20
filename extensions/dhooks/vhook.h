@@ -39,7 +39,7 @@
 #include <registers.h>
 #include <vector>
 
-#ifdef PLATFORM_X64
+#ifdef KE_ARCH_X64
 #include "sh_asm_x86_64.h"
 #endif
 
@@ -176,7 +176,7 @@ public:
     virtual void DeleteThis()
 	{
 		*(void ***)this = this->oldvtable;
-#ifdef PLATFORM_X64
+#ifdef KE_ARCH_X64
 		delete callThunk;
 #else
 		g_pSM->GetScriptingEngine()->FreePageMemory(this->newvtable[2]);
@@ -188,12 +188,12 @@ public:
 public:
 	void **newvtable;
 	void **oldvtable;
-#ifdef PLATFORM_X64
+#ifdef KE_ARCH_X64
 	SourceHook::Asm::x64JitWriter* callThunk;
 #endif
 };
 
-#if defined( WIN32 ) && !defined( PLATFORM_X64 )
+#if defined( WIN32 ) && !defined( KE_ARCH_X64 )
 void *Callback(DHooksCallback *dg, void **stack, size_t *argsizep);
 float Callback_float(DHooksCallback *dg, void **stack, size_t *argsizep);
 SDKVector *Callback_vector(DHooksCallback *dg, void **stack, size_t *argsizep);
@@ -278,7 +278,7 @@ public:
 	HookMethod hookMethod;
 };
 
-#ifdef PLATFORM_X64
+#ifdef KE_ARCH_X64
 SourceHook::Asm::x64JitWriter* GenerateThunk(HookSetup* type);
 static DHooksCallback *MakeHandler(HookSetup* hook)
 {

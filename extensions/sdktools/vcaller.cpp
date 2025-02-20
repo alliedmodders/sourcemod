@@ -172,7 +172,7 @@ static cell_t PrepSDKCall_SetSignature(IPluginContext *pContext, const cell_t *p
 
 static cell_t PrepSDKCall_SetAddress(IPluginContext *pContext, const cell_t *params)
 {
-#ifdef PLATFORM_X86
+#ifdef KE_ARCH_X86
 	s_call_addr = reinterpret_cast<void *>(params[1]);
 #else
 	s_call_addr = g_pSM->FromPseudoAddress(params[1]);

@@ -863,7 +863,7 @@ enum NumberType
 
 static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
 {
-#ifdef PLATFORM_X86
+#ifdef KE_ARCH_X86
 	void *addr = reinterpret_cast<void*>(params[1]);
 #else
 	void *addr = pseudoAddr.FromPseudoAddress(params[1]);
@@ -895,7 +895,7 @@ static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
 
 static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 {
-#ifdef PLATFORM_X86
+#ifdef KE_ARCH_X86
 	void *addr = reinterpret_cast<void*>(params[1]);
 #else
 	void *addr = pseudoAddr.FromPseudoAddress(params[1]);

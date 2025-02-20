@@ -360,7 +360,7 @@ void TempEntityManager::Initialize()
 				return;
 			}
 			/* Store the head of the TE linked list */
-#ifdef PLATFORM_X86
+#ifdef KE_ARCH_X86
 			m_ListHead = **(void ***) ((unsigned char *) addr + offset);
 #else
 			int32_t varOffset = *(int32_t *) ((unsigned char *) addr + offset);

@@ -243,6 +243,8 @@ class SMConfig(object):
       '-Wno-unused',
       '-Wno-switch',
       '-Wno-array-bounds',
+      '-Wno-unknown-pragmas',
+      '-Wno-dangling-else',
       '-fvisibility=hidden',
     ]
     if cxx.target.arch in ['x86', 'x86_64']:

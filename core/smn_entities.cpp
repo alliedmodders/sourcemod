@@ -724,7 +724,7 @@ static cell_t GetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 
 static cell_t LoadEntityFromHandleAddress(IPluginContext *pContext, const cell_t *params)
 {
-#ifdef PLATFORM_X86
+#ifdef KE_ARCH_X86
 	void *addr = reinterpret_cast<void*>(params[1]);
 #else
 	void *addr = g_SourceMod.FromPseudoAddress(params[1]);
@@ -835,7 +835,7 @@ static cell_t SetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 
 static cell_t StoreEntityToHandleAddress(IPluginContext *pContext, const cell_t *params)
 {
-#ifdef PLATFORM_X86
+#ifdef KE_ARCH_X86
 	void *addr = reinterpret_cast<void*>(params[1]);
 #else
 	void *addr = g_SourceMod.FromPseudoAddress(params[1]);
@@ -2772,7 +2772,7 @@ static cell_t GetEntityAddress(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
-#ifdef PLATFORM_X86
+#ifdef KE_ARCH_X86
 	return reinterpret_cast<cell_t>(pEntity);
 #else
 	return g_SourceMod.ToPseudoAddress(pEntity);

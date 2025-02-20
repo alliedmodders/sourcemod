@@ -213,7 +213,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	/* There will always be a path by this point, since it was force-set above. */
 	m_GotBasePath = true;
 
-#if defined PLATFORM_X86
+#if defined KE_ARCH_X86
 # define SOURCEPAWN_DLL "sourcepawn.jit.x86"
 #else
 # define SOURCEPAWN_DLL "sourcepawn.vm"

@@ -82,7 +82,7 @@ CTakeDamageInfoHack::CTakeDamageInfoHack( CBaseEntity *pInflictor, CBaseEntity *
 #endif
 
 #if SOURCE_ENGINE == SE_TF2
-	m_eCritType = kCritType_None;
+	m_eCritType = CRIT_NONE;
 #endif
 
 #if SOURCE_ENGINE >= SE_ALIENSWARM

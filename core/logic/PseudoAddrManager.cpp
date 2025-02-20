@@ -44,7 +44,7 @@ PseudoAddressManager::PseudoAddressManager() : m_NumEntries(0)
 // lower 26 bits. The table consists of memory allocation base addresses.
 void *PseudoAddressManager::FromPseudoAddress(uint32_t paddr)
 {
-#ifdef PLATFORM_X64
+#ifdef KE_ARCH_X64
 	uint8_t index = paddr >> PSEUDO_OFFSET_BITS;
 	uint32_t offset = paddr & ((1 << PSEUDO_OFFSET_BITS) - 1);
 
@@ -59,7 +59,7 @@ void *PseudoAddressManager::FromPseudoAddress(uint32_t paddr)
 
 uint32_t PseudoAddressManager::ToPseudoAddress(void *addr)
 {
-#ifdef PLATFORM_X64
+#ifdef KE_ARCH_X64
 	uint8_t index = 0;
 	uint32_t offset = 0;
 	bool hasEntry = false;
@@ -108,13 +108,13 @@ void *PseudoAddressManager::GetAllocationBase(void *ptr)
 
 #elif defined PLATFORM_APPLE
 
-#ifdef PLATFORM_X86
+#ifdef KE_ARCH_X86
 	typedef vm_region_info_t mach_vm_region_info_t;
 	typedef vm_region_basic_info_data_t mach_vm_region_basic_info_data_t;
 	const vm_region_flavor_t MACH_VM_REGION_BASIC_INFO = VM_REGION_BASIC_INFO;
 	const mach_msg_type_number_t MACH_VM_REGION_BASIC_INFO_COUNT = VM_REGION_BASIC_INFO_COUNT;
 	#define mach_vm_region vm_region
-#elif defined PLATFORM_X64
+#elif defined KE_ARCH_X64
 	typedef vm_region_info_64_t mach_vm_region_info_t ;
 	typedef vm_region_basic_info_data_64_t mach_vm_region_basic_info_data_t;
 	const vm_region_flavor_t MACH_VM_REGION_BASIC_INFO = VM_REGION_BASIC_INFO_64;
