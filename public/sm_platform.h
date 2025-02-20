@@ -37,6 +37,8 @@
  * @brief Contains platform-specific macros for abstraction.
  */
 
+#include <am-platform.h>
+
 #if defined WIN32 || defined WIN64
 #ifndef PLATFORM_WINDOWS
 #define PLATFORM_WINDOWS		1
