@@ -639,15 +639,15 @@
 			{
 				"windows"	"17"
 				"windows64"	"17"
-				"linux"		"16"
-				"linux64"	"16"
+				"linux"		"18"
+				"linux64"	"18"
 			}
 			"Spawn"
 			{
-				"windows"	"29"
-				"windows64"	"29"
-				"linux"		"30"
-				"linux64"	"30"
+				"windows"	"24"
+				"windows64"	"24"
+				"linux"		"25"
+				"linux64"	"25"
 			}
 			"StartTouch"
 			{
