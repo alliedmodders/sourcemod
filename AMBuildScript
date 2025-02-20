@@ -191,11 +191,6 @@ class SMConfig(object):
     elif cxx.family == 'clang':
       if cxx.version < 'clang-5':
         raise Exception('Only clang versions 5 or later are supported, full C++17 support is required.')
-      
-    if cxx.target.arch == 'x86':
-      cxx.defines += ['SOURCEMOD_X86']
-    elif cxx.target.arch == 'x86_64':
-      cxx.defines += ['SOURCEMOD_X64']
 
     if cxx.like('gcc'):
       self.configure_gcc(cxx)

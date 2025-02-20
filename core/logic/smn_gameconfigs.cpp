@@ -155,7 +155,7 @@ static cell_t smn_GameConfGetAddress(IPluginContext *pCtx, const cell_t *params)
 	if (!gc->GetAddress(key, &val))
 		return 0;
 
-#ifdef SOURCEMOD_X86
+#ifdef KE_ARCH_X86
 	return (cell_t)val;
 #else
 	return pseudoAddr.ToPseudoAddress(val);
@@ -187,7 +187,7 @@ static cell_t smn_GameConfGetMemSig(IPluginContext *pCtx, const cell_t *params)
 		return 0;
 	}
 
-#ifdef SOURCEMOD_X86
+#ifdef KE_ARCH_X86
 	return (cell_t)val;
 #else
 	return pseudoAddr.ToPseudoAddress(val);
