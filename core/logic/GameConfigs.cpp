@@ -79,9 +79,9 @@ static const char *g_pParseEngine = NULL;
 #define PSTATE_GAMEDEFS_ADDRESSES_ADDRESS	14
 #define PSTATE_GAMEDEFS_ADDRESSES_ADDRESS_READ	15
 
-#if defined PLATFORM_X86
+#if defined KE_ARCH_X86
 #define PLATFORM_ARCH_SUFFIX		""
-#elif defined PLATFORM_X64
+#elif defined KE_ARCH_X64
 #define PLATFORM_ARCH_SUFFIX		"64"
 #endif
 

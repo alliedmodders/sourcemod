@@ -18,7 +18,7 @@ struct HashItemDef_Node
 class CHashItemDef
 {
 public:
-#ifdef PLATFORM_X86
+#ifdef KE_ARCH_X86
 	unsigned char padding[36];
 #else
 	unsigned char padding[56];

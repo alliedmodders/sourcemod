@@ -73,7 +73,7 @@ bool EntityOutputManager::IsEnabled()
 	return enabled;
 }
 
-#if defined PLATFORM_WINDOWS && defined PLATFORM_X86
+#if defined PLATFORM_WINDOWS && defined KE_ARCH_X86
 DETOUR_DECL_MEMBER8(FireOutput, void, int, what, int, the, int, hell, int, msvc, void *, variant_t, CBaseEntity *, pActivator, CBaseEntity *, pCaller, float, fDelay)
 {
 	bool fireOutput = g_OutputManager.FireEventDetour((void *)this, pActivator, pCaller, fDelay);

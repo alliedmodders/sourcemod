@@ -311,7 +311,7 @@ static cell_t FireEntityOutput(IPluginContext *pContext, const cell_t *params)
 		{
 			return pContext->ThrowNativeError("\"FireEntityOutput\" not supported by this mod");
 		}
-#if defined PLATFORM_WINDOWS && defined PLATFORM_X86
+#if defined PLATFORM_WINDOWS && defined KE_ARCH_X86
 		int iMaxParam = 8;
 		//Instead of being one param, MSVC broke variant_t param into 5 params..
 		PassInfo pass[8];

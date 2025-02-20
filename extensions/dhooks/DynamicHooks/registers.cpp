@@ -162,7 +162,7 @@ CRegisters::CRegisters(std::vector<Register_t> registers)
 	m_xmm7 = CreateRegister(registers, XMM7, 16, 16);
 
 	// 64-bit mode only
-#ifdef PLATFORM_X64
+#ifdef KE_ARCH_X64
 	m_xmm8 = CreateRegister(registers, XMM8, 16);
 	m_xmm9 = CreateRegister(registers, XMM9, 16);
 	m_xmm10 = CreateRegister(registers, XMM10, 16);
