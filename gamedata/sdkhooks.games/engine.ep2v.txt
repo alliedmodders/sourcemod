@@ -475,7 +475,7 @@
 		}
 	}
 
-	"css"
+	"cstrike"
 	{
 		"Offsets"
 		{
