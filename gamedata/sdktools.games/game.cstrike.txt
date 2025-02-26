@@ -51,7 +51,7 @@
 			"Weapon_GetSlot"
 			{
 				"windows"	"274"
-				"windows"	"274"
+				"windows64"	"274"
 				"linux"		"275"
 				"linux64"	"275"
 			}
