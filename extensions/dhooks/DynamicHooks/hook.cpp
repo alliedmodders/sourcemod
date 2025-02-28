@@ -88,10 +88,13 @@ CHook::~CHook()
 		m_Hook.disable();
 	}
 
+	// x64 will free these in the m_bridge/m_postCallback destructors.
+#ifndef DYNAMICHOOKS_x86_64
 	if (m_pBridge) {
 		smutils->GetScriptingEngine()->FreePageMemory(m_pBridge);
 		smutils->GetScriptingEngine()->FreePageMemory(m_pNewRetAddr);
 	}
+#endif
 
 	delete m_pRegisters;
 	delete m_pCallingConvention;
