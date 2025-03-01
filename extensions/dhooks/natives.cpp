@@ -122,7 +122,7 @@ cell_t Native_CreateHook(IPluginContext *pContext, const cell_t *params)
 //native Handle:DHookCreateDetour(Address:funcaddr, CallingConvention:callConv, ReturnType:returntype, ThisPointerType:thistype);
 cell_t Native_CreateDetour(IPluginContext *pContext, const cell_t *params)
 {
-	HookSetup *setup = new HookSetup((ReturnType)params[3], PASSFLAG_BYVAL, (CallingConvention)params[2], (ThisPointerType)params[4], (void *)params[1]);
+	HookSetup *setup = new HookSetup((ReturnType)params[3], PASSFLAG_BYVAL, (CallingConvention)params[2], (ThisPointerType)params[4], reinterpret_cast<void*>(params[1]));
 
 	Handle_t hndl = handlesys->CreateHandle(g_HookSetupHandle, setup, pContext->GetIdentity(), myself->GetIdentity(), NULL);
 
@@ -589,7 +589,7 @@ cell_t HookRawImpl(IPluginContext *pContext, const cell_t *params, int callbackI
 	if (removalcbIndex > 0)
 		removalcb = pContext->GetFunctionById(params[removalcbIndex]);
 
-	void *iface = (void *)(params[3]);
+	void *iface = reinterpret_cast<void*>(params[3]);
 
 	for(int i = g_pHooks.size() -1; i >= 0; i--)
 	{
