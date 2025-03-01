@@ -27,61 +27,78 @@
 // ============================================================================
 // >> INCLUDES
 // ============================================================================
-#include "x86_64MicrosoftDefault.h"
+#include "x86_64SystemVDefault.h"
 #include <smsdk_ext.h>
 
 // ============================================================================
 // >> CLASSES
 // ============================================================================
-x86_64MicrosoftDefault::x86_64MicrosoftDefault(std::vector<DataTypeSized_t> &vecArgTypes, DataTypeSized_t returnType, int iAlignment) :
+x86_64SystemVDefault::x86_64SystemVDefault(std::vector<DataTypeSized_t> &vecArgTypes, DataTypeSized_t returnType, int iAlignment) :
 	ICallingConvention(vecArgTypes, returnType, iAlignment),
 	m_stackArgs(0)
 {
-	const Register_t params_reg[] = { RCX, RDX, R8, R9 };
-	const Register_t params_floatreg[] = { XMM0, XMM1, XMM2, XMM3 };
+	const Register_t params_reg[] = { RDI, RSI, RDX, RCX, R8, R9 };
+	const Register_t params_floatreg[] = { XMM0, XMM1, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7 };
 	//const char* regNames[] = { "RCX or XMM0", "RDX or XMM1", "R8 or XMM2", "R9 or XMM3"};
 	const std::uint8_t num_reg = sizeof(params_reg) / sizeof(Register_t);
+	const std::uint8_t num_floatreg = sizeof(params_floatreg) / sizeof(Register_t);
 
-	bool used_reg[] = { false, false, false, false };
+	bool used_reg[] = { false, false, false, false, false, false };
+	bool used_floatreg[] = { false, false, false, false, false, false, false, false };
 
 	// Figure out if any register has been used
 	auto retreg = m_returnType.custom_register;
-	used_reg[0] = (retreg == RCX || retreg == XMM0);
-	used_reg[1] = (retreg == RDX || retreg == XMM1);
-	used_reg[2] = (retreg == R8 || retreg == XMM2);
-	used_reg[3] = (retreg == R9 || retreg == XMM3);
-
-	for (const auto& arg : m_vecArgTypes) {
-		int reg_index = -1;
-		if (arg.custom_register == RCX || arg.custom_register == XMM0) {
-			reg_index = 0;
-		} else if (arg.custom_register == RDX || arg.custom_register == XMM1) {
-			reg_index = 1;
-		} else if (arg.custom_register == R8 || arg.custom_register == XMM2) {
-			reg_index = 2;
-		} else if (arg.custom_register == R9 || arg.custom_register == XMM3) {
-			reg_index = 3;
+	for (int i = 0; i < num_reg; ++i) {
+		if (retreg == params_reg[i]) {
+			used_reg[i] = true;
+			break;
 		}
-
-		if (reg_index != -1) {
-			if (used_reg[reg_index]) {
-				puts("Argument register is used twice, or shared with return");
-				return;
-			}
-			used_reg[reg_index] = true;
+	}
+	for (int i = 0; i < num_floatreg; ++i) {
+		if (retreg == params_floatreg[i]) {
+			used_floatreg[i] = true;
+			break;
 		}
 	}
 
+	for (const auto& arg : m_vecArgTypes) {
+		bool found_as_int_or_ptr = false;
+
+		for (int i = 0; i < num_reg; ++i) {
+			if (arg.custom_register == params_reg[i]) {
+				if (used_reg[i]) {
+					puts("Argument (int/ptr) register is used twice, or shared with return");
+					return;
+				}
+				used_reg[i] = true;
+				found_as_int_or_ptr = true;
+				break;
+			}
+		}
+
+		if (found_as_int_or_ptr) continue;
+
+		for (int i = 0; i < num_floatreg; ++i) {
+			if (arg.custom_register == params_floatreg[i]) {
+				if (used_floatreg[i]) {
+					puts("Argument (float/double) register is used twice, or shared with return");
+					return;
+				}
+				used_floatreg[i] = true;
+				break;
+			}
+		}
+	}
+
+	// TODO: Figure out if we need to do something different for Linux...
 	// Special return type
 	if (m_returnType.custom_register == None && m_returnType.type == DATA_TYPE_OBJECT &&
 	// If size unknown, or doesn't fit on 1, 2, 4 or 8 bytes
 	// special place must have been allocated for it
-	(m_returnType.size == 0
-	|| m_returnType.size == 3
-	|| m_returnType.size == 5
-	|| m_returnType.size == 6
-	|| m_returnType.size == 7
-	|| m_returnType.size > 8)) {
+	(m_returnType.size != 1
+	&& m_returnType.size != 2
+	&& m_returnType.size != 4
+	&& m_returnType.size != 8)) {
 		for (std::uint8_t i = 0; i < num_reg && m_returnType.custom_register == None; i++) {
 			if (!used_reg[i]) {
 				m_returnType.custom_register = params_reg[i];
@@ -96,26 +113,37 @@ x86_64MicrosoftDefault::x86_64MicrosoftDefault(std::vector<DataTypeSized_t> &vec
 	}
 
 	for (auto& arg : m_vecArgTypes) {
-		if (arg.custom_register == None) {
-			for (std::uint8_t i = 0; i < num_reg && arg.custom_register == None; i++) {
-				// Register is unused assign it
+		if (arg.custom_register != None) continue;
+
+		if (arg.type == DATA_TYPE_FLOAT || arg.type == DATA_TYPE_DOUBLE) {
+			for (int i = 0; i < num_reg && arg.custom_register == None; ++i) {
+				// Register is unused. Assign it.
+				if (!used_floatreg[i]) {
+					arg.custom_register = params_floatreg[i];
+					used_floatreg[i] = true;
+				}
+			}
+		} else {
+			for (int i = 0; i < num_reg && arg.custom_register == None; ++i) {
+				// Register is unused. Assign it.
 				if (!used_reg[i]) {
-					arg.custom_register = (arg.type == DATA_TYPE_FLOAT || arg.type == DATA_TYPE_DOUBLE) ? params_floatreg[i] : params_reg[i];
+					arg.custom_register = params_reg[i];
 					used_reg[i] = true;
 				}
 			}
-			// Couldn't find a free register, it's therefore a stack parameter
-			if (arg.custom_register == None) {
-				m_stackArgs++;
-			}
+		}
+
+		// Couldn't find a free register, it's therefore a stack parameter
+		if (arg.custom_register == None) {
+			m_stackArgs++;
 		}
 	}
 }
 
-std::vector<Register_t> x86_64MicrosoftDefault::GetRegisters()
+std::vector<Register_t> x86_64SystemVDefault::GetRegisters()
 {
 	std::vector<Register_t> registers;
-	
+
 	registers.push_back(RSP);
 
 	if (m_returnType.custom_register != None)
@@ -144,25 +172,25 @@ std::vector<Register_t> x86_64MicrosoftDefault::GetRegisters()
 	return registers;
 }
 
-int x86_64MicrosoftDefault::GetPopSize()
+int x86_64SystemVDefault::GetPopSize()
 {
 	// Clean-up is caller handled
 	return 0;
 }
 
-int x86_64MicrosoftDefault::GetArgStackSize()
+int x86_64SystemVDefault::GetArgStackSize()
 {
-	// Shadow space (32 bytes) + 8 bytes * amount of stack arguments
-	return 32 + 8 * m_stackArgs;
+	// 8 bytes * amount of stack arguments
+	return 8 * m_stackArgs;
 }
 
-void** x86_64MicrosoftDefault::GetStackArgumentPtr(CRegisters* registers)
+void** x86_64SystemVDefault::GetStackArgumentPtr(CRegisters* registers)
 {
-	// Skip shadow space + return address
-	return (void **)(registers->m_rsp->GetValue<uintptr_t>() + 8 + 32);
+	// Skip return address
+	return (void **)(registers->m_rsp->GetValue<uintptr_t>() + 8);
 }
 
-int x86_64MicrosoftDefault::GetArgRegisterSize()
+int x86_64SystemVDefault::GetArgRegisterSize()
 {
 	int argRegisterSize = 0;
 
@@ -178,7 +206,7 @@ int x86_64MicrosoftDefault::GetArgRegisterSize()
 	return argRegisterSize;
 }
 
-void* x86_64MicrosoftDefault::GetArgumentPtr(unsigned int index, CRegisters* registers)
+void* x86_64SystemVDefault::GetArgumentPtr(unsigned int index, CRegisters* registers)
 {
 	//g_pSM->LogMessage(myself, "Retrieving argument %d (max args %d) registers %p", index, m_vecArgTypes.size(), registers);
 	if (index >= m_vecArgTypes.size())
@@ -186,7 +214,7 @@ void* x86_64MicrosoftDefault::GetArgumentPtr(unsigned int index, CRegisters* reg
 		//g_pSM->LogMessage(myself, "Not enough arguments");
 		return nullptr;
 	}
-	
+
 	// Check if this argument was passed in a register.
 	if (m_vecArgTypes[index].custom_register != None)
 	{
@@ -200,8 +228,8 @@ void* x86_64MicrosoftDefault::GetArgumentPtr(unsigned int index, CRegisters* reg
 		return reg->m_pAddress;
 	}
 
-	// Return address + shadow space
-	size_t offset = 8 + 32;
+	// Return address
+	size_t offset = 8;
 	for (unsigned int i = 0; i < index; i++)
 	{
 		if (m_vecArgTypes[i].custom_register == None)
@@ -213,11 +241,11 @@ void* x86_64MicrosoftDefault::GetArgumentPtr(unsigned int index, CRegisters* reg
 	return (void *) (registers->m_rsp->GetValue<uintptr_t>() + offset);
 }
 
-void x86_64MicrosoftDefault::ArgumentPtrChanged(unsigned int index, CRegisters* registers, void* argumentPtr)
+void x86_64SystemVDefault::ArgumentPtrChanged(unsigned int index, CRegisters* registers, void* argumentPtr)
 {
 }
 
-void* x86_64MicrosoftDefault::GetReturnPtr(CRegisters* registers)
+void* x86_64SystemVDefault::GetReturnPtr(CRegisters* registers)
 {
 	// Custom return value register
 	if (m_returnType.custom_register != None)
@@ -233,11 +261,11 @@ void* x86_64MicrosoftDefault::GetReturnPtr(CRegisters* registers)
 	return registers->m_rax->m_pAddress;
 }
 
-void x86_64MicrosoftDefault::ReturnPtrChanged(CRegisters* pRegisters, void* pReturnPtr)
+void x86_64SystemVDefault::ReturnPtrChanged(CRegisters* pRegisters, void* pReturnPtr)
 {
 }
 
-void x86_64MicrosoftDefault::SaveReturnValue(CRegisters* registers)
+void x86_64SystemVDefault::SaveReturnValue(CRegisters* registers)
 {
 	// It doesn't matter what the return value is, it will always be fitting on 8 bytes (or less)
 	std::unique_ptr<uint8_t[]> savedReturn = std::make_unique<uint8_t[]>(8);
@@ -245,7 +273,7 @@ void x86_64MicrosoftDefault::SaveReturnValue(CRegisters* registers)
 	m_pSavedReturnBuffers.push_back(std::move(savedReturn));
 }
 
-void x86_64MicrosoftDefault::RestoreReturnValue(CRegisters* registers)
+void x86_64SystemVDefault::RestoreReturnValue(CRegisters* registers)
 {
 	// Like stated in SaveReturnValue, it will always fit within 8 bytes
 	// the actual underlining type does not matter
@@ -255,7 +283,7 @@ void x86_64MicrosoftDefault::RestoreReturnValue(CRegisters* registers)
 	m_pSavedReturnBuffers.pop_back();
 }
 
-void x86_64MicrosoftDefault::SaveCallArguments(CRegisters* registers)
+void x86_64SystemVDefault::SaveCallArguments(CRegisters* registers)
 {
 	int size = GetArgStackSize() + GetArgRegisterSize();
 	std::unique_ptr<uint8_t[]> savedCallArguments = std::make_unique<uint8_t[]>(size);
@@ -268,7 +296,7 @@ void x86_64MicrosoftDefault::SaveCallArguments(CRegisters* registers)
 	m_pSavedCallArguments.push_back(std::move(savedCallArguments));
 }
 
-void x86_64MicrosoftDefault::RestoreCallArguments(CRegisters* registers)
+void x86_64SystemVDefault::RestoreCallArguments(CRegisters* registers)
 {
 	uint8_t *savedCallArguments = m_pSavedCallArguments.back().get();
 	size_t offset = 0;

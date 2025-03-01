@@ -24,8 +24,8 @@
 * 3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _X86_64_MICROSOFT_DEFAULT_H
-#define _X86_64_MICROSOFT_DEFAULT_H
+#ifndef _X86_64_SYSTEMV_DEFAULT_H
+#define _X86_64_SYSTEMV_DEFAULT_H
 
 // ============================================================================
 // >> INCLUDES
@@ -35,11 +35,11 @@
 // ============================================================================
 // >> CLASSES
 // ============================================================================
-class x86_64MicrosoftDefault : public ICallingConvention
+class x86_64SystemVDefault : public ICallingConvention
 {
 public:
-	x86_64MicrosoftDefault(std::vector<DataTypeSized_t>& vecArgTypes, DataTypeSized_t returnType, int iAlignment = 8);
-	virtual ~x86_64MicrosoftDefault() = default;
+	x86_64SystemVDefault(std::vector<DataTypeSized_t>& vecArgTypes, DataTypeSized_t returnType, int iAlignment = 8);
+	virtual ~x86_64SystemVDefault() = default;
 
 	virtual std::vector<Register_t> GetRegisters() override;
 	virtual int GetPopSize() override;
@@ -65,4 +65,4 @@ protected:
 	std::uint32_t m_stackArgs;
 };
 
-#endif // _X86_64_MICROSOFT_DEFAULT_H
+#endif // _X86_64_SYSTEMV_DEFAULT_H
