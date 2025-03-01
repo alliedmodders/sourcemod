@@ -49,6 +49,8 @@ typedef x86MsFastcall x86DetourFastCall;
 #endif
 #elif defined KE_LINUX
 #ifdef DYNAMICHOOKS_x86_64
+#include "conventions/x86_64SystemVDefault.h"
+typedef x86_64SystemVDefault x86_64DetourCall;
 #else
 #include "conventions/x86GccCdecl.h"
 #include "conventions/x86GccThiscall.h"
