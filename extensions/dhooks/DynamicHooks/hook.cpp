@@ -363,6 +363,8 @@ void CHook::Write_ModifyReturnAddress(x64JitWriter& jit)
 
 	// Shadow space 32 bytes + 8 bytes to keep it aligned on 16 bytes
 	MSVC_ONLY(jit.sub(rsp, 40));
+	// We need to keep it aligned to 16 bytes on Linux too...
+	GCC_ONLY(jit.sub(rsp, 8));
 
 	// 1st param (this)
 	GCC_ONLY(jit.mov(rdi, reinterpret_cast<std::uint64_t>(this)));
@@ -380,6 +382,8 @@ void CHook::Write_ModifyReturnAddress(x64JitWriter& jit)
 	jit.mov(rax, func.address);
 	jit.call(rax);
 
+	// Free Linux stack alignemnt
+	GCC_ONLY(jit.add(rsp, 8));
 	// Free shadow space
 	MSVC_ONLY(jit.add(rsp, 40));
 	
@@ -419,12 +423,14 @@ void CHook::CreatePostCallback()
 
 	// Shadow space 32 bytes + 8 bytes to keep it aligned on 16 bytes
 	MSVC_ONLY(jit.sub(rsp, 40));
+	// We need to keep it aligned to 16 bytes on Linux too...
+	GCC_ONLY(jit.sub(rsp, 8));
 
 	// 1st param (this)
 	GCC_ONLY(jit.mov(rdi, reinterpret_cast<std::uint64_t>(this)));
 	MSVC_ONLY(jit.mov(rcx, reinterpret_cast<std::uint64_t>(this)));
 
-	// 2n parameter (rsp)
+	// 2nd parameter (rsp)
 	GCC_ONLY(jit.lea(rsi, rsp()));
 	MSVC_ONLY(jit.lea(rdx, rsp(40)));
 
@@ -432,6 +438,8 @@ void CHook::CreatePostCallback()
 	jit.mov(rax, func.address);
 	jit.call(rax);
 
+	// Free Linux stack alignemnt
+	GCC_ONLY(jit.add(rsp, 8));
 	// Free shadow space
 	MSVC_ONLY(jit.add(rsp, 40));
 
@@ -452,6 +460,8 @@ void CHook::Write_CallHandler(x64JitWriter& jit, HookType_t type)
 
 	// Shadow space 32 bytes + 8 bytes to keep it aligned on 16 bytes
 	MSVC_ONLY(jit.sub(rsp, 40));
+	// We need to keep it aligned to 16 bytes on Linux too...
+	GCC_ONLY(jit.sub(rsp, 8));
 
 	// Call the global hook handler
 
@@ -466,6 +476,8 @@ void CHook::Write_CallHandler(x64JitWriter& jit, HookType_t type)
 	jit.mov(rax, func.address);
 	jit.call(rax);
 	
+	// Free Linux stack alignemnt
+	GCC_ONLY(jit.add(rsp, 8));
 	// Free shadow space
 	MSVC_ONLY(jit.add(rsp, 40));
 }
