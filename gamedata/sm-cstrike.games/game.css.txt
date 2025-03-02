@@ -176,7 +176,8 @@
 				"linux"		"@_ZN12CCSGameRules13CheckWinLimitEv"
 				"linux64"		"@_ZN12CCSGameRules13CheckWinLimitEv"
 			}
-			// Inlined on windows // <- year 2025 Is it ?
+			// [Windwos] Search string: "#Hint_you_are_the_vip", you will find function: void CCSPlayer::Spawn(). From the top, look 4th ´call´ instruction, that should be = void CCSPlayer::SetModelFromClass( void )
+			// github post: https://github.com/alliedmodders/sourcemod/pull/2289#issuecomment-2692650409
 			"SetModelFromClass"
 			{
 				"library"	"server"
