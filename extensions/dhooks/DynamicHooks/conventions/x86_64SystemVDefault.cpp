@@ -234,8 +234,10 @@ void* x86_64SystemVDefault::GetArgumentPtr(unsigned int index, CRegisters* regis
 	{
 		if (m_vecArgTypes[i].custom_register == None)
 		{
-			// No matter what, the stack is allocated in slices of 8 bytes
-			offset += 8;
+			// "Regular" types will have a size of 8.
+			// An object's alignment depends on its contents, which we don't know, so we have to assume the user passed in a size that includes the alignment.
+			// We at least align object sizes to 8 here though.
+			offset += Align(m_vecArgTypes[i].size, m_iAlignment);
 		}
 	}
 	return (void *) (registers->m_rsp->GetValue<uintptr_t>() + offset);
