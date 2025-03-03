@@ -61,6 +61,13 @@ x86_64SystemVDefault::x86_64SystemVDefault(std::vector<DataTypeSized_t> &vecArgT
 		}
 	}
 
+	// Let's pad our objects up since the stack must be aligned by 8 (and potentially 16 or 32).
+	for (auto& arg : m_vecArgTypes) {
+		if (arg.type == DATA_TYPE_OBJECT) {
+			arg.size = Align(arg.size, 8);
+		}
+	}
+
 	for (const auto& arg : m_vecArgTypes) {
 		bool found_as_int_or_ptr = false;
 

@@ -727,7 +727,7 @@ void CDynamicHooksSourcePawn::UpdateParamsFromStruct(HookParamsStruct *params)
 
 		// Keep track of the seperate stack and register arguments.
 		if (argTypes[i].custom_register == None) {
-#ifdef DYNAMICHOOKS_x86_64
+#if defined(DYNAMICHOOKS_x86_64) && defined(PLATFORM_WINDOWS)
 			stackOffset += 8;
 #else
 			stackOffset += size;
