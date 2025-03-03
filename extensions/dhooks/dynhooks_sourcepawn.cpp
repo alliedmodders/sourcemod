@@ -315,10 +315,10 @@ bool UpdateRegisterArgumentSizes(CHook* pDetour, HookSetup *setup)
 	int argTypesOffset = 0;
 
 #ifdef DYNAMICHOOKS_x86_64
-		if (setup->callConv == CallConv_THISCALL) {
-			argTypesOffset = 1;
-			--numArgs;
-		}
+	if (setup->callConv == CallConv_THISCALL) {
+		argTypesOffset = 1;
+		--numArgs;
+	}
 #endif
 
 	for (int i = 0; i < numArgs; i++)
