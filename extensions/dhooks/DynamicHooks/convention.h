@@ -74,10 +74,12 @@ typedef struct DataTypeSized_s {
 		type = DATA_TYPE_POINTER;
 		size = 0;
 		custom_register = None;
+		custom_register2 = None;
 	}
 	DataType_t type;
 	size_t size;
 	Register_t custom_register;
+	Register_t custom_register2; // Currently only used for Vector returns on Linux64
 } DataTypeSized_t;
 
 

@@ -90,26 +90,16 @@ x86_64SystemVDefault::x86_64SystemVDefault(std::vector<DataTypeSized_t> &vecArgT
 		}
 	}
 
-	// TODO: Figure out if we need to do something different for Linux...
-	// Special return type
-	if (m_returnType.custom_register == None && m_returnType.type == DATA_TYPE_OBJECT &&
-	// If size unknown, or doesn't fit on 1, 2, 4 or 8 bytes
-	// special place must have been allocated for it
-	(m_returnType.size != 1
-	&& m_returnType.size != 2
-	&& m_returnType.size != 4
-	&& m_returnType.size != 8)) {
-		for (std::uint8_t i = 0; i < num_reg && m_returnType.custom_register == None; i++) {
-			if (!used_reg[i]) {
-				m_returnType.custom_register = params_reg[i];
-				used_reg[i] = true;
-			}
-			// Couldn't find a free register, this is a big problem
-			if (m_returnType.custom_register == None) {
-				puts("Missing free register for return pointer");
-				return;
-			}
-		}
+	// TODO: Object return-type register is RDI, even when thiscall.
+	//       inRDI = out-object-address & outRAX = inRDI
+	//       thiscall: inRDI = out-object-address & inRSI = this
+	//
+	//       Currently not handling object return types other than Vector, which would fit into XMM0 & XMM1.
+	//
+	//       It'd be great if we had PassInfo here...
+	if (m_returnType.custom_register != XMM0 && m_returnType.custom_register2 != XMM1 && m_returnType.type == DATA_TYPE_OBJECT) {
+		puts("Return type is an OBJECT but not a Vector. We don't support this right now.");
+		return;
 	}
 
 	for (auto& arg : m_vecArgTypes) {

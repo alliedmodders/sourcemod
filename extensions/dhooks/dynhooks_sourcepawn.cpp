@@ -255,6 +255,15 @@ ICallingConvention *ConstructCallingConvention(HookSetup *setup)
 	returnType.size = 0;
 	// TODO: Add support for a custom return register.
 	returnType.custom_register = None;
+	returnType.custom_register2 = None;
+
+#if defined(DYNAMICHOOKS_x86_64) && defined(PLATFORM_LINUX)
+	if (setup->returnType == ReturnType_Vector) {
+		returnType.size = 16;
+		returnType.custom_register = XMM0;
+		returnType.custom_register2 = XMM1;
+	}
+#endif
 
 #ifdef DYNAMICHOOKS_x86_64
 	if (setup->callConv == CallConv_THISCALL) {
@@ -387,6 +396,7 @@ ReturnAction_t HandleDetour(HookType_t hookType, CHook* pDetour)
 		if (pWrapper->callConv == CallConv_THISCALL && pWrapper->thisType != ThisPointer_Ignore)
 		{
 			// The this pointer is implicitly always the first argument.
+			// TODO: Linux64 with an object return value can mean `this` is the second argument, but not relevant for now.
 			void *thisPtr = pDetour->GetArgument<void *>(0);
 			cell_t thisAddr = GetThisPtr(thisPtr, pWrapper->thisType);
 			pCallback->PushCell(thisAddr);
