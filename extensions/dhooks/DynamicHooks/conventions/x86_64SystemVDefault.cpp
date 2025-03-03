@@ -34,8 +34,7 @@
 // >> CLASSES
 // ============================================================================
 x86_64SystemVDefault::x86_64SystemVDefault(std::vector<DataTypeSized_t> &vecArgTypes, DataTypeSized_t returnType, int iAlignment) :
-	ICallingConvention(vecArgTypes, returnType, iAlignment),
-	m_stackArgs(0)
+	ICallingConvention(vecArgTypes, returnType, iAlignment)
 {
 	const Register_t params_reg[] = { RDI, RSI, RDX, RCX, R8, R9 };
 	const Register_t params_floatreg[] = { XMM0, XMM1, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7 };
@@ -129,11 +128,6 @@ x86_64SystemVDefault::x86_64SystemVDefault(std::vector<DataTypeSized_t> &vecArgT
 				}
 			}
 		}
-
-		// Couldn't find a free register, it's therefore a stack parameter
-		if (arg.custom_register == None) {
-			m_stackArgs++;
-		}
 	}
 }
 
@@ -146,6 +140,11 @@ std::vector<Register_t> x86_64SystemVDefault::GetRegisters()
 	if (m_returnType.custom_register != None)
 	{
 		registers.push_back(m_returnType.custom_register);
+		
+		if (m_returnType.custom_register2 != None)
+		{
+			registers.push_back(m_returnType.custom_register2);
+		}
 	}
 	else if (m_returnType.type == DATA_TYPE_FLOAT || m_returnType.type == DATA_TYPE_DOUBLE)
 	{
@@ -177,8 +176,15 @@ int x86_64SystemVDefault::GetPopSize()
 
 int x86_64SystemVDefault::GetArgStackSize()
 {
-	// 8 bytes * amount of stack arguments
-	return 8 * m_stackArgs;
+	size_t stackSize = 0;
+	for (const auto& arg : m_vecArgTypes)
+	{
+		if (arg.custom_register == None)
+		{
+			stackSize += arg.size;
+		}
+	}
+	return stackSize;
 }
 
 void** x86_64SystemVDefault::GetStackArgumentPtr(CRegisters* registers)
@@ -234,6 +240,7 @@ void* x86_64SystemVDefault::GetArgumentPtr(unsigned int index, CRegisters* regis
 			// "Regular" types will have a size of 8.
 			// An object's alignment depends on its contents, which we don't know, so we have to assume the user passed in a size that includes the alignment.
 			// We at least align object sizes to 8 here though.
+			// (And dhooks will have already aligned it but maybe this isn't coming from DHooks?)
 			offset += Align(m_vecArgTypes[i].size, m_iAlignment);
 		}
 	}
@@ -266,18 +273,17 @@ void x86_64SystemVDefault::ReturnPtrChanged(CRegisters* pRegisters, void* pRetur
 
 void x86_64SystemVDefault::SaveReturnValue(CRegisters* registers)
 {
-	// It doesn't matter what the return value is, it will always be fitting on 8 bytes (or less)
-	std::unique_ptr<uint8_t[]> savedReturn = std::make_unique<uint8_t[]>(8);
-	memcpy(savedReturn.get(), GetReturnPtr(registers), 8);
+	// Return value for Objects can be a bit complicated but we just have to handle it for Vector right now.
+	// This means it's either RAX or XMM0&XMM1.
+	std::unique_ptr<uint8_t[]> savedReturn = std::make_unique<uint8_t[]>(m_returnType.size);
+	memcpy(savedReturn.get(), GetReturnPtr(registers), m_returnType.size);
 	m_pSavedReturnBuffers.push_back(std::move(savedReturn));
 }
 
 void x86_64SystemVDefault::RestoreReturnValue(CRegisters* registers)
 {
-	// Like stated in SaveReturnValue, it will always fit within 8 bytes
-	// the actual underlining type does not matter
 	uint8_t* savedReturn = m_pSavedReturnBuffers.back().get();
-	memcpy(GetReturnPtr(registers), savedReturn, 8);
+	memcpy(GetReturnPtr(registers), savedReturn, m_returnType.size);
 	ReturnPtrChanged(registers, savedReturn);
 	m_pSavedReturnBuffers.pop_back();
 }
