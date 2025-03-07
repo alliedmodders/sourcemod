@@ -63,7 +63,8 @@ inline void DecodePassMethod(ValveType vtype, SDKPassMethod method, PassType &ty
 		type = PassType_Basic;
 		if (vtype == Valve_POD
 			|| vtype == Valve_Float
-			|| vtype == Valve_Bool)
+			|| vtype == Valve_Bool
+			|| vtype == Valve_Pointer)
 		{
 			flags = PASSFLAG_BYVAL | PASSFLAG_ASPOINTER;
 		} else {
@@ -394,8 +395,8 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 				}
 
 				//note: varargs pawn args are passed by-ref
-				cell_t *cell;
-				pContext->LocalToPhysAddr(params[startparam], &cell);
+				intptr_t *cell;
+				pContext->LocalToPhysAddr(params[startparam], reinterpret_cast<cell_t**>(&cell));
 				void *thisptr = reinterpret_cast<void*>(*cell);
 
 				if (thisptr == nullptr)
@@ -429,7 +430,8 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 		{
 			startparam += 2;
 		} else if (vc->retinfo->vtype == Valve_Vector
-					|| vc->retinfo->vtype == Valve_QAngle)
+					|| vc->retinfo->vtype == Valve_QAngle
+					|| vc->retinfo->vtype == Valve_Pointer)
 		{
 			startparam += 1;
 		}
@@ -506,7 +508,8 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 			pContext->StringToLocalUTF8(params[retparam], *addr, *(char **)vc->retbuf, &written);
 			return (cell_t)written;
 		} else if (vc->retinfo->vtype == Valve_Vector
-					|| vc->retinfo->vtype == Valve_QAngle)
+					|| vc->retinfo->vtype == Valve_QAngle
+					|| vc->retinfo->vtype == Valve_Pointer)
 		{
 			if (numparams < 2)
 			{
