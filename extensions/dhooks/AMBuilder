@@ -7,9 +7,6 @@ for cxx in builder.targets:
   # mac isn't supported
   if binary.compiler.target.platform == 'mac':
     continue
-  # Presently only x86_64 on Windows is supported
-  if binary.compiler.target.arch == 'x86_64' and binary.compiler.target.platform != 'windows':
-    continue
 
   binary.compiler.defines += [
     'META_NO_HL2SDK',
