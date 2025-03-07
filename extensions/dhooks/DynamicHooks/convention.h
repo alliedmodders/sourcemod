@@ -193,7 +193,7 @@ public:
 	virtual void** GetStackArgumentPtr(CRegisters* pRegisters) = 0;
 
 	/*
-	Returns the number of bytes for the buffer to store all the arguments that are passed in a register in.
+	Returns the number of bytes for the buffer to store all the arguments that are passed in a register.
 	*/
 	virtual int GetArgRegisterSize() = 0;
 

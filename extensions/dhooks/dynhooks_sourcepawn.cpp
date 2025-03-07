@@ -259,7 +259,7 @@ ICallingConvention *ConstructCallingConvention(HookSetup *setup)
 
 #if defined(DYNAMICHOOKS_x86_64) && defined(PLATFORM_LINUX)
 	if (setup->returnType == ReturnType_Vector) {
-		returnType.size = 16;
+		returnType.size = 12;
 		returnType.custom_register = XMM0;
 		returnType.custom_register2 = XMM1;
 	}
@@ -704,6 +704,7 @@ void CDynamicHooksSourcePawn::UpdateParamsFromStruct(HookParamsStruct *params)
 	size_t numArgs = argTypes.size();
 
 	size_t firstArg = 0;
+	// TODO: Linux64 will use RDI for retmem even if thiscall
 	// TODO: Support custom register for this ptr.
 	if (callConv == CallConv_THISCALL)
 		firstArg = 1;

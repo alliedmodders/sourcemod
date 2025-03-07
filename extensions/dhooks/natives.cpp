@@ -291,6 +291,7 @@ cell_t Native_AddParam(IPluginContext *pContext, const cell_t *params)
 		info.flags = PASSFLAG_BYVAL;
 	}
 
+	// TODO: why?
 	// DynamicDetours doesn't expose the passflags concept like SourceHook.
 	// See if we're trying to set some invalid flags on detour arguments.
 	if(setup->hookMethod == Detour && (info.flags & ~PASSFLAG_BYVAL) > 0)

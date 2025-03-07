@@ -62,7 +62,6 @@ public:
 	virtual void RestoreCallArguments(CRegisters* pRegisters) override;
 
 protected:
-	std::uint32_t m_stackArgs;
 };
 
 #endif // _X86_64_SYSTEMV_DEFAULT_H
