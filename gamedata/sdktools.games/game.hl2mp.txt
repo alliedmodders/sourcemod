@@ -39,87 +39,121 @@
 			"GiveNamedItem"
 			{
 				"windows"	"407"
+				"windows64"	"407"
 				"linux"		"408"
+				"linux64"	"408"
 			}
 			"RemovePlayerItem"
 			{
 				"windows"	"276"
+				"windows64"	"276"
 				"linux"		"277"
+				"linux64"	"277"
 			}
 			"Weapon_GetSlot"
 			{
 				"windows"	"274"
+				"windows64"	"274"
 				"linux"		"275"
+				"linux64"	"275"
 			}
 			"Ignite"
 			{
 				"windows"	"215"
+				"windows64"	"215"
 				"linux"		"216"
+				"linux64"	"216"
 			}
 			"Extinguish"
 			{
 				"windows"	"219"
+				"windows64"	"219"
 				"linux"		"220"
+				"linux64"	"220"
 			}
 			"Teleport"
 			{
 				"windows"	"110"
+				"windows64"	"110"
 				"linux"		"111"
+				"linux64"	"111"
 			}
 			"CommitSuicide"
 			{
 				"windows"	"446"
+				"windows64"	"446"
 				"linux"		"446"
+				"linux64"	"446"
 			}
 			"GetVelocity"
 			{
 				"windows"	"143"
+				"windows64"	"143"
 				"linux"		"144"
+				"linux64"	"144"
 			}
 			"EyeAngles"
 			{
 				"windows"	"134"
+				"windows64"	"134"
 				"linux"		"135"
+				"linux64"	"135"
 			}
 			"AcceptInput"
 			{
 				"windows"	"38"
+				"windows64"	"38"
 				"linux"		"39"
+				"linux64"	"39"
 			}
 			"SetEntityModel"
 			{
 				"windows"	"26"
+				"windows64"	"26"
 				"linux"		"27"
+				"linux64"	"27"
 			}
 			"WeaponEquip"
 			{
 				"windows"	"267"
+				"windows64"	"267"
 				"linux"		"268"
+				"linux64"	"268"
 			}
 			"Activate"
 			{
 				"windows"	"35"
+				"windows64"	"35"
 				"linux"		"36"
+				"linux64"	"36"
 			}
 			"PlayerRunCmd"
 			{
 				"windows"	"425"
+				"windows64"	"425"
 				"linux"		"426"
+				"linux64"	"426"
 			}
 			"GiveAmmo"
 			{
 				"windows"	"258"
+				"windows64"	"258"
 				"linux"		"259"
+				"linux64"	"259"
 			}
 			"SetOwnerEntity"
 			{
 				"windows"	"18"
+				"windows64"	"18"
 				"linux"		"19"
+				"linux64"	"19"
 			}
 			"GetAttachment"
 			{
 				"windows"	"211"
+				"windows64"	"211"
 				"linux"		"212"
+				"linux64"	"212"
 			}
 		}
 		
