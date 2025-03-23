@@ -266,10 +266,10 @@
 			}
 			"SetTransmit"
 			{
-				"windows"	"20"
-				"windows64"	"20"
-				"linux"		"21"
-				"linux64"	"21"
+				"windows"	"22"
+				"windows64"	"22"
+				"linux"		"23"
+				"linux64"	"23"
 			}
 			"ShouldCollide"
 			{
