@@ -23,3 +23,292 @@
 *
 * 3. This notice may not be removed or altered from any source distribution.
 */
+
+// ============================================================================
+// >> INCLUDES
+// ============================================================================
+#include "x86_64SystemVDefault.h"
+#include <smsdk_ext.h>
+
+// ============================================================================
+// >> CLASSES
+// ============================================================================
+x86_64SystemVDefault::x86_64SystemVDefault(std::vector<DataTypeSized_t> &vecArgTypes, DataTypeSized_t returnType, int iAlignment) :
+	ICallingConvention(vecArgTypes, returnType, iAlignment)
+{
+	const Register_t params_reg[] = { RDI, RSI, RDX, RCX, R8, R9 };
+	const Register_t params_floatreg[] = { XMM0, XMM1, XMM2, XMM3, XMM4, XMM5, XMM6, XMM7 };
+	//const char* regNames[] = { "RCX or XMM0", "RDX or XMM1", "R8 or XMM2", "R9 or XMM3"};
+	const std::uint8_t num_reg = sizeof(params_reg) / sizeof(Register_t);
+	const std::uint8_t num_floatreg = sizeof(params_floatreg) / sizeof(Register_t);
+
+	bool used_reg[] = { false, false, false, false, false, false };
+	bool used_floatreg[] = { false, false, false, false, false, false, false, false };
+
+	// Figure out if any register has been used
+	auto retreg = m_returnType.custom_register;
+	for (int i = 0; i < num_reg; ++i) {
+		if (retreg == params_reg[i]) {
+			used_reg[i] = true;
+			break;
+		}
+	}
+	for (int i = 0; i < num_floatreg; ++i) {
+		if (retreg == params_floatreg[i]) {
+			used_floatreg[i] = true;
+			break;
+		}
+	}
+
+	// Let's pad our objects up since the stack must be aligned by 8 (and potentially 16 or 32).
+	for (auto& arg : m_vecArgTypes) {
+		if (arg.type == DATA_TYPE_OBJECT) {
+			arg.size = Align(arg.size, 8);
+		}
+	}
+
+	for (const auto& arg : m_vecArgTypes) {
+		bool found_as_int_or_ptr = false;
+
+		for (int i = 0; i < num_reg; ++i) {
+			if (arg.custom_register == params_reg[i]) {
+				if (used_reg[i]) {
+					puts("Argument (int/ptr) register is used twice, or shared with return");
+					return;
+				}
+				used_reg[i] = true;
+				found_as_int_or_ptr = true;
+				break;
+			}
+		}
+
+		if (found_as_int_or_ptr) continue;
+
+		for (int i = 0; i < num_floatreg; ++i) {
+			if (arg.custom_register == params_floatreg[i]) {
+				if (used_floatreg[i]) {
+					puts("Argument (float/double) register is used twice, or shared with return");
+					return;
+				}
+				used_floatreg[i] = true;
+				break;
+			}
+		}
+	}
+
+	// TODO: Object return-type register is RDI, even when thiscall.
+	//       inRDI = out-object-address & outRAX = inRDI
+	//       thiscall: inRDI = out-object-address & inRSI = this
+	//
+	//       Currently not handling object return types other than Vector, which would fit into XMM0 & XMM1.
+	//
+	//       It'd be great if we had PassInfo here...
+	if (m_returnType.custom_register != XMM0 && m_returnType.custom_register2 != XMM1 && m_returnType.type == DATA_TYPE_OBJECT) {
+		puts("Return type is an OBJECT but not a Vector. We don't support this right now.");
+		return;
+	}
+
+	for (auto& arg : m_vecArgTypes) {
+		if (arg.custom_register != None) continue;
+
+		if (arg.type == DATA_TYPE_FLOAT || arg.type == DATA_TYPE_DOUBLE) {
+			for (int i = 0; i < num_reg && arg.custom_register == None; ++i) {
+				// Register is unused. Assign it.
+				if (!used_floatreg[i]) {
+					arg.custom_register = params_floatreg[i];
+					used_floatreg[i] = true;
+				}
+			}
+		} else {
+			for (int i = 0; i < num_reg && arg.custom_register == None; ++i) {
+				// Register is unused. Assign it.
+				if (!used_reg[i]) {
+					arg.custom_register = params_reg[i];
+					used_reg[i] = true;
+				}
+			}
+		}
+	}
+}
+
+std::vector<Register_t> x86_64SystemVDefault::GetRegisters()
+{
+	std::vector<Register_t> registers;
+
+	registers.push_back(RSP);
+
+	if (m_returnType.custom_register != None)
+	{
+		registers.push_back(m_returnType.custom_register);
+		
+		if (m_returnType.custom_register2 != None)
+		{
+			registers.push_back(m_returnType.custom_register2);
+		}
+	}
+	else if (m_returnType.type == DATA_TYPE_FLOAT || m_returnType.type == DATA_TYPE_DOUBLE)
+	{
+		registers.push_back(XMM0);
+	}
+	else
+	{
+		registers.push_back(RAX);
+	}
+
+	for (size_t i = 0; i < m_vecArgTypes.size(); i++)
+	{
+		auto reg = m_vecArgTypes[i].custom_register;
+		if (reg == None)
+		{
+			continue;
+		}
+		registers.push_back(m_vecArgTypes[i].custom_register);
+	}
+
+	return registers;
+}
+
+int x86_64SystemVDefault::GetPopSize()
+{
+	// Clean-up is caller handled
+	return 0;
+}
+
+int x86_64SystemVDefault::GetArgStackSize()
+{
+	size_t stackSize = 0;
+	for (const auto& arg : m_vecArgTypes)
+	{
+		if (arg.custom_register == None)
+		{
+			stackSize += arg.size;
+		}
+	}
+	return stackSize;
+}
+
+void** x86_64SystemVDefault::GetStackArgumentPtr(CRegisters* registers)
+{
+	// Skip return address
+	return (void **)(registers->m_rsp->GetValue<uintptr_t>() + 8);
+}
+
+int x86_64SystemVDefault::GetArgRegisterSize()
+{
+	int argRegisterSize = 0;
+
+	for (size_t i = 0; i < m_vecArgTypes.size(); i++)
+	{
+		if (m_vecArgTypes[i].custom_register != None)
+		{
+			// It doesn't matter, it's always 8 bytes or less
+			argRegisterSize += 8;
+		}
+	}
+
+	return argRegisterSize;
+}
+
+void* x86_64SystemVDefault::GetArgumentPtr(unsigned int index, CRegisters* registers)
+{
+	//g_pSM->LogMessage(myself, "Retrieving argument %d (max args %d) registers %p", index, m_vecArgTypes.size(), registers);
+	if (index >= m_vecArgTypes.size())
+	{
+		//g_pSM->LogMessage(myself, "Not enough arguments");
+		return nullptr;
+	}
+
+	// Check if this argument was passed in a register.
+	if (m_vecArgTypes[index].custom_register != None)
+	{
+		CRegister* reg = registers->GetRegister(m_vecArgTypes[index].custom_register);
+		if (!reg)
+		{
+			//g_pSM->LogMessage(myself, "Register does not exit");
+			return nullptr;
+		}
+		//g_pSM->LogMessage(myself, "Register arg %d", m_vecArgTypes[index].custom_register);
+		return reg->m_pAddress;
+	}
+
+	// Return address
+	size_t offset = 8;
+	for (unsigned int i = 0; i < index; i++)
+	{
+		if (m_vecArgTypes[i].custom_register == None)
+		{
+			// "Regular" types will have a size of 8.
+			// An object's alignment depends on its contents, which we don't know, so we have to assume the user passed in a size that includes the alignment.
+			// We at least align object sizes to 8 here though.
+			// (And dhooks will have already aligned it but maybe this isn't coming from DHooks?)
+			offset += Align(m_vecArgTypes[i].size, m_iAlignment);
+		}
+	}
+	return (void *) (registers->m_rsp->GetValue<uintptr_t>() + offset);
+}
+
+void x86_64SystemVDefault::ArgumentPtrChanged(unsigned int index, CRegisters* registers, void* argumentPtr)
+{
+}
+
+void* x86_64SystemVDefault::GetReturnPtr(CRegisters* registers)
+{
+	// Custom return value register
+	if (m_returnType.custom_register != None)
+	{
+		return registers->GetRegister(m_returnType.custom_register)->m_pAddress;
+	}
+
+	if (m_returnType.type == DATA_TYPE_FLOAT || m_returnType.type == DATA_TYPE_DOUBLE)
+	{
+		// Floating point register
+		return registers->m_xmm0->m_pAddress;
+	}
+	return registers->m_rax->m_pAddress;
+}
+
+void x86_64SystemVDefault::ReturnPtrChanged(CRegisters* pRegisters, void* pReturnPtr)
+{
+}
+
+void x86_64SystemVDefault::SaveReturnValue(CRegisters* registers)
+{
+	// Return value for Objects can be a bit complicated but we just have to handle it for Vector right now.
+	// This means it's either RAX or XMM0&XMM1.
+	std::unique_ptr<uint8_t[]> savedReturn = std::make_unique<uint8_t[]>(m_returnType.size);
+	memcpy(savedReturn.get(), GetReturnPtr(registers), m_returnType.size);
+	m_pSavedReturnBuffers.push_back(std::move(savedReturn));
+}
+
+void x86_64SystemVDefault::RestoreReturnValue(CRegisters* registers)
+{
+	uint8_t* savedReturn = m_pSavedReturnBuffers.back().get();
+	memcpy(GetReturnPtr(registers), savedReturn, m_returnType.size);
+	ReturnPtrChanged(registers, savedReturn);
+	m_pSavedReturnBuffers.pop_back();
+}
+
+void x86_64SystemVDefault::SaveCallArguments(CRegisters* registers)
+{
+	int size = GetArgStackSize() + GetArgRegisterSize();
+	std::unique_ptr<uint8_t[]> savedCallArguments = std::make_unique<uint8_t[]>(size);
+	size_t offset = 0;
+	for (unsigned int i = 0; i < m_vecArgTypes.size(); i++) {
+		// Doesn't matter the type, it will always be within 8 bytes
+		memcpy((void *)((uintptr_t)savedCallArguments.get() + offset), GetArgumentPtr(i, registers), 8);
+		offset += 8;
+	}
+	m_pSavedCallArguments.push_back(std::move(savedCallArguments));
+}
+
+void x86_64SystemVDefault::RestoreCallArguments(CRegisters* registers)
+{
+	uint8_t *savedCallArguments = m_pSavedCallArguments.back().get();
+	size_t offset = 0;
+	for (size_t i = 0; i < m_vecArgTypes.size(); i++) {
+		// Doesn't matter the type, it will always be within 8 bytes
+		memcpy(GetArgumentPtr((unsigned int)i, registers), (void *)((uintptr_t)savedCallArguments + offset), 8);
+		offset += 8;
+	}
+	m_pSavedCallArguments.pop_back();
+}
