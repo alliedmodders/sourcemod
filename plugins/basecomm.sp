@@ -150,6 +150,17 @@ public bool OnClientConnect(int client, char[] rejectmsg, int maxlen)
 	playerstate[client].isGagged = false;
 	playerstate[client].isMuted = false;
 	
+	int dead_talk_mode = g_Cvar_Deadtalk.IntValue;
+	if(dead_talk_mode == 0)
+	{
+		SetClientListeningFlags(client, VOICE_NORMAL);
+	}
+	else
+	{
+		dead_talk_mode == 1 ? SetClientListeningFlags(client, VOICE_LISTENALL) 
+							: SetClientListeningFlags(client, VOICE_TEAM);
+	}
+
 	return true;
 }
 
