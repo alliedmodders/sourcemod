@@ -408,9 +408,11 @@ native int GetTime(int bigStamp[2]={0,0});
  * @param maxlength     Maximum length of output string buffer.
  * @param format        Formatting rules (passing NULL_STRING will use the rules defined in sm_datetime_format).
  * @param stamp         Optional time stamp.
+ * @param adjust        If true, formatting will adjust for the local timezone and sm_time_adjustment value.
+ *                      If false, the time will be formatted for UTC/GMT.
  * @error               Buffer too small or invalid time format.
  */
-native void FormatTime(char[] buffer, int maxlength, const char[] format, int stamp=-1);
+native void FormatTime(char[] buffer, int maxlength, const char[] format, int stamp=-1, bool adjust=true);
 
 /**
  * Parses a string representing a date and/or time into a unix timestamp.
