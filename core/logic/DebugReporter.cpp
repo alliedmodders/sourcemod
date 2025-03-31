@@ -129,7 +129,7 @@ void DebugReport::GenerateCodeError(IPluginContext *pContext, uint32_t code_addr
 	{
 		g_Logger.LogError("[SM] Unable to call function \"%s\" due to above error(s).", name);
 	} else {
-		g_Logger.LogError("[SM] Unable to call function (name unknown, address \"%x\").", code_addr);
+		g_Logger.LogError("[SM] Unable to call function (name unknown, address \"%p\").", code_addr);
 	}
 }
 

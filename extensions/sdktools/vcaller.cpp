@@ -406,7 +406,7 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 				else if (reinterpret_cast<uintptr_t>(thisptr) < VALID_MINIMUM_MEMORY_ADDRESS)
 				{
 					vc->stk_put(ptr);
-					return pContext->ThrowNativeError("Invalid ThisPtr address 0x%x is pointing to reserved memory.", thisptr);
+					return pContext->ThrowNativeError("Invalid ThisPtr address %p is pointing to reserved memory.", thisptr);
 				}
 
 				*(void **)ptr = thisptr;
