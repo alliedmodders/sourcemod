@@ -344,7 +344,7 @@ void CookieManager::OnPluginDestroyed(IPlugin *plugin)
 
 				if (strcmp(draw.display, name) == 0)
 				{
-					data = (AutoMenuData *)strtoul(info, NULL, 16);
+					data = (AutoMenuData *)strtoull(info, nullptr, 16);
 
 					if (data->handler->forward != NULL)
 					{
