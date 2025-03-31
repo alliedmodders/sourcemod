@@ -736,7 +736,7 @@ static cell_t LoadEntityFromHandleAddress(IPluginContext *pContext, const cell_t
 	}
 	else if (reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
 	{
-		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory.", addr);
+		return pContext->ThrowNativeError("Invalid address %p is pointing to reserved memory.", addr);
 	}
 
 	CBaseHandle &hndl = *reinterpret_cast<CBaseHandle*>(addr);
