@@ -76,6 +76,7 @@ public:
 	}
 
 private:
+	ke::RefPtr<ke::SharedLib> safetyhook_;
 	ke::RefPtr<ke::SharedLib> logic_;
 	LogicInitFunction logic_init_;
 	GameHooks hooks_;

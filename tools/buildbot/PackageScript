@@ -50,6 +50,13 @@ helpers = SM.package_helpers
 helpers.builder = builder
 folder_map = helpers.CreateFolders(folder_list)
 
+# Copy safetyhook
+for cxx_task in SM.libsafetyhook:
+  if cxx_task.target.arch == 'x86_64' in cxx_task.binary.path:
+    builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/bin/x64'])
+  else:
+    builder.AddCopy(cxx_task.binary, folder_map['addons/sourcemod/bin'])
+
 # Copy binaries.
 for cxx_task in SM.binaries:
   # mms expects our loader (sourcemod_mm) to exist in /bin/
