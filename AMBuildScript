@@ -534,7 +534,6 @@ class SMConfig(object):
     binary.sources += [ os.path.join(public_path, 'CDetour', 'detours.cpp') ]
     binary.compiler.cxxincludes += [ os.path.join(public_path, 'safetyhook', 'include') ]
 
-    #help(self.libsafetyhook)
     for task in self.libsafetyhook:
       if task.target.arch == binary.compiler.target.arch:
         if task.target.platform == 'windows':
