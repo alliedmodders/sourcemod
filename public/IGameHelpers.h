@@ -351,7 +351,7 @@ namespace SourceMod
 		 * @return				64-bit server Steam id.
 		 */
 		virtual uint64_t GetServerSteamId64() const =0;
-    
+
 		/**
 		 * @brief Finds a given entity's server class.
 		 *
