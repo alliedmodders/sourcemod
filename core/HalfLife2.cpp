@@ -1600,3 +1600,26 @@ uint64_t CHalfLife2::GetServerSteamId64() const
 
 	return 1ULL;
 }
+
+void CHalfLife2::RemoveDataTableCache(datamap_t *pMap)
+{
+	if (pMap == nullptr)
+	{
+		m_Maps.clear();
+		return;
+	}
+
+	m_Maps.removeIfExists(pMap);
+}
+
+bool CHalfLife2::RemoveSendPropCache(const char *classname)
+{
+	if (classname == nullptr)
+	{
+		m_Classes.clear();
+		return true;
+	}
+
+	return m_Classes.remove(classname);
+}
+

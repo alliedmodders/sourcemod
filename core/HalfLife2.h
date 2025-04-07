@@ -261,6 +261,8 @@ public: //IGameHelpers
 	string_t AllocPooledString(const char *pszValue);
 	bool GetServerSteam3Id(char *pszOut, size_t len) const override;
 	uint64_t GetServerSteamId64() const override;
+	void RemoveDataTableCache(datamap_t *pMap = nullptr);
+	bool RemoveSendPropCache(const char *classname = nullptr);
 public:
 	void AddToFakeCliCmdQueue(int client, int userid, const char *cmd);
 	void ProcessFakeCliCmdQueue();
