@@ -4,16 +4,21 @@
 trap "exit" INT
 
 download_mysql=1
+download_mysql_debug=1
 
 # List of HL2SDK branch names to download.
 # ./checkout-deps.sh -s tf2,css
 # Disable downloading of mysql libraries.
 # ./checkout-deps.sh -m
+# Disable downloading of mysql debug libraries on Windows.
+# ./checkout-deps.sh -d
 while getopts ":s:m" opt; do
   case $opt in
     s) IFS=', ' read -r -a sdks <<< "$OPTARG"
     ;;
     m) download_mysql=0
+    ;;
+    d) download_mysql_debug=0
     ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
@@ -45,9 +50,9 @@ getmysql ()
 {
   if [ ! -d $mysqlfolder ]; then
     if [ `command -v wget` ]; then
-      wget $mysqlurl -O $mysqlfolder.$archive_ext
+      wget -q $mysqlurl -O $mysqlfolder.$archive_ext
     elif [ `command -v curl` ]; then
-      curl -o $mysqlfolder.$archive_ext $mysqlurl
+      curl -sS -o $mysqlfolder.$archive_ext $mysqlurl
     else
       echo "Failed to locate wget or curl. Install one of these programs to download MySQL."
       exit 1
@@ -59,43 +64,61 @@ getmysql ()
 }
 
 # 32-bit MySQL
-mysqlfolder=mysql-5.5
+mysqlfolder=mysql-5.7
 if [ $ismac -eq 1 ]; then
+  mysqlfolder=mysql-5.5
   mysqlver=mysql-5.5.28-osx10.5-x86
   mysqlurl=https://cdn.mysql.com/archives/mysql-5.5/$mysqlver.$archive_ext
 elif [ $iswin -eq 1 ]; then
-  mysqlver=mysql-5.5.54-win32
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.5/$mysqlver.$archive_ext
+  mysqlver=mysql-5.7.44-win32
+  mysqlurl=https://cdn.mysql.com/archives/mysql-5.7/$mysqlver.$archive_ext
   # The folder in the zip archive does not contain the substring "-noinstall", so strip it
   mysqlver=${mysqlver/-noinstall}
 else
-  mysqlver=mysql-5.6.15-linux-glibc2.5-i686
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.6/$mysqlver.$archive_ext
+  mysqlver=mysql-5.7.44-linux-glibc2.12-i686
+  mysqlurl=https://cdn.mysql.com/archives/mysql-5.7/$mysqlver.$archive_ext
 fi
 if [ $download_mysql -eq 1 ]; then
   getmysql
 fi
 
 # 64-bit MySQL
-mysqlfolder=mysql-5.5-x86_64
+mysqlfolder=mysql-5.7-x86_64
 if [ $ismac -eq 1 ]; then
+  mysqlfolder=mysql-5.5-x86_64
   mysqlver=mysql-5.5.28-osx10.5-x86_64
   mysqlurl=https://cdn.mysql.com/archives/mysql-5.5/$mysqlver.$archive_ext
 elif [ $iswin -eq 1 ]; then
-  mysqlver=mysql-5.5.54-winx64
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.5/$mysqlver.$archive_ext
+  mysqlver=mysql-5.7.44-winx64
+  mysqlurl=https://cdn.mysql.com/archives/mysql-5.7/$mysqlver.$archive_ext
 else
-  mysqlver=mysql-5.6.15-linux-glibc2.5-x86_64
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.6/$mysqlver.$archive_ext
+  mysqlver=mysql-5.7.44-linux-glibc2.12-x86_64
+  mysqlurl=https://cdn.mysql.com/archives/mysql-5.7/$mysqlver.$archive_ext
 fi
 if [ $download_mysql -eq 1 ]; then
   getmysql
 fi
 
+if [ $iswin -eq 1 && $download_mysql_debug -eq 1 ]; then
+  mysqlfolder=mysql-5.7-debug
+  mysqlver=mysql-5.7.44-win32
+  mysqlurl=https://cdn.mysql.com/archives/mysql-5.7/$mysqlver-debug-test.$archive_ext
+  getmysql
+  cp -r $mysqlfolder/lib/* mysql-5.7/lib
+  rm -rf $mysqlfolder
+
+  mysqlfolder=mysql-5.7-debug-x86_64
+  mysqlver=mysql-5.7.44-winx64
+  mysqlurl=https://cdn.mysql.com/archives/mysql-5.7/$mysqlver-debug-test.$archive_ext
+  getmysql
+  cp -r $mysqlfolder/lib/* mysql-5.7-x86_64/lib
+  rm -rf $mysqlfolder
+fi
+
 checkout ()
 {
   if [ ! -d "$name" ]; then
-    git clone $repo -b $branch $name
+    git clone --recursive $repo -b $branch $name
     if [ -n "$origin" ]; then
       cd $name
       git remote set-url origin $origin
@@ -144,14 +167,27 @@ else
   cd ..
 fi
 
+want_mock_sdk=0
 for sdk in "${sdks[@]}"
 do
+  if [ "$sdk" == "mock" ]; then
+    want_mock_sdk=1
+    continue
+  fi
   repo=hl2sdk-proxy-repo
   origin="https://github.com/alliedmodders/hl2sdk"
   name=hl2sdk-$sdk
   branch=$sdk
   checkout
 done
+
+if [ $want_mock_sdk -eq 1 ]; then
+  name=hl2sdk-mock
+  branch=master
+  repo="https://github.com/alliedmodders/hl2sdk-mock"
+  origin=
+  checkout
+fi
 
 python_cmd=`command -v python3`
 if [ -z "$python_cmd" ]; then
@@ -197,7 +233,11 @@ if [ $? -eq 1 ]; then
   name=ambuild
   checkout
 
-  if [ $iswin -eq 1 ] || [ $ismac -eq 1 ]; then
+  if [ $iswin -eq 1 ]; then
+    # Without first doing this explicitly, ambuild install fails on newer Python versions on Windows
+    $python_cmd -m pip install wheel
+    $python_cmd -m pip install ./ambuild
+  elif [ $ismac -eq 1 ]; then
     $python_cmd -m pip install ./ambuild
   else
     echo "Installing AMBuild at the user level. Location can be: ~/.local/bin"

@@ -73,6 +73,7 @@ class FileObject
 public:
 	virtual ~FileObject()
 	{}
+	virtual size_t Size() = 0;
 	virtual size_t Read(void *pOut, int size) = 0;
 	virtual char *ReadLine(char *pOut, int size) = 0;
 	virtual size_t Write(const void *pData, int size) = 0;
@@ -117,6 +118,10 @@ public:
 			return false;
 
 		return true;
+	}
+
+	size_t Size() override {
+		return (size_t)bridge->filesystem->Size(handle_);
 	}
 
 	size_t Read(void *pOut, int size) override {
@@ -181,6 +186,30 @@ public:
 
 	static bool Delete(const char *path) {
 		return unlink(path) == 0;
+	}
+
+	size_t Size() override {
+#ifdef PLATFORM_WINDOWS
+		struct _stat s;
+		int fd = _fileno(fp_);
+		if (fd == -1)
+			return -1;
+		if (_fstat(fd, &s) != 0)
+			return -1;
+		if (s.st_mode & S_IFREG)
+			return static_cast<size_t>(s.st_size);
+		return -1;
+#elif defined PLATFORM_POSIX
+		struct stat s;
+		int fd = fileno(fp_);
+		if (fd == -1)
+			return -1;
+		if (fstat(fd, &s) != 0)
+			return -1;
+		if (S_ISREG(s.st_mode))
+			return static_cast<size_t>(s.st_size);
+		return -1;
+#endif
 	}
 
 	size_t Read(void *pOut, int size) override {
@@ -288,6 +317,10 @@ public:
 	}
 	virtual bool LogPrint(const char *msg)
 	{
+		if (!g_pLogHook) {
+			return false;
+		}
+
 		cell_t result = 0;
 		g_pLogHook->PushString(msg);
 		g_pLogHook->Execute(&result);
@@ -610,7 +643,7 @@ static cell_t sm_RenameFile(IPluginContext *pContext, const cell_t *params)
 	g_pSM->BuildPath(Path_Game, old_realpath, sizeof(old_realpath), "%s", oldpath);
 
 #ifdef PLATFORM_WINDOWS
-	return (MoveFileA(old_realpath, new_realpath)) ? 1 : 0;
+	return (MoveFileExA(old_realpath, new_realpath, MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING)) ? 1 : 0;
 #elif defined PLATFORM_POSIX
 	return (rename(old_realpath, new_realpath)) ? 0 : 1;
 #endif
@@ -719,6 +752,39 @@ static cell_t sm_SetFilePermissions(IPluginContext *pContext, const cell_t *para
 	return _chmod(realpath, mask) == 0;
 #else
 	return chmod(realpath, params[2]) == 0;
+#endif
+}
+
+static cell_t sm_GetFilePermissions(IPluginContext *pContext, const cell_t *params)
+{
+	char *name;
+	char realpath[PLATFORM_MAX_PATH];
+
+	pContext->LocalToString(params[1], &name);
+	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", name);
+
+	cell_t *mask;
+	pContext->LocalToPhysAddr(params[2], &mask);
+
+#if defined PLATFORM_WINDOWS
+	struct _stat buffer;
+	cell_t valid = _stat(realpath, &buffer) == 0;
+
+	if ((buffer.st_mode & _S_IREAD) != 0) {
+		*mask |= (FPERM_U_READ|FPERM_G_READ|FPERM_O_READ)|(FPERM_U_EXEC|FPERM_G_EXEC|FPERM_O_EXEC);
+	}
+
+	if ((buffer.st_mode & _S_IWRITE) != 0) {
+		*mask |= (FPERM_U_WRITE|FPERM_G_WRITE|FPERM_O_WRITE);
+	}
+
+	return valid;
+#else
+	struct stat buffer;
+	cell_t valid = stat(realpath, &buffer) == 0;
+
+	*mask = buffer.st_mode;
+	return valid;
 #endif
 }
 
@@ -1125,6 +1191,15 @@ static cell_t sm_RemoveGameLogHook(IPluginContext *pContext, const cell_t *param
 	return 1;
 }
 
+static cell_t File_Size(IPluginContext *pContext, const cell_t *params)
+{
+	OpenHandle<FileObject> file(pContext, params[1], g_FileType);
+	if (!file.Ok())
+		return -1;
+
+	return file->Size();
+}
+
 template <typename T>
 static cell_t File_ReadTyped(IPluginContext *pContext, const cell_t *params)
 {
@@ -1186,6 +1261,7 @@ REGISTER_NATIVES(filesystem)
 	{"RemoveGameLogHook",		sm_RemoveGameLogHook},
 	{"CreateDirectory",			sm_CreateDirectory},
 	{"SetFilePermissions",		sm_SetFilePermissions},
+	{"GetFilePermissions",		sm_GetFilePermissions},
 
 	{"File.ReadLine",			sm_ReadFileLine},
 	{"File.Read",				sm_ReadFile},
@@ -1197,6 +1273,7 @@ REGISTER_NATIVES(filesystem)
 	{"File.Seek",				sm_FileSeek},
 	{"File.Flush",				sm_FlushFile},
 	{"File.Position.get",		sm_FilePosition},
+	{"File.Size",				File_Size},
 	{"File.ReadInt8",			File_ReadTyped<int8_t>},
 	{"File.ReadUint8",			File_ReadTyped<uint8_t>},
 	{"File.ReadInt16",			File_ReadTyped<int16_t>},

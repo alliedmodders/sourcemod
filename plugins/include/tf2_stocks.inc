@@ -399,6 +399,7 @@ stock TFClassType TF2_GetPlayerClass(int client)
  */
 stock void TF2_SetPlayerClass(int client, TFClassType classType, bool weapons=true, bool persistent=true)
 {
+	#pragma unused weapons
 	SetEntProp(client, Prop_Send, "m_iClass", view_as<int>(classType));
 
 	if (persistent)

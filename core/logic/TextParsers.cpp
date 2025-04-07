@@ -342,6 +342,7 @@ SMCError TextParsers::ParseStream_SMC(void *stream,
 	SMCResult res;
 	SMCStates states;
 	char c;
+	bool end_of_last_buffer_was_backslash = false;
 
 	StringInfo strings[3];
 	StringInfo emptystring;
@@ -383,6 +384,10 @@ SMCError TextParsers::ParseStream_SMC(void *stream,
 		if (reparse_point)
 		{
 			read += (parse_point - reparse_point);
+			if(read > 0)
+			{
+				end_of_last_buffer_was_backslash = reparse_point[-1] == '\\';
+			}
 			parse_point = reparse_point;
 			reparse_point = NULL;
 		}
@@ -454,7 +459,7 @@ SMCError TextParsers::ParseStream_SMC(void *stream,
 				if (in_quote)
 				{
 					/* If i was 0, we could have reparsed, so make sure there's no buffer underrun */
-					if ((&parse_point[i] != in_buf) && c == '"' && parse_point[i-1] != '\\')
+					if ( (&parse_point[i] != in_buf) && c == '"' && !((i == 0 && end_of_last_buffer_was_backslash) || (i > 0 && parse_point[i-1] == '\\')) )
 					{
 						/* If we reached a quote in an ignore phase,
 						 * we're staging a string and we must rotate it out.
@@ -726,6 +731,7 @@ SMCError TextParsers::ParseStream_SMC(void *stream,
 			if (parse_point)
 			{
 				parse_point = &parse_point[read];
+				end_of_last_buffer_was_backslash = parse_point[-1] == '\\';
 				parse_point -= bytes;
 			}
 		} 

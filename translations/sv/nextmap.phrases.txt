@@ -2,32 +2,32 @@
 {
 	"Map History"
 	{
-		"sv"		"Banans historia"
+		"sv"		"Kartans historia"
 	}
 
 	"Map"
 	{
-		"sv"		"[Bana]  "
+		"sv"		"[Karta]"
 	}
 
 	"Started"
 	{
-		"sv"		"[Startad]  "
+		"sv"		"[Startad]"
 	}
 
 	"Played Time"
 	{
-		"sv"		"[Spelad tid]  "
+		"sv"		"[Spelad tid]"
 	}
 
 	"Reason"
 	{
-		"sv"		"[Anledning till avslutande]  "
+		"sv"		"[Anledning till avslutande]"
 	}
 
 	"Current Map"
 	{
-		"sv"		"Nuvarande bana"
+		"sv"		"Nuvarande karta"
 	}
 
 	"ago"

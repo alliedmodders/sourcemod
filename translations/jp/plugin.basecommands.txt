@@ -12,7 +12,7 @@
 
 	"Value of cvar"
 	{
-		"jp"		"CVar \"{1]\" の値: \"{2}\""
+		"jp"		"CVar \"{1}\" の値: \"{2}\""
 	}
 
 	"Cvar changed"
@@ -47,12 +47,12 @@
 
 	"Banned player reason"
 	{
-		"jp"		"プレイヤー \"{1}\" を{2}分間BANしました。 (理由: {3})"
+		"jp"		"プレイヤー \"{1}\" を{2}分間BANしました。(理由: {3})"
 	}
 
 	"Removed bans matching"
 	{
-		"jp"		"フィルターにマッチするBANを削除しました:"
+		"jp"		"フィルターにマッチするBANを削除しました: {1}"
 	}
 
 	"Ban added"
@@ -87,17 +87,17 @@
 
 	"Admin logged in anon"
 	{
-		"jp"		"\"{1}\"の権限: {2}"
+		"jp"		"\"{1}\" の権限: {2}"
 	}
 
 	"Player is not an admin"
 	{
-		"jp"		"\"{1}\"は管理者ではありません。"
+		"jp"		"\"{1}\" は管理者ではありません。"
 	}
 
 	"Player is an admin"
 	{
-		"jp"		"\"{1}\"は管理者です。"
+		"jp"		"\"{1}\" は管理者です。"
 	}
 
 	"Username"

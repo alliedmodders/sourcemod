@@ -2,22 +2,22 @@
 {
 	"Admin Menu"
 	{
-		"sv"		"Adminmeny "
+		"sv"		"Adminmeny"
 	}
 
 	"Player Commands"
 	{
-		"sv"		"Spelarkommandon "
+		"sv"		"Spelarkommandon"
 	}
 
 	"Server Commands"
 	{
-		"sv"		"Serverkommandon "
+		"sv"		"Serverkommandon"
 	}
 
 	"Voting Commands"
 	{
-		"sv"		"Omröstningskommandon "
+		"sv"		"Omröstningskommandon"
 	}
 
 }

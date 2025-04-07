@@ -65,4 +65,8 @@
 		"fi"		"Ehdotettu"
 	}
 
+	"Map Not In Pool"
+	{
+		"fi"		"Kartta '{1}' ei ole ehdokasluettelossa."
+	}
 }

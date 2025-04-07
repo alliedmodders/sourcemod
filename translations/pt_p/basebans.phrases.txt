@@ -40,6 +40,21 @@
 		"pt_p"		"O banimento foi adicionado."
 	}
 
+	"Custom ban reason explanation"
+	{
+		"pt_p"		"Introduz uma razão através do chat. Usa {1} para cancelar."
+	}
+
+	"AbortBan applied successfully"
+	{
+		"pt_p"		"Ban cancelado."
+	}
+	
+	"AbortBan not waiting for custom reason"
+	{
+		"pt_p"		"Sem esperar por uma razão de ban ser escrita, nenhum ban para cancelar."
+	}
+
 	"Cannot ban that IP"
 	{
 		"pt_p"		"Não podes banir esse endereço IP."

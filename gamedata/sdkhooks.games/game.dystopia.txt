@@ -1,0 +1,129 @@
+"Games"
+{
+	"!Dystopia"
+	{
+		"Offsets"
+		{
+			"EndTouch"
+			{
+				"windows"	"100"
+				"linux"		"101"
+			}
+			"FireBullets"
+			{
+				"windows"	"112"
+				"linux"		"113"
+			}
+			"GetMaxHealth"
+			{
+				"windows"	"117"
+				"linux"		"118"
+			}
+			"GroundEntChanged"
+			{
+				"windows"	"177"
+				"linux"		"178"
+			}
+			"OnTakeDamage"
+			{
+				"windows"	"62"
+				"linux"		"63"
+			}
+			"OnTakeDamage_Alive"
+			{
+				"windows"	"275"
+				"linux"		"276"
+			}
+			"PreThink"
+			{
+				"windows"	"335"
+				"linux"		"336"
+			}
+			"PostThink"
+			{
+				"windows"	"336"
+				"linux"		"337"
+			}
+			"Reload"
+			{
+				"windows"	"274"
+				"linux"		"275"
+			}
+			"SetTransmit"
+			{
+				"windows"	"20"
+				"linux"		"21"
+			}
+			"ShouldCollide"
+			{
+				"windows"	"16"
+				"linux"		"17"
+			}
+			"Spawn"
+			{
+				"windows"	"22"
+				"linux"		"23"
+			}
+			"StartTouch"
+			{
+				"windows"	"98"
+				"linux"		"99"
+			}
+			"Think"
+			{
+				"windows"	"47"
+				"linux"		"48"
+			}
+			"Touch"
+			{
+				"windows"	"99"
+				"linux"		"100"
+			}
+			"TraceAttack"
+			{
+				"windows"	"60"
+				"linux"		"61"
+			}
+			"Use"
+			{
+				"windows"	"97"
+				"linux"		"98"
+			}
+			"VPhysicsUpdate"
+			{
+				"windows"	"157"
+				"linux"		"158"
+			}
+			"Blocked"
+			{
+				"windows"	"102"
+				"linux"		"103"
+			}
+			"Weapon_CanSwitchTo"
+			{
+				"windows"	"269"
+				"linux"		"270"
+			}
+			"Weapon_CanUse"
+			{
+				"windows"	"263"
+				"linux"		"264"
+			}
+			"Weapon_Drop"
+			{
+				"windows"	"266"
+				"linux"		"267"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"264"
+				"linux"		"265"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"267"
+				"linux"		"268"
+			}
+		}
+	}
+}

@@ -64,5 +64,9 @@
 	{
 		"it"		"Nominata"
 	}
-
+	
+	"Map Not In Pool"
+	{
+		"it"		"La mappa '{1}' non è nell'elenco delle nominazioni."
+	}
 }

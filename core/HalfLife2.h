@@ -38,7 +38,7 @@
 #include <am-utility.h>
 #include <am-hashset.h>
 #include <am-hashmap.h>
-#include <sm_stringhashmap.h>
+#include <sm_hashmap.h>
 #include <sm_namehashset.h>
 #include "sm_globals.h"
 #include "sm_queue.h"
@@ -56,6 +56,8 @@ class ICommandArgs;
 
 using namespace SourceHook;
 using namespace SourceMod;
+
+static const int ENTREF_MASK = (1 << 31);
 
 #define HUD_PRINTTALK		3
 #define HUD_PRINTCENTER		4
@@ -221,6 +223,7 @@ public: //IGameHelpers
 	bool FindSendPropInfo(const char *classname, const char *offset, sm_sendprop_info_t *info);
 	datamap_t *GetDataMap(CBaseEntity *pEntity);
 	ServerClass *FindServerClass(const char *classname);
+	ServerClass *FindEntityServerClass(CBaseEntity *pEntity);
 	typedescription_t *FindInDataMap(datamap_t *pMap, const char *offset);
 	bool FindDataMapInfo(datamap_t *pMap, const char *offset, sm_datatable_info_t *pDataTable);
 	void SetEdictStateChanged(edict_t *pEdict, unsigned short offset);

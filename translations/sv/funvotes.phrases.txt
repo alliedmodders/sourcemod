@@ -7,12 +7,12 @@
 
 	"Initiated Vote Burn"
 	{
-		"sv"		"Startade en bränn röstning mot {1}. "
+		"sv"		"Startade en bränn röstning mot {1}."
 	}
 
 	"Initiated Vote Slay"
 	{
-		"sv"		"Startade en döds röstning mot {1}. "
+		"sv"		"Startade en döds röstning mot {1}."
 	}
 
 	"Initiated Vote Alltalk"
@@ -27,12 +27,12 @@
 
 	"Gravity Vote"
 	{
-		"sv"		"Gravitations röstning: {1} "
+		"sv"		"Gravitations röstning: {1}"
 	}
 
 	"Change Gravity To"
 	{
-		"sv"		" Ändra gravitationen till {1}"
+		"sv"		"Ändra gravitationen till {1}"
 	}
 
 	"Voteburn player"
@@ -42,7 +42,7 @@
 
 	"Voteslay Player"
 	{
-		"sv"		"Dräp {1}? "
+		"sv"		"Dräp {1}?"
 	}
 
 	"Votealltalk Off"
@@ -52,17 +52,17 @@
 
 	"Votealltalk On"
 	{
-		"sv"		"Sätt på allprat? {1} "
+		"sv"		"Sätt på allprat? {1}"
 	}
 
 	"Voteff Off"
 	{
-		"sv"		"Stäng av vänlig skada? {1} "
+		"sv"		"Stäng av vänlig skada? {1}"
 	}
 
 	"Voteff On"
 	{
-		"sv"		"Slå på vänlig skada? {1} "
+		"sv"		"Slå på vänlig skada? {1}"
 	}
 
 	"Gravity vote"
@@ -72,7 +72,7 @@
 
 	"Vote FF"
 	{
-		"sv"		"Rösta vänlig skada "
+		"sv"		"Rösta vänlig skada"
 	}
 
 	"Burn vote"
@@ -82,7 +82,7 @@
 
 	"Alltalk vote"
 	{
-		"sv"		"Allprat röstning "
+		"sv"		"Allprat röstning"
 	}
 
 	"Slay vote"
@@ -92,7 +92,7 @@
 
 	"Slayed player"
 	{
-		"sv"		"Dräpte spelare '{1}'  "
+		"sv"		"Dräpte spelare '{1}'"
 	}
 
 }

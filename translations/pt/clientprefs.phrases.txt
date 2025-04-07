@@ -22,12 +22,12 @@
 
 	"Protected Cookie"
 	{
-		"pt"		"Não é possível alterar o valor do cookie protegido \"{1}\" "
+		"pt"		"Não é possível alterar o valor do cookie protegido \"{1}\""
 	}
 
 	"Cookie Changed Value"
 	{
-		"pt"		"Alterou o valor do cookie \"{1}\" para \"{2}\" "
+		"pt"		"Alterou o valor do cookie \"{1}\" para \"{2}\""
 	}
 
 	"No Console"
@@ -44,5 +44,4 @@
 	{
 		"pt"		"Configurações do cliente"
 	}
-
 }

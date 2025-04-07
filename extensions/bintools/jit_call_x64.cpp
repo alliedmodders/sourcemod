@@ -725,7 +725,7 @@ inline void Write_PushObject(JitWriter *jit, const SourceHook::PassInfo *info, u
 		ObjectClass classes[MAX_CLASSES];
 		int numWords = ClassifyObject(smInfo, classes);
 
-		if (classes[0] == ObjectClass::Pointer)
+		if (classes[0] == ObjectClass::Pointer || classes[0] == ObjectClass::Memory)
 			goto push_byref;
 
 		int neededIntRegs = 0;
@@ -787,7 +787,7 @@ inline void Write_PushObject(JitWriter *jit, const SourceHook::PassInfo *info, u
 		return;
 
 #elif defined PLATFORM_WINDOWS
-		if (info->size < 64 && (info->size & (info->size - 1)) == 0)
+		if (info->size > 8 || (info->size & (info->size - 1)) != 0)
 			goto push_byref;
 		else {
 			SourceHook::PassInfo podInfo;
@@ -1055,7 +1055,11 @@ void *JIT_CallCompile(CallWrapper *pWrapper, FuncAddrMethod method)
 	int numWords;
 #endif
 
+#ifdef PLATFORM_POSIX
 	g_StackUsage = 0;
+#elif defined PLATFORM_WINDOWS
+	g_StackUsage = 32;	// Shadow space
+#endif
 
 	writer.outbase = NULL;
 	writer.outptr = NULL;
@@ -1155,8 +1159,12 @@ skip_retbuffer:
 #endif
 
 	/* Clean up the calling stack */
+#ifdef PLATFORM_POSIX
 	if (hasParams && g_StackUsage)
+#endif
+	{
 		Write_RectifyStack(jit, g_StackAlign);
+	}
 
 	/* Copy the return type to the return buffer if the function is not void */
 	if (pRet && !Needs_Retbuf)

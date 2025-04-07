@@ -192,6 +192,10 @@
 			"game"					"bms"
 			"game"					"iosoccer"
 			"game"					"vietnam"
+			"game"					"open_fortress"
+			"game"					"tf2classic"
+			"game"					"pf2"
+			"game"					"dystopia"
 		}
 
 		"Keys"
@@ -244,6 +248,10 @@
 			"game"					"iosoccer"
 			"game"					"vietnam"
 			"game"					"reactivedrop"
+			"game"					"open_fortress"
+			"game"					"tf2classic"
+			"game"					"pf2"
+			"game"					"dystopia"
 		}
 		
 		"Keys"
@@ -305,6 +313,10 @@
 			"game"					"reactivedrop"
 			"game"					"FortressForever"
 			"game"					"vietnam"
+			"game"					"open_fortress"
+			"game"					"tf2classic"
+			"game"					"pf2"
+			"game"					"dystopia"
 		}
 		
 		"Keys"

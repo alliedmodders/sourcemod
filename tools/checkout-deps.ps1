@@ -44,7 +44,7 @@ Function Get-Repository
 
     If (-not (Test-Path $Name -PathType Container))
     {
-        & git clone $Repo -b $Branch $Name 2>&1 | Write-Host
+        & git clone --recursive $Repo -b $Branch $Name 2>&1 | Write-Host
         If ($Origin)
         {
             Set-Location $Name
@@ -91,6 +91,8 @@ else
 $SDKS | ForEach-Object {
     Get-Repository -Name "hl2sdk-$_" -Branch $_ -Repo "hl2sdk-proxy-repo" "https://github.com/alliedmodders/hl2sdk.git"
 }
+
+Get-Repository -Name "hl2sdk-mock" -Branch "master" -Repo "https://github.com/alliedmodders/hl2sdk-mock.git"
 
 # Find a suitable installation of Python
 $PYTHON_CMD = Get-Command 'python3' -ErrorAction SilentlyContinue

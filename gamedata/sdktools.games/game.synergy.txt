@@ -47,8 +47,8 @@
 			"CBaseTempEntity"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x89\x41\x04\xC7\x01\x2A\x2A\x2A\x2A\xA1"
-				"linux"		"\x55\x89\xE5\x8B\x45\x08\x8B\x55\x0C\xC7\x2A\x2A\x2A\x2A\x2A\x89\x50\x04\x8B\x15\x2A\x2A\x2A\x2A\xA3"
+				"windows"	"\x55\x89\xE5\x89\xC8\x8B\x4D\x08\xC7\x00\x2A\x2A\x2A\x2A\x89\x48\x04"
+				"linux"		"\x55\x89\xE5\x56\xE8\x2A\x2A\x2A\x2A\x58\x81\xC0\xCF\x27\x58\x00"
 			}
 			"s_pTempEntities"
 			{
@@ -67,8 +67,8 @@
 			"FindEntityByClassname"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x53\x56\x57\x8B\xF9\x8B\x4D\x08\x85\xC9\x74\x15"
-				"linux"		"\x55\x89\xE5\x57\x56\x53\x83\x2A\x2A\x8B\x2A\x2A\x8B\x2A\x2A\x85\xC0\x74\x2A\x8B\x10\x89\x04\x24\xFF\x52\x0C\x8B\x55\x08\x8B\x00\x25\xFF\x0F\x00\x00\xC1\xE0\x04\x8B\x2A\x2A\x2A\xEB\x15\x66"
+				"windows"	"\x55\x89\xE5\x53\x57\x56\x83\xEC\x08\x8B\x45\x08\x85\xC0\x0F\x85\x2A\x2A\x2A\x2A"
+				"linux"		"\x55\x89\xE5\x53\x57\x56\x83\xEC\x1C\xE8\x2A\x2A\x2A\x2A\x5B\x81\xC3\xEA\xF8\x83\x00"
 				"mac"		"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 			}
 		}
@@ -82,8 +82,8 @@
 			"FireOutput"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x81\xEC\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A\x33\xC5\x89\x45\xFC\x53\x8B\x5D\x20\x8B\xC1\x8B\x4D\x1C\x56\x57\x8B"
-				"linux"		"\x55\x89\xE5\x57\x56\x53\x81\xEC\x2A\x2A\x2A\x2A\xC7\x85\xDC\xFE\xFF\xFF\x00\x00\x00\x00\x8B"
+				"windows"	"\x55\x89\xE5\x53\x57\x56\x81\xEC\x10\x01\x00\x00\x8B\x71\x14"
+				"linux"		"\x55\x89\xE5\x53\x57\x56\x81\xEC\x5C\x01\x00\x00\xE8\x2A\x2A\x2A\x2A\x5B\x81\xC3\x37\x3C\x88\x00"
 				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
@@ -96,57 +96,57 @@
 			/* CBasePlayer */
 			"GiveNamedItem"
 			{
-				"windows"	"406"
-				"linux"		"407"
-				"mac"		"407"
+				"windows"	"408"
+				"linux"		"409"
+				"mac"		"409"
 			}
 			"RemovePlayerItem"
+			{
+				"windows"	"271"
+				"linux"		"272"
+				"mac"		"272"
+			}
+			"Weapon_GetSlot"
 			{
 				"windows"	"269"
 				"linux"		"270"
 				"mac"		"270"
 			}
-			"Weapon_GetSlot"
-			{
-				"windows"	"267"
-				"linux"		"268"
-				"mac"		"268"
-			}
 			"Ignite"
 			{
-				"windows"	"208"
-				"linux"		"209"
-				"mac"		"209"
+				"windows"	"210"
+				"linux"		"211"
+				"mac"		"211"
 			}
 			"Extinguish"
 			{
-				"windows"	"212"
-				"linux"		"213"
-				"mac"		"213"
+				"windows"	"214"
+				"linux"		"215"
+				"mac"		"215"
 			}
 			"Teleport"
 			{
-				"windows"	"108"
-				"linux"		"109"
-				"mac"		"109"
+				"windows"	"109"
+				"linux"		"110"
+				"mac"		"110"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"445"
-				"linux"		"445"
-				"mac"		"445"
+				"windows"	"446"
+				"linux"		"447"
+				"mac"		"447"
 			}
 			"GetVelocity"
 			{
-				"windows"	"140"
-				"linux"		"141"
-				"mac"		"141"
+				"windows"	"141"
+				"linux"		"142"
+				"mac"		"142"
 			}
 			"EyeAngles"
 			{
-				"windows"	"131"
-				"linux"		"132"
-				"mac"		"132"
+				"windows"	"132"
+				"linux"		"133"
+				"mac"		"133"
 			}
 			"AcceptInput"
 			{
@@ -162,9 +162,9 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"260"
-				"linux"		"261"
-				"mac"		"261"
+				"windows"	"262"
+				"linux"		"263"
+				"mac"		"263"
 			}
 			"Activate"
 			{
@@ -174,15 +174,15 @@
 			}
 			"RemoveAllItems"
 			{
-				"windows"	"348"
-				"linux"		"349"
-				"mac"		"349"
+				"windows"	"349"
+				"linux"		"350"
+				"mac"		"350"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"424"
-				"linux"		"425"
-				"mac"		"425"
+				"windows"	"426"
+				"linux"		"427"
+				"mac"		"427"
 			}
 		}
 		

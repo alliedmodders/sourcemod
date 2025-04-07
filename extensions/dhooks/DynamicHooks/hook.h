@@ -41,6 +41,22 @@
 #include "convention.h"
 #include <am-hashmap.h>
 #include <am-hashset.h>
+#include <safetyhook.hpp>
+
+#ifdef DYNAMICHOOKS_x86_64
+#include <sourcehook.h>
+#include <sh_memory.h>
+#include "sh_asm_x86_64.h"
+
+#if SH_COMP == SH_COMP_MSVC
+# define GCC_ONLY(x)
+# define MSVC_ONLY(x) x
+#elif SH_COMP == SH_COMP_GCC
+# define GCC_ONLY(x) x
+# define MSVC_ONLY(x)
+#endif
+
+#endif
 
 // ============================================================================
 // >> HookType_t
@@ -173,14 +189,23 @@ public:
 	}
 
 private:
-	void* CreateBridge();
+	void CreateBridge();
+	void CreatePostCallback();
 
+#ifdef DYNAMICHOOKS_x86_64
+	void Write_ModifyReturnAddress(SourceHook::Asm::x64JitWriter& jit);
+	void Write_CallHandler(SourceHook::Asm::x64JitWriter& jit, HookType_t type);
+	void Write_SaveRegisters(SourceHook::Asm::x64JitWriter& jit, HookType_t type);
+	void Write_RestoreRegisters(SourceHook::Asm::x64JitWriter& jit, HookType_t type);
+
+	SourceHook::Asm::x64JitWriter m_bridge;
+	SourceHook::Asm::x64JitWriter m_postCallback;
+#else
 	void Write_ModifyReturnAddress(sp::MacroAssembler& masm);
 	void Write_CallHandler(sp::MacroAssembler& masm, HookType_t type);
 	void Write_SaveRegisters(sp::MacroAssembler& masm, HookType_t type);
 	void Write_RestoreRegisters(sp::MacroAssembler& masm, HookType_t type);
-
-	void* CreatePostCallback();
+#endif
 
 	ReturnAction_t __cdecl HookHandler(HookType_t type);
 
@@ -195,6 +220,9 @@ public:
 	void* m_pFunc;
 
 	ICallingConvention* m_pCallingConvention;
+
+	// SafetyHook
+	SafetyHookInline m_Hook{};
 
 	// Address of the bridge
 	void* m_pBridge;

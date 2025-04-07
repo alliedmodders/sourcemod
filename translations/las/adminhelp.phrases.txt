@@ -27,7 +27,7 @@
 
 	"No matching results found"
 	{
-		"las"		"No se encontraron coincidencias"
+		"las"		"No se encontraron resultados que coincidan"
 	}
 
 }

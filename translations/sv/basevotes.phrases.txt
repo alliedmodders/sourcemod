@@ -2,17 +2,17 @@
 {
 	"Initiate Vote"
 	{
-		"sv"		"Påbörjade omröstning: {1} "
+		"sv"		"Påbörjade omröstning: {1}"
 	}
 
 	"Initiated Vote Map"
 	{
-		"sv"		"Startade omröstning om karta. "
+		"sv"		"Startade omröstning om karta."
 	}
 
 	"Initiated Vote Kick"
 	{
-		"sv"		"Startade en utsparkningomröstning mot {1}. "
+		"sv"		"Startade en utsparkningomröstning mot {1}."
 	}
 
 	"Initiated Vote Ban"
@@ -22,37 +22,37 @@
 
 	"Map Vote"
 	{
-		"sv"		"Kartomröstning: {1} "
+		"sv"		"Kartomröstning: {1}"
 	}
 
 	"Change Map To"
 	{
-		"sv"		" Byt karta till {1}? "
+		"sv"		"Byt karta till {1}?"
 	}
 
 	"Votekick Player"
 	{
-		"sv"		"Sparka ut {1}? "
+		"sv"		"Sparka ut {1}?"
 	}
 
 	"Voteban Player"
 	{
-		"sv"		"Bannlys {1}? "
+		"sv"		"Bannlys {1}?"
 	}
 
 	"Vote Successful"
 	{
-		"sv"		"Omröstningen lyckades. (Fick {1}%% av {2} röster) "
+		"sv"		"Omröstningen lyckades. (Fick {1}%% av {2} röster)"
 	}
 
 	"Vote Failed"
 	{
-		"sv"		"Omröstningen misslyckades. {1}%% röster krävs. (Fick {2}%% av {3} röster) "
+		"sv"		"Omröstningen misslyckades. {1}%% röster krävs. (Fick {2}%% av {3} röster)"
 	}
 
 	"Vote End"
 	{
-		"sv"		"Svaret till {1} är: {2}. "
+		"sv"		"Svaret till {1} är: {2}."
 	}
 
 	"Kick vote"
@@ -67,12 +67,12 @@
 
 	"Map vote"
 	{
-		"sv"		"Kartomröstning "
+		"sv"		"Kartomröstning"
 	}
 
 	"Confirm Vote"
 	{
-		"sv"		"Bekräfta omröstning "
+		"sv"		"Bekräfta omröstning"
 	}
 
 	"Map Vote In Use"

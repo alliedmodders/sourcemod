@@ -2,7 +2,6 @@
 {
 	"Played sound to target"
 	{
-		"pt"		"Som tocado para {1}"
+		"pt"		"Tocou som para {1}"
 	}
-
 }

@@ -29,5 +29,4 @@
 	{
 		"pt"		"Nenhum resultado encontrado"
 	}
-
 }

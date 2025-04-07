@@ -56,87 +56,86 @@ pb_gamesrcdir_map = {
   'mcv': 'vietnam',
 }
 
-for sdk_name in SM.sdks:
-  sdk = SM.sdks[sdk_name]
-  for cxx in builder.targets:
-    if not cxx.target.arch in sdk.platformSpec[cxx.target.platform]:
-      continue
+for sdk_target in SM.sdk_targets:
+  sdk = sdk_target.sdk
+  cxx = sdk_target.cxx
 
-    binary_name = 'sourcemod.' + sdk.ext
+  binary_name = 'sourcemod.' + sdk['extension']
+  needs_protobuf = sdk['name'] in ['csgo', 'blade', 'mcv']
 
-    binary = SM.HL2Config(project, builder, cxx, binary_name, sdk)
-    SM.ConfigureForExtension(builder, binary.compiler)
+  binary = SM.HL2Config(project, builder, cxx, binary_name, sdk)
+  SM.ConfigureForExtension(builder, binary.compiler)
 
-    compiler = binary.compiler
+  compiler = binary.compiler
+  compiler.cxxincludes += [
+    builder.sourcePath
+  ]
+
+  if needs_protobuf:
     compiler.cxxincludes += [
-      builder.sourcePath
+      os.path.join(sdk['path'], 'common', 'protobuf-2.5.0', 'src'),
+      os.path.join(sdk['path'], 'public', 'engine', 'protobuf'),
+      os.path.join(sdk['path'], 'public', 'game', 'shared', pb_gamedir_map[sdk['name']], 'protobuf')
+    ]
+  
+  if compiler.like('msvc'):
+    compiler.defines += ['_ALLOW_KEYWORD_MACROS']
+  if cxx.target.platform == 'linux':
+    compiler.postlink += ['-lpthread', '-lrt']
+
+  if needs_protobuf:
+    if compiler.target.platform == 'linux':
+      if compiler.target.arch == 'x86':
+        lib_path = os.path.join(sdk['path'], 'lib', 'linux32', 'release', 'libprotobuf.a')
+      elif compiler.target.arch == 'x86_64':
+        lib_path = os.path.join(sdk['path'], 'lib', 'linux64', 'release', 'libprotobuf.a')
+      compiler.linkflags += ['-Wl,--exclude-libs=libprotobuf.a']
+    elif compiler.target.platform == 'mac':
+      if compiler.target.arch == 'x86':
+        lib_path = os.path.join(sdk['path'], 'lib', 'osx32', 'release', 'libprotobuf.a')
+      elif compiler.target.arch == 'x86_64':
+        lib_path = os.path.join(sdk['path'], 'lib', 'osx64', 'release', 'libprotobuf.a')
+    elif compiler.target.platform == 'windows':
+      msvc_ver = compiler.version
+      vs_year = ''
+      platform = ''
+      if compiler.target.arch == 'x86':
+        platform = 'win32'
+      elif compiler.target.arch == 'x86_64':
+        platform = 'win64'
+      
+      if 1900 <= msvc_ver < 2000:
+        vs_year = '2015'
+      else:
+        raise Exception('Cannot find libprotobuf for MSVC version "' + str(compiler.version) + '"')
+
+      if 'DEBUG' in compiler.defines:
+        lib_path = os.path.join(sdk['path'], 'lib', platform, 'debug', 'vs' + vs_year, 'libprotobuf.lib')
+      else:
+        lib_path = os.path.join(sdk['path'], 'lib', platform, 'release', 'vs' + vs_year, 'libprotobuf.lib')
+    compiler.linkflags.insert(0, lib_path)
+
+  if needs_protobuf:
+    binary.sources += ['smn_protobuf.cpp']
+  else:
+    binary.sources += ['smn_bitbuffer.cpp']
+
+  if sdk['name'] != 'blade':
+    binary.sources += [
+      'vprof_tool.cpp',
     ]
 
-    if sdk.name in ['csgo', 'blade', 'mcv']:
-      compiler.cxxincludes += [
-        os.path.join(sdk.path, 'common', 'protobuf-2.5.0', 'src'),
-        os.path.join(sdk.path, 'public', 'engine', 'protobuf'),
-        os.path.join(sdk.path, 'public', 'game', 'shared', pb_gamedir_map[sdk.name], 'protobuf')
-      ]
-    
-    if compiler.like('msvc'):
-      compiler.defines += ['_ALLOW_KEYWORD_MACROS']
-    if cxx.target.platform == 'linux':
-      compiler.postlink += ['-lpthread', '-lrt']
-
-    if sdk.name in ['csgo', 'blade', 'mcv']:
-      if compiler.target.platform == 'linux':
-        if compiler.target.arch == 'x86':
-          lib_path = os.path.join(sdk.path, 'lib', 'linux32', 'release', 'libprotobuf.a')
-        elif compiler.target.arch == 'x86_64':
-          lib_path = os.path.join(sdk.path, 'lib', 'linux64', 'release', 'libprotobuf.a')
-        compiler.linkflags += ['-Wl,--exclude-libs=libprotobuf.a']
-      elif compiler.target.platform == 'mac':
-        if compiler.target.arch == 'x86':
-          lib_path = os.path.join(sdk.path, 'lib', 'osx32', 'release', 'libprotobuf.a')
-        elif compiler.target.arch == 'x86_64':
-          lib_path = os.path.join(sdk.path, 'lib', 'osx64', 'release', 'libprotobuf.a')
-      elif compiler.target.platform == 'windows':
-        msvc_ver = compiler.version
-        vs_year = ''
-        platform = ''
-        if compiler.target.arch == 'x86':
-          platform = 'win32'
-        elif compiler.target.arch == 'x86_64':
-          platform = 'win64'
-        
-        if 1900 <= msvc_ver < 2000:
-          vs_year = '2015'
-        else:
-          raise Exception('Cannot find libprotobuf for MSVC version "' + str(compiler.version) + '"')
-
-        if 'DEBUG' in compiler.defines:
-          lib_path = os.path.join(sdk.path, 'lib', platform, 'debug', 'vs' + vs_year, 'libprotobuf.lib')
-        else:
-          lib_path = os.path.join(sdk.path, 'lib', platform, 'release', 'vs' + vs_year, 'libprotobuf.lib')
-      compiler.linkflags.insert(0, lib_path)
-  
-    if sdk.name in ['csgo', 'blade', 'mcv']:
-      binary.sources += ['smn_protobuf.cpp']
-    else:
-      binary.sources += ['smn_bitbuffer.cpp']
-
-    if sdk.name != 'blade':
+  if needs_protobuf:
+    binary.sources += [
+      os.path.join(sdk['path'], 'public', 'engine', 'protobuf', 'netmessages.pb.cc'),
+      os.path.join(sdk['path'], 'public', 'game', 'shared', pb_gamedir_map[sdk['name']], 'protobuf', pb_gamesrcdir_map[sdk['name']] + '_usermessages.pb.cc'),
+      os.path.join(sdk['path'], 'public', 'game', 'shared', pb_gamedir_map[sdk['name']], 'protobuf', pb_gamesrcdir_map[sdk['name']] + '_usermessage_helpers.cpp'),
+    ]
+    if sdk['name'] == 'mcv':
       binary.sources += [
-        'vprof_tool.cpp',
+        os.path.join(sdk['path'], 'public', 'game', 'shared', pb_gamedir_map[sdk['name']], 'protobuf', pb_gamesrcdir_map[sdk['name']] + '_gcmessages.pb.cc'),
+        os.path.join(sdk['path'], 'public', 'engine', 'protobuf', 'engine_gcmessages.pb.cc'),
       ]
-
-    if sdk.name in ['csgo', 'blade', 'mcv']:
-      binary.sources += [
-        os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'netmessages.pb.cc'),
-        os.path.join(sdk.path, 'public', 'game', 'shared', pb_gamedir_map[sdk.name], 'protobuf', pb_gamesrcdir_map[sdk.name] + '_usermessages.pb.cc'),
-        os.path.join(sdk.path, 'public', 'game', 'shared', pb_gamedir_map[sdk.name], 'protobuf', pb_gamesrcdir_map[sdk.name] + '_usermessage_helpers.cpp'),
-      ]
-      if sdk.name == 'mcv':
-        binary.sources += [
-          os.path.join(sdk.path, 'public', 'game', 'shared', pb_gamedir_map[sdk.name], 'protobuf', pb_gamesrcdir_map[sdk.name] + '_gcmessages.pb.cc'),
-          os.path.join(sdk.path, 'public', 'engine', 'protobuf', 'engine_gcmessages.pb.cc'),
-        ]
 
 SM.binaries += builder.Add(project)
 

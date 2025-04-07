@@ -7,7 +7,7 @@
 
 	"Player Commands"
 	{
-		"pt"		"Comandos de jogadores "
+		"pt"		"Comandos de jogadores"
 	}
 
 	"Server Commands"
@@ -19,5 +19,4 @@
 	{
 		"pt"		"Comandos de votação"
 	}
-
 }

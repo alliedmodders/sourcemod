@@ -7,22 +7,22 @@
 
 	"RTV Not Allowed"
 	{
-		"lv"		"Aptauja dotajā momentā nav atļauta."
+		"lv"		"Balsošana dotajā momentā nav atļauta."
 	}
 
 	"RTV Started"
 	{
-		"lv"		"Aptauja jau ir sākusies."
+		"lv"		"Balsošana jau ir sākusies."
 	}
 
 	"RTV Ended"
 	{
 		"lv"		"Aptauja jau ir beigusies, tu nevari sākt vēl vienu aptauju kā arī nevari pievienot kartes."
 	}
-
+	
 	"Already Voted"
 	{
-		"lv"		"Tu jau esi nobalsojis lai palaistu aptauju."
+	 	"lv"			"Tu jau nobalsoji par kartes maiņu ar RTV ({1} balsis, {2} balsis palikušas)"
 	}
 
 	"Minimal Players Not Met"
@@ -32,12 +32,12 @@
 
 	"RTV Requested"
 	{
-		"lv"		"{1} vēlas uzsākt aptauju. ({2} balsis, {3} nepieciešamas)"
+		"lv"		"{1} vēlas uzsākt balsošanu. ({2} balsis, vēl {3} nepieciešama/s)"
 	}
 
 	"RTV Vote Ready"
 	{
-		"lv"		"Sākas aptauja:"
+		"lv"		"Sākas balsošana:"
 	}
 
 	"Don't Change"
@@ -52,17 +52,17 @@
 
 	"No Votes"
 	{
-		"lv"		"Netika saņemta neviena balss, patreizējā karte netiek mainīta."
+		"lv"		"Netika saņemta neviena balss, esošā karte netiek mainīta."
 	}
 
 	"Current Map Stays"
 	{
-		"lv"		"Esošā karte turpinās! Tas tika noteikts aptaujas rezultātā!"
+		"lv"		"Esošā karte turpinās! Tas tika noteikts balsošanas rezultātā!"
 	}
 
 	"Changing Maps"
 	{
-		"lv"		"Maina karti uz {1}! Kas tika noteikta aptaujas rezultātā!"
+		"lv"		"Maina karti uz {1}! Kas tika noteikta balsošanas rezultātā!"
 	}
 
 }

@@ -229,5 +229,25 @@
 	{
 		"de"		"Aus"
 	}
+	
+	"Say all"
+	{
+		"de"			"(ALLE) {1}"
+	}
+	
+	"Chat admins"
+	{
+		"de"			"(ADMINS) {1}"
+	}
+	
+	"Chat to admins"
+	{
+		"de"			"(AN ADMINS) {1}"
+	}
+	
+	"Private say to"
+	{
+		"de"			"(Privat an {1}) {2}"
+	}
 
 }

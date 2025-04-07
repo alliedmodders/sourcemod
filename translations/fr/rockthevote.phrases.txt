@@ -22,7 +22,7 @@
 
 	"Already Voted"
 	{
-		"fr"		"Vous avez déjà voté au Rock the Vote."
+		"fr"		"Vous avez déjà voté au Rock the Vote. ({1} votes, {2} requis)"
 	}
 
 	"Minimal Players Not Met"

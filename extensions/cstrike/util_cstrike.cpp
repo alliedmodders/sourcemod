@@ -240,15 +240,10 @@ void CreateHashMaps()
 	if (!pSchema)
 		return;
 
-	static const char *pPriceKey = NULL;
-
+	const char *pPriceKey = g_pGameConf->GetKeyValue("PriceKey");
 	if (!pPriceKey)
 	{
-		pPriceKey = g_pGameConf->GetKeyValue("PriceKey");
-		if (!pPriceKey)
-		{
-			return;
-		}
+		return;
 	}
 
 	static int iHashMapOffset = -1;

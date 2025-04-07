@@ -173,7 +173,7 @@ void RegEx::ClearMatch()
 	mErrorCode = 0;
 	mError = nullptr;
 	if (subject)
-		delete [] subject;
+		free(subject);
 	subject = nullptr;
 	mMatchCount = 0;
 }

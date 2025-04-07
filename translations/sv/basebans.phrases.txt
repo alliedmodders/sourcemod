@@ -42,7 +42,7 @@
 
 	"Cannot ban that IP"
 	{
-		"sv"		" Du kan inte bannlysa den IP adressen."
+		"sv"		"Du kan inte bannlysa den IP adressen."
 	}
 
 	"Custom ban reason explanation"

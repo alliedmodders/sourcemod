@@ -20,6 +20,11 @@
 		"sk"		"Zranenie priateľských hráčov je vypnuté."
 	}
 
+	"Friendly Fire Percent"
+	{
+		"sk"		"Zranenie priateľských hráčov je na {1}%."
+	}
+
 	"Current Map"
 	{
 		"sk"		"Aktuálna mapa je {1}. "

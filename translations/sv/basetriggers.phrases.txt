@@ -17,7 +17,12 @@
 
 	"Friendly Fire Off"
 	{
-		"sv"		" Vänlig skada är av. "
+		"sv"		"Vänlig skada är av."
+	}
+
+	"Friendly Fire Percent"
+	{
+		"sv"		"Vänlig skada är {1}%."
 	}
 
 	"Current Map"
@@ -37,7 +42,7 @@
 
 	"Next Map"
 	{
-		"sv"		"Nästa karta: {1} "
+		"sv"		"Nästa karta: {1}"
 	}
 
 	"Pending Vote"
@@ -47,32 +52,32 @@
 
 	"WinLimitAppend"
 	{
-		"sv"		", eller byt karta efter ett lag vinner en omgång "
+		"sv"		", eller byt karta efter ett lag vinner en omgång"
 	}
 
 	"WinLimit"
 	{
-		"sv"		"Kartan kommer att bytas när ett lag vinner en omgång "
+		"sv"		"Kartan kommer att bytas när ett lag vinner en omgång"
 	}
 
 	"MaxRoundsAppend"
 	{
-		"sv"		", eller byt karta efter en till omgång "
+		"sv"		", eller byt karta efter en till omgång"
 	}
 
 	"MaxRounds"
 	{
-		"sv"		"Kartan kommer att bytas efter nästa omgång "
+		"sv"		"Kartan kommer att bytas efter nästa omgång"
 	}
 
 	"FragLimitAppend"
 	{
-		"sv"		", eller byt karta efter att en spelare når en poäng "
+		"sv"		", eller byt karta efter att en spelare når en poäng"
 	}
 
 	"FragLimit"
 	{
-		"sv"		"Kartan kommer att bytas efter att en spelare når en poäng "
+		"sv"		"Kartan kommer att bytas efter att en spelare når en poäng"
 	}
 
 	"WinLimitAppendPlural"
@@ -82,27 +87,27 @@
 
 	"WinLimitPlural"
 	{
-		"sv"		"Kartan kommer att bytas när ett lag vinner {1} omgångar "
+		"sv"		"Kartan kommer att bytas när ett lag vinner {1} omgångar"
 	}
 
 	"MaxRoundsAppendPlural"
 	{
-		"sv"		", eller byt karta efter {1} mer omgångar "
+		"sv"		", eller byt karta efter {1} mer omgångar"
 	}
 
 	"MaxRoundsPlural"
 	{
-		"sv"		"Kartan kommer att bytas efter {1} omgångar "
+		"sv"		"Kartan kommer att bytas efter {1} omgångar"
 	}
 
 	"FragLimitAppendPlural"
 	{
-		"sv"		", eller byt karta efter att en spelare når {1} poäng "
+		"sv"		", eller byt karta efter att en spelare når {1} poäng"
 	}
 
 	"FragLimitPlural"
 	{
-		"sv"		"Kartan kommer att bytas efter att en spelare når {1} poäng "
+		"sv"		"Kartan kommer att bytas efter att en spelare når {1} poäng"
 	}
 
 }

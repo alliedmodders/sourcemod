@@ -7,12 +7,12 @@
 
 	"No access to cvar"
 	{
-		"sv"		"Du har inte access till denna cvar. "
+		"sv"		"Du har inte access till denna cvar."
 	}
 
 	"Value of cvar"
 	{
-		"sv"		"Värde för cvar \"{1}\": \"{2}\" "
+		"sv"		"Värde för cvar \"{1}\": \"{2}\""
 	}
 
 	"Cvar changed"
@@ -22,12 +22,12 @@
 
 	"Config not found"
 	{
-		"sv"		"Konfigurationsfil \"{1}\" hittades inte. "
+		"sv"		"Konfigurationsfil \"{1}\" hittades inte."
 	}
 
 	"Executed config"
 	{
-		"sv"		"Utförde konfiguration \"{1}\". "
+		"sv"		"Utförde konfiguration \"{1}\"."
 	}
 
 	"Permabanned player"
@@ -42,7 +42,7 @@
 
 	"Banned player"
 	{
-		"sv"		"Bannlyste spelare \"{1}\" i {2} minuter. "
+		"sv"		"Bannlyste spelare \"{1}\" i {2} minuter."
 	}
 
 	"Banned player reason"
@@ -52,7 +52,7 @@
 
 	"Removed bans matching"
 	{
-		"sv"		"Tog bort banlysningar som matchade följande filter: {1}  "
+		"sv"		"Tog bort banlysningar som matchade följande filter: {1}"
 	}
 
 	"Ban added"
@@ -62,7 +62,7 @@
 
 	"Admin cache refreshed"
 	{
-		"sv"		"Admincachen har blivit förnyad. "
+		"sv"		"Admincachen har blivit förnyad."
 	}
 
 	"Identify player"
@@ -82,7 +82,7 @@
 
 	"Admin logged in as"
 	{
-		"sv"		"\"{1}\" är inloggad som \"{2}\" med access: {3} "
+		"sv"		"\"{1}\" är inloggad som \"{2}\" med access: {3}"
 	}
 
 	"Admin logged in anon"
@@ -102,7 +102,7 @@
 
 	"Username"
 	{
-		"sv"		"Användarnamn "
+		"sv"		"Användarnamn"
 	}
 
 	"Kicked target"
@@ -130,4 +130,8 @@
 		"sv"		"Vänligen välj en karta"
 	}
 
+	"Choose Config"
+	{
+		"sv"		"Välj konfiguration"
+	}
 }

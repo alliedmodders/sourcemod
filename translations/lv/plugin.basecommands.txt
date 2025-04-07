@@ -122,12 +122,17 @@
 
 	"Kicked target reason"
 	{
-		"lv"		"Izmeta {1} (Iemesls: {2})  "
+		"lv"		"Izmeta {1} (Iemesls: {2})"
 	}
 
 	"Please select a map"
 	{
 		"lv"		"Lūdzu izvēlies karti"
+	}
+	
+	"Choose Config"
+	{
+		"lv"		"Izvēlies konfigurācijas failu"
 	}
 
 }

@@ -27,7 +27,7 @@
 
 	"Name changed"
 	{
-		"las"		"Un administrador te ha cambiado el nombre"
+		"las"		"Un administrador te cambió el nombre"
 	}
 
 	"Renamed target"

@@ -979,11 +979,14 @@ static cell_t sm_ServerCommandEx(IPluginContext *pContext, const cell_t *params)
 	}
 
 	engine->ServerExecute();
-
-	g_ShouldCatchSpew = true;
-	engine->ServerCommand("sm_conhook_start\n");
-	engine->ServerCommand(buffer);
-	engine->ServerCommand("sm_conhook_stop\n");
+	if (!g_ShouldCatchSpew) {
+		g_ShouldCatchSpew = true;
+		engine->ServerCommand("sm_conhook_start\n");
+		engine->ServerCommand(buffer);
+		engine->ServerCommand("sm_conhook_stop\n");
+	} else {
+		engine->ServerCommand(buffer);
+	}
 
 	engine->ServerExecute();
 

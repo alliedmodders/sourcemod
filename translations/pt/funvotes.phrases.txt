@@ -17,7 +17,7 @@
 
 	"Initiated Vote Alltalk"
 	{
-		"pt"		"Iniciou uma votação para alterar a fala aberta (AllTalk)."
+		"pt"		"Iniciou uma votação para alterar fala aberta (AllTalk)."
 	}
 
 	"Initiated Vote FF"
@@ -82,7 +82,7 @@
 
 	"Alltalk vote"
 	{
-		"pt"		"Votação para alterar a fala aberta (AllTalk)"
+		"pt"		"Votação para alterar fala aberta (AllTalk)"
 	}
 
 	"Slay vote"
@@ -94,5 +94,4 @@
 	{
 		"pt"		"Assassinou '{1}'"
 	}
-
 }

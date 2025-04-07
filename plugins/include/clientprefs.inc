@@ -139,7 +139,7 @@ methodmap Cookie < Handle {
 	// @param value         Integer value to set.
 	// @error               Invalid cookie handle or invalid client index.
 	public void SetInt(int client, int value) {
-		char sValue[11];
+		char sValue[12];
 		IntToString(value, sValue, sizeof(sValue));
 		
 		this.Set(client, sValue);
@@ -173,7 +173,7 @@ methodmap Cookie < Handle {
 	// @error               Invalid cookie handle or invalid client index.
 	public int GetInt(int client, int defaultValue = 0)
 	{
-		char buffer[11];
+		char buffer[12];
 		this.Get(client, buffer, sizeof(buffer));
 
 		int value;

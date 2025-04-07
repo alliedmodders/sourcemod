@@ -37,7 +37,7 @@
 
 	"Permabanned player reason"
 	{
-		"pt"		"Baniu \"{1}\" permanentemente.(motivo: {2})."
+		"pt"		"Baniu \"{1}\" permanentemente. (Motivo: {2})"
 	}
 
 	"Banned player"
@@ -47,7 +47,7 @@
 
 	"Banned player reason"
 	{
-		"pt"		"Baniu \"{1}\" por {2} minuto(s) (motivo: {3})."
+		"pt"		"Baniu \"{1}\" por {2} minuto(s). (Motivo: {3})"
 	}
 
 	"Removed bans matching"
@@ -67,7 +67,7 @@
 
 	"Identify player"
 	{
-		"pt"		"Identificar jogador "
+		"pt"		"Identificar jogador"
 	}
 
 	"Choose Map"
@@ -92,12 +92,12 @@
 
 	"Player is not an admin"
 	{
-		"pt"		"\"{1}\" não é um administrador. "
+		"pt"		"\"{1}\" não é um administrador."
 	}
 
 	"Player is an admin"
 	{
-		"pt"		" \"{1}\" é um administrador. "
+		"pt"		"\"{1}\" é um administrador."
 	}
 
 	"Username"
@@ -112,7 +112,7 @@
 
 	"Admin access"
 	{
-		"pt"		"Acesso administrativo "
+		"pt"		"Acesso administrativo"
 	}
 
 	"Cvar is now protected"
@@ -122,7 +122,7 @@
 
 	"Kicked target reason"
 	{
-		"pt"		"Expulsou {1} (Motivo: {2})"
+		"pt"		"Expulsou {1}. (Motivo: {2})"
 	}
 
 	"Please select a map"
@@ -134,5 +134,4 @@
 	{
 		"pt"		"Escolha a configuração"
 	}
-
 }

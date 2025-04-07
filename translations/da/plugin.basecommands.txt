@@ -130,4 +130,9 @@
 		"da"		"Vælg venligst en bane"
 	}
 
+	"Choose Config"
+	{
+		"da"		"Vælg Konfiguration"
+	}
+
 }

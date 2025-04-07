@@ -65,4 +65,9 @@
 		"fr"		"Sélectionnée"
 	}
 
+	"Map Not In Pool"
+	{
+		"fr"		"La map '{1}' n'est pas dans la liste des nominations."
+	}
+
 }

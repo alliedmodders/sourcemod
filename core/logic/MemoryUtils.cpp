@@ -123,7 +123,7 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 	
 #elif defined PLATFORM_LINUX
 
-#ifdef PLATFORM_X86
+#ifdef KE_ARCH_X86
 	typedef Elf32_Ehdr ElfHeader;
 	typedef Elf32_Shdr ElfSHeader;
 	typedef Elf32_Sym ElfSymbol;
@@ -272,7 +272,7 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 
 #elif defined PLATFORM_APPLE
 
-#ifdef PLATFORM_X86
+#ifdef KE_ARCH_X86
 	typedef struct mach_header MachHeader;
 	typedef struct segment_command MachSegment;
 	typedef struct nlist MachSymbol;
@@ -451,7 +451,7 @@ const DynLibInfo *MemoryUtils::GetLibraryInfo(const void *libPtr)
 
 #ifdef PLATFORM_WINDOWS
 
-#ifdef PLATFORM_X86
+#ifdef KE_ARCH_X86
 	const WORD PE_FILE_MACHINE = IMAGE_FILE_MACHINE_I386;
 	const WORD PE_NT_OPTIONAL_HDR_MAGIC = IMAGE_NT_OPTIONAL_HDR32_MAGIC;
 #else
@@ -501,7 +501,7 @@ const DynLibInfo *MemoryUtils::GetLibraryInfo(const void *libPtr)
 
 #elif defined PLATFORM_LINUX
 
-#ifdef PLATFORM_X86
+#ifdef KE_ARCH_X86
 	typedef Elf32_Ehdr ElfHeader;
 	typedef Elf32_Phdr ElfPHeader;
 	const unsigned char ELF_CLASS = ELFCLASS32;
@@ -586,7 +586,7 @@ const DynLibInfo *MemoryUtils::GetLibraryInfo(const void *libPtr)
 
 #elif defined PLATFORM_APPLE
 
-#ifdef PLATFORM_X86
+#ifdef KE_ARCH_X86
 	typedef struct mach_header MachHeader;
 	typedef struct segment_command MachSegment;
 	const uint32_t MACH_MAGIC = MH_MAGIC;

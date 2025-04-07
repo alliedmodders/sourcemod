@@ -1,0 +1,185 @@
+"Games"
+{
+	"hl1mp"
+	{
+		"Offsets"
+		{
+			"EntityListeners"
+			{
+				"windows"	"131108"
+				"windows64"	"262200"
+				"linux"		"131108"
+				"linux64"	"262200"
+			}
+			"Blocked"
+			{
+				"windows"	"104"
+				"windows64"	"104"
+				"linux"		"105"
+				"linux64"	"105"
+			}
+			"EndTouch"
+			{
+				"windows"	"102"
+				"windows64"	"102"
+				"linux"		"103"
+				"linux64"	"103"
+			}
+			"FireBullets"
+			{
+				"windows"	"114"
+				"windows64"	"114"
+				"linux"		"115"
+				"linux64"	"115"
+			}
+			"GetMaxHealth"
+			{
+				"windows"	"119"
+				"windows64"	"119"
+				"linux"		"120"
+				"linux64"	"120"
+			}
+			"GroundEntChanged"
+			{
+				"windows"	"180"
+				"windows64"	"180"
+				"linux"		"182"
+				"linux64"	"182"
+			}
+			"OnTakeDamage"
+			{
+				"windows"	"64"
+				"windows64"	"64"
+				"linux"		"65"
+				"linux64"	"65"
+			}
+			"OnTakeDamage_Alive"
+			{
+				"windows"	"278"
+				"windows64"	"278"
+				"linux"		"279"
+				"linux64"	"279"
+			}
+			"PreThink"
+			{
+				"windows"	"338"
+				"windows64"	"338"
+				"linux"		"339"
+				"linux64"	"339"
+			}
+			"PostThink"
+			{
+				"windows"	"339"
+				"windows64"	"339"
+				"linux"		"340"
+				"linux64"	"340"
+			}
+			/* CBaseCombatWeapon::Reload */
+			"Reload"
+			{
+				"windows"	"276"
+				"windows64"	"276"
+				"linux"		"277"
+				"linux64"	"277"
+			}
+			"SetTransmit"
+			{
+				"windows"	"22"
+				"windows64"	"22"
+				"linux"		"23"
+				"linux64"	"23"
+			}
+			"ShouldCollide"
+			{
+				"windows"	"17"
+				"windows64"	"17"
+				"linux"		"16"
+				"linux64"	"16"
+			}
+			"Spawn"
+			{
+				"windows"	"24"
+				"windows64"	"24"
+				"linux"		"25"
+				"linux64"	"25"
+			}
+			"StartTouch"
+			{
+				"windows"	"100"
+				"windows64"	"100"
+				"linux"		"101"
+				"linux64"	"101"
+			}
+			"Think"
+			{
+				"windows"	"49"
+				"windows64"	"49"
+				"linux"		"50"
+				"linux64"	"50"
+			}
+			"Touch"
+			{
+				"windows"	"101"
+				"windows64"	"101"
+				"linux"		"102"
+				"linux64"	"102"
+			}
+			"TraceAttack"
+			{
+				"windows"	"62"
+				"windows64"	"62"
+				"linux"		"63"
+				"linux64"	"63"
+			}
+			"Use"
+			{
+				"windows"	"99"
+				"windows64"	"99"
+				"linux"		"100"
+				"linux64"	"100"
+			}
+			"VPhysicsUpdate"
+			{
+				"windows"	"160"
+				"windows64"	"160"
+				"linux"		"161"
+				"linux64"	"161"
+			}
+			"Weapon_CanSwitchTo"
+			{
+				"windows"	"272"
+				"windows64"	"272"
+				"linux"		"273"
+				"linux64"	"273"
+			}
+			"Weapon_CanUse"
+			{
+				"windows"	"266"
+				"windows64"	"266"
+				"linux"		"267"
+				"linux64"	"267"
+			}
+			"Weapon_Drop"
+			{
+				"windows"	"269"
+				"windows64"	"269"
+				"linux"		"270"
+				"linux64"	"270"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"267"
+				"windows64"	"267"
+				"linux"		"268"
+				"linux64"	"268"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"270"
+				"windows64"	"270"
+				"linux"		"271"
+				"linux64"	"271"
+			}
+		}
+	}
+}

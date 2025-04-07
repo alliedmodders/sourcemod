@@ -27,7 +27,7 @@
 
 	"Unmuted target"
 	{
-		"pt"		" Desemudeceu {1}"
+		"pt"		"Desemudeceu {1}"
 	}
 
 	"Silenced target"
@@ -69,5 +69,4 @@
 	{
 		"pt"		"Desilenciar jogador"
 	}
-
 }

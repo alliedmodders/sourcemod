@@ -20,13 +20,15 @@
 			"gEntList"
 			{
 				"windows"	"11"
+				"windows64"	"81"
 			}
 
 			"EntInfo"
 			{
 				"windows"	"4"	
+				"windows64"	"8"	
 				"linux"		"4"
-				"mac"		"4"
+				"linux64"	"8"
 			}
 		}
 		
@@ -34,14 +36,21 @@
 		{
 			"LevelShutdown"
 			{
+				/* not confirmed to be : CServerGameDLL:: LevelShutdown */
+				/* This comment is for 64xBit */
+				/* if you know the exact level shutdown function, please comment.*/
+				/* String : "VDebugOverlay003" -> one call up.*/
+				/* it only needs to know when the server shuts down, not the absolute correct signature.*/
+				/* incase it needs the exact function, please notify.*/
 				"library"	"server"
 				"windows"	"\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8"
+				"windows64"	"\x40\x53\x48\x83\xEC\x20\xE8\x2A\x2A\x2A\x2A\x48\x8B\x05\x1E\x04\x9E\x00"
 			}
 			"gEntList"
 			{
 				"library"	"server"
 				"linux"		"@gEntList"
-				"mac"		"@gEntList"
+				"linux64"	"@gEntList"
 			}
 		}
 		

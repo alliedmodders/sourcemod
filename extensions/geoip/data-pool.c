@@ -1,11 +1,13 @@
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #include "data-pool.h"
 #include "maxminddb.h"
 
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdlib.h>
-
-static bool can_multiply(size_t const, size_t const, size_t const);
 
 // Allocate an MMDB_data_pool_s. It initially has space for size
 // MMDB_entry_data_list_s structs.
@@ -39,7 +41,7 @@ MMDB_data_pool_s *data_pool_new(size_t const size) {
 // the given max. max will typically be SIZE_MAX.
 //
 // We want to know if we'll wrap around.
-static bool can_multiply(size_t const max, size_t const m, size_t const n) {
+bool can_multiply(size_t const max, size_t const m, size_t const n) {
     if (m == 0) {
         return false;
     }

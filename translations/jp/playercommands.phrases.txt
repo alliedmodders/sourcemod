@@ -32,12 +32,11 @@
 
 	"Renamed target"
 	{
-		"jp"		"リネーム対象"
+		"jp"		"{1}をリネームしました。"
 	}
 
 	"Rename player"
 	{
 		"jp"		"プレイヤーをリネーム"
 	}
-
 }

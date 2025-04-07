@@ -22,7 +22,7 @@
 
 	"Already Voted"
 	{
-		"jp"		"すでにRock the Voteに投票しています。"
+		"jp"		"すでにRock the Voteに投票しています。({1}投票、残り{2}必要)"
 	}
 
 	"Minimal Players Not Met"

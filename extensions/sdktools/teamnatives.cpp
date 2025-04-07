@@ -39,7 +39,7 @@ struct TeamInfo
 	CBaseEntity *pEnt;
 };
 
-const char *m_iScore;
+char m_iScore[64] = { 0 };
 
 SourceHook::CVector<TeamInfo> g_Teams;
 
@@ -50,19 +50,20 @@ void InitTeamNatives()
 
 	int edictCount = gpGlobals->maxEntities;
 
-	for (int i=0; i<edictCount; i++)
+	for (int i = 0; i < edictCount; i++)
 	{
-		edict_t *pEdict = PEntityOfEntIndex(i);
-		if (!pEdict || pEdict->IsFree())
-		{
-			continue;
-		}
-		if (!pEdict->GetNetworkable())
+		CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(i);
+		if (pEntity == nullptr)
 		{
 			continue;
 		}
 
-		ServerClass *pClass = pEdict->GetNetworkable()->GetServerClass();
+		ServerClass *pClass = gamehelpers->FindEntityServerClass(pEntity);
+		if (pClass == nullptr)
+		{
+			continue;
+		}
+		
 		if (FindNestedDataTable(pClass->m_pTable, "DT_Team"))
 		{
 			SendProp *pTeamNumProp = g_pGameHelpers->FindInSendTable(pClass->GetName(), "m_iTeamNum");
@@ -70,15 +71,14 @@ void InitTeamNatives()
 			if (pTeamNumProp != NULL)
 			{
 				int offset = pTeamNumProp->GetOffset();
-				CBaseEntity *pEnt = pEdict->GetUnknown()->GetBaseEntity();
-				int TeamIndex = *(int *)((unsigned char *)pEnt + offset);
+				int TeamIndex = *(int *)((unsigned char *)pEntity + offset);
 
 				if (TeamIndex >= (int)g_Teams.size())
 				{
 					g_Teams.resize(TeamIndex+1);
 				}
 				g_Teams[TeamIndex].ClassName = pClass->GetName();
-				g_Teams[TeamIndex].pEnt = pEnt;
+				g_Teams[TeamIndex].pEnt = pEntity;
 			}
 		}
 	}
@@ -137,13 +137,15 @@ static cell_t GetTeamScore(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Team index %d is invalid", teamindex);
 	}
 
-	if (!m_iScore)
+	if (!m_iScore[0])
 	{
-		m_iScore = g_pGameConf->GetKeyValue("m_iScore");
-		if (!m_iScore)
+		auto key = g_pGameConf->GetKeyValue("m_iScore");
+		if (!key || !key[0])
 		{
 			return pContext->ThrowNativeError("Failed to get m_iScore key");
 		}
+		strncpy(m_iScore, key, sizeof(m_iScore));
+		m_iScore[sizeof(m_iScore) - 1] = '\0';
 	}
 
 	static int offset = -1;
@@ -175,13 +177,15 @@ static cell_t SetTeamScore(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Team index %d is invalid", teamindex);
 	}
 
-	if (m_iScore == NULL)
+	if (!m_iScore[0])
 	{
-		m_iScore = g_pGameConf->GetKeyValue("m_iScore");
-		if (m_iScore == NULL)
+		auto key = g_pGameConf->GetKeyValue("m_iScore");
+		if (!key || !key[0])
 		{
 			return pContext->ThrowNativeError("Failed to get m_iScore key");
 		}
+		strncpy(m_iScore, key, sizeof(m_iScore));
+		m_iScore[sizeof(m_iScore) - 1] = '\0';
 	}
 
 	static int offset = -1;

@@ -351,6 +351,13 @@ namespace SourceMod
 		 * @return				64-bit server Steam id.
 		 */
 		virtual uint64_t GetServerSteamId64() const =0;
+    
+		/**
+		 * @brief Finds a given entity's server class.
+		 *
+		 * @return				ServerClass pointer on success, nullptr on failure.
+		 */
+		virtual ServerClass *FindEntityServerClass(CBaseEntity *pEntity) = 0;
 
 		/**
 		 * @brief Clears all, or removes a single datamap from the DataTable cache.

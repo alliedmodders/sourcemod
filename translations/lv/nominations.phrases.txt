@@ -42,7 +42,7 @@
 
 	"Can't Nominate Current Map"
 	{
-		"lv"		"Tevis izvēlētā karte ir patreizējā karte un nevar būt nominēta"
+		"lv"		"Tevis izvēlētā karte šobrīd tiek spēlēta un nevar būt nominēta"
 	}
 
 	"Map in Exclude List"
@@ -63,6 +63,11 @@
 	"Nominated"
 	{
 		"lv"		"Nominēja"
+	}
+	
+	"Map Not In Pool"
+	{
+		"lv"			"Karte '{1}' nav pieejama nomināciju sarakstā."
 	}
 
 }

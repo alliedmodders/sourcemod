@@ -1,0 +1,116 @@
+
+"Games"
+{
+	/* GMod 9.0.4b */
+	"gmod9"
+	{
+		"Offsets"
+		{
+			"EndTouch"
+			{
+				"windows"	"86"
+				"linux"		"87"
+			}
+			"FireBullets"
+			{
+				"windows"	"96"
+				"linux"		"97"
+			}
+			"GroundEntChanged"
+			{
+				"windows"	"149"
+				"linux"		"150"
+			}
+			"OnTakeDamage"
+			{
+				"windows"	"56"
+				"linux"		"57"
+			}
+			"PreThink"
+			{
+				"windows"	"250"
+				"linux"		"251"
+			}
+			"PostThink"
+			{
+				"windows"	"251"
+				"linux"		"252"
+			}
+			"Reload"
+			{
+				"windows"	"217"
+				"linux"		"218"
+			}
+			"SetTransmit"
+			{
+				"windows"	"23"
+				"linux"		"24"
+			}
+			"ShouldCollide"
+			{
+				"windows"	"19"
+				"linux"		"20"
+			}
+			"Spawn"
+			{
+				"windows"	"25"
+				"linux"		"26"
+			}
+			"StartTouch"
+			{
+				"windows"	"84"
+				"linux"		"85"
+			}
+			"Think"
+			{
+				"windows"	"47"
+				"linux"		"48"
+			}
+			"Touch"
+			{
+				"windows"	"91"
+				"linux"		"92"
+			}
+			"TraceAttack"
+			{
+				"windows"	"55"
+				"linux"		"56"
+			}
+			"Use"
+			{
+				"windows"	"83"
+				"linux"		"84"
+			}
+			"VPhysicsUpdate"
+			{
+				"windows"	"133"
+				"linux"		"134"
+			}
+			"Weapon_CanSwitchTo"
+			{
+				"windows"	"208"
+				"linux"		"209"
+			}
+			"Weapon_CanUse"
+			{
+				"windows"	"202"
+				"linux"		"203"
+			}
+			"Weapon_Drop"
+			{
+				"windows"	"205"
+				"linux"		"206"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"203"
+				"linux"		"204"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"206"
+				"linux"		"207"
+			}
+		}
+	}
+}

@@ -7,7 +7,7 @@
 
 	"Nextmap Voting Started"
 	{
-		"las"		"La votación para el siguiente mapa ha comenzado."
+		"las"		"La votación para el próximo mapa comenzó."
 	}
 
 	"Nextmap Voting Finished"
@@ -17,12 +17,12 @@
 
 	"Current Map Extended"
 	{
-		"las"		"El mapa actual ha sido extendido. (Obtenidos {1}%% de {2} votos)"
+		"las"		"El mapa actual fue extendido. (Obtenidos {1}%% de {2} votos)"
 	}
 
 	"Extend Map"
 	{
-		"las"		"Extender el Mapa Actual"
+		"las"		"Extender el mapa actual"
 	}
 
 	"Dont Change"
@@ -32,7 +32,7 @@
 
 	"Current Map Stays"
 	{
-		"las"		"¡El mapa actual continúa! ¡El voto ha decidido! (Obtenidos {1}%% de {2} votos)"
+		"las"		"¡El mapa actual continuará! (Obtenidos {1}%% de {2} votos)"
 	}
 
 	"Changed Next Map"
@@ -42,7 +42,7 @@
 
 	"Starting Runoff"
 	{
-		"las"		"No hay ningún mapa que superase el {1}%% de los votos ({2} [{3}%%] & {4} [{5}%%]), comenzando segunda votación"
+		"las"		"Ningún mapa superó el {1}%% de los votos ({2} [{3}%%] & {4} [{5}%%]), comenzando segunda votación"
 	}
 
 }

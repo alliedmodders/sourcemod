@@ -82,7 +82,7 @@
 
 	"Unable to find cvar"
 	{
-		"las"		"No se encontrá cvar: {1}"
+		"las"		"No se encontró la cvar: {1}"
 	}
 
 	"No access to cvar"
@@ -102,7 +102,7 @@
 
 	"Config not found"
 	{
-		"las"		"Fichero de configuración \"{1}\" no encontrado."
+		"las"		"Archivo de configuración \"{1}\" no encontrado."
 	}
 
 	"Executed config"
@@ -112,7 +112,7 @@
 
 	"Admin cache refreshed"
 	{
-		"las"		"La caché de admins ha sido actualizada."
+		"las"		"La caché de admins se actualizó."
 	}
 
 	"Invalid Amount"
@@ -132,12 +132,12 @@
 
 	"Vote in Progress"
 	{
-		"las"		"Ya hay una votación en progreso."
+		"las"		"Ya hay una votación en curso."
 	}
 
 	"Vote Not In Progress"
 	{
-		"las"		"No hay ninguna votación en progreso en este momento."
+		"las"		"No hay ninguna votación en curso en este momento."
 	}
 
 	"Cancelled Vote"
@@ -172,12 +172,12 @@
 
 	"Could not connect to database"
 	{
-		"las"		"Imposible conectar a la base de datos."
+		"las"		"No se pudo conectar a la base de datos"
 	}
 
 	"Failed to query database"
 	{
-		"las"		"Fallo al consultar la base de datos."
+		"las"		"Ocurrió un error al consultar a la base de datos."
 	}
 
 	"Invalid SteamID specified"

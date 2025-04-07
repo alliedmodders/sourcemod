@@ -19,6 +19,11 @@
 	{
 		"lv"		"Draudzīgā uguns ir atslēgta."
 	}
+	
+	"Friendly Fire Percent"
+	{
+		"lv"		"Draudzīgas uguns iespējamība {1}%."
+	}
 
 	"Current Map"
 	{

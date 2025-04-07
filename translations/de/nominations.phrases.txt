@@ -65,4 +65,9 @@
 		"de"		"Nominiert"
 	}
 
+	"Map Not In Pool"
+	{
+		"de"		"Karte '{1}' steht nicht zur Wahl."
+	}
+
 }

@@ -39,6 +39,10 @@
 #include <registers.h>
 #include <vector>
 
+#ifdef KE_ARCH_X64
+#include "sh_asm_x86_64.h"
+#endif
+
 enum CallingConvention
 {
 	CallConv_CDECL,
@@ -163,11 +167,20 @@ public:
 class DHooksCallback : public SourceHook::ISHDelegate, public DHooksInfo
 {
 public:
+	DHooksCallback()
+	{
+		//g_pSM->LogMessage(myself, "DHooksCallback(%p)", this);
+	}
+
     virtual bool IsEqual(ISHDelegate *pOtherDeleg){return false;};
     virtual void DeleteThis()
 	{
 		*(void ***)this = this->oldvtable;
+#ifdef KE_ARCH_X64
+		delete callThunk;
+#else
 		g_pSM->GetScriptingEngine()->FreePageMemory(this->newvtable[2]);
+#endif
 		delete this->newvtable;
 		delete this;
 	};
@@ -175,9 +188,12 @@ public:
 public:
 	void **newvtable;
 	void **oldvtable;
+#ifdef KE_ARCH_X64
+	SourceHook::Asm::x64JitWriter* callThunk;
+#endif
 };
 
-#ifdef  WIN32
+#if defined( WIN32 ) && !defined( KE_ARCH_X64 )
 void *Callback(DHooksCallback *dg, void **stack, size_t *argsizep);
 float Callback_float(DHooksCallback *dg, void **stack, size_t *argsizep);
 SDKVector *Callback_vector(DHooksCallback *dg, void **stack, size_t *argsizep);
@@ -192,20 +208,6 @@ bool SetupHookManager(ISmmAPI *ismm);
 void CleanupHooks(IPluginContext *pContext = NULL);
 size_t GetParamTypeSize(HookParamType type);
 SourceHook::PassInfo::PassType GetParamTypePassType(HookParamType type);
-void *GenerateThunk(ReturnType type);
-
-static DHooksCallback *MakeHandler(ReturnType type)
-{
-	DHooksCallback *dg = new DHooksCallback();
-	dg->returnType = type;
-	dg->oldvtable = *(void ***)dg;
-	dg->newvtable = new void *[3];
-	dg->newvtable[0] = dg->oldvtable[0];
-	dg->newvtable[1] = dg->oldvtable[1];
-	dg->newvtable[2] = GenerateThunk(type);
-	*(void ***)dg = dg->newvtable;
-	return dg;
-}
 
 class HookParamsStruct
 {
@@ -275,6 +277,37 @@ public:
 	IPluginFunction *callback;
 	HookMethod hookMethod;
 };
+
+#ifdef KE_ARCH_X64
+SourceHook::Asm::x64JitWriter* GenerateThunk(HookSetup* type);
+static DHooksCallback *MakeHandler(HookSetup* hook)
+{
+	DHooksCallback *dg = new DHooksCallback();
+	dg->returnType = hook->returnType;
+	dg->oldvtable = *(void ***)dg;
+	dg->newvtable = new void *[3];
+	dg->newvtable[0] = dg->oldvtable[0];
+	dg->newvtable[1] = dg->oldvtable[1];
+	dg->callThunk = GenerateThunk(hook);
+	dg->newvtable[2] = dg->callThunk->GetData();
+	*(void ***)dg = dg->newvtable;
+	return dg;
+}
+#else
+void *GenerateThunk(HookSetup* type);
+static DHooksCallback *MakeHandler(HookSetup* hook)
+{
+	DHooksCallback *dg = new DHooksCallback();
+	dg->returnType = hook->returnType;
+	dg->oldvtable = *(void ***)dg;
+	dg->newvtable = new void *[3];
+	dg->newvtable[0] = dg->oldvtable[0];
+	dg->newvtable[1] = dg->oldvtable[1];
+	dg->newvtable[2] = GenerateThunk(hook);
+	*(void ***)dg = dg->newvtable;
+	return dg;
+}
+#endif
 
 class DHooksManager
 {

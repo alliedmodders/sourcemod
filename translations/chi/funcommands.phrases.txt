@@ -132,7 +132,7 @@
 
 	"Toggled noclip on target"
 	{
-		"chi"		"触发{1}的穿墙模式"
+		"chi"		"触发 {1} 的穿墙模式"
 	}
 
 	"Toggled drug on target"
@@ -162,7 +162,7 @@
 
 	"You will be unfrozen"
 	{
-		"chi"		"您将被解冻."
+		"chi"		"您将在 {1} 秒后被解冻."
 	}
 
 }
