@@ -32,6 +32,7 @@
 #ifndef _INCLUDE_SOURCEMOD_DETOURS_H_
 #define _INCLUDE_SOURCEMOD_DETOURS_H_
 
+#define SAFETYHOOK_SHARED_LIB true
 #include "safetyhook.hpp"
 #include <smsdk_ext.h>
 
