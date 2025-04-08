@@ -689,7 +689,7 @@ void CDynamicHooksSourcePawn::UpdateParamsFromStruct(HookParamsStruct *params)
 	// Values of arguments stored in registers are saved after the stack arguments.
 	size_t registerOffset = stackSize;
 	size_t offset;
-	for (size_t i = 0; i < numArgs; i++)
+	for (size_t i = firstArg; i < numArgs; i++)
 	{
 		size_t size = argTypes[i].size;
 		// Only have to copy something if the plugin changed this parameter.
@@ -699,7 +699,7 @@ void CDynamicHooksSourcePawn::UpdateParamsFromStruct(HookParamsStruct *params)
 			offset = argTypes[i].custom_register == None ? stackOffset : registerOffset;
 
 			void *paramAddr = (void *)((intptr_t)params->newParams + offset);
-			void *stackAddr = callingConvention->GetArgumentPtr(i + firstArg, m_pDetour->m_pRegisters);
+			void *stackAddr = callingConvention->GetArgumentPtr(i, m_pDetour->m_pRegisters);
 			memcpy(stackAddr, paramAddr, size);
 		}
 
