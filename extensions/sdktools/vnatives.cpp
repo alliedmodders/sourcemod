@@ -378,6 +378,23 @@ static cell_t IgniteEntity(IPluginContext *pContext, const cell_t *params)
 				return pContext->ThrowNativeError("\"Ignite\" wrapper failed to initialize");
 			}
 		}
+		else if (!strcmp(g_pSM->GetGameFolderName(), "synergy"))
+		{
+			ValvePassInfo pass[5];
+			InitPass(pass[0], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
+			InitPass(pass[1], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+			InitPass(pass[2], Valve_Float, PassType_Float, PASSFLAG_BYVAL);
+			InitPass(pass[3], Valve_Bool, PassType_Basic, PASSFLAG_BYVAL);
+			InitPass(pass[4], Valve_CBaseEntity, PassType_Basic, PASSFLAG_BYVAL);
+			if (!CreateBaseCall("Ignite", ValveCall_Entity, NULL, pass, 5, &pCall))
+			{
+				return pContext->ThrowNativeError("\"Ignite\" not supported by this mod");
+			}
+			else if (!pCall)
+			{
+				return pContext->ThrowNativeError("\"Ignite\" wrapper failed to initialize");
+			}
+		}
 		else
 #endif // SDK2013
 		{
@@ -421,6 +438,10 @@ static cell_t IgniteEntity(IPluginContext *pContext, const cell_t *params)
 	{
 		*(int *) (vptr + pCall->vparams[4].offset) = 0;
 		*(int *) (vptr + pCall->vparams[5].offset) = 0;
+	}
+	else if (!strcmp(g_pSM->GetGameFolderName(), "synergy"))
+	{
+		*(CBaseEntity **) (vptr + pCall->vparams[4].offset) = nullptr; // pAttacker
 	}
 #elif SOURCE_ENGINE == SE_MCV
 	*(CBaseEntity **) (vptr + pCall->vparams[4].offset) = nullptr; // pAttacker
