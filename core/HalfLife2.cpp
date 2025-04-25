@@ -1102,7 +1102,7 @@ int CHalfLife2::ReferenceToIndex(cell_t entRef)
 
 		CEntInfo *pInfo = LookupEntity(hndl.GetEntryIndex());
 
-		if (pInfo->m_SerialNumber != hndl.GetSerialNumber())
+		if (!pInfo || pInfo->m_SerialNumber != hndl.GetSerialNumber())
 		{
 			return INVALID_EHANDLE_INDEX;
 		}
