@@ -162,10 +162,10 @@
 		{
 			"ForceRespawn"
 			{
-				"windows"	"336"
-				"windows64"	"336"
-				"linux"		"337"
-				"linux64"	"337"
+				"windows"	"337"
+				"windows64"	"337"
+				"linux"		"338"
+				"linux64"	"338"
 			}
 			"CalcIsAttackCriticalHelper"
 			{
@@ -193,10 +193,10 @@
 
 			"RemoveWearable"
 			{
-				"windows"	"439"
-				"windows64"	"439"
-				"linux"		"440"
-				"linux64"	"440"
+				"windows"	"440"
+				"windows64"	"440"
+				"linux"		"441"
+				"linux64"	"441"
 			}
 		}
 	}
