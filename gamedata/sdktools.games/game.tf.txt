@@ -33,7 +33,7 @@
 			"RemovePlayerItem"
 			{
 				"windows"	"281"
-				"windows64"	"282"
+				"windows64"	"281"
 				"linux"		"282"
 				"linux64"	"282"
 			}
