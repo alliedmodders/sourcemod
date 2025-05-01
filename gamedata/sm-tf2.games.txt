@@ -160,6 +160,7 @@
 		}
 		"Offsets"
 		{
+			// CBasePlayer
 			"ForceRespawn"
 			{
 				"windows"	"337"
@@ -167,19 +168,28 @@
 				"linux"		"338"
 				"linux64"	"338"
 			}
+			"RemoveWearable"
+			{
+				"windows"	"440"
+				"windows64"	"440"
+				"linux"		"441"
+				"linux64"	"441"
+			}
+
+			// CTFWeaponBase
 			"CalcIsAttackCriticalHelper"
 			{
-				"windows"	"398"
-				"windows64"	"398"
-				"linux"		"405"
-				"linux64"	"405"
+				"windows"	"400"
+				"windows64"	"400"
+				"linux"		"407"
+				"linux64"	"407"
 			}
 			"CalcIsAttackCriticalHelperNoCrits"
 			{
-				"windows"	"399"
-				"windows64"	"399"
-				"linux"		"406"
-				"linux64"	"406"
+				"windows"	"401"
+				"windows64"	"401"
+				"linux"		"408"
+				"linux64"	"408"
 			}
 			
 			// CTFGameRules::IsHolidayActive
@@ -189,14 +199,6 @@
 				"windows64"	"139"
 				"linux"		"140"
 				"linux64"	"140"
-			}
-
-			"RemoveWearable"
-			{
-				"windows"	"440"
-				"windows64"	"440"
-				"linux"		"441"
-				"linux64"	"441"
 			}
 		}
 	}
