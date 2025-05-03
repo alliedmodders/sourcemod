@@ -39,6 +39,8 @@
 #include <bridge/include/CoreProvider.h>
 #include <bridge/include/IVEngineServerBridge.h>
 
+static constexpr unsigned MAX_CONSOLE_LENGTH = 1024; // paired to MAX_CONSOLE_LENGTH in console.inc
+
 static cell_t CheckCommandAccess(IPluginContext *pContext, const cell_t *params)
 {
 	if (params[1] == 0)
@@ -88,7 +90,7 @@ static cell_t CheckAccess(IPluginContext *pContext, const cell_t *params)
 
 static cell_t sm_PrintToServer(IPluginContext *pCtx, const cell_t *params)
 {
-	char buffer[1024];
+	char buffer[MAX_CONSOLE_LENGTH];
 	char *fmt;
 	int arg = 2;
 
@@ -129,7 +131,7 @@ static cell_t sm_PrintToConsole(IPluginContext *pCtx, const cell_t *params)
 
 	g_pSM->SetGlobalTarget(index);
 
-	char buffer[1024];
+	char buffer[MAX_CONSOLE_LENGTH];
 	char *fmt;
 	int arg = 3;
 
@@ -154,7 +156,7 @@ static cell_t sm_ServerCommand(IPluginContext *pContext, const cell_t *params)
 {
 	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 
-	char buffer[1024];
+	char buffer[MAX_CONSOLE_LENGTH];
 	size_t len;
 	{
 		DetectExceptions eh(pContext);
@@ -176,7 +178,7 @@ static cell_t sm_InsertServerCommand(IPluginContext *pContext, const cell_t *par
 {
 	g_pSM->SetGlobalTarget(SOURCEMOD_SERVER_LANGUAGE);
 
-	char buffer[1024];
+	char buffer[MAX_CONSOLE_LENGTH];
 	size_t len;
 	{
 		DetectExceptions eh(pContext);
@@ -265,7 +267,7 @@ static cell_t ReplyToCommand(IPluginContext *pContext, const cell_t *params)
 	g_pSM->SetGlobalTarget(params[1]);
 
 	/* Build the format string */
-	char buffer[1024];
+	char buffer[MAX_CONSOLE_LENGTH];
 	size_t len;
 	{
 		DetectExceptions eh(pContext);
@@ -338,19 +340,19 @@ static cell_t RemoveServerTag(IPluginContext *pContext, const cell_t *params)
 
 REGISTER_NATIVES(consoleNatives)
 {
-	{"CheckCommandAccess",	CheckCommandAccess},
-	{"CheckAccess",			CheckAccess},
-	{"PrintToServer",		sm_PrintToServer},
-	{"PrintToConsole",		sm_PrintToConsole},
-	{"ServerCommand",		sm_ServerCommand},
-	{"InsertServerCommand",	sm_InsertServerCommand},
-	{"ServerExecute",		sm_ServerExecute},
-	{"ClientCommand",		sm_ClientCommand},
-	{"FakeClientCommand",	FakeClientCommand},
-	{"ReplyToCommand",		ReplyToCommand},
-	{"GetCmdReplySource",	GetCmdReplyTarget},
-	{"SetCmdReplySource",	SetCmdReplyTarget},
-	{"AddServerTag",		AddServerTag},
-	{"RemoveServerTag",		RemoveServerTag},
-	{NULL,					NULL}
+	{"CheckCommandAccess",  CheckCommandAccess},
+	{"CheckAccess",         CheckAccess},
+	{"PrintToServer",       sm_PrintToServer},
+	{"PrintToConsole",      sm_PrintToConsole},
+	{"ServerCommand",       sm_ServerCommand},
+	{"InsertServerCommand", sm_InsertServerCommand},
+	{"ServerExecute",       sm_ServerExecute},
+	{"ClientCommand",       sm_ClientCommand},
+	{"FakeClientCommand",   FakeClientCommand},
+	{"ReplyToCommand",      ReplyToCommand},
+	{"GetCmdReplySource",   GetCmdReplyTarget},
+	{"SetCmdReplySource",   SetCmdReplyTarget},
+	{"AddServerTag",        AddServerTag},
+	{"RemoveServerTag",     RemoveServerTag},
+	{NULL,                  NULL}
 };
