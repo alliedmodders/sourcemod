@@ -179,17 +179,17 @@
 			// CTFWeaponBase
 			"CalcIsAttackCriticalHelper"
 			{
-				"windows"	"400"
-				"windows64"	"400"
-				"linux"		"407"
-				"linux64"	"407"
-			}
-			"CalcIsAttackCriticalHelperNoCrits"
-			{
 				"windows"	"401"
 				"windows64"	"401"
 				"linux"		"408"
 				"linux64"	"408"
+			}
+			"CalcIsAttackCriticalHelperNoCrits"
+			{
+				"windows"	"402"
+				"windows64"	"402"
+				"linux"		"409"
+				"linux64"	"409"
 			}
 			
 			// CTFGameRules::IsHolidayActive
