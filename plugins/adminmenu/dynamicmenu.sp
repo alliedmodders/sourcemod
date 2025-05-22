@@ -584,14 +584,22 @@ public void ParamCheck(int client)
 		char unquotedCommand[CMD_LENGTH];
 		UnQuoteString(g_command[client], unquotedCommand, sizeof(unquotedCommand), "#@");
 		
-		if (outputItem.execute == Execute_Player) // assume 'player' type execute option
+		// Use commands directly without unnecessary unquoting
+		char commands[10][CMD_LENGTH];
+		int count = ExplodeString(g_command[client], ";", commands, sizeof(commands), sizeof(commands[]));
+
+		for (int i = 0; i < count; i++)
 		{
-			FakeClientCommand(client, unquotedCommand);
-		}
-		else // assume 'server' type execute option
-		{
-			InsertServerCommand(unquotedCommand);
-			ServerExecute();
+			TrimString(commands[i]);
+			if (outputItem.execute == Execute_Player) // assume 'player' type execute option
+			{
+				FakeClientCommand(client, commands[i]);
+			}
+			else // assume 'server' type execute option
+			{
+				InsertServerCommand(commands[i]);
+				ServerExecute();
+			}
 		}
 
 		g_command[client][0] = '\0';
