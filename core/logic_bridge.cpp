@@ -676,6 +676,19 @@ void CoreProviderImpl::InitializeBridge()
 bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)
 {
 	char file[PLATFORM_MAX_PATH];
+	char myerror[255];
+
+	/* Load safetyhook first. The core & extensions might depend on it */
+	g_SMAPI->PathFormat(file,
+		sizeof(file),
+		"%s/bin/" PLATFORM_ARCH_FOLDER "safetyhook." PLATFORM_LIB_EXT,
+		g_SourceMod.GetSourceModPath());
+
+	safetyhook_ = ke::SharedLib::Open(file, myerror, sizeof(myerror));
+	if (!safetyhook_) {
+		ke::SafeSprintf(error, maxlength, "failed to load %s: %s", file, myerror);
+		return false;
+	}
 
 	/* Now it's time to load the logic binary */
 	g_SMAPI->PathFormat(file,
@@ -683,7 +696,6 @@ bool CoreProviderImpl::LoadBridge(char *error, size_t maxlength)
 		"%s/bin/" PLATFORM_ARCH_FOLDER "sourcemod.logic." PLATFORM_LIB_EXT,
 		g_SourceMod.GetSourceModPath());
 
-	char myerror[255];
 	logic_ = ke::SharedLib::Open(file, myerror, sizeof(myerror));
 	if (!logic_) {
 		ke::SafeSprintf(error, maxlength, "failed to load %s: %s", file, myerror);
