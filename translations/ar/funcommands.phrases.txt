@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"ar"		"أحرق اللاعب"
+	}
+
+	"FireBomb player"
+	{
+		"ar"		"فجر اللاعب"
+	}
+
+	"Freeze player"
+	{
+		"ar"		"جمد اللاعب"
+	}
+
+	"FreezeBomb player"
+	{
+		"ar"		"جمد و فجر اللاعب"
+	}
+
+	"TimeBomb player"
+	{
+		"ar"		"حدد وقت إنفجار اللاعب"
+	}
+
+	"Beacon player"
+	{
+		"ar"		"حدد موقع اللاعب"
+	}
+
+	"NoClip player"
+	{
+		"ar"		"حرر اللاعب"
+	}
+
+	"Blind player"
+	{
+		"ar"		"إجعل اللاعب أعمى"
+	}
+
+	"Drug player"
+	{
+		"ar"		"خدر اللاعب"
+	}
+
+	"Gravity player"
+	{
+		"ar"		"مارس الجاجبية على اللاعب"
+	}
+
+	"Blind amount"
+	{
+		"ar"		"مستوى العمى"
+	}
+
+	"Fully blind"
+	{
+		"ar"		"أعمى بالكامل"
+	}
+
+	"Half blind"
+	{
+		"ar"		"نصف أعمى"
+	}
+
+	"No blind"
+	{
+		"ar"		"لا أعمى"
+	}
+
+	"Gravity amount"
+	{
+		"ar"		"جاذبية؟"
+	}
+
+	"Gravity Very High"
+	{
+		"ar"		"جاذبية جد عالية"
+	}
+
+	"Gravity High"
+	{
+		"ar"		"جاذبية عالية"
+	}
+
+	"Gravity Normal"
+	{
+		"ar"		"جاذبية عادية"
+	}
+
+	"Gravity Low"
+	{
+		"ar"		"جاذبية خفيفة"
+	}
+
+	"Gravity Very Low"
+	{
+		"ar"		"جاذبية جد خفيفة"
+	}
+
+	"Set target on fire"
+	{
+		"ar"		"احرق اللاعب {1}"
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"ar"		"مارس الإنفجار على {1}"
+	}
+
+	"Froze target"
+	{
+		"ar"		"جامد {1}"
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"ar"		"مارس التجميد و الانفجار على {1}"
+	}
+
+	"Toggled beacon on target"
+	{
+		"ar"		"مارس تحديد الموقع على {1ç"
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"ar"		"حدد الإنفجار المبرمج على {1}"
+	}
+
+	"Toggled noclip on target"
+	{
+		"ar"		"مارس التحرير على {1}"
+	}
+
+	"Toggled drug on target"
+	{
+		"ar"		"مارس التخدير على {1}"
+	}
+
+	"Set blind on target"
+	{
+		"ar"		"إجعل اللاعب أعمى {1}"
+	}
+
+	"Set gravity on target"
+	{
+		"ar"		"إجعل جاذبية اللاعب {1}"
+	}
+
+	"Till Explodes"
+	{
+		"ar"		"{2} حتى إنفجار {1}"
+	}
+
+	"Unfrozen"
+	{
+		"ar"		"تم عسك التجميد عنك"
+	}
+
+	"You will be unfrozen"
+	{
+		"ar"		"سيتم عكس تجميدك في {1} ثوان"
+	}
+
+}

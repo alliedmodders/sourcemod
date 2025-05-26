@@ -311,9 +311,9 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 			clients[0] = client;
 			filter.Initialize(clients, 1);
 
-			const char *sound = g_Menus.GetMenuSound(type);
+			std::string *sound = g_Menus.GetMenuSound(type);
 
-			if (sound != NULL)
+			if (nullptr != sound && !sound->empty())
 			{
 				edict_t *pEdict = PEntityOfEntIndex(client);
 				if (pEdict)
@@ -327,10 +327,10 @@ void BaseMenuStyle::ClientPressedKey(int client, unsigned int key_press)
 							client, 
 							CHAN_AUTO, 
 #if SOURCE_ENGINE >= SE_PORTAL2
-							sound, 
+							sound->c_str(),
 							-1, 
 #endif
-							sound, 
+							sound->c_str(),
 							VOL_NORM, 
 							ATTN_NORM, 
 #if SOURCE_ENGINE >= SE_PORTAL2
@@ -419,7 +419,7 @@ bool BaseMenuStyle::DoClientMenu(int client, IMenuPanel *menu, IMenuHandler *mh,
 		time);
 #endif
 	CPlayer *pPlayer = g_Players.GetPlayerByIndex(client);
-	if (!pPlayer || pPlayer->IsFakeClient() || !pPlayer->IsInGame())
+	if (!pPlayer || !pPlayer->IsInGame())
 	{
 		return false;
 	}

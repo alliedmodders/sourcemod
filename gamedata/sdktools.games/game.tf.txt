@@ -18,105 +18,122 @@
 		{
 			"SetOwnerEntity"
 			{
-				"windows"	"17"
-				"linux"		"18"
-				"mac"		"18"
+				"windows"	"18"
+				"windows64"	"18"
+				"linux"		"19"
+				"linux64"	"19"
 			}
 			"GiveNamedItem"
 			{
-				"windows"	"409"
-				"linux"		"410"
-				"mac"		"410"
+				"windows"	"413"
+				"windows64"	"413"
+				"linux"		"414"
+				"linux64"	"414"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"277"
-				"linux"		"278"
-				"mac"		"278"
+				"windows"	"281"
+				"windows64"	"281"
+				"linux"		"282"
+				"linux64"	"282"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"275"
-				"linux"		"276"
-				"mac"		"276"
+				"windows"	"279"
+				"windows64"	"279"
+				"linux"		"280"
+				"linux64"	"280"
 			}
 			"Ignite"
 			{
-				"windows"	"216"
-				"linux"		"217"
-				"mac"		"217"
+				"windows"	"220"
+				"windows64"	"220"
+				"linux"		"221"
+				"linux64"	"221"
 			}
 			"Extinguish"
 			{
-				"windows"	"220"
-				"linux"		"221"
-				"mac"		"221"
+				"windows"	"224"
+				"windows64"	"224"
+				"linux"		"225"
+				"linux64"	"225"
 			}
 			"Teleport"
 			{
-				"windows"	"111"
-				"linux"		"112"
-				"mac"		"112"
+				"windows"	"114"
+				"windows64"	"114"
+				"linux"		"115"
+				"linux64"	"115"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"450"
-				"linux"		"450"
-				"mac"		"450"
+				"windows"	"454"
+				"windows64"	"454"
+				"linux"		"454"
+				"linux64"	"454"
 			}
 			"GetVelocity"
 			{
-				"windows"	"143"
-				"linux"		"144"
-				"mac"		"144"
+				"windows"	"147"
+				"windows64"	"147"
+				"linux"		"148"
+				"linux64"	"148"
 			}
 			"EyeAngles"
 			{
-				"windows"	"134"
-				"linux"		"135"
-				"mac"		"135"
+				"windows"	"138"
+				"windows64"	"138"
+				"linux"		"139"
+				"linux64"	"139"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"24"
-				"linux"		"25"
-				"mac"		"25"
+				"windows"	"26"
+				"windows64"	"26"
+				"linux"		"27"
+				"linux64"	"27"
 			}
 			"AcceptInput"
 			{
-				"windows"	"36"
-				"linux"		"37"
-				"mac"		"37"
+				"windows"	"38"
+				"windows64"	"38"
+				"linux"		"39"
+				"linux64"	"39"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"268"
-				"linux"		"269"
-				"mac"		"269"
+				"windows"	"272"
+				"windows64"	"272"
+				"linux"		"273"
+				"linux64"	"273"
 			}
 			"Activate"
 			{
-				"windows"	"33"
-				"linux"		"34"
-				"mac"		"34"
+				"windows"	"35"
+				"windows64"	"35"
+				"linux"		"36"
+				"linux64"	"36"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"427"
-				"linux"		"428"
-				"mac"		"428"
+				"windows"	"431"
+				"windows64"	"431"
+				"linux"		"432"
+				"linux64"	"432"
 			}
 			"GiveAmmo"
 			{
-				"windows"	"259"
-				"linux"		"260"
-				"mac"		"260"
+				"windows"	"263"
+				"windows64"	"263"
+				"linux"		"264"
+				"linux64"	"264"
 			}
 			"GetAttachment"
 			{
-				"windows"	"212"
-				"linux"		"213"
-				"mac"		"213"
+				"windows"	"216"
+				"windows64"	"216"
+				"linux"		"217"
+				"linux64"	"217"
 			}
 		}
 		
@@ -127,32 +144,36 @@
 		}
 	}
 	
-	/* CBaseEntityOutput::FireOutput */
 	"#default"
 	{
 		"Signatures"
 		{
 			"FireOutput"
 			{
+				/* CBaseEntityOutput::FireOutput */
+				/* String: "(%0.2f) output: (%s,%s) -> (%s,%s,%.1f)" */
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x81\xEC\x24\x01\x00\x00\x53\x8B\xC1"
+				"windows"	"\x55\x8B\xEC\x81\xEC\x40\x01\x00\x00\x8B\xC1"
+				"windows64"	"\x48\x8B\xC4\x48\x89\x50\x10\x48\x89\x48\x08\x41\x54"
 				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
-				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+				"linux64"	"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
 	}
 	
-	/* CBaseAnimating::LookupAttachment */
 	"#default"
 	{
 		"Signatures"
 		{
 			"LookupAttachment"
 			{
+				/* CBaseAnimating::LookupAttachment */
+				/* String: "vehicle_driver_eyes", middle length top function, with 4 calls, pick the first one. */
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x80\xBE\x41\x03\x00\x00\x00\x75\x2A\x83\xBE\x6C\x04\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x86\x6C\x04\x00\x00\x85\xC0\x74\x2A\x83\x38\x00\x74\x2A\xFF\x75\x08\x50\xE8\x2A\x2A\x2A\x2A\x83\xC4\x08\x40"
+				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x80\xBE\x2A\x03\x00\x00\x00\x75\x2A\x83\xBE\x2A\x04\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x86\x2A\x04\x00\x00\x85\xC0\x74\x2A\x83\x38\x00\x74\x2A\xFF\x75\x08\x50\xE8\x2A\x2A\x2A\x2A\x83\xC4\x08\x40"
+				"windows64"	"\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x80\xB9\x65\x04\x00\x00\x00\x48\x8B\xFA\x48\x8B\xD9\x75\x2A\x48\x83\xB9\xC0\x05\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x48\x85\xC0\x74\x2A\x48\x8B\xCB\xE8\x2A\x2A\x2A\x2A\x48\x8B\x8B\xC0\x05\x00\x00\x48\x85\xC9\x74\x2A\x48\x83\x39\x00\x74\x2A\x48\x8B\xD7\xE8\x2A\x2A\x2A\x2A"
 				"linux"		"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
-				"mac"		"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
+				"linux64"	"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
 			}
 		}
 	}

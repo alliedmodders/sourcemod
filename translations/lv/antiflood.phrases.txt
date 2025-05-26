@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Flooding the server"
+	{
+		"lv"		"Tu pludini serveri ar tekstiem!"
+	}
+
+}

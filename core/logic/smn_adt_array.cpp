@@ -281,7 +281,19 @@ static cell_t GetArrayString(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid index %d (count: %d)", idx, array->size());
 	}
 
-	cell_t *blk = array->at(idx);
+	// the blocknumber is not guaranteed to always be passed
+	size_t blocknumber = 0;
+	if (params[0] >= 5)
+	{
+		blocknumber = (size_t)params[5];
+	}
+
+	if (blocknumber >= array->blocksize())
+	{
+		return pContext->ThrowNativeError("Invalid block %d (blocksize: %d)", blocknumber, array->blocksize());
+	}
+
+	cell_t *blk = &array->base()[idx * array->blocksize() + blocknumber];
 	size_t numWritten = 0;
 
 	pContext->StringToLocalUTF8(params[3], params[4], (char *)blk, &numWritten);
@@ -307,7 +319,19 @@ static cell_t GetArrayArray(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid index %d (count: %d)", idx, array->size());
 	}
 
-	cell_t *blk = array->at(idx);
+	// the blocknumber is not guaranteed to always be passed
+	size_t blocknumber = 0;
+	if (params[0] >= 5)
+	{
+		blocknumber = (size_t)params[5];
+	}
+
+	if (blocknumber >= array->blocksize())
+	{
+		return pContext->ThrowNativeError("Invalid block %d (blocksize: %d)", blocknumber, array->blocksize());
+	}
+
+	cell_t *blk = &array->base()[idx * array->blocksize() + blocknumber];
 	size_t indexes = array->blocksize();
 	if (params[4] != -1 && (size_t)params[4] <= array->blocksize())
 	{
@@ -379,12 +403,30 @@ static cell_t SetArrayString(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid index %d (count: %d)", idx, array->size());
 	}
 
-	cell_t *blk = array->at(idx);
+	// the blocknumber is not guaranteed to always be passed
+	size_t blocknumber = 0;
+	if (params[0] >= 5)
+	{
+		blocknumber = (size_t)params[5];
+	}
+
+	if (blocknumber >= array->blocksize())
+	{
+		return pContext->ThrowNativeError("Invalid block %d (blocksize: %d)", blocknumber, array->blocksize());
+	}
+
+	cell_t *blk = &array->base()[idx * array->blocksize() + blocknumber];
 
 	char *str;
 	pContext->LocalToString(params[3], &str);
 
-	return strncopy((char *)blk, str, array->blocksize() * sizeof(cell_t));
+	size_t maxlength = array->blocksize() * sizeof(cell_t);
+	if (params[0] >= 4 && params[4] != -1 && (size_t)params[4] <= array->blocksize())
+	{
+		maxlength = (size_t)params[4];
+	}
+
+	return strncopy((char*)blk, str, maxlength);
 }
 
 static cell_t SetArrayArray(IPluginContext *pContext, const cell_t *params)
@@ -405,7 +447,19 @@ static cell_t SetArrayArray(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid index %d (count: %d)", idx, array->size());
 	}
 
-	cell_t *blk = array->at(idx);
+	// the blocknumber is not guaranteed to always be passed
+	size_t blocknumber = 0;
+	if (params[0] >= 5)
+	{
+		blocknumber = (size_t)params[5];
+	}
+
+	if (blocknumber >= array->blocksize())
+	{
+		return pContext->ThrowNativeError("Invalid block %d (blocksize: %d)", blocknumber, array->blocksize());
+	}
+
+	cell_t *blk = &array->base()[idx * array->blocksize() + blocknumber];
 	size_t indexes = array->blocksize();
 	if (params[4] != -1 && (size_t)params[4] <= array->blocksize())
 	{
@@ -533,12 +587,24 @@ static cell_t FindStringInArray(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
 	}
 
+	// the blocknumber is not guaranteed to always be passed
+	size_t blocknumber = 0;
+	if (params[0] >= 3)
+	{
+		blocknumber = (size_t)params[3];
+	}
+
+	if (blocknumber >= array->blocksize())
+	{
+		return pContext->ThrowNativeError("Invalid block %d (blocksize: %d)", blocknumber, array->blocksize());
+	}
+
 	char *str;
 	pContext->LocalToString(params[2], &str);
 
 	for (unsigned int i = 0; i < array->size(); i++)
 	{
-		const char *array_str = (const char *)array->at(i);
+		const char *array_str = (const char *)&array->base()[i * array->blocksize() + blocknumber];
 		if (strcmp(str, array_str) == 0)
 		{
 			return (cell_t) i;

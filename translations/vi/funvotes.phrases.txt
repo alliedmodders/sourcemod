@@ -1,0 +1,98 @@
+"Phrases"
+{
+	"Initiated Vote Gravity"
+	{
+		"vi"		"Bắt đầu cuộc bầu chọn trọng lực"
+	}
+
+	"Initiated Vote Burn"
+	{
+		"vi"		"Bắt đầu cuộc bầu chọn thiêu đốt {1}."
+	}
+
+	"Initiated Vote Slay"
+	{
+		"vi"		"Bắt đầu bầu chọn giết {1}."
+	}
+
+	"Initiated Vote Alltalk"
+	{
+		"vi"		"Bắt đầu cuộc bầu chọn alltalk."
+	}
+
+	"Initiated Vote FF"
+	{
+		"vi"		"Bắt đầu cuộc bầu chọn hỏa lực thân thiện."
+	}
+
+	"Gravity Vote"
+	{
+		"vi"		"Bầu chọn trọng lực: {1}"
+	}
+
+	"Change Gravity To"
+	{
+		"vi"		"Thay đổi trọng lực dến {1}?"
+	}
+
+	"Voteburn player"
+	{
+		"vi"		"Thiêu đốt người chơi {1}?"
+	}
+
+	"Voteslay Player"
+	{
+		"vi"		"Giết {1}?"
+	}
+
+	"Votealltalk Off"
+	{
+		"vi"		"Tắt alltalk? {1}"
+	}
+
+	"Votealltalk On"
+	{
+		"vi"		"Bật alltalk? {1}"
+	}
+
+	"Voteff Off"
+	{
+		"vi"		"Tắt hỏa lực thân thiện? {1}"
+	}
+
+	"Voteff On"
+	{
+		"vi"		"Bật hỏa lực thân thiện? {1}"
+	}
+
+	"Gravity vote"
+	{
+		"vi"		"Bầu chọn trọng lực"
+	}
+
+	"Vote FF"
+	{
+		"vi"		"Bầu chọn hỏa lực thân thiện"
+	}
+
+	"Burn vote"
+	{
+		"vi"		"Bầu chọn thiêu đốt"
+	}
+
+	"Alltalk vote"
+	{
+		"vi"		"Bầu chọn alltalk"
+	}
+
+	"Slay vote"
+	{
+		"vi"		"Bầu chọn giết"
+	}
+
+	"Slayed player"
+	{
+		"vi"		"Đã giết '{1}'"
+	}
+
+}

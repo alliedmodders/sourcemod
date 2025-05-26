@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Cookie List"
+	{
+		"lt"		"Sourcemod Sausainėlių Sąrašas"
+	}
+
+	"Printing Cookie List"
+	{
+		"lt"		"Atvaizduoti sausainėlių sąrašą konsolėje"
+	}
+
+	"Cookie not Found"
+	{
+		"lt"		"Nepavyko rasti sausainėlio \"{1}\""
+	}
+
+	"Cookie Value"
+	{
+		"lt"		"{1} nustatymas yra {2}"
+	}
+
+	"Protected Cookie"
+	{
+		"lt"		"Negalima pakeisti apsaugoto sausainėlio \"{1}\" reikšmės"
+	}
+
+	"Cookie Changed Value"
+	{
+		"lt"		"Pakeistas sausainėlio nustatymas iš \"{1}\" į \"{2}\""
+	}
+
+	"No Console"
+	{
+		"lt"		"Nepavyko atvaizduoti nustatymų meniu konsolėje"
+	}
+
+	"Choose Option"
+	{
+		"lt"		"Pasirinkite Opciją"
+	}
+
+	"Client Settings"
+	{
+		"lt"		"Vartotojo Nustatymai"
+	}
+
+}

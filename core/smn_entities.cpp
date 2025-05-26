@@ -134,12 +134,10 @@ inline edict_t *BaseEntityToEdict(CBaseEntity *pEntity)
 {
 	IServerUnknown *pUnk = (IServerUnknown *)pEntity;
 	IServerNetworkable *pNet = pUnk->GetNetworkable();
-
-	if (!pNet)
+	if (pNet == nullptr)
 	{
-		return NULL;
+		return nullptr;
 	}
-
 	return pNet->GetEdict();
 }
 
@@ -285,6 +283,11 @@ static cell_t RemoveEdict(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Edict %d (%d) is not a valid edict", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
+	if (g_HL2.ReferenceToIndex(params[1]) == 0)
+	{
+		return pContext->ThrowNativeError("Cannot remove worldspawn (edict 0)");
+	}
+
 	engine->RemoveEdict(pEdict);
 
 	return 1;
@@ -296,6 +299,11 @@ static cell_t RemoveEntity(IPluginContext *pContext, const cell_t *params)
 	if (!pEntity)
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is not a valid entity", g_HL2.ReferenceToIndex(params[1]), params[1]);
+	}
+
+	if (g_HL2.ReferenceToIndex(params[1]) == 0)
+	{
+		return pContext->ThrowNativeError("Cannot remove worldspawn (entity 0)");
 	}
 
 	// Some games have UTIL_Remove exposed on IServerTools, but for consistence, we'll
@@ -353,14 +361,20 @@ static cell_t IsValidEntity(IPluginContext *pContext, const cell_t *params)
 
 static cell_t IsEntNetworkable(IPluginContext *pContext, const cell_t *params)
 {
-	edict_t *pEdict = GetEdict(params[1]);
-
-	if (!pEdict)
+	IServerUnknown *pUnknown = (IServerUnknown *)g_HL2.ReferenceToEntity(params[1]);
+	if (!pUnknown)
 	{
 		return 0;
 	}
 
-	return (pEdict->GetNetworkable() != NULL) ? 1 : 0;
+	IServerNetworkable *pNet = pUnknown->GetNetworkable();
+	if (!pNet)
+	{
+		return 0;
+	}
+
+	edict_t* edict = pNet->GetEdict();
+	return (edict && !edict->IsFree()) ? 1 : 0;
 }
 
 static cell_t GetEntityCount(IPluginContext *pContext, const cell_t *params)
@@ -426,13 +440,11 @@ static cell_t GetEntityNetClass(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid entity (%d - %d)", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
-	IServerNetworkable *pNet = pUnk->GetNetworkable();
-	if (!pNet)
+	ServerClass *pClass = g_HL2.FindEntityServerClass(pEntity);
+	if (!pClass)
 	{
 		return 0;
 	}
-
-	ServerClass *pClass = pNet->GetServerClass();
 
 	pContext->StringToLocal(params[2], params[3], pClass->GetName());
 
@@ -706,6 +718,36 @@ static cell_t GetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 	return g_HL2.EntityToBCompatRef(pHandleEntity);
 }
 
+//memory addresses below 0x10000 are automatically considered invalid for dereferencing
+//this is copied over from smn_core.cpp
+#define VALID_MINIMUM_MEMORY_ADDRESS 0x10000
+
+static cell_t LoadEntityFromHandleAddress(IPluginContext *pContext, const cell_t *params)
+{
+#ifdef KE_ARCH_X86
+	void *addr = reinterpret_cast<void*>(params[1]);
+#else
+	void *addr = g_SourceMod.FromPseudoAddress(params[1]);
+#endif
+
+	if (addr == NULL)
+	{
+		return pContext->ThrowNativeError("Address cannot be null");
+	}
+	else if (reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
+	{
+		return pContext->ThrowNativeError("Invalid address %p is pointing to reserved memory.", addr);
+	}
+
+	CBaseHandle &hndl = *reinterpret_cast<CBaseHandle*>(addr);
+	CBaseEntity *pHandleEntity = g_HL2.ReferenceToEntity(hndl.GetEntryIndex());
+
+	if (!pHandleEntity || hndl != reinterpret_cast<IHandleEntity *>(pHandleEntity)->GetRefEHandle())
+		return -1;
+
+	return g_HL2.EntityToBCompatRef(pHandleEntity);
+}
+
 /* THIS GUY IS DEPRECATED. */
 static cell_t SetEntDataEnt(IPluginContext *pContext, const cell_t *params)
 {
@@ -788,6 +830,44 @@ static cell_t SetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 		g_HL2.SetEdictStateChanged(pEdict, offset);
 	}
 
+	return 1;
+}
+
+static cell_t StoreEntityToHandleAddress(IPluginContext *pContext, const cell_t *params)
+{
+#ifdef KE_ARCH_X86
+	void *addr = reinterpret_cast<void*>(params[1]);
+#else
+	void *addr = g_SourceMod.FromPseudoAddress(params[1]);
+#endif
+
+	if (addr == NULL)
+	{
+		return pContext->ThrowNativeError("Address cannot be null");
+	}
+	else if (reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
+	{
+		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory.", addr);
+	}
+
+	CBaseHandle &hndl = *reinterpret_cast<CBaseHandle*>(addr);
+
+	if ((unsigned)params[2] == INVALID_EHANDLE_INDEX)
+	{
+		hndl.Set(NULL);
+	}
+	else
+	{
+		CBaseEntity *pOther = GetEntity(params[2]);
+
+		if (!pOther)
+		{
+			return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[2]), params[2]);
+		}
+
+		IHandleEntity *pHandleEnt = (IHandleEntity *)pOther;
+		hndl.Set(pHandleEnt);
+	}
 	return 1;
 }
 
@@ -1192,13 +1272,11 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 #define FIND_PROP_SEND(type, type_name) \
 	sm_sendprop_info_t info;\
 	SendProp *pProp; \
-	IServerUnknown *pUnk = (IServerUnknown *)pEntity; \
-	IServerNetworkable *pNet = pUnk->GetNetworkable(); \
-	if (!pNet) \
-	{ \
-		return pContext->ThrowNativeError("Edict %d (%d) is not networkable", g_HL2.ReferenceToIndex(params[1]), params[1]); \
+	ServerClass *pServerClass = g_HL2.FindEntityServerClass(pEntity); \
+	if (pServerClass == nullptr) { \
+		pContext->ThrowNativeError("Failed to retrieve entity %d (%d) server class!", g_HL2.ReferenceToIndex(params[1]), params[1]); \
 	} \
-	if (!g_HL2.FindSendPropInfo(pNet->GetServerClass()->GetName(), prop, &info)) \
+	if (!g_HL2.FindSendPropInfo(pServerClass->GetName(), prop, &info)) \
 	{ \
 		const char *class_name = g_HL2.GetEntityClassname(pEntity); \
 		return pContext->ThrowNativeError("Property \"%s\" not found (entity %d/%s)", \
@@ -1356,13 +1434,13 @@ static cell_t GetEntPropArraySize(IPluginContext *pContext, const cell_t *params
 		{
 			sm_sendprop_info_t info;
 			
-			IServerUnknown *pUnk = (IServerUnknown *)pEntity;
-			IServerNetworkable *pNet = pUnk->GetNetworkable();
-			if (!pNet)
+			ServerClass *pServerClass = g_HL2.FindEntityServerClass(pEntity);
+			if (pServerClass == nullptr)
 			{
-				return pContext->ThrowNativeError("Edict %d (%d) is not networkable", g_HL2.ReferenceToIndex(params[1]), params[1]);
+				return pContext->ThrowNativeError("Failed to retrieve entity %d (%d) server class!", g_HL2.ReferenceToIndex(params[1]), params[1]);
 			}
-			if (!g_HL2.FindSendPropInfo(pNet->GetServerClass()->GetName(), prop, &info))
+
+			if (!g_HL2.FindSendPropInfo(pServerClass->GetName(), prop, &info))
 			{
 				const char *class_name = g_HL2.GetEntityClassname(pEntity);
 				return pContext->ThrowNativeError("Property \"%s\" not found (entity %d/%s)",
@@ -1458,7 +1536,8 @@ static cell_t GetEntProp(IPluginContext *pContext, const cell_t *params)
 			// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS \
 	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_PVKII
+	|| SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_PVKII \
+	|| SOURCE_ENGINE == SE_MCV
 			if (pProp->GetFlags() & SPROP_VARINT)
 			{
 				bit_count = sizeof(int) * 8;
@@ -1577,7 +1656,8 @@ static cell_t SetEntProp(IPluginContext *pContext, const cell_t *params)
 			// This isn't in CS:S yet, but will be, doesn't hurt to add now, and will save us a build later
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS \
 	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_PVKII
+	|| SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_PVKII \
+	|| SOURCE_ENGINE == SE_MCV
 			if (pProp->GetFlags() & SPROP_VARINT)
 			{
 				bit_count = sizeof(int) * 8;
@@ -1999,13 +2079,7 @@ static cell_t SetEntPropEnt(IPluginContext *pContext, const cell_t *params)
 			edict_t *pOtherEdict = NULL;
 			if (pOther)
 			{
-				IServerNetworkable *pNetworkable = ((IServerUnknown *) pOther)->GetNetworkable();
-				if (!pNetworkable)
-				{
-					return pContext->ThrowNativeError("Entity %d (%d) does not have a valid edict", g_HL2.ReferenceToIndex(params[4]), params[4]);
-				}
-
-				pOtherEdict = pNetworkable->GetEdict();
+				pOtherEdict = BaseEntityToEdict(pOther);
 				if (!pOtherEdict || pOtherEdict->IsFree())
 				{
 					return pContext->ThrowNativeError("Entity %d (%d) does not have a valid edict", g_HL2.ReferenceToIndex(params[4]), params[4]);
@@ -2698,7 +2772,7 @@ static cell_t GetEntityAddress(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
-#ifdef PLATFORM_X86
+#ifdef KE_ARCH_X86
 	return reinterpret_cast<cell_t>(pEntity);
 #else
 	return g_SourceMod.ToPseudoAddress(pEntity);
@@ -2750,5 +2824,7 @@ REGISTER_NATIVES(entityNatives)
 	{"SetEntPropVector",		SetEntPropVector},
 	{"GetEntityAddress",		GetEntityAddress},
 	{"FindDataMapInfo",		FindDataMapInfo},
+	{"LoadEntityFromHandleAddress",	LoadEntityFromHandleAddress},
+	{"StoreEntityToHandleAddress",	StoreEntityToHandleAddress},
 	{NULL,						NULL}
 };

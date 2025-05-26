@@ -396,15 +396,17 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			if (index >= 1 && index <= playerhelpers->GetMaxClients())
 			{
 				IGamePlayer *player = playerhelpers->GetGamePlayer(index);
-				if ((data->decflags & VDECODE_FLAG_ALLOWNOTINGAME)
-					&& !player->IsConnected())
-				{
+
+				if(!player->IsConnected()) {
 					pContext->ThrowNativeError("Client %d is not connected", param);
 					return Data_Fail;
-				} else if (!player->IsInGame()) {
+				}
+
+				if(!(data->decflags & VDECODE_FLAG_ALLOWNOTINGAME) && !player->IsInGame()) {
 					pContext->ThrowNativeError("Client %d is not in game", param);
 					return Data_Fail;
 				}
+
 				pEntity = gamehelpers->ReferenceToEntity(param);
 			} else if (param == -1) {
 				if (data->decflags & VDECODE_FLAG_ALLOWNULL)
@@ -441,15 +443,17 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			if (index >= 1 && index <= playerhelpers->GetMaxClients())
 			{
 				IGamePlayer *player = playerhelpers->GetGamePlayer(index);
-				if ((data->decflags & VDECODE_FLAG_ALLOWNOTINGAME)
-					&& !player->IsConnected())
-				{
+
+				if(!player->IsConnected()) {
 					pContext->ThrowNativeError("Client %d is not connected", param);
 					return Data_Fail;
-				} else if (!player->IsInGame()) {
+				}
+
+				if(!(data->decflags & VDECODE_FLAG_ALLOWNOTINGAME) && !player->IsInGame()) {
 					pContext->ThrowNativeError("Client %d is not in game", param);
 					return Data_Fail;
 				}
+
 				pEntity = gamehelpers->ReferenceToEntity(param);
 			} else if (param == -1) {
 				if (data->decflags & VDECODE_FLAG_ALLOWNULL)
@@ -493,15 +497,17 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			if (param >= 1 && param <= playerhelpers->GetMaxClients())
 			{
 				IGamePlayer *player = playerhelpers->GetGamePlayer(param);
-				if ((data->decflags & VDECODE_FLAG_ALLOWNOTINGAME)
-					&& !player->IsConnected())
-				{
+
+				if(!player->IsConnected()) {
 					pContext->ThrowNativeError("Client %d is not connected", param);
 					return Data_Fail;
-				} else if (!player->IsInGame()) {
+				}
+
+				if(!(data->decflags & VDECODE_FLAG_ALLOWNOTINGAME) && !player->IsInGame()) {
 					pContext->ThrowNativeError("Client %d is not in game", param);
 					return Data_Fail;
 				}
+
 				pEdict = player->GetEdict();
 			} else if (param == -1) {
 				if (data->decflags & VDECODE_FLAG_ALLOWNULL)
@@ -569,7 +575,13 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 	case Valve_String:
 		{
 			char *addr;
-			pContext->LocalToString(param, &addr);
+			pContext->LocalToStringNULL(param, &addr);
+			if (addr == NULL && (data->decflags & VDECODE_FLAG_ALLOWNULL) == 0)
+			{
+				pContext->ThrowNativeError("NULL not allowed");
+				return Data_Fail;
+			}
+			
 			*(char **)buffer = addr;
 			return Data_Okay;
 		}

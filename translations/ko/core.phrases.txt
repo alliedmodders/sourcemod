@@ -1,0 +1,88 @@
+"Phrases"
+{
+	"No Access"
+	{
+		"ko"		"당신은 이 명령을 사용할 권한이 없습니다"
+	}
+
+	"Back"
+	{
+		"ko"		"뒤로"
+	}
+
+	"Next"
+	{
+		"ko"		"다음"
+	}
+
+	"Exit"
+	{
+		"ko"		"종료"
+	}
+
+	"Previous"
+	{
+		"ko"		"이전"
+	}
+
+	"all players"
+	{
+		"ko"		"모든 플레이어"
+	}
+
+	"all humans"
+	{
+		"ko"		"모든 사람"
+	}
+
+	"all bots"
+	{
+		"ko"		"모든 봇"
+	}
+
+	"all dead players"
+	{
+		"ko"		"모든 죽은 플레이어"
+	}
+
+	"all alive players"
+	{
+		"ko"		"모든 살아있는 플레이어"
+	}
+
+	"_s"
+	{
+		"ko"		"{1}"
+	}
+
+	"all spectators"
+	{
+		"ko"		"모든 관전자"
+	}
+
+	"Vote Count"
+	{
+		"ko"		"투표 : {1}/{2}, {3} 초 남음"
+	}
+
+	"Voted For"
+	{
+		"ko"		"{1} 님이 {2} 에 투표했습니다."
+	}
+
+	"Changed Vote"
+	{
+		"ko"		"{1} 님이 자신의 투표를 {2} 로 바꿨습니다 "
+	}
+
+	"No Vote"
+	{
+		"ko"		"투표 없음"
+	}
+
+	"Name Reserved"
+	{
+		"ko"		"소스모드가 당신의 이름을 예약해 두었습니다. 사용하려면 암호를 설정하세요."
+	}
+
+}

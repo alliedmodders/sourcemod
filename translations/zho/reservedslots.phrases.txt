@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Slot reserved"
+	{
+		"zho"		"因無權使用預留通道而中斷連線"
+	}
+
+}

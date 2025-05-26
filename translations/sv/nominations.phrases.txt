@@ -1,0 +1,72 @@
+"Phrases"
+{
+	"Already Nominated"
+	{
+		"sv"		"Du har redan nominerat en karta"
+	}
+
+	"Max Nominations"
+	{
+		"sv"		"Det maximala antalet tillåtna nomineringar har nått sin gräns."
+	}
+
+	"Map Already In Vote"
+	{
+		"sv"		"Kartan '{1}' finns redan i nomineringslistan."
+	}
+
+	"Map Inserted"
+	{
+		"sv"		"Kartan '{1}' har lagts till i nomineringslistan"
+	}
+
+	"Map Already Nominated"
+	{
+		"sv"		"Kartan du valde har redan blivit nominerad"
+	}
+
+	"Map Nominated"
+	{
+		"sv"		"{1} har nominerat {2}."
+	}
+
+	"Map Nomination Changed"
+	{
+		"sv"		"{1} har ändrat sin nominering till {2}."
+	}
+
+	"Nominate Title"
+	{
+		"sv"		"Nominera karta:"
+	}
+
+	"Can't Nominate Current Map"
+	{
+		"sv"		"Kartan du valde är den kartan som spelas just nu och kan inte bli nominerad"
+	}
+
+	"Map in Exclude List"
+	{
+		"sv"		"Den kartan du valde har nyligen blivit spelad och kan inte bli nominerad"
+	}
+
+	"Current Map"
+	{
+		"sv"		"Nuvarande karta"
+	}
+
+	"Recently Played"
+	{
+		"sv"		"Nyligen spelad"
+	}
+
+	"Nominated"
+	{
+		"sv"		"Nominerad"
+	}
+
+	"Map Not In Pool"
+	{
+		"sv"		"Kartan '{1}' kunde inte hittas bland alternativen för nominering."
+	}
+}

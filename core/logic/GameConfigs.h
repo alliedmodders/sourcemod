@@ -36,8 +36,9 @@
 #include <IGameConfigs.h>
 #include <ITextParsers.h>
 #include <am-refcounting.h>
-#include <sm_stringhashmap.h>
+#include <sm_hashmap.h>
 #include <sm_namehashset.h>
+#include <unordered_set>
 
 using namespace SourceMod;
 
@@ -91,6 +92,8 @@ private:
 	std::string m_offset;
 	std::string m_Game;
 	std::string m_Key;
+	unsigned int bCurrentBinCRC;
+	bool bCurrentBinCRC_Ok = false;
 	bool bShouldBeReadingDefault;
 	bool had_game;
 	bool matched_game;
@@ -126,6 +129,30 @@ private:
 	time_t m_ModTime;
 };
 
+struct GameBinaryInfo
+{
+	void *m_pAddr = nullptr;
+	uint32_t m_crc = 0;
+	bool m_crcOK = false;
+};
+
+class GameBinPathManager
+{
+public:
+	GameBinPathManager() {}
+	~GameBinPathManager() {}
+public:
+	void Init();
+
+	inline const std::vector<std::string>& Paths() const
+	{
+		return m_ordered;
+	}
+private:
+	std::unordered_set<std::string> m_lookup;
+	std::vector<std::string> m_ordered;
+};
+
 class GameConfigManager : 
 	public IGameConfigManager,
 	public SMGlobalClass
@@ -148,11 +175,16 @@ public: //SMGlobalClass
 	void OnSourceModAllInitialized();
 	void OnSourceModAllShutdown();
 public:
+	bool TryGetGameBinaryInfo(const char* pszName, GameBinaryInfo* pDest);
 	void RemoveCachedConfig(CGameConfig *config);
 private:
+	void CacheGameBinaryInfo(const char* pszName);
+private:
 	NameHashSet<CGameConfig *> m_Lookup;
+	StringHashMap<GameBinaryInfo> m_gameBinInfos;
 public:
 	StringHashMap<ITextListener_SMC *> m_customHandlers;
+	GameBinPathManager m_gameBinPathManager;
 };
 
 extern GameConfigManager g_GameConfigs;

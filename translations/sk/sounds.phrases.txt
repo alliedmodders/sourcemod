@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Played sound to target"
+	{
+		"sk"		"Prehratý zvuk pre {1}"
+	}
+
+}

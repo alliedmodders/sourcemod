@@ -213,7 +213,7 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 	/* There will always be a path by this point, since it was force-set above. */
 	m_GotBasePath = true;
 
-#if defined PLATFORM_X86
+#if defined KE_ARCH_X86
 # define SOURCEPAWN_DLL "sourcepawn.jit.x86"
 #else
 # define SOURCEPAWN_DLL "sourcepawn.vm"
@@ -363,6 +363,12 @@ void SourceModBase::StartSourceMod(bool late)
 	if (atoi(timeout) != 0)
 	{
 		g_pSourcePawn2->InstallWatchdogTimer(atoi(timeout) * 1000);
+	}
+
+	const char *linedebugger = GetCoreConfigValue("EnableLineDebugging");
+	if (linedebugger != NULL && strcasecmp(linedebugger, "yes") == 0)
+	{
+		g_pPawnEnv->EnableDebugBreak();
 	}
 
 	SH_ADD_HOOK(IServerGameDLL, Think, gamedll, SH_MEMBER(logicore.callbacks, &IProviderCallbacks::OnThink), false);

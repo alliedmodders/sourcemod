@@ -17,87 +17,136 @@
 		{
 			"Burn"
 			{
+				/* CTFPlayerShared::Burn (No clone.)*/
+				/* String : -> "afterburn_immunity"*/
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x56\x8B\xF1\x8B\x8E\x90\x01\x00\x00\x8B\x01"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x56\x8B\xF1\x8B\x8E\x8C\x01\x00\x00\x8B\x01"
+				"windows64"	"\x40\x53\x41\x54\x41\x56\x48\x83\xEC\x60"
 				"linux"		"@_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef"
-				"mac"		"@_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef"
+				"linux64"	"@_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef"
 			}
 			"RemoveDisguise"
 			{
+				/* CTFPlayerShared::RemoveDisguise*/
+				/* String : "reveal_disguised_victim_on_hit", follow the xref, RemoveDisguise is the subroutine that's called if the return value of CALL_ATTRIB_HOOK_INT( iRevealDisguisedSpyOnHit, reveal_disguised_victim_on_hit ); was true */
+				
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x51\x56\x8B\xF1\x57\xF7\x86\xD0\x00\x00\x00\x00\x00\x02\x00"
+				"windows64"	"\x48\x89\x5C\x24\x10\x57\x48\x83\xEC\x40\xF7\x81\xF0\x00\x00\x00\x00\x00\x02\x00"
 				"linux"		"@_ZN15CTFPlayerShared14RemoveDisguiseEv"
-				"mac"		"@_ZN15CTFPlayerShared14RemoveDisguiseEv"
+				"linux64"	"@_ZN15CTFPlayerShared14RemoveDisguiseEv"
 			}
 			"Disguise"
 			{
+				/* CTFPlayerShared::Disguise */
+				/* String : "mod_disguise_consumes_cloak" */
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x24\x56\x57\x8B\xF9\x8B\x8F\x90\x01\x00\x00"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x24\x56\x57\x8B\xF9\x8B\x8F\x8C\x01\x00\x00"
+				"windows64"	"\x40\x53\x55\x56\x57\x41\x54\x48\x81\xEC\x80\x00\x00\x00"
 				"linux"		"@_ZN15CTFPlayerShared8DisguiseEiiP9CTFPlayerb"
-				"mac"		"@_ZN15CTFPlayerShared8DisguiseEiiP9CTFPlayerb"
+				"linux64"	"@_ZN15CTFPlayerShared8DisguiseEiiP9CTFPlayerb"
 			}
 			"Regenerate"
 			{
+				/* CTFPlayer::Regenerate */
+				/* String : "item_meter_resupply_denied" -> subroutine with string "player_regenerate"*/
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x24\x53\x56\x57\x8B\xF9\x8B\x07\xFF\x90"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x44\x53\x56\x57\x8B\xF9"
+				"windows64"	"\x48\x8B\xC4\x88\x50\x10\x48\x81\xEC\xD8\x00\x00\x00"
 				"linux"		"@_ZN9CTFPlayer10RegenerateEb"
-				"mac"		"@_ZN9CTFPlayer10RegenerateEb"
+				"linux64"	"@_ZN9CTFPlayer10RegenerateEb"
 			}
 			"AddCondition"
 			{
+				/* CTFPlayerShared::AddCond */
+				/* String: "#TF_HALLOWEEN_MERASMUS_YOU_ARE_BOMB" -> walk back the graph, right before there should two subroutines call (CTFPlayerShared::AddCond) with 0x20 & 0x35 as parameter */
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x56\x8B\xF1\x8B\x8E\x2A\x2A\x2A\x2A\x85\xC9\x0F\x84\x2A\x2A\x2A\x2A\x8B\x01\x8B"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x56\x8B\xF1\x8B\x8E\x8C\x01\x00\x00\x85\xC9"
+				"windows64"	"\x48\x89\x5C\x24\x18\x48\x89\x7C\x24\x20\x41\x56\x48\x83\xEC\x40"
 				"linux"		"@_ZN15CTFPlayerShared7AddCondE7ETFCondfP11CBaseEntity"
-				"mac"		"@_ZN15CTFPlayerShared7AddCondE7ETFCondfP11CBaseEntity"
+				"linux64"	"@_ZN15CTFPlayerShared7AddCondE7ETFCondfP11CBaseEntity"
 			}
 			"RemoveCondition"
 			{
+				/* CTFPlayerShared::RemoveCond */
+				/* String: "damage_prevented" */
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x53\x8B\x5D\x08\x56\x53"
+				"windows64"	"\x40\x53\x57\x41\x56\x48\x83\xEC\x20\x45\x0F\xB6\xF0"
 				"linux"		"@_ZN15CTFPlayerShared10RemoveCondE7ETFCondb"
-				"mac"		"@_ZN15CTFPlayerShared10RemoveCondE7ETFCondb"
+				"linux64"	"@_ZN15CTFPlayerShared10RemoveCondE7ETFCondb"
 			}
 			"SetPowerplayEnabled"
 			{
+				/* CTFPlayer::SetPowerplayEnabled */
+				/* String: "scenes/player/pyro/low/1485.vcd" -> Main fuction -> That main function again.*/
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x80\x7D\x08\x00\x56\x57\x8B\xF9"
+				"windows64"	"\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x48\x8D\x99\x60\x28\x00\x00"
 				"linux"		"@_ZN9CTFPlayer19SetPowerplayEnabledEb"
-				"mac"		"@_ZN9CTFPlayer19SetPowerplayEnabledEb"
+				"linux64"	"@_ZN9CTFPlayer19SetPowerplayEnabledEb"
 			}
 			"SetInWaitingForPlayers"
 			{
+				/* CTeamplayRoundBasedRules::SetInWaitingForPlayers */
+				/* Locate "mp_waitingforplayers_time" convar. It's used in the only subroutine with no strings */
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\xE8\x2A\x2A\x2A\x2A\x84\xC0\x0F\x85\x2A\x2A\x2A\x2A\xA1\x2A\x2A\x2A\x2A"
+				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\xE8\x2A\x2A\x2A\x2A\x84\xC0\x0F\x85\x2A\x2A\x2A\x2A"
+				"windows64"	"\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x0F\xB6\xFA\x48\x8B\xD9\xE8\x2A\x2A\x2A\x2A\x84\xC0\x0F\x85\x2A\x2A\x2A\x2A"
 				"linux"		"@_ZN24CTeamplayRoundBasedRules22SetInWaitingForPlayersEb"
-				"mac"		"@_ZN24CTeamplayRoundBasedRules22SetInWaitingForPlayersEb"
+				"linux64"	"@_ZN24CTeamplayRoundBasedRules22SetInWaitingForPlayersEb"
 			}
 			"StunPlayer"
 			{
+				/* CTFPlayerShared::StunPlayer */
+				/* String: "player_stunned" */
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x20\x57\x8B\xF9\x8B\x87\x58\x04\x00\x00"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x24\x57\x8B\xF9\x8B\x87\xE0\x04\x00\x00"
+				"windows64"	"\x40\x57\x41\x57\x48\x81\xEC\x98\x00\x00\x00"
 				"linux"		"@_ZN15CTFPlayerShared10StunPlayerEffiP9CTFPlayer"
-				"mac"		"@_ZN15CTFPlayerShared10StunPlayerEffiP9CTFPlayer"
+				"linux64"	"@_ZN15CTFPlayerShared10StunPlayerEffiP9CTFPlayer"
 			}
 			"MakeBleed"
 			{
+				/* CTFPlayerShared::MakeBleed */
+				/* String: "InputBleedPlayer"/"BleedPlayer" follow to the input subroutine (CTFPlayer::InputBleedPlayer), MakeBleed is the last called subroutine.*/
 				"library" 	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x2C\x57\x8B\xF9\x89\x7D\xF0"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x10\x53\x8B\xD9\x89\x5D\xF8\x8B\x8B\x8C\x01\x00\x00"
+				"windows64"	"\x40\x56\x41\x55\x41\x57"
 				"linux"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefibi"
-				"mac"		"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefibi"
+				"linux64"	"@_ZN15CTFPlayerShared9MakeBleedEP9CTFPlayerP13CTFWeaponBasefibi"
 			}
 			"IsPlayerInDuel"
 			{
+				/* DuelMiniGame_IsInDuel */
+				/* String: "CTFPlayer::ForceChangeTeam( %d ) - invalid team index.\n", follow the xref, go back to the top of the subroutine, DuelMiniGame_IsInDuel is the subroutine that is called with 3 arguments and a constant value of 1.*/
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x08\x81\x65\x2A\x2A\x2A\x2A\x2A\x8D\x45\xF8\x8B\x4D\x08\xC6\x45\xFF\x00\x81\x65\x2A\x2A\x2A\x2A\x2A\x50\xC7\x45\x2A\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x84\xC0\x75\x04"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x10\x81\x65\xF4\xFF\xFF\x0F\xFF\x8D\x45\xF0\x8B\x4D\x08\xC6\x45\xF7\x00\x81\x65\xF4\x00\x00\xF0\xFF\x50\xC7\x45\xF0\x00\x00\x00\x00\xE8\x2A\x2A\x2A\x2A\x84\xC0\x0F\x84\x2A\x2A\x2A\x2A\x8D\x45\xF0\x57\x50\xE8\x2A\x2A\x2A\x2A\x8B\xF8\x83\xC4\x04\x85\xFF\x0F\x84\x2A\x2A\x2A\x2A\x81\x65\xFC\xFF\xFF\x0F\xFF\x8B\x0D\x2A\x2A\x2A\x2A\x53\xC6\x45\xFF\x00\xBB\x01\x00\x00\x00\x81\x65\xFC\x00\x00\xF0\xFF\xC7\x45\xF8\x00\x00\x00\x00\x39\x59\x14\x0F\x8C\x2A\x2A\x2A\x2A\x56\x8D\xA4\x24\x00\x00\x00\x00\x53\xE8\x2A\x2A\x2A\x2A\x8B\xF0\x83\xC4\x04\x85\xF6\x74\x2A\x8B\x16\x8B\xCE\x8B\x92\x48\x01\x00\x00\xFF\xD2\x84\xC0\x74\x2A\x3B\x75\x08\x74\x2A\x8D\x45\xF8\x8B\xCE\x50\xE8\x2A\x2A\x2A\x2A\x84\xC0\x74\x2A\x8B\x4D\xF8\x8B\x45\xFC\x3B\x0F\x75\x2A\x3B\x47\x04\x74\x2A\x3B\x4F\x08\x75\x2A\x3B\x47\x0C\x74\x2A\xA1\x2A\x2A\x2A\x2A\x43\x3B\x58\x14\x7E\x2A\x5E\x5B\x5F\x8B\xE5\x5D\xC3\x8B\x5D\x0C"
+				"windows64"	"\x48\x89\x5C\x24\x18\x55\x41\x56\x41\x57\x48\x83\xEC\x30\x81\x64\x24\x24\xFF\xFF\x0F\xFF"
 				"linux"		"@_Z21DuelMiniGame_IsInDuelP9CTFPlayer"
-				"mac"		"@_Z21DuelMiniGame_IsInDuelP9CTFPlayer"
+				"linux64"	"@_Z21DuelMiniGame_IsInDuelP9CTFPlayer"
 			}
+			"CanPlayerBeTeleported"
+			{
+				/* String: "bidirectional_teleport" follow the xref, pick the function that doesn't involve another attribute, follow the graph view after 2 virtual function call, the first subroutine call is CanPlayerTeleport*/
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x53\x56\x57\x8B\x7D\x08\x8B\xD9\x85\xFF\x0F\x84\x2A\x2A\x2A\x2A"
+				"windows64"	"\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\xFA\x48\x8B\xF1\x48\x85\xD2\x0F\x84\x2A\x2A\x2A\x2A\x45\x33\xC0"
+				
+				// Recent updates altered where the teleport check was called in Linux systems.
+				"linux"		"@_ZN17CObjectTeleporter21PlayerCanBeTeleportedEP9CTFPlayer.part.0"
+				"linux64"	"@_ZN17CObjectTeleporter21PlayerCanBeTeleportedEP9CTFPlayer.part.0"
+			}
+			
+			// Obsolete
 			"CanPlayerTeleport"
 			{
+				/* String: "bidirectional_teleport" follow the xref, pick the function that doesn't involve another attribute, follow the graph view after 2 virtual function call, the first subroutine call is CanPlayerTeleport*/
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x53\x57\x8B\x7D\x08\x8B\xD9\x85\xFF\x75\x2A\x5F\x32\xC0\x5B\x5D\xC2\x04\x00"
+				"windows"	"\x55\x8B\xEC\x53\x56\x57\x8B\x7D\x08\x8B\xD9\x85\xFF\x0F\x84\x2A\x2A\x2A\x2A"
+				"windows64"	"\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\xFA\x48\x8B\xF1\x48\x85\xD2\x0F\x84\x2A\x2A\x2A\x2A\x45\x33\xC0"
 				"linux"		"@_ZN17CObjectTeleporter21PlayerCanBeTeleportedEP9CTFPlayer"
-				"mac"		"@_ZN17CObjectTeleporter21PlayerCanBeTeleportedEP9CTFPlayer"
+				"linux64"	"@_ZN17CObjectTeleporter21PlayerCanBeTeleportedEP9CTFPlayer"
 			}
 			
 			// Obsolete
@@ -106,43 +155,50 @@
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\xA1\x2A\x2A\x2A\x2A\x83\x78\x30\x00\x74\x04\x32\xC0"
 				"linux"		"@_Z18TF_IsHolidayActivei"
-				"mac"		"@_Z18TF_IsHolidayActivei"
+				"linux64"	"@_Z18TF_IsHolidayActivei"
 			}
 		}
 		"Offsets"
 		{
+			// CBasePlayer
 			"ForceRespawn"
 			{
-				"windows"	"333"
-				"linux"		"334"
-				"mac"		"334"
+				"windows"	"337"
+				"windows64"	"337"
+				"linux"		"338"
+				"linux64"	"338"
 			}
+			"RemoveWearable"
+			{
+				"windows"	"440"
+				"windows64"	"440"
+				"linux"		"441"
+				"linux64"	"441"
+			}
+
+			// CTFWeaponBase
 			"CalcIsAttackCriticalHelper"
 			{
-				"windows"	"394"
-				"linux"		"401"
-				"mac"		"401"
+				"windows"	"401"
+				"windows64"	"401"
+				"linux"		"408"
+				"linux64"	"408"
 			}
 			"CalcIsAttackCriticalHelperNoCrits"
 			{
-				"windows"	"395"
-				"linux"		"402"
-				"mac"		"402"
+				"windows"	"402"
+				"windows64"	"402"
+				"linux"		"409"
+				"linux64"	"409"
 			}
 			
 			// CTFGameRules::IsHolidayActive
 			"IsHolidayActive"
 			{
 				"windows"	"139"
+				"windows64"	"139"
 				"linux"		"140"
-				"mac"		"140"
-			}
-
-			"RemoveWearable"
-			{
-				"windows"	"436"
-				"linux"		"437"
-				"mac"		"437"
+				"linux64"	"140"
 			}
 		}
 	}

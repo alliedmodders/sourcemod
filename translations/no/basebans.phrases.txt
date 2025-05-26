@@ -1,0 +1,63 @@
+"Phrases"
+{
+	"Ban player"
+	{
+		"no"		"Utesteng spiller"
+	}
+
+	"Ban reason"
+	{
+		"no"		"Begrunnelse for utestenging"
+	}
+
+	"Permabanned player"
+	{
+		"no"		"Utestengte spiller \"{1}\" permanent."
+	}
+
+	"Permabanned player reason"
+	{
+		"no"		"Utestengte spiller \"{1}\" permanent. (begrunnelse: {2})."
+	}
+
+	"Banned player"
+	{
+		"no"		"Utestengte spiller \"{1}\" i {2} minutter."
+	}
+
+	"Banned player reason"
+	{
+		"no"		"Utestengte spiller \"{1}\" i {2} minutter (begrunnelse: {3})."
+	}
+
+	"Removed bans matching"
+	{
+		"no"		"Fjernet utestengelse for matchende filter: {1}"
+	}
+
+	"Ban added"
+	{
+		"no"		"Utestengelse lagt til."
+	}
+
+	"Cannot ban that IP"
+	{
+		"no"		"Kan ikke utestenge denne IPen."
+	}
+
+	"Custom ban reason explanation"
+	{
+		"no"		"Skriv en begrunnelse som en chat melding. Bruk {1} for å avbryte."
+	}
+
+	"AbortBan applied successfully"
+	{
+		"no"		"Utestenging avbrutt."
+	}
+
+	"AbortBan not waiting for custom reason"
+	{
+		"no"		"Venter ikke på en begrunnelse for utestenging, ingen utestengelse å avbryte."
+	}
+
+}

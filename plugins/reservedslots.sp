@@ -66,7 +66,8 @@ enum KickType
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
-	if (GetEngineVersion() == Engine_Contagion)
+	sv_visiblemaxplayers = FindConVar("sv_visiblemaxplayers");
+	if (sv_visiblemaxplayers == null)
 	{
 		// sv_visiblemaxplayers doesn't exist
 		strcopy(error, err_max, "Reserved Slots is incompatible with this game");
@@ -81,8 +82,7 @@ public void OnPluginStart()
 	LoadTranslations("reservedslots.phrases");
 	
 	sm_reserved_slots = CreateConVar("sm_reserved_slots", "0", "Number of reserved player slots", 0, true, 0.0);
-	sm_hide_slots = CreateConVar("sm_hide_slots", "0", "If set to 1, reserved slots will hidden (subtracted from the max slot count)", 0, true, 0.0, true, 1.0);
-	sv_visiblemaxplayers = FindConVar("sv_visiblemaxplayers");
+	sm_hide_slots = CreateConVar("sm_hide_slots", "0", "If set to 1, reserved slots will be hidden (subtracted from the max slot count)", 0, true, 0.0, true, 1.0);
 	sm_reserve_type = CreateConVar("sm_reserve_type", "0", "Method of reserving slots", 0, true, 0.0, true, 2.0);
 	sm_reserve_maxadmins = CreateConVar("sm_reserve_maxadmins", "1", "Maximum amount of admins to let in the server with reserve type 2", 0, true, 0.0);
 	sm_reserve_kicktype = CreateConVar("sm_reserve_kicktype", "0", "How to select a client to kick (if appropriate)", 0, true, 0.0, true, 2.0);

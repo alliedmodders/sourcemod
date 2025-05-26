@@ -240,9 +240,9 @@ static cell_t PopStackCell(IPluginContext *pContext, const cell_t *params)
 	}
 	else
 	{
-		if (idx >= array->blocksize() * 4)
+		if (idx >= array->blocksize() * sizeof(cell_t))
 		{
-			return pContext->ThrowNativeError("Invalid byte %d (blocksize: %d bytes)", idx, array->blocksize() * 4);
+			return pContext->ThrowNativeError("Invalid byte %d (blocksize: %d bytes)", idx, array->blocksize() * sizeof(cell_t));
 		}
 		*buffer = (cell_t)*((char *)blk + idx);
 	}
@@ -356,12 +356,38 @@ static cell_t ArrayStack_Pop(IPluginContext *pContext, const cell_t *params)
 			return pContext->ThrowNativeError("Invalid block %d (blocksize: %d)", idx, array->blocksize());
 		rval = blk[idx];
 	} else {
-		if (idx >= array->blocksize() * 4)
-			return pContext->ThrowNativeError("Invalid byte %d (blocksize: %d bytes)", idx, array->blocksize() * 4);
+		if (idx >= array->blocksize() * sizeof(cell_t))
+			return pContext->ThrowNativeError("Invalid byte %d (blocksize: %d bytes)", idx, array->blocksize() * sizeof(cell_t));
 		rval = (cell_t)*((char *)blk + idx);
 	}
 
 	array->remove(array->size() - 1);
+	return rval;
+}
+
+static cell_t ArrayStack_Top(IPluginContext *pContext, const cell_t *params)
+{
+	OpenHandle<CellArray> array(pContext, params[1], htCellStack);
+	if (!array.Ok())
+		return 0;
+
+	if (array->size() == 0)
+		return pContext->ThrowNativeError("stack is empty");
+
+	cell_t *blk = array->at(array->size() - 1);
+	size_t idx = (size_t)params[2];
+
+	cell_t rval;
+	if (params[3] == 0) {
+		if (idx >= array->blocksize())
+			return pContext->ThrowNativeError("Invalid block %d (blocksize: %d)", idx, array->blocksize());
+		rval = blk[idx];
+	} else {
+		if (idx >= array->blocksize() * sizeof(cell_t))
+			return pContext->ThrowNativeError("Invalid byte %d (blocksize: %d bytes)", idx, array->blocksize() * sizeof(cell_t));
+		rval = (cell_t)*((char *)blk + idx);
+	}
+
 	return rval;
 }
 
@@ -384,6 +410,27 @@ static cell_t ArrayStack_PopString(IPluginContext *pContext, const cell_t *param
 	pContext->StringToLocalUTF8(params[2], params[3], (char *)blk, &numWritten);
 	*pWritten = (cell_t)numWritten;
 	array->remove(idx);
+	return 1;
+}
+
+static cell_t ArrayStack_TopString(IPluginContext *pContext, const cell_t *params)
+{
+	OpenHandle<CellArray> array(pContext, params[1], htCellStack);
+	if (!array.Ok())
+		return 0;
+
+	if (array->size() == 0)
+		return pContext->ThrowNativeError("stack is empty");
+
+	size_t idx = array->size() - 1;
+	cell_t *blk = array->at(idx);
+
+	cell_t *pWritten;
+	pContext->LocalToPhysAddr(params[4], &pWritten);
+
+	size_t numWritten;
+	pContext->StringToLocalUTF8(params[2], params[3], (char *)blk, &numWritten);
+	*pWritten = (cell_t)numWritten;
 	return 1;
 }
 
@@ -411,6 +458,29 @@ static cell_t ArrayStack_PopArray(IPluginContext *pContext, const cell_t *params
 	return 0;
 }
 
+static cell_t ArrayStack_TopArray(IPluginContext *pContext, const cell_t *params)
+{
+	OpenHandle<CellArray> array(pContext, params[1], htCellStack);
+	if (!array.Ok())
+		return 0;
+
+	if (array->size() == 0)
+		return pContext->ThrowNativeError("stack is empty");
+
+	cell_t *addr;
+	pContext->LocalToPhysAddr(params[2], &addr);
+
+	size_t idx = array->size() - 1;
+	cell_t *blk = array->at(idx);
+	size_t indexes = array->blocksize();
+
+	if (params[3] != -1 && (size_t)params[3] <= array->blocksize())
+		indexes = params[3];
+
+	memcpy(addr, blk, sizeof(cell_t) * indexes);
+	return 0;
+}
+
 static cell_t GetStackBlockSize(IPluginContext *pContext, const cell_t *params)
 {
 	HandleError err;
@@ -424,6 +494,21 @@ static cell_t GetStackBlockSize(IPluginContext *pContext, const cell_t *params)
 	}
 
 	return array->blocksize();
+}
+
+static cell_t GetStackSize(IPluginContext *pContext, const cell_t *params)
+{
+	HandleError err;
+	CellArray *array;
+	HandleSecurity sec(pContext->GetIdentity(), g_pCoreIdent);
+
+	if ((err = handlesys->ReadHandle(params[1], htCellStack, &sec, (void **)&array))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
+	}
+
+	return array->size();
 }
 
 REGISTER_NATIVES(cellStackNatives)
@@ -444,13 +529,17 @@ REGISTER_NATIVES(cellStackNatives)
 	{"ArrayStack.Clear",			ClearStack},
 	{"ArrayStack.Clone",			CloneStack},
 	{"ArrayStack.Pop",				ArrayStack_Pop},
+	{"ArrayStack.Top",				ArrayStack_Top},
 	{"ArrayStack.PopString",		ArrayStack_PopString},
+	{"ArrayStack.TopString",		ArrayStack_TopString},
 	{"ArrayStack.PopArray",			ArrayStack_PopArray},
+	{"ArrayStack.TopArray",			ArrayStack_TopArray},
 	{"ArrayStack.Push",				PushStackCell},
 	{"ArrayStack.PushString",		PushStackString},
 	{"ArrayStack.PushArray",		PushStackArray},
 	{"ArrayStack.Empty.get",		IsStackEmpty},
 	{"ArrayStack.BlockSize.get",	GetStackBlockSize},
+	{"ArrayStack.Length.get",		GetStackSize},
 
 	{NULL,							NULL},
 };

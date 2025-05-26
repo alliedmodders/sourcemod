@@ -1,0 +1,88 @@
+"Phrases"
+{
+	"No Access"
+	{
+		"vi"		"Bạn không có quyền sử dụng lệnh này."
+	}
+
+	"Back"
+	{
+		"vi"		"Quay lại"
+	}
+
+	"Next"
+	{
+		"vi"		"Tiếp"
+	}
+
+	"Exit"
+	{
+		"vi"		"Thoát"
+	}
+
+	"Previous"
+	{
+		"vi"		"Trước"
+	}
+
+	"all players"
+	{
+		"vi"		"Mọi người chơi"
+	}
+
+	"all humans"
+	{
+		"vi"		"Mọi người"
+	}
+
+	"all bots"
+	{
+		"vi"		"Tất cả bot"
+	}
+
+	"all dead players"
+	{
+		"vi"		"Mọi người chơi đã chất"
+	}
+
+	"all alive players"
+	{
+		"vi"		"Mọi người chơi còn sống"
+	}
+
+	"_s"
+	{
+		"vi"		"{1}"
+	}
+
+	"all spectators"
+	{
+		"vi"		"Mọi người xem"
+	}
+
+	"Vote Count"
+	{
+		"vi"		"Phiếu bầu: {1}/{2}, còn {3} giây nữa"
+	}
+
+	"Voted For"
+	{
+		"vi"		"{1} đã bầu chọn {2}"
+	}
+
+	"Changed Vote"
+	{
+		"vi"		"{1} đã thay đổi phiếu bầu sang {2}"
+	}
+
+	"No Vote"
+	{
+		"vi"		"Không có phiếu bầu"
+	}
+
+	"Name Reserved"
+	{
+		"vi"		"Tên của bạn đã bị đặt trước bởi SourceMod, nhập mật khẩu của bạn để dùng tên này."
+	}
+
+}

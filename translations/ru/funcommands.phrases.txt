@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"ru"		"Поджечь"
+	}
+
+	"FireBomb player"
+	{
+		"ru"		"Зажигательная бомба"
+	}
+
+	"Freeze player"
+	{
+		"ru"		"Заморозить"
+	}
+
+	"FreezeBomb player"
+	{
+		"ru"		"Замораживающая бомба"
+	}
+
+	"TimeBomb player"
+	{
+		"ru"		"Часовая бомба"
+	}
+
+	"Beacon player"
+	{
+		"ru"		"Маяк"
+	}
+
+	"NoClip player"
+	{
+		"ru"		"Режим полета"
+	}
+
+	"Blind player"
+	{
+		"ru"		"Ослепить"
+	}
+
+	"Drug player"
+	{
+		"ru"		"Опьянить"
+	}
+
+	"Gravity player"
+	{
+		"ru"		"Гравитация"
+	}
+
+	"Blind amount"
+	{
+		"ru"		"Насколько ослепить?"
+	}
+
+	"Fully blind"
+	{
+		"ru"		"Ослепить полностью"
+	}
+
+	"Half blind"
+	{
+		"ru"		"Ослепить наполовину"
+	}
+
+	"No blind"
+	{
+		"ru"		"Без ослепления"
+	}
+
+	"Gravity amount"
+	{
+		"ru"		"Какая гравитация?"
+	}
+
+	"Gravity Very High"
+	{
+		"ru"		"Очень высокая гравитация"
+	}
+
+	"Gravity High"
+	{
+		"ru"		"Высокая гравитация"
+	}
+
+	"Gravity Normal"
+	{
+		"ru"		"Нормальная гравитация"
+	}
+
+	"Gravity Low"
+	{
+		"ru"		"Низкая гравитация"
+	}
+
+	"Gravity Very Low"
+	{
+		"ru"		"Очень низкая гравитация"
+	}
+
+	"Set target on fire"
+	{
+		"ru"		"Игрок {1} подожжен."
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"ru"		"на игроке {1} установлена зажигательная бомба."
+	}
+
+	"Froze target"
+	{
+		"ru"		"Игрок {1} заморожен."
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"ru"		"на игроке {1} установлена замораживающая бомба."
+	}
+
+	"Toggled beacon on target"
+	{
+		"ru"		"на игроке {1} установлен маяк."
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"ru"		"на игроке {1} установлена часовая бомба."
+	}
+
+	"Toggled noclip on target"
+	{
+		"ru"		"для игрока {1} установлен режим полета."
+	}
+
+	"Toggled drug on target"
+	{
+		"ru"		"Игрок {1} опьянен."
+	}
+
+	"Set blind on target"
+	{
+		"ru"		"Игрок {1} ослеплен."
+	}
+
+	"Set gravity on target"
+	{
+		"ru"		"гравитация для игрока {1} изменена."
+	}
+
+	"Till Explodes"
+	{
+		"ru"		"{2} секунд до взрыва игрока {1}."
+	}
+
+	"Unfrozen"
+	{
+		"ru"		"Вы были разморожены."
+	}
+
+	"You will be unfrozen"
+	{
+		"ru"		"Вы будете разморожены через {1} секунд."
+	}
+
+}

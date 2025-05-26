@@ -104,7 +104,7 @@ ICallWrapper *CallMaker::CreateCall(void *address,
 			NULL, NULL, NULL, NULL);
 	}
 
-#if defined PLATFORM_X64
+#if defined KE_ARCH_X64
 	return g_CallMaker2.CreateCall(address, &(*protoInfo), retInfo, paramInfo, fnFlags);
 #else
 	return g_CallMaker2.CreateCall(address, &(*protoInfo));
@@ -144,7 +144,7 @@ ICallWrapper *CallMaker::CreateVCall(unsigned int vtblIdx,
 			NULL, NULL, NULL, NULL);
 	}
 	
-#if defined PLATFORM_X64
+#if defined KE_ARCH_X64
 	return g_CallMaker2.CreateVirtualCall(&(*protoInfo), &info, retInfo, paramInfo, fnFlags);
 #else
 	return g_CallMaker2.CreateVirtualCall(&(*protoInfo), &info);
@@ -153,7 +153,7 @@ ICallWrapper *CallMaker::CreateVCall(unsigned int vtblIdx,
 
 ICallWrapper *CallMaker2::CreateCall(void *address, const SourceHook::ProtoInfo *protoInfo)
 {
-#ifdef PLATFORM_X86
+#ifdef KE_ARCH_X86
 	CallWrapper *pWrapper = new CallWrapper(protoInfo);
 	pWrapper->SetCalleeAddr(address);
 
@@ -169,7 +169,7 @@ ICallWrapper *CallMaker2::CreateCall(void *address, const SourceHook::ProtoInfo 
 ICallWrapper *CallMaker2::CreateVirtualCall(const SourceHook::ProtoInfo *protoInfo, 
 											const SourceHook::MemFuncInfo *info)
 {
-#ifdef PLATFORM_X86
+#ifdef KE_ARCH_X86
 	CallWrapper *pWrapper = new CallWrapper(protoInfo);
 	pWrapper->SetMemFuncInfo(info);
 
@@ -186,7 +186,7 @@ ICallWrapper *CallMaker2::CreateCall(void *address, const SourceHook::ProtoInfo 
                                      const PassInfo *retInfo, const PassInfo paramInfo[],
                                      unsigned int fnFlags)
 {
-#ifdef PLATFORM_X64
+#ifdef KE_ARCH_X64
 	CallWrapper *pWrapper = new CallWrapper(protoInfo, retInfo, paramInfo, fnFlags);
 	pWrapper->SetCalleeAddr(address);
 
@@ -205,7 +205,7 @@ ICallWrapper *CallMaker2::CreateVirtualCall(const SourceHook::ProtoInfo *protoIn
                                             const PassInfo paramInfo[],
                                             unsigned int fnFlags)
 {
-#ifdef PLATFORM_X64
+#ifdef KE_ARCH_X64
 	CallWrapper *pWrapper = new CallWrapper(protoInfo, retInfo, paramInfo, fnFlags);
 	pWrapper->SetMemFuncInfo(info);
 

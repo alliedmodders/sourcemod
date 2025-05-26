@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Vote Nextmap"
+	{
+		"sk"		"Hlasuj za ďalšiu mapu!"
+	}
+
+	"Nextmap Voting Started"
+	{
+		"sk"		"Hlasovanie pre ďalšiu mapu sa začalo."
+	}
+
+	"Nextmap Voting Finished"
+	{
+		"sk"		"Hlasovanie o ďalšiu mapu sa skončilo. Ďalšia mapa bude {1}. (Získala {2}%% z {3} hlasov)"
+	}
+
+	"Current Map Extended"
+	{
+		"sk"		"Aktuálna mapa bola predĺžená. (Získala {1}%% z {2} hlasov)"
+	}
+
+	"Extend Map"
+	{
+		"sk"		"Predĺžiť aktuálnu mapu"
+	}
+
+	"Dont Change"
+	{
+		"sk"		"Nemeniť"
+	}
+
+	"Current Map Stays"
+	{
+		"sk"		"Aktuálna mapa pokračuje! Hlasovanie prehovorilo! (Získala {1}%% z {2} hlasov)"
+	}
+
+	"Changed Next Map"
+	{
+		"sk"		"Nasledujúca mapa zmenená na \"{1}\"."
+	}
+
+	"Starting Runoff"
+	{
+		"sk"		"Žiadna mapa nedostala viac ako {1}%% hlasov ({2} [{3}%%] & {4} [{5}%%]), spúšťam ďalšie hlasovanie."
+	}
+
+}

@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Cookie List"
+	{
+		"chi"		"Sourcemod Cookie 列表"
+	}
+
+	"Printing Cookie List"
+	{
+		"chi"		"打印 cookie 列表至控制台"
+	}
+
+	"Cookie not Found"
+	{
+		"chi"		"无法找到 cookie \"{1}\""
+	}
+
+	"Cookie Value"
+	{
+		"chi"		"{1} 的值为 {2}"
+	}
+
+	"Protected Cookie"
+	{
+		"chi"		"无法更改受保护 cookie \"{1}\" 的值"
+	}
+
+	"Cookie Changed Value"
+	{
+		"chi"		"更改 cookie \"{1}\" 的值为 \"{2}\""
+	}
+
+	"No Console"
+	{
+		"chi"		"无法显示设置菜单至控制台"
+	}
+
+	"Choose Option"
+	{
+		"chi"		"择取选项"
+	}
+
+	"Client Settings"
+	{
+		"chi"		"客户端设定"
+	}
+
+}

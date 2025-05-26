@@ -109,6 +109,8 @@ bool NextMapManager::SetNextMap(const char *map)
 	return true;
 }
 
+static char g_nextMap[PLATFORM_MAX_PATH];
+
 #if SOURCE_ENGINE != SE_DARKMESSIAH
 void NextMapManager::HookChangeLevel(const char *map, const char *unknown)
 #else
@@ -122,8 +124,16 @@ void NextMapManager::HookChangeLevel(const char *map, const char *unknown, const
 	}
 
 	const char *newmap = sm_nextmap.GetString();
+	if (newmap[0] != '\0') {
+		ke::SafeStrcpy(g_nextMap, sizeof(g_nextMap), newmap);
+		newmap = g_nextMap;
 
-	if (newmap[0] == 0 || !g_HL2.IsMapValid(newmap))
+		// Clear the value so that if the map load fails later we don't get stuck in a loop.
+		// This might cause us to go off-cycle for a map, but nextmap will get us back on track.
+		sm_nextmap.SetValue("");
+	}
+
+	if (newmap[0] == '\0' || !g_HL2.IsMapValid(newmap))
 	{
 		RETURN_META(MRES_IGNORED);
 	}
@@ -142,6 +152,15 @@ void NextMapManager::HookChangeLevel(const char *map, const char *unknown, const
 
 void NextMapManager::OnSourceModLevelChange( const char *mapName )
 {
+	// If we were controlling the map change, reset sm_nextmap to be the name of the map we successfully changed to.
+	// This maintains an old API contract on the plugin side. We use the real map name even if it was different from
+	// the expected map name as if the expected map failed to load we let the game take over instead, but the nextmap
+	// plugin compares the sm_nextmap value to the current map to decide if it should advance the mapcycle.
+	if (g_nextMap[0] != '\0') {
+		sm_nextmap.SetValue(mapName);
+		g_nextMap[0] = '\0';
+	}
+
 	/* Skip the first 'mapchange' when the server starts up */
 	if (m_tempChangeInfo.startTime != 0)
 	{

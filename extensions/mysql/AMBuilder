@@ -13,10 +13,14 @@ if SM.mysql_root:
       binary.compiler.cxxflags += ['-fno-rtti']
     elif binary.compiler.family == 'msvc':
       binary.compiler.cxxflags += ['/GR-']
+      if builder.options.debug == '1':
+        binary.compiler.cflags += ['/MDd']
+      else:
+        binary.compiler.cflags += ['/MD']
 
     if binary.compiler.target.platform == 'linux' or binary.compiler.target.platform == 'mac':
       binary.compiler.postlink += [
-        os.path.join(SM.mysql_root[arch], 'lib', 'libmysqlclient_r.a'),
+        os.path.join(SM.mysql_root[arch], 'lib', 'libmysqlclient.a'),
         '-lz',
         '-lpthread',
         '-lm',
@@ -25,8 +29,17 @@ if SM.mysql_root:
       binary.compiler.postlink += ['-lrt']
     elif binary.compiler.target.platform == 'windows':
       binary.compiler.defines += ['WIN32_LEAN_AND_MEAN']
+      if builder.options.debug == '1':
+        binary.compiler.defines += ['_ITERATOR_DEBUG_LEVEL=2']
+        binary.compiler.postlink += [
+          os.path.join(SM.mysql_root[arch], 'lib', 'debug', 'mysqlclient.lib'),
+        ]
+      else:
+        binary.compiler.postlink += [
+          os.path.join(SM.mysql_root[arch], 'lib', 'mysqlclient.lib'),
+        ]
       binary.compiler.postlink += [
-        os.path.join(SM.mysql_root[arch], 'lib', 'mysqlclient.lib'),
+        'crypt32.lib',
         'wsock32.lib'
       ]
 

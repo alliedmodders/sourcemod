@@ -1,0 +1,7 @@
+"Phrases"
+{
+    "Slayed player"
+	{
+		"bg"		"Играчът {1} е убит"
+	}
+}

@@ -36,7 +36,7 @@
 #include <ITextParsers.h>
 #include <IRootConsoleMenu.h>
 #include <am-string.h>
-#include <sm_stringhashmap.h>
+#include <sm_hashmap.h>
 
 using namespace SourceMod;
 

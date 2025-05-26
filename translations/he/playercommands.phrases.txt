@@ -1,0 +1,43 @@
+"Phrases"
+{
+	"Slap player"
+	{
+		"he"		"תן כאפה לשחקן"
+	}
+
+	"Slap damage"
+	{
+		"he"		"חוזק הכאפה"
+	}
+
+	"Slay player"
+	{
+		"he"		"רצח שחקן"
+	}
+
+	"Slapped target"
+	{
+		"he"		"נתן כאפה ל{1}"
+	}
+
+	"Slayed target"
+	{
+		"he"		"רצח את {1}"
+	}
+
+	"Name changed"
+	{
+		"he"		"השם שונה"
+	}
+
+	"Renamed target"
+	{
+		"he"		"שם {1} שונה"
+	}
+
+	"Rename player"
+	{
+		"he"		"שנה את שם השחקן"
+	}
+
+}

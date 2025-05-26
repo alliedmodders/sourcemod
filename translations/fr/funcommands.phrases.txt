@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"fr"		"Brûler un joueur"
+	}
+
+	"FireBomb player"
+	{
+		"fr"		"Bombe incendiaire sur un joueur"
+	}
+
+	"Freeze player"
+	{
+		"fr"		"Paralyser un joueur"
+	}
+
+	"FreezeBomb player"
+	{
+		"fr"		"Bombe paralysante sur un joueur"
+	}
+
+	"TimeBomb player"
+	{
+		"fr"		"Bombe a retardement"
+	}
+
+	"Beacon player"
+	{
+		"fr"		"Baliser un joueur"
+	}
+
+	"NoClip player"
+	{
+		"fr"		"Donner le pouvoir passe-murailles (NoClip) à un joueur"
+	}
+
+	"Blind player"
+	{
+		"fr"		"Aveugler un joueur"
+	}
+
+	"Drug player"
+	{
+		"fr"		"Droguer un joueur"
+	}
+
+	"Gravity player"
+	{
+		"fr"		"Modifier la Gravité sur un Joueur"
+	}
+
+	"Blind amount"
+	{
+		"fr"		"Taux d'aveuglement?"
+	}
+
+	"Fully blind"
+	{
+		"fr"		"Aveuglement total"
+	}
+
+	"Half blind"
+	{
+		"fr"		"Aveuglement partiel"
+	}
+
+	"No blind"
+	{
+		"fr"		"Pas d'aveuglement"
+	}
+
+	"Gravity amount"
+	{
+		"fr"		"Gravité ?"
+	}
+
+	"Gravity Very High"
+	{
+		"fr"		"Gravité Très Forte"
+	}
+
+	"Gravity High"
+	{
+		"fr"		"Gravité Forte"
+	}
+
+	"Gravity Normal"
+	{
+		"fr"		"Gravité Normale"
+	}
+
+	"Gravity Low"
+	{
+		"fr"		"Gravité Faible"
+	}
+
+	"Gravity Very Low"
+	{
+		"fr"		"Gravité Très Faible"
+	}
+
+	"Set target on fire"
+	{
+		"fr"		"a mis {1} en feu."
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"fr"		"a activé la bombe incendiaire sur {1}."
+	}
+
+	"Froze target"
+	{
+		"fr"		"{1} gelé."
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"fr"		"a activé la bombe paralysante sur {1}."
+	}
+
+	"Toggled beacon on target"
+	{
+		"fr"		"a placé/enlevé une Balise sur {1}."
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"fr"		"a activé la bombe a retardement sur {1}."
+	}
+
+	"Toggled noclip on target"
+	{
+		"fr"		"a placé/enlevé le pouvoir passe-murailles (NoClip) sur {1}."
+	}
+
+	"Toggled drug on target"
+	{
+		"fr"		"a drogué {1}. "
+	}
+
+	"Set blind on target"
+	{
+		"fr"		"a rendu {1} aveugle."
+	}
+
+	"Set gravity on target"
+	{
+		"fr"		"a modifié la gravité sur {1}."
+	}
+
+	"Till Explodes"
+	{
+		"fr"		"{2} secondes avant l'explosion de {1} "
+	}
+
+	"Unfrozen"
+	{
+		"fr"		"Vous êtes maintenant dégelé."
+	}
+
+	"You will be unfrozen"
+	{
+		"fr"		"Vous serez dégelé dans {1} secondes."
+	}
+
+}

@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Slot reserved"
+	{
+		"tr"		"Yer ayırtıldığı için düşürüldünüz"
+	}
+
+}

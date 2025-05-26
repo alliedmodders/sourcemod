@@ -1,0 +1,48 @@
+"Phrases"
+{
+	"Vote Nextmap"
+	{
+		"hu"		"Mi legyen a következő pálya?"
+	}
+
+	"Nextmap Voting Started"
+	{
+		"hu"		"Palyavalaszto szavazas elindult!"
+	}
+
+	"Nextmap Voting Finished"
+	{
+		"hu"		"A szavazás lezárult. A következő pálya a {1} lesz"
+	}
+
+	"Current Map Extended"
+	{
+		"hu"		"Az aktualis palya meghosszabitva."
+	}
+
+	"Extend Map"
+	{
+		"hu"		"Palya meghosszabitasa"
+	}
+
+	"Dont Change"
+	{
+		"hu"		"Ne valtsunk!"
+	}
+
+	"Current Map Stays"
+	{
+		"hu"		"Jelenlegi palya folytatodik."
+	}
+
+	"Changed Next Map"
+	{
+		"hu"		"\"{1}\" lesz a kovetkezo palya"
+	}
+
+	"Starting Runoff"
+	{
+		"hu"		"Egy pálya se kapot legalább {1}%%t  ({2} [{3}%%] & {4} [{5}%%]), végső szavazás indítása."
+	}
+
+}

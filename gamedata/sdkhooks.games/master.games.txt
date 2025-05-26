@@ -61,6 +61,11 @@
 		"engine"	"insurgency"
 		"engine"	"doi" // #cheating #yolo
 	}
+
+	"engine.mcv.txt"
+	{
+		"engine"	"mcv"
+	}
 	
 /*
 	Not Yet
@@ -151,11 +156,6 @@
 		"game"		"ag2"
 	}
 	
-	"game.cstrike.txt"
-	{
-		"game"		"cstrike"
-	}
-	
 	"game.nmrih.txt"
 	{
 		"game"		"nmrih"
@@ -198,5 +198,29 @@
 	"game.reactivedrop.txt"
 	{
 		"game"		"reactivedrop"
+	}
+	"game.openfortress.txt"
+	{
+		"game"		"open_fortress"
+	}
+	"game.dystopia.txt"
+	{
+		"game"		"!Dystopia"
+	}
+	"game.tf2classic.txt"
+	{
+		"game"		"tf2classic"
+	}
+	"game.pf2.txt"
+	{
+		"game"		"pf2"
+	}
+	"game.gmod9.txt"
+	{
+		"game"		"gmod9"
+	}
+	"game.hl1mp.txt"
+	{
+		"game"		"hl1mp"
 	}
 }

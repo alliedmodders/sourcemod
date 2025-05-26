@@ -1,0 +1,23 @@
+"Phrases"
+{
+	"Admin Menu"
+	{
+		"chi"		"管理员菜单"
+	}
+
+	"Player Commands"
+	{
+		"chi"		"玩家指令"
+	}
+
+	"Server Commands"
+	{
+		"chi"		"服务器指令"
+	}
+
+	"Voting Commands"
+	{
+		"chi"		"投票指令"
+	}
+
+}

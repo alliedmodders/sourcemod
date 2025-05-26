@@ -1,0 +1,23 @@
+"Phrases"
+{
+	"Admin Menu"
+	{
+		"bg"		"Администраторско меню"
+	}
+
+	"Player Commands"
+	{
+		"bg"		"Клиентски команди"
+	}
+
+	"Server Commands"
+	{
+		"bg"		"Сървърни команди"
+	}
+
+	"Voting Commands"
+	{
+		"bg"		"Команди за гласуване"
+	}
+
+}

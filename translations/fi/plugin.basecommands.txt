@@ -1,0 +1,138 @@
+"Phrases"
+{
+	"Unable to find cvar"
+	{
+		"fi"		"Cvaria \"{1}\" ei löytynyt."
+	}
+
+	"No access to cvar"
+	{
+		"fi"		"Sinulla ei ole oikeuksia tähän cvariin."
+	}
+
+	"Value of cvar"
+	{
+		"fi"		"Cvarin \"{1}\" arvo on: \"{2}\""
+	}
+
+	"Cvar changed"
+	{
+		"fi"		"Cvarin \"{1}\" arvoksi vaihdettiin \"{2}\"."
+	}
+
+	"Config not found"
+	{
+		"fi"		"Asetustiedostoa \"{1}\" ei löytynyt."
+	}
+
+	"Executed config"
+	{
+		"fi"		"Suoritettiin asetustiedosto \"{1}\"."
+	}
+
+	"Permabanned player"
+	{
+		"fi"		"Annettiin pysyvä porttikielto pelaajalle \"{1}\"."
+	}
+
+	"Permabanned player reason"
+	{
+		"fi"		"Annettiin pysyvä porttikielto pelaajalle \"{1}\" (syy: {3})."
+	}
+
+	"Banned player"
+	{
+		"fi"		"Annettiin porttikielto pelaajalle \"{1}\" {2} minuutiksi."
+	}
+
+	"Banned player reason"
+	{
+		"fi"		"Annettiin porttikielto pelaajalle \"{1}\" {2} minuutiksi (syy: {3})."
+	}
+
+	"Removed bans matching"
+	{
+		"fi"		"Poistettiin porttikiellot, jotka vastaavat suodatusta: {1}"
+	}
+
+	"Ban added"
+	{
+		"fi"		"Porttikielto lisätty."
+	}
+
+	"Admin cache refreshed"
+	{
+		"fi"		"Admin-välimuisti uudistettu."
+	}
+
+	"Identify player"
+	{
+		"fi"		"Tunnista pelaaja"
+	}
+
+	"Choose Map"
+	{
+		"fi"		"Valitse kartta"
+	}
+
+	"Exec CFG"
+	{
+		"fi"		"Suorita CFG"
+	}
+
+	"Admin logged in as"
+	{
+		"fi"		"\"{1}\" on kirjautuneena nimellä \"{2}\" ja oikeuksilla: {3}"
+	}
+
+	"Admin logged in anon"
+	{
+		"fi"		"Pelaajalla \"{1}\" on oikeudet: {2}"
+	}
+
+	"Player is not an admin"
+	{
+		"fi"		"\"{1}\" ei ole admin."
+	}
+
+	"Player is an admin"
+	{
+		"fi"		"\"{1}\" on admin."
+	}
+
+	"Username"
+	{
+		"fi"		"Käyttäjänimi"
+	}
+
+	"Kicked target"
+	{
+		"fi"		"Potkittiin {1}."
+	}
+
+	"Admin access"
+	{
+		"fi"		"Adminoikeudet"
+	}
+
+	"Cvar is now protected"
+	{
+		"fi"		"Cvar {1} on nyt suojeltu."
+	}
+
+	"Kicked target reason"
+	{
+		"fi"		"Erotettiin pelaaja {1} (Syy: {2})"
+	}
+
+	"Please select a map"
+	{
+		"fi"		"Valitse kartta"
+	}
+
+	"Choose Config"
+	{
+		"fi"		"Valitse konfiguraatio"
+	}
+
+}

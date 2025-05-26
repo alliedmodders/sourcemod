@@ -1,0 +1,168 @@
+"Phrases"
+{
+	"Burn player"
+	{
+		"hu"		"Játékos megégetése"
+	}
+
+	"FireBomb player"
+	{
+		"hu"		"Játékos felrobbantása"
+	}
+
+	"Freeze player"
+	{
+		"hu"		"Játékos lebénítása"
+	}
+
+	"FreezeBomb player"
+	{
+		"hu"		"Bénítóbomba"
+	}
+
+	"TimeBomb player"
+	{
+		"hu"		"Időzített bomba"
+	}
+
+	"Beacon player"
+	{
+		"hu"		"Játékos megjelölése"
+	}
+
+	"NoClip player"
+	{
+		"hu"		"Falonátjárás"
+	}
+
+	"Blind player"
+	{
+		"hu"		"Játékos megvakítása"
+	}
+
+	"Drug player"
+	{
+		"hu"		"Játékos belövése"
+	}
+
+	"Gravity player"
+	{
+		"hu"		"Játékos súlyának megváltoztatása"
+	}
+
+	"Blind amount"
+	{
+		"hu"		"Vakság mértéke?"
+	}
+
+	"Fully blind"
+	{
+		"hu"		"Tejlesen vak"
+	}
+
+	"Half blind"
+	{
+		"hu"		"Félig vak"
+	}
+
+	"No blind"
+	{
+		"hu"		"Vakítás feloldása"
+	}
+
+	"Gravity amount"
+	{
+		"hu"		"Gravitáció mértéke?"
+	}
+
+	"Gravity Very High"
+	{
+		"hu"		"Nagyon magas gravitáció"
+	}
+
+	"Gravity High"
+	{
+		"hu"		"Magas gravitáció"
+	}
+
+	"Gravity Normal"
+	{
+		"hu"		"Normális gravitáció"
+	}
+
+	"Gravity Low"
+	{
+		"hu"		"Alacsony gravitáció"
+	}
+
+	"Gravity Very Low"
+	{
+		"hu"		"Nagyon alacsony gravitáció"
+	}
+
+	"Set target on fire"
+	{
+		"hu"		"{1} meggyújtása"
+	}
+
+	"Toggled FireBomb on target"
+	{
+		"hu"		"{1} bombáva lett"
+	}
+
+	"Froze target"
+	{
+		"hu"		"{1} lebénítva"
+	}
+
+	"Toggled FreezeBomb on target"
+	{
+		"hu"		"{1} bénítóbombáva lett"
+	}
+
+	"Toggled beacon on target"
+	{
+		"hu"		"{1} megjelölve"
+	}
+
+	"Toggled TimeBomb on target"
+	{
+		"hu"		"{1} időzített bomba lett"
+	}
+
+	"Toggled noclip on target"
+	{
+		"hu"		"{1} átjárhat a falakon"
+	}
+
+	"Toggled drug on target"
+	{
+		"hu"		"{1} bedrogozva"
+	}
+
+	"Set blind on target"
+	{
+		"hu"		"{1} megvakítva"
+	}
+
+	"Set gravity on target"
+	{
+		"hu"		"{1} súlyának megváltoztatása"
+	}
+
+	"Till Explodes"
+	{
+		"hu"		"{1} {2} másodperc múlva felrobban"
+	}
+
+	"Unfrozen"
+	{
+		"hu"		"Most már felolvadtál."
+	}
+
+	"You will be unfrozen"
+	{
+		"hu"		"Felolvasztás {1} másodperc múlva."
+	}
+
+}

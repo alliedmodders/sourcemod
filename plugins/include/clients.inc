@@ -69,7 +69,7 @@ enum AuthIdType
  * MAXPLAYERS is a hardcoded value as an upper limit.  MaxClients changes based on the server.
  */
 
-#define MAXPLAYERS      65  /**< Maximum number of players SourceMod supports */
+#define MAXPLAYERS      101  /**< Maximum number of players SourceMod supports */
 #define MAX_NAME_LENGTH 128 /**< Maximum buffer required to store a client name */
 #define MAX_AUTHID_LENGTH 64 /**< Maximum buffer required to store any AuthID type */
 
@@ -214,6 +214,18 @@ forward Action OnClientPreAdminCheck(int client);
  * @param client        Client index.
  */
 forward void OnClientPostAdminFilter(int client);
+
+/**
+ * Called directly before the server enters hibernation.
+ * This is your last chance to do anything in the plugin before
+ * hibernation occurs, as SV_Frame will no longer be called.
+ */
+forward void OnServerEnterHibernation();
+
+/**
+ * Called directly before the server leaves hibernation.
+ */
+forward void OnServerExitHibernation();
 
 /**
  * Called once a client is authorized and fully in-game, and 

@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Slot reserved"
+	{
+		"pt_p"		"A ligação foi cancelada porque a vaga está reservada para outra pessoa"
+	}
+
+}

@@ -62,7 +62,11 @@ size_t GetStackParamOffset(HookParamsStruct *paramStruct, unsigned int index)
 			continue;
 		}
 #endif
+#ifdef KE_ARCH_X64
+		offset += 8;
+#else
 		offset += paramStruct->dg->params[i].size;
+#endif
 	}
 	return offset;
 }
@@ -77,7 +81,9 @@ size_t GetRegisterParamOffset(HookParamsStruct *paramStruct, unsigned int index)
 	for (int i = paramStruct->dg->params.size() - 1; i >= 0; i--)
 	{
 		if (paramStruct->dg->params[i].custom_register == None)
+		{
 			stackSize += paramStruct->dg->params[i].size;
+		}
 	}
 
 	size_t offset = stackSize;

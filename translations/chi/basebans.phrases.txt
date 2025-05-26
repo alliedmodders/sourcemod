@@ -1,0 +1,63 @@
+"Phrases"
+{
+	"Ban player"
+	{
+		"chi"		"封禁玩家"
+	}
+
+	"Ban reason"
+	{
+		"chi"		"封禁原因"
+	}
+
+	"Permabanned player"
+	{
+		"chi"		"玩家 \"{1}\" 已被永久封禁."
+	}
+
+	"Permabanned player reason"
+	{
+		"chi"		"玩家 \"{1}\" 已被永久封禁 (原因: {2})."
+	}
+
+	"Banned player"
+	{
+		"chi"		"封禁玩家 \"{1}\" {2} 分钟."
+	}
+
+	"Banned player reason"
+	{
+		"chi"		"封禁玩家 \"{1}\" {2} 分钟 (原因: {3})."
+	}
+
+	"Removed bans matching"
+	{
+		"chi"		"移除符合条件: {1} 的封禁"
+	}
+
+	"Ban added"
+	{
+		"chi"		"封禁已添加."
+	}
+
+	"Cannot ban that IP"
+	{
+		"chi"		"您无法封禁该 IP 地址."
+	}
+
+	"Custom ban reason explanation"
+	{
+		"chi"		"以聊天信息方式输入理由. 按 {1} 则中止."
+	}
+
+	"AbortBan applied successfully"
+	{
+		"chi"		"中止封禁."
+	}
+
+	"AbortBan not waiting for custom reason"
+	{
+		"chi"		"不等待键入封禁理由, 无封禁可中止."
+	}
+
+}

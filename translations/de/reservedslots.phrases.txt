@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Slot reserved"
+	{
+		"de"		"Gekickt wegen der Nutzung eines reservierten Platzes"
+	}
+
+}

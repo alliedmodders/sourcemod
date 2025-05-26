@@ -47,6 +47,8 @@
 #include <cstrike15_usermessages.pb.h>
 #elif SOURCE_ENGINE == SE_BLADE
 #include <berimbau_usermessages.pb.h>
+#elif SOURCE_ENGINE == SE_MCV
+#include <vietnam_usermessages.pb.h>
 #endif
 
 typedef ICommandLine *(*FakeGetCommandLine)();
@@ -55,7 +57,6 @@ typedef ICommandLine *(*FakeGetCommandLine)();
 #define VSTDLIB_NAME		FORMAT_SOURCE_BIN_NAME("vstdlib")
 
 CHalfLife2 g_HL2;
-ConVar *sv_lan = NULL;
 
 static void *g_EntList = NULL;
 static void **g_pEntInfoList = NULL;
@@ -233,9 +234,9 @@ void CHalfLife2::InitLogicalEntData()
 				return;
 			}
 
-#ifdef PLATFORM_X86
+#ifdef KE_ARCH_X86
 			g_EntList = *reinterpret_cast<void **>(addr + offset);
-#elif defined PLATFORM_X64
+#elif defined KE_ARCH_X64
 			int32_t varOffset = *reinterpret_cast<int32_t *>(addr + offset);
 			g_EntList = reinterpret_cast<void *>(addr + offset + sizeof(int32_t) + varOffset);
 #endif
@@ -411,6 +412,17 @@ ServerClass *CHalfLife2::FindServerClass(const char *classname)
 	return pInfo->sc;
 }
 
+ServerClass *CHalfLife2::FindEntityServerClass(CBaseEntity *pEntity)
+{
+	IServerNetworkable* pNetwork = ((IServerUnknown *)pEntity)->GetNetworkable();
+	if (pNetwork == nullptr)
+	{
+		return nullptr;
+	}
+
+	return pNetwork->GetServerClass();
+}
+
 DataTableInfo *CHalfLife2::_FindServerClass(const char *classname)
 {
 	DataTableInfo *pInfo = NULL;
@@ -443,20 +455,25 @@ bool CHalfLife2::FindSendPropInfo(const char *classname, const char *offset, sm_
 		return false;
 	}
 
-	if (!pInfo->lookup.retrieve(offset, info))
-	{
-		sm_sendprop_info_t temp_info;
+	DataTableInfo::SendPropInfo temp;
 
-		if (!UTIL_FindInSendTable(pInfo->sc->m_pTable, offset, &temp_info, 0))
+	if (!pInfo->lookup.retrieve(offset, &temp))
+	{
+		bool found = UTIL_FindInSendTable(pInfo->sc->m_pTable, offset, &temp.info, 0);
+		temp.name = offset;
+
+		pInfo->lookup.insert(offset, temp);
+
+		if (found)
 		{
-			return false;
+			*info = temp.info;
 		}
 
-		pInfo->lookup.insert(offset, temp_info);
-		*info = temp_info;
+		return found;
 	}
-	
-	return true;
+
+	*info = temp.info;
+	return info->prop != nullptr;
 }
 
 SendProp *CHalfLife2::FindInSendTable(const char *classname, const char *offset)
@@ -490,15 +507,25 @@ bool CHalfLife2::FindDataMapInfo(datamap_t *pMap, const char *offset, sm_datatab
 		m_Maps.add(i, pMap, new DataMapCache());
 
 	DataMapCache *cache = i->value;
+	DataMapCacheInfo temp;
 
-	if (!cache->retrieve(offset, pDataTable))
+	if (!cache->retrieve(offset, &temp))
 	{
-		if (!UTIL_FindDataMapInfo(pMap, offset, pDataTable))
-			return false;
-		cache->insert(offset, *pDataTable);
+		bool found = UTIL_FindDataMapInfo(pMap, offset, &temp.info);
+		temp.name = offset;
+
+		cache->insert(offset, temp);
+
+		if (found)
+		{
+			*pDataTable = temp.info;
+		}
+
+		return found;
 	}
 
-	return true;
+	*pDataTable = temp.info;
+	return pDataTable->prop != nullptr;
 }
 
 void CHalfLife2::SetEdictStateChanged(edict_t *pEdict, unsigned short offset)
@@ -539,7 +566,7 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 			char buffer[253];
 			ke::SafeSprintf(buffer, sizeof(buffer), "%s\1\n", msg);
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 			CCSUsrMsg_SayText *pMsg;
 			if ((pMsg = (CCSUsrMsg_SayText *)g_UserMsgs.StartProtobufMessage(m_SayTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
 			{
@@ -566,7 +593,7 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 		}
 	}
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	CCSUsrMsg_TextMsg *pMsg;
 	if ((pMsg = (CCSUsrMsg_TextMsg *)g_UserMsgs.StartProtobufMessage(m_MsgTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
 	{
@@ -603,7 +630,7 @@ bool CHalfLife2::HintTextMsg(int client, const char *msg)
 {
 	cell_t players[] = {client};
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	CCSUsrMsg_HintText *pMsg;
 	if ((pMsg = (CCSUsrMsg_HintText *)g_UserMsgs.StartProtobufMessage(m_HinTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
 	{
@@ -633,7 +660,7 @@ bool CHalfLife2::HintTextMsg(int client, const char *msg)
 
 bool CHalfLife2::HintTextMsg(cell_t *players, int count, const char *msg)
 {
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	CCSUsrMsg_HintText *pMsg;
 	if ((pMsg = (CCSUsrMsg_HintText *)g_UserMsgs.StartProtobufMessage(m_HinTextMsg, players, count, USERMSG_RELIABLE)) == NULL)
 	{
@@ -668,7 +695,7 @@ bool CHalfLife2::ShowVGUIMenu(int client, const char *name, KeyValues *data, boo
 	int count = 0;
 	cell_t players[] = {client};
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	CCSUsrMsg_VGUIMenu *pMsg;
 	if ((pMsg = (CCSUsrMsg_VGUIMenu *)g_UserMsgs.StartProtobufMessage(m_VGUIMenu, players, 1, USERMSG_RELIABLE)) == NULL)
 	{
@@ -693,7 +720,7 @@ bool CHalfLife2::ShowVGUIMenu(int client, const char *name, KeyValues *data, boo
 		SubKey = data->GetFirstSubKey();
 	}
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	pMsg->set_name(name);
 	pMsg->set_show(show);
 
@@ -759,7 +786,7 @@ void CHalfLife2::ProcessFakeCliCmdQueue()
 
 bool CHalfLife2::IsLANServer()
 {
-	sv_lan = icvar->FindVar("sv_lan");
+	static ConVar *sv_lan = icvar->FindVar("sv_lan");
 
 	if (!sv_lan)
 	{
@@ -951,7 +978,7 @@ cell_t CHalfLife2::EntityToReference(CBaseEntity *pEntity)
 {
 	IServerUnknown *pUnknown = (IServerUnknown *)pEntity;
 	CBaseHandle hndl = pUnknown->GetRefEHandle();
-	return (hndl.ToInt() | (1<<31));
+	return (hndl.ToInt() | ENTREF_MASK);
 }
 
 CBaseEntity *CHalfLife2::ReferenceToEntity(cell_t entRef)
@@ -963,10 +990,10 @@ CBaseEntity *CHalfLife2::ReferenceToEntity(cell_t entRef)
 
 	CEntInfo *pInfo = NULL;
 
-	if (entRef & (1<<31))
+	if (entRef & ENTREF_MASK)
 	{
 		/* Proper ent reference */
-		int hndlValue = entRef & ~(1<<31);
+		int hndlValue = entRef & ~ENTREF_MASK;
 		CBaseHandle hndl(hndlValue);
 
 		pInfo = LookupEntity(hndl.GetEntryIndex());
@@ -1067,23 +1094,41 @@ int CHalfLife2::ReferenceToIndex(cell_t entRef)
 		return INVALID_EHANDLE_INDEX;
 	}
 
-	if (entRef & (1<<31))
+	if (entRef & ENTREF_MASK)
 	{
 		/* Proper ent reference */
-		int hndlValue = entRef & ~(1<<31);
+		int hndlValue = entRef & ~ENTREF_MASK;
 		CBaseHandle hndl(hndlValue);
 
 		CEntInfo *pInfo = LookupEntity(hndl.GetEntryIndex());
 
-		if (pInfo->m_SerialNumber != hndl.GetSerialNumber())
+		if (!pInfo || pInfo->m_SerialNumber != hndl.GetSerialNumber())
 		{
 			return INVALID_EHANDLE_INDEX;
 		}
 
 		return hndl.GetEntryIndex();
 	}
+	else
+	{
+		CEntInfo *pInfo = LookupEntity(entRef);
+		if (!pInfo)
+		{
+			return INVALID_EHANDLE_INDEX;
+		}
+		IServerUnknown *pUnk = static_cast<IServerUnknown *>(pInfo->m_pEntity);
+		if (!pUnk)
+		{
+			return INVALID_EHANDLE_INDEX;
+		}
+		CBaseEntity *pEntity = pUnk->GetBaseEntity();
+		if (!pEntity)
+		{
+			return INVALID_EHANDLE_INDEX; 
+		}
 
-	return entRef;
+		return entRef;
+	}
 }
 
 cell_t CHalfLife2::EntityToBCompatRef(CBaseEntity *pEntity)
@@ -1103,7 +1148,7 @@ cell_t CHalfLife2::EntityToBCompatRef(CBaseEntity *pEntity)
 	
 	if (hndl.GetEntryIndex() >= MAX_EDICTS)
 	{
-		return (hndl.ToInt() | (1<<31));
+		return (hndl.ToInt() | ENTREF_MASK);
 	}
 	else
 	{
@@ -1118,7 +1163,7 @@ cell_t CHalfLife2::ReferenceToBCompatRef(cell_t entRef)
 		return INVALID_EHANDLE_INDEX;
 	}
 
-	int hndlValue = entRef & ~(1<<31);
+	int hndlValue = entRef & ~ENTREF_MASK;
 	CBaseHandle hndl(hndlValue);
 
 	if (hndl.GetEntryIndex() < MAX_EDICTS)
@@ -1528,7 +1573,8 @@ uint64_t CHalfLife2::GetServerSteamId64() const
 	|| SOURCE_ENGINE == SE_SDK2013     \
 	|| SOURCE_ENGINE == SE_ALIENSWARM  \
 	|| SOURCE_ENGINE == SE_TF2 \
-	|| SOURCE_ENGINE == SE_PVKII
+	|| SOURCE_ENGINE == SE_PVKII \
+	|| SOURCE_ENGINE == SE_MCV
 	const CSteamID *sid = engine->GetGameServerSteamID();
 	if (sid)
 	{
@@ -1554,3 +1600,26 @@ uint64_t CHalfLife2::GetServerSteamId64() const
 
 	return 1ULL;
 }
+
+void CHalfLife2::RemoveDataTableCache(datamap_t *pMap)
+{
+	if (pMap == nullptr)
+	{
+		m_Maps.clear();
+		return;
+	}
+
+	m_Maps.removeIfExists(pMap);
+}
+
+bool CHalfLife2::RemoveSendPropCache(const char *classname)
+{
+	if (classname == nullptr)
+	{
+		m_Classes.clear();
+		return true;
+	}
+
+	return m_Classes.remove(classname);
+}
+

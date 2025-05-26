@@ -31,13 +31,24 @@
 
 #include "teleporter.h"
 
-CDetour *canPlayerTeleportDetour = NULL;
+CDetour *canPlayerBeTeleportedDetour = NULL;
 
 IForward *g_teleportForward = NULL;
 
 class CTFPlayer;
 
+#if defined(__linux__) && defined(__i386__)
+class CanPlayerBeTeleportedClass
+{
+public:
+	__attribute__((regparm(2))) bool CanPlayerBeTeleported(CTFPlayer * pPlayer); 
+	static __attribute__((regparm(2))) bool (CanPlayerBeTeleportedClass::* CanPlayerBeTeleported_Actual)(CTFPlayer *);
+};
+__attribute__((regparm(2))) bool (CanPlayerBeTeleportedClass::* CanPlayerBeTeleportedClass::CanPlayerBeTeleported_Actual)(CTFPlayer *) = NULL;
+__attribute__((regparm(2))) bool CanPlayerBeTeleportedClass::CanPlayerBeTeleported(CTFPlayer* pPlayer)
+#else
 DETOUR_DECL_MEMBER1(CanPlayerBeTeleported, bool, CTFPlayer *, pPlayer)
+#endif
 {
 	bool origCanTeleport = DETOUR_MEMBER_CALL(CanPlayerBeTeleported)(pPlayer);
 
@@ -73,11 +84,11 @@ DETOUR_DECL_MEMBER1(CanPlayerBeTeleported, bool, CTFPlayer *, pPlayer)
 
 bool InitialiseTeleporterDetour()
 {
-	canPlayerTeleportDetour = DETOUR_CREATE_MEMBER(CanPlayerBeTeleported, "CanPlayerTeleport");
+	canPlayerBeTeleportedDetour = DETOUR_CREATE_MEMBER(CanPlayerBeTeleported, "CanPlayerBeTeleported");
 
-	if (canPlayerTeleportDetour != NULL)
+	if (canPlayerBeTeleportedDetour != NULL)
 	{
-		canPlayerTeleportDetour->EnableDetour();
+		canPlayerBeTeleportedDetour->EnableDetour();
 		return true;
 	}
 
@@ -88,9 +99,9 @@ bool InitialiseTeleporterDetour()
 
 void RemoveTeleporterDetour()
 {
-	if (canPlayerTeleportDetour != NULL)
+	if (canPlayerBeTeleportedDetour != NULL)
 	{
-		canPlayerTeleportDetour->Destroy();
-		canPlayerTeleportDetour = NULL;
+		canPlayerBeTeleportedDetour->Destroy();
+		canPlayerBeTeleportedDetour = NULL;
 	}
 }

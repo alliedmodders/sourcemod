@@ -73,12 +73,22 @@ SMCResult SignatureGameConfig::ReadSMC_NewSection(const SMCStates *states, const
 	}
 
 	// Handle platform specific sections first.
+#ifdef DYNAMICHOOKS_x86_64
+#if defined WIN32
+	if (!strcmp(name, "windows64"))
+#elif defined _LINUX
+	if (!strcmp(name, "linux64"))
+#elif defined _OSX
+	if (!strcmp(name, "mac64"))
+#endif
+#else
 #if defined WIN32
 	if (!strcmp(name, "windows"))
 #elif defined _LINUX
 	if (!strcmp(name, "linux"))
 #elif defined _OSX
 	if (!strcmp(name, "mac"))
+#endif
 #endif
 	{
 		// We're already in a section for a different OS that we're ignoring. Can't have a section for our OS in here.
@@ -99,13 +109,8 @@ SMCResult SignatureGameConfig::ReadSMC_NewSection(const SMCStates *states, const
 		g_PlatformOnlyState = g_ParseState;
 		return SMCResult_Continue;
 	}
-#if defined WIN32
-	else if (!strcmp(name, "linux") || !strcmp(name, "mac"))
-#elif defined _LINUX
-	else if (!strcmp(name, "windows") || !strcmp(name, "mac"))
-#elif defined _OSX
-	else if (!strcmp(name, "windows") || !strcmp(name, "linux"))
-#endif
+	else if (!strcmp(name, "windows") || !strcmp(name, "linux") || !strcmp(name, "mac")
+	|| !strcmp(name, "windows64") || !strcmp(name, "linux64") || !strcmp(name, "mac64"))
 	{
 		if (g_PlatformOnlyState != PState_None)
 		{
@@ -565,6 +570,42 @@ Register_t SignatureGameConfig::GetCustomRegisterFromString(const char *str)
 	else if (!strcmp(str, "edi"))
 		return EDI;
 
+#ifdef DYNAMICHOOKS_x86_64
+	else if (!strcmp(str, "rax"))
+		return RAX;
+	else if (!strcmp(str, "rcx"))
+		return RCX;
+	else if (!strcmp(str, "rdx"))
+		return RDX;
+	else if (!strcmp(str, "rbx"))
+		return RBX;
+	else if (!strcmp(str, "rsp"))
+		return RSP;
+	else if (!strcmp(str, "rbp"))
+		return RBP;
+	else if (!strcmp(str, "rsi"))
+		return RSI;
+	else if (!strcmp(str, "rdi"))
+		return RDI;
+
+	else if (!strcmp(str, "r8"))
+		return R8;
+	else if (!strcmp(str, "r9"))
+		return R9;
+	else if (!strcmp(str, "r10"))
+		return R10;
+	else if (!strcmp(str, "r11"))
+		return R11;
+	else if (!strcmp(str, "r12"))
+		return R12;
+	else if (!strcmp(str, "r13"))
+		return R13;
+	else if (!strcmp(str, "r14"))
+		return R14;
+	else if (!strcmp(str, "r15"))
+		return R15;
+#endif
+
 	else if (!strcmp(str, "mm0"))
 		return MM0;
 	else if (!strcmp(str, "mm1"))
@@ -598,6 +639,25 @@ Register_t SignatureGameConfig::GetCustomRegisterFromString(const char *str)
 		return XMM6;
 	else if (!strcmp(str, "xmm7"))
 		return XMM7;
+
+#ifdef DYNAMICHOOKS_x86_64
+	else if (!strcmp(str, "xmm8"))
+		return XMM8;
+	else if (!strcmp(str, "xmm9"))
+		return XMM9;
+	else if (!strcmp(str, "xmm10"))
+		return XMM10;
+	else if (!strcmp(str, "xmm11"))
+		return XMM11;
+	else if (!strcmp(str, "xmm12"))
+		return XMM12;
+	else if (!strcmp(str, "xmm13"))
+		return XMM13;
+	else if (!strcmp(str, "xmm14"))
+		return XMM14;
+	else if (!strcmp(str, "xmm15"))
+		return XMM15;
+#endif
 
 	else if (!strcmp(str, "cs"))
 		return CS;

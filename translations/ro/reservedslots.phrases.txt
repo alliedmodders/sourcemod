@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Slot reserved"
+	{
+		"ro"		"Deconectat din cauza rezervării slotului."
+	}
+
+}

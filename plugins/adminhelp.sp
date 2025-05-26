@@ -98,7 +98,7 @@ public Action HelpCmd(int client, int args)
 			cmdIter.GetName(name, sizeof(name));
 			cmdIter.GetDescription(desc, sizeof(desc));
 
-			if ((StrContains(name, arg, false) != -1) && CheckCommandAccess(client, name, cmdIter.Flags))
+			if ((StrContains(name, arg, false) != -1) && ((cmdIter.ConVarFlags & FCVAR_HIDDEN) == 0) && CheckCommandAccess(client, name, cmdIter.Flags))
 			{
 				PrintToConsole(client, "[%03d] %s - %s", i++, name, (desc[0] == '\0') ? noDesc : desc);
 			}
@@ -120,7 +120,7 @@ public Action HelpCmd(int client, int args)
 			{
 				cmdIter.GetName(name, sizeof(name));
 
-				if (CheckCommandAccess(client, name, cmdIter.Flags))
+				if (((cmdIter.ConVarFlags & FCVAR_HIDDEN) == 0) && CheckCommandAccess(client, name, cmdIter.Flags))
 				{
 					i++;
 				}
@@ -142,7 +142,7 @@ public Action HelpCmd(int client, int args)
 			cmdIter.GetName(name, sizeof(name));
 			cmdIter.GetDescription(desc, sizeof(desc));
 			
-			if (CheckCommandAccess(client, name, cmdIter.Flags))
+			if (((cmdIter.ConVarFlags & FCVAR_HIDDEN) == 0) && CheckCommandAccess(client, name, cmdIter.Flags))
 			{
 				i++;
 				PrintToConsole(client, "[%03d] %s - %s", i+StartCmd, name, (desc[0] == '\0') ? noDesc : desc);

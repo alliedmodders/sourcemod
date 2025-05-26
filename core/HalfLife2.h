@@ -38,7 +38,7 @@
 #include <am-utility.h>
 #include <am-hashset.h>
 #include <am-hashmap.h>
-#include <sm_stringhashmap.h>
+#include <sm_hashmap.h>
 #include <sm_namehashset.h>
 #include "sm_globals.h"
 #include "sm_queue.h"
@@ -56,6 +56,8 @@ class ICommandArgs;
 
 using namespace SourceHook;
 using namespace SourceMod;
+
+static const int ENTREF_MASK = (1 << 31);
 
 #define HUD_PRINTTALK		3
 #define HUD_PRINTCENTER		4
@@ -89,16 +91,24 @@ using namespace SourceMod;
 
 struct DataTableInfo
 {
-	struct SendPropPolicy
+	struct SendPropInfo
 	{
-		static inline bool matches(const char *name, const sm_sendprop_info_t &info)
+		static inline bool matches(const char *name, const SendPropInfo &info)
 		{
-			return strcmp(name, info.prop->GetName()) == 0;
+			return strcmp(name, info.name.c_str()) == 0;
 		}
 		static inline uint32_t hash(const detail::CharsAndLength &key)
 		{
 			return key.hash();
 		}
+
+		SendPropInfo()
+			: name(), info{nullptr, 0}
+		{
+		}
+
+		std::string name;
+		sm_sendprop_info_t info;
 	};
 
 	static inline bool matches(const char *name, const DataTableInfo *info)
@@ -116,22 +126,30 @@ struct DataTableInfo
 	}
 
 	ServerClass *sc;
-	NameHashSet<sm_sendprop_info_t, SendPropPolicy> lookup;
+	NameHashSet<SendPropInfo> lookup;
 };
 
-struct DataMapCachePolicy
+struct DataMapCacheInfo
 {
-	static inline bool matches(const char *name, const sm_datatable_info_t &info)
+	static inline bool matches(const char *name, const DataMapCacheInfo &info)
 	{
-		return strcmp(name, info.prop->fieldName) == 0;
+		return strcmp(name, info.name.c_str()) == 0;
 	}
 	static inline uint32_t hash(const detail::CharsAndLength &key)
 	{
 		return key.hash();
 	}
+
+	DataMapCacheInfo()
+		: name(), info{nullptr, 0}
+	{
+	}
+
+	std::string name;
+	sm_datatable_info_t info;
 };
 
-typedef NameHashSet<sm_datatable_info_t, DataMapCachePolicy> DataMapCache;
+typedef NameHashSet<DataMapCacheInfo> DataMapCache;
 
 struct DelayedFakeCliCmd
 {
@@ -205,6 +223,7 @@ public: //IGameHelpers
 	bool FindSendPropInfo(const char *classname, const char *offset, sm_sendprop_info_t *info);
 	datamap_t *GetDataMap(CBaseEntity *pEntity);
 	ServerClass *FindServerClass(const char *classname);
+	ServerClass *FindEntityServerClass(CBaseEntity *pEntity);
 	typedescription_t *FindInDataMap(datamap_t *pMap, const char *offset);
 	bool FindDataMapInfo(datamap_t *pMap, const char *offset, sm_datatable_info_t *pDataTable);
 	void SetEdictStateChanged(edict_t *pEdict, unsigned short offset);
@@ -242,6 +261,8 @@ public: //IGameHelpers
 	string_t AllocPooledString(const char *pszValue);
 	bool GetServerSteam3Id(char *pszOut, size_t len) const override;
 	uint64_t GetServerSteamId64() const override;
+	void RemoveDataTableCache(datamap_t *pMap = nullptr);
+	bool RemoveSendPropCache(const char *classname = nullptr);
 public:
 	void AddToFakeCliCmdQueue(int client, int userid, const char *cmd);
 	void ProcessFakeCliCmdQueue();

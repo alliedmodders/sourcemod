@@ -1,0 +1,38 @@
+"Phrases"
+{
+	"Map History"
+	{
+		"sv"		"Kartans historia"
+	}
+
+	"Map"
+	{
+		"sv"		"[Karta]"
+	}
+
+	"Started"
+	{
+		"sv"		"[Startad]"
+	}
+
+	"Played Time"
+	{
+		"sv"		"[Spelad tid]"
+	}
+
+	"Reason"
+	{
+		"sv"		"[Anledning till avslutande]"
+	}
+
+	"Current Map"
+	{
+		"sv"		"Nuvarande karta"
+	}
+
+	"ago"
+	{
+		"sv"		"sedan"
+	}
+
+}

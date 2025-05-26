@@ -1787,10 +1787,10 @@ static cell_t SQL_ExecuteTransaction(IPluginContext *pContext, const cell_t *par
 
 	IPluginFunction *onSuccess = NULL;
 	IPluginFunction *onError = NULL;
-	if (params[3] != -1 && ((onSuccess = pContext->GetFunctionById(params[3])) == NULL))
-		return pContext->ThrowNativeError("Function id %x is invalid", params[3]);
-	if (params[4] != -1 && ((onError = pContext->GetFunctionById(params[4])) == NULL))
-		return pContext->ThrowNativeError("Function id %x is invalid", params[4]);
+	if (!pContext->GetFunctionByIdOrNull(params[3], &onSuccess))
+		return 0;
+	if (!pContext->GetFunctionByIdOrNull(params[4], &onError))
+		return 0;
 
 	cell_t data = params[5];
 	PrioQueueLevel priority = PrioQueue_Normal;

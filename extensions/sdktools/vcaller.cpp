@@ -152,7 +152,8 @@ static cell_t PrepSDKCall_SetSignature(IPluginContext *pContext, const cell_t *p
 	|| SOURCE_ENGINE == SE_INSURGENCY  \
 	|| SOURCE_ENGINE == SE_DOI         \
 	|| SOURCE_ENGINE == SE_CSGO        \
-	|| SOURCE_ENGINE == SE_PVKII
+	|| SOURCE_ENGINE == SE_PVKII       \
+	|| SOURCE_ENGINE == SE_MCV
 		s_call_addr = memutils->ResolveSymbol(handle, &sig[1]);
 #else
 		s_call_addr = dlsym(handle, &sig[1]);
@@ -171,7 +172,7 @@ static cell_t PrepSDKCall_SetSignature(IPluginContext *pContext, const cell_t *p
 
 static cell_t PrepSDKCall_SetAddress(IPluginContext *pContext, const cell_t *params)
 {
-#ifdef PLATFORM_X86
+#ifdef KE_ARCH_X86
 	s_call_addr = reinterpret_cast<void *>(params[1]);
 #else
 	s_call_addr = g_pSM->FromPseudoAddress(params[1]);
@@ -405,7 +406,7 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 				else if (reinterpret_cast<uintptr_t>(thisptr) < VALID_MINIMUM_MEMORY_ADDRESS)
 				{
 					vc->stk_put(ptr);
-					return pContext->ThrowNativeError("Invalid ThisPtr address 0x%x is pointing to reserved memory.", thisptr);
+					return pContext->ThrowNativeError("Invalid ThisPtr address %p is pointing to reserved memory.", thisptr);
 				}
 
 				*(void **)ptr = thisptr;

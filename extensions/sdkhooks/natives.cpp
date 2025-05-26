@@ -230,10 +230,13 @@ cell_t Native_DropWeapon(IPluginContext *pContext, const cell_t *params)
 	if (!pWeapon)
 		return pContext->ThrowNativeError("Invalid entity index %d for weapon", params[2]);
 
-	IServerUnknown *pUnk = (IServerUnknown *)pWeapon;
-	IServerNetworkable *pNet = pUnk->GetNetworkable();
+	ServerClass *pClass = gamehelpers->FindEntityServerClass(pWeapon);
+	if (pClass == nullptr)
+	{
+		return pContext->ThrowNativeError("Failed to retrieve entity %d server class!", params[2]);
+	}
 
-	if (!UTIL_ContainsDataTable(pNet->GetServerClass()->m_pTable, "DT_BaseCombatWeapon"))
+	if (!UTIL_ContainsDataTable(pClass->m_pTable, "DT_BaseCombatWeapon"))
 		return pContext->ThrowNativeError("Entity index %d is not a weapon", params[2]);
 
 	sm_sendprop_info_t spi;
@@ -244,9 +247,12 @@ cell_t Native_DropWeapon(IPluginContext *pContext, const cell_t *params)
 	if (params[1] != hndl.GetEntryIndex())
 		return pContext->ThrowNativeError("Weapon %d is not owned by client %d", params[2], params[1]);
 
-	Vector vecTarget;
 	cell_t *addr;
 	int err;
+
+	Vector vecTarget;
+	Vector *pVecTarget = nullptr;
+
 	if ((err = pContext->LocalToPhysAddr(params[3], &addr)) != SP_ERROR_NONE)
 	{
 		return pContext->ThrowNativeError("Could not read vecTarget vector");
@@ -258,15 +264,12 @@ cell_t Native_DropWeapon(IPluginContext *pContext, const cell_t *params)
 			sp_ctof(addr[0]),
 			sp_ctof(addr[1]),
 			sp_ctof(addr[2]));
-	}
-	else
-	{
-		SH_MCALL(pPlayer, Weapon_Drop)((CBaseCombatWeapon *)pWeapon, NULL, NULL);
-		return 0;
+		pVecTarget = &vecTarget;
 	}
 
 	Vector vecVelocity;
 	Vector *pVecVelocity = nullptr;
+
 	if ((err = pContext->LocalToPhysAddr(params[4], &addr)) != SP_ERROR_NONE)
 	{
 		return pContext->ThrowNativeError("Could not read vecVelocity vector");
@@ -283,7 +286,7 @@ cell_t Native_DropWeapon(IPluginContext *pContext, const cell_t *params)
 
 	if (params[0] < 5 || params[5] != 0)
 	{
-		SH_MCALL(pPlayer, Weapon_Drop)((CBaseCombatWeapon*)pWeapon, &vecTarget, pVecVelocity);
+		SH_MCALL(pPlayer, Weapon_Drop)((CBaseCombatWeapon*)pWeapon, pVecTarget, pVecVelocity);
 	}
 	else
 	{
@@ -310,7 +313,7 @@ cell_t Native_DropWeapon(IPluginContext *pContext, const cell_t *params)
 			pCall = g_pBinTools->CreateVCall(offset, 0, 0, nullptr, pass, 3);
 		}
 
-		pCall->Execute(ArgBuffer<CBaseEntity *, CBaseEntity *, Vector *, Vector *>(pPlayer, pWeapon, &vecTarget, pVecVelocity), nullptr);
+		pCall->Execute(ArgBuffer<CBaseEntity *, CBaseEntity *, Vector *, Vector *>(pPlayer, pWeapon, pVecTarget, pVecVelocity), nullptr);
 	}
 
 	return 0;

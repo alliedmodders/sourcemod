@@ -102,89 +102,97 @@ public:
 class VFileSystem_Logic : public IFileSystemBridge
 {
 public:
-	const char *FindFirstEx(const char *pWildCard, const char *pPathID, FileFindHandle_t *pHandle)
+	const char *FindFirstEx(const char *pWildCard, const char *pPathID, FileFindHandle_t *pHandle) override
 	{
 		return filesystem->FindFirstEx(pWildCard, pPathID, pHandle);
 	}
-	const char *FindNext(FileFindHandle_t handle)
+	const char *FindNext(FileFindHandle_t handle) override
 	{
 		return filesystem->FindNext(handle);
 	}
-	bool FindIsDirectory(FileFindHandle_t handle)
+	bool FindIsDirectory(FileFindHandle_t handle) override
 	{
 		return filesystem->FindIsDirectory(handle);
 	}
-	void FindClose(FileFindHandle_t handle)
+	void FindClose(FileFindHandle_t handle) override
 	{
 		filesystem->FindClose(handle);
 	}
-	FileHandle_t Open(const char *pFileName, const char *pOptions, const char *pathID = 0)
+	FileHandle_t Open(const char *pFileName, const char *pOptions, const char *pathID = 0) override
 	{
 		return filesystem->Open(pFileName, pOptions, pathID);
 	}
-	void Close(FileHandle_t file)
+	void Close(FileHandle_t file) override
 	{
 		filesystem->Close(file);
 	}
-	char *ReadLine(char *pOutput, int maxChars, FileHandle_t file)
+	char *ReadLine(char *pOutput, int maxChars, FileHandle_t file) override
 	{
 		return filesystem->ReadLine(pOutput, maxChars, file);
 	}
-	bool EndOfFile(FileHandle_t file)
+	bool EndOfFile(FileHandle_t file) override
 	{
 		return filesystem->EndOfFile(file);
 	}
-	bool FileExists(const char *pFileName, const char *pPathID = 0)
+	bool FileExists(const char *pFileName, const char *pPathID = 0) override
 	{
 		return filesystem->FileExists(pFileName, pPathID);
 	}
-	unsigned int Size(const char *pFileName, const char *pPathID = 0)
+	unsigned int Size(FileHandle_t file) override
+	{
+		return filesystem->Size(file);
+	}
+	unsigned int Size(const char *pFileName, const char *pPathID = 0) override
 	{
 		return filesystem->Size(pFileName, pPathID);
 	}
-	int Read(void* pOutput, int size, FileHandle_t file)
+	int Read(void* pOutput, int size, FileHandle_t file) override
 	{
 		return filesystem->Read(pOutput, size, file);
 	}
-	int Write(void const* pInput, int size, FileHandle_t file)
+	int Write(void const* pInput, int size, FileHandle_t file) override
 	{
 		return filesystem->Write(pInput, size, file);
 	}
-	void Seek(FileHandle_t file, int pos, int seekType)
+	void Seek(FileHandle_t file, int pos, int seekType) override
 	{
 		filesystem->Seek(file, pos, (FileSystemSeek_t) seekType);
 	}
-	unsigned int Tell(FileHandle_t file)
+	unsigned int Tell(FileHandle_t file) override
 	{
 		return filesystem->Tell(file);
 	}
-	int FPrint(FileHandle_t file, const char *pData)
+	int FPrint(FileHandle_t file, const char *pData) override
 	{
 		return filesystem->FPrintf(file, "%s", pData);
 	}
-	void Flush(FileHandle_t file)
+	void Flush(FileHandle_t file) override
 	{
 		filesystem->Flush(file);
 	}
-	bool IsOk(FileHandle_t file)
+	bool IsOk(FileHandle_t file) override
 	{
 		return filesystem->IsOk(file);
 	}
-	void RemoveFile(const char *pRelativePath, const char *pathID)
+	void RemoveFile(const char *pRelativePath, const char *pathID) override
 	{
 		filesystem->RemoveFile(pRelativePath, pathID);
 	}
-	void RenameFile(char const *pOldPath, char const *pNewPath, const char *pathID)
+	void RenameFile(char const *pOldPath, char const *pNewPath, const char *pathID) override
 	{
 		filesystem->RenameFile(pOldPath, pNewPath, pathID);
 	}
-	bool IsDirectory(const char *pFileName, const char *pathID)
+	bool IsDirectory(const char *pFileName, const char *pathID) override
 	{
 		return filesystem->IsDirectory(pFileName, pathID);
 	}
-	void CreateDirHierarchy(const char *path, const char *pathID)
+	void CreateDirHierarchy(const char *path, const char *pathID) override
 	{
 		filesystem->CreateDirHierarchy(path, pathID);
+	}
+	int GetSearchPath(const char* pathID, bool bGetPackFiles, char* pPath, int nMaxLen) override
+	{
+		return filesystem->GetSearchPath(pathID, bGetPackFiles, pPath, nMaxLen);
 	}
 } fs_wrapper;
 
@@ -373,6 +381,10 @@ void UTIL_ConsolePrint(const char *fmt, ...)
 #define GAMEFIX "2.contagion"
 #elif SOURCE_ENGINE == SE_PVKII
 #define GAMEFIX "2.pvkii"
+#elif SOURCE_ENGINE == SE_MCV
+#define GAMEFIX "2.mcv"
+#elif SOURCE_ENGINE == SE_MOCK
+#define GAMEFIX "2.mock"
 #else
 #define GAMEFIX "2.ep1"
 #endif
@@ -405,9 +417,6 @@ CoreProviderImpl::CoreProviderImpl()
 	this->GetGlobalTarget = get_global_target;
 	this->gamesuffix = GAMEFIX;
 	this->serverGlobals = &::serverGlobals;
-	this->serverFactory = nullptr;
-	this->engineFactory = nullptr;
-	this->matchmakingDSFactory = nullptr;
 	this->listeners = nullptr;
 }
 
@@ -499,6 +508,8 @@ const char *CoreProviderImpl::GetSourceEngineName()
 	return "mock";
 #elif SOURCE_ENGINE == SE_PVKII
 	return "pvkii";
+#elif SOURCE_ENGINE == SE_MCV
+	return "mcv";
 #endif
 }
 
@@ -517,7 +528,8 @@ bool CoreProviderImpl::SymbolsAreHidden()
 	|| (SOURCE_ENGINE == SE_DOI)  \
 	|| (SOURCE_ENGINE == SE_BLADE)       \
 	|| (SOURCE_ENGINE == SE_CSGO) \
-	|| (SOURCE_ENGINE == SE_PVKII)
+	|| (SOURCE_ENGINE == SE_PVKII) \
+	|| (SOURCE_ENGINE == SE_MCV)
 	return true;
 #else
 	return false;
@@ -562,8 +574,16 @@ int CoreProviderImpl::MaxClients()
 	return g_Players.MaxClients();
 }
 
-bool CoreProviderImpl::DescribePlayer(int index, const char **namep, const char **authp, int *useridp)
+bool CoreProviderImpl::DescribePlayer(int entRef, const char **namep, const char **authp, int *useridp)
 {
+	int index = entRef;
+	if (entRef & ENTREF_MASK)
+	{
+		// Unless this is an explicit entity reference, we don't know nor care if the player has an entity yet,
+		// as long as they are currently connected. (But if it *is* an explicit ref, validate it)
+		index = g_HL2.ReferenceToIndex(entRef);
+	}
+
 	CPlayer *player = g_Players.GetPlayerByIndex(index);
 	if (!player || !player->IsConnected())
 		return false;
@@ -630,21 +650,7 @@ void CoreProviderImpl::InitializeBridge()
 	::serverGlobals.frametime = &gpGlobals->frametime;
 	::serverGlobals.interval_per_tick = &gpGlobals->interval_per_tick;
 
-	this->engineFactory = (void *)g_SMAPI->GetEngineFactory(false);
-	this->serverFactory = (void *)g_SMAPI->GetServerFactory(false);
 	this->listeners = SMGlobalClass::head;
-
-	if (auto mmlib = ::filesystem->LoadModule("matchmaking_ds" SOURCE_BIN_SUFFIX, "GAMEBIN")) {
-		this->matchmakingDSFactory = (void*)Sys_GetFactory(mmlib);
-	}
-
-	if (auto mmlib = ::filesystem->LoadModule("soundemittersystem" SOURCE_BIN_SUFFIX)) {
-		this->soundemittersystemFactory = (void*)Sys_GetFactory(mmlib);
-	}
-
-	if (auto mmlib = ::filesystem->LoadModule("vscript" SOURCE_BIN_SUFFIX)) {
-		this->vscriptFactory = (void*)Sys_GetFactory(mmlib);
-	}
 
 	logic_init_(this, &logicore);
 

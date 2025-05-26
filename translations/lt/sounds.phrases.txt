@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Played sound to target"
+	{
+		"lt"		"Sugrotas garsas žaidėjui {1}"
+	}
+
+}

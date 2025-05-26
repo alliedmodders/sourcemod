@@ -1,0 +1,8 @@
+"Phrases"
+{
+	"Flooding the server"
+	{
+		"pt_p"		"Estás a enviar demasiadas mensagens!"
+	}
+
+}
