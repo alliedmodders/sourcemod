@@ -49,6 +49,8 @@ typedef x86MsFastcall x86DetourFastCall;
 #endif
 #elif defined KE_LINUX
 #ifdef DYNAMICHOOKS_x86_64
+#include "conventions/x86_64SystemVDefault.h"
+typedef x86_64SystemVDefault x86_64DetourCall;
 #else
 #include "conventions/x86GccCdecl.h"
 #include "conventions/x86GccThiscall.h"
@@ -253,17 +255,28 @@ ICallingConvention *ConstructCallingConvention(HookSetup *setup)
 	returnType.size = 0;
 	// TODO: Add support for a custom return register.
 	returnType.custom_register = None;
+	returnType.custom_register2 = None;
+
+#if defined(DYNAMICHOOKS_x86_64) && defined(PLATFORM_LINUX)
+	if (setup->returnType == ReturnType_Vector) {
+		returnType.size = 12;
+		returnType.custom_register = XMM0;
+		returnType.custom_register2 = XMM1;
+	}
+#endif
 
 #ifdef DYNAMICHOOKS_x86_64
-#ifdef WIN32
 	if (setup->callConv == CallConv_THISCALL) {
 		DataTypeSized_t type;
 		type.type = DATA_TYPE_POINTER;
 		type.size = GetDataTypeSize(type, sizeof(void*));
+#ifdef PLATFORM_WINDOWS
 		type.custom_register = RCX;
+#else
+		type.custom_register = RDI;
+#endif
 		vecArgTypes.insert(vecArgTypes.begin(), type);
 	}
-#endif
 #endif
 
 	ICallingConvention *pCallConv = nullptr;
@@ -308,19 +321,27 @@ bool UpdateRegisterArgumentSizes(CHook* pDetour, HookSetup *setup)
 	ICallingConvention* callingConvention = pDetour->m_pCallingConvention;
 	std::vector<DataTypeSized_t> &argTypes = callingConvention->m_vecArgTypes;
 	int numArgs = argTypes.size();
+	int argTypesOffset = 0;
+
+#ifdef DYNAMICHOOKS_x86_64
+	if (setup->callConv == CallConv_THISCALL) {
+		argTypesOffset = 1;
+		--numArgs;
+	}
+#endif
 
 	for (int i = 0; i < numArgs; i++)
 	{
 		// Ignore regular arguments on the stack.
-		if (argTypes[i].custom_register == None)
+		if (argTypes[argTypesOffset+i].custom_register == None)
 			continue;
 
-		CRegister *reg = pDetour->m_pRegisters->GetRegister(argTypes[i].custom_register);
+		CRegister *reg = pDetour->m_pRegisters->GetRegister(argTypes[argTypesOffset+i].custom_register);
 		// That register can't be handled yet.
 		if (!reg)
 			return false;
 
-		argTypes[i].size = reg->m_iSize;
+		argTypes[argTypesOffset+i].size = reg->m_iSize;
 		setup->params[i].size = reg->m_iSize;
 	}
 
@@ -375,6 +396,7 @@ ReturnAction_t HandleDetour(HookType_t hookType, CHook* pDetour)
 		if (pWrapper->callConv == CallConv_THISCALL && pWrapper->thisType != ThisPointer_Ignore)
 		{
 			// The this pointer is implicitly always the first argument.
+			// TODO: Linux64 with an object return value can mean `this` is the second argument, but not relevant for now.
 			void *thisPtr = pDetour->GetArgument<void *>(0);
 			cell_t thisAddr = GetThisPtr(thisPtr, pWrapper->thisType);
 			pCallback->PushCell(thisAddr);
@@ -682,6 +704,7 @@ void CDynamicHooksSourcePawn::UpdateParamsFromStruct(HookParamsStruct *params)
 	size_t numArgs = argTypes.size();
 
 	size_t firstArg = 0;
+	// TODO: Linux64 will use RDI for retmem even if thiscall
 	// TODO: Support custom register for this ptr.
 	if (callConv == CallConv_THISCALL)
 		firstArg = 1;
@@ -705,7 +728,7 @@ void CDynamicHooksSourcePawn::UpdateParamsFromStruct(HookParamsStruct *params)
 
 		// Keep track of the seperate stack and register arguments.
 		if (argTypes[i].custom_register == None) {
-#ifdef DYNAMICHOOKS_x86_64
+#if defined(DYNAMICHOOKS_x86_64) && defined(PLATFORM_WINDOWS)
 			stackOffset += 8;
 #else
 			stackOffset += size;
