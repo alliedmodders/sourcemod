@@ -255,15 +255,17 @@ ICallingConvention *ConstructCallingConvention(HookSetup *setup)
 	returnType.custom_register = None;
 
 #ifdef DYNAMICHOOKS_x86_64
-#ifdef WIN32
 	if (setup->callConv == CallConv_THISCALL) {
 		DataTypeSized_t type;
 		type.type = DATA_TYPE_POINTER;
 		type.size = GetDataTypeSize(type, sizeof(void*));
+#ifdef PLATFORM_WINDOWS
 		type.custom_register = RCX;
+#else
+		type.custom_register = RDI;
+#endif
 		vecArgTypes.insert(vecArgTypes.begin(), type);
 	}
-#endif
 #endif
 
 	ICallingConvention *pCallConv = nullptr;
@@ -308,19 +310,27 @@ bool UpdateRegisterArgumentSizes(CHook* pDetour, HookSetup *setup)
 	ICallingConvention* callingConvention = pDetour->m_pCallingConvention;
 	std::vector<DataTypeSized_t> &argTypes = callingConvention->m_vecArgTypes;
 	int numArgs = argTypes.size();
+	int argTypesOffset = 0;
+
+#ifdef DYNAMICHOOKS_x86_64
+		if (setup->callConv == CallConv_THISCALL) {
+			argTypesOffset = 1;
+			--numArgs;
+		}
+#endif
 
 	for (int i = 0; i < numArgs; i++)
 	{
 		// Ignore regular arguments on the stack.
-		if (argTypes[i].custom_register == None)
+		if (argTypes[argTypesOffset+i].custom_register == None)
 			continue;
 
-		CRegister *reg = pDetour->m_pRegisters->GetRegister(argTypes[i].custom_register);
+		CRegister *reg = pDetour->m_pRegisters->GetRegister(argTypes[argTypesOffset+i].custom_register);
 		// That register can't be handled yet.
 		if (!reg)
 			return false;
 
-		argTypes[i].size = reg->m_iSize;
+		argTypes[argTypesOffset+i].size = reg->m_iSize;
 		setup->params[i].size = reg->m_iSize;
 	}
 
