@@ -254,6 +254,12 @@ void AddFloat(char **buf_p, size_t &maxlen, double fval, int width, int prec, in
 		return;
 	}
 
+	if (std::isinf(fval))
+	{
+		AddString(buf_p, maxlen, "Inf", width, prec, flags | NOESCAPE);
+		return;
+	}
+
 	// default precision
 	if (prec < 0)
 	{
