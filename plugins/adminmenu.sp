@@ -186,7 +186,7 @@ public int __AddTargetsToMenu2(Handle plugin, int numParams)
 
 public Action Command_DisplayMenu(int client, int args)
 {
-	if (client == 0)
+	if (client == 0 || !IsClientInGame(client))
 	{
 		ReplyToCommand(client, "[SM] %t", "Command is in-game only");
 		return Plugin_Handled;
