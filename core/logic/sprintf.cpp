@@ -1215,7 +1215,6 @@ reswitch:
 					return pCtx->ThrowNativeError("Escaped string would be truncated (arg %d)", arg);
 				arg++;
 				break;
-
 			}
 		case 's':
 			{
