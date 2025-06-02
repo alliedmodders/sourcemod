@@ -31,6 +31,7 @@
 #include <am-float.h>
 #include <am-string.h>
 #include <IDBDriver.h>
+#include <IGameHelpers.h>
 #include <ITranslator.h>
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/CoreProvider.h>
@@ -1198,6 +1199,23 @@ reswitch:
 					return pCtx->ThrowNativeError("Escaped string would be truncated (arg %d)", arg);
 				arg++;
 				break;
+			}
+		case 'E':
+			{
+				CHECK_ARGS(0);
+				cell_t *value;
+				pCtx->LocalToPhysAddr(params[arg], &value);
+
+				CBaseEntity *entity = gamehelpers->ReferenceToEntity(*value);
+				if (!entity) 
+					return pCtx->ThrowNativeError("Entity index %d is invalid (arg %d)", *value, arg);
+
+				const char *classname = gamehelpers->GetEntityClassname(entity);
+				if (!AddString(&buf_p, llen, classname, width, prec, flags))
+					return pCtx->ThrowNativeError("Escaped string would be truncated (arg %d)", arg);
+				arg++;
+				break;
+
 			}
 		case 's':
 			{
