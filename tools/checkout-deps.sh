@@ -99,7 +99,7 @@ if [ $download_mysql -eq 1 ]; then
   getmysql
 fi
 
-if [ $iswin -eq 1 && $download_mysql_debug -eq 1 ]; then
+if [ $iswin -eq 1 ] && [ $download_mysql_debug -eq 1 ]; then
   mysqlfolder=mysql-5.7-debug
   mysqlver=mysql-5.7.44-win32
   mysqlurl=https://cdn.mysql.com/archives/mysql-5.7/$mysqlver-debug-test.$archive_ext
