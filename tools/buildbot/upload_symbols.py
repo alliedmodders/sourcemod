@@ -1,4 +1,5 @@
 # vim: ts=8 sts=2 sw=2 tw=99 et ft=python: 
+import shutil
 import sys
 import subprocess
 import os
@@ -14,6 +15,9 @@ if len(sys.argv) < 3:
 SYMBOL_SERVER = os.environ['BREAKPAD_SYMBOL_SERVER']
 symbol_file = sys.argv[1]
 cmd_argv = sys.argv[2:]
+
+# Find the dump_syms executable. (On Windows, subprocess.Popen doesn't use PATH unless shell=True.)
+cmd_argv[0] = shutil.which(cmd_argv[0])
 
 sys.stdout.write(' '.join(cmd_argv))
 sys.stdout.write('\n')
@@ -100,15 +104,17 @@ for i, line in enumerate(lines):
 
 index = 1
 while lines[index].split(None, 1)[0] == 'INFO':
-  index += 1;
+  index += 1
 
 for root, info in roots.items():
   lines.insert(index, 'INFO REPO ' + ' '.join([info[1], info[0], root]))
-  index += 1;
+  index += 1
 
 out = os.linesep.join(lines).encode('utf8')
 
 request = urllib.Request(SYMBOL_SERVER, out)
 request.add_header('Content-Type', 'text/plain')
+if 'BREAKPAD_SYMBOL_SERVER_TOKEN' in os.environ:
+  request.add_header('X-Auth', os.environ['BREAKPAD_SYMBOL_SERVER_TOKEN'])
 server_response = urllib.urlopen(request).read().decode('utf8').strip()
 print(server_response)

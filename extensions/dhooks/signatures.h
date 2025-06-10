@@ -36,7 +36,7 @@
 #include "util.h"
 #include <string>
 #include <vector>
-#include <sm_stringhashmap.h>
+#include <sm_hashmap.h>
 
 struct ArgumentInfo {
 	ArgumentInfo() : name()

@@ -510,7 +510,7 @@ void FetchUser(Database db, int client)
 	/**
 	 * Construct the query using the information the user gave us.
 	 */
-	char query[512];
+	char query[544];
 	int len = 0;
 	
 	len += Format(query[len], sizeof(query)-len, "SELECT a.id, a.authtype, a.identity, a.password, a.flags, a.name, COUNT(ag.group_id), immunity");
@@ -526,8 +526,8 @@ void FetchUser(Database db, int client)
 			" OR (a.authtype = 'steam' AND (a.identity = '%s' OR a.identity = '%s' OR a.identity = '%s' OR a.identity = '%s'))",
 			steamid2, steamid2alt, steamid3, steamid64);
 	}
-	len += Format(query[len], sizeof(query)-len, " GROUP BY a.id");
-	
+	len += Format(query[len], sizeof(query)-len, " GROUP BY a.id, a.authtype, a.identity, a.password, a.flags, a.name, immunity");
+
 	/**
 	 * Send the actual query.
 	 */	

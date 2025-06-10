@@ -26,6 +26,7 @@
 			"game"		"esmod"
 			"game"		"ios"
 			"game"		"hl2ctf"
+			"game"		"gmod9"
 		}
 		
 		"Offsets"

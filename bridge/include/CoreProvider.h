@@ -106,7 +106,7 @@ public:
 	virtual bool IsMapLoading() = 0;
 	virtual bool IsMapRunning() = 0;
 	virtual int MaxClients() = 0;
-	virtual bool DescribePlayer(int index, const char **namep, const char **authp, int *useridp) = 0;
+	virtual bool DescribePlayer(int entRef, const char **namep, const char **authp, int *useridp) = 0;
 	virtual void LogToGame(const char *message) = 0;
 	virtual void ConPrint(const char *message) = 0;
 	virtual void ConsolePrint(const char *fmt, ...) = 0;

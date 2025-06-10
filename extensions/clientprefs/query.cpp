@@ -162,7 +162,7 @@ bool TQueryOp::BindParamsAndRun()
 				g_pSM->Format(query,
 					sizeof(query),
 					"INSERT IGNORE INTO sm_cookies (name, description, access) \
-					 VALUES (\"%s\", \"%s\", %d)",
+					 VALUES ('%s', '%s', %d)",
 					safe_name,
 					safe_desc,
 					m_params.cookie->access);
@@ -239,9 +239,9 @@ bool TQueryOp::BindParamsAndRun()
 				g_pSM->Format(query, 
 					sizeof(query),
 					"INSERT INTO sm_cookie_cache (player, cookie_id, value, timestamp) 	\
-					 VALUES (\"%s\", %d, \"%s\", %d)									\
+					 VALUES ('%s', %d, '%s', %d)									\
 					 ON DUPLICATE KEY UPDATE											\
-					 value = \"%s\", timestamp = %d",
+					 value = '%s', timestamp = %d",
 					safe_id,
 					m_params.cookieId,
 					safe_val,

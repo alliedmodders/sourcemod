@@ -1,0 +1,153 @@
+"Games"
+{
+	"#default"
+	{
+		"Offsets"
+		{
+			/* CBaseTempEntity::GetName() */
+			"GetTEName"
+			{
+				"windows"	"4"
+				"linux"		"4"
+				"mac"		"4"
+			}
+
+			/* CBaseTempEntity::GetNext() */
+			"GetTENext"
+			{
+				"windows"	"8"
+				"linux"		"8"
+				"mac"		"8"
+			}
+
+			/* CBaseTempEntity::GetServerClass() */
+			"TE_GetServerClass"
+			{
+				"windows"	"0"
+				"linux"		"0"
+				"mac"		"0"
+			}
+
+			/* CBasePlayer::GiveNamedItem(char const*, int) */
+			"GiveNamedItem"
+			{
+				"linux"		"436"
+				"windows"	"435"
+			}
+
+			/* CBaseCombatCharacter::RemovePlayerItem(CBaseCombatWeapon*) */
+			"RemovePlayerItem"
+			{
+				"linux"		"298"
+				"windows"	"297"
+			}
+
+			/* CBaseCombatCharacter::Weapon_GetSlot(int) const */
+			"Weapon_GetSlot"
+			{
+				"linux"		"296"
+				"windows"	"295"
+			}
+
+			/* CBaseAnimating::Ignite(float, bool, float, bool) */
+			"Ignite"
+			{
+				"linux"		"231"
+				"windows"	"230"
+			}
+
+			/* CBaseAnimating::Extinguish() */
+			"Extinguish"
+			{
+				"linux"		"235"
+				"windows"	"234"
+			}
+
+			/* CBaseEntity::Teleport(Vector const*, QAngle const*, Vector const*) */
+			"Teleport"
+			{
+				"linux"		"122"
+				"windows"	"121"
+			}
+
+			/* CBasePlayer::CommitSuicide(bool, bool) */
+			"CommitSuicide"
+			{
+				"linux"		"479"
+				"windows"	"479"
+			}
+
+			/* CBaseEntity::GetVelocity(Vector*, Vector*) */
+			"GetVelocity"
+			{
+				"linux"		"156"
+				"windows"	"155"
+			}
+
+			/* CBaseEntity::EyeAngles() */
+			"EyeAngles"
+			{
+				"linux"		"147"
+				"windows"	"146"
+			}
+
+			/* CBaseEntity::SetModel(char const*) */
+			"SetEntityModel"
+			{
+				"linux"		"28"
+				"windows"	"27"
+			}
+
+			/* CBaseEntity::AcceptInput(char const*, CBaseEntity*, CBaseEntity*, variant_t, int) */
+			"AcceptInput"
+			{
+				"linux"		"41"
+				"windows"	"40"
+			}
+
+			/* CBaseCombatCharacter::Weapon_Equip(CBaseCombatWeapon*) */
+			"WeaponEquip"
+			{
+				"linux"		"287"
+				"windows"	"286"
+			}
+
+			/* CBaseEntity::Activate() */
+			"Activate"
+			{
+				"linux"		"38"
+				"windows"	"37"
+			}
+
+			/* CBasePlayer::PlayerRunCommand(CUserCmd*, IMoveHelper*) */
+			"PlayerRunCmd"
+			{
+				"linux"		"456"
+				"windows"	"455"
+			}
+
+			/* CBaseCombatCharacter::GiveAmmo(int, int, bool) */
+			"GiveAmmo"
+			{
+				"linux"		"277"
+				"windows"	"276"
+			}
+		}
+
+		"Keys"
+		{
+			"GameRulesProxy"	"CTFGameRulesProxy"
+			"GameRulesDataTable" "tf_gamerules_data"
+		}
+
+		"Signatures"
+		{
+			"FireOutput"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x81\xEC\x40\x01\x00\x00\x8B\xC1"
+				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+			}
+		}
+	}
+}

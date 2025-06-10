@@ -24,35 +24,40 @@ project.sources += [
   'hooks.cpp',
   'gamerulesnatives.cpp',
   'vstringtable.cpp',
-  '../../public/smsdk_ext.cpp',
-  '../../public/CDetour/detours.cpp',
-  '../../public/asm/asm.c',
-  '../../public/libudis86/decode.c',
-  '../../public/libudis86/itab.c',
-  '../../public/libudis86/syn-att.c',
-  '../../public/libudis86/syn-intel.c',
-  '../../public/libudis86/syn.c',
-  '../../public/libudis86/udis86.c',
+  '../../public/smsdk_ext.cpp'
 ]
 
 for sdk_name in SM.sdks:
   sdk = SM.sdks[sdk_name]
-  if sdk.name in ['mock']:
+  if sdk['name'] in ['mock']:
     continue
 
   for cxx in builder.targets:
-    if not cxx.target.arch in sdk.platformSpec[cxx.target.platform]:
+    if not cxx.target.arch in sdk['platforms'][cxx.target.platform]:
       continue
 
-    binary = SM.HL2ExtConfig(project, builder, cxx, 'sdktools.ext.' + sdk.ext, sdk)
+    binary = SM.HL2ExtConfig(project, builder, cxx, 'sdktools.ext.' + sdk['extension'], sdk)
+    SM.AddCDetour(binary)
+    
     binary.compiler.cxxincludes += [
-      os.path.join(sdk.path, 'game', 'shared'),
       os.path.join(builder.sourcePath, 'public', 'jit'),
       os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
     ]
-    binary.compiler.defines += ['HAVE_STRING_H'];
 
-    if sdk.name != 'episode1':
+    if sdk['name'] in ('episode1', 'darkm'):
+      binary.compiler.cxxincludes += [os.path.join(sdk['path'], 'game_shared')]
+      binary.compiler.cxxincludes += [os.path.join(sdk['path'], 'dlls')]
+    else:
+      binary.compiler.cxxincludes += [
+        os.path.join(sdk['path'], 'game', 'shared'),
+        os.path.join(sdk['path'], 'game', 'server'),
+      ]
+
+    #binary.sources += [os.path.join(builder.options.hl2sdk_root, sdk['path'], 'game', 'server', 'variant_t.cpp')]
+
+    binary.compiler.defines += ['HAVE_STRING_H']
+
+    if sdk['name'] != 'episode1':
       binary.compiler.defines += ['HOOKING_ENABLED']
 
     if binary.compiler.behavior == 'gcc':

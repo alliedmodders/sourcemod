@@ -86,7 +86,7 @@ IScriptManager *scripts = &g_PluginSys;
 IExtensionSys *extsys = &g_Extensions;
 ILogger *logger = &g_Logger;
 CNativeOwner g_CoreNatives;
-#ifdef PLATFORM_X64
+#ifdef KE_ARCH_X64
 PseudoAddressManager pseudoAddr;
 #endif
 
@@ -122,7 +122,7 @@ static void RegisterProfiler(IProfilingTool *tool)
 
 static void *FromPseudoAddress(uint32_t paddr)
 {
-#ifdef PLATFORM_X64
+#ifdef KE_ARCH_X64
 	return pseudoAddr.FromPseudoAddress(paddr);
 #else
 	return nullptr;
@@ -131,7 +131,7 @@ static void *FromPseudoAddress(uint32_t paddr)
 
 static uint32_t ToPseudoAddress(void *addr)
 {
-#ifdef PLATFORM_X64
+#ifdef KE_ARCH_X64
 	return pseudoAddr.ToPseudoAddress(addr);
 #else
 	return 0;

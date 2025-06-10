@@ -148,8 +148,15 @@ enum MenuSource
  * @param action            The action of the menu.
  * @param param1            First action parameter (usually the client).
  * @param param2            Second action parameter (usually the item).
+ *
+ * Use void-typed prototype if you don't plan to handle MenuAction_DrawItem
+ * and MenuAction_DisplayItem actions.
  */
-typedef MenuHandler = function int (Menu menu, MenuAction action, int param1, int param2);
+typeset MenuHandler
+{
+	function int (Menu menu, MenuAction action, int param1, int param2);
+	function void (Menu menu, MenuAction action, int param1, int param2);
+};
 
 // Panels are used for drawing raw menus without any extra helper functions.
 // Handles must be closed via delete or CloseHandle().

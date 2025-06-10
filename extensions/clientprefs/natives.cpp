@@ -83,10 +83,9 @@ cell_t FindClientPrefCookie(IPluginContext *pContext, const cell_t *params)
 		NULL);
 }
 
-size_t IsAuthIdConnected(char *authID)
+int IsAuthIdConnected(char *authID)
 {
 	IGamePlayer *player;
-	const char *authString;
 	
 	for (int playerIndex = playerhelpers->GetMaxClients()+1; --playerIndex > 0;)
 	{
@@ -347,7 +346,7 @@ cell_t AddSettingsMenuItem(IPluginContext *pContext, const cell_t *params)
 	AutoMenuData *data = new AutoMenuData;
 	data->datavalue = params[2];
 	data->handler = pItem;
-	g_pSM->Format(info, sizeof(info), "%x", data);
+	g_pSM->Format(info, sizeof(info), "%" PRIxPTR, reinterpret_cast<uintptr_t>(data));
 
 	ItemDrawInfo draw(display, 0);
 
@@ -419,7 +418,7 @@ cell_t AddSettingsPrefabMenuItem(IPluginContext *pContext, const cell_t *params)
 	data->pCookie = pCookie;
 	data->type = (CookieMenu)params[2];
 	data->handler = pItem;
-	g_pSM->Format(info, sizeof(info), "%x", data);
+	g_pSM->Format(info, sizeof(info), "%" PRIxPTR, reinterpret_cast<uintptr_t>(data));
 
 	g_CookieManager.clientMenu->AppendItem(info, draw);
 

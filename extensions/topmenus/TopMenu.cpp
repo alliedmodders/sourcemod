@@ -1179,6 +1179,11 @@ SMCResult TopMenu::ReadSMC_NewSection(const SMCStates *states, const char *name)
 				}
 			}
 		}
+		else if (current_parse_state == PARSE_STATE_CATEGORY)
+		{
+			cur_cat->commands.push_back(m_Config.strings.AddString(name));
+			ignore_parse_level++;
+		}
 		else
 		{
 			ignore_parse_level = 1;

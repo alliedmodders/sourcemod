@@ -338,6 +338,7 @@ cell_t Native_AddParam(IPluginContext *pContext, const cell_t *params)
 // native bool:DHookEnableDetour(Handle:setup, bool:post, DHookCallback:callback);
 cell_t Native_EnableDetour(IPluginContext *pContext, const cell_t *params)
 {
+#if defined( DHOOKS_DYNAMIC_DETOUR )
 	HookSetup *setup;
 
 	if (!GetHandleIfValidOrError(g_HookSetupHandle, (void **)&setup, pContext, params[1]))
@@ -377,11 +378,15 @@ cell_t Native_EnableDetour(IPluginContext *pContext, const cell_t *params)
 
 	// Add the plugin callback to the map.
 	return AddDetourPluginHook(hookType, pDetour, setup, callback);
+#else
+	return pContext->ThrowNativeError("Dynamic detours are not enabled for this mod!");
+#endif
 }
 
 // native bool:DHookDisableDetour(Handle:setup, bool:post, DHookCallback:callback);
 cell_t Native_DisableDetour(IPluginContext *pContext, const cell_t *params)
 {
+#if defined( DHOOKS_DYNAMIC_DETOUR )
 	HookSetup *setup;
 
 	if (!GetHandleIfValidOrError(g_HookSetupHandle, (void **)&setup, pContext, params[1]))
@@ -414,6 +419,9 @@ cell_t Native_DisableDetour(IPluginContext *pContext, const cell_t *params)
 
 	// Remove the callback from the hook.
 	return RemoveDetourPluginHook(hookType, pDetour, callback);
+#else
+	return pContext->ThrowNativeError("Dynamic detours are not enabled for this mod!");
+#endif 
 }
 
 cell_t HookEntityImpl(IPluginContext *pContext, const cell_t *params, uint32_t callbackIndex, uint32_t removalcbIndex)

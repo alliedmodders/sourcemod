@@ -50,11 +50,6 @@
 		"engine"	"sdk2013"
 	}
 	
-	"engine.css.txt"
-	{
-		"engine"	"css"
-	}
-	
 	"engine.ep1.txt"
 	{
 		"engine"	"original"
@@ -272,5 +267,21 @@
 	"game.openfortress.txt"
 	{
 		"game"		"open_fortress"
+	}
+	"game.tf2classic.txt"
+	{
+		"game"		"tf2classic"
+	}
+	"game.pf2.txt"
+	{
+		"game"		"pf2"
+	}
+	"game.gmod9.txt"
+	{
+		"game"		"gmod9"
+	}
+	"game.hl1mp.txt"
+	{
+		"game"		"hl1mp"
 	}
 }

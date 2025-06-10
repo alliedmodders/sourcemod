@@ -6,6 +6,12 @@
 	path = sourcepawn
 	url = https://github.com/alliedmodders/sourcepawn
 	shallow = true
+[submodule "hl2sdk-manifests"]
+	path = hl2sdk-manifests
+	url = https://github.com/alliedmodders/hl2sdk-manifests.git
+[submodule "public/safetyhook"]
+	path = public/safetyhook
+	url = https://github.com/alliedmodders/safetyhook
 [submodule "extensions/mysql/openssl/lib"]
 	path = extensions/mysql/openssl/lib
 	url = https://github.com/openssl/openssl

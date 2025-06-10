@@ -116,7 +116,7 @@ CRegisters::CRegisters(std::vector<Register_t> registers)
 	// >> 64-bit General purpose registers
 	// ========================================================================
 	// 64-bit mode only
-	/*
+#ifdef DYNAMICHOOKS_x86_64
 	m_rax = CreateRegister(registers, RAX, 8);
 	m_rcx = CreateRegister(registers, RCX, 8);
 	m_rdx = CreateRegister(registers, RDX, 8);
@@ -125,10 +125,7 @@ CRegisters::CRegisters(std::vector<Register_t> registers)
 	m_rbp = CreateRegister(registers, RBP, 8);
 	m_rsi = CreateRegister(registers, RSI, 8);
 	m_rdi = CreateRegister(registers, RDI, 8);
-	*/
-	
-	// 64-bit mode only
-	/*
+
 	m_r8 = CreateRegister(registers, R8, 8);
 	m_r9 = CreateRegister(registers, R9, 8);
 	m_r10 = CreateRegister(registers, R10, 8);
@@ -137,7 +134,7 @@ CRegisters::CRegisters(std::vector<Register_t> registers)
 	m_r13 = CreateRegister(registers, R13, 8);
 	m_r14 = CreateRegister(registers, R14, 8);
 	m_r15 = CreateRegister(registers, R15, 8);
-	*/
+#endif
 
 	// ========================================================================
 	// >> 64-bit MM (MMX) registers
@@ -165,7 +162,7 @@ CRegisters::CRegisters(std::vector<Register_t> registers)
 	m_xmm7 = CreateRegister(registers, XMM7, 16, 16);
 
 	// 64-bit mode only
-	/*
+#ifdef KE_ARCH_X64
 	m_xmm8 = CreateRegister(registers, XMM8, 16);
 	m_xmm9 = CreateRegister(registers, XMM9, 16);
 	m_xmm10 = CreateRegister(registers, XMM10, 16);
@@ -174,7 +171,7 @@ CRegisters::CRegisters(std::vector<Register_t> registers)
 	m_xmm13 = CreateRegister(registers, XMM13, 16);
 	m_xmm14 = CreateRegister(registers, XMM14, 16);
 	m_xmm15 = CreateRegister(registers, XMM15, 16);
-	*/
+#endif
 
 	// ========================================================================
 	// >> 16-bit Segment registers
@@ -282,7 +279,7 @@ CRegisters::~CRegisters()
 	// >> 64-bit General purpose registers
 	// ========================================================================
 	// 64-bit mode only
-	/*
+#ifdef DYNAMICHOOKS_x86_64
 	DeleteRegister(m_rax);
 	DeleteRegister(m_rcx);
 	DeleteRegister(m_rdx);
@@ -291,10 +288,8 @@ CRegisters::~CRegisters()
 	DeleteRegister(m_rbp);
 	DeleteRegister(m_rsi);
 	DeleteRegister(m_rdi);
-	*/
 	
 	// 64-bit mode only
-	/*
 	DeleteRegister(m_r8);
 	DeleteRegister(m_r9);
 	DeleteRegister(m_r10);
@@ -303,7 +298,7 @@ CRegisters::~CRegisters()
 	DeleteRegister(m_r13);
 	DeleteRegister(m_r14);
 	DeleteRegister(m_r15);
-	*/
+#endif
 
 	// ========================================================================
 	// >> 64-bit MM (MMX) registers
@@ -330,7 +325,7 @@ CRegisters::~CRegisters()
 	DeleteRegister(m_xmm7);
 
 	// 64-bit mode only
-	/*
+#ifdef DYNAMICHOOKS_x86_64
 	DeleteRegister(m_xmm8);
 	DeleteRegister(m_xmm9);
 	DeleteRegister(m_xmm10);
@@ -339,7 +334,7 @@ CRegisters::~CRegisters()
 	DeleteRegister(m_xmm13);
 	DeleteRegister(m_xmm14);
 	DeleteRegister(m_xmm15);
-	*/
+#endif
 
 	// ========================================================================
 	// >> 2-bit Segment registers
@@ -439,6 +434,42 @@ CRegister* CRegisters::GetRegister(Register_t reg)
 	case EDI:
 		return m_edi;
 
+#ifdef DYNAMICHOOKS_x86_64
+	case RAX:
+		return m_rax;
+	case RCX:
+		return m_rcx;
+	case RDX:
+		return m_rdx;
+	case RBX:
+		return m_rbx;
+	case RSP:
+		return m_rsp;
+	case RBP:
+		return m_rbp;
+	case RSI:
+		return m_rsi;
+	case RDI:
+		return m_rdi;
+
+	case R8:
+		return m_r8;
+	case R9:
+		return m_r9;
+	case R10:
+		return m_r10;
+	case R11:
+		return m_r11;
+	case R12:
+		return m_r12;
+	case R13:
+		return m_r13;
+	case R14:
+		return m_r14;
+	case R15:
+		return m_r15;
+#endif
+
 	case MM0:
 		return m_mm0;
 	case MM1:
@@ -473,6 +504,25 @@ CRegister* CRegisters::GetRegister(Register_t reg)
 	case XMM7:
 		return m_xmm7;
 
+#ifdef DYNAMICHOOKS_x86_64
+	case XMM8:
+		return m_xmm8;
+	case XMM9:
+		return m_xmm9;
+	case XMM10:
+		return m_xmm10;
+	case XMM11:
+		return m_xmm11;
+	case XMM12:
+		return m_xmm12;
+	case XMM13:
+		return m_xmm13;
+	case XMM14:
+		return m_xmm14;
+	case XMM15:
+		return m_xmm15;
+#endif
+
 	case CS:
 		return m_cs;
 	case SS:
@@ -504,6 +554,6 @@ CRegister* CRegisters::GetRegister(Register_t reg)
 		return m_st7;
 
 	default:
-		return NULL;
+		return nullptr;
 	}
 }

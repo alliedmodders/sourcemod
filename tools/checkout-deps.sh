@@ -87,14 +87,27 @@ else
   cd ..
 fi
 
+want_mock_sdk=0
 for sdk in "${sdks[@]}"
 do
+  if [ "$sdk" == "mock" ]; then
+    want_mock_sdk=1
+    continue
+  fi
   repo=hl2sdk-proxy-repo
   origin="https://github.com/alliedmodders/hl2sdk"
   name=hl2sdk-$sdk
   branch=$sdk
   checkout
 done
+
+if [ $want_mock_sdk -eq 1 ]; then
+  name=hl2sdk-mock
+  branch=master
+  repo="https://github.com/alliedmodders/hl2sdk-mock"
+  origin=
+  checkout
+fi
 
 python_cmd=`command -v python3`
 if [ -z "$python_cmd" ]; then
@@ -140,7 +153,11 @@ if [ $? -eq 1 ]; then
   name=ambuild
   checkout
 
-  if [ $iswin -eq 1 ] || [ $ismac -eq 1 ]; then
+  if [ $iswin -eq 1 ]; then
+    # Without first doing this explicitly, ambuild install fails on newer Python versions on Windows
+    $python_cmd -m pip install wheel
+    $python_cmd -m pip install ./ambuild
+  elif [ $ismac -eq 1 ]; then
     $python_cmd -m pip install ./ambuild
   else
     echo "Installing AMBuild at the user level. Location can be: ~/.local/bin"

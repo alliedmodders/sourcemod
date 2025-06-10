@@ -38,7 +38,7 @@
 #include <am-utility.h>
 #include <am-refcounting.h>
 #include <sh_list.h>
-#include <sm_stringhashmap.h>
+#include <sm_hashmap.h>
 #include <sm_namehashset.h>
 #include "common_logic.h"
 #include "Native.h"
@@ -59,7 +59,7 @@ namespace SourceMod
 
 struct IfaceInfo
 {
-	bool operator ==(const IfaceInfo &info)
+	bool operator ==(const IfaceInfo &info) const
 	{
 		return (info.iface == iface && info.owner == owner);
 	}
