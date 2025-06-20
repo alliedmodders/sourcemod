@@ -536,7 +536,10 @@ class SMConfig(object):
 
     for task in self.libsafetyhook:
       if task.target.arch == binary.compiler.target.arch:
-        binary.compiler.linkflags += [task.binary]
+        if task.target.platform == 'windows':
+          binary.compiler.linkflags += [task.binary.path.removesuffix('.dll') + '.lib']
+        else:
+          binary.compiler.linkflags += [task.binary]
         return
     raise Exception('No suitable build of safetyhook was found.')
 
