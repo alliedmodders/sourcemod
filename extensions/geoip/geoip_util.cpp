@@ -190,6 +190,9 @@ const char *getLang(int target)
 					return code;
 				}
 			}
+			if (strcmp(code, "chi") == 0 || strcmp(code, "zho") == 0) {
+				return "zh-CN";
+			}
 		}
 	}
 
