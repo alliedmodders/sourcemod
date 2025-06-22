@@ -12,3 +12,11 @@
 [submodule "public/safetyhook"]
 	path = public/safetyhook
 	url = https://github.com/alliedmodders/safetyhook
+[submodule "extensions/curl/curl/lib"]
+	path = extensions/curl/curl/lib
+	url = https://github.com/alliedmodders/curl
+	shallow = true
+[submodule "extensions/curl/mbedtls/lib"]
+	path = extensions/curl/mbedtls/lib
+	url = https://github.com/alliedmodders/mbedtls
+	shallow = true
