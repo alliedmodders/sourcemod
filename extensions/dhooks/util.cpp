@@ -37,7 +37,7 @@ void * GetObjectAddr(HookParamType type, unsigned int flags, void **params, size
 	if (type == HookParamType_Object)
 		return (void *)((intptr_t)params + offset);
 #elif POSIX
-	if (type == HookParamType_Object && !(flags & PASSFLAG_ODTOR)) //Objects are passed by rrefrence if they contain destructors.
+	if (type == HookParamType_Object && !(flags & PASSFLAG_ODTOR)) //Objects are passed by reference if they contain destructors.
 		return (void *)((intptr_t)params + offset);
 #endif
 	return *(void **)((intptr_t)params + offset);
@@ -62,7 +62,7 @@ size_t GetStackParamOffset(HookParamsStruct *paramStruct, unsigned int index)
 			continue;
 		}
 #endif
-#ifdef KE_ARCH_X64
+#if defined(KE_ARCH_X64) && defined(WIN64)
 		offset += 8;
 #else
 		offset += paramStruct->dg->params[i].size;
