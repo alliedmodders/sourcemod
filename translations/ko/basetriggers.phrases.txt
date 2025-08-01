@@ -23,7 +23,7 @@
 	"Friendly Fire Percent"
 	{
 		"#format"	"{1:0.0f}"
-		"en"		"아군 피해가 {1}% 입니다."
+		"ko"		"아군 피해가 {1}% 입니다."
 	}
 
 	"Current Map"
