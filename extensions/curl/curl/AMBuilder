@@ -1,0 +1,121 @@
+# vim: sts=2 ts=8 sw=2 tw=99 et ft=python: 
+import os, platform
+
+builder.SetBuildFolder('libcurl')
+
+rvalue = {}
+for cxx in builder.targets:
+  binary = SM.StaticLibrary(builder, cxx, 'curl')
+  binary.compiler.includes += [
+    os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl', 'include'),
+    os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl', 'lib'),
+    os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl', 'lib', 'lib'),
+    os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl', 'lib', 'include'),
+    os.path.join(builder.sourcePath, 'extensions', 'curl', 'mbedtls', 'lib', 'include')
+  ]
+  
+  binary.compiler.defines += [
+    'BUILDING_LIBCURL',
+    'CURL_STATICLIB',
+    'HAVE_CONFIG_H',
+  ]
+
+  if binary.compiler.target.platform == 'linux':
+    binary.compiler.defines += ['_GNU_SOURCE']
+    binary.compiler.cflags += ['-Wno-constant-conversion']
+
+  if binary.compiler.family == 'clang':
+    # https://llvm.org/bugs/show_bug.cgi?id=16428
+    binary.compiler.cflags += ['-Wno-attributes']
+
+  binary.sources += [
+    #LIB_CFILES
+    'lib/lib/altsvc.c',
+    'lib/lib/asyn-thread.c',
+    'lib/lib/base64.c',
+    'lib/lib/bufref.c',
+    'lib/lib/conncache.c',
+    'lib/lib/connect.c',
+    'lib/lib/content_encoding.c',
+    'lib/lib/curl_addrinfo.c',
+    'lib/lib/curl_endian.c',
+    'lib/lib/curl_fnmatch.c',
+    'lib/lib/curl_get_line.c',
+    'lib/lib/curl_gethostname.c',
+    'lib/lib/curl_memrchr.c',
+    'lib/lib/curl_multibyte.c',
+    'lib/lib/curl_path.c',
+    'lib/lib/curl_range.c',
+    'lib/lib/curl_threads.c',
+    'lib/lib/doh.c',
+    'lib/lib/dynbuf.c',
+    'lib/lib/easy.c',
+    'lib/lib/easygetopt.c',
+    'lib/lib/easyoptions.c',
+    'lib/lib/escape.c',
+    'lib/lib/file.c',
+    'lib/lib/fileinfo.c',
+    'lib/lib/fopen.c',
+    'lib/lib/formdata.c',
+    'lib/lib/getenv.c',
+    'lib/lib/getinfo.c',
+    'lib/lib/hash.c',
+    'lib/lib/headers.c',
+    'lib/lib/hostasyn.c',
+    'lib/lib/hostip.c',
+    'lib/lib/hostip4.c',
+    'lib/lib/hostip6.c',
+    'lib/lib/hsts.c',
+    'lib/lib/http.c',
+    'lib/lib/http_chunks.c',
+    'lib/lib/http_proxy.c',
+    'lib/lib/if2ip.c',
+    'lib/lib/inet_ntop.c',
+    'lib/lib/inet_pton.c',
+    'lib/lib/llist.c',
+    'lib/lib/mime.c',
+    'lib/lib/mprintf.c',
+    'lib/lib/multi.c',
+    'lib/lib/nonblock.c',
+    'lib/lib/noproxy.c',
+    'lib/lib/parsedate.c',
+    'lib/lib/progress.c',
+    'lib/lib/rand.c',
+    'lib/lib/rename.c',
+    'lib/lib/select.c',
+    'lib/lib/sendf.c',
+    'lib/lib/setopt.c',
+    'lib/lib/sha256.c',
+    'lib/lib/share.c',
+    'lib/lib/slist.c',
+    'lib/lib/speedcheck.c',
+    'lib/lib/splay.c',
+    'lib/lib/strcase.c',
+    'lib/lib/strdup.c',
+    'lib/lib/strerror.c',
+    'lib/lib/strtok.c',
+    'lib/lib/strtoofft.c',
+    'lib/lib/timediff.c',
+    'lib/lib/timeval.c',
+    'lib/lib/transfer.c',
+    'lib/lib/url.c',
+    'lib/lib/urlapi.c',
+    'lib/lib/version.c',
+    'lib/lib/warnless.c',
+
+    #LIB_VTLS_CFILES
+    'lib/lib/vtls/mbedtls.c',
+    'lib/lib/vtls/mbedtls_threadlock.c',
+    'lib/lib/vtls/vtls.c',
+    
+    # LIB_VAUTH_CFILES
+    'lib/lib/vauth/vauth.c',
+  ]
+
+  if binary.compiler.target.platform == 'windows':
+    binary.sources += [
+      'lib/lib/system_win32.c',
+      'lib/lib/version_win32.c',
+    ]
+
+  rvalue[binary.compiler.target.arch] = builder.Add(binary)
