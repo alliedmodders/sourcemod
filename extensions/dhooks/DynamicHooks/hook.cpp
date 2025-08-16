@@ -42,7 +42,6 @@
 #else
 #include <macro-assembler-x86.h>
 #include <jit/jit_helpers.h>
-#include <CDetour/detourhelpers.h>
 using namespace sp;
 #endif
 
