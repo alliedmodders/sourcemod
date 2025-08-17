@@ -674,7 +674,7 @@ else:
     #'extensions/regex/AMBuilder',
     #'extensions/sdkhooks/AMBuilder',
     #'extensions/sdktools/AMBuilder',
-    #'extensions/sqlite/AMBuilder',
+    'extensions/sqlite/AMBuilder',
     #'extensions/tf2/AMBuilder',
     #'extensions/topmenus/AMBuilder',
     #'extensions/updater/AMBuilder',
