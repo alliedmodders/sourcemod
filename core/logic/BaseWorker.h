@@ -32,7 +32,7 @@
 #ifndef _INCLUDE_SOURCEMOD_BASEWORKER_H
 #define _INCLUDE_SOURCEMOD_BASEWORKER_H
 
-#include "sh_list.h"
+#include <list>
 #include "ThreadSupport.h"
 
 #define SM_DEFAULT_THREADS_PER_FRAME	1
@@ -96,7 +96,7 @@ public:	//BaseWorker
 	virtual void AddThreadToQueue(SWThreadHandle *pHandle);
 	virtual SWThreadHandle *PopThreadFromQueue();
 protected:
-	SourceHook::List<SWThreadHandle *> m_ThreadQueue;
+	std::list<SWThreadHandle *> m_ThreadQueue;
 	unsigned int m_perFrame;
 	volatile WorkerState m_state;
 	IThreadWorkerCallbacks *m_pHooks;

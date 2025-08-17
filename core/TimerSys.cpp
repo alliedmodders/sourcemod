@@ -177,12 +177,11 @@ TimerSystem::TimerSystem()
 
 TimerSystem::~TimerSystem()
 {
-	CStack<ITimer *>::iterator iter;
-	for (iter=m_FreeTimers.begin(); iter!=m_FreeTimers.end(); iter++)
+	while (!m_FreeTimers.empty())
 	{
-		delete (*iter);
+		delete m_FreeTimers.top();
+		m_FreeTimers.pop();
 	}
-	m_FreeTimers.popall();
 }
 
 void TimerSystem::OnSourceModAllInitialized()
@@ -304,7 +303,7 @@ ITimer *TimerSystem::CreateTimer(ITimedEvent *pCallbacks, float fInterval, void 
 	{
 		pTimer = new ITimer;
 	} else {
-		pTimer = m_FreeTimers.front();
+		pTimer = m_FreeTimers.top();
 		m_FreeTimers.pop();
 	}
 
@@ -402,7 +401,7 @@ void TimerSystem::KillTimer(ITimer *pTimer)
 	m_FreeTimers.push(pTimer);
 }
 
-CStack<ITimer *> s_tokill;
+std::stack<ITimer *> s_tokill;
 void TimerSystem::RemoveMapChangeTimers()
 {
 	ITimer *pTimer;
@@ -428,7 +427,7 @@ void TimerSystem::RemoveMapChangeTimers()
 
 	while (!s_tokill.empty())
 	{
-		KillTimer(s_tokill.front());
+		KillTimer(s_tokill.top());
 		s_tokill.pop();
 	}
 }

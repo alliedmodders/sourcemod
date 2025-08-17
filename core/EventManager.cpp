@@ -38,10 +38,8 @@
 
 EventManager g_EventManager;
 
-SH_DECL_HOOK2(IGameEventManager2, FireEvent, SH_NOATTRIB, 0, bool, IGameEvent *, bool);
-
 const ParamType GAMEEVENT_PARAMS[] = {Param_Cell, Param_String, Param_Cell};
-typedef List<EventHook *> EventHookList;
+typedef std::list<EventHook *> EventHookList;
 
 class EventForwardFilter : public IForwardFilter
 {
@@ -57,27 +55,25 @@ public:
 	}
 };
 
-EventManager::EventManager() : m_EventType(0)
+EventManager::EventManager() : m_EventType(0),
+	m_FireEvent(&IGameEventManager2::FireEvent, this, &EventManager::OnFireEvent, &EventManager::OnFireEvent_Post)
 {
 }
 
 EventManager::~EventManager()
 {
 	/* Free memory used by EventInfo structs if any */
-	CStack<EventInfo *>::iterator iter;
-	for (iter = m_FreeEvents.begin(); iter != m_FreeEvents.end(); iter++)
+	while (!m_FreeEvents.empty())
 	{
-		delete (*iter);
+		delete (m_FreeEvents.top());
+		m_FreeEvents.pop();
 	}
-
-	m_FreeEvents.popall();
 }
 
 void EventManager::OnSourceModAllInitialized()
 {
 	/* Add a hook for IGameEventManager2::FireEvent() */
-	SH_ADD_HOOK(IGameEventManager2, FireEvent, gameevents, SH_MEMBER(this, &EventManager::OnFireEvent), false);
-	SH_ADD_HOOK(IGameEventManager2, FireEvent, gameevents, SH_MEMBER(this, &EventManager::OnFireEvent_Post), true);
+	m_FireEvent.Add(gameevents);
 
 	HandleAccess sec;
 
@@ -93,8 +89,7 @@ void EventManager::OnSourceModAllInitialized()
 void EventManager::OnSourceModShutdown()
 {
 	/* Remove hook for IGameEventManager2::FireEvent() */
-	SH_REMOVE_HOOK(IGameEventManager2, FireEvent, gameevents, SH_MEMBER(this, &EventManager::OnFireEvent), false);
-	SH_REMOVE_HOOK(IGameEventManager2, FireEvent, gameevents, SH_MEMBER(this, &EventManager::OnFireEvent_Post), true);
+	m_FireEvent.Remove(gameevents);
 
 	/* Remove the 'GameEvent' handle type */
 	handlesys->RemoveType(m_EventType, g_pCoreIdent);
@@ -306,7 +301,11 @@ EventHookError EventManager::UnhookEvent(const char *name, IPluginFunction *pFun
 		}
 
 		/* Make sure the event was actually being hooked */
-		if (pHookList->find(pHook) == pHookList->end())
+		auto iter = pHookList->begin();
+		while (iter != pHookList->end() && *iter == pHook) {
+			iter++;
+		}
+		if (iter == pHookList->end())
 		{
 			return EventHookErr_NotActive;
 		}
@@ -335,7 +334,7 @@ EventInfo *EventManager::CreateEvent(IPluginContext *pContext, const char *name,
 		{
 			pInfo = new EventInfo();
 		} else {
-			pInfo = m_FreeEvents.front();
+			pInfo = m_FreeEvents.top();
 			m_FreeEvents.pop();
 		}
 
@@ -382,7 +381,7 @@ void EventManager::CancelCreatedEvent(EventInfo *pInfo)
 }
 
 /* IGameEventManager2::FireEvent hook */
-bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
+KHook::Return<bool> EventManager::OnFireEvent(IGameEventManager2* this_ptr, IGameEvent *pEvent, bool bDontBroadcast)
 {
 	EventHook *pHook;
 	IChangeableForward *pForward;
@@ -393,7 +392,7 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 	/* The engine accepts NULL without crashing, so to prevent a crash in SM we ignore these */
 	if (!pEvent)
 	{
-		RETURN_META_VALUE(MRES_IGNORED, false);
+		return { KHook::Action::Ignore, false };
 	}
 
 	name = pEvent->GetName();
@@ -436,7 +435,7 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 		if (res >= Pl_Handled)
 		{
 			gameevents->FreeEvent(pEvent);
-			RETURN_META_VALUE(MRES_SUPERCEDE, false);
+			return { KHook::Action::Supersede, false };
 		}
 	}
 	else
@@ -445,13 +444,13 @@ bool EventManager::OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast)
 	}
 
 	if (broadcast != bDontBroadcast)
-		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, true, &IGameEventManager2::FireEvent, (pEvent, broadcast));
+		return KHook::Recall(KHook::Return<bool>{ KHook::Action::Ignore, true }, this_ptr, pEvent, broadcast);
 
-	RETURN_META_VALUE(MRES_IGNORED, true);
+	return { KHook::Action::Ignore, true };
 }
 
 /* IGameEventManager2::FireEvent post hook */
-bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
+KHook::Return<bool> EventManager::OnFireEvent_Post(IGameEventManager2*, IGameEvent *pEvent, bool bDontBroadcast)
 {
 	EventHook *pHook;
 	EventInfo info;
@@ -461,10 +460,10 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 	/* The engine accepts NULL without crashing, so to prevent a crash in SM we ignore these */
 	if (!pEvent)
 	{
-		RETURN_META_VALUE(MRES_IGNORED, false);
+		return { KHook::Action::Ignore, false };
 	}
 
-	pHook = m_EventStack.front();
+	pHook = m_EventStack.top();
 
 	if (pHook != NULL)
 	{
@@ -475,7 +474,7 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 			if (pHook->postCopy)
 			{
 				info.bDontBroadcast = bDontBroadcast;
-				info.pEvent = m_EventCopies.front();
+				info.pEvent = m_EventCopies.top();
 				info.pOwner = NULL;
 				hndl = handlesys->CreateHandle(m_EventType, &info, NULL, g_pCoreIdent, NULL);
 
@@ -512,5 +511,5 @@ bool EventManager::OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast)
 
 	m_EventStack.pop();
 
-	RETURN_META_VALUE(MRES_IGNORED, true);
+	return { KHook::Action::Ignore, true };
 }
