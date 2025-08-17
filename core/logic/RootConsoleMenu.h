@@ -28,6 +28,7 @@
 #define _INCLUDE_SOURCEMOD_ROOT_CONSOLE_MENU_IMPL_H_
 
 #include "common_logic.h"
+#include "sm_namehashset.h"
 #include <IRootConsoleMenu.h>
 #include <list>
 #include <string>
