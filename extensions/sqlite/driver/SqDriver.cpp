@@ -77,9 +77,8 @@ SqDriver::~SqDriver()
 {
 	std::lock_guard<std::mutex> lock(m_OpenLock);
 
-	List<SqDbInfo>::iterator iter;
 	SqDatabase *sqdb;
-	for (iter = m_Cache.begin(); iter != m_Cache.end(); iter++)
+	for (auto iter = m_Cache.begin(); iter != m_Cache.end(); iter++)
 	{
 		// Don't let SqDatabase try to remove itself from m_Cache
 		// now that we're gone.
@@ -258,8 +257,7 @@ IDatabase *SqDriver::Connect(const DatabaseInfo *info, bool persistent, char *er
 	if (persistent)
 	{
 		/* See if anything in the cache matches */
-		List<SqDbInfo>::iterator iter;
-		for (iter = m_Cache.begin(); iter != m_Cache.end(); iter++)
+		for (auto iter = m_Cache.begin(); iter != m_Cache.end(); iter++)
 		{
 			if ((*iter).path.compare(fullpath) == 0)
 			{
@@ -298,8 +296,7 @@ void SqDriver::RemovePersistent(IDatabase *pdb)
 {
 	std::lock_guard<std::mutex> lock(m_OpenLock);
 
-	List<SqDbInfo>::iterator iter;
-	for (iter = m_Cache.begin(); iter != m_Cache.end(); iter++)
+	for (auto iter = m_Cache.begin(); iter != m_Cache.end(); iter++)
 	{
 		if ((*iter).db == pdb)
 		{
