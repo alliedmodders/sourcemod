@@ -677,7 +677,7 @@ else:
     'extensions/sqlite/AMBuilder',
     #'extensions/tf2/AMBuilder',
     #'extensions/topmenus/AMBuilder',
-    #'extensions/updater/AMBuilder',
+    'extensions/updater/AMBuilder',
   ]
 
   if builder.backend == 'amb2':

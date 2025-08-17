@@ -36,20 +36,18 @@
 #include <stdlib.h>
 #include "extension.h"
 #include "Updater.h"
-#include <sh_list.h>
-#include <sh_string.h>
+#include <list>
+#include <string>
 
 #define DEFAULT_UPDATE_URL			"http://www.sourcemod.net/update/"
-
-using namespace SourceHook;
 
 SmUpdater g_Updater;		/**< Global singleton for extension's main interface */
 SMEXT_LINK(&g_Updater);
 
 IWebternet *webternet;
-static List<String *> update_errors;
+static std::list<std::string *> update_errors;
 static IThreadHandle *update_thread;
-static String update_url;
+static std::string update_url;
 
 bool SmUpdater::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
@@ -90,7 +88,7 @@ void SmUpdater::SDK_OnUnload()
 	}
 
 	/* Clear message tables */
-	List<String *>::iterator iter = update_errors.begin();
+	auto iter = update_errors.begin();
 	while (iter != update_errors.end())
 	{
 		iter = update_errors.erase(iter);
@@ -120,9 +118,8 @@ void SmUpdater::NotifyInterfaceDrop(SMInterface *pInterface)
 
 static void PumpUpdate(void *data)
 {
-	String *str;
+	std::string *str;
 	bool new_files = false;
-	List<String *>::iterator iter;
 
 	char path[PLATFORM_MAX_PATH];
 	UpdatePart *temp;
@@ -185,7 +182,7 @@ skip_create:
 	{
 		smutils->LogError(myself, "--- BEGIN ERRORS FROM AUTOMATIC UPDATER ---");
 
-		for (iter = update_errors.begin();
+		for (auto iter = update_errors.begin();
 			 iter != update_errors.end();
 			 iter++)
 		{
@@ -244,7 +241,7 @@ void AddUpdateError(const char *fmt, ...)
 	smutils->FormatArgs(buffer, sizeof(buffer), fmt, ap);
 	va_end(ap);
 
-	update_errors.push_back(new String(buffer));
+	update_errors.push_back(new std::string(buffer));
 }
 
 const char *SmUpdater::GetExtensionVerString()
