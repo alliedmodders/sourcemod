@@ -40,10 +40,9 @@ PgDriver::PgDriver()
 	m_Handle = BAD_HANDLE;
 }
 
-void CloseDBList(List<PgDatabase *> &l)
+void CloseDBList(std::list<PgDatabase *> &l)
 {
-	List<PgDatabase *>::iterator iter;
-	for (iter=l.begin(); iter!=l.end(); iter++)
+	for (auto iter=l.begin(); iter!=l.end(); iter++)
 	{
 		PgDatabase *db = (*iter);
 		while (!db->Close())
@@ -56,7 +55,6 @@ void CloseDBList(List<PgDatabase *> &l)
 
 void PgDriver::Shutdown()
 {
-	List<PgDatabase *>::iterator iter;
 	CloseDBList(m_PermDbs);
 
 	if (m_Handle != BAD_HANDLE)
@@ -161,8 +159,7 @@ IDatabase *PgDriver::Connect(const DatabaseInfo *info, bool persistent, char *er
 	if (persistent)
 	{
 		/* Try to find a matching persistent connection */
-		List<PgDatabase *>::iterator iter;
-		for (iter=m_PermDbs.begin();
+		for (auto iter=m_PermDbs.begin();
 			 iter!=m_PermDbs.end();
 			 iter++)
 		{
