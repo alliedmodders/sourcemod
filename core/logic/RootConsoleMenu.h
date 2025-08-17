@@ -28,18 +28,17 @@
 #define _INCLUDE_SOURCEMOD_ROOT_CONSOLE_MENU_IMPL_H_
 
 #include "common_logic.h"
+#include "sm_namehashset.h"
 #include <IRootConsoleMenu.h>
-#include <sh_list.h>
-#include <sh_string.h>
-#include <sm_namehashset.h>
+#include <string>
+#include <list>
 
 using namespace SourceMod;
-using namespace SourceHook;
 
 struct ConsoleEntry
 {
-	String command;
-	String description;
+	std::string command;
+	std::string description;
 	IRootConsoleCommand *cmd;
 
 	static inline bool matches(const char *name, const ConsoleEntry *entry)
@@ -84,7 +83,7 @@ public:
 	void GotRootCmd(const ICommandArgs *cmd);
 private:
 	NameHashSet<ConsoleEntry *> m_Commands;
-	List<ConsoleEntry *> m_Menu;
+	std::list<ConsoleEntry *> m_Menu;
 };
 
 extern RootConsoleMenu g_RootMenu;

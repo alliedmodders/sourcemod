@@ -42,8 +42,7 @@ RootConsoleMenu::RootConsoleMenu()
 
 RootConsoleMenu::~RootConsoleMenu()
 {
-	List<ConsoleEntry *>::iterator iter;
-	for (iter=m_Menu.begin(); iter!=m_Menu.end(); iter++)
+	for (auto iter=m_Menu.begin(); iter!=m_Menu.end(); iter++)
 	{
 		delete (*iter);
 	}
@@ -100,7 +99,7 @@ bool RootConsoleMenu::AddRootConsoleCommand3(const char *cmd,
 		return false;
 
 	/* Sort this into the menu */
-	List<ConsoleEntry *>::iterator iter = m_Menu.begin();
+	auto iter = m_Menu.begin();
 	ConsoleEntry *pEntry;
 	bool inserted = false;
 	while (iter != m_Menu.end())
@@ -137,9 +136,8 @@ bool RootConsoleMenu::RemoveRootConsoleCommand(const char *cmd, IRootConsoleComm
 {
 	m_Commands.remove(cmd);
 
-	List<ConsoleEntry *>::iterator iter;
 	ConsoleEntry *pEntry;
-	for (iter=m_Menu.begin(); iter!=m_Menu.end(); iter++)
+	for (auto iter=m_Menu.begin(); iter!=m_Menu.end(); iter++)
 	{
 		pEntry = (*iter);
 		if (pEntry->command.compare(cmd) == 0)
@@ -200,9 +198,8 @@ void RootConsoleMenu::GotRootCmd(const ICommandArgs *cmd)
 	ConsolePrint("SourceMod Menu:");
 	ConsolePrint("Usage: sm <command> [arguments]");
 
-	List<ConsoleEntry *>::iterator iter;
 	ConsoleEntry *pEntry;
-	for (iter=m_Menu.begin(); iter!=m_Menu.end(); iter++)
+	for (auto iter=m_Menu.begin(); iter!=m_Menu.end(); iter++)
 	{
 		pEntry = (*iter);
 		DrawGenericOption(pEntry->command.c_str(), pEntry->description.c_str());

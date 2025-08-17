@@ -34,11 +34,10 @@
 
 #include <IMenuManager.h>
 #include <IPlayerHelpers.h>
-#include <sh_vector.h>
+#include <vector>
 #include "sm_globals.h"
 #include <TimerSys.h>
 
-using namespace SourceHook;
 using namespace SourceMod;
 
 class VoteMenuHandler : 
@@ -97,7 +96,7 @@ private:
 	unsigned int m_Clients;
 	unsigned int m_TotalClients;
 	unsigned int m_Items;
-	CVector<unsigned int> m_Votes;
+	std::vector<unsigned int> m_Votes;
 	IBaseMenu *m_pCurMenu;
 	bool m_bStarted;
 	bool m_bCancelled;

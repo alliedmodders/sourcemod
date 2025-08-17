@@ -33,10 +33,8 @@
 #define _INCLUDE_SOURCEMOD_CLOGGER_H_
 
 #include <stdio.h>
-#include <sh_string.h>
+#include <string>
 #include "sm_globals.h"
-
-using namespace SourceHook;
 
 class LoggerCore : public SMGlobalClass
 {

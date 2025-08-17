@@ -30,7 +30,7 @@
 #include "ConVarManager.h"
 #include "HalfLife2.h"
 #include "sm_stringutil.h"
-#include <sh_vector.h>
+#include <vector>
 #include <sm_namehashset.h>
 #include "logic_bridge.h"
 #include "sourcemod.h"
@@ -40,7 +40,7 @@
 ConVarManager g_ConVarManager;
 
 const ParamType CONVARCHANGE_PARAMS[] = {Param_Cell, Param_String, Param_String};
-typedef List<const ConVar *> ConVarList;
+typedef std::list<const ConVar *> ConVarList;
 NameHashSet<ConVarInfo *, ConVarInfo::ConVarPolicy> convar_cache;
 
 enum {
@@ -114,7 +114,7 @@ void ConVarManager::OnSourceModAllInitialized()
 
 void ConVarManager::OnSourceModShutdown()
 {
-	List<ConVarInfo *>::iterator iter = m_ConVars.begin();
+	auto iter = m_ConVars.begin();
 	HandleSecurity sec(NULL, g_pCoreIdent);
 
 	/* Iterate list of ConVarInfo structures, remove every one of them */
@@ -217,7 +217,7 @@ void ConVarManager::OnPluginUnloaded(IPlugin *plugin)
 	}
 
 	/* Clear any references to this plugin as the convar creator */
-	for (List<ConVarInfo *>::iterator iter = m_ConVars.begin(); iter != m_ConVars.end(); ++iter)
+	for (auto iter = m_ConVars.begin(); iter != m_ConVars.end(); ++iter)
 	{
 		ConVarInfo *pInfo = (*iter);
 
@@ -230,7 +230,7 @@ void ConVarManager::OnPluginUnloaded(IPlugin *plugin)
 	const IPluginRuntime * pRuntime = plugin->GetRuntime();
 
 	/* Remove convar queries for this plugin that haven't returned results yet */
-	for (List<ConVarQuery>::iterator iter = m_ConVarQueries.begin(); iter != m_ConVarQueries.end();)
+	for (auto iter = m_ConVarQueries.begin(); iter != m_ConVarQueries.end();)
 	{
 		ConVarQuery &query = (*iter);
 		if (query.pCallback->GetParentRuntime() == pRuntime)
@@ -246,7 +246,7 @@ void ConVarManager::OnPluginUnloaded(IPlugin *plugin)
 void ConVarManager::OnClientDisconnected(int client)
 {
 	/* Remove convar queries for this client that haven't returned results yet */
-	for (List<ConVarQuery>::iterator iter = m_ConVarQueries.begin(); iter != m_ConVarQueries.end();)
+	for (auto iter = m_ConVarQueries.begin(); iter != m_ConVarQueries.end();)
 	{
 		ConVarQuery &query = (*iter);
 		if (query.client == client)
@@ -311,7 +311,6 @@ void ConVarManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs
 		const char *plname = IS_STR_FILLED(plinfo->name) ? plinfo->name : plugin->GetFilename();
 
 		ConVarList *pConVarList;
-		ConVarList::iterator iter;
 
 		/* If no convar list... */
 		if (!plugin->GetProperty("ConVarList", (void **)&pConVarList))
@@ -327,7 +326,7 @@ void ConVarManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs
 		}
 		
 		/* Iterate convar list and display/reset each one */
-		for (iter = pConVarList->begin(); iter != pConVarList->end(); iter++)
+		for (auto iter = pConVarList->begin(); iter != pConVarList->end(); iter++)
 		{
 			/*const */ConVar *pConVar = const_cast<ConVar *>(*iter);
 			if (!wantReset)
@@ -599,10 +598,18 @@ void ConVarManager::AddConVarToPluginList(IPlugin *plugin, const ConVar *pConVar
 		pConVarList = new ConVarList();
 		plugin->SetProperty("ConVarList", pConVarList);
 	}
-	else if (pConVarList->find(pConVar) != pConVarList->end())
+	else
 	{
 		/* If convar is already in list, then don't add it */
-		return;
+		auto iterS = pConVarList->begin();
+		while (iterS != pConVarList->end() && (*iterS) != pConVar)
+		{
+			iterS++;
+		}
+		if (iterS != pConVarList->end())
+		{
+			return;
+		}
 	}
 
 	/* Insert convar into list which is sorted alphabetically */
@@ -672,9 +679,9 @@ void ConVarManager::OnClientQueryFinished(QueryCvarCookie_t cookie,
 {
 	IPluginFunction *pCallback = NULL;
 	cell_t value = 0;
-	List<ConVarQuery>::iterator iter;
 
-	for (iter = m_ConVarQueries.begin(); iter != m_ConVarQueries.end(); iter++)
+	auto iter = m_ConVarQueries.begin();
+	for (; iter != m_ConVarQueries.end(); iter++)
 	{
 		ConVarQuery &query = (*iter);
 		if (query.cookie == cookie)
@@ -706,7 +713,8 @@ void ConVarManager::OnClientQueryFinished(QueryCvarCookie_t cookie,
 		pCallback->PushCell(value);
 		pCallback->Execute(&ret);
 
-		m_ConVarQueries.erase(iter);
+		if (iter != m_ConVarQueries.end())
+			m_ConVarQueries.erase(iter);
 	}
 }
 #endif
