@@ -34,15 +34,15 @@
 #include "MenuStyle_Valve.h"
 #include "PlayerManager.h"
 #include "ConCmdManager.h"
-
-SH_DECL_HOOK4_void(IServerPluginHelpers, CreateMessage, SH_NOATTRIB, false, edict_t *, DIALOG_TYPE, KeyValues *, IServerPluginCallbacks *);
+#include "engine/iserverplugin.h"
 
 ValveMenuStyle g_ValveMenuStyle;
 extern const char *g_OptionNumTable[];
 extern const char *g_OptionCmdTable[];
-CallClass<IServerPluginHelpers> *g_pSPHCC = NULL;
 
-ValveMenuStyle::ValveMenuStyle() : m_players(new CValveMenuPlayer[256+1])
+ValveMenuStyle::ValveMenuStyle() : 
+	m_HookCreateMessage(&IServerPluginHelpers::CreateMessage, this, &ValveMenuStyle::HookCreateMessage, nullptr),
+	m_players(new CValveMenuPlayer[256+1])
 {
 }
 
@@ -66,31 +66,30 @@ bool ValveMenuStyle::OnClientCommand(int client, const char *cmdname, const CCom
 void ValveMenuStyle::OnSourceModAllInitialized()
 {
 	g_Players.AddClientListener(this);
-	SH_ADD_HOOK(IServerPluginHelpers, CreateMessage, serverpluginhelpers, SH_MEMBER(this, &ValveMenuStyle::HookCreateMessage), false);
-	g_pSPHCC = SH_GET_CALLCLASS(serverpluginhelpers);
+	m_HookCreateMessage.Add(serverpluginhelpers);
 }
 
 void ValveMenuStyle::OnSourceModShutdown()
 {
-	SH_RELEASE_CALLCLASS(g_pSPHCC);
-	SH_REMOVE_HOOK(IServerPluginHelpers, CreateMessage, serverpluginhelpers, SH_MEMBER(this, &ValveMenuStyle::HookCreateMessage), false);
+	m_HookCreateMessage.Remove(serverpluginhelpers);
 	g_Players.RemoveClientListener(this);
 }
 
-void ValveMenuStyle::HookCreateMessage(edict_t *pEdict,
+KHook::Return<void> ValveMenuStyle::HookCreateMessage(IServerPluginHelpers*,
+									   edict_t *pEdict,
 									   DIALOG_TYPE type,
 									   KeyValues *kv,
 									   IServerPluginCallbacks *plugin)
 {
 	if (type != DIALOG_MENU)
 	{
-		return;
+		return { KHook::Action::Ignore };
 	}
 
 	int client = IndexOfEdict(pEdict);
 	if (client < 1 || client > 256)
 	{
-		return;
+		return { KHook::Action::Ignore };
 	}
 
 	CValveMenuPlayer *player = &m_players[client];
@@ -110,6 +109,7 @@ void ValveMenuStyle::HookCreateMessage(edict_t *pEdict,
 		 */
 		_CancelClientMenu(client, MenuCancel_Interrupted, true);
 	}
+	return { KHook::Action::Ignore };
 }
 
 IMenuPanel *ValveMenuStyle::CreatePanel()
@@ -323,7 +323,8 @@ void CValveMenuDisplay::SendRawDisplay(int client, int priority, unsigned int ti
 	m_pKv->SetInt("level", priority);
 	m_pKv->SetInt("time", time ? time : 200);
 
-	SH_CALL(g_pSPHCC, &IServerPluginHelpers::CreateMessage)(
+	KHook::CallOriginal(&IServerPluginHelpers::CreateMessage,
+		serverpluginhelpers, 
 		PEntityOfEntIndex(client),
 		DIALOG_MENU,
 		m_pKv,

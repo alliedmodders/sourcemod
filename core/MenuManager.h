@@ -33,14 +33,11 @@
 #define _INCLUDE_SOURCEMOD_MENUMANAGER_H_
 
 #include <IMenuManager.h>
-#include <sh_vector.h>
-#include <sh_stack.h>
-#include <sh_list.h>
+#include <vector>
 #include "sm_globals.h"
 #include <string>
 
 using namespace SourceMod;
-using namespace SourceHook;
 
 class MenuManager : 
 	public IMenuManager,
@@ -102,7 +99,7 @@ protected:
 private:
 	int m_ShowMenu;
 	IMenuStyle *m_pDefaultStyle;
-	CVector<IMenuStyle *> m_Styles;
+	std::vector<IMenuStyle *> m_Styles;
 	HandleType_t m_StyleType;
 	HandleType_t m_MenuType;
 	std::string m_SelectSound = "";
