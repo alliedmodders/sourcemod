@@ -415,7 +415,7 @@ void RegisterInPlugin(CmdHook *hook)
 
 void ConCmdManager::AddToCmdList(ConCmdInfo *info)
 {
-	List<ConCmdInfo *>::iterator iter = m_CmdList.begin();
+	auto iter = m_CmdList.begin();
 	ConCmdInfo *pInfo;
 	bool inserted = false;
 	const char *orig = NULL;

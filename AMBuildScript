@@ -519,7 +519,7 @@ class SMConfig(object):
 
     compiler.cxxincludes += [
       os.path.join(self.mms_root, 'core'),
-      os.path.join(self.mms_root, 'core', 'sourcehook'),
+      os.path.join(self.mms_root, 'third_party', 'khook', 'include'),
     ]
 
     for other_sdk in self.sdk_manifests:
@@ -663,21 +663,21 @@ else:
     'loader/AMBuilder',
     'core/AMBuilder',
     'core/logic/AMBuilder',
-    'extensions/bintools/AMBuilder',
-    'extensions/clientprefs/AMBuilder',
-    'extensions/curl/AMBuilder',
-    'extensions/cstrike/AMBuilder',
-    'extensions/dhooks/AMBuilder',
-    'extensions/geoip/AMBuilder',
-    'extensions/mysql/AMBuilder',
-    'extensions/pgsql/AMBuilder',
-    'extensions/regex/AMBuilder',
-    'extensions/sdkhooks/AMBuilder',
-    'extensions/sdktools/AMBuilder',
-    'extensions/sqlite/AMBuilder',
-    'extensions/tf2/AMBuilder',
-    'extensions/topmenus/AMBuilder',
-    'extensions/updater/AMBuilder',
+    #'extensions/bintools/AMBuilder',
+    #'extensions/clientprefs/AMBuilder',
+    #'extensions/curl/AMBuilder',
+    #'extensions/cstrike/AMBuilder',
+    #'extensions/dhooks/AMBuilder',
+    #'extensions/geoip/AMBuilder',
+    #'extensions/mysql/AMBuilder',
+    #'extensions/pgsql/AMBuilder',
+    #'extensions/regex/AMBuilder',
+    #'extensions/sdkhooks/AMBuilder',
+    #'extensions/sdktools/AMBuilder',
+    #'extensions/sqlite/AMBuilder',
+    #'extensions/tf2/AMBuilder',
+    #'extensions/topmenus/AMBuilder',
+    #'extensions/updater/AMBuilder',
   ]
 
   if builder.backend == 'amb2':

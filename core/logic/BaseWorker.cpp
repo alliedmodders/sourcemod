@@ -109,10 +109,9 @@ SWThreadHandle *BaseWorker::PopThreadFromQueue()
 	if (!m_ThreadQueue.size())
 		return NULL;
 
-	SourceHook::List<SWThreadHandle *>::iterator begin;
 	SWThreadHandle *swt;
 
-	begin = m_ThreadQueue.begin();
+	auto begin = m_ThreadQueue.begin();
 	swt = (*begin);
 	m_ThreadQueue.erase(begin);
 

@@ -144,7 +144,7 @@ void CRadioStyle::OnSourceModShutdown()
 
 	while (!m_FreeDisplays.empty())
 	{
-		delete m_FreeDisplays.front();
+		delete m_FreeDisplays.top();
 		m_FreeDisplays.pop();
 	}
 }
@@ -261,7 +261,7 @@ CRadioDisplay *CRadioStyle::MakeRadioDisplay(CRadioMenu *menu)
 	}
 	else
 	{
-		display = m_FreeDisplays.front();
+		display = m_FreeDisplays.top();
 		m_FreeDisplays.pop();
 		display->Reset();
 	}
