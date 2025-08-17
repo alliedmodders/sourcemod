@@ -232,7 +232,7 @@ void ShareSystem::DestroyIdentType(IdentityType_t type)
 
 void ShareSystem::RemoveInterfaces(IExtension *pExtension)
 {
-	List<IfaceInfo>::iterator iter = m_Interfaces.begin();
+	auto iter = m_Interfaces.begin();
 
 	while (iter != m_Interfaces.end())
 	{

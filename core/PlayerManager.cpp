@@ -64,38 +64,11 @@ IForward *ServerExitHibernation = NULL;
 
 const unsigned int *g_NumPlayersToAuth = NULL;
 int lifestate_offset = -1;
-List<ICommandTargetProcessor *> target_processors;
+std::list<ICommandTargetProcessor *> target_processors;
 
 ConVar sm_debug_connect("sm_debug_connect", "1", 0, "Log Debug information about potential connection issues.");
 
-SH_DECL_HOOK5(IServerGameClients, ClientConnect, SH_NOATTRIB, 0, bool, edict_t *, const char *, const char *, char *, int);
-SH_DECL_HOOK2_void(IServerGameClients, ClientPutInServer, SH_NOATTRIB, 0, edict_t *, const char *);
-SH_DECL_HOOK1_void(IServerGameClients, ClientDisconnect, SH_NOATTRIB, 0, edict_t *);
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *, const CCommand &);
-#else
-SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *);
-#endif
-SH_DECL_HOOK1_void(IServerGameClients, ClientSettingsChanged, SH_NOATTRIB, 0, edict_t *);
-
-#if SOURCE_ENGINE >= SE_EYE
-SH_DECL_HOOK2_void(IServerGameClients, ClientCommandKeyValues, SH_NOATTRIB, 0, edict_t *, KeyValues *);
-#endif
-
-SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, int, int);
-
-#if SOURCE_ENGINE >= SE_LEFT4DEAD
-SH_DECL_HOOK1_void(IServerGameDLL, ServerHibernationUpdate, SH_NOATTRIB, 0, bool);
-#elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox.
-SH_DECL_HOOK1_void(IServerGameDLL, SetServerHibernation, SH_NOATTRIB, 0, bool);
-#endif
-
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
-#else
-SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
-#endif
-SH_DECL_HOOK2_void(IVEngineServer, ClientPrintf, SH_NOATTRIB, 0, edict_t *, const char *);
+KHook::Virtual gHookCommandDispatch(&ConCommand::Dispatch, nullptr, &CmdMaxplayersCallback);
 
 static void PrintfBuffer_FrameAction(void *data)
 {
@@ -125,7 +98,22 @@ public:
 	}
 } s_KickPlayerTimer;
 
-PlayerManager::PlayerManager()
+PlayerManager::PlayerManager() :
+	m_HookClientConnect(&IServerGameClients::ClientConnect, this, &PlayerManager::OnClientConnect, &PlayerManager::OnClientConnect_Post),
+	m_HookClientPutInServer(&IServerGameClients::ClientPutInServer, this, nullptr, &PlayerManager::OnClientPutInServer),
+	m_HookClientDisconnect(&IServerGameClients::ClientDisconnect, this, &PlayerManager::OnClientDisconnect, &PlayerManager::OnClientDisconnect_Post),
+	m_HookClientCommand(&IServerGameClients::ClientCommand, this, &PlayerManager::OnClientCommand, nullptr),
+#if SOURCE_ENGINE >= SE_EYE	
+	m_HookClientCommandKeyValues(&IServerGameClients::ClientCommandKeyValues, this, &PlayerManager::OnClientCommandKeyValues, &PlayerManager::OnClientCommandKeyValues_Post),
+#endif
+	m_HookClientSettingsChanged(&IServerGameClients::ClientSettingsChanged, this, nullptr, &PlayerManager::OnClientSettingsChanged),
+	m_HookServerActivate(&IServerGameDLL::ServerActivate, this, nullptr, &PlayerManager::OnServerActivate),
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
+	m_HookServerHibernationUpdate(&IServerGameDLL::ServerHibernationUpdate, this, nullptr, &PlayerManager::OnServerHibernationUpdate),
+#elif SOURCE_ENGINE > SE_EYE
+	m_HookSetServerHibernation(&IServerGameDLL::SetServerHibernation, this, nullptr, &PlayerManager::OnServerHibernationUpdate),
+#endif
+	m_HookClientPrintf(&IVEngineServer::ClientPrintf, this, &PlayerManager::OnClientPrintf, nullptr)
 {
 	m_AuthQueue = NULL;
 	m_bServerActivated = false;
@@ -164,24 +152,21 @@ void PlayerManager::OnSourceModStartup(bool late)
 
 void PlayerManager::OnSourceModAllInitialized()
 {
-	SH_ADD_HOOK(IServerGameClients, ClientConnect, serverClients, SH_MEMBER(this, &PlayerManager::OnClientConnect), false);
-	SH_ADD_HOOK(IServerGameClients, ClientConnect, serverClients, SH_MEMBER(this, &PlayerManager::OnClientConnect_Post), true);
-	SH_ADD_HOOK(IServerGameClients, ClientPutInServer, serverClients, SH_MEMBER(this, &PlayerManager::OnClientPutInServer), true);
-	SH_ADD_HOOK(IServerGameClients, ClientDisconnect, serverClients, SH_MEMBER(this, &PlayerManager::OnClientDisconnect), false);
-	SH_ADD_HOOK(IServerGameClients, ClientDisconnect, serverClients, SH_MEMBER(this, &PlayerManager::OnClientDisconnect_Post), true);
-	SH_ADD_HOOK(IServerGameClients, ClientCommand, serverClients, SH_MEMBER(this, &PlayerManager::OnClientCommand), false);
+	m_HookClientConnect.Add(serverClients);
+	m_HookClientPutInServer.Add(serverClients);
+	m_HookClientDisconnect.Add(serverClients);
+	m_HookClientCommand.Add(serverClients);
 #if SOURCE_ENGINE >= SE_EYE
-	SH_ADD_HOOK(IServerGameClients, ClientCommandKeyValues, serverClients, SH_MEMBER(this, &PlayerManager::OnClientCommandKeyValues), false);
-	SH_ADD_HOOK(IServerGameClients, ClientCommandKeyValues, serverClients, SH_MEMBER(this, &PlayerManager::OnClientCommandKeyValues_Post), true);
+	m_HookClientCommandKeyValues.Add(serverClients);
 #endif
-	SH_ADD_HOOK(IServerGameClients, ClientSettingsChanged, serverClients, SH_MEMBER(this, &PlayerManager::OnClientSettingsChanged), true);
-	SH_ADD_HOOK(IServerGameDLL, ServerActivate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerActivate), true);
+	m_HookClientSettingsChanged.Add(serverClients);
+	m_HookServerActivate.Add(gamedll);
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
-	SH_ADD_HOOK(IServerGameDLL, ServerHibernationUpdate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
+	m_HookServerHibernationUpdate.Add(gamedll);
 #elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox.
-	SH_ADD_HOOK(IServerGameDLL, SetServerHibernation, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
+	m_HookSetServerHibernation.Add(gamedll);
 #endif
-	SH_ADD_HOOK(IVEngineServer, ClientPrintf, engine, SH_MEMBER(this, &PlayerManager::OnClientPrintf), false);
+	m_HookClientPrintf.Add(engine);
 
 	sharesys->AddInterface(NULL, this);
 
@@ -214,31 +199,28 @@ void PlayerManager::OnSourceModAllInitialized()
 	ConCommand *pCmd = FindCommand("maxplayers");
 	if (pCmd != NULL)
 	{
-		SH_ADD_HOOK(ConCommand, Dispatch, pCmd, SH_STATIC(CmdMaxplayersCallback), true);
+		gHookCommandDispatch.Add(pCmd);
 		maxplayersCmd = pCmd;
 	}
 }
 
 void PlayerManager::OnSourceModShutdown()
 {
-	SH_REMOVE_HOOK(IServerGameClients, ClientConnect, serverClients, SH_MEMBER(this, &PlayerManager::OnClientConnect), false);
-	SH_REMOVE_HOOK(IServerGameClients, ClientConnect, serverClients, SH_MEMBER(this, &PlayerManager::OnClientConnect_Post), true);
-	SH_REMOVE_HOOK(IServerGameClients, ClientPutInServer, serverClients, SH_MEMBER(this, &PlayerManager::OnClientPutInServer), true);
-	SH_REMOVE_HOOK(IServerGameClients, ClientDisconnect, serverClients, SH_MEMBER(this, &PlayerManager::OnClientDisconnect), false);
-	SH_REMOVE_HOOK(IServerGameClients, ClientDisconnect, serverClients, SH_MEMBER(this, &PlayerManager::OnClientDisconnect_Post), true);
-	SH_REMOVE_HOOK(IServerGameClients, ClientCommand, serverClients, SH_MEMBER(this, &PlayerManager::OnClientCommand), false);
+	m_HookClientConnect.Remove(serverClients);
+	m_HookClientPutInServer.Remove(serverClients);
+	m_HookClientDisconnect.Remove(serverClients);
+	m_HookClientCommand.Remove(serverClients);
 #if SOURCE_ENGINE >= SE_EYE
-	SH_REMOVE_HOOK(IServerGameClients, ClientCommandKeyValues, serverClients, SH_MEMBER(this, &PlayerManager::OnClientCommandKeyValues), false);
-	SH_REMOVE_HOOK(IServerGameClients, ClientCommandKeyValues, serverClients, SH_MEMBER(this, &PlayerManager::OnClientCommandKeyValues_Post), true);
+	m_HookClientCommandKeyValues.Remove(serverClients);
 #endif
-	SH_REMOVE_HOOK(IServerGameClients, ClientSettingsChanged, serverClients, SH_MEMBER(this, &PlayerManager::OnClientSettingsChanged), true);
-	SH_REMOVE_HOOK(IServerGameDLL, ServerActivate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerActivate), true);
+	m_HookClientSettingsChanged.Remove(serverClients);
+	m_HookServerActivate.Remove(gamedll);
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
-	SH_REMOVE_HOOK(IServerGameDLL, ServerHibernationUpdate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
+	m_HookServerHibernationUpdate.Remove(gamedll);
 #elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox.
-	SH_REMOVE_HOOK(IServerGameDLL, SetServerHibernation, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
+	m_HookSetServerHibernation.Remove(gamedll);
 #endif
-	SH_REMOVE_HOOK(IVEngineServer, ClientPrintf, engine, SH_MEMBER(this, &PlayerManager::OnClientPrintf), false);
+	m_HookClientPrintf.Remove(engine);
 
 	/* Release forwards */
 	forwardsys->ReleaseForward(m_clconnect);
@@ -265,7 +247,7 @@ void PlayerManager::OnSourceModShutdown()
 
 	if (maxplayersCmd != NULL)
 	{
-		SH_REMOVE_HOOK(ConCommand, Dispatch, maxplayersCmd, SH_STATIC(CmdMaxplayersCallback), true);
+		gHookCommandDispatch.Remove(maxplayersCmd);
 	}
 }
 
@@ -308,7 +290,7 @@ ConfigResult PlayerManager::OnSourceModConfigChanged(const char *key,
 	return ConfigResult_Ignore;
 }
 
-void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
+KHook::Return<void> PlayerManager::OnServerActivate(IServerGameDLL*, edict_t *pEdictList, int edictCount, int clientMax)
 {
 	static ConVar *tv_enable = icvar->FindVar("tv_enable");
 #if SOURCE_ENGINE == SE_TF2
@@ -331,8 +313,7 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 	m_onActivate->Execute(NULL);
 	m_onActivate2->Execute(NULL);
 
-	List<IClientListener *>::iterator iter;
-	for (iter = m_hooks.begin(); iter != m_hooks.end(); iter++)
+	for (auto iter = m_hooks.begin(); iter != m_hooks.end(); iter++)
 	{
 		if ((*iter)->GetClientListenerVersion() >= 5)
 		{
@@ -348,6 +329,8 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 	}
 
 	SM_ExecuteAllConfigs();
+
+	return { KHook::Action::Ignore };
 }
 
 bool PlayerManager::IsServerActivated()
@@ -434,9 +417,8 @@ void PlayerManager::RunAuthChecks()
 			const char *steamId = pPlayer->GetSteam2Id();
 
 			/* Send to extensions */
-			List<IClientListener *>::iterator iter;
 			IClientListener *pListener;
-			for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+			for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 			{
 				pListener = (*iter);
 				pListener->OnClientAuthorized(client, steamId ? steamId : authstr);
@@ -492,7 +474,7 @@ void PlayerManager::RunAuthChecks()
 	}
 }
 
-bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
+KHook::Return<bool> PlayerManager::OnClientConnect(IServerGameClients* clients, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
 {
 	int client = IndexOfEdict(pEntity);
 	CPlayer *pPlayer = &m_Players[client];
@@ -511,8 +493,8 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 			logger->LogMessage("\"%s<%d><%s><>\" was already connected to the server.", pPlayer->GetName(), pPlayer->GetUserId(), pAuth);
 		}
 
-		OnClientDisconnect(pPlayer->GetEdict());
-		OnClientDisconnect_Post(pPlayer->GetEdict());
+		OnClientDisconnect(clients, pPlayer->GetEdict());
+		OnClientDisconnect_Post(clients, pPlayer->GetEdict());
 	}
 
 	pPlayer->Initialize(pszName, pszAddress, pEntity);
@@ -537,14 +519,13 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 		pPlayer->m_OriginalLangId = pPlayer->m_LangId;
 	}
 	
-	List<IClientListener *>::iterator iter;
 	IClientListener *pListener = NULL;
-	for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+	for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 	{
 		pListener = (*iter);
 		if (!pListener->InterceptClientConnect(client, reject, maxrejectlen))
 		{
-			RETURN_META_VALUE(MRES_SUPERCEDE, false);
+			return { KHook::Action::Supersede, false };
 		}
 	}
 
@@ -568,30 +549,29 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 	{
 		if (!pPlayer->IsFakeClient())
 		{
-			RETURN_META_VALUE(MRES_SUPERCEDE, false);
+			return { KHook::Action::Supersede, false };
 		}
 	}
 
-	return true;
+	return { KHook::Action::Ignore, true };
 }
 
-bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
+KHook::Return<bool> PlayerManager::OnClientConnect_Post(IServerGameClients*, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
 {
 	int client = IndexOfEdict(pEntity);
-	bool orig_value = META_RESULT_ORIG_RET(bool);
+	bool orig_value = *(bool*)KHook::GetOriginalValuePtr();
 	CPlayer *pPlayer = &m_Players[client];
 
 	if (orig_value)
 	{
-		List<IClientListener *>::iterator iter;
 		IClientListener *pListener = NULL;
-		for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+		for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 		{
 			pListener = (*iter);
 			pListener->OnClientConnected(client);
 			if (!pPlayer->IsConnected())
 			{
-				return true;
+				return { KHook::Action::Ignore };
 			}
 		}
 
@@ -611,10 +591,10 @@ bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, 
 		InvalidatePlayer(pPlayer);
 	}
 
-	return true;
+	return { KHook::Action::Ignore };
 }
 
-void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername)
+KHook::Return<void> PlayerManager::OnClientPutInServer(IServerGameClients* clients, edict_t *pEntity, const char *playername)
 {
 	cell_t res;
 	int client = IndexOfEdict(pEntity);
@@ -693,21 +673,21 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 			m_SourceTVUserId = userId;
 		}
 
-		if (!OnClientConnect(pEntity, playername, "127.0.0.1", error, sizeof(error)))
+		if (!OnClientConnect(clients, pEntity, playername, "127.0.0.1", error, sizeof(error)).ret)
 		{
 			/* :TODO: kick the bot if it's rejected */
-			return;
+			return { KHook::Action::Ignore };
 		}
-		List<IClientListener *>::iterator iter;
+
 		IClientListener *pListener = NULL;
-		for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+		for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 		{
 			pListener = (*iter);
 			pListener->OnClientConnected(client);
 			/* See if bot was kicked */
 			if (!pPlayer->IsConnected())
 			{
-				return;
+				return { KHook::Action::Ignore };
 			}
 		}
 
@@ -720,7 +700,7 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		const char *steamId = pPlayer->GetSteam2Id();
 
 		/* Now do authorization */
-		for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+		for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 		{
 			pListener = (*iter);
 			pListener->OnClientAuthorized(client, steamId ? steamId : pPlayer->m_AuthID.c_str());
@@ -751,9 +731,8 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 	pPlayer->Connect();
 	m_PlayerCount++;
 
-	List<IClientListener *>::iterator iter;
 	IClientListener *pListener = NULL;
-	for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+	for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 	{
 		pListener = (*iter);
 		pListener->OnClientPutInServer(client);
@@ -766,6 +745,8 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 	{
 		pPlayer->DoPostConnectAuthorization();
 	}
+
+	return { KHook::Action::Ignore };
 }
 
 void PlayerManager::OnSourceModLevelEnd()
@@ -775,14 +756,14 @@ void PlayerManager::OnSourceModLevelEnd()
 	{
 		if (m_Players[i].IsConnected())
 		{
-			OnClientDisconnect(m_Players[i].GetEdict());
-			OnClientDisconnect_Post(m_Players[i].GetEdict());
+			OnClientDisconnect(serverClients, m_Players[i].GetEdict());
+			OnClientDisconnect_Post(serverClients, m_Players[i].GetEdict());
 		}
 	}
 	m_PlayerCount = 0;
 }
 
-void PlayerManager::OnServerHibernationUpdate(bool bHibernating)
+KHook::Return<void> PlayerManager::OnServerHibernationUpdate(IServerGameDLL*, bool bHibernating)
 {
 	cell_t res;
 	if (bHibernating)
@@ -805,14 +786,16 @@ void PlayerManager::OnServerHibernationUpdate(bool bHibernating)
 				if (pPlayer->IsSourceTV() || pPlayer->IsReplay())
 					continue;
 #endif
-				OnClientDisconnect(m_Players[i].GetEdict());
-				OnClientDisconnect_Post(m_Players[i].GetEdict());
+				OnClientDisconnect(serverClients, m_Players[i].GetEdict());
+				OnClientDisconnect_Post(serverClients, m_Players[i].GetEdict());
 			}
 		}
 	}
+
+	return { KHook::Action::Ignore };
 }
 
-void PlayerManager::OnClientDisconnect(edict_t *pEntity)
+KHook::Return<void> PlayerManager::OnClientDisconnect(IServerGameClients*, edict_t *pEntity)
 {
 	cell_t res;
 	int client = IndexOfEdict(pEntity);
@@ -826,7 +809,7 @@ void PlayerManager::OnClientDisconnect(edict_t *pEntity)
 	else
 	{
 		/* We don't care, prevent a double call */
-		return;
+		return { KHook::Action::Ignore };
 	}
 
 	if (pPlayer->WasCountedAsInGame())
@@ -834,23 +817,23 @@ void PlayerManager::OnClientDisconnect(edict_t *pEntity)
 		m_PlayerCount--;
 	}
 
-	List<IClientListener *>::iterator iter;
 	IClientListener *pListener = NULL;
-	for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+	for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 	{
 		pListener = (*iter);
 		pListener->OnClientDisconnecting(client);
 	}
+	return { KHook::Action::Ignore };
 }
 
-void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
+KHook::Return<void> PlayerManager::OnClientDisconnect_Post(IServerGameClients*, edict_t *pEntity)
 {
 	int client = IndexOfEdict(pEntity);
 	CPlayer *pPlayer = &m_Players[client];
 	if (!pPlayer->IsConnected())
 	{
 		/* We don't care, prevent a double call */
-		return;
+		return { KHook::Action::Ignore };
 	}
 
 	InvalidatePlayer(pPlayer);
@@ -865,26 +848,26 @@ void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
 	m_cldisconnect_post->PushCell(client);
 	m_cldisconnect_post->Execute(&res, NULL);
 
-	List<IClientListener *>::iterator iter;
 	IClientListener *pListener = NULL;
-	for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+	for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 	{
 		pListener = (*iter);
 		pListener->OnClientDisconnected(client);
 	}
+	return { KHook::Action::Ignore };
 }
 
-void PlayerManager::OnClientPrintf(edict_t *pEdict, const char *szMsg)
+KHook::Return<void> PlayerManager::OnClientPrintf(IVEngineServer*, edict_t *pEdict, const char *szMsg)
 {
 	int client = IndexOfEdict(pEdict);
 
 	CPlayer &player = m_Players[client];
 	if (!player.IsConnected())
-		RETURN_META(MRES_IGNORED);
+		return { KHook::Action::Ignore };
 
 	INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(client));
 	if (pNetChan == NULL)
-		RETURN_META(MRES_IGNORED);
+		return { KHook::Action::Ignore };
 
 	size_t nMsgLen = strlen(szMsg);
 #if SOURCE_ENGINE == SE_EPISODEONE || SOURCE_ENGINE == SE_DARKMESSIAH
@@ -895,7 +878,7 @@ void PlayerManager::OnClientPrintf(edict_t *pEdict, const char *szMsg)
 
 	// if the msg is bigger than allowed then just let it fail
 	if (nMsgLen + 1 >= SVC_Print_BufferSize) // +1 for NETMSG_TYPE_BITS
-		RETURN_META(MRES_IGNORED);
+		return { KHook::Action::Ignore };
 
 	// enqueue msgs if we'd overflow the SVC_Print buffer (+7 as ceil)
 	if (!player.m_PrintfBuffer.empty() || (nNumBitsWritten + NETMSG_TYPE_BITS + 7) / 8 + nMsgLen >= SVC_Print_BufferSize)
@@ -907,10 +890,10 @@ void PlayerManager::OnClientPrintf(edict_t *pEdict, const char *szMsg)
 
 		player.m_PrintfBuffer.push_back(szMsg);
 
-		RETURN_META(MRES_SUPERCEDE);
+		return { KHook::Action::Supersede };
 	}
 
-	RETURN_META(MRES_IGNORED);
+	return { KHook::Action::Ignore };
 }
 
 void PlayerManager::OnPrintfFrameAction(unsigned int serial)
@@ -944,7 +927,7 @@ void PlayerManager::OnPrintfFrameAction(unsigned int serial)
 		if ((nNumBitsWritten + NETMSG_TYPE_BITS + 7) / 8 + string.length() >= SVC_Print_BufferSize)
 			break;
 
-		SH_CALL(engine, &IVEngineServer::ClientPrintf)(player.m_pEdict, string.c_str());
+		KHook::CallOriginal(&IVEngineServer::ClientPrintf, engine, player.m_pEdict, string.c_str());
 
 		player.m_PrintfBuffer.pop_front();
 	}
@@ -1045,7 +1028,7 @@ void ListPluginsToClient(CPlayer *player, const CCommand &args)
 		return;
 	}
 
-	SourceHook::List<SMPlugin *> m_FailList;
+	std::list<SMPlugin *> m_FailList;
 
 	size_t i = 0;
 	for (; i < plugins->size(); i++)
@@ -1077,10 +1060,10 @@ void ListPluginsToClient(CPlayer *player, const CCommand &args)
 }
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-void PlayerManager::OnClientCommand(edict_t *pEntity, const CCommand &args)
+KHook::Return<void> PlayerManager::OnClientCommand(IServerGameClients*, edict_t *pEntity, const CCommand &args)
 {
 #else
-void PlayerManager::OnClientCommand(edict_t *pEntity)
+KHook::Return<void> PlayerManager::OnClientCommand(IServerGameClients*, edict_t *pEntity)
 {
 	CCommand args;
 #endif
@@ -1091,7 +1074,7 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 
 	if (!pPlayer->IsConnected())
 	{
-		return;
+		return { KHook::Action::Ignore };
 	}
 
 	if (strcmp(args.Arg(0), "sm") == 0)
@@ -1099,12 +1082,12 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 		if (args.ArgC() > 1 && strcmp(args.Arg(1), "plugins") == 0)
 		{
 			ListPluginsToClient(pPlayer, args);
-			RETURN_META(MRES_SUPERCEDE);
+			return { KHook::Action::Supersede };
 		}
 		else if (args.ArgC() > 1 && strcmp(args.Arg(1), "exts") == 0)
 		{
 			ListExtensionsToClient(pPlayer, args);
-			RETURN_META(MRES_SUPERCEDE);
+			return { KHook::Action::Supersede };
 		}
 		else if (args.ArgC() > 1 && strcmp(args.Arg(1), "credits") == 0)
 		{
@@ -1124,7 +1107,7 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 				" Borja \"faluco\" Ferrer, Pavol \"PM OnoTo\" Marko");
 			ClientConsolePrint(pEntity,
 				"SourceMod is open source under the GNU General Public License.");
-			RETURN_META(MRES_SUPERCEDE);
+			return { KHook::Action::Supersede };
 		}
 
 		ClientConsolePrint(pEntity,
@@ -1135,7 +1118,7 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 			"To see credits, type \"sm credits\"");
 		ClientConsolePrint(pEntity,
 			"Visit https://www.sourcemod.net/");
-		RETURN_META(MRES_SUPERCEDE);
+		return { KHook::Action::Supersede };
 	}
 
 	EngineArgs cargs(args);
@@ -1161,7 +1144,7 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 		cell_t res2 = g_ConsoleDetours.InternalDispatch(client, &cargs);
 		if (res2 >= Pl_Handled)
 		{
-			RETURN_META(MRES_SUPERCEDE);
+			return { KHook::Action::Supersede };
 		}
 		else if (res2 > res)
 		{
@@ -1184,21 +1167,22 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 
 	if (res >= Pl_Stop)
 	{
-		RETURN_META(MRES_SUPERCEDE);
+		return { KHook::Action::Supersede };
 	}
 
 	res = g_ConCmds.DispatchClientCommand(client, cmd, argcount, (ResultType)res);
 
 	if (res >= Pl_Handled)
 	{
-		RETURN_META(MRES_SUPERCEDE);
+		return { KHook::Action::Supersede };
 	}
+	return { KHook::Action::Ignore };
 }
 
 #if SOURCE_ENGINE >= SE_EYE
 static bool s_LastCCKVAllowed = true;
 
-void PlayerManager::OnClientCommandKeyValues(edict_t *pEntity, KeyValues *pCommand)
+KHook::Return<void> PlayerManager::OnClientCommandKeyValues(IServerGameClients*, edict_t *pEntity, KeyValues *pCommand)
 {
 	int client = IndexOfEdict(pEntity);
 
@@ -1207,12 +1191,12 @@ void PlayerManager::OnClientCommandKeyValues(edict_t *pEntity, KeyValues *pComma
 
 	if (!pPlayer->IsInGame())
 	{
-		RETURN_META(MRES_IGNORED);
+		return { KHook::Action::Ignore };
 	}
 
 	KeyValueStack *pStk = new KeyValueStack;
 	pStk->pBase = pCommand;
-	pStk->pCurRoot.push(pStk->pBase);
+	pStk->pCurRoot.push_front(pStk->pBase);
 	pStk->m_bDeleteOnDestroy = false;
 
 	Handle_t hndl = handlesys->CreateHandle(g_KeyValueType, pStk, g_pCoreIdent, g_pCoreIdent, NULL);
@@ -1231,19 +1215,19 @@ void PlayerManager::OnClientCommandKeyValues(edict_t *pEntity, KeyValues *pComma
 	if (res >= Pl_Handled)
 	{
 		s_LastCCKVAllowed = false;
-		RETURN_META(MRES_SUPERCEDE);
+		return { KHook::Action::Supersede };
 	}
 
 	s_LastCCKVAllowed = true;
 
-	RETURN_META(MRES_IGNORED);
+	return { KHook::Action::Ignore };
 }
 
-void PlayerManager::OnClientCommandKeyValues_Post(edict_t *pEntity, KeyValues *pCommand)
+KHook::Return<void> PlayerManager::OnClientCommandKeyValues_Post(IServerGameClients*, edict_t *pEntity, KeyValues *pCommand)
 {
 	if (!s_LastCCKVAllowed)
 	{
-		return;
+		return { KHook::Action::Ignore };
 	}
 
 	int client = IndexOfEdict(pEntity);
@@ -1252,12 +1236,12 @@ void PlayerManager::OnClientCommandKeyValues_Post(edict_t *pEntity, KeyValues *p
 
 	if (!pPlayer->IsInGame())
 	{
-		return;
+		return { KHook::Action::Ignore };
 	}
 
 	KeyValueStack *pStk = new KeyValueStack;
 	pStk->pBase = pCommand;
-	pStk->pCurRoot.push(pStk->pBase);
+	pStk->pCurRoot.push_front(pStk->pBase);
 	pStk->m_bDeleteOnDestroy = false;
 
 	Handle_t hndl = handlesys->CreateHandle(g_KeyValueType, pStk, g_pCoreIdent, g_pCoreIdent, NULL);
@@ -1272,10 +1256,12 @@ void PlayerManager::OnClientCommandKeyValues_Post(edict_t *pEntity, KeyValues *p
 
 	// Deletes pStk
 	handlesys->FreeHandle(hndl, &sec);
+
+	return { KHook::Action::Ignore };
 }
 #endif
 
-void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
+KHook::Return<void> PlayerManager::OnClientSettingsChanged(IServerGameClients*, edict_t *pEntity)
 {
 	cell_t res;
 	int client = IndexOfEdict(pEntity);
@@ -1283,7 +1269,7 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 
 	if (!pPlayer->IsConnected())
 	{
-		return;
+		return { KHook::Action::Ignore };
 	}
 
 	m_clinfochanged->PushCell(client);
@@ -1305,7 +1291,7 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 					char kickMsg[128];
 					logicore.CoreTranslate(kickMsg, sizeof(kickMsg), "%T", 2, NULL, "Name Reserved", &client);
 					pPlayer->Kick(kickMsg);
-					RETURN_META(MRES_IGNORED);
+					return { KHook::Action::Ignore };
 				}
 			}
 			else if ((id = adminsys->FindAdminByIdentity("name", old_name)) != INVALID_ADMIN_ID) {
@@ -1347,15 +1333,14 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 				new_name, pPlayer->GetUserId(), accountId & 1, accountId >> 1, networkid_force, pPlayer->GetIPAddress());
 
 			pPlayer->Kick("NetworkID spoofing detected.");
-			RETURN_META(MRES_IGNORED);
+			return { KHook::Action::Ignore };
 		}
 #endif
 	}
 
 	/* Notify Extensions */
-	List<IClientListener *>::iterator iter;
 	IClientListener *pListener = NULL;
-	for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+	for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 	{
 		pListener = (*iter);
 		if (pListener->GetClientListenerVersion() >= 13)
@@ -1363,6 +1348,7 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 			pListener->OnClientSettingsChanged(client);
 		}
 	}
+	return { KHook::Action::Ignore };
 }
 
 void PlayerManager::OnClientLanguageChanged(int client, unsigned int language)
@@ -1842,8 +1828,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 		}
 	}
 
-	List<ICommandTargetProcessor *>::iterator iter;
-	for (iter = target_processors.begin(); iter != target_processors.end(); iter++)
+	for (auto iter = target_processors.begin(); iter != target_processors.end(); iter++)
 	{
 		ICommandTargetProcessor *pProcessor = (*iter);
 		if (pProcessor->ProcessCommandTarget(info))
@@ -1926,9 +1911,8 @@ void PlayerManager::MaxPlayersChanged( int newvalue /*= -1*/ )
 	}
 
 	/* Notify Extensions */
-	List<IClientListener *>::iterator iter;
 	IClientListener *pListener = NULL;
-	for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+	for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 	{
 		pListener = (*iter);
 		if (pListener->GetClientListenerVersion() >= 8)
@@ -1961,14 +1945,16 @@ int PlayerManager::GetClientFromSerial(unsigned int serial)
 }
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-void CmdMaxplayersCallback(const CCommand &command)
+KHook::Return<void> CmdMaxplayersCallback(ConCommand*, const CCommand &command)
 {
 #else
-void CmdMaxplayersCallback()
+KHook::Return<void> CmdMaxplayersCallback(ConCommand*)
 {
 #endif
 
 	g_Players.MaxPlayersChanged();
+
+	return { KHook::Action::Ignore };
 }
 
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
@@ -2451,8 +2437,7 @@ void CPlayer::DoPostConnectAuthorization()
 {
 	bool delay = false;
 
-	List<IClientListener *>::iterator iter;
-	for (iter = g_Players.m_hooks.begin();
+	for (auto iter = g_Players.m_hooks.begin();
 		 iter != g_Players.m_hooks.end();
 		 iter++)
 	{
@@ -2511,8 +2496,7 @@ void CPlayer::NotifyPostAdminChecks()
 	/* Block beforehand so they can't double-call */
 	m_bAdminCheckSignalled = true;
 
-	List<IClientListener *>::iterator iter;
-	for (iter = g_Players.m_hooks.begin();
+	for (auto iter = g_Players.m_hooks.begin();
 		iter != g_Players.m_hooks.end();
 		iter++)
 	{

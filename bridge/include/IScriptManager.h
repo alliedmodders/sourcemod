@@ -29,12 +29,11 @@
 
 #include <sp_vm_api.h>
 #include <IPluginSys.h>
-#include <sh_vector.h>
-#include <sh_string.h>
+#include <vector>
+#include <string>
 
 namespace SourceMod {
 
-using namespace SourceHook;
 using namespace SourcePawn;
 
 class IChangeableForward;
@@ -47,8 +46,8 @@ enum LibraryAction
 
 struct AutoConfig
 {
-	SourceHook::String autocfg;
-	SourceHook::String folder;
+	std::string autocfg;
+	std::string folder;
 	bool create;
 };
 
@@ -82,8 +81,8 @@ public:
 	virtual SMPlugin *FindPluginByConsoleArg(const char *text) = 0;
 	virtual SMPlugin *FindPluginByHandle(Handle_t hndl, HandleError *errp) = 0;
 	virtual bool UnloadPlugin(IPlugin *plugin) = 0;
-	virtual const CVector<SMPlugin *> *ListPlugins() = 0;
-	virtual void FreePluginList(const CVector<SMPlugin *> *list) = 0;
+	virtual const std::vector<SMPlugin *> *ListPlugins() = 0;
+	virtual void FreePluginList(const std::vector<SMPlugin *> *list) = 0;
 	virtual void AddFunctionsToForward(const char *name, IChangeableForward *fwd) = 0;
 };
 
@@ -98,13 +97,13 @@ public:
 	{
 		scripts_->FreePluginList(list_);
 	}
-	const CVector<SMPlugin *> *operator ->()
+	const std::vector<SMPlugin *> *operator ->()
 	{
 		return list_;
 	}
 private:
 	IScriptManager *scripts_;
-	const CVector<SMPlugin *> *list_;
+	const std::vector<SMPlugin *> *list_;
 };
 
 } // namespace SourceMod

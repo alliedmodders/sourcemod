@@ -204,7 +204,7 @@ void DBManager::RemoveDriver(IDBDriver *pDriver)
 	{
 		if (m_drivers[i] == pDriver)
 		{
-			m_drivers.erase(m_drivers.iterAt(i));
+			m_drivers.erase(m_drivers.begin() + i);
 			break;
 		}
 	}

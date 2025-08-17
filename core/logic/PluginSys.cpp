@@ -668,7 +668,11 @@ void CPlugin::DependencyDropped(CPlugin *pOwner)
 		return;
 
 	for (auto lib_iter=pOwner->m_Libraries.begin(); lib_iter!=pOwner->m_Libraries.end(); lib_iter++) {
-		if (m_RequiredLibs.find(*lib_iter) != m_RequiredLibs.end()) {
+		auto iterS = m_RequiredLibs.begin();
+		while (iterS != m_RequiredLibs.end() && (*iterS) != *lib_iter) {
+			iterS++;
+		}
+		if (iterS != m_RequiredLibs.end()) {
 			m_LibraryMissing = true;
 			break;
 		}
@@ -739,10 +743,9 @@ void CPlugin::AddConfig(bool autoCreate, const char *cfg, const char *folder)
 void CPlugin::DropEverything()
 {
 	CPlugin *pOther;
-	List<WeakNative>::iterator wk_iter;
 
 	/* Tell everyone that depends on us that we're about to drop */
-	for (List<CPlugin *>::iterator iter = m_Dependents.begin();
+	for (auto iter = m_Dependents.begin();
 		 iter != m_Dependents.end();
 		 iter++)
 	{
@@ -1184,7 +1187,11 @@ void CPlugin::ForEachLibrary(ke::Function<void(const char *)> callback)
 
 void CPlugin::AddRequiredLib(const char *name)
 {
-	if (m_RequiredLibs.find(name) == m_RequiredLibs.end())
+	auto iterS = m_RequiredLibs.begin();
+	while (iterS != m_RequiredLibs.end() && (*iterS) != name) {
+		iterS++;
+	}
+	if (iterS == m_RequiredLibs.end())
 		m_RequiredLibs.push_back(name);
 }
 
@@ -2274,9 +2281,9 @@ void CPluginManager::SyncMaxClients(int max_clients)
 		(*iter)->SyncMaxClients(max_clients);
 }
 
-const CVector<SMPlugin *> *CPluginManager::ListPlugins()
+const std::vector<SMPlugin *> *CPluginManager::ListPlugins()
 {
-	CVector<SMPlugin *> *list = new CVector<SMPlugin *>();
+	std::vector<SMPlugin *> *list = new std::vector<SMPlugin *>();
 
 	for (PluginIter iter(m_plugins); !iter.done(); iter.next())
 		list->push_back((*iter));
@@ -2284,9 +2291,9 @@ const CVector<SMPlugin *> *CPluginManager::ListPlugins()
 	return list;
 }
 
-void CPluginManager::FreePluginList(const CVector<SMPlugin *> *list)
+void CPluginManager::FreePluginList(const std::vector<SMPlugin *> *list)
 {
-	delete const_cast<CVector<SMPlugin *> *>(list);
+	delete const_cast<std::vector<SMPlugin *> *>(list);
 }
 
 void CPluginManager::ForEachPlugin(ke::Function<void(CPlugin *)> callback)

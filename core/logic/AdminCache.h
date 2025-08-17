@@ -33,16 +33,12 @@
 #define _INCLUDE_SOURCEMOD_ADMINCACHE_H_
 
 #include "common_logic.h"
-#include <IAdminSystem.h>
+#include "sm_hashmap.h"
 #include "sm_memtable.h"
-#include <sm_trie.h>
-#include <sh_list.h>
-#include <sh_string.h>
+#include "sm_namehashset.h"
+#include <IAdminSystem.h>
 #include <IForwardSys.h>
-#include <sm_hashmap.h>
-#include <sm_namehashset.h>
-
-using namespace SourceHook;
+#include <list>
 
 #define GRP_MAGIC_SET		0xDEADFADE
 #define GRP_MAGIC_UNSET		0xFACEFACE
@@ -70,7 +66,7 @@ struct AdminGroup
 
 struct AuthMethod
 {
-	String name;
+	std::string name;
 	StringHashMap<AdminId> identities;
 
 	AuthMethod(const char *name)
@@ -214,8 +210,8 @@ public:
 	int m_LastGroup;
 	int m_FreeGroupList;
 	StringHashMap<GroupId> m_Groups;
-	List<IAdminListener *> m_hooks;
-	List<AuthMethod *> m_AuthMethods;
+	std::list<IAdminListener *> m_hooks;
+	std::list<AuthMethod *> m_AuthMethods;
 	NameHashSet<AuthMethod *> m_AuthTables;
 	IForward *m_pCacheFwd;
 	int m_FirstUser;

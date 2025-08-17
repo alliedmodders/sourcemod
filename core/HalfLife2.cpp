@@ -756,7 +756,7 @@ void CHalfLife2::AddToFakeCliCmdQueue(int client, int userid, const char *cmd)
 	{
 		pFake = new DelayedFakeCliCmd;
 	} else {
-		pFake = m_FreeCmds.front();
+		pFake = m_FreeCmds.top();
 		m_FreeCmds.pop();
 	}
 
@@ -852,7 +852,7 @@ const ICommandArgs *CHalfLife2::PeekCommandStack()
 		return NULL;
 	}
 
-	return m_CommandStack.front().args;
+	return m_CommandStack.top().args;
 }
 
 void CHalfLife2::PopCommandStack()
@@ -863,9 +863,9 @@ void CHalfLife2::PopCommandStack()
 const char *CHalfLife2::CurrentCommandName()
 {
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-	return m_CommandStack.front().args->Arg(0);
+	return m_CommandStack.top().args->Arg(0);
 #else
-	return m_CommandStack.front().cmd;
+	return m_CommandStack.top().cmd;
 #endif
 }
 

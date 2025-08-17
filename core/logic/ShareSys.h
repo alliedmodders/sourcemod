@@ -37,13 +37,11 @@
 #include <am-string.h>
 #include <am-utility.h>
 #include <am-refcounting.h>
-#include <sh_list.h>
+#include <list>
 #include <sm_hashmap.h>
 #include <sm_namehashset.h>
 #include "common_logic.h"
 #include "Native.h"
-
-using namespace SourceHook;
 
 namespace SourceMod
 {
@@ -133,7 +131,7 @@ private:
 private:
 	typedef NameHashSet<ke::RefPtr<Native>, Native> NativeCache;
 
-	List<IfaceInfo> m_Interfaces;
+	std::list<IfaceInfo> m_Interfaces;
 	HandleType_t m_TypeRoot;
 	IdentityToken_t m_IdentRoot;
 	HandleType_t m_IfaceType;

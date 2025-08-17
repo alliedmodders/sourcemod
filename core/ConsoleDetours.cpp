@@ -62,30 +62,34 @@
 # include <unistd.h>
 #endif
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-	SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
-#else
-	SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
-#endif
-
 class GenericCommandHooker : public IConCommandLinkListener
 {
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+	using CmdHook = KHook::Member<ConCommand, void, const CCommand&>;
+	KHook::Return<void> Dispatch(ConCommand* this_ptr, const CCommand& args)
+#else
+	using CmdHook = KHook::Member<ConCommand, void>;
+	KHook::Return<void> Dispatch(ConCommand* this_ptr)
+#endif
+	{
+		cell_t res = ConsoleDetours::Dispatch(this_ptr
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+			, args
+#endif
+			);
+		if (res >= Pl_Handled)
+			return { KHook::Action::Supersede };
+		return { KHook::Action::Ignore };
+	}
+
 	struct HackInfo
 	{
 		void **vtable;
-		int hook;
+		CmdHook* hook;
 		unsigned int refcount;
 	};
-	CVector<HackInfo> vtables;
+	std::vector<HackInfo> vtables;
 	bool enabled;
-	SourceHook::MemFuncInfo dispatch;
-
-	inline void **GetVirtualTable(ConCommandBase *pBase)
-	{
-		return *reinterpret_cast<void***>(reinterpret_cast<char*>(pBase) +
-		                                  dispatch.thisptroffs +
-		                                  dispatch.vtbloffs);
-	}
 
 	inline bool FindVtable(void **ptr, size_t& index)
 	{
@@ -105,15 +109,14 @@ class GenericCommandHooker : public IConCommandLinkListener
 		if (!pBase->IsCommand())
 			return;
 
-		ConCommand *cmd = (ConCommand*)pBase;
-		void **vtable = GetVirtualTable(cmd);
-
+		ConCommand *cmd = reinterpret_cast<ConCommand*>(pBase);
+		void **vtable = *(void***)cmd;
 		size_t index;
 		if (!FindVtable(vtable, index))
 		{
 			HackInfo hack;
 			hack.vtable = vtable;
-			hack.hook = SH_ADD_VPHOOK(ConCommand, Dispatch, cmd, SH_MEMBER(this, &GenericCommandHooker::Dispatch), false);
+			hack.hook = new CmdHook(KHook::GetVtableFunction(cmd, &ConCommand::Dispatch), this, &GenericCommandHooker::Dispatch, nullptr);
 			hack.refcount = 1;
 			vtables.push_back(hack);
 		}
@@ -123,28 +126,13 @@ class GenericCommandHooker : public IConCommandLinkListener
 		}
 	}
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-	void Dispatch(const CCommand& args)
-#else
-	void Dispatch()
-#endif
-	{
-		cell_t res = ConsoleDetours::Dispatch(META_IFACEPTR(ConCommand)
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-			, args
-#endif
-			);
-		if (res >= Pl_Handled)
-			RETURN_META(MRES_SUPERCEDE);
-	}
-
 	void ReparseCommandList()
 	{
 		for (size_t i = 0; i < vtables.size(); i++)
 			vtables[i].refcount = 0;
 		for (ConCommandBaseIterator iter; iter.IsValid(); iter.Next())
 			MakeHookable(iter.Get());
-		CVector<HackInfo>::iterator iter = vtables.begin();
+		auto iter = vtables.begin();
 		while (iter != vtables.end())
 		{
 			if ((*iter).refcount)
@@ -167,6 +155,7 @@ class GenericCommandHooker : public IConCommandLinkListener
 			 *
 			 * See bug 4018.
 			 */
+			delete (*iter).hook;
 			iter = vtables.erase(iter);
 		}
 	}
@@ -177,7 +166,7 @@ class GenericCommandHooker : public IConCommandLinkListener
 			return;
 
 		ConCommand *cmd = (ConCommand*)pBase;
-		void **vtable = GetVirtualTable(cmd);
+		void **vtable = *(void***)(cmd);
 
 		size_t index;
 		if (!FindVtable(vtable, index))
@@ -190,8 +179,8 @@ class GenericCommandHooker : public IConCommandLinkListener
 		vtables[index].refcount--;
 		if (vtables[index].refcount == 0)
 		{
-			SH_REMOVE_HOOK_ID(vtables[index].hook);
-			vtables.erase(vtables.iterAt(index));
+			delete vtables[index].hook;
+			vtables.erase(vtables.begin() + index);
 		}
 	}
 
@@ -202,9 +191,7 @@ public:
 
 	bool Enable()
 	{
-		SourceHook::GetFuncInfo(&ConCommand::Dispatch, dispatch);
-
-		if (dispatch.thisptroffs < 0)
+		if (KHook::GetVtableIndex(&ConCommand::Dispatch) == -1)
 		{
 			logger->LogError("Command filter could not determine ConCommand layout");
 			return false;
@@ -227,7 +214,7 @@ public:
 	void Disable()
 	{
 		for (size_t i = 0; i < vtables.size(); i++)
-			SH_REMOVE_HOOK_ID(vtables[i].hook);
+			delete vtables[i].hook;
 		vtables.clear();
 	}
 

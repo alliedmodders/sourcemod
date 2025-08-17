@@ -43,15 +43,13 @@
 #include "sm_globals.h"
 #include "sourcemm_api.h"
 #include <IForwardSys.h>
-#include <sh_list.h>
-#include <sh_string.h>
+#include <list>
+#include <string>
 #include <IRootConsoleMenu.h>
 #include <IAdminSystem.h>
 #include "concmd_cleaner.h"
 #include "GameHooks.h"
 #include <sm_namehashset.h>
-
-using namespace SourceHook;
 
 struct CmdHook;
 struct ConCmdInfo;
@@ -137,7 +135,7 @@ struct ConCmdInfo
 	};
 };
 
-typedef List<ConCmdInfo *> ConCmdList;
+typedef std::list<ConCmdInfo *> ConCmdList;
 
 class ConCmdManager :
 	public SMGlobalClass,
@@ -180,7 +178,7 @@ private:
 	bool CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin);
 	ConCmdInfo *FindInTrie(const char *name);
 public:
-	inline const List<ConCmdInfo *> & GetCommandList()
+	inline const std::list<ConCmdInfo *> & GetCommandList()
 	{
 		return m_CmdList;
 	}

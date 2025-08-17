@@ -39,8 +39,8 @@
 #include <IPlayerHelpers.h>
 #include "UserMessages.h"
 #include "sm_fastlink.h"
-#include <sh_stack.h>
-#include <sh_string.h>
+#include <stack>
+#include <string>
 #include <compat_wrappers.h>
 #include "logic/common_logic.h"
 #include "AutoHandleRooter.h"
@@ -106,7 +106,7 @@ public:
 	CRadioMenuPlayer *GetRadioMenuPlayer(int client);
 private:
 	CRadioMenuPlayer *m_players;
-	CStack<CRadioDisplay *> m_FreeDisplays;
+	std::stack<CRadioDisplay *> m_FreeDisplays;
 };
 
 class CRadioDisplay : public IMenuPanel
@@ -133,8 +133,8 @@ public: //IMenuPanel
 	unsigned int GetApproxMemUsage();
 	bool DirectSet(const char *str);
 private:
-	String m_BufferText;
-	String m_Title;
+	std::string m_BufferText;
+	std::string m_Title;
 	unsigned int m_NextPos;
 	int keys;
 };

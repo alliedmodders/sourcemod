@@ -34,7 +34,6 @@
 #include "HalfLife2.h"
 #include "sourcemm_api.h"
 #include "sm_stringutil.h"
-#include "sourcehook.h"
 #include "logic_bridge.h"
 #include "compat_wrappers.h"
 #include <time.h>
@@ -42,17 +41,7 @@
 
 NextMapManager g_NextMap;
 
-#if SOURCE_ENGINE != SE_DARKMESSIAH
-SH_DECL_HOOK2_void(IVEngineServer, ChangeLevel, SH_NOATTRIB, 0, const char *, const char *);
-#else
-SH_DECL_HOOK4_void(IVEngineServer, ChangeLevel, SH_NOATTRIB, 0, const char *, const char *, const char *, bool);
-#endif
-
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
-#else
-SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
-#endif
+KHook::Virtual gCommandDispatch(&ConCommand::Dispatch, CmdChangeLevelCallback, nullptr);
 
 ConCommand *changeLevelCmd = NULL;
 
@@ -63,27 +52,25 @@ bool g_forcedChange = false;
 
 void NextMapManager::OnSourceModAllInitialized_Post()
 {
-	SH_ADD_HOOK(IVEngineServer, ChangeLevel, engine, SH_MEMBER(this, &NextMapManager::HookChangeLevel), false);
-
+	m_HookChangeLevel.Add(engine);
 	ConCommand *pCmd = FindCommand("changelevel");
 	if (pCmd != NULL)
 	{
-		SH_ADD_HOOK(ConCommand, Dispatch, pCmd, SH_STATIC(CmdChangeLevelCallback), false);
+		gCommandDispatch.Add(pCmd);
 		changeLevelCmd = pCmd;
 	}
 }
 
 void NextMapManager::OnSourceModShutdown()
 {
-	SH_REMOVE_HOOK(IVEngineServer, ChangeLevel, engine, SH_MEMBER(this, &NextMapManager::HookChangeLevel), false);
+	m_HookChangeLevel.Remove(engine);
 
 	if (changeLevelCmd != NULL)
 	{
-		SH_REMOVE_HOOK(ConCommand, Dispatch, changeLevelCmd, SH_STATIC(CmdChangeLevelCallback), false);
+		gCommandDispatch.Remove(changeLevelCmd);
 	}
 
-	SourceHook::List<MapChangeData *>::iterator iter;
-	iter = m_mapHistory.begin();
+	auto iter = m_mapHistory.begin();
 
 	while (iter != m_mapHistory.end())
 	{
@@ -112,15 +99,15 @@ bool NextMapManager::SetNextMap(const char *map)
 static char g_nextMap[PLATFORM_MAX_PATH];
 
 #if SOURCE_ENGINE != SE_DARKMESSIAH
-void NextMapManager::HookChangeLevel(const char *map, const char *unknown)
+KHook::Return<void> NextMapManager::HookChangeLevel(IVEngineServer* this_ptr, const char *map, const char *unknown)
 #else
-void NextMapManager::HookChangeLevel(const char *map, const char *unknown, const char *video, bool bLongLoading)
+KHook::Return<void> NextMapManager::HookChangeLevel(IVEngineServer* this_ptr, const char *map, const char *unknown, const char *video, bool bLongLoading)
 #endif
 {
 	if (g_forcedChange)
 	{
 		logger->LogMessage("[SM] Changed map to \"%s\"", map);
-		RETURN_META(MRES_IGNORED);
+		return { KHook::Action::Ignore };
 	}
 
 	const char *newmap = sm_nextmap.GetString();
@@ -135,7 +122,7 @@ void NextMapManager::HookChangeLevel(const char *map, const char *unknown, const
 
 	if (newmap[0] == '\0' || !g_HL2.IsMapValid(newmap))
 	{
-		RETURN_META(MRES_IGNORED);
+		return { KHook::Action::Ignore };
 	}
 
 	logger->LogMessage("[SM] Changed map to \"%s\"", newmap);
@@ -144,9 +131,9 @@ void NextMapManager::HookChangeLevel(const char *map, const char *unknown, const
 	ke::SafeStrcpy(m_tempChangeInfo.m_changeReason, sizeof(m_tempChangeInfo.m_changeReason), "Normal level change");
 
 #if SOURCE_ENGINE != SE_DARKMESSIAH
-	RETURN_META_NEWPARAMS(MRES_IGNORED, &IVEngineServer::ChangeLevel, (newmap, unknown));
+	return KHook::Recall(KHook::Return<void>{ KHook::Action::Ignore }, this_ptr, newmap, unknown);
 #else
-	RETURN_META_NEWPARAMS(MRES_IGNORED, &IVEngineServer::ChangeLevel, (newmap, unknown, video, bLongLoading));
+	return KHook::Recall(KHook::Return<void>{ KHook::Action::Ignore }, this_ptr, newmap, unknown, video, bLongLoading);
 #endif
 }
 
@@ -186,7 +173,7 @@ void NextMapManager::OnSourceModLevelChange( const char *mapName )
 			historydiff = (m_mapHistory.size() * -1);
 		}
 
-		for (SourceHook::List<MapChangeData *>::iterator iter = m_mapHistory.begin(); historydiff++ < 0; iter = m_mapHistory.erase(iter))
+		for (auto iter = m_mapHistory.begin(); historydiff++ < 0; iter = m_mapHistory.erase(iter))
 		{
 			delete (MapChangeData *)*iter;
 		}
@@ -210,24 +197,24 @@ void NextMapManager::ForceChangeLevel( const char *mapName, const char* changeRe
 	g_forcedChange = false;
 }
 
-NextMapManager::NextMapManager()
+NextMapManager::NextMapManager() :
+	m_HookChangeLevel(&IVEngineServer::ChangeLevel, this, &NextMapManager::HookChangeLevel, nullptr)
 {
 	m_tempChangeInfo = MapChangeData();
-	m_mapHistory = SourceHook::List<MapChangeData *>();
 }
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-void CmdChangeLevelCallback(const CCommand &command)
+KHook::Return<void> CmdChangeLevelCallback(ConCommand*, const CCommand &command)
 {
 #else
-void CmdChangeLevelCallback()
+KHook::Return<void> CmdChangeLevelCallback(ConCommand*)
 {
 	CCommand command;
 #endif
 
 	if (command.ArgC() < 2)
 	{
-		return;
+		return { KHook::Action::Ignore };
 	}
 
 	if (g_NextMap.m_tempChangeInfo.m_mapName[0] == '\0')
@@ -235,4 +222,6 @@ void CmdChangeLevelCallback()
 		ke::SafeStrcpy(g_NextMap.m_tempChangeInfo.m_mapName, sizeof(g_NextMap.m_tempChangeInfo.m_mapName), command.Arg(1));
 		ke::SafeStrcpy(g_NextMap.m_tempChangeInfo.m_changeReason, sizeof(g_NextMap.m_tempChangeInfo.m_changeReason), "changelevel Command");
 	}
+
+	return { KHook::Action::Ignore };
 }

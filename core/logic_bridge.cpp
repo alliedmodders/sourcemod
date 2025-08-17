@@ -454,7 +454,7 @@ bool CoreProviderImpl::GetGameName(char *buffer, size_t maxlength)
 
 const char *CoreProviderImpl::GetGameDescription()
 {
-	return SERVER_CALL(GetGameDescription)();
+	return KHook::CallOriginal(&IServerGameDLL::GetGameDescription, gamedll);
 }
 
 const char *CoreProviderImpl::GetSourceEngineName()

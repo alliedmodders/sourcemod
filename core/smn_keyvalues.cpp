@@ -499,7 +499,7 @@ static cell_t smn_CreateKeyValues(IPluginContext *pCtx, const cell_t *params)
 	is_empty = (firstkey[0] == '\0');
 	pStk = new KeyValueStack;
 	pStk->pBase = new KeyValues(name, is_empty ? NULL : firstkey, (is_empty||(firstvalue[0]=='\0')) ? NULL : firstvalue);
-	pStk->pCurRoot.push(pStk->pBase);
+	pStk->pCurRoot.push_front(pStk->pBase);
 
 	return handlesys->CreateHandle(g_KeyValueType, pStk, pCtx->GetIdentity(), g_pCoreIdent, NULL);
 }
@@ -529,7 +529,7 @@ static cell_t smn_KvJumpToKey(IPluginContext *pCtx, const cell_t *params)
 	{
 		return 0;
 	}
-	pStk->pCurRoot.push(pSubKey);
+	pStk->pCurRoot.push_front(pSubKey);
 
 	return 1;
 }
@@ -556,7 +556,7 @@ static cell_t smn_KvJumpToKeySymbol(IPluginContext *pCtx, const cell_t *params)
 	{
 		return 0;
 	}
-	pStk->pCurRoot.push(pSubKey);
+	pStk->pCurRoot.push_front(pSubKey);
 
 	return 1;
 }
@@ -590,7 +590,7 @@ static cell_t smn_KvGotoFirstSubKey(IPluginContext *pCtx, const cell_t *params)
 	{
 		return 0;
 	}
-	pStk->pCurRoot.push(pFirstSubKey);
+	pStk->pCurRoot.push_front(pFirstSubKey);
 
 	return 1;
 }
@@ -622,8 +622,8 @@ static cell_t smn_KvGotoNextKey(IPluginContext *pCtx, const cell_t *params)
 	{
 		return 0;
 	}
-	pStk->pCurRoot.pop();
-	pStk->pCurRoot.push(pSubKey);
+	pStk->pCurRoot.pop_front();
+	pStk->pCurRoot.push_front(pSubKey);
 
 	return 1;	
 }
@@ -648,7 +648,7 @@ static cell_t smn_KvGoBack(IPluginContext *pCtx, const cell_t *params)
 	{
 		return 0;
 	}
-	pStk->pCurRoot.pop();
+	pStk->pCurRoot.pop_front();
 
 	return 1;
 }
@@ -674,7 +674,7 @@ static cell_t smn_KvRewind(IPluginContext *pCtx, const cell_t *params)
 	{
 		while (pStk->pCurRoot.size() > 1)
 		{
-			pStk->pCurRoot.pop();
+			pStk->pCurRoot.pop_front();
 		}
 	}
 	else
@@ -682,7 +682,7 @@ static cell_t smn_KvRewind(IPluginContext *pCtx, const cell_t *params)
 		auto root = pStk->pCurRoot.begin();
 		if (root != pStk->pCurRoot.end())
 		{
-			pStk->pCurRoot.push(*root);
+			pStk->pCurRoot.push_front(*root);
 		}
 	}
 
@@ -897,7 +897,7 @@ static cell_t smn_KvDeleteThis(IPluginContext *pContext, const cell_t *params)
 	}
 
 	KeyValues *pValues = pStk->pCurRoot.front();
-	pStk->pCurRoot.pop();
+	pStk->pCurRoot.pop_front();
 	KeyValues *pRoot = pStk->pCurRoot.front();
 
 	/* We have to manually verify this since Valve sucks
@@ -914,7 +914,7 @@ static cell_t smn_KvDeleteThis(IPluginContext *pContext, const cell_t *params)
 			pValues->deleteThis();
 			if (pNext)
 			{
-				pStk->pCurRoot.push(pNext);
+				pStk->pCurRoot.push_front(pNext);
 				return 1;
 			} else {
 				return -1;
@@ -924,7 +924,7 @@ static cell_t smn_KvDeleteThis(IPluginContext *pContext, const cell_t *params)
 	}
 
 	/* Push this back on :( */
-	pStk->pCurRoot.push(pValues);
+	pStk->pCurRoot.push_front(pValues);
 
 	return 0;
 }
@@ -988,7 +988,7 @@ static cell_t smn_KvSavePosition(IPluginContext *pContext, const cell_t *params)
 	}
 
 	KeyValues *pValues = pStk->pCurRoot.front();
-	pStk->pCurRoot.push(pValues);
+	pStk->pCurRoot.push_front(pValues);
 
 	return 1;
 }

@@ -181,7 +181,7 @@ static cell_t GetGameDescription(IPluginContext *pContext, const cell_t *params)
 	{
 		description = gamedll->GetGameDescription();
 	} else {
-		description = SERVER_CALL(GetGameDescription)();
+		description = KHook::CallOriginal(&IServerGameDLL::GetGameDescription, gamedll);
 	}
 
 	size_t numBytes;

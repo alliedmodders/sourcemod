@@ -32,9 +32,8 @@
 #ifndef _INCLUDE_SOURCEMOD_CHALFLIFE2_H_
 #define _INCLUDE_SOURCEMOD_CHALFLIFE2_H_
 
-#include <sh_list.h>
-#include <sh_string.h>
-#include <sh_tinyhash.h>
+#include <list>
+#include <string>
 #include <am-utility.h>
 #include <am-hashset.h>
 #include <am-hashmap.h>
@@ -54,7 +53,6 @@ namespace SourceMod {
 class ICommandArgs;
 } // namespace SourceMod
 
-using namespace SourceHook;
 using namespace SourceMod;
 
 static const int ENTREF_MASK = (1 << 31);
@@ -153,7 +151,7 @@ typedef NameHashSet<DataMapCacheInfo> DataMapCache;
 
 struct DelayedFakeCliCmd
 {
-	String cmd;
+	std::string cmd;
 	int client;
 	int userid;
 };
@@ -288,8 +286,8 @@ private:
 	int m_SayTextMsg;
 	int m_VGUIMenu;
 	Queue<DelayedFakeCliCmd *> m_CmdQueue;
-	CStack<DelayedFakeCliCmd *> m_FreeCmds;
-	CStack<CachedCommandInfo> m_CommandStack;
+	std::stack<DelayedFakeCliCmd *> m_FreeCmds;
+	std::stack<CachedCommandInfo> m_CommandStack;
 	Queue<DelayedKickInfo> m_DelayedKicks;
 	void *m_pGetCommandLine;
 #if SOURCE_ENGINE == SE_CSGO

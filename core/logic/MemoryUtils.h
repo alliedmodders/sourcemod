@@ -35,10 +35,8 @@
 #include <am-hashmap.h>
 #include <memory>
 #if defined PLATFORM_LINUX || defined PLATFORM_APPLE
-#include <sh_vector.h>
+#include <vector>
 #include "sm_symtable.h"
-
-using namespace SourceHook;
 #endif
 
 using namespace SourceMod;
@@ -79,7 +77,7 @@ public:
 	const DynLibInfo *GetLibraryInfo(const void *libPtr);
 #if defined PLATFORM_LINUX || defined PLATFORM_APPLE
 private:
-	CVector<LibSymbolTable *> m_SymTables;
+	std::vector<LibSymbolTable *> m_SymTables;
 #ifdef PLATFORM_APPLE
 	struct dyld_all_image_infos *m_ImageList;
 	SInt32 m_OSXMajor;
