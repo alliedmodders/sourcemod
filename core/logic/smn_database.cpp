@@ -290,7 +290,7 @@ public:
 private:
 	IDatabase *m_pDatabase;
 	IPluginFunction *m_pFunction;
-	String m_Query;
+	std::string m_Query;
 	cell_t m_Data;
 	IPlugin *me;
 	IQuery *m_pQuery;
