@@ -157,7 +157,7 @@ KHook::Return<void> CommandHook::Dispatch(ConCommand*, const CCommand& command)
 KHook::Return<void> CommandHook::Dispatch(ConCommand*)
 #endif
 {
-	DISPATCH_PROLOGUE
+	DISPATCH_PROLOGUE;
 	EngineArgs args(command);
 
 	AddRef();
