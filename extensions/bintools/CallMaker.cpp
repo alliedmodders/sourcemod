@@ -30,53 +30,82 @@
  */
 
 #include <stdio.h>
+#include <vector>
 #include "CallMaker.h"
 #include "jit_compile.h"
 #include "extension.h"
 
-/* SourceMod <==> SourceHook type conversion functions */
-
-SourceHook::ProtoInfo::CallConvention GetSHCallConvention(SourceMod::CallConvention cv)
+class CProtoInfoBuilder
 {
-	if (cv < SourceMod::CallConv_ThisCall || cv > SourceMod::CallConv_Cdecl)
+	ProtoInfo m_PI;
+	std::vector<PassInfo> m_Params;
+public:
+	CProtoInfoBuilder(int cc)
 	{
-		return SourceHook::ProtoInfo::CallConv_Unknown;
+		memset(reinterpret_cast<void*>(&m_PI), 0, sizeof(ProtoInfo));
+		m_PI.convention = cc;
+
+		// dummy 0 params
+		PassInfo dummy;
+		memset(reinterpret_cast<void*>(&dummy), 0, sizeof(PassInfo));
+
+		dummy.size = 1;		// Version1
+
+		m_Params.push_back(dummy);
 	}
 
-	return (SourceHook::ProtoInfo::CallConvention)(cv + 1);
-}
-
-SourceMod::CallConvention GetSMCallConvention(SourceHook::ProtoInfo::CallConvention cv)
-{
-	assert(cv >= SourceHook::ProtoInfo::CallConv_ThisCall || cv <= SourceHook::ProtoInfo::CallConv_Cdecl);
-
-	return (SourceMod::CallConvention)(cv - 1);
-}
-
-SourceHook::PassInfo::PassType GetSHPassType(SourceMod::PassType type)
-{
-	if (type < SourceMod::PassType_Basic || type > SourceMod::PassType_Object)
+	void SetReturnType(size_t size, PassType type, int flags,
+		void *pNormalCtor, void *pCopyCtor, void *pDtor, void *pAssignOperator)
 	{
-		return SourceHook::PassInfo::PassType_Unknown;
+		if (pNormalCtor)
+			flags |= PASSFLAG_OCTOR;
+
+		//if (pCopyCtor)
+		//	flags |= PassInfo::PassFlag_CCtor;
+
+		if (pDtor)
+			flags |= PASSFLAG_ODTOR;
+
+		if (pAssignOperator)
+			flags |= PASSFLAG_OASSIGNOP;
+
+		m_PI.retPassInfo.size = size;
+		m_PI.retPassInfo.type = type;
+		m_PI.retPassInfo.flags = flags;
 	}
 
-	return (SourceHook::PassInfo::PassType)(type + 1);
-}
+	void AddParam(size_t size, PassType type, int flags,
+		void *pNormalCtor, void *pCopyCtor, void *pDtor, void *pAssignOperator)
+	{
+		PassInfo pi;
 
-SourceMod::PassType GetSMPassType(int type)
-{
-	/* SourceMod doesn't provide an Unknown type so we it must be an error */
-	assert(type >= SourceHook::PassInfo::PassType_Basic && type <= SourceHook::PassInfo::PassType_Object);
+		if (pNormalCtor)
+			flags |= PASSFLAG_OCTOR;
 
-	return (SourceMod::PassType)(type - 1);
-}
+		//if (pCopyCtor)
+		//	flags |= PassInfo::PassFlag_CCtor;
 
-void GetSMPassInfo(SourceMod::PassInfo *out, const SourceHook::PassInfo *in)
-{
-	out->size = in->size;
-	out->flags = in->flags;
-	out->type = GetSMPassType(in->type);
-}
+		if (pDtor)
+			flags |= PASSFLAG_ODTOR;
+
+		if (pAssignOperator)
+			flags |= PASSFLAG_OASSIGNOP;
+
+		
+		pi.size = size;
+		pi.type = type;
+		pi.flags = flags;
+
+		m_Params.push_back(pi);
+		++m_PI.numOfParams;
+	}
+
+	operator ProtoInfo*()
+	{
+		m_PI.paramsPassInfo = &(m_Params[0]);
+		return &m_PI;
+	}
+};
 
 ICallWrapper *CallMaker::CreateCall(void *address,
 						 CallConvention cv,
@@ -85,22 +114,22 @@ ICallWrapper *CallMaker::CreateCall(void *address,
 						 unsigned int numParams,
 						 unsigned int fnFlags)
 {
-	SourceHook::CProtoInfoBuilder protoInfo(GetSHCallConvention(cv));
+	CProtoInfoBuilder protoInfo(cv);
 
 	for (unsigned int i=0; i<numParams; i++)
 	{
-		protoInfo.AddParam(paramInfo[i].size, GetSHPassType(paramInfo[i].type), paramInfo[i].flags,
+		protoInfo.AddParam(paramInfo[i].size, paramInfo[i].type, paramInfo[i].flags,
 			NULL, NULL, NULL, NULL);
 	}
 
 	if (retInfo)
 	{
-		protoInfo.SetReturnType(retInfo->size, GetSHPassType(retInfo->type), retInfo->flags,
+		protoInfo.SetReturnType(retInfo->size, retInfo->type, retInfo->flags,
 			NULL, NULL, NULL, NULL);
 	}
 	else
 	{
-		protoInfo.SetReturnType(0, SourceHook::PassInfo::PassType_Unknown, 0,
+		protoInfo.SetReturnType(0, PassType_Basic, 0,
 			NULL, NULL, NULL, NULL);
 	}
 
@@ -119,39 +148,34 @@ ICallWrapper *CallMaker::CreateVCall(unsigned int vtblIdx,
 									 unsigned int numParams,
 									 unsigned int fnFlags)
 {
-	SourceHook::MemFuncInfo info;
-	info.isVirtual = true;
-	info.vtblindex = vtblIdx;
-	info.vtbloffs = vtblOffs;
-	info.thisptroffs = thisOffs;
 
-	SourceHook::CProtoInfoBuilder protoInfo(SourceHook::ProtoInfo::CallConv_ThisCall);
+	CProtoInfoBuilder protoInfo(CallConv_ThisCall);
 
 	for (unsigned int i=0; i<numParams; i++)
 	{
-		protoInfo.AddParam(paramInfo[i].size, GetSHPassType(paramInfo[i].type), paramInfo[i].flags,
+		protoInfo.AddParam(paramInfo[i].size, paramInfo[i].type, paramInfo[i].flags,
 			NULL, NULL, NULL, NULL);
 	}
 
 	if (retInfo)
 	{
-		protoInfo.SetReturnType(retInfo->size, GetSHPassType(retInfo->type), retInfo->flags,
+		protoInfo.SetReturnType(retInfo->size, retInfo->type, retInfo->flags,
 			NULL, NULL, NULL, NULL);
 	}
 	else
 	{
-		protoInfo.SetReturnType(0, SourceHook::PassInfo::PassType_Unknown, 0,
+		protoInfo.SetReturnType(0, PassType::PassType_Basic, 0,
 			NULL, NULL, NULL, NULL);
 	}
 	
 #if defined KE_ARCH_X64
-	return g_CallMaker2.CreateVirtualCall(&(*protoInfo), &info, retInfo, paramInfo, fnFlags);
+	return g_CallMaker2.CreateVirtualCall(&(*protoInfo), vtblIdx, retInfo, paramInfo, fnFlags);
 #else
-	return g_CallMaker2.CreateVirtualCall(&(*protoInfo), &info);
+	return g_CallMaker2.CreateVirtualCall(&(*protoInfo), vtblIdx);
 #endif
 }
 
-ICallWrapper *CallMaker2::CreateCall(void *address, const SourceHook::ProtoInfo *protoInfo)
+ICallWrapper *CallMaker2::CreateCall(void *address, const ProtoInfo *protoInfo)
 {
 #ifdef KE_ARCH_X86
 	CallWrapper *pWrapper = new CallWrapper(protoInfo);
@@ -166,12 +190,11 @@ ICallWrapper *CallMaker2::CreateCall(void *address, const SourceHook::ProtoInfo 
 #endif
 }
 
-ICallWrapper *CallMaker2::CreateVirtualCall(const SourceHook::ProtoInfo *protoInfo, 
-											const SourceHook::MemFuncInfo *info)
+ICallWrapper *CallMaker2::CreateVirtualCall(const ProtoInfo* protoInfo, uint32_t vtable_index)
 {
 #ifdef KE_ARCH_X86
 	CallWrapper *pWrapper = new CallWrapper(protoInfo);
-	pWrapper->SetMemFuncInfo(info);
+	pWrapper->SetVtableIndex(vtable_index);
 
 	void *addr = JIT_CallCompile(pWrapper, FuncAddr_VTable);
 	pWrapper->SetCodeBaseAddr(addr);
@@ -182,7 +205,7 @@ ICallWrapper *CallMaker2::CreateVirtualCall(const SourceHook::ProtoInfo *protoIn
 #endif
 }
 
-ICallWrapper *CallMaker2::CreateCall(void *address, const SourceHook::ProtoInfo *protoInfo,
+ICallWrapper *CallMaker2::CreateCall(void *address, const ProtoInfo *protoInfo,
                                      const PassInfo *retInfo, const PassInfo paramInfo[],
                                      unsigned int fnFlags)
 {
@@ -199,15 +222,15 @@ ICallWrapper *CallMaker2::CreateCall(void *address, const SourceHook::ProtoInfo 
 #endif
 }
 
-ICallWrapper *CallMaker2::CreateVirtualCall(const SourceHook::ProtoInfo *protoInfo, 
-											const SourceHook::MemFuncInfo *info,
+ICallWrapper *CallMaker2::CreateVirtualCall(const ProtoInfo *protoInfo,
+											uint32_t vtable_index,
 											const PassInfo *retInfo,
                                             const PassInfo paramInfo[],
                                             unsigned int fnFlags)
 {
 #ifdef KE_ARCH_X64
 	CallWrapper *pWrapper = new CallWrapper(protoInfo, retInfo, paramInfo, fnFlags);
-	pWrapper->SetMemFuncInfo(info);
+	pWrapper->SetVtableIndex(vtable_index);
 
 	void *addr = JIT_CallCompile(pWrapper, FuncAddr_VTable);
 	pWrapper->SetCodeBaseAddr(addr);
@@ -217,22 +240,3 @@ ICallWrapper *CallMaker2::CreateVirtualCall(const SourceHook::ProtoInfo *protoIn
 	return nullptr;
 #endif
 }
-
-#if 0
-IHookWrapper *CallMaker2::CreateVirtualHook(SourceHook::ISourceHook *pSH, 
-											const SourceHook::ProtoInfo *protoInfo,
-											const SourceHook::MemFuncInfo *info, 
-											VIRTUAL_HOOK_PROTO f)
-{
-	HookWrapper *pWrapper = new HookWrapper(pSH, protoInfo, const_cast<SourceHook::MemFuncInfo *>(info), (void *)f);
-
-	void *addr = JIT_HookCompile(pWrapper);
-	pWrapper->SetHookWrpAddr(addr);
-
-	ICallWrapper *callWrap = CreateVirtualCall(protoInfo, info);
-	pWrapper->SetCallWrapperAddr(callWrap);
-	
-	return pWrapper;
-}
-#endif
-

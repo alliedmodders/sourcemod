@@ -34,6 +34,7 @@
 
 
 #include "CallWrapper.h"
+#include "stdint.h"
 
 using namespace SourceMod;
 
@@ -59,29 +60,17 @@ class CallMaker2
 {
 public: //IBinTools2
 	virtual ICallWrapper *CreateCall(void *address,
-		const SourceHook::ProtoInfo *protoInfo);
-	virtual ICallWrapper *CreateVirtualCall(const SourceHook::ProtoInfo *protoInfo,
-		const SourceHook::MemFuncInfo *info);
-	ICallWrapper *CreateCall(void *address, const SourceHook::ProtoInfo *protoInfo,
+		const ProtoInfo *protoInfo);
+	virtual ICallWrapper *CreateVirtualCall(const ProtoInfo *protoInfo,
+		uint32_t vtable_index);
+	ICallWrapper *CreateCall(void *address, const ProtoInfo *protoInfo,
 		const PassInfo *retInfo, const PassInfo paramInfo[], unsigned int fnFlags);
-	ICallWrapper *CreateVirtualCall(const SourceHook::ProtoInfo *protoInfo,
-		const SourceHook::MemFuncInfo *info, const PassInfo *retInfo, 
+	ICallWrapper *CreateVirtualCall(const ProtoInfo *protoInfo,
+		uint32_t vtable_index, const PassInfo *retInfo, 
 		const PassInfo paramInfo[], unsigned int fnFlags);
-#if 0
-	virtual IHookWrapper *CreateVirtualHook(SourceHook::ISourceHook *pSH, 
-		const SourceHook::ProtoInfo *protoInfo, 
-		const SourceHook::MemFuncInfo *info, 
-		VIRTUAL_HOOK_PROTO f);
-#endif
 };
 
 extern CallMaker2 g_CallMaker2;
-
-SourceHook::ProtoInfo::CallConvention GetSHCallConvention(SourceMod::CallConvention cv);
-SourceMod::CallConvention GetSMCallConvention(SourceHook::ProtoInfo::CallConvention cv);
-SourceHook::PassInfo::PassType GetSHPassType(SourceMod::PassType type);
-SourceMod::PassType GetSMPassType(int type);
-void GetSMPassInfo(SourceMod::PassInfo *out, const SourceHook::PassInfo *in);
 
 
 
