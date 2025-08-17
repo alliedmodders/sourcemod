@@ -86,7 +86,7 @@ private:
 	SqField *GetField(unsigned int col);
 private:
 	sqlite3_stmt *m_pStmt;		/** DOES NOT CHANGE */
-	String *m_ColNames;			/** DOES NOT CHANGE */
+	std::string *m_ColNames;	/** DOES NOT CHANGE */
 	unsigned int m_ColCount;	/** DOES NOT CHANGE */
 	BaseStringTable m_Strings;	/** DOES NOT CHANGE */
 	BaseMemTable *m_pMemory;	/** DOES NOT CHANGE */

@@ -34,17 +34,16 @@
 
 #define SOURCEMOD_SQL_DRIVER_CODE
 #include <IDBDriver.h>
-#include <sh_list.h>
-#include <sh_string.h>
+#include <list>
+#include <string>
 #include <mutex>
 #include "sqlite-source/sqlite3.h"
 
 using namespace SourceMod;
-using namespace SourceHook;
 
 struct SqDbInfo
 {
-	String path;
+	std::string path;
 	IDatabase *db;
 };
 
@@ -73,7 +72,7 @@ public:
 private:
 	Handle_t m_Handle;
 	std::mutex m_OpenLock;
-	List<SqDbInfo> m_Cache;
+	std::list<SqDbInfo> m_Cache;
 	bool m_bThreadSafe;
 	bool m_bShutdown;
 };
