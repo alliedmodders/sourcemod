@@ -444,7 +444,7 @@ KHook::Return<bool> EventManager::OnFireEvent(IGameEventManager2* this_ptr, IGam
 	}
 
 	if (broadcast != bDontBroadcast)
-		return KHook::Recall(KHook::Return<bool>{ KHook::Action::Ignore, true }, this_ptr, pEvent, broadcast);
+		return KHook::Recall(&IGameEventManager2::FireEvent, KHook::Return<bool>{ KHook::Action::Ignore, true }, this_ptr, pEvent, broadcast);
 
 	return { KHook::Action::Ignore, true };
 }

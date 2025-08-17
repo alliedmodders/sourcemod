@@ -131,9 +131,9 @@ KHook::Return<void> NextMapManager::HookChangeLevel(IVEngineServer* this_ptr, co
 	ke::SafeStrcpy(m_tempChangeInfo.m_changeReason, sizeof(m_tempChangeInfo.m_changeReason), "Normal level change");
 
 #if SOURCE_ENGINE != SE_DARKMESSIAH
-	return KHook::Recall(KHook::Return<void>{ KHook::Action::Ignore }, this_ptr, newmap, unknown);
+	return KHook::Recall(&IVEngineServer::ChangeLevel, KHook::Return<void>{ KHook::Action::Ignore }, this_ptr, newmap, unknown);
 #else
-	return KHook::Recall(KHook::Return<void>{ KHook::Action::Ignore }, this_ptr, newmap, unknown, video, bLongLoading);
+	return KHook::Recall(&IVEngineServer::ChangeLevel, KHook::Return<void>{ KHook::Action::Ignore }, this_ptr, newmap, unknown, video, bLongLoading);
 #endif
 }
 
