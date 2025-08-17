@@ -41,13 +41,10 @@
 
 #include <libpq-fe.h>
 
-#include <sh_string.h>
-#include <sh_list.h>
-
 #include <mutex>
+#include <list>
 
 using namespace SourceMod;
-using namespace SourceHook;
 
 #define M_CLIENT_MULTI_RESULTS    ((1) << 17)  /* Enable/disable multi-results */
 
@@ -72,7 +69,7 @@ public:
 private:
 	std::mutex m_Lock;
 	Handle_t m_Handle;
-	List<PgDatabase *> m_PermDbs;
+	std::list<PgDatabase *> m_PermDbs;
 };
 
 extern PgDriver g_PgDriver;
