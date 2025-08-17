@@ -385,7 +385,7 @@ void SourceModBase::StartSourceMod(bool late)
 }
 
 static bool g_LevelEndBarrier = false;
-KHook::Return<bool> SourceModBase::Hook_LevelInit(IServerGameDLL*, char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
+KHook::Return<bool> SourceModBase::Hook_LevelInit(IServerGameDLL* this_ptr, char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
 {
 	/* Seed rand() globally per map */
 	srand(time(NULL));
@@ -449,7 +449,7 @@ KHook::Return<bool> SourceModBase::Hook_LevelInit(IServerGameDLL*, char const *p
 		return { KHook::Action::Ignore };
 	}
 
-	return KHook::Recall(KHook::Return<bool>{KHook::Action::Override, true}, (pMapName, logicore.GetEntityLumpString(), pOldLevel, pLandmarkName, loadGame, background));
+	return KHook::Recall(&IServerGameDLL::LevelInit, KHook::Return<bool>{KHook::Action::Override, true}, this_ptr, pMapName, logicore.GetEntityLumpString(), pOldLevel, pLandmarkName, loadGame, background);
 }
 
 KHook::Return<const char*> SourceModBase::Hook_GetMapEntitiesString(IVEngineServer*)
