@@ -34,10 +34,8 @@
 
 #include <IWebternet.h>
 #include <ITextParsers.h>
-#include <sh_string.h>
+#include <string>
 #include "MemoryDownloader.h"
-
-using namespace SourceHook;
 
 struct UpdatePart
 {
@@ -72,8 +70,8 @@ namespace SourceMod
 		MemoryDownloader mdl;
 		unsigned int ustate;
 		unsigned int ignoreLevel;
-		SourceHook::String curfile;
-		SourceHook::String url;
+		std::string curfile;
+		std::string url;
 		char checksum[33];
 		UpdatePart *partFirst;
 		UpdatePart *partLast;
