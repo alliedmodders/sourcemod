@@ -273,10 +273,10 @@ inline void Write_Function_Epilogue(JitWriter *jit, bool is_void, bool has_param
 	X64_Return(jit);
 }
 
-inline jit_uint8_t Write_PushPOD(JitWriter *jit, const SourceHook::PassInfo *info, unsigned int offset)
+inline jit_uint8_t Write_PushPOD(JitWriter *jit, const PassInfo& info, unsigned int offset)
 {
 	bool needStack = false;
-	jit_uint8_t reg = NextPODReg(info->size);
+	jit_uint8_t reg = NextPODReg(info.size);
 	jit_uint8_t reg2;
 	
 	if (reg == STACK_PARAM)
@@ -285,9 +285,9 @@ inline jit_uint8_t Write_PushPOD(JitWriter *jit, const SourceHook::PassInfo *inf
 		needStack = true;
 	}
 
-	if (info->flags & PASSFLAG_BYVAL)
+	if (info.flags & PASSFLAG_BYVAL)
 	{
-		switch (info->size)
+		switch (info.size)
 		{
 			case 1:
 			{
@@ -358,7 +358,7 @@ inline jit_uint8_t Write_PushPOD(JitWriter *jit, const SourceHook::PassInfo *inf
 				break;
 			}
 		}
-	} else if (info->flags & PASSFLAG_BYREF) {
+	} else if (info.flags & PASSFLAG_BYREF) {
 		//lea reg, [ebx+<offset>]
 		if (!offset)
 			X64_Mov_Reg_Rm(jit, reg, kREG_RBX, MOD_REG);
@@ -384,7 +384,7 @@ inline jit_uint8_t Write_PushPOD(JitWriter *jit, const SourceHook::PassInfo *inf
 		else
 			X64_Mov_RmRSP_Disp32_Reg(jit, reg, g_StackUsage);
 			
-		if (info->size == 16)
+		if (info.size == 16)
 		{
 			if (g_StackUsage + 8 < SCHAR_MAX)
 				X64_Mov_RmRSP_Disp8_Reg(jit, reg2, (jit_int8_t)g_StackUsage + 8);
@@ -399,10 +399,10 @@ inline jit_uint8_t Write_PushPOD(JitWriter *jit, const SourceHook::PassInfo *inf
 	return reg;
 }
 
-inline void Write_PushFloat(JitWriter *jit, const SourceHook::PassInfo *info, unsigned int offset, uint8_t *floatRegs)
+inline void Write_PushFloat(JitWriter *jit, const PassInfo& info, unsigned int offset, uint8_t *floatRegs)
 {
 	bool needStack = false;
-	jit_uint8_t floatReg = NextFloatReg(info->size);
+	jit_uint8_t floatReg = NextFloatReg(info.size);
 	jit_uint8_t floatReg2;
 	
 	if (floatReg == STACK_PARAM)
@@ -411,9 +411,9 @@ inline void Write_PushFloat(JitWriter *jit, const SourceHook::PassInfo *info, un
 		needStack = true;
 	}
 	
-	if (info->flags & PASSFLAG_BYVAL)
+	if (info.flags & PASSFLAG_BYVAL)
 	{
-		switch (info->size)
+		switch (info.size)
 		{
 			case 4:
 			{
@@ -491,7 +491,7 @@ inline void Write_PushFloat(JitWriter *jit, const SourceHook::PassInfo *info, un
 						X64_Movups_Rm_Disp32(jit, floatReg2, kREG_EBX, offset+8);
 				}
 		}
-	} else if (info->flags & PASSFLAG_BYREF) {
+	} else if (info.flags & PASSFLAG_BYREF) {
 		//lea reg, [ebx+<offset>]
 		Write_PushPOD(jit, info, offset);
 		return;
@@ -520,7 +520,7 @@ inline void Write_PushFloat(JitWriter *jit, const SourceHook::PassInfo *info, un
 				X64_Movups_Rm_Disp32_Reg(jit, kREG_RSP, floatReg, g_StackUsage);
 		}
 			
-		if (info->size == 16)
+		if (info.size == 16)
 		{
 			if (g_StackUsage + 8 < SCHAR_MAX) {
 				if ((g_StackUsage + 8) % 16 == 0)
@@ -542,7 +542,7 @@ inline void Write_PushFloat(JitWriter *jit, const SourceHook::PassInfo *info, un
 	if (floatRegs)
 	{
 		floatRegs[0] = floatReg;
-		floatRegs[1] = info->size == 16 ? floatReg2 : INVALID_REG;
+		floatRegs[1] = info.size == 16 ? floatReg2 : INVALID_REG;
 	}
 }
 
@@ -716,10 +716,10 @@ inline int ClassifyObject(const PassInfo *info, ObjectClass *classes)
 	return numWords;
 }
 
-inline void Write_PushObject(JitWriter *jit, const SourceHook::PassInfo *info, unsigned int offset,
+inline void Write_PushObject(JitWriter *jit, const PassInfo& info, unsigned int offset,
                              const PassInfo *smInfo)
 {
-	if (info->flags & PASSFLAG_BYVAL)
+	if (info.flags & PASSFLAG_BYVAL)
 	{
 #ifdef PLATFORM_POSIX
 		ObjectClass classes[MAX_CLASSES];
@@ -752,27 +752,27 @@ inline void Write_PushObject(JitWriter *jit, const SourceHook::PassInfo *info, u
 
 		if (classes[0] != ObjectClass::Memory)
 		{
-			size_t sizeLeft = info->size;
+			size_t sizeLeft = info.size;
 			for (int i = 0; i < numWords; i++)
 			{
 				switch (classes[i])
 				{
 					case ObjectClass::Integer:
 					{
-						SourceHook::PassInfo podInfo;
+						PassInfo podInfo;
 						podInfo.size = (sizeLeft > 8) ? 8 : sizeLeft;
-						podInfo.type = SourceHook::PassInfo::PassType_Basic;
-						podInfo.flags = SourceHook::PassInfo::PassFlag_ByVal;
-						Write_PushPOD(jit, &podInfo, offset + (i * 8));
+						podInfo.type = PassType_Basic;
+						podInfo.flags = PASSFLAG_BYVAL;
+						Write_PushPOD(jit, podInfo, offset + (i * 8));
 						break;
 					}
 					case ObjectClass::SSE:
 					{
-						SourceHook::PassInfo floatInfo;
+						PassInfo floatInfo;
 						floatInfo.size = (sizeLeft > 8) ? 8 : sizeLeft;
-						floatInfo.type = SourceHook::PassInfo::PassType_Float;
-						floatInfo.flags = SourceHook::PassInfo::PassFlag_ByVal;
-						Write_PushFloat(jit, &floatInfo, offset + (i * 8), nullptr);
+						floatInfo.type = PassType_Float;
+						floatInfo.flags = PASSFLAG_BYVAL;
+						Write_PushFloat(jit, floatInfo, offset + (i * 8), nullptr);
 						break;
 					}
 					default:
@@ -800,8 +800,8 @@ inline void Write_PushObject(JitWriter *jit, const SourceHook::PassInfo *info, u
 		return;
 #endif
 
-		jit_uint32_t qwords = info->size >> 3;
-		jit_uint32_t bytes = info->size & 0x7;
+		jit_uint32_t qwords = info.size >> 3;
+		jit_uint32_t bytes = info.size & 0x7;
 
 		//sub rsp, <size>
 		//cld
@@ -854,25 +854,25 @@ inline void Write_PushObject(JitWriter *jit, const SourceHook::PassInfo *info, u
 		X64_Pop_Reg(jit, kREG_RSI);
 		X64_Pop_Reg(jit, kREG_RDI);
 
-		g_StackUsage += info->size;
-	} else if (info->flags & PASSFLAG_BYREF) {
+		g_StackUsage += info.size;
+	} else if (info.flags & PASSFLAG_BYREF) {
 push_byref:
 		//lea reg, [ebx+<offset>]
-		SourceHook::PassInfo podInfo;
+		PassInfo podInfo;
 		podInfo.size = sizeof(void *);
-		podInfo.type = SourceHook::PassInfo::PassType_Basic;
-		podInfo.flags = SourceHook::PassInfo::PassFlag_ByRef;
-		Write_PushPOD(jit, &podInfo, offset);
+		podInfo.type = PassType_Basic;
+		podInfo.flags = PASSFLAG_BYREF;
+		Write_PushPOD(jit, podInfo, offset);
 	}
 }
 
 inline void Write_PushThisPtr(JitWriter *jit)
 {
-	SourceHook::PassInfo podInfo;
+	PassInfo podInfo;
 	podInfo.size = 8;
-	podInfo.type = SourceHook::PassInfo::PassType_Basic;
-	podInfo.flags = SourceHook::PassInfo::PassFlag_ByVal;
-	g_ThisPtrReg = Write_PushPOD(jit, &podInfo, 0);
+	podInfo.type = PassType_Basic;
+	podInfo.flags = PASSFLAG_BYVAL;
+	g_ThisPtrReg = Write_PushPOD(jit, podInfo, 0);
 }
 
 inline void Write_PushRetBuffer(JitWriter *jit)
@@ -904,9 +904,9 @@ inline void Write_CallFunction(JitWriter *jit, FuncAddrMethod method, CallWrappe
 		// mov r10, [g_ThisPtrReg+<thisOffs>+<vtblOffs>]
 		// mov r11, [r10+<vtablIdx>*8]
 		// call r11
-		SourceHook::MemFuncInfo *funcInfo = pWrapper->GetMemFuncInfo();
-		jit_uint32_t total_offs = funcInfo->thisptroffs + funcInfo->vtbloffs;
-		jit_uint32_t vfunc_pos = funcInfo->vtblindex * 8;
+		//SourceHook::MemFuncInfo *funcInfo = pWrapper->GetMemFuncInfo();
+		jit_uint32_t total_offs = 0;/*funcInfo->thisptroffs + funcInfo->vtbloffs;*/
+		jit_uint32_t vfunc_pos = pWrapper->GetVtableIndex();/*funcInfo->vtblindex * 8;*/
 
 		//X64_Mov_Reg_Rm(jit, kREG_RAX, kREG_RBX, MOD_MEM_REG);
 		if (total_offs < SCHAR_MAX)
@@ -1115,17 +1115,17 @@ skip_retbuffer:
 	for (jit_uint32_t i = 0; i < ParamCount; i++)
 	{
 		unsigned int offset = pWrapper->GetParamOffset(i);
-		const SourceHook::PassInfo *info = pWrapper->GetSHParamInfo(i);
+		auto info = pWrapper->GetParamInfo(i);
 		assert(info != NULL);
 
-		switch (info->type)
+		switch (info->info.type)
 		{
-		case SourceHook::PassInfo::PassType_Basic:
+		case PassType::PassType_Basic:
 			{
-				Write_PushPOD(jit, info, offset);
+				Write_PushPOD(jit, info->info, offset);
 				break;
 			}
-		case SourceHook::PassInfo::PassType_Float:
+		case PassType::PassType_Float:
 			{
 #ifdef PLATFORM_WINDOWS
 				if ((info->flags & PASSFLAG_BYVAL) && (pWrapper->GetFunctionFlags() & FNFLAG_VARARGS))
@@ -1137,14 +1137,14 @@ skip_retbuffer:
 				else
 #endif
 				{
-					Write_PushFloat(jit, info, offset, nullptr);
+					Write_PushFloat(jit, info->info, offset, nullptr);
 				}
 				break;
 			}
-		case SourceHook::PassInfo::PassType_Object:
+		case PassType::PassType_Object:
 			{
 				const PassEncode *paramInfo = pWrapper->GetParamInfo(i);
-				Write_PushObject(jit, info, offset, &paramInfo->info);
+				Write_PushObject(jit, info->info, offset, &paramInfo->info);
 				break;
 			}
 		}
