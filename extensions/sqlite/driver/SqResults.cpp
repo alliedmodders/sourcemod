@@ -42,7 +42,7 @@ SqResults::SqResults(SqQuery *query) :
 	m_ColCount = sqlite3_column_count(m_pStmt);
 	if (m_ColCount)
 	{
-		m_ColNames = new String[m_ColCount];
+		m_ColNames = new std::string[m_ColCount];
 		for (unsigned int i=0; i<m_ColCount; i++)
 		{
 			m_ColNames[i].assign(sqlite3_column_name(m_pStmt, i));
