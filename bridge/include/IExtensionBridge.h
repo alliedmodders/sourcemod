@@ -29,13 +29,12 @@
 
 #include <sp_vm_api.h>
 #include <IExtensionSys.h>
-#include <sh_vector.h>
+#include <vector>
 
 struct edict_t;
 
 namespace SourceMod {
 
-using namespace SourceHook;
 using namespace SourcePawn;
 class SMPlugin;
 
@@ -51,8 +50,8 @@ public:
 	virtual IExtension *GetExtensionFromIdent(IdentityToken_t *token) = 0;
 	virtual void BindChildPlugin(IExtension *ext, SMPlugin *plugin) = 0;
 	virtual void AddRawDependency(IExtension *myself, IdentityToken_t *token, void *iface) = 0;
-	virtual const CVector<IExtension *> *ListExtensions() = 0;
-	virtual void FreeExtensionList(const CVector<IExtension *> *list) = 0;
+	virtual const std::vector<IExtension *> *ListExtensions() = 0;
+	virtual void FreeExtensionList(const std::vector<IExtension *> *list) = 0;
 	virtual void CallOnCoreMapEnd() = 0;
 };
 
@@ -67,13 +66,13 @@ public:
 	{
 		extensions_->FreeExtensionList(list_);
 	}
-	const CVector<IExtension *> *operator ->()
+	const std::vector<IExtension *> *operator ->()
 	{
 		return list_;
 	}
 private:
 	IExtensionSys *extensions_;
-	const CVector<IExtension *> *list_;
+	const std::vector<IExtension *> *list_;
 };
 
 } // namespace SourceMod

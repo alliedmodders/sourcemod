@@ -51,8 +51,8 @@ bf_read g_ReadBitBuf;
 int g_MsgPlayers[SM_MAXPLAYERS+1];
 bool g_IsMsgInExec = false;
 
-typedef List<MsgListenerWrapper *> MsgWrapperList;
-typedef List<MsgListenerWrapper *>::iterator MsgWrapperIter;
+typedef std::list<MsgListenerWrapper *> MsgWrapperList;
+typedef MsgWrapperList::iterator MsgWrapperIter;
 
 class UsrMessageNatives :
 	public SMGlobalClass,
@@ -72,17 +72,15 @@ public:
 	bool FindListener(int msgid, IPluginContext *pCtx, IPluginFunction *pHook, bool intercept, MsgWrapperIter *iter);
 	bool DeleteListener(IPluginContext *pCtx, MsgWrapperIter iter);
 private:
-	CStack<MsgListenerWrapper *> m_FreeListeners;
+	std::stack<MsgListenerWrapper *> m_FreeListeners;
 };
 
 UsrMessageNatives::~UsrMessageNatives()
 {
-	CStack<MsgListenerWrapper *>::iterator iter;
-	for (iter=m_FreeListeners.begin(); iter!=m_FreeListeners.end(); iter++)
-	{
-		delete (*iter);
+	while (!m_FreeListeners.empty()) {
+		delete m_FreeListeners.top();
+		m_FreeListeners.pop();
 	}
-	m_FreeListeners.popall();
 }
 
 void UsrMessageNatives::OnSourceModAllInitialized()
@@ -175,13 +173,13 @@ MsgListenerWrapper *UsrMessageNatives::CreateListener(IPluginContext *pCtx)
 	{
 		pListener = new MsgListenerWrapper;
 	} else {
-		pListener = m_FreeListeners.front();
+		pListener = m_FreeListeners.top();
 		m_FreeListeners.pop();
 	}
 
 	if (!pl->GetProperty("MsgListeners", reinterpret_cast<void **>(&pList)))
 	{
-		pList = new List<MsgListenerWrapper *>;
+		pList = new std::list<MsgListenerWrapper *>;
 		pl->SetProperty("MsgListeners", pList);
 	}
 

@@ -30,49 +30,33 @@
 #include "command_args.h"
 #include "provider.h"
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-SH_DECL_HOOK3_void(ICvar, CallGlobalChangeCallbacks, SH_NOATTRIB, false, ConVar *, const char *, float);
-#else
-SH_DECL_HOOK2_void(ICvar, CallGlobalChangeCallback, SH_NOATTRIB, false, ConVar *, const char *);
-#endif
-
-#if SOURCE_ENGINE != SE_DARKMESSIAH
-SH_DECL_HOOK5_void(IServerGameDLL, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, edict_t *, EQueryCvarValueStatus, const char *, const char *);
-SH_DECL_HOOK5_void(IServerPluginCallbacks, OnQueryCvarValueFinished, SH_NOATTRIB, 0, QueryCvarCookie_t, edict_t *, EQueryCvarValueStatus, const char *, const char *);
-#endif
-
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-SH_DECL_HOOK1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
-#else
-SH_DECL_HOOK0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
-#endif
-
-SH_DECL_HOOK1_void(IServerGameClients, SetCommandClient, SH_NOATTRIB, false, int);
+KHook::Virtual CallGlobalChangeCallback_Hook(&ICvar::CallGlobalChangeCallbacks, &GameHooks::OnConVarChanged, nullptr);
 
 GameHooks::GameHooks()
-	: client_cvar_query_mode_(ClientCvarQueryMode::Unavailable),
-	  last_command_client_(-1)
+	:
+#if SOURCE_ENGINE != SE_DARKMESSIAH
+	m_GameDLLOnQueryCvarValueFinishedHook(&IServerGameDLL::OnQueryCvarValueFinished, this, &GameHooks::GameDLLOnQueryCvarValueFinished, nullptr),
+	m_VSPOnQueryCvarValueFinishedHook(&IServerPluginCallbacks::OnQueryCvarValueFinished, this, &GameHooks::VSPOnQueryCvarValueFinished, nullptr),
+#endif
+	m_SetCommandClient(&IServerGameClients::SetCommandClient, this, &GameHooks::SetCommandClient, nullptr)
+	,client_cvar_query_mode_(ClientCvarQueryMode::Unavailable)
+	,last_command_client_(-1)
 {
 }
 
 void GameHooks::Start()
 {
 	// Hook ICvar::CallGlobalChangeCallbacks.
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-	hooks_ += SH_ADD_HOOK(ICvar, CallGlobalChangeCallbacks, icvar, SH_STATIC(OnConVarChanged), false);
-#else
-	hooks_ += SH_ADD_HOOK(ICvar, CallGlobalChangeCallback, icvar, SH_STATIC(OnConVarChanged), false);
-#endif
+	CallGlobalChangeCallback_Hook.Add(icvar);
 
 	// Episode 2 has this function by default, but the older versions do not.
 #if SOURCE_ENGINE == SE_EPISODEONE
 	if (g_SMAPI->GetGameDLLVersion() >= 6) {
-		hooks_ += SH_ADD_HOOK(IServerGameDLL, OnQueryCvarValueFinished, gamedll, SH_MEMBER(this, &GameHooks::OnQueryCvarValueFinished), false);
+		m_GameDLLOnQueryCvarValueFinishedHook.Add(gamedll);
 		client_cvar_query_mode_ = ClientCvarQueryMode::DLL;
 	}
 #endif
-
-	hooks_ += SH_ADD_HOOK(IServerGameClients, SetCommandClient, serverClients, SH_MEMBER(this, &GameHooks::SetCommandClient), false);
+	m_SetCommandClient.Add(serverClients);
 }
 
 void GameHooks::OnVSPReceived()
@@ -84,30 +68,33 @@ void GameHooks::OnVSPReceived()
 		return;
 
 #if SOURCE_ENGINE != SE_DARKMESSIAH
-	hooks_ += SH_ADD_HOOK(IServerPluginCallbacks, OnQueryCvarValueFinished, vsp_interface, SH_MEMBER(this, &GameHooks::OnQueryCvarValueFinished), false);
+	m_VSPOnQueryCvarValueFinishedHook.Add(vsp_interface);
 	client_cvar_query_mode_ = ClientCvarQueryMode::VSP;
 #endif
 }
 
 void GameHooks::Shutdown()
 {
-	for (size_t i = 0; i < hooks_.size(); i++)
-		SH_REMOVE_HOOK_ID(hooks_[i]);
-	hooks_.clear();
+	CallGlobalChangeCallback_Hook.Remove(icvar);
+	m_GameDLLOnQueryCvarValueFinishedHook.Remove(gamedll);
+	m_SetCommandClient.Remove(serverClients);
+	m_VSPOnQueryCvarValueFinishedHook.Remove(vsp_interface);
 
 	client_cvar_query_mode_ = ClientCvarQueryMode::Unavailable;
 }
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-void GameHooks::OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue)
+KHook::Return<void> GameHooks::OnConVarChanged(ICvar*, ConVar *pConVar, const char *oldValue, float flOldValue)
 #else
-void GameHooks::OnConVarChanged(ConVar *pConVar, const char *oldValue)
+KHook::Return<void> GameHooks::OnConVarChanged(ICvar*, ConVar *pConVar, const char *oldValue)
 #endif
 {
 #if SOURCE_ENGINE < SE_ORANGEBOX
   float flOldValue = atof(oldValue);
 #endif
   g_ConVarManager.OnConVarChanged(pConVar, oldValue, flOldValue);
+
+  return { KHook::Action::Ignore };
 }
 
 #if SOURCE_ENGINE != SE_DARKMESSIAH
@@ -123,6 +110,17 @@ void GameHooks::OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *pPla
 }
 #endif
 
+KHook::Return<void> GameHooks::GameDLLOnQueryCvarValueFinished(IServerGameDLL*, QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result,
+	                              const char *cvarName, const char *cvarValue) {
+	OnQueryCvarValueFinished(cookie, pPlayer, result, cvarName, cvarValue);
+	return { KHook::Action::Ignore };
+}
+KHook::Return<void> GameHooks::VSPOnQueryCvarValueFinished(IServerPluginCallbacks*, QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result,
+	                              const char *cvarName, const char *cvarValue) {
+	OnQueryCvarValueFinished(cookie, pPlayer, result, cvarName, cvarValue);
+	return { KHook::Action::Ignore };
+}
+
 ke::RefPtr<CommandHook>
 GameHooks::AddCommandHook(ConCommand *cmd, const CommandHook::Callback &callback)
 {
@@ -135,37 +133,39 @@ GameHooks::AddPostCommandHook(ConCommand *cmd, const CommandHook::Callback &call
 	return new CommandHook(cmd, callback, true);
 }
 
-void GameHooks::SetCommandClient(int client)
+KHook::Return<void> GameHooks::SetCommandClient(IServerGameClients*, int client)
 {
 	last_command_client_ = client + 1;
+
+	return { KHook::Action::Ignore };
 }
 
 CommandHook::CommandHook(ConCommand *cmd, const Callback &callback, bool post)
- : hook_id_(0),
-   callback_(callback)
+ : callback_(callback),
+   m_DispatchHook(&ConCommand::Dispatch, this, (post) ? nullptr : &CommandHook::Dispatch, (post) ? &CommandHook::Dispatch : nullptr)
 {
-	hook_id_ = SH_ADD_HOOK(ConCommand, Dispatch, cmd, SH_MEMBER(this, &CommandHook::Dispatch), post);
+	m_DispatchHook.Add(cmd);
 }
 
 CommandHook::~CommandHook()
 {
-	if (hook_id_)
-	  SH_REMOVE_HOOK_ID(hook_id_);
 }
 
-void CommandHook::Dispatch(DISPATCH_ARGS)
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+KHook::Return<void> CommandHook::Dispatch(ConCommand*, const CCommand& command)
+#else
+KHook::Return<void> CommandHook::Dispatch(ConCommand*)
+#endif
 {
-	DISPATCH_PROLOGUE;
+	DISPATCH_PROLOGUE
 	EngineArgs args(command);
 
 	AddRef();
 	bool rval = callback_(sCoreProviderImpl.CommandClient(), &args);
 	Release();
 	if (rval)
-		RETURN_META(MRES_SUPERCEDE);
-}
-
-void CommandHook::Zap()
-{
-	hook_id_ = 0;
+	{
+		return { KHook::Action::Supersede };
+	}
+	return { KHook::Action::Ignore };
 }

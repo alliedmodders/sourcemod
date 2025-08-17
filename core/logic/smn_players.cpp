@@ -35,8 +35,8 @@
 #include <IGameHelpers.h>
 #include <ISourceMod.h>
 #include <ITranslator.h>
-#include <sh_string.h>
-#include <sh_list.h>
+#include <string>
+#include <list>
 #include "GameConfigs.h"
 #include "CellArray.h"
 #include "AutoHandleRooter.h"
@@ -46,7 +46,6 @@
 #include <bridge/include/CoreProvider.h>
 #include <bridge/include/IVEngineServerBridge.h>
 
-using namespace SourceHook;
 using namespace SourceMod;
 
 #ifndef PRIu64
@@ -75,9 +74,9 @@ class PlayerLogicHelpers :
 	struct SimpleMultiTargetFilter
 	{
 		IPlugin *plugin;
-		SourceHook::String pattern;
+		std::string pattern;
 		IPluginFunction *fun;
-		SourceHook::String phrase;
+		std::string phrase;
 		bool phraseIsML;
 
 		SimpleMultiTargetFilter(IPlugin *plugin, const char *pattern, IPluginFunction *fun,
@@ -87,7 +86,7 @@ class PlayerLogicHelpers :
 		}
 	};
 
-	List<SimpleMultiTargetFilter *> simpleMultis;
+	std::list<SimpleMultiTargetFilter *> simpleMultis;
 	bool filterEnabled;
 
 public:
@@ -107,7 +106,7 @@ public:
 
 	void RemoveMultiTargetFilter(const char *pattern, IPluginFunction *fun)
 	{
-		List<SimpleMultiTargetFilter *>::iterator iter = simpleMultis.begin();
+		auto iter = simpleMultis.begin();
 
 		while (iter != simpleMultis.end()) {
 			if ((*iter)->fun == fun && strcmp((*iter)->pattern.c_str(), pattern) == 0) {
@@ -127,9 +126,7 @@ public:
 public: //ICommandTargetProcessor
 	bool ProcessCommandTarget(cmd_target_info_t *info)
 	{
-		List<SimpleMultiTargetFilter *>::iterator iter;
-
-		for (iter = simpleMultis.begin(); iter != simpleMultis.end(); iter++) {
+		for (auto iter = simpleMultis.begin(); iter != simpleMultis.end(); iter++) {
 			SimpleMultiTargetFilter *smtf = (*iter);
 			if (strcmp(smtf->pattern.c_str(), info->pattern) == 0) {
 				CellArray *array = new CellArray(1);
@@ -206,7 +203,7 @@ public: //IPluginsListener
 
 	void OnPluginDestroyed(IPlugin *plugin)
 	{
-		List<SimpleMultiTargetFilter *>::iterator iter = simpleMultis.begin();
+		auto iter = simpleMultis.begin();
 
 		while (iter != simpleMultis.end()) {
 			if ((*iter)->plugin != plugin) {

@@ -34,9 +34,7 @@
 
 #include <new>
 #include <stdlib.h>
-#include <sh_stack.h>
-
-using namespace SourceHook;
+#include <stack>
 
 /*
 	A circular, doubly-linked List with one sentinel node
@@ -109,7 +107,7 @@ public:
 
 		while (!m_FreeNodes.empty())
 		{
-			free(m_FreeNodes.front());
+			free(m_FreeNodes.top());
 			m_FreeNodes.pop();
 		}
 	}
@@ -122,7 +120,7 @@ public:
 		{
 			node = (QueueNode *)malloc(sizeof(QueueNode));
 		} else {
-			node = m_FreeNodes.front();
+			node = m_FreeNodes.top();
 			m_FreeNodes.pop();
 		}
 
@@ -169,7 +167,7 @@ public:
 private:
 	QueueNode *m_Head;
 	size_t m_Size;
-	CStack<QueueNode *> m_FreeNodes;
+	std::stack<QueueNode *> m_FreeNodes;
 public:
 	class iterator
 	{
