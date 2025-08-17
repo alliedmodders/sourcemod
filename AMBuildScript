@@ -663,7 +663,7 @@ else:
     'loader/AMBuilder',
     'core/AMBuilder',
     'core/logic/AMBuilder',
-    #'extensions/bintools/AMBuilder',
+    'extensions/bintools/AMBuilder',
     #'extensions/clientprefs/AMBuilder',
     #'extensions/curl/AMBuilder',
     #'extensions/cstrike/AMBuilder',
