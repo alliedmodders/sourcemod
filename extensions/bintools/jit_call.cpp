@@ -111,13 +111,13 @@ inline void Write_Function_Epilogue(JitWriter *jit, bool is_void, bool has_param
 	IA32_Return(jit);
 }
 
-inline void Write_PushPOD(JitWriter *jit, const SourceHook::PassInfo *info, unsigned int offset)
+inline void Write_PushPOD(JitWriter *jit, const PassInfo& info, unsigned int offset)
 {
 	jit_uint8_t reg = _DecodeRegister3(g_RegDecoder++);
 
-	if (info->flags & PASSFLAG_BYVAL)
+	if (info.flags & PASSFLAG_BYVAL)
 	{
-		switch (info->size)
+		switch (info.size)
 		{
 		case 1:
 			{
@@ -200,7 +200,7 @@ inline void Write_PushPOD(JitWriter *jit, const SourceHook::PassInfo *info, unsi
 				break;
 			}
 		}
-	} else if (info->flags & PASSFLAG_BYREF) {
+	} else if (info.flags & PASSFLAG_BYREF) {
 		//lea reg, [ebx+<offset>]
 		//push reg
 		if (!offset)
@@ -221,11 +221,11 @@ inline void Write_PushPOD(JitWriter *jit, const SourceHook::PassInfo *info, unsi
 	}
 }
 
-inline void Write_PushFloat(JitWriter *jit, const SourceHook::PassInfo *info, unsigned int offset)
+inline void Write_PushFloat(JitWriter *jit, const PassInfo& info, unsigned int offset)
 {
-	if (info->flags & PASSFLAG_BYVAL)
+	if (info.flags & PASSFLAG_BYVAL)
 	{
-		switch (info->size)
+		switch (info.size)
 		{
 		case 4:
 			{
@@ -264,7 +264,7 @@ inline void Write_PushFloat(JitWriter *jit, const SourceHook::PassInfo *info, un
 				break;
 			}
 		}
-	} else if (info->flags & PASSFLAG_BYREF) {
+	} else if (info.flags & PASSFLAG_BYREF) {
 		//lea reg, [ebx+<offset>]
 		//push reg
 		if (!offset)
@@ -287,18 +287,18 @@ inline void Write_PushFloat(JitWriter *jit, const SourceHook::PassInfo *info, un
 	}
 }
 
-inline void Write_PushObject(JitWriter *jit, const SourceHook::PassInfo *info, unsigned int offset)
+inline void Write_PushObject(JitWriter *jit, const PassInfo& info, unsigned int offset)
 {
-	if (info->flags & PASSFLAG_BYVAL)
+	if (info.flags & PASSFLAG_BYVAL)
 	{
 #ifdef PLATFORM_POSIX
-		if (info->flags & PASSFLAG_ODTOR)
+		if (info.flags & PASSFLAG_ODTOR)
 		{
 			goto push_byref;
 		}
 #endif
-		jit_uint32_t dwords = info->size >> 2;
-		jit_uint32_t bytes = info->size & 0x3;
+		jit_uint32_t dwords = info.size >> 2;
+		jit_uint32_t bytes = info.size & 0x3;
 
 		//sub esp, <size>
 		//cld
@@ -314,11 +314,11 @@ inline void Write_PushObject(JitWriter *jit, const SourceHook::PassInfo *info, u
 		// rep movsb
 		//pop esi
 		//pop edi
-		if (info->size < SCHAR_MAX)
+		if (info.size < SCHAR_MAX)
 		{
-			IA32_Sub_Rm_Imm8(jit, kREG_ESP, (jit_int8_t)info->size, MOD_REG);
+			IA32_Sub_Rm_Imm8(jit, kREG_ESP, (jit_int8_t)info.size, MOD_REG);
 		} else {
-			IA32_Sub_Rm_Imm32(jit, kREG_ESP, info->size, MOD_REG);
+			IA32_Sub_Rm_Imm32(jit, kREG_ESP, info.size, MOD_REG);
 		}
 		IA32_Cld(jit);
 		IA32_Push_Reg(jit, kREG_EDI);
@@ -347,8 +347,8 @@ inline void Write_PushObject(JitWriter *jit, const SourceHook::PassInfo *info, u
 		IA32_Pop_Reg(jit, kREG_ESI);
 		IA32_Pop_Reg(jit, kREG_EDI);
 
-		g_StackUsage += info->size;
-	} else if (info->flags & PASSFLAG_BYREF) {
+		g_StackUsage += info.size;
+	} else if (info.flags & PASSFLAG_BYREF) {
 #ifdef PLATFORM_POSIX
 push_byref:
 #endif
@@ -410,9 +410,9 @@ inline void Write_CallFunction(JitWriter *jit, FuncAddrMethod method, CallWrappe
 		//mov eax, [edx+<thisOffs>+<vtblOffs>]
 		//mov edx, [eax+<vtblIdx>*4]
 		//call edx
-		SourceHook::MemFuncInfo *funcInfo = pWrapper->GetMemFuncInfo();
-		jit_uint32_t total_offs = funcInfo->thisptroffs + funcInfo->vtbloffs;
-		jit_uint32_t vfunc_pos = funcInfo->vtblindex * 4;
+		//SourceHook::MemFuncInfo *funcInfo = pWrapper->GetMemFuncInfo();
+		jit_uint32_t total_offs = 0; /*funcInfo->thisptroffs + funcInfo->vtbloffs;*/
+		jit_uint32_t vfunc_pos = pWrapper->GetVtableIndex(); /*funcInfo->vtblindex * 4;*/
 
 		IA32_Mov_Reg_Rm(jit, kREG_EDX, kREG_EBX, MOD_MEM_REG);
 		if (total_offs < SCHAR_MAX)
@@ -529,24 +529,24 @@ jit_rewind:
 	for (jit_int32_t i=ParamCount-1; i>=0; i--)
 	{
 		unsigned int offset = pWrapper->GetParamOffset(i);
-		const SourceHook::PassInfo *info = pWrapper->GetSHParamInfo(i);
+		auto info = pWrapper->GetParamInfo(i);
 		assert(info != NULL);
 
-		switch (info->type)
+		switch (info->info.type)
 		{
-		case SourceHook::PassInfo::PassType_Basic:
+		case PassType::PassType_Basic:
 			{
-				Write_PushPOD(jit, info, offset);
+				Write_PushPOD(jit, info->info, offset);
 				break;
 			}
-		case SourceHook::PassInfo::PassType_Float:
+		case PassType::PassType_Float:
 			{
-				Write_PushFloat(jit, info, offset);
+				Write_PushFloat(jit, info->info, offset);
 				break;
 			}
-		case SourceHook::PassInfo::PassType_Object:
+		case PassType::PassType_Object:
 			{
-				Write_PushObject(jit, info, offset);
+				Write_PushObject(jit, info->info, offset);
 				break;
 			}
 		}

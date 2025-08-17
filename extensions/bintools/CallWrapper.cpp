@@ -33,7 +33,7 @@
 #include "CallWrapper.h"
 #include "CallMaker.h"
 
-CallWrapper::CallWrapper(const SourceHook::ProtoInfo *protoInfo) : m_FnFlags(0)
+CallWrapper::CallWrapper(const ProtoInfo *protoInfo) : m_FnFlags(0)
 {
 	m_AddrCodeBase = NULL;
 	m_AddrCallee = NULL;
@@ -41,15 +41,15 @@ CallWrapper::CallWrapper(const SourceHook::ProtoInfo *protoInfo) : m_FnFlags(0)
 	unsigned int argnum = protoInfo->numOfParams;
 
 	m_Info = *protoInfo;
-	m_Info.paramsPassInfo = new SourceHook::PassInfo[argnum + 1];
-	memcpy((void *)m_Info.paramsPassInfo, protoInfo->paramsPassInfo, sizeof(SourceHook::PassInfo) * (argnum+1));
+	m_Info.paramsPassInfo = new PassInfo[argnum + 1];
+	memcpy((void *)m_Info.paramsPassInfo, protoInfo->paramsPassInfo, sizeof(PassInfo) * (argnum+1));
 
 	if (argnum)
 	{
 		m_Params = new PassEncode[argnum];
 		for (size_t i=0; i<argnum; i++)
 		{
-			GetSMPassInfo(&(m_Params[i].info), &(m_Info.paramsPassInfo[i+1]));
+			m_Params[i].info = m_Info.paramsPassInfo[i+1];
 		}
 	} else {
 		m_Params = NULL;
@@ -57,8 +57,7 @@ CallWrapper::CallWrapper(const SourceHook::ProtoInfo *protoInfo) : m_FnFlags(0)
 
 	if (m_Info.retPassInfo.size != 0)
 	{
-		m_RetParam = new PassInfo;
-		GetSMPassInfo(m_RetParam, &(m_Info.retPassInfo));
+		m_RetParam = new PassInfo(m_Info.retPassInfo);
 	} else {
 		m_RetParam = NULL;
 	}
@@ -66,7 +65,7 @@ CallWrapper::CallWrapper(const SourceHook::ProtoInfo *protoInfo) : m_FnFlags(0)
 	/* Calculate virtual stack offsets for each parameter */
 	size_t offs = 0;
 
-	if (m_Info.convention == SourceHook::ProtoInfo::CallConv_ThisCall)
+	if (m_Info.convention == CallConvention::CallConv_ThisCall)
 	{
 		offs += sizeof(void *);
 	}
@@ -77,7 +76,7 @@ CallWrapper::CallWrapper(const SourceHook::ProtoInfo *protoInfo) : m_FnFlags(0)
 	}
 }
 
-CallWrapper::CallWrapper(const SourceHook::ProtoInfo *protoInfo, const PassInfo *retInfo,
+CallWrapper::CallWrapper(const ProtoInfo *protoInfo, const PassInfo *retInfo,
                          const PassInfo paramInfo[], unsigned int fnFlags) : CallWrapper(protoInfo)
 {
 	if (retInfo)
@@ -121,7 +120,7 @@ void CallWrapper::Destroy()
 CallConvention CallWrapper::GetCallConvention()
 {
 	/* Need to convert to a SourceMod convention for bcompat */
-	return GetSMCallConvention((SourceHook::ProtoInfo::CallConvention)m_Info.convention);
+	return (CallConvention)m_Info.convention;
 }
 
 const PassEncode *CallWrapper::GetParamInfo(unsigned int num)
@@ -151,16 +150,6 @@ void CallWrapper::Execute(void *vParamStack, void *retBuffer)
 	fn(vParamStack, retBuffer);
 }
 
-void CallWrapper::SetMemFuncInfo(const SourceHook::MemFuncInfo *funcInfo)
-{
-	m_FuncInfo = *funcInfo;
-}
-
-SourceHook::MemFuncInfo *CallWrapper::GetMemFuncInfo()
-{
-	return &m_FuncInfo;
-}
-
 void CallWrapper::SetCalleeAddr(void *addr)
 {
 	m_AddrCallee = addr;
@@ -179,26 +168,6 @@ void *CallWrapper::GetCalleeAddr()
 void *CallWrapper::GetCodeBaseAddr()
 {
 	return m_AddrCodeBase;
-}
-
-const SourceHook::PassInfo *CallWrapper::GetSHReturnInfo()
-{
-	return &(m_Info.retPassInfo);
-}
-
-SourceHook::ProtoInfo::CallConvention CallWrapper::GetSHCallConvention()
-{
-	return (SourceHook::ProtoInfo::CallConvention)m_Info.convention;
-}
-
-const SourceHook::PassInfo * CallWrapper::GetSHParamInfo(unsigned int num)
-{
-	if (num + 1 > GetParamCount())
-	{
-		return NULL;
-	}
-
-	return &(m_Info.paramsPassInfo[num+1]);
 }
 
 unsigned int CallWrapper::GetParamOffset(unsigned int num)

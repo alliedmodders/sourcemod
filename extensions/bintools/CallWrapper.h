@@ -33,7 +33,6 @@
 #define _INCLUDE_SOURCEMOD_CALLWRAPPER_H_
 
 #include <IBinTools.h>
-#include <sourcehook_pibuilder.h>
 
 using namespace SourceMod;
 
@@ -43,11 +42,24 @@ enum FuncAddrMethod
 	FuncAddr_VTable
 };
 
+struct ProtoInfo
+{
+	int numOfParams;			//!< number of parameters
+	PassInfo retPassInfo;		//!< PassInfo for the return value. size=0 -> no retval
+	const PassInfo *paramsPassInfo;	//!< PassInfos for the parameters
+
+	// paramsPassInfo[0] is basically a dummy parameter.
+	// However, paramsPassInfo[0].size stores the version of the ProtoInfo structure.
+
+	// Extra info:
+	int convention;
+};
+
 class CallWrapper : public ICallWrapper
 {
 public:
-	CallWrapper(const SourceHook::ProtoInfo *protoInfo);
-	CallWrapper(const SourceHook::ProtoInfo *protoInfo, const PassInfo *retInfo,
+	CallWrapper(const ProtoInfo *protoInfo);
+	CallWrapper(const ProtoInfo *protoInfo, const PassInfo *retInfo,
 	            const PassInfo paramInfo[], unsigned int fnFlags);
 	~CallWrapper();
 public: //ICallWrapper
@@ -57,26 +69,21 @@ public: //ICallWrapper
 	unsigned int GetParamCount();
 	void Execute(void *vParamStack, void *retBuffer);
 	void Destroy();
-	const SourceHook::PassInfo *GetSHReturnInfo();
-	SourceHook::ProtoInfo::CallConvention GetSHCallConvention();
-	const SourceHook::PassInfo *GetSHParamInfo(unsigned int num);
 	unsigned int GetParamOffset(unsigned int num);
 	unsigned int GetFunctionFlags();
+	void SetVtableIndex(unsigned int);
+	unsigned int GetVtableIndex();
 public:
 	void SetCalleeAddr(void *addr);
 	void SetCodeBaseAddr(void *addr);
 	void *GetCalleeAddr();
 	void *GetCodeBaseAddr();
-
-	void SetMemFuncInfo(const SourceHook::MemFuncInfo *funcInfo);
-	SourceHook::MemFuncInfo *GetMemFuncInfo();
 private:
 	PassEncode *m_Params;
-	SourceHook::ProtoInfo m_Info;
+	ProtoInfo m_Info;
 	PassInfo *m_RetParam;
 	void *m_AddrCallee;
 	void *m_AddrCodeBase;
-	SourceHook::MemFuncInfo m_FuncInfo;
 	unsigned int m_FnFlags;
 };
 
