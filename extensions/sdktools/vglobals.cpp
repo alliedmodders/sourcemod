@@ -262,7 +262,8 @@ void GetIServer()
 	}
 
 	/* Get the CreateFakeClient function pointer */
-	if (!(vfunc=SH_GET_ORIG_VFNPTR_ENTRY(engine, &IVEngineServer::CreateFakeClient)))
+	auto entry = KHook::ExtractMFP(KHook::GetVtableFunction(engine, &IVEngineServer::CreateFakeClient));
+	if (!(vfunc=KHook::GetOriginal(entry)))
 	{
 		return;
 	}
