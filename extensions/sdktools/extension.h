@@ -110,19 +110,26 @@ public: //IClientListner
 	void OnClientDisconnecting(int client);
 public:
 #if defined CLIENTVOICE_HOOK_SUPPORT
-	void OnClientVoice(edict_t *pPlayer);
+	KHook::Virtual<IServerGameClients, void, edict_t*> m_HookClientVoice;
+	KHook::Return<void> OnClientVoice(IServerGameClients*, edict_t *pPlayer);
 #endif
 public: // IVoiceServer
-	bool OnSetClientListening(int iReceiver, int iSender, bool bListen);
+	KHook::Virtual<IVoiceServer, bool, int, int, bool> m_HookSetClientListening;
+	KHook::Return<bool> OnSetClientListening(IVoiceServer*, int iReceiver, int iSender, bool bListen);
+	bool DecListeningHookCount();
+	void IncListeningHookCount();
 	void VoiceInit();
 	void VoiceShutdown();
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-	void OnClientCommand(edict_t *pEntity, const CCommand &args);
+	KHook::Return<void> OnClientCommand(class IServerGameClients*, edict_t *pEntity, const CCommand &args);
+	KHook::Virtual<class IServerGameClients, void, edict_t*, const CCommand&> m_HookClientCommand;
 #else
-	void OnClientCommand(edict_t *pEntity);
+	KHook::Return<void> OnClientCommand(class IServerGameClients*, edict_t *pEntity);
+	KHook::Virtual<class IServerGameClients, void, edict_t*> m_HookClientCommand;
 #endif
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
-	void OnSendClientCommand(edict_t *pPlayer, const char *szFormat);
+	KHook::Virtual<IVEngineServer, void, edict_t*, const char*> m_HookClientCommand;
+	KHook::Return<void> OnSendClientCommand(IVEngineServer*, edict_t *pPlayer, const char *szFormat);
 #endif
 public: //ITimedEvent
 	ResultType OnTimer(ITimer *pTimer, void *pData);
@@ -131,8 +138,10 @@ public: //ITimedEvent
 public: //ICommandTargetProcessor
 	bool ProcessCommandTarget(cmd_target_info_t *info);
 public:
-	bool LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
-	void LevelShutdown();
+	KHook::Virtual<IServerGameDLL, bool, char const*, char const*, char const*, char const*, bool, bool> m_HookLevelInit;
+	KHook::Return<bool> LevelInit(IServerGameDLL*, char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
+	KHook::Virtual<IServerGameDLL, void> m_HookLevelShutdown;
+	KHook::Return<void> LevelShutdown(IServerGameDLL*);
 	void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
 public:
 	bool HasAnyLevelInited() { return m_bAnyLevelInited; }
@@ -181,12 +190,7 @@ extern ITimer *g_hTimerSpeaking[SM_MAXPLAYERS+1];
 /* Forwards */
 extern IForward *m_OnClientSpeaking;
 extern IForward *m_OnClientSpeakingEnd;
-/* Call classes */
-extern SourceHook::CallClass<IVEngineServer> *enginePatch;
-extern SourceHook::CallClass<IEngineSound> *enginesoundPatch;
 
 #include <compat_wrappers.h>
-
-#define ENGINE_CALL(func)		SH_CALL(enginePatch, &IVEngineServer::func)
 
 #endif //_INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_
