@@ -38,9 +38,6 @@
 
 using namespace SourceMod;
 
-SH_DECL_MANUALEXTERN1(OnTakeDamage, int, CTakeDamageInfoHack &);
-SH_DECL_MANUALEXTERN3_void(Weapon_Drop, CBaseCombatWeapon *, const Vector *, const Vector *);
-
 cell_t Native_Hook(IPluginContext *pContext, const cell_t *params)
 {
 	int entity = (int)params[1];
@@ -102,6 +99,9 @@ cell_t Native_Unhook(IPluginContext *pContext, const cell_t *params)
 
 cell_t Native_TakeDamage(IPluginContext *pContext, const cell_t *params)
 {
+	if (g_HookTypes[SDKHook_OnTakeDamage].supported == false)
+		return pContext->ThrowNativeError("SDKHooks_DropWeapon isn't supported by this mod.");
+	
 	CBaseEntity *pVictim = gamehelpers->ReferenceToEntity(params[1]);
 	if (!pVictim)
 		return pContext->ThrowNativeError("Invalid entity index %d for victim", params[1]);
@@ -177,7 +177,9 @@ cell_t Native_TakeDamage(IPluginContext *pContext, const cell_t *params)
 
 	if (params[0] < 9 || params[9] != 0)
 	{
-		SH_MCALL(pVictim, OnTakeDamage)((CTakeDamageInfoHack&)info);
+		auto func = KHook::GetOriginal((*(void***)pVictim)[g_HookTypes[SDKHook_OnTakeDamage].offset]);
+		auto mfp = KHook::BuildMFP<CBaseEntity, int, const CTakeDamageInfoHack&>(func);
+		(pVictim->*mfp)(info);
 	}
 	else
 	{
@@ -198,7 +200,7 @@ cell_t Native_TakeDamage(IPluginContext *pContext, const cell_t *params)
 			pass[1].size = sizeof(int);
 			pass[1].flags = PASSFLAG_BYVAL;
 
-			pCall = g_pBinTools->CreateVCall(offset, 0, 0, &pass[1], &pass[0], 1);
+			pCall = g_pBinTools->CreateVCall(g_HookTypes[SDKHook_OnTakeDamage].offset, 0, 0, &pass[1], &pass[0], 1);
 		}
 
 		// Can't ArgBuffer here until we upgrade our Clang version on the Linux builder
@@ -218,6 +220,9 @@ cell_t Native_TakeDamage(IPluginContext *pContext, const cell_t *params)
 
 cell_t Native_DropWeapon(IPluginContext *pContext, const cell_t *params)
 {
+	if (g_HookTypes[SDKHook_WeaponDrop].supported == false)
+		return pContext->ThrowNativeError("SDKHooks_DropWeapon isn't supported by this mod.");
+
 	CBaseEntity *pPlayer = gamehelpers->ReferenceToEntity(params[1]);
 	if (!pPlayer)
 		return pContext->ThrowNativeError("Invalid client index %d", params[1]);
@@ -286,19 +291,15 @@ cell_t Native_DropWeapon(IPluginContext *pContext, const cell_t *params)
 
 	if (params[0] < 5 || params[5] != 0)
 	{
-		SH_MCALL(pPlayer, Weapon_Drop)((CBaseCombatWeapon*)pWeapon, pVecTarget, pVecVelocity);
+		auto func = KHook::GetOriginal((*(void***)pPlayer)[g_HookTypes[SDKHook_WeaponDrop].offset]);
+		auto mfp = KHook::BuildMFP<CBaseEntity, void, CBaseCombatWeapon*, const Vector*, const Vector*>(func);
+		(pPlayer->*mfp)((CBaseCombatWeapon*)pWeapon, pVecTarget, pVecVelocity);
 	}
 	else
 	{
 		static ICallWrapper* pCall = nullptr;
 		if (!pCall)
 		{
-			int offset;
-			if (!g_pGameConf->GetOffset("Weapon_Drop", &offset))
-			{
-				return pContext->ThrowNativeError("Could not find Weapon_Drop offset");
-			}
-
 			PassInfo pass[3];
 			pass[0].type = PassType_Basic;
 			pass[0].size = sizeof(CBaseEntity *);
@@ -310,7 +311,7 @@ cell_t Native_DropWeapon(IPluginContext *pContext, const cell_t *params)
 			pass[2].size = sizeof(Vector *);
 			pass[2].flags = PASSFLAG_BYVAL;
 
-			pCall = g_pBinTools->CreateVCall(offset, 0, 0, nullptr, pass, 3);
+			pCall = g_pBinTools->CreateVCall(g_HookTypes[SDKHook_WeaponDrop].offset, 0, 0, nullptr, pass, 3);
 		}
 
 		pCall->Execute(ArgBuffer<CBaseEntity *, CBaseEntity *, Vector *, Vector *>(pPlayer, pWeapon, pVecTarget, pVecVelocity), nullptr);
