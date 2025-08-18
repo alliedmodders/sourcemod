@@ -65,14 +65,14 @@ cell_t HookSingleEntityOutput(IPluginContext *pContext, const cell_t *params)
 	OutputNameStruct *pOutputName = g_OutputManager.FindOutputPointer((const char *)classname, outputname, true);
 
 	//Check for an existing identical hook
-	SourceHook::List<omg_hooks *>::iterator _iter;
+	std::list<omg_hooks *>::iterator _iter;
 
 	omg_hooks *hook;
 
 	IPluginFunction *pFunction;
 	pFunction = pContext->GetFunctionById(params[3]);
 
-	for (_iter=pOutputName->hooks.begin(); _iter!=pOutputName->hooks.end(); _iter++)
+	for (auto _iter=pOutputName->hooks.begin(); _iter!=pOutputName->hooks.end(); _iter++)
 	{
 		hook = (omg_hooks *)*_iter;
 		if (hook->pf == pFunction && hook->entity_ref == gamehelpers->EntityToReference(pEntity))
@@ -95,11 +95,11 @@ cell_t HookSingleEntityOutput(IPluginContext *pContext, const cell_t *params)
 	g_OutputManager.OnHookAdded();
 
 	IPlugin *pPlugin = plsys->FindPluginByContext(pContext->GetContext());
-	SourceHook::List<omg_hooks *> *pList = NULL;
+	std::list<omg_hooks *> *pList = NULL;
 
 	if (!pPlugin->GetProperty("OutputHookList", (void **)&pList, false) || !pList)
 	{
-		pList = new SourceHook::List<omg_hooks *>;
+		pList = new std::list<omg_hooks *>;
 		pPlugin->SetProperty("OutputHookList", pList);
 	}
 
@@ -126,14 +126,13 @@ cell_t HookEntityOutput(IPluginContext *pContext, const cell_t *params)
 	OutputNameStruct *pOutputName = g_OutputManager.FindOutputPointer((const char *)classname, outputname, true);
 
 	//Check for an existing identical hook
-	SourceHook::List<omg_hooks *>::iterator _iter;
 
 	omg_hooks *hook;
 
 	IPluginFunction *pFunction;
 	pFunction = pContext->GetFunctionById(params[3]);
 
-	for (_iter=pOutputName->hooks.begin(); _iter!=pOutputName->hooks.end(); _iter++)
+	for (auto _iter=pOutputName->hooks.begin(); _iter!=pOutputName->hooks.end(); _iter++)
 	{
 		hook = (omg_hooks *)*_iter;
 		if (hook->pf == pFunction && hook->entity_ref == -1)
@@ -158,11 +157,11 @@ cell_t HookEntityOutput(IPluginContext *pContext, const cell_t *params)
 	g_OutputManager.OnHookAdded();
 
 	IPlugin *pPlugin = plsys->FindPluginByContext(pContext->GetContext());
-	SourceHook::List<omg_hooks *> *pList = NULL;
+	std::list<omg_hooks *> *pList = NULL;
 
 	if (!pPlugin->GetProperty("OutputHookList", (void **)&pList, false) || !pList)
 	{
-		pList = new SourceHook::List<omg_hooks *>;
+		pList = new std::list<omg_hooks *>;
 		pPlugin->SetProperty("OutputHookList", pList);
 	}
 
@@ -193,14 +192,13 @@ cell_t UnHookEntityOutput(IPluginContext *pContext, const cell_t *params)
 	}
 
 	//Check for an existing identical hook
-	SourceHook::List<omg_hooks *>::iterator _iter;
 
 	omg_hooks *hook;
 
 	IPluginFunction *pFunction;
 	pFunction = pContext->GetFunctionById(params[3]);
 
-	for (_iter=pOutputName->hooks.begin(); _iter!=pOutputName->hooks.end(); _iter++)
+	for (auto _iter=pOutputName->hooks.begin(); _iter!=pOutputName->hooks.end(); _iter++)
 	{
 		hook = (omg_hooks *)*_iter;
 		if (hook->pf == pFunction && hook->entity_ref == -1)
@@ -250,14 +248,13 @@ cell_t UnHookSingleEntityOutput(IPluginContext *pContext, const cell_t *params)
 	}
 
 	//Check for an existing identical hook
-	SourceHook::List<omg_hooks *>::iterator _iter;
 
 	omg_hooks *hook;
 
 	IPluginFunction *pFunction;
 	pFunction = pContext->GetFunctionById(params[3]);
 
-	for (_iter=pOutputName->hooks.begin(); _iter!=pOutputName->hooks.end(); _iter++)
+	for (auto _iter=pOutputName->hooks.begin(); _iter!=pOutputName->hooks.end(); _iter++)
 	{
 		hook = (omg_hooks *)*_iter;
 		/* We're not serial checking and just removing by index here - This was always allowed so is left for bcompat */

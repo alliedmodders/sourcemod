@@ -32,14 +32,14 @@
 #ifndef _INCLUDE_SOURCEMOD_VSOUND_H_
 #define _INCLUDE_SOURCEMOD_VSOUND_H_
 
-#include <sh_list.h>
+#include <list>
 #include "extension.h"
 #include "CellRecipientFilter.h"
 
 #define NORMAL_SOUND_HOOK		0
 #define AMBIENT_SOUND_HOOK		1
 
-typedef SourceHook::List<IPluginFunction *>::iterator SoundHookIter;
+typedef std::list<IPluginFunction *>::iterator SoundHookIter;
 
 class SoundHooks : public IPluginsListener
 {
@@ -99,8 +99,8 @@ private:
 	void _IncRefCounter(int type);
 	void _DecRefCounter(int type);
 private:
-	SourceHook::List<IPluginFunction *> m_AmbientFuncs;
-	SourceHook::List<IPluginFunction *> m_NormalFuncs;
+	std::list<IPluginFunction *> m_AmbientFuncs;
+	std::list<IPluginFunction *> m_NormalFuncs;
 	size_t m_NormalCount;
 	size_t m_AmbientCount;
 };

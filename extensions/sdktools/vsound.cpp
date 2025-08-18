@@ -82,13 +82,13 @@ size_t SoundHooks::_FillInPlayers(int *pl_array, IRecipientFilter *pFilter)
 void SoundHooks::_IncRefCounter(int type)
 {
 	if (type == NORMAL_SOUND_HOOK)
-{
-	if (m_NormalCount++ == 0)
 	{
-		SH_ADD_HOOK(IEngineSound, EmitSound, engsound, SH_MEMBER(this, &SoundHooks::OnEmitSound), false);
-		SH_ADD_HOOK(IEngineSound, EmitSound, engsound, SH_MEMBER(this, &SoundHooks::OnEmitSound2), false);
+		if (m_NormalCount++ == 0)
+		{
+			SH_ADD_HOOK(IEngineSound, EmitSound, engsound, SH_MEMBER(this, &SoundHooks::OnEmitSound), false);
+			SH_ADD_HOOK(IEngineSound, EmitSound, engsound, SH_MEMBER(this, &SoundHooks::OnEmitSound2), false);
+		}
 	}
-}
 	else if (type == AMBIENT_SOUND_HOOK)
 	{
 		if (m_AmbientCount++ == 0)

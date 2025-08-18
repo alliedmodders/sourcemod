@@ -31,7 +31,7 @@
 
 #include "extension.h"
 #include "vhelpers.h"
-#include <sh_vector.h>
+#include <vector>
 
 struct TeamInfo
 {
@@ -41,7 +41,7 @@ struct TeamInfo
 
 char m_iScore[64] = { 0 };
 
-SourceHook::CVector<TeamInfo> g_Teams;
+std::vector<TeamInfo> g_Teams;
 
 void InitTeamNatives()
 {

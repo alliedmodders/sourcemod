@@ -32,7 +32,7 @@
 #ifndef _INCLUDE_SOURCEMOD_VALVE_CALLER_H_
 #define _INCLUDE_SOURCEMOD_VALVE_CALLER_H_
 
-#include <sh_stack.h>
+#include <stack>
 #include <extensions/IBinTools.h>
 #include "vdecoder.h"
 
@@ -51,7 +51,7 @@ struct ValveCall
 	size_t stackSize;							/**< Stack size */
 	size_t stackEnd;							/**< End of the bintools stack */
 	unsigned char *retbuf;						/**< Return buffer */
-	SourceHook::CStack<unsigned char *> stk;	/**< Parameter stack */
+	std::stack<unsigned char *> stk;			/**< Parameter stack */
 
 	unsigned char *stk_get();
 	void stk_put(unsigned char *ptr);
