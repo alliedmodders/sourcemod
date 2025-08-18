@@ -52,9 +52,6 @@
  * @file extension.cpp
  * @brief Implements SDK Tools extension code.
  */
-
-SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
-SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
 SH_DECL_HOOK1_void_vafmt(IVEngineServer, ClientCommand, SH_NOATTRIB, 0, edict_t *);
 #endif
@@ -88,8 +85,6 @@ IForward *m_OnClientSpeakingEnd;
 IServerTools *servertools = NULL;
 #endif
 
-SourceHook::CallClass<IVEngineServer> *enginePatch = NULL;
-SourceHook::CallClass<IEngineSound> *enginesoundPatch = NULL;
 HandleType_t g_CallHandle = 0;
 HandleType_t g_TraceHandle = 0;
 ISDKTools *g_pSDKTools;
@@ -120,6 +115,19 @@ DETOUR_DECL_MEMBER3(CNetworkStringTableContainer__WriteBaselines, void, char con
 	return DETOUR_MEMBER_CALL(CNetworkStringTableContainer__WriteBaselines)(mapName, buffer, INT_MAX);
 }
 #endif
+
+SDKTools::SDKTools() :
+	m_HookLevelInit(&IServerGameDLL::LevelInit, this, nullptr, &SDKTools::LevelInit),
+	m_HookLevelShutdown(&IServerGameDLL::LevelShutdown, this, nullptr, &SDKTools::LevelShutdown),
+	m_HookSetClientListening(&IVoiceServer::SetClientListening, this, &SDKTools::OnSetClientListening, nullptr)
+#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
+	,m_HookClientCommand(&IVEngineServer::ClientCommand, this, &SDKTools::OnSendClientCommand, nullptr)
+#endif
+#if defined CLIENTVOICE_HOOK_SUPPORT
+	,m_HookClientVoice(&IServerGameClients::ClientVoice, this, nullptr, &SDKTools::OnClientVoice)
+#endif
+	,m_HookClientCommand(&IServerGameClients::ClientCommand, this, nullptr, &SDKTools::OnClientCommand)
+{}
 
 bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
@@ -174,8 +182,8 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 #endif
 	CONVAR_REGISTER(this);
 
-	SH_ADD_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(this, &SDKTools::LevelInit), true);
-	SH_ADD_HOOK(IServerGameDLL, LevelShutdown, gamedll, SH_MEMBER(this, &SDKTools::LevelShutdown), true);
+	m_HookLevelInit.Add(gamedll);
+	m_HookLevelShutdown.Add(gamedll);
 
 	playerhelpers->RegisterCommandTargetProcessor(this);
 
@@ -275,19 +283,8 @@ void SDKTools::SDK_OnUnload()
 	playerhelpers->UnregisterCommandTargetProcessor(this);
 	plsys->RemovePluginsListener(&g_OutputManager);
 
-	SH_REMOVE_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(this, &SDKTools::LevelInit), true);
-	SH_REMOVE_HOOK(IServerGameDLL, LevelShutdown, gamedll, SH_MEMBER(this, &SDKTools::LevelShutdown), true);
-
-	if (enginePatch)
-	{
-		SH_RELEASE_CALLCLASS(enginePatch);
-		enginePatch = NULL;
-	}
-	if (enginesoundPatch)
-	{
-		SH_RELEASE_CALLCLASS(enginesoundPatch);
-		enginesoundPatch = NULL;
-	}
+	m_HookLevelInit.Remove(gamedll);
+	m_HookLevelShutdown.Remove(gamedll);
 
 	bool err;
 	if (g_CallHandle != 0)
@@ -327,14 +324,12 @@ bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 	GET_V_IFACE_ANY(GetEngineFactory, soundemitterbase, ISoundEmitterSystemBase, SOUNDEMITTERSYSTEM_INTERFACE_VERSION);
 
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
-	SH_ADD_HOOK(IVEngineServer, ClientCommand, engine, SH_MEMBER(this, &SDKTools::OnSendClientCommand), false);
+	m_HookClientCommand.Add(engine);
 #endif
 #if defined CLIENTVOICE_HOOK_SUPPORT
-	SH_ADD_HOOK(IServerGameClients, ClientVoice, serverClients, SH_MEMBER(this, &SDKTools::OnClientVoice), true);
+	m_HookClientVoice.Add(serverClients);
 #endif
 	gpGlobals = ismm->GetCGlobals();
-	enginePatch = SH_GET_CALLCLASS(engine);
-	enginesoundPatch = SH_GET_CALLCLASS(engsound);
 
 	return true;
 }
@@ -342,10 +337,10 @@ bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 bool SDKTools::SDK_OnMetamodUnload(char *error, size_t maxlen)
 {
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
-	SH_REMOVE_HOOK(IVEngineServer, ClientCommand, engine, SH_MEMBER(this, &SDKTools::OnSendClientCommand), false);
+	m_HookClientCommand.Remove(engine);
 #endif
 #if defined CLIENTVOICE_HOOK_SUPPORT
-	SH_REMOVE_HOOK(IServerGameClients, ClientVoice, serverClients, SH_MEMBER(this, &SDKTools::OnClientVoice), true);
+	m_HookClientVoice.Remove(serverClients);
 #endif
 	return true;
 }
@@ -420,7 +415,7 @@ bool SDKTools::RegisterConCommandBase(ConCommandBase *pVar)
 	return g_SMAPI->RegisterConCommandBase(g_PLAPI, pVar);
 }
 
-bool SDKTools::LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
+KHook::Return<bool> SDKTools::LevelInit(IServerGameDLL*, char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
 {
 	m_bAnyLevelInited = true;
 
@@ -432,7 +427,7 @@ bool SDKTools::LevelInit(char const *pMapName, char const *pMapEntities, char co
 
 	if (!(name=g_pGameConf->GetKeyValue("SlapSoundCount")))
 	{
-		RETURN_META_VALUE(MRES_IGNORED, true);
+		return { KHook::Action::Ignore };
 	}
 
 	count = atoi(name);
@@ -447,12 +442,14 @@ bool SDKTools::LevelInit(char const *pMapName, char const *pMapEntities, char co
 		n++;
 	}
 
-	RETURN_META_VALUE(MRES_IGNORED, true);
+	return { KHook::Action::Ignore };
 }
 
-void SDKTools::LevelShutdown()
+KHook::Return<void> SDKTools::LevelShutdown(IServerGameDLL*)
 {
 	ClearValveGlobals();
+
+	return { KHook::Action::Ignore };
 }
 
 bool SDKTools::ProcessCommandTarget(cmd_target_info_t *info)
@@ -552,7 +549,7 @@ void SDKTools::OnClientConnected(int client)
 #endif
 
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
-void SDKTools::OnSendClientCommand(edict_t *pPlayer, const char *szFormat)
+KHook::Return<void> SDKTools::OnSendClientCommand(IVEngineServer*, edict_t *pPlayer, const char *szFormat)
 {
 	// Due to legacy code, CS:S and CS:GO still sends "name \"newname\"" to the
 	// client after aname change. The engine has a change hook on name causing
@@ -560,10 +557,10 @@ void SDKTools::OnSendClientCommand(edict_t *pPlayer, const char *szFormat)
 	// SetClientName work properly.
 	if (!strncmp(szFormat, "name ", 5))
 	{
-		RETURN_META(MRES_SUPERCEDE);
+		return { KHook::Action::Supersede };
 	}
 
-	RETURN_META(MRES_IGNORED);
+	return { KHook::Action::Ignore };
 }
 #endif
 
@@ -583,11 +580,11 @@ void SDKTools::OnTimerEnd(ITimer *pTimer, void *pData)
 }
 
 #if defined CLIENTVOICE_HOOK_SUPPORT
-void SDKTools::OnClientVoice(edict_t *pPlayer)
+KHook::Return<void> OnClientVoice(IServerGameClients*, edict_t *pPlayer)
 {
 	if (!pPlayer)
 	{
-		return;
+		return { KHook::Action::Ignore };
 	}
 
 	int client = IndexOfEdict(pPlayer);
@@ -601,6 +598,8 @@ void SDKTools::OnClientVoice(edict_t *pPlayer)
 
 	m_OnClientSpeaking->PushCell(client);
 	m_OnClientSpeaking->Execute();
+
+	return { KHook::Action::Ignore };
 }
 #endif
 
