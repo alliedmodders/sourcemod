@@ -12,20 +12,20 @@ jobs:
   mock:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         name: Clone sourcemod
         with:
           submodules: recursive
           path: sourcemod
       
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         name: Clone metamod-source
         with:
           repository: alliedmodders/metamod-source
           submodules: recursive
           path: metamod-source
       
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         name: Clone hl2sdk-mock
         with:
           repository: alliedmodders/hl2sdk-mock
