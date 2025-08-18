@@ -35,9 +35,9 @@
 
 ISourcePawnEngine *spengine = NULL;
 EntityOutputManager g_OutputManager;
-CDetour *fireOutputDetour = NULL;
 
-EntityOutputManager::EntityOutputManager()
+EntityOutputManager::EntityOutputManager() :
+	m_HookFireOutput(this, &EntityOutputManager::Hook_FireOutput, nullptr)
 {
 	info_address = NULL;
 	info_callback = NULL;
@@ -53,7 +53,6 @@ void EntityOutputManager::Shutdown()
 	}
 
 	ClassNames->Destroy();
-	fireOutputDetour->Destroy();
 }
 
 void EntityOutputManager::Init()
@@ -74,46 +73,35 @@ bool EntityOutputManager::IsEnabled()
 }
 
 #if defined PLATFORM_WINDOWS && defined KE_ARCH_X86
-DETOUR_DECL_MEMBER8(FireOutput, void, int, what, int, the, int, hell, int, msvc, void *, variant_t, CBaseEntity *, pActivator, CBaseEntity *, pCaller, float, fDelay)
-{
-	bool fireOutput = g_OutputManager.FireEventDetour((void *)this, pActivator, pCaller, fDelay);
-
-	if (!fireOutput)
-	{
-		return;
-	}
-
-	DETOUR_MEMBER_CALL(FireOutput)(what, the, hell, msvc, variant_t, pActivator, pCaller, fDelay);
-}
+KHook::Return<void> Hook_FireOutput(CBaseEntity* this_ptr, int what, int the, int hell, int msvc, void*, CBaseEntity* pActivator, CBaseEntity* pCaller, float fDelay)
 #else
-DETOUR_DECL_MEMBER4(FireOutput, void, void *, variant_t, CBaseEntity *, pActivator, CBaseEntity *, pCaller, float, fDelay)
+KHook::Return<void> EntityOutputManager::Hook_FireOutput(CBaseEntity* this_ptr, void*, CBaseEntity* pActivator, CBaseEntity* pCaller, float fDelay)
+#endif
 {
-	bool fireOutput = g_OutputManager.FireEventDetour((void *)this, pActivator, pCaller, fDelay);
+	bool fireOutput = g_OutputManager.FireEventDetour(this_ptr, pActivator, pCaller, fDelay);
 
 	if (!fireOutput)
 	{
-		return;
+		return { KHook::Action::Supersede };
 	}
 
-	DETOUR_MEMBER_CALL(FireOutput)(variant_t, pActivator, pCaller, fDelay);
+	return { KHook::Action::Ignore };
 }
-#endif
 
 bool EntityOutputManager::CreateFireEventDetour()
 {
-	fireOutputDetour = DETOUR_CREATE_MEMBER(FireOutput, "FireOutput");
-
-	if (fireOutputDetour)
-	{
-		return true;
+	void* func = nullptr;
+	if (!g_pGameConf->GetMemSig("FireOutput", &func) || func == nullptr) {
+		return false;
 	}
 
-	return false;
+	m_HookFireOutput.Configure(func);
+	return true;
 }
 
 bool EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator, CBaseEntity *pCaller, float fDelay)
 {
-	if (!pCaller)
+	if (!pCaller || HookCount == 0)
 	{
 		return true;
 	}
@@ -138,11 +126,9 @@ bool EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 
 	if (!pOutputName->hooks.empty())
 	{
-		SourceHook::List<omg_hooks *>::iterator _iter;
-
 		omg_hooks *hook;
 
-		_iter = pOutputName->hooks.begin();
+		auto _iter = pOutputName->hooks.begin();
 
 		// by default we'll call the game's output func, unless a plugin overrides it
 		bool fireOriginal = true;
@@ -221,7 +207,7 @@ omg_hooks *EntityOutputManager::NewHook()
 	}
 	else
 	{
-		hook = g_OutputManager.FreeHooks.front();
+		hook = g_OutputManager.FreeHooks.top();
 		g_OutputManager.FreeHooks.pop();
 	}
 
@@ -231,22 +217,11 @@ omg_hooks *EntityOutputManager::NewHook()
 void EntityOutputManager::OnHookAdded()
 {
 	HookCount++;
-
-	if (HookCount == 1)
-	{
-		// This is the first hook created
-		fireOutputDetour->EnableDetour();
-	}
 }
 
 void EntityOutputManager::OnHookRemoved()
 {
 	HookCount--;
-
-	if (HookCount == 0)
-	{
-		fireOutputDetour->DisableDetour();
-	}
 }
 
 void EntityOutputManager::CleanUpHook(omg_hooks *hook)
@@ -256,14 +231,14 @@ void EntityOutputManager::CleanUpHook(omg_hooks *hook)
 	OnHookRemoved();
 
 	IPlugin *pPlugin = plsys->FindPluginByContext(hook->pf->GetParentContext()->GetContext());
-	SourceHook::List<omg_hooks *> *pList = NULL;
+	std::list<omg_hooks *> *pList = NULL;
 
 	if (!pPlugin->GetProperty("OutputHookList", (void **)&pList, false) || !pList)
 	{
 		return;
 	}
 
-	SourceHook::List<omg_hooks *>::iterator p_iter = pList->begin();
+	auto p_iter = pList->begin();
 
 	omg_hooks *pluginHook;
 
@@ -283,11 +258,11 @@ void EntityOutputManager::CleanUpHook(omg_hooks *hook)
 
 void EntityOutputManager::OnPluginDestroyed(IPlugin *plugin)
 {
-	SourceHook::List<omg_hooks *> *pList = NULL;
+	std::list<omg_hooks *> *pList = NULL;
 
 	if (plugin->GetProperty("OutputHookList", (void **)&pList, true))
 	{
-		SourceHook::List<omg_hooks *>::iterator p_iter = pList->begin();
+		auto p_iter = pList->begin();
 		omg_hooks *hook;
 
 		while (p_iter != pList->end())

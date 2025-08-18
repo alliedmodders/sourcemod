@@ -51,21 +51,21 @@ public:
 	void OnClientConnected(int client);
 #endif
 	void OnClientPutInServer(int client);
-	void PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper);
-	void PlayerRunCmdPost(CUserCmd *ucmd, IMoveHelper *moveHelper);
+	KHook::Return<void> PlayerRunCmd(CBaseEntity*, CUserCmd *ucmd, IMoveHelper *moveHelper);
+	KHook::Return<void> PlayerRunCmdPost(CBaseEntity*, CUserCmd *ucmd, IMoveHelper *moveHelper);
 	void OnMapStart();
 public: /* NetChannel/Related Hooks */
-	bool FileExists(const char *filename, const char *pathID);
+	KHook::Return<bool> FileExists(IBaseFileSystem*, const char *filename, const char *pathID);
 #if (SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2)
-	bool SendFile(const char *filename, unsigned int transferID, bool isReplayDemo);
+	KHook::Return<bool> SendFile(INetChannel*, const char *filename, unsigned int transferID, bool isReplayDemo);
 #else
-	bool SendFile(const char *filename, unsigned int transferID);
+	KHook::Return<bool> SendFile(INetChannel*, const char *filename, unsigned int transferID);
 #endif
 #if !defined CLIENTVOICE_HOOK_SUPPORT
-	bool ProcessVoiceData(CLC_VoiceData *msg);
+	KHook::Return<bool> ProcessVoiceData(class IClientMessageHandler*, CLC_VoiceData *msg);
 #endif
-	void ProcessPacket(struct netpacket_s *packet, bool bHasHeader);
-	void ProcessPacket_Post(struct netpacket_s *packet, bool bHasHeader);
+	KHook::Return<void> ProcessPacket(INetChannel*, struct netpacket_s *packet, bool bHasHeader);
+	KHook::Return<void> ProcessPacket_Post(INetChannel*, struct netpacket_s *packet, bool bHasHeader);
 public: //IPluginsListener
 	void OnPluginLoaded(IPlugin *plugin);
 	void OnPluginUnloaded(IPlugin *plugin);
