@@ -32,83 +32,26 @@
 #ifndef _INCLUDE_VTABLE_HOOK_HELPER_H_
 #define _INCLUDE_VTABLE_HOOK_HELPER_H_
 
+#include <memory>
+
 class CVTableHook
 {
 public:
-	CVTableHook(void *takenclass)
-	{
-		this->vtableptr = *reinterpret_cast<void ***>(takenclass);
-		this->hookid = 0;
-	}
-
-	CVTableHook(void *vtable, int hook)
+	CVTableHook(void** vtable, KHook::__Hook* hook) : vtableptr(vtable), _khook(hook)
 	{
 		this->vtableptr = vtable;
-		this->hookid = hook;
 	}
 
-	CVTableHook(CVTableHook &other)
-	{
-		this->vtableptr = other.vtableptr;
-		this->hookid = other.hookid;
-
-		other.hookid = 0;
-	}
-
-	CVTableHook(CVTableHook *other)
-	{
-		this->vtableptr = other->vtableptr;
-		this->hookid = other->hookid;
-
-		other->hookid = 0;
-	}
-
-	~CVTableHook()
-	{
-		if (this->hookid)
-		{
-			SH_REMOVE_HOOK_ID(this->hookid);
-			this->hookid = 0;
-		}
-	}
+	CVTableHook(const CVTableHook&) = delete;
+	CVTableHook& operator= (const CVTableHook&) = delete;
 public:
-	void *GetVTablePtr(void)
+	void** GetVTablePtr(void)
 	{
 		return this->vtableptr;
 	}
-
-	void SetHookID(int hook)
-	{
-		this->hookid = hook;
-	}
-
-	bool IsHooked(void)
-	{
-		return (this->hookid != 0);
-	}
-public:
-	bool operator == (CVTableHook &other)
-	{
-		return (this->GetVTablePtr() == other.GetVTablePtr());
-	}
-
-	bool operator == (CVTableHook *other)
-	{
-		return (this->GetVTablePtr() == other->GetVTablePtr());
-	}
-
-	bool operator != (CVTableHook &other)
-	{
-		return (this->GetVTablePtr() != other.GetVTablePtr());
-	}
-
-	bool operator != (CVTableHook *other)
-	{
-		return (this->GetVTablePtr() != other->GetVTablePtr());
-	}
 private:
-	void *vtableptr;
-	int hookid;
+	void** vtableptr;
+	std::unique_ptr<KHook::__Hook> _khook;
 };
 
 #endif //_INCLUDE_VTABLE_HOOK_HELPER_H_

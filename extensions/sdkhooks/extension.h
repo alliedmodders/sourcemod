@@ -4,7 +4,7 @@
 #include "smsdk_ext.h"
 #include <ISDKHooks.h>
 #include <convar.h>
-#include <sh_list.h>
+#include <list>
 #include <am-vector.h>
 #include <vtable_hook_helper.h>
 
@@ -36,6 +36,7 @@ struct HookTypeData
 	const char *name;
 	const char *dtReq;
 	bool supported;
+	unsigned int offset;
 };
 
 enum SDKHookType
@@ -87,6 +88,8 @@ enum SDKHookType
 	SDKHook_MAXHOOKS
 };
 
+extern HookTypeData g_HookTypes[SDKHook_MAXHOOKS];
+
 enum HookReturn
 {
 	HookRet_Successful,
@@ -130,6 +133,9 @@ public:
 	{
 		delete vtablehook;
 	};
+
+	CVTableList(const CVTableList&) = delete;
+	CVTableList& operator= (const CVTableList&) = delete;
 public:
 	CVTableHook *vtablehook;
 	std::vector<HookList> hooks;
@@ -160,6 +166,8 @@ class SDKHooks :
 	public ISDKHooks
 {
 public:
+	SDKHooks();
+
 	/**
 	 * @brief This is called after the initial loading sequence has been processed.
 	 *
@@ -260,9 +268,10 @@ public:  // ISDKHooks
 	virtual void RemoveEntityListener(ISMEntityListener *listener);
 
 public:	// IServerGameDLL
-	void LevelShutdown();
+	KHook::Return<void> LevelShutdown(IServerGameDLL*);
+	KHook::Virtual<IServerGameDLL, void> m_HookLevelShutdown;
 private:
-	SourceHook::List<ISMEntityListener *> m_EntListeners;
+	std::list<ISMEntityListener *> m_EntListeners;
 
 public:
 	/**
@@ -280,65 +289,67 @@ public:
 	 * IServerGameDLL & IVEngineServer Hook Handlers
 	 */
 #ifdef GAMEDESC_CAN_CHANGE
-	const char *Hook_GetGameDescription();
+	KHook::Return<const char*> Hook_GetGameDescription(IServerGameDLL*);
+	KHook::Virtual<IServerGameDLL, const char*> m_HookGetGameDescription;
 #endif
-	bool Hook_LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
+	KHook::Return<bool> Hook_LevelInit(IServerGameDLL*, char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
+	KHook::Virtual<IServerGameDLL, bool, char const*, char const*, char const*, char const*, bool, bool> m_HookLevelInit;
 
 	/**
 	 * CBaseEntity Hook Handlers
 	 */
-	bool Hook_CanBeAutobalanced();
-	void Hook_EndTouch(CBaseEntity *pOther);
-	void Hook_EndTouchPost(CBaseEntity *pOther);
-	void Hook_FireBulletsPost(const FireBulletsInfo_t &info);
+	KHook::Return<bool> Hook_CanBeAutobalanced(CBaseEntity*);
+	KHook::Return<void> Hook_EndTouch(CBaseEntity*, CBaseEntity *pOther);
+	KHook::Return<void> Hook_EndTouchPost(CBaseEntity*, CBaseEntity *pOther);
+	KHook::Return<void> Hook_FireBulletsPost(CBaseEntity*, const FireBulletsInfo_t &info);
 #ifdef GETMAXHEALTH_IS_VIRTUAL
-	int Hook_GetMaxHealth();
+	KHook::Return<int> Hook_GetMaxHealth(CBaseEntity*);
 #endif
-	void Hook_GroundEntChangedPost(void *pVar);
-	int Hook_OnTakeDamage(CTakeDamageInfoHack &info);
-	int Hook_OnTakeDamagePost(CTakeDamageInfoHack &info);
-	int Hook_OnTakeDamage_Alive(CTakeDamageInfoHack &info);
-	int Hook_OnTakeDamage_AlivePost(CTakeDamageInfoHack &info);
-	void Hook_PreThink();
-	void Hook_PreThinkPost();
-	void Hook_PostThink();
-	void Hook_PostThinkPost();
-	bool Hook_Reload();
-	bool Hook_ReloadPost();
-	void Hook_SetTransmit(CCheckTransmitInfo *pInfo, bool bAlways);
-	bool Hook_ShouldCollide(int collisonGroup, int contentsMask);
-	void Hook_Spawn();
-	void Hook_SpawnPost();
-	void Hook_StartTouch(CBaseEntity *pOther);
-	void Hook_StartTouchPost(CBaseEntity *pOther);
-	void Hook_Think();
-	void Hook_ThinkPost();
-	void Hook_Touch(CBaseEntity *pOther);
-	void Hook_TouchPost(CBaseEntity *pOther);
+	KHook::Return<void> Hook_GroundEntChangedPost(CBaseEntity*, void *pVar);
+	KHook::Return<int> Hook_OnTakeDamage(CBaseEntity*, CTakeDamageInfoHack &info);
+	KHook::Return<int> Hook_OnTakeDamagePost(CBaseEntity*, CTakeDamageInfoHack &info);
+	KHook::Return<int> Hook_OnTakeDamage_Alive(CBaseEntity*, CTakeDamageInfoHack &info);
+	KHook::Return<int> Hook_OnTakeDamage_AlivePost(CBaseEntity*, CTakeDamageInfoHack &info);
+	KHook::Return<void> Hook_PreThink(CBaseEntity*);
+	KHook::Return<void> Hook_PreThinkPost(CBaseEntity*);
+	KHook::Return<void> Hook_PostThink(CBaseEntity*);
+	KHook::Return<void> Hook_PostThinkPost(CBaseEntity*);
+	KHook::Return<bool> Hook_Reload(CBaseEntity*);
+	KHook::Return<bool> Hook_ReloadPost(CBaseEntity*);
+	KHook::Return<void> Hook_SetTransmit(CBaseEntity*, CCheckTransmitInfo *pInfo, bool bAlways);
+	KHook::Return<bool> Hook_ShouldCollide(CBaseEntity*, int collisonGroup, int contentsMask);
+	KHook::Return<void> Hook_Spawn(CBaseEntity*);
+	KHook::Return<void> Hook_SpawnPost(CBaseEntity*);
+	KHook::Return<void> Hook_StartTouch(CBaseEntity*, CBaseEntity *pOther);
+	KHook::Return<void> Hook_StartTouchPost(CBaseEntity*, CBaseEntity *pOther);
+	KHook::Return<void> Hook_Think(CBaseEntity*);
+	KHook::Return<void> Hook_ThinkPost(CBaseEntity*);
+	KHook::Return<void> Hook_Touch(CBaseEntity*, CBaseEntity *pOther);
+	KHook::Return<void> Hook_TouchPost(CBaseEntity*, CBaseEntity *pOther);
 #if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
 	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_PVKII
-	void Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator);
-	void Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator);
+	KHook::Return<void> Hook_TraceAttack(CBaseEntity*, CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator);
+	KHook::Return<void> Hook_TraceAttackPost(CBaseEntity*, CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr, CDmgAccumulator *pAccumulator);
 #else
-	void Hook_TraceAttack(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr);
-	void Hook_TraceAttackPost(CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr);
+	KHook::Return<void> Hook_TraceAttack(CBaseEntity*, CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr);
+	KHook::Return<void> Hook_TraceAttackPost(CBaseEntity*, CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr);
 #endif
-	void Hook_Use(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
-	void Hook_UsePost(CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
-	void Hook_VPhysicsUpdate(IPhysicsObject *pPhysics);
-	void Hook_VPhysicsUpdatePost(IPhysicsObject *pPhysics);
-	void Hook_Blocked(CBaseEntity *pOther);
-	void Hook_BlockedPost(CBaseEntity *pOther);
-	bool Hook_WeaponCanSwitchTo(CBaseCombatWeapon *pWeapon);
-	bool Hook_WeaponCanSwitchToPost(CBaseCombatWeapon *pWeapon);
-	bool Hook_WeaponCanUse(CBaseCombatWeapon *pWeapon);
-	bool Hook_WeaponCanUsePost(CBaseCombatWeapon *pWeapon);
-	void Hook_WeaponDrop(CBaseCombatWeapon *pWeapon, const Vector *pvecTarget, const Vector *pVelocity);
-	void Hook_WeaponDropPost(CBaseCombatWeapon *pWeapon, const Vector *pvecTarget, const Vector *pVelocity);
-	void Hook_WeaponEquip(CBaseCombatWeapon *pWeapon);
-	void Hook_WeaponEquipPost(CBaseCombatWeapon *pWeapon);
-	bool Hook_WeaponSwitch(CBaseCombatWeapon *pWeapon, int viewmodelindex);
-	bool Hook_WeaponSwitchPost(CBaseCombatWeapon *pWeapon, int viewmodelindex);
+	KHook::Return<void> Hook_Use(CBaseEntity*, CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
+	KHook::Return<void> Hook_UsePost(CBaseEntity*, CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value);
+	KHook::Return<void> Hook_VPhysicsUpdate(CBaseEntity*, IPhysicsObject *pPhysics);
+	KHook::Return<void> Hook_VPhysicsUpdatePost(CBaseEntity*, IPhysicsObject *pPhysics);
+	KHook::Return<void> Hook_Blocked(CBaseEntity*, CBaseEntity *pOther);
+	KHook::Return<void> Hook_BlockedPost(CBaseEntity*, CBaseEntity *pOther);
+	KHook::Return<bool> Hook_WeaponCanSwitchTo(CBaseEntity*, CBaseCombatWeapon *pWeapon);
+	KHook::Return<bool> Hook_WeaponCanSwitchToPost(CBaseEntity*, CBaseCombatWeapon *pWeapon);
+	KHook::Return<bool> Hook_WeaponCanUse(CBaseEntity*, CBaseCombatWeapon *pWeapon);
+	KHook::Return<bool> Hook_WeaponCanUsePost(CBaseEntity*, CBaseCombatWeapon *pWeapon);
+	KHook::Return<void> Hook_WeaponDrop(CBaseEntity*, CBaseCombatWeapon *pWeapon, const Vector *pvecTarget, const Vector *pVelocity);
+	KHook::Return<void> Hook_WeaponDropPost(CBaseEntity*, CBaseCombatWeapon *pWeapon, const Vector *pvecTarget, const Vector *pVelocity);
+	KHook::Return<void> Hook_WeaponEquip(CBaseEntity*, CBaseCombatWeapon *pWeapon);
+	KHook::Return<void> Hook_WeaponEquipPost(CBaseEntity*, CBaseCombatWeapon *pWeapon);
+	KHook::Return<bool> Hook_WeaponSwitch(CBaseEntity*, CBaseCombatWeapon *pWeapon, int viewmodelindex);
+	KHook::Return<bool> Hook_WeaponSwitchPost(CBaseEntity*, CBaseCombatWeapon *pWeapon, int viewmodelindex);
 	
 private:
 	void HandleEntityCreated(CBaseEntity *pEntity, int index, cell_t ref);
@@ -347,8 +358,8 @@ private:
 	void Unhook(IPluginContext *pContext);
 
 private:
-	int HandleOnTakeDamageHook(CTakeDamageInfoHack &info, SDKHookType hookType);
-	int HandleOnTakeDamageHookPost(CTakeDamageInfoHack &info, SDKHookType hookType);
+	KHook::Return<int> HandleOnTakeDamageHook(CBaseEntity*, CTakeDamageInfoHack &info, SDKHookType hookType);
+	KHook::Return<int> HandleOnTakeDamageHookPost(CBaseEntity*, CTakeDamageInfoHack &info, SDKHookType hookType);
 
 private:
 	inline bool IsEntityIndexInRange(int i) { return i >= 0 && i < NUM_ENT_ENTRIES; }

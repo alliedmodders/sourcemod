@@ -672,7 +672,7 @@ else:
     #'extensions/mysql/AMBuilder',
     'extensions/pgsql/AMBuilder',
     'extensions/regex/AMBuilder',
-    #'extensions/sdkhooks/AMBuilder',
+    'extensions/sdkhooks/AMBuilder',
     #'extensions/sdktools/AMBuilder',
     'extensions/sqlite/AMBuilder',
     #'extensions/tf2/AMBuilder',
