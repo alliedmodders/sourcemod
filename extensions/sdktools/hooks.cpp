@@ -53,19 +53,7 @@ static bool FILE_used = false;
 static bool PVD_used = false;
 #endif
 
-SH_DECL_MANUALHOOK2_void(PlayerRunCmdHook, 0, 0, 0, CUserCmd *, IMoveHelper *);
-SH_DECL_HOOK2(IBaseFileSystem, FileExists, SH_NOATTRIB, 0, bool, const char*, const char *);
-#if (SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2)
-SH_DECL_HOOK3(INetChannel, SendFile, SH_NOATTRIB, 0, bool, const char *, unsigned int, bool);
-#else
-SH_DECL_HOOK2(INetChannel, SendFile, SH_NOATTRIB, 0, bool, const char *, unsigned int);
-#endif
-#if !defined CLIENTVOICE_HOOK_SUPPORT
-SH_DECL_HOOK1(IClientMessageHandler, ProcessVoiceData, SH_NOATTRIB, 0, bool, CLC_VoiceData *);
-#endif
-SH_DECL_HOOK2_void(INetChannel, ProcessPacket, SH_NOATTRIB, 0, struct netpacket_s *, bool);
-
-SourceHook::CallClass<IBaseFileSystem> *basefilesystemPatch = NULL; 
+unsigned int g_iPlayerRunCmdHook = 0;
 
 CHookManager::CHookManager()
 {
@@ -82,7 +70,7 @@ void CHookManager::Initialize()
 	int offset;
 	if (g_pGameConf->GetOffset("PlayerRunCmd", &offset))
 	{
-		SH_MANUALHOOK_RECONFIGURE(PlayerRunCmdHook, offset, 0, 0);
+		g_iPlayerRunCmdHook = offset;
 		PRCH_enabled = true;
 	}
 	else
@@ -90,8 +78,6 @@ void CHookManager::Initialize()
 		g_pSM->LogError(myself, "Failed to find PlayerRunCmd offset - OnPlayerRunCmd forward disabled.");
 		PRCH_enabled = false;
 	}
-
-	basefilesystemPatch = SH_GET_CALLCLASS(basefilesystem);
 
 	m_netFileSendFwd = forwards->CreateForward("OnFileSend", ET_Event, 2, NULL, Param_Cell, Param_String);
 	m_netFileReceiveFwd = forwards->CreateForward("OnFileReceive", ET_Event, 2, NULL, Param_Cell, Param_String);
@@ -141,11 +127,6 @@ void CHookManager::Initialize()
 
 void CHookManager::Shutdown()
 {
-	if (basefilesystemPatch)
-	{
-		SH_RELEASE_CALLCLASS(basefilesystemPatch);
-		basefilesystemPatch = NULL;
-	}
 
 	if (PRCH_used)
 	{
@@ -228,18 +209,23 @@ void CHookManager::OnClientConnected(int client)
 	}
 	
 	std::vector<CVTableHook *> &netProcessVoiceData = m_netProcessVoiceData;
-	CVTableHook hook(pClient);
+	void** vtable = *(void***)pClient;
 	for (size_t i = 0; i < netProcessVoiceData.size(); ++i)
 	{
-		if (hook == netProcessVoiceData[i])
+		if (vtable == netProcessVoiceData[i]->GetVTablePtr())
 		{
 			return;
 		}
 	}
 	
-	int hookid = SH_ADD_VPHOOK(IClientMessageHandler, ProcessVoiceData, (IClientMessageHandler *)((intptr_t)(pClient) + sizeof(void *)), SH_MEMBER(this, &CHookManager::ProcessVoiceData), true);
-	hook.SetHookID(hookid);
-	netProcessVoiceData.push_back(new CVTableHook(hook));
+	auto msghndl = (IClientMessageHandler *)((intptr_t)(pClient) + sizeof(void *));
+	auto func = KHook::GetVtableFunction(msghndl, &IClientMessageHandler::ProcessVoiceData);
+
+	netProcessVoiceData.push_back(new CVTableHook(vtable,
+	new KHook::Member(
+		func,
+		this, nullptr, &CHookManager::ProcessVoiceData
+	)));
 }
 #endif
 
@@ -272,30 +258,29 @@ void CHookManager::PlayerRunCmdHook(int client, bool post)
 	}
 
 	std::vector<CVTableHook *> &runUserCmdHookVec = post ? m_runUserCmdPostHooks : m_runUserCmdHooks;
-	CVTableHook hook(pEntity);
+	void** vtable = *(void***)pEntity;
 	for (size_t i = 0; i < runUserCmdHookVec.size(); ++i)
 	{
-		if (hook == runUserCmdHookVec[i])
+		if (vtable == runUserCmdHookVec[i]->GetVTablePtr())
 		{
 			return;
 		}
 	}
 
-	int hookid;
-	if (post)
-		hookid = SH_ADD_MANUALVPHOOK(PlayerRunCmdHook, pEntity, SH_MEMBER(this, &CHookManager::PlayerRunCmdPost), true);
-	else
-		hookid = SH_ADD_MANUALVPHOOK(PlayerRunCmdHook, pEntity, SH_MEMBER(this, &CHookManager::PlayerRunCmd), false);
+	auto func = KHook::GetVtableFunction<CBaseEntity, void, CUserCmd*, IMoveHelper*>(pEntity, g_iPlayerRunCmdHook);
 
-	hook.SetHookID(hookid);
-	runUserCmdHookVec.push_back(new CVTableHook(hook));
+	runUserCmdHookVec.push_back(new CVTableHook(vtable,
+	new KHook::Member(
+		func,
+		this, (post) ? nullptr : &CHookManager::PlayerRunCmd, (post) ? &CHookManager::PlayerRunCmdPost : nullptr
+	)));
 }
 
-void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
+KHook::Return<void> CHookManager::PlayerRunCmd(CBaseEntity* this_ptr, CUserCmd *ucmd, IMoveHelper *moveHelper)
 {
 	if (!ucmd)
 	{
-		RETURN_META(MRES_IGNORED);
+		return { KHook::Action::Ignore };
 	}
 
 	bool hasUsercmdsPreFwds = (m_usercmdsPreFwd->GetFunctionCount() > 0);
@@ -303,21 +288,21 @@ void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 
 	if (!hasUsercmdsPreFwds && !hasUsercmdsFwds)
 	{
-		RETURN_META(MRES_IGNORED);
+		return { KHook::Action::Ignore };
 	}
 
-	CBaseEntity *pEntity = META_IFACEPTR(CBaseEntity);
+	CBaseEntity *pEntity = this_ptr;
 
 	if (!pEntity)
 	{
-		RETURN_META(MRES_IGNORED);
+		return { KHook::Action::Ignore };
 	}
 
 	edict_t *pEdict = gameents->BaseEntityToEdict(pEntity);
 
 	if (!pEdict)
 	{
-		RETURN_META(MRES_IGNORED);
+		return { KHook::Action::Ignore };
 	}
 
 	int client = IndexOfEdict(pEdict);
@@ -374,37 +359,37 @@ void CHookManager::PlayerRunCmd(CUserCmd *ucmd, IMoveHelper *moveHelper)
 
 		if (result == Pl_Handled)
 		{
-			RETURN_META(MRES_SUPERCEDE);
+			return { KHook::Action::Supersede };
 		}
 	}
 
-	RETURN_META(MRES_IGNORED);
+	return { KHook::Action::Ignore };
 }
 
-void CHookManager::PlayerRunCmdPost(CUserCmd *ucmd, IMoveHelper *moveHelper)
+KHook::Return<void> CHookManager::PlayerRunCmdPost(CBaseEntity* this_ptr, CUserCmd *ucmd, IMoveHelper *moveHelper)
 {
 	if (!ucmd)
 	{
-		RETURN_META(MRES_IGNORED);
+		return { KHook::Action::Ignore };
 	}
 
 	if (m_usercmdsPostFwd->GetFunctionCount() == 0)
 	{
-		RETURN_META(MRES_IGNORED);
+		return { KHook::Action::Ignore };
 	}
 
-	CBaseEntity *pEntity = META_IFACEPTR(CBaseEntity);
+	CBaseEntity *pEntity = this_ptr;
 
 	if (!pEntity)
 	{
-		RETURN_META(MRES_IGNORED);
+		return { KHook::Action::Ignore };
 	}
 
 	edict_t *pEdict = gameents->BaseEntityToEdict(pEntity);
 
 	if (!pEdict)
 	{
-		RETURN_META(MRES_IGNORED);
+		return { KHook::Action::Ignore };
 	}
 
 	int client = IndexOfEdict(pEdict);
@@ -425,7 +410,7 @@ void CHookManager::PlayerRunCmdPost(CUserCmd *ucmd, IMoveHelper *moveHelper)
 	m_usercmdsPostFwd->PushArray(mouse, 2);
 	m_usercmdsPostFwd->Execute();
 
-	RETURN_META(MRES_IGNORED);
+	return { KHook::Action::Ignore };
 }
 
 void CHookManager::NetChannelHook(int client)
@@ -441,7 +426,7 @@ void CHookManager::NetChannelHook(int client)
 
 	/* Normal NetChannel Hooks. */
 	{
-		CVTableHook nethook(pNetChannel);
+		void** vtable = *(void***)pNetChannel;
 		size_t iter;
 
 		/* Initial Hook */
@@ -459,16 +444,16 @@ void CHookManager::NetChannelHook(int client)
 #endif
 		if (!m_netChannelHooks.size())
 		{
-			CVTableHook filehook(basefilesystem);
-
-			int hookid = SH_ADD_VPHOOK(IBaseFileSystem, FileExists, basefilesystem, SH_MEMBER(this, &CHookManager::FileExists), false);
-			filehook.SetHookID(hookid);
-			m_netChannelHooks.push_back(new CVTableHook(filehook));
+			m_netChannelHooks.push_back(new CVTableHook(*(void***)basefilesystem,
+			new KHook::Member(
+				KHook::GetVtableFunction(basefilesystem, &IBaseFileSystem::FileExists),
+				this, &CHookManager::FileExists, nullptr
+			)));
 		}
 
 		for (iter = 0; iter < m_netChannelHooks.size(); ++iter)
 		{
-			if (nethook == m_netChannelHooks[iter])
+			if (vtable == m_netChannelHooks[iter]->GetVTablePtr())
 			{
 				break;
 			}
@@ -476,43 +461,43 @@ void CHookManager::NetChannelHook(int client)
 
 		if (iter == m_netChannelHooks.size())
 		{
-			int hookid = SH_ADD_VPHOOK(INetChannel, SendFile, pNetChannel, SH_MEMBER(this, &CHookManager::SendFile), false);
-			nethook.SetHookID(hookid);
-			m_netChannelHooks.push_back(new CVTableHook(nethook));
-			
-			hookid = SH_ADD_VPHOOK(INetChannel, ProcessPacket, pNetChannel, SH_MEMBER(this, &CHookManager::ProcessPacket), false);
-			nethook.SetHookID(hookid);
-			m_netChannelHooks.push_back(new CVTableHook(nethook));
-			
-			hookid = SH_ADD_VPHOOK(INetChannel, ProcessPacket, pNetChannel, SH_MEMBER(this, &CHookManager::ProcessPacket_Post), true);
-			nethook.SetHookID(hookid);
-			m_netChannelHooks.push_back(new CVTableHook(nethook));
+			m_netChannelHooks.push_back(new CVTableHook(*(void***)pNetChannel,
+			new KHook::Member(
+				KHook::GetVtableFunction(pNetChannel, &INetChannel::SendFile),
+				this, &CHookManager::SendFile, nullptr
+			)));
+
+			m_netChannelHooks.push_back(new CVTableHook(*(void***)pNetChannel,
+			new KHook::Member(
+				KHook::GetVtableFunction(pNetChannel, &INetChannel::ProcessPacket),
+				this, &CHookManager::ProcessPacket, &CHookManager::ProcessPacket_Post
+			)));
 		}
 	}
 }
 
-void CHookManager::ProcessPacket(struct netpacket_s *packet, bool bHasHeader)
+KHook::Return<void> CHookManager::ProcessPacket(INetChannel* this_ptr, struct netpacket_s *packet, bool bHasHeader)
 {
 	if (m_netFileReceiveFwd->GetFunctionCount() == 0)
 	{
-		RETURN_META(MRES_IGNORED);
+		return { KHook::Action::Ignore };
 	}
 
-	m_pActiveNetChannel = META_IFACEPTR(INetChannel);
-	RETURN_META(MRES_IGNORED);
+	m_pActiveNetChannel = this_ptr;
+	return { KHook::Action::Ignore };
 }
 
-bool CHookManager::FileExists(const char *filename, const char *pathID)
+KHook::Return<bool> CHookManager::FileExists(IBaseFileSystem*, const char *filename, const char *pathID)
 {
 	if (m_pActiveNetChannel == NULL || m_netFileReceiveFwd->GetFunctionCount() == 0)
 	{
-		RETURN_META_VALUE(MRES_IGNORED, false);
+		return { KHook::Action::Ignore };
 	}
 
-	bool ret = SH_CALL(basefilesystemPatch, &IBaseFileSystem::FileExists)(filename, pathID);
+	bool ret = KHook::CallOriginal(&IBaseFileSystem::FileExists, basefilesystem, filename, pathID);
 	if (ret == true) /* If the File Exists, the engine historically bails out. */
 	{
-		RETURN_META_VALUE(MRES_IGNORED, false);
+		return { KHook::Action::Ignore };
 	}
 
 	int userid = 0;
@@ -529,33 +514,33 @@ bool CHookManager::FileExists(const char *filename, const char *pathID)
 
 	if (res != Pl_Continue)
 	{
-		RETURN_META_VALUE(MRES_SUPERCEDE, true);
+		return { KHook::Action::Supersede, true };
 	}
 
-	RETURN_META_VALUE(MRES_IGNORED, false);
+	return { KHook::Action::Ignore };
 }
 
-void CHookManager::ProcessPacket_Post(struct netpacket_s* packet, bool bHasHeader)
+KHook::Return<void> CHookManager::ProcessPacket_Post(INetChannel*, struct netpacket_s* packet, bool bHasHeader)
 {
 	m_pActiveNetChannel = NULL;
-	RETURN_META(MRES_IGNORED);
+	return { KHook::Action::Ignore };
 }
 
 #if (SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2)
-bool CHookManager::SendFile(const char *filename, unsigned int transferID, bool isReplayDemo)
+KHook::Return<bool> CHookManager::SendFile(INetChannel* this_ptr, const char *filename, unsigned int transferID, bool isReplayDemo)
 #else
-bool CHookManager::SendFile(const char *filename, unsigned int transferID)
+KHook::Return<bool> CHookManager::SendFile(INetChannel* this_ptr, const char *filename, unsigned int transferID)
 #endif
 {
 	if (m_netFileSendFwd->GetFunctionCount() == 0)
 	{
-		RETURN_META_VALUE(MRES_IGNORED, false);
+		return { KHook::Action::Ignore };
 	}
 
-	INetChannel *pNetChannel = META_IFACEPTR(INetChannel);
+	INetChannel *pNetChannel = this_ptr;
 	if (pNetChannel == NULL)
 	{
-		RETURN_META_VALUE(MRES_IGNORED, false);
+		return { KHook::Action::Ignore };
 	}
 
 	int userid = 0;
@@ -578,19 +563,19 @@ bool CHookManager::SendFile(const char *filename, unsigned int transferID)
 #else
 		pNetChannel->DenyFile(filename, transferID);
 #endif
-		RETURN_META_VALUE(MRES_SUPERCEDE, false);
+		return { KHook::Action::Supersede, false };
 	}
 
-	RETURN_META_VALUE(MRES_IGNORED, false);
+	return { KHook::Action::Ignore };
 }
 
 #if !defined CLIENTVOICE_HOOK_SUPPORT
-bool CHookManager::ProcessVoiceData(CLC_VoiceData *msg)
+KHook::Return<bool> CHookManager::ProcessVoiceData(IClientMessageHandler* this_ptr, CLC_VoiceData *msg)
 {
-	IClient *pClient = (IClient *)((intptr_t)(META_IFACEPTR(IClient)) - sizeof(void *));
+	IClient *pClient = (IClient *)((intptr_t)(this_ptr) - sizeof(void *));
 	if (pClient == NULL)
 	{
-		return true;
+		return { KHook::Action::Ignore, true };
 	}
 
 	int client = pClient->GetPlayerSlot() + 1;
@@ -605,7 +590,7 @@ bool CHookManager::ProcessVoiceData(CLC_VoiceData *msg)
 	m_OnClientSpeaking->PushCell(client);
 	m_OnClientSpeaking->Execute();
 
-	return true;
+	return { KHook::Action::Ignore, true };
 }
 #endif
 
