@@ -3,13 +3,13 @@ import os
 
 project = builder.LibraryProject('sdktools.ext')
 project.sources += [
-  'extension.cpp',
+  #'extension.cpp',
   'variant-t.cpp',
   'inputnatives.cpp',
   'output.cpp',
   'outputnatives.cpp',
   'tempents.cpp',
-  'tenatives.cpp',
+  #'tenatives.cpp',
   'teamnatives.cpp',
   'trnatives.cpp',
   'vcaller.cpp',
@@ -37,7 +37,6 @@ for sdk_name in SM.sdks:
       continue
 
     binary = SM.HL2ExtConfig(project, builder, cxx, 'sdktools.ext.' + sdk['extension'], sdk)
-    SM.AddCDetour(binary)
     
     binary.compiler.cxxincludes += [
       os.path.join(builder.sourcePath, 'public', 'jit'),
