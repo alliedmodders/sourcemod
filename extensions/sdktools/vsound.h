@@ -46,49 +46,58 @@ class SoundHooks : public IPluginsListener
 public: //IPluginsListener
 	void OnPluginUnloaded(IPlugin *plugin);
 public:
+	SoundHooks();
 	void Initialize();
 	void Shutdown();
 	void AddHook(int type, IPluginFunction *pFunc);
 	bool RemoveHook(int type, IPluginFunction *pFunc);
 
-	void OnEmitAmbientSound(int entindex, const Vector &pos, const char *samp, float vol, soundlevel_t soundlevel, int fFlags, int pitch, float delay);
+	KHook::Virtual<IVEngineServer, void, int, const Vector&, const char*, float, soundlevel_t, int, int, float> m_HookEmitAmbientSound;
+	KHook::Return<void> OnEmitAmbientSound(IVEngineServer*, int entindex, const Vector &pos, const char *samp, float vol, soundlevel_t soundlevel, int fFlags, int pitch, float delay);
 
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
-	int OnEmitSound(IRecipientFilter& filter, int iEntIndex, int iChannel, const char *, unsigned int, const char *pSample, float flVolume, 
+	KHook::Virtual<IEngineSound, int, IRecipientFilter&, int, int, const char*, unsigned int, const char*, float, soundlevel_t, int, int, int, const Vector*, const Vector*, CUtlVector<Vector>*, bool, float, int, void*> m_HookEmitSound;
+	KHook::Return<int> OnEmitSound(IEngineSound*, IRecipientFilter& filter, int iEntIndex, int iChannel, const char *, unsigned int, const char *pSample, float flVolume, 
 		soundlevel_t iSoundlevel, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
 		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 		float soundtime, int speakerentity, void *pUnknown);
-	int OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChannel, const char *pSoundEntry, unsigned int nSoundEntryHash, const char *pSample, 
+	KHook::Virtual<IEngineSound, int, IRecipientFilter&, int, int, const char*, unsigned int, const char*, float, float, int, int, int, const Vector*, const Vector*, CUtlVector<Vector>*, bool, float, int, void*> m_HookEmitSound2;
+	KHook::Return<int> OnEmitSound2(IEngineSound*, IRecipientFilter &filter, int iEntIndex, int iChannel, const char *pSoundEntry, unsigned int nSoundEntryHash, const char *pSample, 
 		float flVolume, float flAttenuation, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
 		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 		float soundtime, int speakerentity, void *pUnknown);
 #elif SOURCE_ENGINE >= SE_PORTAL2
-	int OnEmitSound(IRecipientFilter& filter, int iEntIndex, int iChannel, const char *, unsigned int, const char *pSample, float flVolume, 
+	KHook::Virtual<IEngineSound, int, IRecipientFilter&, int, int, const char*, unsigned int, const char*, float, soundlevel_t, int, int, int, const Vector*, const Vector*, CUtlVector<Vector>*, bool, float, int> m_HookEmitSound;
+	KHook::Return<int> OnEmitSound(IEngineSound*, IRecipientFilter& filter, int iEntIndex, int iChannel, const char *, unsigned int, const char *pSample, float flVolume, 
 		soundlevel_t iSoundlevel, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
 		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 		float soundtime, int speakerentity);
-	int OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChannel, const char *pSoundEntry, unsigned int nSoundEntryHash, const char *pSample, 
+	KHook::Virtual<IEngineSound, int, IRecipientFilter&, int, int, const char*, unsigned int, const char*, float, float, int, int, int, const Vector*, const Vector*, CUtlVector<Vector>*, bool, float, int> m_HookEmitSound2;
+	KHook::Return<int> OnEmitSound2(IEngineSound*, IRecipientFilter &filter, int iEntIndex, int iChannel, const char *pSoundEntry, unsigned int nSoundEntryHash, const char *pSample, 
 		float flVolume, float flAttenuation, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
 		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 		float soundtime, int speakerentity);
 #else
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
 	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
-	
-	void OnEmitSound(IRecipientFilter& filter, int iEntIndex, int iChannel, const char *pSample, float flVolume, 
+	KHook::Virtual<IEngineSound, void, IRecipientFilter&, int, int, const char*, float, soundlevel_t, int, int, int, const Vector*, const Vector*, CUtlVector<Vector>*, bool, float, int> m_HookEmitSound;
+	KHook::Return<void> OnEmitSound(IEngineSound*, IRecipientFilter& filter, int iEntIndex, int iChannel, const char *pSample, float flVolume, 
 		soundlevel_t iSoundlevel, int iFlags, int iPitch, int iSpecialDSP, const Vector *pOrigin, 
 		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 		float soundtime, int speakerentity);
-	void OnEmitSound2(IRecipientFilter& filter, int iEntIndex, int iChannel, const char *pSample, float flVolume, 
+	KHook::Virtual<IEngineSound, void, IRecipientFilter&, int, int, const char*, float, float, int, int, int, const Vector*, const Vector*, CUtlVector<Vector>*, bool, float, int> m_HookEmitSound2;
+	KHook::Return<void> OnEmitSound2(IEngineSound*, IRecipientFilter& filter, int iEntIndex, int iChannel, const char *pSample, float flVolume, 
 		float flAttenuation, int iFlags, int iPitch, int iSpecialDSP, const Vector *pOrigin, 
 		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 		float soundtime, int speakerentity);
 #else
-	void OnEmitSound(IRecipientFilter& filter, int iEntIndex, int iChannel, const char *pSample, float flVolume, 
+	KHook::Virtual<IEngineSound, void, IRecipientFilter&, int, int, const char*, float, soundlevel_t, int, int, const Vector*, const Vector*, CUtlVector<Vector>*, bool, float, int> m_HookEmitSound;
+	KHook::Return<void> OnEmitSound(IEngineSound*, IRecipientFilter& filter, int iEntIndex, int iChannel, const char *pSample, float flVolume, 
 		soundlevel_t iSoundlevel, int iFlags, int iPitch, const Vector *pOrigin, 
 		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 		float soundtime, int speakerentity);
-	void OnEmitSound2(IRecipientFilter& filter, int iEntIndex, int iChannel, const char *pSample, float flVolume, 
+	KHook::Virtual<IEngineSound, void, IRecipientFilter&, int, int, const char*, float, float, int, int, const Vector*, const Vector*, CUtlVector<Vector>*, bool, float, int> m_HookEmitSound2;
+	KHook::Return<void> OnEmitSound2(IEngineSound*, IRecipientFilter& filter, int iEntIndex, int iChannel, const char *pSample, float flVolume, 
 		float flAttenuation, int iFlags, int iPitch, const Vector *pOrigin, 
 		const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 		float soundtime, int speakerentity);

@@ -99,11 +99,13 @@ class TempEntHooks : public IPluginsListener
 public: //IPluginsListener
 	void OnPluginUnloaded(IPlugin *plugin);
 public:
+	TempEntHooks();
 	void Initialize();
 	void Shutdown();
 	bool AddHook(const char *name, IPluginFunction *pFunc);
 	bool RemoveHook(const char *name, IPluginFunction *pFunc);
-	void OnPlaybackTempEntity(IRecipientFilter &filter, float delay, const void *pSender, const SendTable *pST, int classID);
+	KHook::Return<void> OnPlaybackTempEntity(IVEngineServer*, IRecipientFilter &filter, float delay, const void *pSender, const SendTable *pST, int classID);
+	KHook::Virtual<IVEngineServer, void, IRecipientFilter&, float, const void*, const SendTable*, int> m_HookPlaybackTempEntity;
 private:
 	void _IncRefCounter();
 	void _DecRefCounter();
