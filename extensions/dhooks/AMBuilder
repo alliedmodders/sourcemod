@@ -1,87 +1,12 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
+sources = [
+]
+
 for cxx in builder.targets:
   binary = SM.ExtLibrary(builder, cxx, 'dhooks.ext')
 
-  # mac isn't supported
-  if binary.compiler.target.platform == 'mac':
-    continue
-  # Presently only x86_64 on Windows is supported
-  if binary.compiler.target.arch == 'x86_64' and binary.compiler.target.platform != 'windows':
-    continue
+  binary.sources += sources
 
-  binary.compiler.defines += [
-    'META_NO_HL2SDK',
-    'HAVE_STRING_H',
-  ]
-
-  if binary.compiler.like('gcc'):
-    binary.compiler.cflags += ['-Wno-invalid-offsetof']
-
-  binary.compiler.cxxincludes += [
-    os.path.join(SM.mms_root, 'core'),
-    os.path.join(SM.mms_root, 'core', 'sourcehook'),
-    os.path.join(builder.sourcePath, 'extensions', 'dhooks'),
-    os.path.join(builder.sourcePath, 'public', 'jit'),
-    os.path.join(builder.sourcePath, 'sourcepawn', 'include'),
-    os.path.join(builder.sourcePath, 'sourcepawn', 'vm'),
-    os.path.join(builder.sourcePath, 'extensions', 'dhooks', 'DynamicHooks'),
-  ]
-
-  binary.compiler.includes += [
-    os.path.join(builder.sourcePath, 'extensions', 'dhooks')
-  ]
-
-  binary.sources += [
-    'extension.cpp',
-    'listeners.cpp',
-    'natives.cpp',
-    'signatures.cpp',
-    'vhook.cpp',
-    'util.cpp',
-    'dynhooks_sourcepawn.cpp',
-    '../../public/smsdk_ext.cpp',
-    # Dynamic Hooks
-    os.path.join('DynamicHooks', 'registers.cpp'),
-    os.path.join('DynamicHooks', 'hook.cpp'),
-    os.path.join('DynamicHooks', 'manager.cpp')
-  ]
-  SM.AddCDetour(binary)
-
-  if binary.compiler.target.arch == 'x86':
-    binary.sources += ['../../sourcepawn/vm/x86/assembler-x86.cpp']
-    
-    binary.compiler.cxxincludes += [
-      os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
-      os.path.join(builder.sourcePath, 'sourcepawn', 'vm', 'x86')
-    ]
-    # DynamicHooks
-    binary.sources += [
-      os.path.join('DynamicHooks', 'conventions', 'x86MsCdecl.cpp'),
-      os.path.join('DynamicHooks', 'conventions', 'x86MsStdcall.cpp'),
-      os.path.join('DynamicHooks', 'conventions', 'x86MsFastcall.cpp'),
-    ]
-
-    if binary.compiler.target.platform == 'windows':
-      binary.sources += [os.path.join('DynamicHooks', 'conventions', 'x86MsThiscall.cpp')]
-    else:
-      binary.sources += [os.path.join('DynamicHooks', 'conventions', 'x86GccThiscall.cpp')]
-    
-    # Dynamic detour is only supported on x86
-    binary.compiler.defines += ['DHOOKS_DYNAMIC_DETOUR']
-
-  elif binary.compiler.target.arch == 'x86_64':
-    binary.compiler.defines += ['DYNAMICHOOKS_x86_64', 'DHOOKS_DYNAMIC_DETOUR']
-
-    if binary.compiler.target.platform == 'windows':
-      binary.sources += [
-        os.path.join('DynamicHooks', 'conventions', 'x86_64MicrosoftDefault.cpp')
-      ]
-    # Linux follows System V definition
-    elif binary.compiler.target.platform == 'linux':
-      binary.sources += [
-        os.path.join('DynamicHooks', 'conventions', 'x86_64SystemVDefault.cpp')
-      ]
-  
   SM.extensions += [builder.Add(binary)]
