@@ -33,8 +33,6 @@
 #include "CellRecipientFilter.h"
 #include <IForwardSys.h>
 
-SH_DECL_HOOK5_void(IVEngineServer, PlaybackTempEntity, SH_NOATTRIB, 0, IRecipientFilter &, float, const void *, const SendTable *, int);
-
 CellRecipientFilter g_TERecFilter;
 TempEntityInfo *g_CurrentTE = NULL;
 int g_TEPlayers[SM_MAXPLAYERS+1];
@@ -45,6 +43,10 @@ bool tenatives_initialized = false;
 * Temp Entity Hook Class *
 *                        *
 **************************/
+
+TempEntHooks::TempEntHooks() :
+	m_HookPlaybackTempEntity(&IVEngineServer::PlaybackTempEntity, this, &TempEntHooks::OnPlaybackTempEntity, nullptr)
+{}
 
 void TempEntHooks::Initialize()
 {
@@ -119,7 +121,7 @@ void TempEntHooks::_IncRefCounter()
 {
 	if (m_HookCount++ == 0)
 	{
-		SH_ADD_HOOK(IVEngineServer, PlaybackTempEntity, engine, SH_MEMBER(this, &TempEntHooks::OnPlaybackTempEntity), false);
+		m_HookPlaybackTempEntity.Add(engine);
 	}
 }
 
@@ -127,7 +129,7 @@ void TempEntHooks::_DecRefCounter()
 {
 	if (--m_HookCount == 0)
 	{
-		SH_REMOVE_HOOK(IVEngineServer, PlaybackTempEntity, engine, SH_MEMBER(this, &TempEntHooks::OnPlaybackTempEntity), false);
+		m_HookPlaybackTempEntity.Remove(engine);
 	}
 }
 
@@ -177,7 +179,7 @@ bool TempEntHooks::RemoveHook(const char *name, IPluginFunction *pFunc)
 	if (m_TEHooks->Retrieve(name, reinterpret_cast<void **>(&pInfo)))
 	{
 		auto iter = pInfo->lst.begin();
-		while (iter != pInfo->lst.end() && *iter != pFunc) { iter++ };
+		while (iter != pInfo->lst.end() && *iter != pFunc) { iter++; };
 		if (iter != pInfo->lst.end())
 		{
 			pInfo->lst.erase(iter);
@@ -198,7 +200,7 @@ bool TempEntHooks::RemoveHook(const char *name, IPluginFunction *pFunc)
 	return true;
 }
 
-void TempEntHooks::OnPlaybackTempEntity(IRecipientFilter &filter, float delay, const void *pSender, const SendTable *pST, int classID)
+KHook::Return<void> TempEntHooks::OnPlaybackTempEntity(IVEngineServer*, IRecipientFilter &filter, float delay, const void *pSender, const SendTable *pST, int classID)
 {
 	TEHookInfo *pInfo;
 	const char *name = g_TEManager.GetNameFromThisPtr(const_cast<void *>(pSender));
@@ -225,13 +227,13 @@ void TempEntHooks::OnPlaybackTempEntity(IRecipientFilter &filter, float delay, c
 			if (res != Pl_Continue)
 			{
 				g_CurrentTE = oldinfo;
-				RETURN_META(MRES_SUPERCEDE);
+				return { KHook::Action::Supersede };
 			}
 		}
 
 		g_CurrentTE = oldinfo;
-		RETURN_META(MRES_IGNORED);
 	}
+	return { KHook::Action::Ignore };
 }
 
 /**********************

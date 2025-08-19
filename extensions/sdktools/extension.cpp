@@ -52,13 +52,6 @@
  * @file extension.cpp
  * @brief Implements SDK Tools extension code.
  */
-#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
-SH_DECL_HOOK1_void_vafmt(IVEngineServer, ClientCommand, SH_NOATTRIB, 0, edict_t *);
-#endif
-#if defined CLIENTVOICE_HOOK_SUPPORT
-SH_DECL_HOOK1_void(IServerGameClients, ClientVoice, SH_NOATTRIB, 0, edict_t *);
-#endif
-
 SDKTools g_SdkTools;		/**< Global singleton for extension's main interface */
 IServerGameEnts *gameents = NULL;
 IEngineTrace *enginetrace = NULL;
@@ -117,16 +110,16 @@ DETOUR_DECL_MEMBER3(CNetworkStringTableContainer__WriteBaselines, void, char con
 #endif
 
 SDKTools::SDKTools() :
+	m_HookSetClientListening(&IVoiceServer::SetClientListening, this, &SDKTools::OnSetClientListening, nullptr),
+	m_HookClientCommand(&IServerGameClients::ClientCommand, this, nullptr, &SDKTools::OnClientCommand),
 	m_HookLevelInit(&IServerGameDLL::LevelInit, this, nullptr, &SDKTools::LevelInit),
-	m_HookLevelShutdown(&IServerGameDLL::LevelShutdown, this, nullptr, &SDKTools::LevelShutdown),
-	m_HookSetClientListening(&IVoiceServer::SetClientListening, this, &SDKTools::OnSetClientListening, nullptr)
+	m_HookLevelShutdown(&IServerGameDLL::LevelShutdown, this, nullptr, &SDKTools::LevelShutdown)
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
 	,m_HookClientCommand(&IVEngineServer::ClientCommand, this, &SDKTools::OnSendClientCommand, nullptr)
 #endif
 #if defined CLIENTVOICE_HOOK_SUPPORT
 	,m_HookClientVoice(&IServerGameClients::ClientVoice, this, nullptr, &SDKTools::OnClientVoice)
 #endif
-	,m_HookClientCommand(&IServerGameClients::ClientCommand, this, nullptr, &SDKTools::OnClientCommand)
 {}
 
 bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
@@ -192,8 +185,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	spengine = g_pSM->GetScriptingEngine();
 
 	plsys->AddPluginsListener(&g_OutputManager);
-
-	CDetourManager::Init(g_pSM->GetScriptingEngine(), g_pGameConf);
+	
 	g_OutputManager.Init();
 
 	VoiceInit();
@@ -245,8 +237,7 @@ void SDKTools::OnHandleDestroy(HandleType_t type, void *object)
 
 void SDKTools::SDK_OnUnload()
 {
-	SourceHook::List<ValveCall *>::iterator iter;
-	for (iter = g_RegCalls.begin();
+	for (auto iter = g_RegCalls.begin();
 		 iter != g_RegCalls.end();
 		 iter++)
 	{
@@ -390,8 +381,7 @@ bool SDKTools::QueryInterfaceDrop(SMInterface *pInterface)
 
 void SDKTools::NotifyInterfaceDrop(SMInterface *pInterface)
 {
-	SourceHook::List<ValveCall *>::iterator iter;
-	for (iter = g_RegCalls.begin();
+	for (auto iter = g_RegCalls.begin();
 		iter != g_RegCalls.end();
 		iter++)
 	{
@@ -580,7 +570,7 @@ void SDKTools::OnTimerEnd(ITimer *pTimer, void *pData)
 }
 
 #if defined CLIENTVOICE_HOOK_SUPPORT
-KHook::Return<void> OnClientVoice(IServerGameClients*, edict_t *pPlayer)
+KHook::Return<void> SDKTools::OnClientVoice(IServerGameClients*, edict_t *pPlayer)
 {
 	if (!pPlayer)
 	{
