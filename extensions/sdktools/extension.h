@@ -80,6 +80,8 @@ class SDKTools :
 	public ITimedEvent,
 	public ICommandTargetProcessor
 {
+public:
+	SDKTools();
 public: //public IHandleTypeDispatch
 	void OnHandleDestroy(HandleType_t type, void *object);
 public: //public SDKExtension
