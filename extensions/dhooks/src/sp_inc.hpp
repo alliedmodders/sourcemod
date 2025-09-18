@@ -2,6 +2,13 @@
 
 namespace dhooks::sp {
 
+enum ThisPointerType
+{
+	ThisPointer_Ignore,
+	ThisPointer_CBaseEntity,
+	ThisPointer_Address
+};
+
 enum CallingConvention
 {
 	CallConv_CDECL,
