@@ -2,11 +2,20 @@
 import os
 
 sources = [
+  'src/capsule.cpp',
+  'src/globals.cpp',
+  'src/handle.cpp',
+  'src/register.cpp'
 ]
 
 for cxx in builder.targets:
   binary = SM.ExtLibrary(builder, cxx, 'dhooks.ext')
 
   binary.sources += sources
+
+  if binary.compiler.target.arch == "x86":
+    binary.compiler.defines += ['DHOOKS_X86']
+  elif binary.compiler.target.arch == "x86_64":
+    binary.compiler.defines += ['DHOOKS_X86_64']
 
   SM.extensions += [builder.Add(binary)]
