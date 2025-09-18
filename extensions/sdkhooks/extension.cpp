@@ -1350,7 +1350,7 @@ KHook::Return<bool> SDKHooks::Hook_ShouldCollide(CBaseEntity* this_ptr, int coll
 		}
 
 		int entity = gamehelpers->EntityToBCompatRef(pEntity);
-		cell_t origRet = ((KHook::GetHookAction() >= KHook::Action::Override)?(*(bool*)KHook::GetOverrideValuePtr()):(*(bool*)KHook::GetOriginalValuePtr())) ? 1 : 0;
+		cell_t origRet = (*(bool*)KHook::GetCurrentValuePtr()) ? 1 : 0;
 		cell_t res = 0;
 
 		std::vector<IPluginFunction *> callbackList;
