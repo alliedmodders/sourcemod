@@ -166,7 +166,7 @@ bool Process(sp::CallingConvention conv, std::vector<Variable>& params, ReturnVa
 	stack_size = stack_offset - sizeof(void*);
 }
 
-void JIT_CallMemberFunction(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], bool save_float_register[MAX_FLOAT_REGISTERS], void* this_ptr, void* mfp, bool post) {
+void JIT_CallMemberFunction(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], bool save_float_register[MAX_FLOAT_REGISTERS], void* this_ptr, const void* mfp, bool post) {
 	jit.push(rbp);
 
 	static constexpr size_t stack_size = (MAX_GENERAL_REGISTERS * 0x8) + (MAX_FLOAT_REGISTERS * 0x10);
