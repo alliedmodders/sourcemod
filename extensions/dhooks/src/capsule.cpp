@@ -15,7 +15,7 @@ void JIT_Align(AsmJit& jit) {
 }
 
 bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnVariable& ret, size_t& stack_size);
-void JIT_CallMemberFunction(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], bool save_float_register[MAX_FLOAT_REGISTERS], void* this_ptr, void* mfp, bool post);
+void JIT_CallMemberFunction(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], bool save_float_register[MAX_FLOAT_REGISTERS], void* this_ptr, const void* mfp, bool post);
 void JIT_MakeReturn(AsmJit& jit, ReturnVariable& ret);
 void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original_function);
 }
@@ -50,7 +50,7 @@ Capsule::Capsule(void* address, sp::CallingConvention conv, const std::vector<Va
 		_save_general_register[_return.reg_index.value()] = true;
 	}
 
-	void* mfp = nullptr;
+	const void* mfp = nullptr;
 	switch (ret.dhook_type) {
 		case sp::ReturnType_Void:
 		mfp = KHook::ExtractMFP(&Capsule::PrePostHookLoop<void>);
@@ -134,38 +134,5 @@ Capsule::Capsule(void* address, sp::CallingConvention conv, const std::vector<Va
 		_original_function = reinterpret_cast<std::uintptr_t>(KHook::GetOriginal(address));
 	}
 }
-
-/*void Capsule::JIT_SaveRegisters(AsmJit& jit) {
-// No matter what, EAX/RAX is always saved
-#if defined(DHOOKS_X86_64)
-	auto reg_temp = rax;
-	auto reg_temp_storage = rcx;
-#elif defined(DHOOKS_X86)
-	auto reg_temp = eax;
-	auto reg_temp_storage = ecx;
-#endif
-	jit.push(reg_temp);
-
-	// EAX/RAX are saved differently from the rest
-	jit.push(reg_temp_storage);
-	jit.mov(reg_temp_storage, reinterpret_cast<std::uintptr_t>(&_general_register[reg_temp]));
-	jit.mov(reg_temp_storage(), reg_temp);
-	jit.pop(reg_temp_storage);
-
-	for (std::uint8_t i = 1; i < MAX_GENERAL_REGISTERS; i++) {
-		auto reg = AsmReg((AsmRegCode)i);
-		if (_save_general_register[i] && reg != reg_temp) {
-			jit.mov(reg_temp, reinterpret_cast<std::uintptr_t>(&_general_register[reg]));
-			if (reg == STACK_REG) // Adjust the stack so we MOV the correct value
-				jit.add(STACK_REG, sizeof(void*));
-			// Store the register value at our pointer
-			jit.mov(reg_temp(), reg);
-			if (reg == STACK_REG) // Adjust it back
-				jit.sub(STACK_REG, sizeof(void*));
-		}
-	}
-
-	jit.pop(reg_temp);
-}*/
 
 }
