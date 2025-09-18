@@ -4,6 +4,7 @@
 #include "sp_inc.hpp"
 #include "globals.hpp"
 #include "handle.hpp"
+#include "hook.hpp"
 
 #if defined(DHOOKS_X86_64)
 #include <khook/asm/x86_64.hpp>
@@ -16,6 +17,7 @@
 #include <optional>
 #include <memory>
 #include <stack>
+#include <unordered_set>
 
 namespace dhooks {
 
@@ -45,7 +47,7 @@ public:
     // into an array so that the SP natives know where to look when offsetting into an object
     std::optional<AsmRegCode> reg_index;
     std::optional<AsmFloatRegCode> float_reg_index;
-    size_t reg_offset;
+    std::optional<size_t> reg_offset;
     Alignment alignment;
     // Atm it's exactly the same as _dhook_size
     // We differentiate it anyways, to avoid having to refactor the JIT
@@ -72,15 +74,18 @@ public:
     size_t reg_offset;
 };
 
+struct HookCallback;
 class Capsule {
 public:
     Capsule(void* address, sp::CallingConvention conv, const std::vector<Variable>& params, const ReturnVariable& ret);
+
+    const std::vector<Variable>& GetParameters() const { return _parameters; };
 protected:
     //void JIT_SaveRegisters(AsmJit& jit);
     void JIT_RestoreRegisters(AsmJit& jit);
 
     template<typename T>
-    void PrePostHookLoop(std::uint8_t* saved_register, bool post);
+    void PrePostHookLoop(std::uint8_t* saved_register, bool post) const;
 protected:
     void _KHook_RemovedHook(KHook::HookID_t id);
 
@@ -107,10 +112,13 @@ protected:
     AsmJit _jit;
     size_t _stack_size;
     std::uintptr_t _original_function;
+
+    std::unordered_set<HookCallback*> _pre_hooks;
+    std::unordered_set<HookCallback*> _post_hooks;
 };
 
 template<typename RETURN>
-void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post) {
+void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post) const {
 	RETURN* return_ptr = nullptr;
 	RETURN* temp_ptr = nullptr;
 	void* init_op = nullptr;
@@ -132,8 +140,53 @@ void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post) {
         handle::ParamReturn paramret(
             this,
             reinterpret_cast<GeneralRegister*>(saved_register),
-            reinterpret_cast<FloatRegister*>(saved_register + sizeof(GeneralRegister) * MAX_GENERAL_REGISTERS)
+            reinterpret_cast<FloatRegister*>(saved_register + sizeof(GeneralRegister) * MAX_GENERAL_REGISTERS),
+            return_ptr
         );
+
+        // Save some time and pre-save a this pointer (if it even exists)
+        void* this_ptr = nullptr;
+        std::optional<cell_t> entity_index;
+        if (_parameters.size() != 0) {
+            this_ptr = *(paramret.Get<void*>(0));
+        }
+
+        // Make deep-copy to allow deletion of hooks under callbacks
+        auto hooks = (post) ? _post_hooks : _pre_hooks;
+        for (auto hook : hooks) {
+            if (hook->callback->IsRunnable()) {
+                if (hook->this_pointer_type != sp::ThisPointer_Ignore) {
+                    // Push the associated this pointer
+                    if (hook->this_pointer_type == sp::ThisPointer_CBaseEntity) {
+                        if (!entity_index) {
+                            entity_index = globals::gamehelpers->EntityToBCompatRef(reinterpret_cast<CBaseEntity*>(this_ptr));
+                        }
+                        hook->callback->PushCell(entity_index.value_or(-1));
+                    } else if (hook->this_pointer_type == sp::ThisPointer_Address) {
+                        hook->callback->PushCell(globals::sourcemod->ToPseudoAddress(this_ptr));
+                    }
+                }
+
+                if (_return.dhook_type != sp::ReturnType_Void) {
+                    hook->callback->PushCell(paramret);
+                }
+
+                if (_parameters.size() != 0) {
+                    hook->callback->PushCell(paramret);
+                }
+
+                cell_t result = (cell_t)sp::MRES_Ignored;
+                hook->callback->Execute(&result);
+
+                if (result == (cell_t)sp::MRES_Supercede) {
+                    final_action = KHook::Action::Supersede;
+                } else if (result != (cell_t)sp::MRES_Ignored) {
+                    final_action = KHook::Action::Override;
+                }
+                // No change params support for now
+                // KHook::DoRecall
+            }
+        }
 	}
 	KHook::SaveReturnValue(final_action, return_ptr, return_size, init_op, delete_op, false);
 }
