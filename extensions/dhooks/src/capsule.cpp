@@ -23,7 +23,8 @@ void JIT_Recall(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], 
 
 Capsule::Capsule(void* address, sp::CallingConvention conv, const std::vector<Variable>& params, const ReturnVariable& ret) :
 	_parameters(params),
-	_return(ret) {
+	_return(ret),
+	_call_conv(conv) {
 	if (!abi::Proccess(conv, _parameters, _return, _stack_size)) {
 		return;
 	}
