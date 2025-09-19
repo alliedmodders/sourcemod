@@ -81,6 +81,7 @@ public:
 
     const std::vector<Variable>& GetParameters() const { return _parameters; };
     const ReturnVariable& GetReturn() const { return _return; };
+    const sp::CallingConvention GetCallConv() const { return _call_conv; };
 protected:
     //void JIT_SaveRegisters(AsmJit& jit);
     void JIT_RestoreRegisters(AsmJit& jit);
@@ -118,6 +119,9 @@ protected:
 
     std::unordered_set<HookCallback*> _pre_hooks;
     std::unordered_set<HookCallback*> _post_hooks;
+
+    // Only for dhook natives
+    sp::CallingConvention _call_conv;
 };
 
 template<typename RETURN>
