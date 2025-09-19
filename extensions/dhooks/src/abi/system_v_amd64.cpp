@@ -188,7 +188,7 @@ void JIT_CallMemberFunction(AsmJit& jit, bool save_general_register[MAX_GENERAL_
 		}
 	}
 
-	for (size_t i = 1; i < MAX_GENERAL_REGISTERS; i++) {
+	for (size_t i = 1; i < MAX_FLOAT_REGISTERS; i++) {
 		auto reg = AsmFloatReg((AsmFloatRegCode)i);
 		if (!save_float_register[i]) {
 			continue;
@@ -209,7 +209,9 @@ void JIT_CallMemberFunction(AsmJit& jit, bool save_general_register[MAX_GENERAL_
 }
 
 void JIT_MakeReturn(AsmJit& jit, ReturnVariable& ret) {
-	jit.sub(rsp, 0x8); // Re-align stack
+	jit.push(rbp); // Re-align stack
+	jit.mov(rbp, rsp);
+
 	jit.mov(rax, reinterpret_cast<std::uintptr_t>(::KHook::GetCurrentValuePtr));
 	jit.mov(rdi, true); // Pop
 	jit.call(rax);
@@ -268,17 +270,99 @@ void JIT_MakeReturn(AsmJit& jit, ReturnVariable& ret) {
 		return;
 	}
 
-	jit.add(rsp, 0x8);
+	jit.pop(rbp);
 	jit.retn();
 }
 
-void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original_function, std::uintptr_t* call_function) {
+void JIT_Recall(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], bool save_float_register[MAX_FLOAT_REGISTERS], size_t stack_size, std::uintptr_t* jit_start) {
+	auto start = jit.get_outputpos();
+
+	jit.push(rbp);
+	jit.mov(rbp, rsp);
+
+	// 1st - is ptr to function to call
+	// 2nd - is ptr to registers
+
+	if (stack_size != 0) {
+		if (save_general_register[STACK_REG] == false) {
+			// What the hell
+			std::abort();
+		}
+		// Have RAX act as the previous stack
+		jit.mov(rax, rsi(sizeof(GeneralRegister) * STACK_REG));
+
+		// Prepare the stack
+		jit.sub(rsp, stack_size + (16 - (stack_size % 16)) % 16);
+
+		// Save the 2 parameters
+		jit.push(rdi);
+		jit.push(rsi);
+
+		jit.mov(rax, reinterpret_cast<std::uintptr_t>(memcpy));
+		// Skip the two parameters we just saved
+		jit.lea(rdi, rsp(0x8 * 2));
+		// Skip return value
+		jit.lea(rsi, rax(0x8));
+		jit.mov(rdx, stack_size);
+
+		jit.call(rax);
+
+		jit.pop(rsi);
+		jit.pop(rdi);
+	}
+
+	// Prepare function to call
+	jit.push(rdi);
+	jit.push(rdi);
+
+	// Figure out the return address
+	jit.mov(rdi, reinterpret_cast<std::uintptr_t>(jit_start));
+	jit.mov(rdi, rdi());
+	jit.add(rdi, INT32_MAX);
+	auto add = jit.get_outputpos();
+	jit.mov(rsp(0x8), rdi);
+
+	// Restore the registers
+	for (size_t i = 1; i < MAX_FLOAT_REGISTERS; i++) {
+		auto reg = AsmFloatReg((AsmFloatRegCode)i);
+		if (!save_float_register[i]) {
+			continue;
+		}
+		jit.movsd(reg, rsi(i * 0x10 + (MAX_GENERAL_REGISTERS * 0x8)));
+	}
+
+	for (size_t i = 1; i < MAX_GENERAL_REGISTERS; i++) {
+		auto reg = AsmReg((AsmRegCode)i);
+		if (!save_general_register[i]) {
+			continue;
+		}
+		// Stack isn't a register to restore
+		if (reg != STACK_REG && reg != rsi) {
+			jit.mov(reg, rsi(sizeof(GeneralRegister) * i));
+		}
+	}
+	// RSI is restored last
+	if (save_general_register[RSI]) {
+		jit.mov(rsi, rsi(sizeof(GeneralRegister) * RSI));
+	}
+
+	// Call the recall
+	jit.retn();
+	// Rewrite the add value
+	jit.rewrite<std::int32_t>(add - sizeof(std::int32_t), jit.get_outputpos() - start);
+
+	jit.mov(rsp, rbp);
+	jit.pop(rbp);
+	jit.retn();
+}
+
+void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original_function, std::uintptr_t* jit_start) {
 	auto start = jit.get_outputpos();
 
 	jit.push(rsp()); // Save return address
 	jit.push(rsp());
 
-	jit.mov(r15, reinterpret_cast<std::uintptr_t>(call_function));
+	jit.mov(r15, reinterpret_cast<std::uintptr_t>(jit_start));
 	jit.mov(r15, r15());
 	jit.add(r15, INT32_MAX);
 	auto add = jit.get_outputpos();
