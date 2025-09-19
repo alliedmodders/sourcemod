@@ -306,7 +306,7 @@ void TimerSystem::RunFrame(bool timerThink)
         ProcessTimerType(curtime, m_LowSpeedTimers, false);
     }
 
-    // High speed timers will
+    // High speed timers will always update
     ProcessTimerType(curtime, m_HighSpeedTimers, true);
 }
 
