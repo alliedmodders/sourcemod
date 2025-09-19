@@ -331,7 +331,7 @@ ITimer *TimerSystem::CreateTimer(ITimedEvent *pCallbacks, float fInterval, void 
 
 	if (flags & TIMER_FLAG_REPEAT)
 	{
-        List<ITimer*> timerList = pTimer->m_Flags & TIMER_FLAG_TICK_PRECISE ? m_HighSpeedLoopTimers : m_LowSpeedLoopTimers; 
+        List<ITimer*>& timerList = pTimer->m_Flags & TIMER_FLAG_TICK_PRECISE ? m_HighSpeedLoopTimers : m_LowSpeedLoopTimers; 
         timerList.push_back(pTimer);
 		goto return_timer;
 	}
@@ -391,7 +391,7 @@ void TimerSystem::FireTimerOnce(ITimer *pTimer, bool delayExec)
 			return;
 		}
 
-        List<ITimer*> timerList = pTimer->m_Flags & TIMER_FLAG_TICK_PRECISE ? m_HighSpeedLoopTimers : m_LowSpeedLoopTimers; 
+        List<ITimer*>& timerList = pTimer->m_Flags & TIMER_FLAG_TICK_PRECISE ? m_HighSpeedLoopTimers : m_LowSpeedLoopTimers; 
 		pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
 		timerList.remove(pTimer);
 		m_FreeTimers.push(pTimer);
@@ -416,7 +416,7 @@ void TimerSystem::KillTimer(ITimer *pTimer)
 
 	if (pTimer->m_Flags & TIMER_FLAG_REPEAT)
 	{
-        List<ITimer*> timerList = pTimer->m_Flags & TIMER_FLAG_TICK_PRECISE ? m_HighSpeedLoopTimers : m_LowSpeedLoopTimers; 
+        List<ITimer*>& timerList = pTimer->m_Flags & TIMER_FLAG_TICK_PRECISE ? m_HighSpeedLoopTimers : m_LowSpeedLoopTimers; 
 		timerList.remove(pTimer);
 	} else {
 		m_SingleTimers.remove(pTimer);
