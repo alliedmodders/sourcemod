@@ -3,7 +3,14 @@
 namespace sdk {
 
 class CBaseEntity;
-class edict_t;
+
+static constexpr size_t FL_EDICT_FREE = (1<<1);
+struct edict_t {
+public:
+	bool IsFree() { return (m_fStateFlags & FL_EDICT_FREE) != 0; }
+private:
+	int	m_fStateFlags;	
+};
 
 class Vector
 {
@@ -39,22 +46,5 @@ protected:
 	const char *pszValue;
 };
 static_assert(sizeof(string_t) == sizeof(void*));
-
-// Demanded by KHook
-void Vector_Assign(Vector* assignee, Vector* value) {
-	new (assignee) Vector(*value);
-}
-
-void Vector_Delete(Vector* assignee) {
-	assignee->~Vector();
-}
-
-void StringT_Assign(string_t* assignee, string_t* value) {
-	new (assignee) string_t(*value);
-}
-
-void StringT_Delete(string_t* assignee) {
-	assignee->~string_t();
-}
 
 }
