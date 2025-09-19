@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 namespace sdk {
 
 class CBaseEntity;
@@ -32,6 +34,7 @@ public:
 	float z;
 };
 
+static constexpr std::uintptr_t NULL_STRING = 0;
 struct string_t
 {
 public:
