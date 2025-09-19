@@ -36,10 +36,12 @@
 #include "ConVarManager.h"
 #include "logic_bridge.h"
 
+#define TIMER_MIN_ACCURACY 0.1
+
 TimerSystem g_Timers;
 double g_fUniversalTime = 0.0f;
-float g_fGameStartTime = 0.0f;	/* Game game start time, non-universal */
-double g_fTimerThink = 0.0f;		/* Timer's next think time */
+float g_fGameStartTime = 0.0f;       /* Game game start time, non-universal */
+double g_fTimerThink = 0.0f;         /* Timer's next think time */
 const double *g_pUniversalTime = &g_fUniversalTime;
 ConVar *mp_timelimit = NULL;
 int g_TimeLeftMode = 0;
@@ -142,9 +144,10 @@ private:
  * that a drastic jump in time will continue acting normally.  Users 
  * may not expect this, but... I think it is the best solution.
  */
-inline double CalcNextThink(double last, float interval)
+inline double CalcNextThink(double last, float interval, bool useTickInterval = false)
 {
-	if (g_fUniversalTime - last - interval <= gpGlobals->interval_per_tick)
+    const float intervalAccuracy = useTickInterval ? gpGlobals->interval_per_tick : TIMER_MIN_ACCURACY;
+	if (g_fUniversalTime - last - interval <= intervalAccuracy)
 	{
 		return last + interval;
 	}
@@ -163,6 +166,7 @@ void ITimer::Initialize(ITimedEvent *pCallbacks, float fInterval, float fToExec,
 	m_Flags = flags;
 	m_InExec = false;
 	m_KillMe = false;
+    m_HighSpeed = false;
 }
 
 TimerSystem::TimerSystem()
@@ -232,10 +236,11 @@ void TimerSystem::GameFrame(bool simulating)
 	m_fLastTickedTime = gpGlobals->curtime;
 	m_bHasMapTickedYet = true;
 
-	if (g_fUniversalTime >= g_fTimerThink)
-	{
-		RunFrame();
+    const bool timerThink = g_fUniversalTime >= g_fTimerThink;
+    RunFrame(timerThink);
 
+	if (timerThink)
+	{
 		g_fTimerThink = CalcNextThink(g_fTimerThink, gpGlobals->interval_per_tick);
 	}
 
@@ -247,13 +252,12 @@ void TimerSystem::GameFrame(bool simulating)
 	}
 }
 
-void TimerSystem::RunFrame()
+void TimerSystem::ProcessTimerType(double curtime, TimerType& timerType, bool isHighSpeed)
 {
-	ITimer *pTimer;
+    ITimer *pTimer;
 	TimerIter iter;
 
-	double curtime = GetSimulatedTime();
-	for (iter=m_SingleTimers.begin(); iter!=m_SingleTimers.end(); )
+	for (iter=timerType.m_SingleTimers.begin(); iter!=timerType.m_SingleTimers.end(); )
 	{
 		pTimer = (*iter);
 		if (curtime >= pTimer->m_ToExec)
@@ -261,7 +265,7 @@ void TimerSystem::RunFrame()
 			pTimer->m_InExec = true;
 			pTimer->m_Listener->OnTimer(pTimer, pTimer->m_pData);
 			pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
-			iter = m_SingleTimers.erase(iter);
+			iter = timerType.m_SingleTimers.erase(iter);
 			m_FreeTimers.push(pTimer);
 		} 
 		else 
@@ -271,7 +275,7 @@ void TimerSystem::RunFrame()
 	}
 
 	ResultType res;
-	for (iter=m_LoopTimers.begin(); iter!=m_LoopTimers.end(); )
+	for (iter=timerType.m_LoopTimers.begin(); iter!=timerType.m_LoopTimers.end(); )
 	{
 		pTimer = (*iter);
 		if (curtime >= pTimer->m_ToExec)
@@ -281,15 +285,29 @@ void TimerSystem::RunFrame()
 			if (pTimer->m_KillMe || (res == Pl_Stop))
 			{
 				pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
-				iter = m_LoopTimers.erase(iter);
+				iter = timerType.m_LoopTimers.erase(iter);
 				m_FreeTimers.push(pTimer);
 				continue;
 			}
 			pTimer->m_InExec = false;
-			pTimer->m_ToExec = CalcNextThink(pTimer->m_ToExec, pTimer->m_Interval);
+			pTimer->m_ToExec = CalcNextThink(pTimer->m_ToExec, pTimer->m_Interval, isHighSpeed);
 		}
 		iter++;
 	}
+}
+
+void TimerSystem::RunFrame(bool timerThink)
+{
+	const double curtime = GetSimulatedTime();
+
+    // Most timers do not need to be updated every frame 
+    if (timerThink)
+    {
+        ProcessTimerType(curtime, m_LowSpeedTimers, false);
+    }
+
+    // High speed timers will
+    ProcessTimerType(curtime, m_HighSpeedTimers, true);
 }
 
 ITimer *TimerSystem::CreateTimer(ITimedEvent *pCallbacks, float fInterval, void *pData, int flags)
@@ -307,33 +325,34 @@ ITimer *TimerSystem::CreateTimer(ITimedEvent *pCallbacks, float fInterval, void 
 	}
 
 	pTimer->Initialize(pCallbacks, fInterval, to_exec, pData, flags);
+    TimerType& timerType = flags & TIMER_FLAG_TICK_PRECISE ? m_HighSpeedTimers : m_LowSpeedTimers;
 
 	if (flags & TIMER_FLAG_REPEAT)
 	{
-		m_LoopTimers.push_back(pTimer);
+		timerType.m_LoopTimers.push_back(pTimer);
 		goto return_timer;
 	}
 
-	if (m_SingleTimers.size() >= 1)
+	if (timerType.m_SingleTimers.size() >= 1)
 	{
-		iter = --m_SingleTimers.end();
+		iter = --timerType.m_SingleTimers.end();
 		if ((*iter)->m_ToExec <= to_exec)
 		{
 			goto normal_insert_end;
 		}
 	}
 
-	for (iter=m_SingleTimers.begin(); iter!=m_SingleTimers.end(); iter++)
+	for (iter=timerType.m_SingleTimers.begin(); iter!=timerType.m_SingleTimers.end(); iter++)
 	{
 		if ((*iter)->m_ToExec >= to_exec)
 		{
-			m_SingleTimers.insert(iter, pTimer);
+			timerType.m_SingleTimers.insert(iter, pTimer);
 			goto return_timer;
 		}
 	}
 
 normal_insert_end:
-	m_SingleTimers.push_back(pTimer);
+	timerType.m_SingleTimers.push_back(pTimer);
 
 return_timer:
 	return pTimer;
@@ -350,11 +369,12 @@ void TimerSystem::FireTimerOnce(ITimer *pTimer, bool delayExec)
 
 	pTimer->m_InExec = true;
 	res = pTimer->m_Listener->OnTimer(pTimer, pTimer->m_pData);
+    TimerType& timerType = pTimer->m_Flags & TIMER_FLAG_TICK_PRECISE ? m_HighSpeedTimers : m_LowSpeedTimers; 
 
 	if (!(pTimer->m_Flags & TIMER_FLAG_REPEAT))
 	{
 		pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
-		m_SingleTimers.remove(pTimer);
+		timerType.m_SingleTimers.remove(pTimer);
 		m_FreeTimers.push(pTimer);
 	} 
 	else 
@@ -369,7 +389,7 @@ void TimerSystem::FireTimerOnce(ITimer *pTimer, bool delayExec)
 			return;
 		}
 		pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
-		m_LoopTimers.remove(pTimer);
+		timerType.m_LoopTimers.remove(pTimer);
 		m_FreeTimers.push(pTimer);
 	}
 }
@@ -387,14 +407,15 @@ void TimerSystem::KillTimer(ITimer *pTimer)
 		return;
 	}
 
-	pTimer->m_InExec = true; /* The timer it's not really executed but this check needs to be done */
+	pTimer->m_InExec = true; /* The timer is not really executed but this check needs to be done */
 	pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
+    TimerType& timerType = pTimer->m_Flags & TIMER_FLAG_TICK_PRECISE ? m_HighSpeedTimers : m_LowSpeedTimers; 
 
 	if (pTimer->m_Flags & TIMER_FLAG_REPEAT)
 	{
-		m_LoopTimers.remove(pTimer);
+		timerType.m_LoopTimers.remove(pTimer);
 	} else {
-		m_SingleTimers.remove(pTimer);
+		timerType.m_SingleTimers.remove(pTimer);
 	}
 
 	m_FreeTimers.push(pTimer);
@@ -403,26 +424,21 @@ void TimerSystem::KillTimer(ITimer *pTimer)
 CStack<ITimer *> s_tokill;
 void TimerSystem::RemoveMapChangeTimers()
 {
-	ITimer *pTimer;
-	TimerIter iter;
+    auto KillMapchangeTimers = [](TimerList& timerList) {
+        for (ITimer* pTimer : timerList)
+        {
+            if (pTimer->m_Flags & TIMER_FLAG_NO_MAPCHANGE)
+            {
+                s_tokill.push(pTimer);
+            }
+        }
+    };
 
-	for (iter=m_SingleTimers.begin(); iter!=m_SingleTimers.end(); iter++)
-	{
-		pTimer = (*iter);
-		if (pTimer->m_Flags & TIMER_FLAG_NO_MAPCHANGE)
-		{
-			s_tokill.push(pTimer);
-		}
-	}
+    KillMapchangeTimers(m_LowSpeedTimers.m_SingleTimers);
+    KillMapchangeTimers(m_LowSpeedTimers.m_LoopTimers);
 
-	for (iter=m_LoopTimers.begin(); iter!=m_LoopTimers.end(); iter++)
-	{
-		pTimer = (*iter);
-		if (pTimer->m_Flags & TIMER_FLAG_NO_MAPCHANGE)
-		{
-			s_tokill.push(pTimer);
-		}
-	}
+    KillMapchangeTimers(m_HighSpeedTimers.m_SingleTimers);
+    KillMapchangeTimers(m_HighSpeedTimers.m_LoopTimers);
 
 	while (!s_tokill.empty())
 	{
