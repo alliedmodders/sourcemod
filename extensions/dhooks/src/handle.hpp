@@ -21,16 +21,19 @@ public:
 		return _handle;
 	}
 
-	ParamReturn(Capsule*, GeneralRegister*, FloatRegister*, void*);
+	ParamReturn(const Capsule*, GeneralRegister*, FloatRegister*, void*);
 	~ParamReturn();
 
 	template<typename T>
-    inline T* Get(size_t index) const { return _Get(index); };
+    inline T* Get(size_t index) const { return reinterpret_cast<T*>(_Get(index)); };
+	template<typename T>
+    inline T* GetReturn() const { return reinterpret_cast<T*>(_return); };
+	inline const Capsule* GetCapsule() const { return _capsule; };
 private:
 	void* _Get(size_t index) const;
 
 	cell_t _handle;
-	Capsule* _capsule;
+	const Capsule* _capsule;
 	GeneralRegister* _general_registers;
 	FloatRegister* _float_registers;
 	void* _return;
