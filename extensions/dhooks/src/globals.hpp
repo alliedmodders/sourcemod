@@ -4,8 +4,10 @@
 #include <IExtensionSys.h>
 #include <IGameHelpers.h>
 #include <ISourceMod.h>
+#include <sp_vm_types.h>
 
 #include <thread>
+#include <vector>
 
 namespace dhooks::globals {
 
@@ -14,6 +16,7 @@ extern SourceMod::IHandleSys* handlesys;
 extern SourceMod::IGameHelpers* gamehelpers;
 extern SourceMod::IExtension* myself;
 extern SourceMod::ISourceMod* sourcemod;
+extern std::vector<sp_nativeinfo_t> natives;
 
 void init();
 
