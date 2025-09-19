@@ -80,6 +80,7 @@ public:
     Capsule(void* address, sp::CallingConvention conv, const std::vector<Variable>& params, const ReturnVariable& ret);
 
     const std::vector<Variable>& GetParameters() const { return _parameters; };
+    const ReturnVariable& GetReturn() const { return _return; };
 protected:
     //void JIT_SaveRegisters(AsmJit& jit);
     void JIT_RestoreRegisters(AsmJit& jit);
@@ -112,6 +113,8 @@ protected:
     AsmJit _jit;
     size_t _stack_size;
     std::uintptr_t _original_function;
+    std::uintptr_t _jit_start;
+    void (*_recall_function)(void* recall_func, std::uint8_t* saved_register);
 
     std::unordered_set<HookCallback*> _pre_hooks;
     std::unordered_set<HookCallback*> _post_hooks;
@@ -183,8 +186,11 @@ void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post) const {
                 } else if (result != (cell_t)sp::MRES_Ignored) {
                     final_action = KHook::Action::Override;
                 }
-                // No change params support for now
-                // KHook::DoRecall
+                // Params change, perform recall
+                if (result == (cell_t)sp::MRES_ChangedHandled || result == (cell_t)sp::MRES_ChangedOverride) {
+                    void* recall_func = KHook::DoRecall(final_action, return_ptr, return_size, init_op, delete_op);
+                    (*_recall_function)(recall_func, saved_register);
+                }
             }
         }
 	}
