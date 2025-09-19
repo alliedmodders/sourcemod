@@ -57,20 +57,10 @@ public:
     bool m_HighSpeed;
 };
 
-class TimerList : public List<ITimer*>
-{
-
-};
-
 class TimerSystem : 
 	public ITimerSystem,
 	public SMGlobalClass
 {
-public:
-    struct TimerType {
-        TimerList m_SingleTimers;
-	    TimerList m_LoopTimers;
-    };
 public:
 	TimerSystem();
 	~TimerSystem();
@@ -94,10 +84,11 @@ public:
 	void RemoveMapChangeTimers();
 	void GameFrame(bool simulating);
 private:
-    void ProcessTimerType(double curtime, TimerType& timerType, bool isHighSpeed);
+    void ProcessRepeatTimers(double curtime, List<ITimer*>& timerList, bool isHighSpeed);
 private:
-    TimerType m_LowSpeedTimers;
-    TimerType m_HighSpeedTimers;
+    List<ITimer*> m_SingleTimers;
+    List<ITimer*> m_LowSpeedLoopTimers;
+    List<ITimer*> m_HighSpeedLoopTimers;
 	CStack<ITimer *> m_FreeTimers;
 	IMapTimer *m_pMapTimer;
 
