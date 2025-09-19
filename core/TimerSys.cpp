@@ -166,7 +166,6 @@ void ITimer::Initialize(ITimedEvent *pCallbacks, float fInterval, float fToExec,
 	m_Flags = flags;
 	m_InExec = false;
 	m_KillMe = false;
-    m_HighSpeed = false;
 }
 
 TimerSystem::TimerSystem()

@@ -54,7 +54,6 @@ public:
 	int m_Flags;
 	bool m_InExec;
 	bool m_KillMe;
-    bool m_HighSpeed;
 };
 
 class TimerSystem : 
