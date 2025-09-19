@@ -33,6 +33,10 @@ enum HookParamType
 	HookParamType_Object
 };
 
+inline bool HookParamTypeIsPtr(HookParamType type) {
+	return (type == HookParamType_StringPtr || type == HookParamType_CharPtr || type == HookParamType_VectorPtr || type == HookParamType_CBaseEntity || type == HookParamType_ObjectPtr || type == HookParamType_Edict);
+}
+
 enum ReturnType
 {
 	ReturnType_Unknown,
@@ -96,6 +100,23 @@ enum DHookRegister
 	DHookRegister_XMM6,
 	DHookRegister_XMM7,
 	DHookRegister_ST0
+};
+
+enum ObjectValueType
+{
+	ObjectValueType_Int = 0,
+	ObjectValueType_Bool,
+	ObjectValueType_Ehandle,
+	ObjectValueType_Float,
+	ObjectValueType_CBaseEntityPtr,
+	ObjectValueType_IntPtr,
+	ObjectValueType_BoolPtr,
+	ObjectValueType_EhandlePtr,
+	ObjectValueType_FloatPtr,
+	ObjectValueType_Vector,
+	ObjectValueType_VectorPtr,
+	ObjectValueType_CharPtr,
+	ObjectValueType_String
 };
 
 }
