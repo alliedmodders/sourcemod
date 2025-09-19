@@ -3,6 +3,7 @@
 #include "register.hpp"
 
 #include <sp_vm_types.h>
+#include <IHandleSys.h>
 
 namespace dhooks {
 class Capsule;
@@ -29,6 +30,8 @@ public:
 	template<typename T>
     inline T* GetReturn() const { return reinterpret_cast<T*>(_return); };
 	inline const Capsule* GetCapsule() const { return _capsule; };
+
+	static SourceMod::HandleType_t HANDLE_TYPE;
 private:
 	void* _Get(size_t index) const;
 
