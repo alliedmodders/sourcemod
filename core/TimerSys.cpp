@@ -240,7 +240,7 @@ void TimerSystem::GameFrame(bool simulating)
 
 	if (timerThink)
 	{
-		g_fTimerThink = CalcNextThink(g_fTimerThink, gpGlobals->interval_per_tick);
+		g_fTimerThink = CalcNextThink(g_fTimerThink, TIMER_MIN_ACCURACY);
 	}
 
 	RunFrameHooks(simulating);
