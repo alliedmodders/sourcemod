@@ -17,7 +17,8 @@ void JIT_Align(AsmJit& jit) {
 bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnVariable& ret, size_t& stack_size);
 void JIT_CallMemberFunction(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], bool save_float_register[MAX_FLOAT_REGISTERS], void* this_ptr, const void* mfp, bool post);
 void JIT_MakeReturn(AsmJit& jit, ReturnVariable& ret);
-void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original_function);
+void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original_function, std::uintptr_t* call_function);
+void JIT_Recall(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], bool save_float_register[MAX_FLOAT_REGISTERS], size_t stack_size, std::uintptr_t* call_function);
 }
 
 Capsule::Capsule(void* address, sp::CallingConvention conv, const std::vector<Variable>& params, const ReturnVariable& ret) :
@@ -114,24 +115,29 @@ Capsule::Capsule(void* address, sp::CallingConvention conv, const std::vector<Va
 
 	abi::JIT_Align(_jit);
 	auto offset_to_call_original = _jit.get_outputpos();
-	abi::JIT_CallOriginal(_jit, _return, &_original_function);
+	abi::JIT_CallOriginal(_jit, _return, &_original_function, &_jit_start);
+
+	abi::JIT_Align(_jit);
+	auto offset_to_recall = _jit.get_outputpos();
+	abi::JIT_Recall(_jit, _save_general_register, _save_float_register, _stack_size, &_jit_start);
 
 	_jit.SetRE();
-	std::uint8_t* jit = _jit.GetData();
+	_jit_start = reinterpret_cast<std::uintptr_t>(_jit.GetData());
 
 	auto id = KHook::SetupHook(
 		address,
 		this,
 		KHook::ExtractMFP(&Capsule::_KHook_RemovedHook),
-		jit + offset_to_pre_callback,
-		jit + offset_to_post_callback,
-		jit + offset_to_make_return,
-		jit + offset_to_call_original,
+		reinterpret_cast<void*>(_jit_start + offset_to_pre_callback),
+		reinterpret_cast<void*>(_jit_start + offset_to_post_callback),
+		reinterpret_cast<void*>(_jit_start + offset_to_make_return),
+		reinterpret_cast<void*>(_jit_start + offset_to_call_original),
 		true
 	);
 
 	if (id != KHook::INVALID_HOOK) {
 		_original_function = reinterpret_cast<std::uintptr_t>(KHook::GetOriginal(address));
+		_recall_function = reinterpret_cast<decltype(_recall_function)>(_jit_start + offset_to_recall);
 	}
 }
 
