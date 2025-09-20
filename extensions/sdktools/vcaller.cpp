@@ -535,6 +535,13 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 				addr = *(bool **)addr;
 			}
 			return *addr ? 1 : 0;
+        } else if (vc->retinfo->vtype == Valve_VirtualAddress) {
+            void *addr = (void *)vc->retbuf;
+            if (vc->retinfo->flags & PASSFLAG_ASPOINTER)
+			{
+				addr = *(void **)addr;
+			}
+			return g_pSM->ToPseudoAddress((void*)addr);
 		} else {
 			cell_t *addr = (cell_t *)vc->retbuf;
 			if (vc->retinfo->flags & PASSFLAG_ASPOINTER)
