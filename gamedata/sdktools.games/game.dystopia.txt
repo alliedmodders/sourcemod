@@ -20,70 +20,90 @@
 			/* CBasePlayer */
 			"GiveNamedItem"
 			{
-				"windows"	"331"
-				"linux"		"332"
+				"windows"	"403"
+				"linux"		"404"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"229"
-				"linux"		"230"
+				"windows"	"273"
+				"linux"		"274"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"227"
-				"linux"		"228"
+				"windows"	"271"
+				"linux"		"272"
 			}
 			"Ignite"
 			{
-				"windows"	"191"
-				"linux"		"192"
+				"windows"	"212"
+				"linux"		"213"
 			}
 			"Extinguish"
 			{
-				"windows"	"192"
-				"linux"		"193"
+				"windows"	"216"
+				"linux"		"217"
 			}
 			"Teleport"
 			{
-				"windows"	"100"
-				"linux"		"101"
+				"windows"	"108"
+				"linux"		"109"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"360"
-				"linux"		"361"
+				"windows"	"442"
+				"linux"		"442"
 			}
 			"GetVelocity"
 			{
-				"windows"	"128"
-				"linux"		"129"
+				"windows"	"140"
+				"linux"		"141"
 			}
 			"EyeAngles"
 			{
-				"windows"	"120"
-				"linux"		"121"
+				"windows"	"131"
+				"linux"		"132"
+			}
+			"DispatchKeyValue"
+			{
+				"windows"	"31"
+				"linux"		"30"
+			}
+			"DispatchKeyValueFloat"
+			{
+				"windows"	"30"
+				"linux"		"31"
+			}
+			"DispatchKeyValueVector"
+			{
+				"windows"	"29"
+				"linux"		"32"
 			}
 			"AcceptInput"
 			{
-				"windows"	"35"
-				"linux"		"36"
+				"windows"	"36"
+				"linux"		"37"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"25"
-				"linux"		"26"
+				"windows"	"24"
+				"linux"		"25"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"220"
-				"linux"		"221"
+				"windows"	"264"
+				"linux"		"265"
 			}
 			"Activate"
 			{
-				"windows"	"32"
-				"linux"		"33"
+				"windows"	"33"
+				"linux"		"34"
 			}
-
+			/* CBasePlayer::PlayerRunCommand(CUserCmd*, IMoveHelper*) */
+			"PlayerRunCmd"
+			{
+				"windows"	"421"
+				"linux"		"422"
+			}
 			/* Offset into CBaseTempEntity constructor.
 			 * On Windows Dsytopia is heavily inlined; we use the function 
 			 * surrounding "aCouldnTFindTem" in IDA instead.
