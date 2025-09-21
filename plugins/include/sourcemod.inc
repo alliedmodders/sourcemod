@@ -730,10 +730,6 @@ enum Address
     Address_Null = 0               // a typical invalid result when an address lookup fails
 };
 
-#if defined VIRTUAL_ADDRESS
-public const Address __Virtual_Address__ = 0;
-#endif
-
 /**
  * Load up to 4 bytes from a memory address.
  *
