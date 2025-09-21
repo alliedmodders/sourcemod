@@ -1,0 +1,124 @@
+"Games"
+{
+	"treason"
+	{
+		"Offsets"
+		{
+			"EndTouch"
+			{
+				"windows"	"104"
+			}
+			"FireBullets"
+			{
+				"windows"	"116"
+			}
+			"GroundEntChanged"
+			{
+				"windows"	"182"
+			}
+			"OnTakeDamage"
+			{
+				"windows"	"62"
+			}
+			"OnTakeDamage_Alive"
+			{
+				"windows"	"277"
+			}
+			"PreThink"
+			{
+				"windows"	"337"
+			}
+			"PostThink"
+			{
+				"windows"	"338"
+			}
+			"SetTransmit"
+			{
+				"windows"	"20"
+			}
+			"ShouldCollide"
+			{
+				"windows"	"16"
+			}
+			"Spawn"
+			{
+				"windows"	"22"
+			}
+			"StartTouch"
+			{
+				"windows"	"102"
+			}
+			"Think"
+			{
+				"windows"	"47"
+			}
+			"Touch"
+			{
+				"windows"	"103"
+			}
+			"TraceAttack"
+			{
+				"windows"	"60"
+			}
+			"Use"
+			{
+				"windows"	"101"
+			}
+			"VPhysicsUpdate"
+			{
+				"windows"	"162"
+			}
+			"Weapon_CanSwitchTo"
+			{
+				"windows"	"271"
+			}
+			"Weapon_CanUse"
+			{
+				"windows"	"265"
+			}
+			"Weapon_Drop"
+			{
+				"windows"	"268"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"266"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"269"
+			}
+
+			// Offset of szClassName in CTreasonWeaponInfo
+			"WeaponName"
+			{
+				"windows"		"6"
+			}
+		}
+
+		"Signatures"
+		{
+			"RoundRespawn"
+			{
+				"library"	"server"
+				"windows"	"\xA1\x2A\x2A\x2A\x2A\x56\x8B\xF1\x83\xB8\x90\x06\x00\x00\x03"
+			}
+			"GetWeaponInfo"
+			{
+				"library"		"server"
+				"windows"		"\x55\x8B\xEC\x8B\x4D\x08\x56\x85\xC9\x74\x2A\x33\xC0"
+			}
+			// weapon aliases are not really used in Treason... use full weapon strings instead :(
+			"WeaponIDFromString"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x56\x57\x8B\x7D\x08\x33\xF6\x66\x0F\x1F\x44\x00\x00\x57\xFF\x34\xF5\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x08\x85\xC0\x74\x2A\x46\x83\xFE\x15"
+			}
+			"WeaponIDAsString"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x8B\x4D\x08\x33\xC0\x0F\x1F\x84\x00\x00\x00\x00\x00\x39\x0C\xC5\x2A\x2A\x2A\x2A\x74\x2A\x40\x83\xF8\x15"
+			}
+		}
+	}
+}
