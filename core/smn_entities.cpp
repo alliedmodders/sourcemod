@@ -724,11 +724,10 @@ static cell_t GetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 
 static cell_t LoadEntityFromHandleAddress(IPluginContext *pContext, const cell_t *params)
 {
-#ifdef KE_ARCH_X86
 	void *addr = reinterpret_cast<void*>(params[1]);
-#else
-	void *addr = g_SourceMod.FromPseudoAddress(params[1]);
-#endif
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) != SP_ERROR_NONE) {
+		addr = g_SourceMod.FromPseudoAddress(params[1]);
+	}
 
 	if (addr == NULL)
 	{
