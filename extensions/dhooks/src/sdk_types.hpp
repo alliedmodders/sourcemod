@@ -6,7 +6,7 @@ namespace sdk {
 
 class CBaseEntity;
 
-static constexpr size_t FL_EDICT_FREE = (1<<1);
+static constexpr std::size_t FL_EDICT_FREE = (1<<1);
 struct edict_t {
 public:
 	bool IsFree() { return (m_fStateFlags & FL_EDICT_FREE) != 0; }
