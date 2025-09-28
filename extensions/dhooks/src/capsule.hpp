@@ -5,6 +5,7 @@
 #include "globals.hpp"
 #include "handle.hpp"
 #include "hook.hpp"
+#include "variable.hpp"
 
 #if defined(DHOOKS_X86_64)
 #include <khook/asm/x86_64.hpp>
@@ -26,53 +27,6 @@ using AsmJit = KHook::Asm::x86_64_Jit;
 #elif defined(DHOOKS_X86)
 using AsmJit = KHook::Asm::x86_Jit;
 #endif
-
-struct Variable {
-public:
-    enum Alignment {
-        OneByte = 1,
-        TwoBytes = 2,
-        FourBytes = 4,
-        EightBytes = 8,
-        SixteenBytes = 16
-    };
-
-    sp::HookParamType dhook_type;
-    size_t dhook_size;
-    sp::DHookPassFlag dhook_pass_flags;
-    sp::DHookRegister dhook_custom_register;
-
-    // Provided by the ABI, used by the JIT
-    // If DHook is to ever support complex type, transform those fields
-    // into an array so that the SP natives know where to look when offsetting into an object
-    std::optional<AsmRegCode> reg_index;
-    std::optional<AsmFloatRegCode> float_reg_index;
-    std::optional<size_t> reg_offset;
-    Alignment alignment;
-    // Atm it's exactly the same as _dhook_size
-    // We differentiate it anyways, to avoid having to refactor the JIT
-    size_t type_size;
-};
-
-struct ReturnVariable {
-public:
-    enum Alignment {
-        OneByte = 1,
-        TwoBytes = 2,
-        FourBytes = 4,
-        EightBytes = 8,
-        SixteenBytes = 16
-    };
-
-    sp::ReturnType dhook_type;
-    size_t dhook_size;
-    sp::DHookPassFlag dhook_pass_flags;
-    sp::DHookRegister dhook_custom_register;
-
-    std::optional<AsmRegCode> reg_index;
-    std::optional<AsmFloatRegCode> float_reg_index;
-    size_t reg_offset;
-};
 
 struct HookCallback;
 class Capsule {
