@@ -8,6 +8,7 @@ std::optional<AsmRegCode> Translate_DHookRegister(sp::DHookRegister reg) {
 		case sp::DHookRegister_AH:
 		case sp::DHookRegister_EAX:
 #ifdef DHOOKS_X86_64
+		case sp::DHookRegister_RAX:
 		return KHook::Asm::rax;
 #else
 		return KHook::Asm::eax;
@@ -16,6 +17,7 @@ std::optional<AsmRegCode> Translate_DHookRegister(sp::DHookRegister reg) {
 		case sp::DHookRegister_CH:
 		case sp::DHookRegister_ECX:
 #ifdef DHOOKS_X86_64
+		case sp::DHookRegister_RCX:
 		return KHook::Asm::rcx;
 #else
 		return KHook::Asm::ecx;
@@ -24,6 +26,7 @@ std::optional<AsmRegCode> Translate_DHookRegister(sp::DHookRegister reg) {
 		case sp::DHookRegister_DH:
 		case sp::DHookRegister_EDX:
 #ifdef DHOOKS_X86_64
+		case sp::DHookRegister_RDX:
 		return KHook::Asm::rdx;
 #else
 		return KHook::Asm::edx;
@@ -32,30 +35,35 @@ std::optional<AsmRegCode> Translate_DHookRegister(sp::DHookRegister reg) {
 		case sp::DHookRegister_BH:
 		case sp::DHookRegister_EBX:
 #ifdef DHOOKS_X86_64
+		case sp::DHookRegister_RBX:
 		return KHook::Asm::rbx;
 #else
 		return KHook::Asm::ebx;
 #endif
 		case sp::DHookRegister_ESP:
 #ifdef DHOOKS_X86_64
+		case sp::DHookRegister_RSP:
 		return KHook::Asm::rsp;
 #else
 		return KHook::Asm::esp;
 #endif
 		case sp::DHookRegister_EBP:
 #ifdef DHOOKS_X86_64
+		case sp::DHookRegister_RBP:
 		return KHook::Asm::rbp;
 #else
 		return KHook::Asm::ebp;
 #endif
 		case sp::DHookRegister_ESI:
 #ifdef DHOOKS_X86_64
+		case sp::DHookRegister_RSI:
 		return KHook::Asm::rsi;
 #else
 		return KHook::Asm::esi;
 #endif
 		case sp::DHookRegister_EDI:
 #ifdef DHOOKS_X86_64
+		case sp::DHookRegister_RDI:
 		return KHook::Asm::rdi;
 #else
 		return KHook::Asm::edi;

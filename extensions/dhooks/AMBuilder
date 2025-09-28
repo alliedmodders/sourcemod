@@ -6,7 +6,10 @@ sources = [
   'src/globals.cpp',
   'src/handle.cpp',
   'src/register.cpp',
-  'src/natives/dhookparam.cpp'
+  'src/signatures.cpp',
+  'src/sp_inc.cpp',
+  'src/natives/dhookparam.cpp',
+  'src/natives/dhookreturn.cpp'
 ]
 
 for cxx in builder.targets:
