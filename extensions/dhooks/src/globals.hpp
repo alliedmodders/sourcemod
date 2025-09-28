@@ -9,6 +9,10 @@
 #include <thread>
 #include <vector>
 
+namespace dhooks {
+class SignatureGameConfig;
+};
+
 namespace dhooks::globals {
 
 extern std::thread::id main_thread;
@@ -17,6 +21,7 @@ extern SourceMod::IGameHelpers* gamehelpers;
 extern SourceMod::IExtension* myself;
 extern SourceMod::ISourceMod* sourcemod;
 extern std::vector<sp_nativeinfo_t> natives;
+extern dhooks::SignatureGameConfig* dhooks_config;
 
 void init();
 
