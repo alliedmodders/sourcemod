@@ -34,7 +34,7 @@
 #include <datamap.h>
 
 variant_t g_Variant_t;
-char g_Variant_str_Value[128];
+char g_Variant_str_Value[1024];
 
 // copy this definition as the original file includes cbase.h which explodes in a shower of compile errors
 void variant_t::SetEntity( CBaseEntity *val ) 
