@@ -16,131 +16,125 @@
 	{
 		"Offsets"
 		{
+			"CanBeAutobalanced"
+			{
+				"windows"	"464"
+				"linux"		"465"
+			}
 			"EndTouch"
 			{
 				"windows"	"101"
 				"linux"		"102"
-				"mac"		"102"
 			}
 			"FireBullets"
 			{
 				"windows"	"113"
 				"linux"		"114"
-				"mac"		"114"
+			}
+			"GetMaxHealth"
+			{
+				"windows"	"118"
+				"linux"		"119"
 			}
 			"GroundEntChanged"
 			{
 				"windows"	"178"
 				"linux"		"179"
-				"mac"		"179"
 			}
 			"OnTakeDamage"
 			{
 				"windows"	"62"
 				"linux"		"63"
-				"mac"		"63"
+			}
+			"OnTakeDamage_Alive"
+			{
+				"windows"	"273"
+				"linux"		"274"
 			}
 			"PreThink"
 			{
 				"windows"	"336"
 				"linux"		"337"
-				"mac"		"337"
 			}
 			"PostThink"
 			{
 				"windows"	"337"
 				"linux"		"338"
-				"mac"		"338"
 			}
 			"Reload"
 			{
 				"windows"	"271"
 				"linux"		"272"
-				"mac"		"272"
 			}
 			"SetTransmit"
 			{
 				"windows"	"20"
 				"linux"		"21"
-				"mac"		"21"
 			}
 			"ShouldCollide"
 			{
 				"windows"	"16"
 				"linux"		"17"
-				"mac"		"17"
 			}
 			"Spawn"
 			{
 				"windows"	"22"
 				"linux"		"23"
-				"mac"		"23"
 			}
 			"StartTouch"
 			{
 				"windows"	"99"
 				"linux"		"100"
-				"mac"		"100"
 			}
 			"Think"
 			{
 				"windows"	"47"
 				"linux"		"48"
-				"mac"		"48"
 			}
 			"Touch"
 			{
 				"windows"	"100"
 				"linux"		"101"
-				"mac"		"101"
 			}
 			"TraceAttack"
 			{
 				"windows"	"60"
 				"linux"		"61"
-				"mac"		"61"
 			}
 			"Use"
 			{
 				"windows"	"98"
 				"linux"		"99"
-				"mac"		"99"
 			}
 			"VPhysicsUpdate"
 			{
 				"windows"	"158"
 				"linux"		"159"
-				"mac"		"159"
 			}
 			"Weapon_CanSwitchTo"
 			{
 				"windows"	"267"
 				"linux"		"268"
-				"mac"		"268"
 			}
 			"Weapon_CanUse"
 			{
 				"windows"	"261"
 				"linux"		"262"
-				"mac"		"262"
 			}
 			"Weapon_Drop"
 			{
 				"windows"	"264"
 				"linux"		"265"
-				"mac"		"265"
 			}
 			"Weapon_Equip"
 			{
 				"windows"	"262"
 				"linux"		"263"
-				"mac"		"263"
 			}
 			"Weapon_Switch"
 			{
 				"windows"	"265"
 				"linux"		"266"
-				"mac"		"266"
 			}
 		}
 	}
