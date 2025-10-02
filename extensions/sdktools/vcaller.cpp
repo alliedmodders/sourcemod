@@ -172,11 +172,10 @@ static cell_t PrepSDKCall_SetSignature(IPluginContext *pContext, const cell_t *p
 
 static cell_t PrepSDKCall_SetAddress(IPluginContext *pContext, const cell_t *params)
 {
-#ifdef KE_ARCH_X86
-	s_call_addr = reinterpret_cast<void *>(params[1]);
-#else
-	s_call_addr = g_pSM->FromPseudoAddress(params[1]);
-#endif
+	s_call_addr = reinterpret_cast<void*>(params[1]);
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) != SP_ERROR_NONE) {
+		s_call_addr = g_pSM->FromPseudoAddress(params[1]);
+	}
 
 	return (s_call_addr != NULL) ? 1 : 0;
 }
@@ -536,6 +535,13 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 				addr = *(bool **)addr;
 			}
 			return *addr ? 1 : 0;
+        } else if (vc->retinfo->vtype == Valve_VirtualAddress) {
+            void *addr = (void *)vc->retbuf;
+            if (vc->retinfo->flags & PASSFLAG_ASPOINTER)
+			{
+				addr = *(void **)addr;
+			}
+			return g_pSM->ToPseudoAddress((void*)addr);
 		} else {
 			cell_t *addr = (cell_t *)vc->retbuf;
 			if (vc->retinfo->flags & PASSFLAG_ASPOINTER)
