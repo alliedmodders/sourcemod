@@ -142,6 +142,7 @@ public: //ITopMenu
 		TopMenuPosition position);
 	virtual bool LoadConfiguration(const char *file, char *error, size_t maxlength);
 	virtual unsigned int FindCategory(const char *name);
+	virtual unsigned int FindItem(const char *name);
 	const char *GetObjectInfoString(unsigned int object_id);
 	const char *GetObjectName(unsigned int object_id);
 public: //IMenuHandler
