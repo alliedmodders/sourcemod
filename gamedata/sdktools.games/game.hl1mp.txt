@@ -81,10 +81,10 @@
 			}
 			"Teleport"
 			{
-				"windows"	"111"
-				"windows64"	"111"
-				"linux"		"110"
-				"linux64"	"110"
+				"windows"	"110"
+				"windows64"	"110"
+				"linux"		"111"
+				"linux64"	"111"
 			}
 			"CommitSuicide"
 			{
@@ -151,10 +151,10 @@
 			}
 			"GetAttachment"
 			{
-				"windows"	"258"
-				"windows64"	"258"
-				"linux"		"259"
-				"linux64"	"259"
+				"windows"	"211"
+				"windows64"	"211"
+				"linux"		"212"
+				"linux64"	"212"
 			}
 		}
 		
