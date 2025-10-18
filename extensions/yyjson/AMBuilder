@@ -1,0 +1,28 @@
+# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
+import os
+
+for cxx in builder.targets:
+  binary = SM.ExtLibrary(builder, cxx, 'yyjson.ext')
+  if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
+    binary.compiler.cxxflags += ['-fno-rtti']
+    binary.compiler.cflags += ['-fPIC']
+  elif binary.compiler.family == 'msvc':
+    binary.compiler.cxxflags += ['/GR-']
+
+  binary.compiler.defines += [
+    'YYJSON_DISABLE_INCR_READER',
+  ]
+
+  binary.compiler.cxxincludes += [
+    os.path.join(builder.sourcePath, 'extensions', 'yyjson', 'yyjson'),
+  ]
+
+  binary.sources += [
+    'extension.cpp',
+    'YYJSONManager.cpp',
+    'json_natives.cpp',
+    'yyjson/yyjson.c',
+    '../../public/smsdk_ext.cpp',
+  ]
+
+  SM.extensions += [builder.Add(binary)]
