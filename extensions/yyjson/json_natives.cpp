@@ -1178,7 +1178,7 @@ static cell_t json_doc_write_to_str(IPluginContext* pContext, const cell_t* para
 
 	pContext->StringToLocalUTF8(params[2], buffer_size, temp_buffer, nullptr);
 	free(temp_buffer);
-	return static_cast<cell_t>(output_len + 1);
+	return static_cast<cell_t>(output_len);
 }
 
 static cell_t json_doc_write_to_file(IPluginContext* pContext, const cell_t* params)
