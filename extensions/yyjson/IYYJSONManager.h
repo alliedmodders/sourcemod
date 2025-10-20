@@ -5,6 +5,7 @@
 
 using SourceMod::Handle_t;
 using SourceMod::HandleType_t;
+using SourceMod::SMInterface;
 using SourcePawn::IPluginContext;
 
 // Forward declaration
@@ -27,7 +28,7 @@ enum YYJSON_SORT_ORDER
 
 /**
  * @brief Parameter provider interface for Pack operation
- *
+ * 
  * Allows Pack to retrieve parameters in a platform-independent way.
  */
 class IPackParamProvider
@@ -56,7 +57,7 @@ public:
  *     SM_GET_LATE_IFACE(YYJSONMANAGER, g_pYYJSONManager);
  * }
  */
-class IYYJSONManager : public SourceMod::SMInterface
+class IYYJSONManager : public SMInterface
 {
 public:
 	virtual const char *GetInterfaceName() override {
@@ -87,8 +88,11 @@ public:
 	 * @param buffer Output buffer
 	 * @param buffer_size Buffer size
 	 * @param write_flg Write flags (YYJSON_WRITE_FLAG values, default: 0)
-	 * @param out_size Pointer to receive actual size (optional, default: nullptr)
-	 * @return true on success
+	 * @param out_size Pointer to receive actual size written (including null terminator), optional
+	 * @return true on success, false if buffer is too small or on error
+	 * 
+	 * @note The out_size parameter returns the size including null terminator
+	 * @note Use GetSerializedSize() with the same write_flg to determine buffer size
 	 */
 	virtual bool WriteToString(YYJSONValue* handle, char* buffer, size_t buffer_size, 
 		uint32_t write_flg = 0, size_t* out_size = nullptr) = 0;
@@ -126,15 +130,28 @@ public:
 	/**
 	 * Get human-readable type description string
 	 * @param handle JSON value
-	 * @return Type description string (e.g., "object", "array", "string", "number", "true", "false", "null")
+	 * @return Type description string (e.g., "object", "array", "string", "number", "true", "false", "unknown")
 	 */
 	virtual const char* GetTypeDesc(YYJSONValue* handle) = 0;
 
 	/**
 	 * Get the size needed to serialize this JSON value
+	 * 
 	 * @param handle JSON value
 	 * @param write_flg Write flags (YYJSON_WRITE_FLAG values, default: 0)
 	 * @return Size in bytes (including null terminator)
+	 * 
+	 * @note The returned size depends on the write_flg parameter.
+	 *       You MUST use the same flags when calling both GetSerializedSize() 
+	 *       and WriteToString(). Using different flags will return 
+	 *       different sizes and may cause buffer overflow.
+	 * 
+	 * @example
+	 *   // Correct usage:
+	 *   auto flags = YYJSON_WRITE_PRETTY;
+	 *   size_t size = g_pYYJSONManager->GetSerializedSize(handle, flags);
+	 *   char* buffer = new char[size];
+	 *   g_pYYJSONManager->WriteToString(handle, buffer, size, flags);  // Use same flags
 	 */
 	virtual size_t GetSerializedSize(YYJSONValue* handle, uint32_t write_flg = 0) = 0;
 
@@ -278,7 +295,11 @@ public:
 	/**
 	 * Get the number of bytes read when parsing this document
 	 * @param handle JSON value
-	 * @return Number of bytes read during parsing, 0 if not from parsing
+	 * @return Number of bytes read during parsing (excluding null terminator), 0 if not from parsing
+	 * 
+	 * @note This value only applies to documents created from parsing
+	 * @note Manually created documents (ObjectInit, CreateBool, etc.) will return 0
+	 * @note The returned size does not include the null terminator
 	 */
 	virtual size_t GetReadSize(YYJSONValue* handle) = 0;
 

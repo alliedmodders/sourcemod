@@ -669,7 +669,7 @@ static cell_t json_val_get_read_size(IPluginContext* pContext, const cell_t* par
 	size_t size = g_pYYJSONManager->GetReadSize(handle);
 	if (size == 0) return 0;
 
-	return static_cast<cell_t>(size + 1);
+	return static_cast<cell_t>(size);
 }
 
 static cell_t json_val_create_null(IPluginContext* pContext, const cell_t* params)

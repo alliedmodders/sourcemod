@@ -527,7 +527,12 @@ size_t YYJSONManager::GetReadSize(YYJSONValue* handle)
 		return 0;
 	}
 
-	return handle->m_readSize;
+	// this not happen in normal case, but it's possible if the document is not from parsing.
+	if (handle->m_readSize == 0) {
+		return 0;
+	}
+
+	return handle->m_readSize + 1;
 }
 
 YYJSONValue* YYJSONManager::ObjectInit()

@@ -55,8 +55,3 @@ void JSONHandler::OnHandleDestroy(HandleType_t type, void* object)
 {
 	delete (YYJSONValue*)object;
 }
-
-IYYJSONManager* JsonExtension::GetYYJSONManager()
-{
-	return g_pYYJSONManager;
-}

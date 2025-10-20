@@ -61,7 +61,7 @@ public:
 	yyjson_obj_iter m_iterObjImm;
 	yyjson_arr_iter m_iterArrImm;
 
-	SourceMod::Handle_t m_handle{ BAD_HANDLE };
+	Handle_t m_handle{ BAD_HANDLE };
 	size_t m_arrayIndex{ 0 };
 	size_t m_readSize{ 0 };
 	bool m_iterInitialized{ false };
