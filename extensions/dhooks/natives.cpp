@@ -81,6 +81,56 @@ bool GetCallbackArgHandleIfValidOrError(HandleType_t type, HandleType_t otherTyp
 	return true;
 }
 
+bool GetObjectAddrOrThis(IPluginContext *pContext, const cell_t *params, void *&retAddr)
+{
+	HookParamsStruct *paramStruct = NULL;
+	retAddr = NULL;
+
+	if(!GetCallbackArgHandleIfValidOrError(g_HookParamsHandle, g_HookReturnHandle, (void **)&paramStruct, pContext, params[1]))
+	{
+		return false;
+	}
+
+	if(params[2] != 0)
+	{
+		const auto &paramsVec = paramStruct->dg->params;
+
+		if(params[2] < 0 || params[2] > static_cast<int>(paramsVec.size()))
+		{
+			return pContext->ThrowNativeError("Invalid param number %i max params is %i", params[2], paramsVec.size());
+		}
+
+		int index = params[2] - 1;
+		const auto &param = paramsVec.at(index);
+
+		if(param.type != HookParamType_ObjectPtr && param.type != HookParamType_Object)
+		{
+			return pContext->ThrowNativeError("Invalid object value type %i", param.type);
+		}
+
+		size_t offset = GetParamOffset(paramStruct, index);
+		retAddr = GetObjectAddr(param.type, param.flags, paramStruct->orgParams, offset);
+		return true;
+	}
+
+	const auto &dgInfo = paramStruct->dg;
+
+	if(dgInfo->thisFuncCallConv != CallConv_THISCALL)
+	{
+		return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
+	}
+
+	if(dgInfo->thisType != ThisPointer_Address
+		&& dgInfo->thisType != ThisPointer_CBaseEntity
+		&& !(dgInfo->thisType == ThisPointer_Ignore && dgInfo->hookType == HookType_GameRules))
+	{
+		return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
+	}
+
+	retAddr = g_SHPtr->GetIfacePtr();
+	return true;
+}
+
 IPluginFunction *GetCallback(IPluginContext *pContext, HookSetup * setup, const cell_t *params, cell_t callback_index)
 {
 	IPluginFunction *ret = NULL;
@@ -1086,57 +1136,14 @@ cell_t Native_RemoveEntityListener(IPluginContext *pContext, const cell_t *param
 	return pContext->ThrowNativeError("Failed to get g_pEntityListener");
 }
 
-void* GetObjectAddrOrThis(HookParamsStruct* paramStruct, IPluginContext* pContext, const cell_t* params)
-{
-	if (params[2] != 0)
-	{
-		const auto& paramsVec = paramStruct->dg->params;
-
-		if (params[2] < 0 || params[2] > static_cast<int>(paramsVec.size()))
-		{
-			return pContext->ThrowNativeError("Invalid param number %i max params is %i", params[2], paramsVec.size());
-		}
-
-		int index = params[2] - 1;
-		const auto& param = paramsVec.at(index);
-
-		if (param.type != HookParamType_ObjectPtr && param.type != HookParamType_Object)
-		{
-			return pContext->ThrowNativeError("Invalid object value type %i", param.type);
-		}
-
-		size_t offset = GetParamOffset(paramStruct, index);
-		return GetObjectAddr(param.type, param.flags, paramStruct->orgParams, offset);
-	}
-
-	const auto& dgInfo = paramStruct->dg;
-
-	if (dgInfo->thisFuncCallConv != CallConv_THISCALL)
-	{
-		return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
-	}
-
-	if (dgInfo->thisType != ThisPointer_Address
-		&& dgInfo->thisType != ThisPointer_CBaseEntity
-		&& !(dgInfo->thisType == ThisPointer_Ignore && dgInfo->hookType == HookType_GameRules))
-	{
-		return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
-	}
-
-	return g_SHPtr->GetIfacePtr();
-}
-
 //native any:DHookGetParamObjectPtrVar(Handle:hParams, num, offset, ObjectValueType:type);
 cell_t Native_GetParamObjectPtrVar(IPluginContext *pContext, const cell_t *params)
 {
-	HookParamsStruct *paramStruct;
-
-	if(!GetCallbackArgHandleIfValidOrError(g_HookParamsHandle, g_HookReturnHandle, (void **)&paramStruct, pContext, params[1]))
+	void *addr = NULL;
+	if(!GetObjectAddrOrThis(pContext, params, addr))
 	{
 		return 0;
 	}
-
-	void* addr = GetObjectAddrOrThis(paramStruct, pContext, params);
 
 	switch((ObjectValueType)params[4])
 	{
@@ -1187,14 +1194,11 @@ cell_t Native_GetParamObjectPtrVar(IPluginContext *pContext, const cell_t *param
 //native DHookSetParamObjectPtrVar(Handle:hParams, num, offset, ObjectValueType:type, value)
 cell_t Native_SetParamObjectPtrVar(IPluginContext *pContext, const cell_t *params)
 {
-	HookParamsStruct *paramStruct;
-
-	if(!GetCallbackArgHandleIfValidOrError(g_HookParamsHandle, g_HookReturnHandle, (void **)&paramStruct, pContext, params[1]))
+	void *addr = NULL;
+	if(!GetObjectAddrOrThis(pContext, params, addr))
 	{
 		return 0;
 	}
-
-	void* addr = GetObjectAddrOrThis(paramStruct, pContext, params);
 
 	switch((ObjectValueType)params[4])
 	{
@@ -1259,14 +1263,11 @@ cell_t Native_SetParamObjectPtrVar(IPluginContext *pContext, const cell_t *param
 //native DHookGetParamObjectPtrVarVector(Handle:hParams, num, offset, ObjectValueType:type, Float:buffer[3]);
 cell_t Native_GetParamObjectPtrVarVector(IPluginContext *pContext, const cell_t *params)
 {
-	HookParamsStruct *paramStruct;
-
-	if(!GetCallbackArgHandleIfValidOrError(g_HookParamsHandle, g_HookReturnHandle, (void **)&paramStruct, pContext, params[1]))
+	void *addr = NULL;
+	if(!GetObjectAddrOrThis(pContext, params, addr))
 	{
 		return 0;
 	}
-
-	void* addr = GetObjectAddrOrThis(paramStruct, pContext, params);
 
 	cell_t *buffer;
 	pContext->LocalToPhysAddr(params[5], &buffer);
@@ -1300,14 +1301,11 @@ cell_t Native_GetParamObjectPtrVarVector(IPluginContext *pContext, const cell_t 
 //native DHookSetParamObjectPtrVarVector(Handle:hParams, num, offset, ObjectValueType:type, Float:value[3]);
 cell_t Native_SetParamObjectPtrVarVector(IPluginContext *pContext, const cell_t *params)
 {
-	HookParamsStruct *paramStruct;
-
-	if(!GetCallbackArgHandleIfValidOrError(g_HookParamsHandle, g_HookReturnHandle, (void **)&paramStruct, pContext, params[1]))
+	void *addr = NULL;
+	if(!GetObjectAddrOrThis(pContext, params, addr))
 	{
 		return 0;
 	}
-	
-	void* addr = GetObjectAddrOrThis(paramStruct, pContext, params);
 
 	cell_t *buffer;
 	pContext->LocalToPhysAddr(params[5], &buffer);
@@ -1340,14 +1338,11 @@ cell_t Native_SetParamObjectPtrVarVector(IPluginContext *pContext, const cell_t 
 //native DHookGetParamObjectPtrString(Handle:hParams, num, offset, ObjectValueType:type, String:buffer[], size)
 cell_t Native_GetParamObjectPtrString(IPluginContext *pContext, const cell_t *params)
 {
-	HookParamsStruct *paramStruct;
-
-	if(!GetCallbackArgHandleIfValidOrError(g_HookParamsHandle, g_HookReturnHandle, (void **)&paramStruct, pContext, params[1]))
+	void *addr = NULL;
+	if (!GetObjectAddrOrThis(pContext, params, addr))
 	{
 		return 0;
 	}
-
-	void* addr = GetObjectAddrOrThis(paramStruct, pContext, params);
 
 	switch((ObjectValueType)params[4])
 	{
