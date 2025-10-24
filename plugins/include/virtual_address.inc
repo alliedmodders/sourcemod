@@ -36,3 +36,4 @@
 #define _virtual_address_included
 
 public const Address __Virtual_Address__ = 0;
+public const Address PointerSize = 0; /**< Size of a pointer in bytes (same as `sizeof(void*)`) */
