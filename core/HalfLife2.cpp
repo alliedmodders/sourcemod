@@ -57,7 +57,6 @@ typedef ICommandLine *(*FakeGetCommandLine)();
 #define VSTDLIB_NAME		FORMAT_SOURCE_BIN_NAME("vstdlib")
 
 CHalfLife2 g_HL2;
-ConVar *sv_lan = NULL;
 
 static void *g_EntList = NULL;
 static void **g_pEntInfoList = NULL;
@@ -235,9 +234,9 @@ void CHalfLife2::InitLogicalEntData()
 				return;
 			}
 
-#ifdef PLATFORM_X86
+#ifdef KE_ARCH_X86
 			g_EntList = *reinterpret_cast<void **>(addr + offset);
-#elif defined PLATFORM_X64
+#elif defined KE_ARCH_X64
 			int32_t varOffset = *reinterpret_cast<int32_t *>(addr + offset);
 			g_EntList = reinterpret_cast<void *>(addr + offset + sizeof(int32_t) + varOffset);
 #endif
@@ -787,7 +786,7 @@ void CHalfLife2::ProcessFakeCliCmdQueue()
 
 bool CHalfLife2::IsLANServer()
 {
-	sv_lan = icvar->FindVar("sv_lan");
+	static ConVar *sv_lan = icvar->FindVar("sv_lan");
 
 	if (!sv_lan)
 	{
@@ -979,7 +978,7 @@ cell_t CHalfLife2::EntityToReference(CBaseEntity *pEntity)
 {
 	IServerUnknown *pUnknown = (IServerUnknown *)pEntity;
 	CBaseHandle hndl = pUnknown->GetRefEHandle();
-	return (hndl.ToInt() | (1<<31));
+	return (hndl.ToInt() | ENTREF_MASK);
 }
 
 CBaseEntity *CHalfLife2::ReferenceToEntity(cell_t entRef)
@@ -991,10 +990,10 @@ CBaseEntity *CHalfLife2::ReferenceToEntity(cell_t entRef)
 
 	CEntInfo *pInfo = NULL;
 
-	if (entRef & (1<<31))
+	if (entRef & ENTREF_MASK)
 	{
 		/* Proper ent reference */
-		int hndlValue = entRef & ~(1<<31);
+		int hndlValue = entRef & ~ENTREF_MASK;
 		CBaseHandle hndl(hndlValue);
 
 		pInfo = LookupEntity(hndl.GetEntryIndex());
@@ -1095,15 +1094,15 @@ int CHalfLife2::ReferenceToIndex(cell_t entRef)
 		return INVALID_EHANDLE_INDEX;
 	}
 
-	if (entRef & (1<<31))
+	if (entRef & ENTREF_MASK)
 	{
 		/* Proper ent reference */
-		int hndlValue = entRef & ~(1<<31);
+		int hndlValue = entRef & ~ENTREF_MASK;
 		CBaseHandle hndl(hndlValue);
 
 		CEntInfo *pInfo = LookupEntity(hndl.GetEntryIndex());
 
-		if (pInfo->m_SerialNumber != hndl.GetSerialNumber())
+		if (!pInfo || pInfo->m_SerialNumber != hndl.GetSerialNumber())
 		{
 			return INVALID_EHANDLE_INDEX;
 		}
@@ -1149,7 +1148,7 @@ cell_t CHalfLife2::EntityToBCompatRef(CBaseEntity *pEntity)
 	
 	if (hndl.GetEntryIndex() >= MAX_EDICTS)
 	{
-		return (hndl.ToInt() | (1<<31));
+		return (hndl.ToInt() | ENTREF_MASK);
 	}
 	else
 	{
@@ -1164,7 +1163,7 @@ cell_t CHalfLife2::ReferenceToBCompatRef(cell_t entRef)
 		return INVALID_EHANDLE_INDEX;
 	}
 
-	int hndlValue = entRef & ~(1<<31);
+	int hndlValue = entRef & ~ENTREF_MASK;
 	CBaseHandle hndl(hndlValue);
 
 	if (hndl.GetEntryIndex() < MAX_EDICTS)
@@ -1601,3 +1600,26 @@ uint64_t CHalfLife2::GetServerSteamId64() const
 
 	return 1ULL;
 }
+
+void CHalfLife2::RemoveDataTableCache(datamap_t *pMap)
+{
+	if (pMap == nullptr)
+	{
+		m_Maps.clear();
+		return;
+	}
+
+	m_Maps.removeIfExists(pMap);
+}
+
+bool CHalfLife2::RemoveSendPropCache(const char *classname)
+{
+	if (classname == nullptr)
+	{
+		m_Classes.clear();
+		return true;
+	}
+
+	return m_Classes.remove(classname);
+}
+

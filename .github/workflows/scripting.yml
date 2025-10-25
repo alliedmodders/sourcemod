@@ -25,12 +25,12 @@ jobs:
     env:
       ARCH: x86,x86_64
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
 
       # Setup Python for AMBuild
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         name: Setup Python 3.8
         with:
           python-version: 3.8

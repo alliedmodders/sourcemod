@@ -57,25 +57,9 @@ void PlayerConditionsMgr::ProcessCondChange(CondChangeData_t *pCondData)
 		return;
 
 	int client = pCondData->hPlayer.GetEntryIndex();
-	int newConds = 0;
-	int prevConds = 0;
 	CondVar var = pCondData->var;
-
-	if (var == m_nPlayerCond)
-	{
-		prevConds = m_OldConds[client][_condition_bits] | m_OldConds[client][var];
-		newConds = m_OldConds[client][_condition_bits] | pCondData->newConds;
-	}
-	else if (var == _condition_bits)
-	{
-		prevConds = m_OldConds[client][m_nPlayerCond] | m_OldConds[client][var];
-		newConds = m_OldConds[client][m_nPlayerCond] | pCondData->newConds;
-	}
-	else
-	{
-		prevConds = m_OldConds[client][var];
-		newConds = pCondData->newConds;
-	}
+	int newConds = pCondData->newConds;
+	int prevConds = m_OldConds[client][var];
 
 	if (prevConds != newConds)
 	{

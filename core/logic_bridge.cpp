@@ -574,8 +574,16 @@ int CoreProviderImpl::MaxClients()
 	return g_Players.MaxClients();
 }
 
-bool CoreProviderImpl::DescribePlayer(int index, const char **namep, const char **authp, int *useridp)
+bool CoreProviderImpl::DescribePlayer(int entRef, const char **namep, const char **authp, int *useridp)
 {
+	int index = entRef;
+	if (entRef & ENTREF_MASK)
+	{
+		// Unless this is an explicit entity reference, we don't know nor care if the player has an entity yet,
+		// as long as they are currently connected. (But if it *is* an explicit ref, validate it)
+		index = g_HL2.ReferenceToIndex(entRef);
+	}
+
 	CPlayer *player = g_Players.GetPlayerByIndex(index);
 	if (!player || !player->IsConnected())
 		return false;

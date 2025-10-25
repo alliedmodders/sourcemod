@@ -81,19 +81,13 @@
 	/* CBaseEntityOutput::FireOutput */
 	"#default"
 	{
-		"#supported"
-		{
-			"game"		"dod"
-			"game"		"tf"
-			"game"		"hl2mp"
-		}
 		"Signatures"
 		{
 			"FireOutput"
 			{
 				/* String: "(%0.2f) output: (%s,%s) -> (%s,%s)(%s)" */
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x81\xEC\x2A\x2A\x2A\x2A\x53\x8B\xC1"
+				"windows"	"\x55\x8B\xEC\x81\xEC\x2A\x2A\x2A\x2A\x8B\xC1\x53\x89\x45\xD4\x56"
 				"windows64"	"\x48\x8B\xC4\x48\x89\x50\x10\x48\x89\x48\x08\x41\x54"
 				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 				"linux64"	"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
@@ -104,13 +98,6 @@
 	/* SetUserInfo data */
 	"#default"
 	{
-		"#supported"
-		{
-			"game"		"dod"
-			"game"		"tf"
-			"game"		"hl2mp"
-		}
-		
 		"Offsets"
 		{
 			/**

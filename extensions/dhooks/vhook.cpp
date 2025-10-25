@@ -32,7 +32,7 @@
 #include "vhook.h"
 #include "vfunc_call.h"
 #include "util.h"
-#ifdef PLATFORM_X64
+#ifdef KE_ARCH_X64
 #include "sh_asm_x86_64.h"
 #else
 #include <macro-assembler-x86.h>
@@ -51,7 +51,7 @@ using namespace sp;
 #define OBJECT_OFFSET (sizeof(void *)*2)
 #endif
 
-#ifdef PLATFORM_X64
+#ifdef KE_ARCH_X64
 using namespace SourceHook::Asm;
 
 SourceHook::Asm::x64JitWriter* GenerateThunk(HookSetup* hook)
@@ -473,14 +473,14 @@ cell_t GetThisPtr(void *iface, ThisPointerType type)
 			return -1;
 		return gamehelpers->EntityToBCompatRef((CBaseEntity *)iface);
 	}
-#ifdef PLATFORM_X64
+#ifdef KE_ARCH_X64
 	return g_pSM->ToPseudoAddress(iface);
 #else
 	return (cell_t)iface;
 #endif
 }
 
-#if defined( WIN32 ) && !defined( PLATFORM_X64 )
+#if defined( WIN32 ) && !defined( KE_ARCH_X64 )
 void *Callback(DHooksCallback *dg, void **argStack, size_t *argsizep)
 #else
 void *Callback(DHooksCallback *dg, void **argStack)
@@ -491,7 +491,7 @@ void *Callback(DHooksCallback *dg, void **argStack)
 	Handle_t rHndl;
 	Handle_t pHndl;
 
-#if defined( WIN32 ) && !defined( PLATFORM_X64 )
+#if defined( WIN32 ) && !defined( KE_ARCH_X64 )
 	*argsizep = GetStackArgsSize(dg);
 #else
 	size_t argsize = GetStackArgsSize(dg);
@@ -519,7 +519,7 @@ void *Callback(DHooksCallback *dg, void **argStack)
 		dg->plugin_callback->PushCell(rHndl);
 	}
 
-#if defined( WIN32 ) && !defined( PLATFORM_X64 )
+#if defined( WIN32 ) && !defined( KE_ARCH_X64 )
 	if(*argsizep > 0)
 	{
 		paramStruct = GetParamStruct(dg, argStack, *argsizep);
@@ -664,7 +664,7 @@ void *Callback(DHooksCallback *dg, void **argStack)
 	}
 	return ret;
 }
-#if defined( WIN32 ) && !defined( PLATFORM_X64 )
+#if defined( WIN32 ) && !defined( KE_ARCH_X64 )
 float Callback_float(DHooksCallback *dg, void **argStack, size_t *argsizep)
 #else
 float Callback_float(DHooksCallback *dg, void **argStack)
@@ -675,7 +675,7 @@ float Callback_float(DHooksCallback *dg, void **argStack)
 	Handle_t rHndl;
 	Handle_t pHndl;
 
-#if defined( WIN32 ) && !defined( PLATFORM_X64 )
+#if defined( WIN32 ) && !defined( KE_ARCH_X64 )
 	*argsizep = GetStackArgsSize(dg);
 #else
 	size_t argsize = GetStackArgsSize(dg);
@@ -702,7 +702,7 @@ float Callback_float(DHooksCallback *dg, void **argStack)
 	}
 	dg->plugin_callback->PushCell(rHndl);
 
-	#if defined( WIN32 ) && !defined( PLATFORM_X64 )
+	#if defined( WIN32 ) && !defined( KE_ARCH_X64 )
 	if(*argsizep > 0)
 	{
 		paramStruct = GetParamStruct(dg, argStack, *argsizep);
@@ -819,7 +819,7 @@ float Callback_float(DHooksCallback *dg, void **argStack)
 	}
 	return *(float *)ret;
 }
-#if defined( WIN32 ) && !defined( PLATFORM_X64 )
+#if defined( WIN32 ) && !defined( KE_ARCH_X64 )
 SDKVector *Callback_vector(DHooksCallback *dg, void **argStack, size_t *argsizep)
 #else
 SDKVector *Callback_vector(DHooksCallback *dg, void **argStack)
@@ -832,7 +832,7 @@ SDKVector *Callback_vector(DHooksCallback *dg, void **argStack)
 	Handle_t rHndl;
 	Handle_t pHndl;
 
-#if defined( WIN32 ) && !defined( PLATFORM_X64 )
+#if defined( WIN32 ) && !defined( KE_ARCH_X64 )
 	*argsizep = GetStackArgsSize(dg);
 #else
 	size_t argsize = GetStackArgsSize(dg);
@@ -859,7 +859,7 @@ SDKVector *Callback_vector(DHooksCallback *dg, void **argStack)
 	}
 	dg->plugin_callback->PushCell(rHndl);
 
-	#if defined( WIN32 ) && !defined( PLATFORM_X64 )
+	#if defined( WIN32 ) && !defined( KE_ARCH_X64 )
 	if(*argsizep > 0)
 	{
 		paramStruct = GetParamStruct(dg, argStack, *argsizep);

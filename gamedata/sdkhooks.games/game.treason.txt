@@ -1,0 +1,93 @@
+"Games"
+{
+	"treason"
+	{
+		"Offsets"
+		{
+			"EndTouch"
+			{
+				"windows"	"104"
+			}
+			"FireBullets"
+			{
+				"windows"	"116"
+			}
+			"GroundEntChanged"
+			{
+				"windows"	"182"
+			}
+			"OnTakeDamage"
+			{
+				"windows"	"62"
+			}
+			"OnTakeDamage_Alive"
+			{
+				"windows"	"277"
+			}
+			"PreThink"
+			{
+				"windows"	"337"
+			}
+			"PostThink"
+			{
+				"windows"	"338"
+			}
+			"SetTransmit"
+			{
+				"windows"	"20"
+			}
+			"ShouldCollide"
+			{
+				"windows"	"16"
+			}
+			"Spawn"
+			{
+				"windows"	"22"
+			}
+			"StartTouch"
+			{
+				"windows"	"102"
+			}
+			"Think"
+			{
+				"windows"	"47"
+			}
+			"Touch"
+			{
+				"windows"	"103"
+			}
+			"TraceAttack"
+			{
+				"windows"	"60"
+			}
+			"Use"
+			{
+				"windows"	"101"
+			}
+			"VPhysicsUpdate"
+			{
+				"windows"	"162"
+			}
+			"Weapon_CanSwitchTo"
+			{
+				"windows"	"271"
+			}
+			"Weapon_CanUse"
+			{
+				"windows"	"265"
+			}
+			"Weapon_Drop"
+			{
+				"windows"	"268"
+			}
+			"Weapon_Equip"
+			{
+				"windows"	"266"
+			}
+			"Weapon_Switch"
+			{
+				"windows"	"269"
+			}
+		}
+	}
+}

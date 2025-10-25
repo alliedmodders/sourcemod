@@ -36,6 +36,9 @@
 #include "vector.h"
 #include "utlvector.h"
 #include <shareddefs.h>
+#if SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_HL2DM
+class CBasePlayer;
+#endif
 #include "usercmd.h"
 #include "filesystem.h"
 

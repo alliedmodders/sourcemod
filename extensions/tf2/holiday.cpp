@@ -148,8 +148,8 @@ void HolidayManager::OnPluginLoaded(IPlugin *plugin)
 	PopulateHolidayVar(pRuntime, "TFHoliday_Birthday");
 	PopulateHolidayVar(pRuntime, "TFHoliday_Halloween");
 	PopulateHolidayVar(pRuntime, "TFHoliday_Christmas");
-	PopulateHolidayVar(pRuntime, "TFHoliday_EndOfTheLine");
 	PopulateHolidayVar(pRuntime, "TFHoliday_CommunityUpdate");
+	PopulateHolidayVar(pRuntime, "TFHoliday_EndOfTheLine");
 	PopulateHolidayVar(pRuntime, "TFHoliday_ValentinesDay");
 	PopulateHolidayVar(pRuntime, "TFHoliday_MeetThePyro");
 	PopulateHolidayVar(pRuntime, "TFHoliday_FullMoon");
@@ -157,6 +157,7 @@ void HolidayManager::OnPluginLoaded(IPlugin *plugin)
 	PopulateHolidayVar(pRuntime, "TFHoliday_HalloweenOrFullMoonOrValentines");
 	PopulateHolidayVar(pRuntime, "TFHoliday_AprilFools");
 	PopulateHolidayVar(pRuntime, "TFHoliday_Soldier");
+	PopulateHolidayVar(pRuntime, "TFHoliday_Summer");
 }
 
 void HolidayManager::OnPluginUnloaded(IPlugin *plugin)

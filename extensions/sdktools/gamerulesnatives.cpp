@@ -33,11 +33,16 @@
 #include "gamerulesnatives.h"
 #include "vglobals.h"
 
-const char *g_szGameRulesProxy;
+char g_szGameRulesProxy[64] = { 0 };
 
 void GameRulesNativesInit()
 {
-	g_szGameRulesProxy = g_pGameConf->GetKeyValue("GameRulesProxy");
+	auto key = g_pGameConf->GetKeyValue("GameRulesProxy");
+	if (key)
+	{
+		strncpy(g_szGameRulesProxy, key, sizeof(g_szGameRulesProxy));
+		g_szGameRulesProxy[sizeof(g_szGameRulesProxy) - 1] = '\0';
+	}
 }
 
 static CBaseEntity *FindEntityByNetClass(int start, const char *classname)
@@ -202,7 +207,7 @@ static cell_t GameRules_GetProp(IPluginContext *pContext, const cell_t *params)
 
 	void *pGameRules = GameRules();
 
-	if (!pGameRules || !g_szGameRulesProxy || !strcmp(g_szGameRulesProxy, ""))
+	if (!pGameRules || !g_szGameRulesProxy[0])
 		return pContext->ThrowNativeError("Gamerules lookup failed.");
 
 	pContext->LocalToString(params[1], &prop);
@@ -274,7 +279,7 @@ static cell_t GameRules_SetProp(IPluginContext *pContext, const cell_t *params)
 	if ((pProxy = GetGameRulesProxyEnt()) == NULL)
 		return pContext->ThrowNativeError("Couldn't find gamerules proxy entity");
 	
-	if (!pGameRules || !g_szGameRulesProxy || !strcmp(g_szGameRulesProxy, ""))
+	if (!pGameRules || !g_szGameRulesProxy[0])
 		return pContext->ThrowNativeError("Gamerules lookup failed");
 
 	pContext->LocalToString(params[1], &prop);
@@ -335,7 +340,7 @@ static cell_t GameRules_GetPropFloat(IPluginContext *pContext, const cell_t *par
 
 	void *pGameRules = GameRules();
 
-	if (!pGameRules || !g_szGameRulesProxy || !strcmp(g_szGameRulesProxy, ""))
+	if (!pGameRules || !g_szGameRulesProxy[0])
 		return pContext->ThrowNativeError("Gamerules lookup failed.");
 
 	pContext->LocalToString(params[1], &prop);
@@ -360,7 +365,7 @@ static cell_t GameRules_SetPropFloat(IPluginContext *pContext, const cell_t *par
 	if ((pProxy = GetGameRulesProxyEnt()) == NULL)
 		return pContext->ThrowNativeError("Couldn't find gamerules proxy entity.");
 	
-	if (!pGameRules || !g_szGameRulesProxy || !strcmp(g_szGameRulesProxy, ""))
+	if (!pGameRules || !g_szGameRulesProxy[0])
 		return pContext->ThrowNativeError("Gamerules lookup failed.");
 
 	pContext->LocalToString(params[1], &prop);
@@ -394,7 +399,7 @@ static cell_t GameRules_GetPropEnt(IPluginContext *pContext, const cell_t *param
 
 	void *pGameRules = GameRules();
 
-	if (!pGameRules || !g_szGameRulesProxy || !strcmp(g_szGameRulesProxy, ""))
+	if (!pGameRules || !g_szGameRulesProxy[0])
 		return pContext->ThrowNativeError("Gamerules lookup failed.");
 
 	pContext->LocalToString(params[1], &prop);
@@ -425,7 +430,7 @@ static cell_t GameRules_SetPropEnt(IPluginContext *pContext, const cell_t *param
 	if ((pProxy = GetGameRulesProxyEnt()) == NULL)
 		return pContext->ThrowNativeError("Couldn't find gamerules proxy entity.");
 	
-	if (!pGameRules || !g_szGameRulesProxy || !strcmp(g_szGameRulesProxy, ""))
+	if (!pGameRules || !g_szGameRulesProxy[0])
 		return pContext->ThrowNativeError("Gamerules lookup failed.");
 
 	pContext->LocalToString(params[1], &prop);
@@ -475,7 +480,7 @@ static cell_t GameRules_GetPropVector(IPluginContext *pContext, const cell_t *pa
 
 	void *pGameRules = GameRules();
 
-	if (!pGameRules || !g_szGameRulesProxy || !strcmp(g_szGameRulesProxy, ""))
+	if (!pGameRules || !g_szGameRulesProxy[0])
 		return pContext->ThrowNativeError("Gamerules lookup failed.");
 
 	pContext->LocalToString(params[1], &prop);
@@ -507,7 +512,7 @@ static cell_t GameRules_SetPropVector(IPluginContext *pContext, const cell_t *pa
 	if ((pProxy = GetGameRulesProxyEnt()) == NULL)
 		return pContext->ThrowNativeError("Couldn't find gamerules proxy entity.");
 	
-	if (!pGameRules || !g_szGameRulesProxy || !strcmp(g_szGameRulesProxy, ""))
+	if (!pGameRules || !g_szGameRulesProxy[0])
 		return pContext->ThrowNativeError("Gamerules lookup failed.");
 
 	pContext->LocalToString(params[1], &prop);
@@ -551,7 +556,7 @@ static cell_t GameRules_GetPropString(IPluginContext *pContext, const cell_t *pa
 
 	void *pGameRules = GameRules();
 
-	if (!pGameRules || !g_szGameRulesProxy || !strcmp(g_szGameRulesProxy, ""))
+	if (!pGameRules || !g_szGameRulesProxy[0])
 		return pContext->ThrowNativeError("Gamerules lookup failed.");
 
 	pContext->LocalToString(params[1], &prop);
@@ -600,7 +605,7 @@ static cell_t GameRules_SetPropString(IPluginContext *pContext, const cell_t *pa
 	if ((pProxy = GetGameRulesProxyEnt()) == NULL)
 		return pContext->ThrowNativeError("Couldn't find gamerules proxy entity.");
 	
-	if (!pGameRules || !g_szGameRulesProxy || !strcmp(g_szGameRulesProxy, ""))
+	if (!pGameRules || !g_szGameRulesProxy[0])
 		return pContext->ThrowNativeError("Gamerules lookup failed.");
 
 	pContext->LocalToString(params[1], &prop);

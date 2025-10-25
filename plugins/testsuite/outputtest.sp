@@ -35,12 +35,12 @@ public void OnPluginStart()
 public void OutputHook(const char[] name, int caller, int activator, float delay)
 {
 	char callerClassname[64];
-	if (caller >= 0 && IsValidEntity(caller)) {
+	if (IsValidEntity(caller)) {
 		GetEntityClassname(caller, callerClassname, sizeof(callerClassname));
 	}
 
 	char activatorClassname[64];
-	if (activator >= 0 && IsValidEntity(activator)) {
+	if (IsValidEntity(activator)) {
 		GetEntityClassname(activator, activatorClassname, sizeof(activatorClassname));
 	}
 

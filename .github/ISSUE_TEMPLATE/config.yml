@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Get Help on Discord
+    url: https://discord.gg/HUc67zN
+    about: For general help or assistance, join the AlliedModders Discord or Forums instead of filing a bug
+  - name: Get Help on the Forums
+    url: https://forums.alliedmods.net
+    about: For general help or assistance, join the AlliedModders Discord or Forums instead of filing a bug

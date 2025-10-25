@@ -33,7 +33,7 @@
 #define _INCLUDE_SOURCEMOD_COMMON_LOGIC_H_
 
 #include "../sm_globals.h"
-#ifdef PLATFORM_X64
+#ifdef KE_ARCH_X64
 #include "PseudoAddrManager.h"
 #endif
 

@@ -863,7 +863,7 @@ enum NumberType
 
 static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
 {
-#ifdef PLATFORM_X86
+#ifdef KE_ARCH_X86
 	void *addr = reinterpret_cast<void*>(params[1]);
 #else
 	void *addr = pseudoAddr.FromPseudoAddress(params[1]);
@@ -875,7 +875,7 @@ static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
 	}
 	else if (reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
 	{
-		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory.", addr);
+		return pContext->ThrowNativeError("Invalid address %p is pointing to reserved memory.", addr);
 	}
 	NumberType size = static_cast<NumberType>(params[2]);
 
@@ -895,7 +895,7 @@ static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
 
 static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 {
-#ifdef PLATFORM_X86
+#ifdef KE_ARCH_X86
 	void *addr = reinterpret_cast<void*>(params[1]);
 #else
 	void *addr = pseudoAddr.FromPseudoAddress(params[1]);
@@ -907,7 +907,7 @@ static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 	}
 	else if (reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
 	{
-		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory.", addr);
+		return pContext->ThrowNativeError("Invalid address %p is pointing to reserved memory.", addr);
 	}
 	cell_t data = params[2];
 

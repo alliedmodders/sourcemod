@@ -1,3 +1,4 @@
+#from __future__ import print_function
 """vtable_dump.py: IDAPython script to dump a linux vtable (and a reconstructed windows one) from a binary."""
 
 """
@@ -43,6 +44,7 @@ classname = None
 offsetdata = {}
 
 # Detect address size
+__EA64__ = ida_idaapi.BADADDR == 0xFFFFFFFFFFFFFFFF
 adr_size = 8 if __EA64__ else 4
 
 def ExtractTypeInfo(ea, level = 0):
@@ -56,14 +58,14 @@ def ExtractTypeInfo(ea, level = 0):
 	while len(Name(end)) == 0:
 		end += adr_size
 	
-	while Dword(end - adr_size) == 0:
+	while (end - adr_size) == 0:
 		end -= adr_size
 	
 	# Skip vtable
 	ea += adr_size
 	
 	# Get type name
-	name = Demangle("_Z" + GetString(Dword(ea)), GetLongPrm(INF_LONG_DN))
+	name = idc.demangle_name("_Z" + ida_bytes.get_strlit_contents(ea), ida_ida.inf_get_long_demnames())
 	ea += adr_size
 	
 	if classname is None and level == 0:
@@ -73,20 +75,20 @@ def ExtractTypeInfo(ea, level = 0):
 		innerclass = name
 		catchclass = False
 	
-	print " %*s%s" % (level, "", name)
+	print(" %*s%s" % (level, "", name))
 	
 	if not ea < end: # Base Type
 		pass
-	elif Dword(ea) != 0: #elif isData(GetFlags(Dword(ea))): # Single Inheritance
-		ExtractTypeInfo(Dword(ea), level + 1)
+	elif ea != 0: #elif isData(GetFlags(ea)): # Single Inheritance
+		ExtractTypeInfo(ea, level + 1)
 		ea += adr_size
 	else: # Multiple Inheritance
 		ea += 8
 		while ea < end:
 			catchclass = True
-			ExtractTypeInfo(Dword(ea), level + 1)
+			ExtractTypeInfo(ea, level + 1)
 			ea += adr_size
-			offset = Dword(ea)
+			offset = ea
 			ea += adr_size
 			#print "%*s Offset: 0x%06X" % (level, "", offset >> 8)
 			if (offset >> 8) != 0:
@@ -100,29 +102,29 @@ def twos_comp(val, bits):
 	return val
 
 def Analyze():
-	SetStatus(IDA_STATUS_WORK)
+	ida_auto.set_ida_state(IDA_STATUS_WORK)
 	
-	if GetLongPrm(INF_COMPILER).id != COMP_GNU:
+	if ida_ida.inf_get_cc_id() != COMP_GNU:
 		Warning("This script is for binaries compiled with GCC only.")
-		SetStatus(IDA_STATUS_READY)
+		ida_auto.set_ida_state(IDA_STATUS_READY)
 		return
 	
-	ea = ScreenEA()
+	ea = idc.get_screen_ea()
 	
 	end = ea + adr_size
-	while Demangle(Name(end), GetLongPrm(INF_LONG_DN)) is None:
+	while idc.demangle_name(idc.get_name(end, ida_name.GN_VISIBLE), ida_ida.inf_get_long_demnames()) is None:
 		end += adr_size
 	
-	while Dword(end - adr_size) == 0:
+	while (end - adr_size) == 0:
 		end -= adr_size
 	
-	while Demangle(Name(ea), GetLongPrm(INF_LONG_DN)) is None:
+	while idc.demangle_name(idc.get_name(ea, ida_name.GN_VISIBLE), ida_ida.inf_get_long_demnames()) is None:
 		ea -= adr_size
 	
-	name = Demangle(Name(ea), GetLongPrm(INF_LONG_DN))
-	if ea == BADADDR or name is None or not re.search(r"vf?table(?: |'\{)for", name):
+	name = idc.demangle_name(idc.get_name(ea, ida_name.GN_VISIBLE), ida_ida.inf_get_long_demnames())
+	if ea == ida_idaapi.BADADDR or name is None or not re.search(r"vf?table(?: |'\{)for", name):
 		Warning("No vtable selected!\nSelect vtable block first.")
-		SetStatus(IDA_STATUS_READY)
+		ida_auto.set_ida_state(IDA_STATUS_READY)
 		return
 	
 	linux_vtable = []
@@ -135,22 +137,22 @@ def Analyze():
 	# Extract vtable
 	while ea < end:
 		# Read thisoffs
-		offset = -twos_comp(Dword(ea), 32)
+		offset = -twos_comp(ea, 32)
 		#print "Offset: 0x%08X (%08X)" % (offset, ea)
 		ea += adr_size
 		
 		# Read typeinfo address
-		typeinfo = Dword(ea)
+		typeinfo = ea
 		ea += adr_size
 		
 		if offset == 0: # We only need to read this once
-			print "Inheritance Tree:"
+			print("Inheritance Tree:")
 			ExtractTypeInfo(typeinfo)
 		
-		while ea < end and (isCode(GetFlags(Dword(ea))) or Name(Dword(ea)) == "___cxa_pure_virtual"):
-			name = Name(Dword(ea))
-			demangled = Demangle(name, GetLongPrm(INF_LONG_DN))
-			#print "Name: %s, Demangled: %s" % (name, demangled)
+		while (ea < end) and (ida_bytes.is_code(ida_bytes.get_full_flags(ea)) or idc.get_name(ea, ida_name.GN_VISIBLE) == "___cxa_pure_virtual"):
+			name = idc.get_name(ea, ida_name.GN_VISIBLE)
+			demangled = idc.demangle_name(name, ida_ida.inf_get_long_demnames())
+			#print "Name: %s, idc.demangle_named: %s" % (name, demangled)
 			
 			name = demangled if demangled else name
 			
@@ -216,18 +218,18 @@ def Analyze():
 	while len(overload_stack) > 0:
 		windows_vtable.append(overload_stack.pop())
 	
-	print "\nVTable for %s: (0, 0)" % (classname)
-	print " Lin  Win Function"
+	print("\nVTable for %s: (0, 0)" % (classname))
+	print(" Lin  Win Function")
 	for i, v in enumerate(linux_vtable):
 		if "__cxa_pure_virtual" in v:
-			print "P%3d" % (i)
+			print("P%3d" % (i))
 			continue
 		
 		winindex = windows_vtable.index(v) if v in windows_vtable else None
 		if winindex is not None:
-			print "%4d %4d %s" % (i, winindex, v)
+			print("%4d %4d %s" % (i, winindex, v))
 		else:
-			print "%4d      %s" % (i, v)
+			print("%4d      %s" % (i, v))
 	
 	for k in temp_other_windows_vtables:
 		for i, v in enumerate(temp_other_windows_vtables[k]):
@@ -260,20 +262,20 @@ def Analyze():
 			prev_symbol = v
 	
 	for k in other_linux_vtables:
-		print "\nVTable for %s: (%d, %d)" % (offsetdata[k], offsetdata.keys().index(k) + 1, k)
-		print " Lin  Win Function"
+		print("\nVTable for %s: (%d, %d)" % (offsetdata[k], offsetdata.keys().index(k) + 1, k))
+		print(" Lin  Win Function")
 		for i, v in enumerate(other_linux_vtables[k]):
 			if "__cxa_pure_virtual" in v:
-				print "P%3d" % (i)
+				print("P%3d" % (i))
 				continue
 			
 			winindex = other_windows_vtables[k].index(v)
 			if v not in other_thunk_linux_vtables[k]:
-				print "%4d %4d %s" % (i, winindex, v)
+				print("%4d %4d %s" % (i, winindex, v))
 			else:
-				print "T%3d %4d %s" % (i, winindex, v)
+				print("T%3d %4d %s" % (i, winindex, v))
 	
-	SetStatus(IDA_STATUS_READY)
+	ida_auto.set_ida_state(IDA_STATUS_READY)
 
 if __name__ == '__main__':
 	Analyze()

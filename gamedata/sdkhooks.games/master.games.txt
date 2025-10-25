@@ -156,11 +156,6 @@
 		"game"		"ag2"
 	}
 	
-	"game.cstrike.txt"
-	{
-		"game"		"cstrike"
-	}
-	
 	"game.nmrih.txt"
 	{
 		"game"		"nmrih"
@@ -223,5 +218,13 @@
 	"game.gmod9.txt"
 	{
 		"game"		"gmod9"
+	}
+	"game.hl1mp.txt"
+	{
+		"game"		"hl1mp"
+	}
+	"game.treason.txt"
+	{
+		"game"		"treason"
 	}
 }

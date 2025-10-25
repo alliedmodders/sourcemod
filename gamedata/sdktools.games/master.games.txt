@@ -50,11 +50,6 @@
 		"engine"	"sdk2013"
 	}
 	
-	"engine.css.txt"
-	{
-		"engine"	"css"
-	}
-	
 	"engine.ep1.txt"
 	{
 		"engine"	"original"
@@ -284,5 +279,13 @@
 	"game.gmod9.txt"
 	{
 		"game"		"gmod9"
+	}
+	"game.hl1mp.txt"
+	{
+		"game"		"hl1mp"
+	}
+	"game.treason.txt"
+	{
+		"game"		"treason"
 	}
 }

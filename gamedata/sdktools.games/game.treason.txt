@@ -1,0 +1,99 @@
+"Games"
+{
+	"treason"
+	{
+		"Keys"
+		{
+			"SlapSoundCount"	"5"
+			"SlapSound1"		"player/hitmark.wav"
+			"SlapSound2"		"player/hitmark_dart.wav"
+			"SlapSound3"		"player/hitmark_protection.wav"
+			"SlapSound4"		"player/hitmarkhead.wav"
+			"SlapSound5"		"player/hitmarkhead_protection.wav"
+			
+			"GameRulesProxy"		"CTreasonGameRulesProxy"
+			"GameRulesDataTable"	"treason_gamerules_data"
+		}
+
+		"Offsets"
+		{
+			"SetOwnerEntity"
+			{
+				"windows"	"17"
+			}
+			"GiveNamedItem"
+			{
+				"windows"	"405"
+			}
+			"RemovePlayerItem"
+			{
+				"windows"	"275"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows"	"273"
+			}
+			"Ignite"
+			{
+				"windows"	"214"
+			}
+			"Extinguish"
+			{
+				"windows"	"218"
+			}
+			"Teleport"
+			{
+				"windows"	"112"
+			}
+			"CommitSuicide"
+			{
+				"windows"	"443"
+			}
+			"GetVelocity"
+			{
+				"windows"	"145"
+			}
+			"EyeAngles"
+			{
+				"windows"	"135"
+			}
+			"AcceptInput"
+			{
+				"windows"	"36"
+			}
+			"SetEntityModel"
+			{
+				"windows"	"24"
+			}
+			"WeaponEquip"
+			{
+				"windows"	"266"
+			}
+			"Activate"
+			{
+				"windows"	"33"
+			}
+			"PlayerRunCmd"
+			{
+				"windows"	"423"
+			}
+			"GiveAmmo"
+			{
+				"windows"	"257"
+			}
+			"GetAttachment"
+			{
+				"windows"	"210"
+			}
+		}
+
+		"Signatures"
+		{
+			"LookupAttachment"
+			{
+				"library"	"server"
+				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x80\xBE\x31\x03\x00\x00\x00\x75\x2A\x83\xBE\x70\x04\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x86\x70\x04\x00\x00\x85\xC0\x74\x2A\x83\x38\x00\x74\x2A\xFF\x75\x08\x50\xE8\x2A\x2A\x2A\x2A\x83\xC4\x08\x40"
+			}
+		}
+	}
+}

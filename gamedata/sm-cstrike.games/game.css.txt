@@ -19,137 +19,176 @@
 			"WeaponName"
 			{
 				"windows"		"6"
+				"windows64"		"10"
 				"linux"			"6"
-				"mac"			"6"
+				"linux64"		"10"
 			}
+			// Find "BlackMarketTable" select the dword -> follow it the only other subroutine -> CCSGameRules::SetBlackMarketPrices is called before return
+			// CCSGameRules::SetBlackMarketPrices sets weapon price & default price. [New way, look offset from _ZNK13CCSWeaponInfo14GetWeaponPriceEv, under _ZN9CCSPlayer26HandleCommand_Buy_InternalEPKc]
 			"WeaponPrice"
 			{
 				"windows"		"2308"
+				"windows64"		"2356"
 				"linux"			"2308"
-				"mac"			"2308"
+				"linux64"		"2352"
 			}
 			//Offset into SetClanTag to find clan tag's offset from player
 			"ClanTagOffset"
 			{
 				"windows"	"24"
-				"linux"		"29"
-				"mac"		"18"
+				"windows64"	"29"
+				"linux"		"23"
+				"linux64"	"8"
 			}
-			//Offset into CheckWinLimit to find CT team score offset from gamerules. For mac this is an offset into CCSGameRules::Think
+			//Offset into CheckWinLimit to find CT team score offset from gamerules. For windows this is an offset into CCSGameRules::Think
 			"CTTeamScoreOffset"
 			{
-				"windows"	"18"
+				"windows"	"274"
+				"windows64"	"309"
 				"linux"		"27"
-				"mac"		"205"
+				"linux64"	"37"
 			}
-			//Offset into CheckWinLimit to find T team score offset from gamerules. For mac this is an offset into CCSGameRules::Think
+			//Offset into CheckWinLimit to find T team score offset from gamerules. For windows this is an offset into CCSGameRules::Think
 			"TTeamScoreOffset"
 			{
-				"windows"	"56"
+				"windows"	"395"
+				"windows64"	"454"
 				"linux"		"38"
-				"mac"		"216"
+				"linux64"	"57"
 			}
 		}
 		"Signatures"
 		{
+			// String: "reload\n" follow the xref, there are two subroutines, pick the bigger one there's a dynamic cast in it
+			// That subroutine is "respawn(CBaseEntity*, bool)", follow the xref, there are once again two subroutines, pick the smaller one.
 			"RoundRespawn"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x51\x89\x2A\x2A\x8B\x2A\x2A\x8B\x10\x8B"
+				"windows"	"\x55\x8B\xEC\x51\x89\x4D\xFC\x8B\x45\xFC\x8B\x10"
+				"windows64"	"\x48\x89\x4C\x24\x08\x48\x83\xEC\x28\x48\x8B\x44\x24\x30\x48\x8B\x00\x48\x8B\x4C\x24\x30"
 				"linux"		"@_ZN9CCSPlayer12RoundRespawnEv"
-				"mac"		"@_ZN9CCSPlayer12RoundRespawnEv"
+				"linux64"		"@_ZN9CCSPlayer12RoundRespawnEv"
 			}
+			// String: "CCSPlayer::SwitchTeam( %d ) - invalid team index."
 			"SwitchTeam"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x2A\x89\x4D\x2A\x8B\x45\x2A\x50\xE8\x2A\x2A\x2A\x2A\x83\xC4\x04\x85\xC0\x74"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x5C\x89\x4D\xFC"
+				"windows64"	"\x89\x54\x24\x10\x48\x89\x4C\x24\x08\x48\x81\xEC\xB8\x00\x00\x00"
 				"linux"		"@_ZN9CCSPlayer10SwitchTeamEi"
-				"mac"		"@_ZN9CCSPlayer10SwitchTeamEi"
+				"linux64"		"@_ZN9CCSPlayer10SwitchTeamEi"
 			}
+			// String: "#Alias_Not_Avail"
 			"HandleCommand_Buy_Internal"
 			{
 				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x83\xEC\x2A\x89\x4D\x2A\x6A\x00\x8B\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x0F\xB6\xC0\x85\xC0\x74"
+				"windows"		"\x55\x8B\xEC\x83\xEC\x28\x89\x4D\xF8\x6A\x00"
+				"windows64"		"\x48\x89\x54\x24\x10\x48\x89\x4C\x24\x08\x48\x81\xEC\x88\x00\x00\x00"
 				"linux"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKc"
-				"mac"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKc"
+				"linux64"			"@_ZN9CCSPlayer26HandleCommand_Buy_InternalEPKc"
 			}
+			// After having located "HandleCommand_Buy_Internal"
+			// Jump back to the string "#Alias_Not_Avail" there should be two conditional jumps before
+			// Pick the first one, and follow it. It should take you to a block that immediately calls another subroutine with one parameter
+			// and then test the return value to perform yet another jump. That subroutine is GetWeaponPrice
 			"GetWeaponPrice"
 			{
 				"library"		"server"
-				"windows"		"\x8B\x81\x04\x09\x00\x00\xC3"
+				"windows"		"\x8B\x81\x04\x09\x00\x00"
+				"windows64"		"\x8B\x81\x34\x09\x00\x00"
 				"linux"			"@_ZNK13CCSWeaponInfo14GetWeaponPriceEv"
-				"mac"			"@_ZNK13CCSWeaponInfo14GetWeaponPriceEv"
+				"linux64"			"@_ZNK13CCSWeaponInfo14GetWeaponPriceEv"
 			}
+			// String: "ValveBiped.Bip01_R_Hand"
 			"CSWeaponDrop"//Wildcard first 6 bytes for CS:S DM
 			{
 				"library"		"server"
-				"windows"		"\x2A\x2A\x2A\x2A\x2A\x2A\x01\x00\x00\x89\x4D\xFC\xC6\x45\x2A\x2A\x8B\x4D\x2A\xE8\x2A\x2A\x2A\x2A\x0F\xB6\xC0"
+				"windows"		"\x55\x8B\xEC\x81\xEC\x80\x01\x00\x00\x89\x4D\xFC"
+				"windows64"		"\x44\x88\x4C\x24\x20\x44\x88\x44\x24\x18\x48\x89\x54\x24\x10\x48\x89\x4C\x24\x08\x56"
 				"linux"			"@_ZN9CCSPlayer12CSWeaponDropEP17CBaseCombatWeaponbb"
-				"mac"			"@_ZN9CCSPlayer12CSWeaponDropEP17CBaseCombatWeaponbb"
+				"linux64"			"@_ZN9CCSPlayer12CSWeaponDropEP17CBaseCombatWeaponbb"
 			}
+			// String: "CTsWin"
 			"TerminateRound"
 			{
 				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x83\xEC\x2A\x8B\x45\x0C\x53\x56\x57\x33\xF6"
+				"windows"		"\x55\x8B\xEC\x83\xEC\x28\x8B\x45\x0C"
+				"windows64"		"\x48\x8B\xC4\x55\x53\x48\x8D\x68\xA1"
 				"linux"			"@_ZN12CCSGameRules14TerminateRoundEfi"
-				"mac"			"@_ZN12CCSGameRules14TerminateRoundEfi"
+				"linux64"			"@_ZN12CCSGameRules14TerminateRoundEfi"
 			}
+			// String: "d3au1" follow the xref to the array
+			// Follow the xref of that array, its only used in GetTranslatedWeaponAlias
+			// if you're in the right place, the subroutine should contain the string 'ak47'
 			"GetTranslatedWeaponAlias"
 			{
 				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x56\x57\x8B\x7D\x2A\x33\xF6\x8D\x9B\x00\x00\x00\x00\x57\xFF\x34\xF5\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x08\x85\xC0\x74\x2A\x46\x83\xFE\x1A\x72\x2A\x8B\xC7\x5F\x5E\x5D\xC3"
+				"windows"		"\x55\x8B\xEC\x56\x57\x8B\x7D\x08\x33\xF6\x8D\x9B\x00\x00\x00\x00\x57\xFF\x34\xF5\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x83\xC4\x08\x85\xC0\x74\x2A\x46\x83\xFE\x1A"
+				"windows64"		"\x48\x89\x5C\x24\x08\x48\x89\x6C\x24\x10\x48\x89\x74\x24\x18\x57\x48\x83\xEC\x20\x48\x8D\x2D\x45\xDC\x21\x00"
 				"linux"			"@_Z24GetTranslatedWeaponAliasPKc"
-				"mac"			"@_Z24GetTranslatedWeaponAliasPKc"
+				"linux64"			"@_Z24GetTranslatedWeaponAliasPKc"
 			}
+			// String: "weapon_assaultsuit" follow the xref to the array, first element should be "weapon_p228"
+			// Follow the xref o that array, it should be used in GetWeaponInfo
 			"GetWeaponInfo"
 			{
 				"library"		"server"
-				"windows"		"\x55\x8B\xEC\x8B\x4D\x08\x85\xC9\x75\x2A\x33\xC0\x5D\xC3\x83\x2A\x2A\x7C\x2A\x69\xC9"
+				"windows"		"\x55\x8B\xEC\x8B\x4D\x08\x56\x85\xC9\x74\x2A\x83\xF9\x1F"
+				"windows64"		"\x40\x53\x48\x83\xEC\x30\x48\x63\xD1"
 				"linux"			"@_Z13GetWeaponInfo10CSWeaponID"
-				"mac"			"@_Z13GetWeaponInfo10CSWeaponID"
+				"linux64"			"@_Z13GetWeaponInfo10CSWeaponID"
 			}
+			// String: "ClanTagChanged" follow the xref, there should be conditional jump to a node with 4 subroutines call and one virtual function call
+			// SetClangTag is the second subroutine called 
 			"SetClanTag"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x51\x89\x2A\x2A\x83\x2A\x2A\x2A\x74\x2A\x6A\x2A\x8B\x2A\x2A\x50"
+				"windows"	"\x55\x8B\xEC\x51\x89\x4D\xFC\x83\x7D\x08\x00\x74\x2A\x6A\x10"
+				"windows64"	"\x48\x89\x54\x24\x10\x48\x89\x4C\x24\x08\x48\x83\xEC\x28\x48\x83\x7C\x24\x38\x00\x74\x2A\x48\x8B\x44\x24\x30"
 				"linux"		"@_ZN9CCSPlayer10SetClanTagEPKc"
-				"mac"		"@_ZN9CCSPlayer10SetClanTagEPKc"
+				"linux64"		"@_ZN9CCSPlayer10SetClanTagEPKc"
 			}
+			// String: "p228" the xref should you to an array that's being used in two subroutines, where the increment is * 8
+			// This is WeaponIDToAlias & AliasToWeaponID. To tell apart one from the other, the array will be used as return value in AliasToWeaponID
 			"AliasToWeaponID"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x56\x57\x8B\x7D\x08\x85\xFF\x74\x2A\x33\xF6\x8B\xFF"
+				"windows"	"\x55\x8B\xEC\x56\x57\x8B\x7D\x08\x85\xFF\x74\x2A\x33\xF6\x8B\xFF\x57"
+				"windows64"	"\x48\x89\x5C\x24\x08\x48\x89\x74\x24\x10\x57\x48\x83\xEC\x20\x48\x8B\xF1\x48\x85\xC9"
 				"linux"		"@_Z15AliasToWeaponIDPKc"
-				"mac"		"@_Z15AliasToWeaponIDPKc"
+				"linux64"		"@_Z15AliasToWeaponIDPKc"
 			}
 			"WeaponIDToAlias"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\x4D\x08\x33\xC0\xEB\x2A\x8D\x9B\x00\x00\x00\x00\x39\x0C\xC5\x2A\x2A\x2A\x2A\x74\x2A\x40\x83\xF8\x26\x72\x2A\x33\xC0\x5D"
+				"windows"	"\x55\x8B\xEC\x8B\x4D\x08\x33\xC0\xEB\x2A\x8D\x9B\x00\x00\x00\x00\x39\x0C\xC5\x2A\x2A\x2A\x2A\x74\x2A\x40\x83\xF8\x26"
+				"windows64"	"\x4C\x8D\x05\x09\xFE\x35\x00"
 				"linux"		"@_Z15WeaponIDToAliasi"
-				"mac"		"@_Z15WeaponIDToAliasi"
+				"linux64"		"@_Z15WeaponIDToAliasi"
 			}
-			
-			//For mac we use think since CheckWinLimit dosnt exist on mac.
+			// String: "Team \"CT\" triggered \"Intermission_Win_Limit\"\n"
+			// Note: Function got inlined on windows inside CCSGameRules::Think
 			"CheckWinLimit"
 			{
 				"library"	"server"
-				"windows"	"\xA1\x2A\x2A\x2A\x2A\x56\x8B\xF1\x8B\x48\x30\x85\xC9\x74\x2A\x0F"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x44\x56\x57\x8B\xF9"
+				"windows64"	"\x48\x89\x5C\x24\x18\x48\x89\x7C\x24\x20\x41\x56\x48\x81\xEC\x80\x00\x00\x00\x48\x8B\xF9"
 				"linux"		"@_ZN12CCSGameRules13CheckWinLimitEv"
-				"mac"		"@_ZN12CCSGameRules5ThinkEv"
+				"linux64"		"@_ZN12CCSGameRules13CheckWinLimitEv"
 			}
+			// [Windwos] Search string: "#Hint_you_are_the_vip", you will find function: void CCSPlayer::Spawn(). From the top, look 4th ´call´ instruction, that should be = void CCSPlayer::SetModelFromClass( void )
+			// github post: https://github.com/alliedmodders/sourcemod/pull/2289#issuecomment-2692650409
 			"SetModelFromClass"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x34\x89\x4D\xFC\x8B\x4D\xFC\xE8\x2A\x2A\x2A\x2A\x83\xF8\x02"
+				"windows"	"\x55\x8B\xEC\x83\xEC\x2C\x89\x4D\xFC\x8B\x4D\xFC"
+				"windows64"	"\x48\x89\x4C\x24\x08\x48\x83\xEC\x78\x48\x8B\x8C\x24\x80\x00\x00\x00\xE8\x2A\x2A\x2A\x2A\x83\xF8\x02"
 				"linux"		"@_ZN9CCSPlayer17SetModelFromClassEv"
-				"mac"		"@_ZN9CCSPlayer17SetModelFromClassEv"
+				"linux64"		"@_ZN9CCSPlayer17SetModelFromClassEv"
 			}
 		}
-	}
 	
-	"cstrike"
-	{
+
 		"Keys"
 		{
 			"MVPsBase"		"m_bPlayerDominatingMe"
@@ -157,13 +196,14 @@
 		
 		"Offsets"
 		{
+			// String: "round_mvp" right above a member variable should be getting incremented
+			// This is m_iMVPs, take the offset and subtract it by the offset of the sendprop above
 			"MVPs"
 			{
-				/* factors in 66 (size of m_bPlayerDominatingMe array (bool size * (65 maxplayers + 1)))
-				... plus another 3 because alignment(?) lolidk */
 				"windows"	"69"
+				"windows64"	"69"
 				"linux"		"69"
-				"mac"		"69"
+				"linux64"	"69"
 			}
 		}
 	}
