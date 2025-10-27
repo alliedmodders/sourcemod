@@ -188,6 +188,15 @@ bool AddString(char **buf_p, size_t &maxlen, const char *string, int width, int 
 
 	width -= size;
 
+	if (!(flags & LADJUST))
+	{
+		while ((width-- > 0) && maxlen)
+		{
+			*buf++ = ' ';
+			maxlen--;
+		}
+	}
+
 	if (g_FormatEscapeDatabase && (flags & NOESCAPE) == 0)
 	{
 		char *tempBuffer = NULL;
@@ -226,10 +235,13 @@ bool AddString(char **buf_p, size_t &maxlen, const char *string, int width, int 
 		}
 	}
 
-	while ((width-- > 0) && maxlen)
+	if (flags & LADJUST)
 	{
-		*buf++ = ' ';
-		maxlen--;
+		while ((width-- > 0) && maxlen)
+		{
+			*buf++ = ' ';
+			maxlen--;
+		}
 	}
 
 	*buf_p = buf;
