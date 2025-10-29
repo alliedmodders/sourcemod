@@ -42,6 +42,8 @@ enum SDKFuncConfSource
 	SDKConf_Address
 };
 
+using ParamVector = SourceHook::CVector<ParamInfo>;
+
 bool GetHandleIfValidOrError(HandleType_t type, void **object, IPluginContext *pContext, cell_t param)
 {
 	if(param == BAD_HANDLE)
@@ -93,7 +95,7 @@ bool GetObjectAddrOrThis(IPluginContext *pContext, const cell_t *params, void *&
 
 	if(params[2] != 0)
 	{
-		const auto &paramsVec = paramStruct->dg->params;
+		const ParamVector &paramsVec = paramStruct->dg->params;
 
 		if(params[2] < 0 || params[2] > static_cast<int>(paramsVec.size()))
 		{
@@ -101,7 +103,7 @@ bool GetObjectAddrOrThis(IPluginContext *pContext, const cell_t *params, void *&
 		}
 
 		int index = params[2] - 1;
-		const auto &param = paramsVec.at(index);
+		const ParamInfo &param = paramsVec.at(index);
 
 		if(param.type != HookParamType_ObjectPtr && param.type != HookParamType_Object)
 		{
@@ -113,16 +115,16 @@ bool GetObjectAddrOrThis(IPluginContext *pContext, const cell_t *params, void *&
 		return true;
 	}
 
-	const auto &dgInfo = paramStruct->dg;
+	const DHooksInfo* dgInfo = paramStruct->dg;
 
 	if(dgInfo->thisFuncCallConv != CallConv_THISCALL)
 	{
-		return pContext->ThrowNativeError("Parameter 'this' is only available in member functions, specify the calling convention type 'thiscall'");
+		return pContext->ThrowNativeError("Parameter 'this' is only available in member functions");
 	}
 
 	if(dgInfo->thisType != ThisPointer_Address
 		&& dgInfo->thisType != ThisPointer_CBaseEntity
-		&& !(dgInfo->thisType == ThisPointer_Ignore && dgInfo->hookType == HookType_GameRules))
+		&& dgInfo->hookType != HookType_GameRules)
 	{
 		return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
 	}
