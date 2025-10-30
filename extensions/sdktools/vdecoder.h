@@ -85,6 +85,7 @@ enum ValveCallType
 	ValveCall_Raw, 		/**< Thiscall (address explicit first parameter) */
 	ValveCall_Server,       /**< Thiscall (CBaseServer implicit first parameter) */
 	ValveCall_Engine,       /**< Thiscall (CVEngineServer implicit first parameter) */
+	ValveCall_VirtualAddress /**< Thiscall (address explicit first parameter) */
 };
 
 /**

@@ -86,6 +86,13 @@ inline void DecodePassMethod(ValveType vtype, SDKPassMethod method, PassType &ty
 
 static cell_t StartPrepSDKCall(IPluginContext *pContext, const cell_t *params)
 {
+	auto call_type = (ValveCallType)params[1];
+	if (call_type == ValveCall_Raw && pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
+		return pContext->ThrowNativeError("SDKCall_Raw is unavailable for plugins that have enabled virtual address.");
+	}
+	if (call_type == ValveCall_VirtualAddress && pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) != SP_ERROR_NONE) {
+		return pContext->ThrowNativeError("SDKCall_VirtualAddress is unavailable for plugins that haven't enabled virtual address.");
+	}
 	s_numparams = 0;
 	s_vtbl_index = -1;
 	s_call_addr = NULL;
@@ -396,6 +403,36 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 				cell_t *cell;
 				pContext->LocalToPhysAddr(params[startparam], &cell);
 				void *thisptr = reinterpret_cast<void*>(*cell);
+
+				if (thisptr == nullptr)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("ThisPtr address cannot be null");
+				}
+				else if (reinterpret_cast<uintptr_t>(thisptr) < VALID_MINIMUM_MEMORY_ADDRESS)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("Invalid ThisPtr address %p is pointing to reserved memory.", thisptr);
+				}
+
+				*(void **)ptr = thisptr;
+				startparam++;
+			}
+			break;
+		case ValveCall_VirtualAddress:
+			{
+				//params[startparam] is an address to a pointer to THIS
+				//params following this are params to the method we will invoke later
+				if (startparam > numparams)
+				{
+					vc->stk_put(ptr);
+					return pContext->ThrowNativeError("Expected a ThisPtr address, it wasn't found");
+				}
+
+				//note: varargs pawn args are passed by-ref
+				cell_t *cell;
+				pContext->LocalToPhysAddr(params[startparam], &cell);
+				void* thisptr = reinterpret_cast<void*>(g_pSM->FromPseudoAddress(*cell));
 
 				if (thisptr == nullptr)
 				{
