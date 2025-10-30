@@ -865,7 +865,7 @@ enum NumberType
 static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
 {
 	void *addr = reinterpret_cast<void*>(params[1]);
-	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) != SP_ERROR_NONE) {
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
 		addr = pseudoAddr.FromPseudoAddress(params[1]);
 	}
 
@@ -895,7 +895,7 @@ static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
 static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 {
 	void *addr = reinterpret_cast<void*>(params[1]);
-	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) != SP_ERROR_NONE) {
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
 		addr = pseudoAddr.FromPseudoAddress(params[1]);
 	}
 
@@ -951,7 +951,7 @@ static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 static cell_t LoadAddressFromAddress(IPluginContext *pContext, const cell_t *params)
 {
 	void *addr = reinterpret_cast<void*>(params[1]);
-	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) != SP_ERROR_NONE) {
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
 		addr = pseudoAddr.FromPseudoAddress(params[1]);
 	}
 
@@ -965,7 +965,7 @@ static cell_t LoadAddressFromAddress(IPluginContext *pContext, const cell_t *par
 	}
 
 	void* data = *reinterpret_cast<void**>(addr);
-	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) != SP_ERROR_NONE) {
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
 		return pseudoAddr.ToPseudoAddress(data);
 	}
 	return reinterpret_cast<uintptr_t>(data);
@@ -974,7 +974,7 @@ static cell_t LoadAddressFromAddress(IPluginContext *pContext, const cell_t *par
 static cell_t StoreAddressToAddress(IPluginContext *pContext, const cell_t *params)
 {
 	void *addr = reinterpret_cast<void*>(params[1]);
-	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) != SP_ERROR_NONE) {
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
 		addr = pseudoAddr.FromPseudoAddress(params[1]);
 	}
 
@@ -988,7 +988,7 @@ static cell_t StoreAddressToAddress(IPluginContext *pContext, const cell_t *para
 	}
 
 	void *data = reinterpret_cast<void*>(params[2]);
-	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) != SP_ERROR_NONE) {
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
 		data = pseudoAddr.FromPseudoAddress(params[2]);
 	}
 

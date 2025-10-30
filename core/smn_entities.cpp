@@ -725,7 +725,7 @@ static cell_t GetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 static cell_t LoadEntityFromHandleAddress(IPluginContext *pContext, const cell_t *params)
 {
 	void *addr = reinterpret_cast<void*>(params[1]);
-	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) != SP_ERROR_NONE) {
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
 		addr = g_SourceMod.FromPseudoAddress(params[1]);
 	}
 
