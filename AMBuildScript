@@ -525,7 +525,7 @@ class SMConfig(object):
     for other_sdk in self.sdk_manifests:
       compiler.defines += ['SE_{}={}'.format(other_sdk['define'], other_sdk['code'])]
 
-    SdkHelpers.configureCxx(context, binary.compiler, sdk)
+    SdkHelpers.configureCxx(context, binary, sdk)
 
     return binary
 
