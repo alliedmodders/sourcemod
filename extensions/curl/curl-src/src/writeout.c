@@ -109,7 +109,7 @@ void ourWriteOut(CURL *curl, const char *writeinfo)
   double doubleinfo;
 
   while(*ptr) {
-    if('%' == *ptr) {
+    if('%' == *ptr && ptr[1]) {
       if('%' == ptr[1]) {
         /* an escaped %-letter */
         fputc('%', stream);
