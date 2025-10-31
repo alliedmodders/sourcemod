@@ -53,7 +53,7 @@ enum LoggingMode
 class Logger : public SMGlobalClass, public ILogger
 {
 public:
-	Logger() : m_Day(-1), m_Mode(LoggingMode_Daily), m_Active(true), m_DamagedNormalFile(false), m_DamagedErrorFile(false)
+	Logger() : m_Day(-1), m_Mode(LoggingMode_Daily), m_Active(true), m_DamagedNormalFile(false), m_DamagedErrorFile(false), m_isUsingDefaultTimeFormat(true)
 	{
 	}
 public: //SMGlobalClass
@@ -95,10 +95,12 @@ private:
 	void _LogFatalOpen(std::string &str);
 	void _PrintToGameLog(const char *fmt, va_list ap);
 	void _UpdateFiles(bool bLevelChange = false);
+	const char* GetFormattedDate() const;
 private:
 	std::string m_NormalFileName;
 	std::string m_ErrorFileName;
 	std::string m_CurrentMapName;
+	std::string m_UserTimeFormat;
 
 	int m_Day;
 
@@ -106,6 +108,7 @@ private:
 	bool m_Active;
 	bool m_DamagedNormalFile;
 	bool m_DamagedErrorFile;
+	bool m_isUsingDefaultTimeFormat;
 };
 
 extern Logger g_Logger;
