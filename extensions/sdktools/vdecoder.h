@@ -53,6 +53,7 @@ enum ValveType
 	Valve_Edict,			/**< Edict */
 	Valve_String,			/**< String */
 	Valve_Bool,				/**< Boolean */
+	Valve_VirtualAddress,   /**< SM Virtual Address */
 	Valve_Object,			/**< Object, not matching one of the above types */
 };
 
@@ -84,6 +85,7 @@ enum ValveCallType
 	ValveCall_Raw, 		/**< Thiscall (address explicit first parameter) */
 	ValveCall_Server,       /**< Thiscall (CBaseServer implicit first parameter) */
 	ValveCall_Engine,       /**< Thiscall (CVEngineServer implicit first parameter) */
+	ValveCall_VirtualAddress /**< Thiscall (address explicit first parameter) */
 };
 
 /**

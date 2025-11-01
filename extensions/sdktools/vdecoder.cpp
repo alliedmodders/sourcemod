@@ -164,6 +164,21 @@ size_t ValveParamToBinParam(ValveType type,
 				return sizeof(float);
 			}
 		}
+	case Valve_VirtualAddress:
+	    {
+			info->flags = flags;
+			if (flags & PASSFLAG_ASPOINTER)
+			{
+				needs_extra = true;
+				info->type = PassType_Basic;
+				info->size = sizeof(void**);
+				return sizeof(void**) + sizeof(void*);
+			} else {
+				info->type = PassType_Basic;
+				info->size = sizeof(void*);
+				return sizeof(void*);
+			}
+		}
 	}
 
 	return 0;
@@ -275,6 +290,16 @@ DataStatus EncodeValveParam(IPluginContext *pContext,
 			}
 
 			*addr = *(bool *)buffer ? 1 : 0;
+
+			return Data_Okay;
+		}
+	case Valve_VirtualAddress:
+	    {
+			if (data->flags & PASSFLAG_ASPOINTER)
+			{
+				buffer = *(void **)buffer;
+			}
+			param = g_pSM->ToPseudoAddress((void*)buffer);
 
 			return Data_Okay;
 		}
@@ -583,6 +608,18 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			}
 			
 			*(char **)buffer = addr;
+			return Data_Okay;
+		}
+	case Valve_VirtualAddress:
+	    {
+			void* addr = g_pSM->FromPseudoAddress(param);
+			if (addr == nullptr && (data->decflags & VDECODE_FLAG_ALLOWNULL) == 0)
+			{
+				pContext->ThrowNativeError("NULL Address not allowed");
+				return Data_Fail;
+			}
+
+			*(void **)buffer = addr;
 			return Data_Okay;
 		}
 	}

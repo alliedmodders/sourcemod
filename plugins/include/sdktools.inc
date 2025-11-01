@@ -60,9 +60,10 @@ enum SDKCallType
 	SDKCall_Player,         /**< CBasePlayer call */
 	SDKCall_GameRules,      /**< CGameRules call */
 	SDKCall_EntityList,     /**< CGlobalEntityList call */
-	SDKCall_Raw,            /**< |this| pointer with an arbitrary address */
+	SDKCall_Raw,            /**< |this| pointer with an arbitrary address. This is not available if SM's virtual addresses are enabled */
 	SDKCall_Server,         /**< CBaseServer call */
-	SDKCall_Engine          /**< CVEngineServer call */
+	SDKCall_Engine,         /**< CVEngineServer call */
+	SDKCall_VirtualAddress  /**< |this| pointer with an arbitrary SM virtual address */
 };
 
 enum SDKLibrary
@@ -88,7 +89,8 @@ enum SDKType
 	SDKType_Float,          /**< Float (any) */
 	SDKType_Edict,          /**< edict_t (always as pointer) */
 	SDKType_String,         /**< NULL-terminated string (always as pointer) */
-	SDKType_Bool            /**< Boolean (any) */
+	SDKType_Bool,           /**< Boolean (any) */
+	SDKType_VirtualAddress, /**< SM Virtual Address */
 };
 
 enum SDKPassMethod
