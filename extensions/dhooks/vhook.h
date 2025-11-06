@@ -162,6 +162,7 @@ public:
 	int entity;
 	ThisPointerType thisType;
 	HookType hookType;
+	CallingConvention thisFuncCallConv;
 };
 
 class DHooksCallback : public SourceHook::ISHDelegate, public DHooksInfo
