@@ -32,6 +32,7 @@
 #include "common_logic.h"
 #include <IHandleSys.h>
 #include "GameConfigs.h"
+#include "PseudoAddrManager.h"
 
 HandleType_t g_GameConfigsType;
 
