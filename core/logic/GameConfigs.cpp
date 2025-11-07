@@ -1094,13 +1094,18 @@ void GameBinPathManager::Init()
 	std::istringstream iss(search_path);
 	for (std::string path; std::getline(iss, path, ';');)
 	{
-		if (path.length() > 0
-			&& path.find(addons_folder) == std::string::npos
-			&& m_lookup.find(path) == m_lookup.cend()
-			)
+		if (path.length() > 0)
 		{
-			m_lookup.insert(path);
-			m_ordered.push_back(path);
+			const char* arch_subdir = bridge->filesystem->GetGameBinArchSubdirectory();
+			std::string full_path = path + arch_subdir;
+			if (full_path.find(addons_folder) == std::string::npos
+				&& m_lookup.find(full_path) == m_lookup.cend()
+				)
+			{
+				m_lookup.insert(full_path);
+				m_ordered.push_back(full_path);
+
+			}
 		}
 	}
 
