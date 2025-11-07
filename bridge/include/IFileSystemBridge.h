@@ -58,6 +58,7 @@ public:
 	virtual bool IsDirectory(const char *pFileName, const char *pathID = 0) = 0;
 	virtual void CreateDirHierarchy(const char *path, const char *pathID = 0) = 0;
 	virtual int GetSearchPath(const char* pathID, bool bGetPackFiles, char* pPath, int nMaxLen) = 0;
+	virtual const char * GetGameBinArchSubdirectory() = 0;
 };
 
 } // namespace SourceMod
