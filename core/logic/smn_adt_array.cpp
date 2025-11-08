@@ -587,27 +587,68 @@ static cell_t FindStringInArray(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
 	}
 
-	// the blocknumber is not guaranteed to always be passed
+	// The parameters above 2 are optional
+
 	size_t blocknumber = 0;
 	if (params[0] >= 3)
 	{
 		blocknumber = (size_t)params[3];
+		if (blocknumber >= array->blocksize())
+		{
+			return pContext->ThrowNativeError("Invalid block %d (blocksize: %d)", blocknumber, array->blocksize());
+		}
 	}
 
-	if (blocknumber >= array->blocksize())
+	int startidx = -1;
+	if (params[0] >= 4)
 	{
-		return pContext->ThrowNativeError("Invalid block %d (blocksize: %d)", blocknumber, array->blocksize());
+		startidx = params[4];
+		if (startidx > 0 && startidx > array->size())
+		{
+			return pContext->ThrowNativeError("Invalid start index %d (max: %d)", startidx, array->size());
+		}
 	}
+
+	bool reverse = false;
+	if (params[0] >= 5)
+	{
+		reverse = params[5];
+	}
+
+	typedef int (*STRCOMPARE)(const char *, const char *);
+	STRCOMPARE comparefn = (params[0] < 6 || params[6]) ? strcmp : strcasecmp;
 
 	char *str;
 	pContext->LocalToString(params[2], &str);
 
-	for (unsigned int i = 0; i < array->size(); i++)
+	if (reverse)
 	{
-		const char *array_str = (const char *)&array->base()[i * array->blocksize() + blocknumber];
-		if (strcmp(str, array_str) == 0)
+		if (startidx < 0)
 		{
-			return (cell_t) i;
+			startidx = array->size();
+		}
+		for (int i = (startidx - 1); i >= 0; i--)
+		{
+			const char *array_str = (const char *)&array->base()[i * array->blocksize() + blocknumber];
+			if (comparefn(str, array_str) == 0)
+			{
+				return (cell_t) i;
+			}
+		}
+	}
+	else
+	{
+		if (startidx < -1)
+		{
+			startidx = -1;
+		}
+		for (unsigned int i = (startidx + 1); i < array->size(); i++)
+		{
+			const char *array_str = (const char *)&array->base()[i * array->blocksize() + blocknumber];
+			if (comparefn(str, array_str) == 0)
+			{
+				return (cell_t) i;
+			}
 		}
 	}
 
@@ -626,24 +667,62 @@ static cell_t FindValueInArray(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
 	}
 
-	// the blocknumber is not guaranteed to always be passed
+	// The parameters above 2 are optional
+
 	size_t blocknumber = 0;
 	if (params[0] >= 3)
 	{
-		blocknumber = (size_t) params[3];
-	}
-
-	if (blocknumber >= array->blocksize())
-	{
-		return pContext->ThrowNativeError("Invalid block %d (blocksize: %d)", blocknumber, array->blocksize());
-	}
-
-	for (unsigned int i = 0; i < array->size(); i++)
-	{
-		cell_t *blk = array->at(i);
-		if (params[2] == blk[blocknumber])
+		blocknumber = (size_t)params[3];
+		if (blocknumber >= array->blocksize())
 		{
-			return (cell_t) i;
+			return pContext->ThrowNativeError("Invalid block %d (blocksize: %d)", blocknumber, array->blocksize());
+		}
+	}
+
+	int startidx = -1;
+	if (params[0] >= 4)
+	{
+		startidx = params[4];
+		if (startidx > 0 && startidx > array->size())
+		{
+			return pContext->ThrowNativeError("Invalid start index %d (max: %d)", startidx, array->size());
+		}
+	}
+
+	bool reverse = false;
+	if (params[0] >= 5)
+	{
+		reverse = params[5];
+	}
+
+	if (reverse)
+	{
+		if (startidx < 0)
+		{
+			startidx = array->size();
+		}
+		for (int i = (startidx - 1); i >= 0; i--)
+		{
+			cell_t *blk = array->at(i);
+			if (params[2] == blk[blocknumber])
+			{
+				return (cell_t) i;
+			}
+		}
+	}
+	else
+	{
+		if (startidx < -1)
+		{
+			startidx = -1;
+		}
+		for (unsigned int i = (startidx + 1); i < array->size(); i++)
+		{
+			cell_t *blk = array->at(i);
+			if (params[2] == blk[blocknumber])
+			{
+				return (cell_t) i;
+			}
 		}
 	}
 
