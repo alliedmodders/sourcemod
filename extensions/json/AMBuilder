@@ -2,7 +2,7 @@
 import os
 
 for cxx in builder.targets:
-  binary = SM.ExtLibrary(builder, cxx, 'yyjson.ext')
+  binary = SM.ExtLibrary(builder, cxx, 'json.ext')
   if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
     binary.compiler.cxxflags += ['-fno-rtti']
     binary.compiler.cflags += ['-fPIC']
@@ -14,13 +14,13 @@ for cxx in builder.targets:
   ]
 
   binary.compiler.cxxincludes += [
-    os.path.join(builder.sourcePath, 'extensions', 'yyjson', 'yyjson'),
+    os.path.join(builder.sourcePath, 'extensions', 'json', 'yyjson'),
   ]
 
   binary.sources += [
     'extension.cpp',
-    'YYJSONManager.cpp',
-    'json_natives.cpp',
+    'JsonManager.cpp',
+    'JsonNatives.cpp',
     'yyjson/yyjson.c',
     '../../public/smsdk_ext.cpp',
   ]

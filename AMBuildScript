@@ -678,7 +678,7 @@ else:
     'extensions/tf2/AMBuilder',
     'extensions/topmenus/AMBuilder',
     'extensions/updater/AMBuilder',
-    'extensions/yyjson/AMBuilder',
+    'extensions/json/AMBuilder',
   ]
 
   if builder.backend == 'amb2':

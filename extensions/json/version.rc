@@ -45,13 +45,13 @@ BEGIN
     BEGIN
         BLOCK "000004b0"
         BEGIN
-            VALUE "Comments", "YYJSON Extension"
-            VALUE "FileDescription", "SourceMod YYJSON Extension"
+            VALUE "Comments", "JSON Extension"
+            VALUE "FileDescription", "SourceMod JSON Extension"
             VALUE "FileVersion", SM_VERSION_FILE
-            VALUE "InternalName", "SourceMod YYJSON Extension"
+            VALUE "InternalName", "SourceMod JSON Extension"
             VALUE "LegalCopyright", "Copyright (c) 2004-2009, AlliedModders LLC"
             VALUE "OriginalFilename", BINARY_NAME
-            VALUE "ProductName", "SourceMod YYJSON Extension"
+            VALUE "ProductName", "SourceMod JSON Extension"
             VALUE "ProductVersion", SM_VERSION_STRING
         END
     END

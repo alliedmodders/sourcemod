@@ -1,31 +1,47 @@
-#include "YYJSONManager.h"
+#include "JsonManager.h"
 #include "extension.h"
 
-std::unique_ptr<YYJSONValue> YYJSONManager::CreateWrapper() {
-	return std::make_unique<YYJSONValue>();
+static inline void ReadInt64FromVal(yyjson_val* val, std::variant<int64_t, uint64_t>* out_value) {
+	if (yyjson_is_uint(val)) {
+		*out_value = yyjson_get_uint(val);
+	} else {
+		*out_value = yyjson_get_sint(val);
+	}
 }
 
-std::shared_ptr<yyjson_mut_doc> YYJSONManager::WrapDocument(yyjson_mut_doc* doc) {
+static inline void ReadInt64FromMutVal(yyjson_mut_val* val, std::variant<int64_t, uint64_t>* out_value) {
+	if (yyjson_mut_is_uint(val)) {
+		*out_value = yyjson_mut_get_uint(val);
+	} else {
+		*out_value = yyjson_mut_get_sint(val);
+	}
+}
+
+std::unique_ptr<JsonValue> JsonManager::CreateWrapper() {
+	return std::make_unique<JsonValue>();
+}
+
+std::shared_ptr<yyjson_mut_doc> JsonManager::WrapDocument(yyjson_mut_doc* doc) {
 	return std::shared_ptr<yyjson_mut_doc>(doc, [](yyjson_mut_doc*){});
 }
 
-std::shared_ptr<yyjson_mut_doc> YYJSONManager::CopyDocument(yyjson_doc* doc) {
+std::shared_ptr<yyjson_mut_doc> JsonManager::CopyDocument(yyjson_doc* doc) {
 	return WrapDocument(yyjson_doc_mut_copy(doc, nullptr));
 }
 
-std::shared_ptr<yyjson_mut_doc> YYJSONManager::CreateDocument() {
+std::shared_ptr<yyjson_mut_doc> JsonManager::CreateDocument() {
 	return WrapDocument(yyjson_mut_doc_new(nullptr));
 }
 
-std::shared_ptr<yyjson_doc> YYJSONManager::WrapImmutableDocument(yyjson_doc* doc) {
+std::shared_ptr<yyjson_doc> JsonManager::WrapImmutableDocument(yyjson_doc* doc) {
 	return std::shared_ptr<yyjson_doc>(doc, [](yyjson_doc*){});
 }
 
-YYJSONManager::YYJSONManager(): m_randomGenerator(m_randomDevice()) {}
+JsonManager::JsonManager(): m_randomGenerator(m_randomDevice()) {}
 
-YYJSONManager::~YYJSONManager() {}
+JsonManager::~JsonManager() {}
 
-YYJSONValue* YYJSONManager::ParseJSON(const char* json_str, bool is_file, bool is_mutable, 
+JsonValue* JsonManager::ParseJSON(const char* json_str, bool is_file, bool is_mutable,
 	yyjson_read_flag read_flg, char* error, size_t error_size)
 {
 	if (!json_str) {
@@ -37,7 +53,7 @@ YYJSONValue* YYJSONManager::ParseJSON(const char* json_str, bool is_file, bool i
 
 	yyjson_read_err readError;
 	yyjson_doc* idoc;
-	auto pYYJSONValue = CreateWrapper();
+	auto pJSONValue = CreateWrapper();
 
 	if (is_file) {
 		char realpath[PLATFORM_MAX_PATH];
@@ -63,21 +79,21 @@ YYJSONValue* YYJSONManager::ParseJSON(const char* json_str, bool is_file, bool i
 		return nullptr;
 	}
 
-	pYYJSONValue->m_readSize = yyjson_doc_get_read_size(idoc);
+	pJSONValue->m_readSize = yyjson_doc_get_read_size(idoc);
 
 	if (is_mutable) {
-		pYYJSONValue->m_pDocument_mut = CopyDocument(idoc);
-		pYYJSONValue->m_pVal_mut = yyjson_mut_doc_get_root(pYYJSONValue->m_pDocument_mut.get());
+		pJSONValue->m_pDocument_mut = CopyDocument(idoc);
+		pJSONValue->m_pVal_mut = yyjson_mut_doc_get_root(pJSONValue->m_pDocument_mut.get());
 		yyjson_doc_free(idoc);
 	} else {
-		pYYJSONValue->m_pDocument = WrapImmutableDocument(idoc);
-		pYYJSONValue->m_pVal = yyjson_doc_get_root(idoc);
+		pJSONValue->m_pDocument = WrapImmutableDocument(idoc);
+		pJSONValue->m_pVal = yyjson_doc_get_root(idoc);
 	}
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-bool YYJSONManager::WriteToString(YYJSONValue* handle, char* buffer, size_t buffer_size, 
+bool JsonManager::WriteToString(JsonValue* handle, char* buffer, size_t buffer_size,
 	yyjson_write_flag write_flg, size_t* out_size)
 {
 	if (!handle || !buffer || buffer_size == 0) {
@@ -114,7 +130,7 @@ bool YYJSONManager::WriteToString(YYJSONValue* handle, char* buffer, size_t buff
 	return true;
 }
 
-bool YYJSONManager::WriteToFile(YYJSONValue* handle, const char* path, yyjson_write_flag write_flg,
+bool JsonManager::WriteToFile(JsonValue* handle, const char* path, yyjson_write_flag write_flg,
 	char* error, size_t error_size)
 {
 	if (!handle || !path) {
@@ -143,7 +159,7 @@ bool YYJSONManager::WriteToFile(YYJSONValue* handle, const char* path, yyjson_wr
 	return is_success;
 }
 
-bool YYJSONManager::Equals(YYJSONValue* handle1, YYJSONValue* handle2)
+bool JsonManager::Equals(JsonValue* handle1, JsonValue* handle2)
 {
 	if (!handle1 || !handle2) {
 		return false;
@@ -171,8 +187,8 @@ bool YYJSONManager::Equals(YYJSONValue* handle1, YYJSONValue* handle2)
 		return yyjson_mut_equals(val1_mut, val2_mut);
 	}
 
-	YYJSONValue* immutable = handle1->IsMutable() ? handle2 : handle1;
-	YYJSONValue* mutable_doc = handle1->IsMutable() ? handle1 : handle2;
+	JsonValue* immutable = handle1->IsMutable() ? handle2 : handle1;
+	JsonValue* mutable_doc = handle1->IsMutable() ? handle1 : handle2;
 
 	auto doc_mut = CopyDocument(immutable->m_pDocument.get());
 	if (!doc_mut) {
@@ -187,30 +203,43 @@ bool YYJSONManager::Equals(YYJSONValue* handle1, YYJSONValue* handle2)
 	return yyjson_mut_equals(mutable_doc->m_pVal_mut, val_mut);
 }
 
-YYJSONValue* YYJSONManager::DeepCopy(YYJSONValue* targetDoc, YYJSONValue* sourceValue)
+bool JsonManager::EqualsStr(JsonValue* handle, const char* str)
+{
+	if (!handle || !str) {
+		return false;
+	}
+
+	if (handle->IsMutable()) {
+		return yyjson_mut_equals_str(handle->m_pVal_mut, str);
+	} else {
+		return yyjson_equals_str(handle->m_pVal, str);
+	}
+}
+
+JsonValue* JsonManager::DeepCopy(JsonValue* targetDoc, JsonValue* sourceValue)
 {
 	if (!targetDoc || !sourceValue) {
 		return nullptr;
 	}
 
-	auto pYYJSONValue = CreateWrapper();
+	auto pJSONValue = CreateWrapper();
 
 	if (targetDoc->IsMutable()) {
-		pYYJSONValue->m_pDocument_mut = CreateDocument();
+		pJSONValue->m_pDocument_mut = CreateDocument();
 
 		yyjson_mut_val* val_copy = nullptr;
 		if (sourceValue->IsMutable()) {
-			val_copy = yyjson_mut_val_mut_copy(pYYJSONValue->m_pDocument_mut.get(), sourceValue->m_pVal_mut);
+			val_copy = yyjson_mut_val_mut_copy(pJSONValue->m_pDocument_mut.get(), sourceValue->m_pVal_mut);
 		} else {
-			val_copy = yyjson_val_mut_copy(pYYJSONValue->m_pDocument_mut.get(), sourceValue->m_pVal);
+			val_copy = yyjson_val_mut_copy(pJSONValue->m_pDocument_mut.get(), sourceValue->m_pVal);
 		}
 
 		if (!val_copy) {
 			return nullptr;
 		}
 
-		yyjson_mut_doc_set_root(pYYJSONValue->m_pDocument_mut.get(), val_copy);
-		pYYJSONValue->m_pVal_mut = val_copy;
+		yyjson_mut_doc_set_root(pJSONValue->m_pDocument_mut.get(), val_copy);
+		pJSONValue->m_pVal_mut = val_copy;
 	} else {
 		yyjson_mut_doc* temp_doc = yyjson_mut_doc_new(nullptr);
 		if (!temp_doc) {
@@ -238,14 +267,14 @@ YYJSONValue* YYJSONManager::DeepCopy(YYJSONValue* targetDoc, YYJSONValue* source
 			return nullptr;
 		}
 
-		pYYJSONValue->m_pDocument = WrapImmutableDocument(doc);
-		pYYJSONValue->m_pVal = yyjson_doc_get_root(doc);
+		pJSONValue->m_pDocument = WrapImmutableDocument(doc);
+		pJSONValue->m_pVal = yyjson_doc_get_root(doc);
 	}
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-const char* YYJSONManager::GetTypeDesc(YYJSONValue* handle)
+const char* JsonManager::GetTypeDesc(JsonValue* handle)
 {
 	if (!handle) {
 		return "invalid";
@@ -258,7 +287,7 @@ const char* YYJSONManager::GetTypeDesc(YYJSONValue* handle)
 	}
 }
 
-size_t YYJSONManager::GetSerializedSize(YYJSONValue* handle, yyjson_write_flag write_flg)
+size_t JsonManager::GetSerializedSize(JsonValue* handle, yyjson_write_flag write_flg)
 {
 	if (!handle) {
 		return 0;
@@ -281,34 +310,34 @@ size_t YYJSONManager::GetSerializedSize(YYJSONValue* handle, yyjson_write_flag w
 	return 0;
 }
 
-YYJSONValue* YYJSONManager::ToMutable(YYJSONValue* handle)
+JsonValue* JsonManager::ToMutable(JsonValue* handle)
 {
 	if (!handle || handle->IsMutable()) {
 		return nullptr;
 	}
 
-	auto pYYJSONValue = CreateWrapper();
-	pYYJSONValue->m_pDocument_mut = CopyDocument(handle->m_pDocument.get());
-	pYYJSONValue->m_pVal_mut = yyjson_mut_doc_get_root(pYYJSONValue->m_pDocument_mut.get());
+	auto pJSONValue = CreateWrapper();
+	pJSONValue->m_pDocument_mut = CopyDocument(handle->m_pDocument.get());
+	pJSONValue->m_pVal_mut = yyjson_mut_doc_get_root(pJSONValue->m_pDocument_mut.get());
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-YYJSONValue* YYJSONManager::ToImmutable(YYJSONValue* handle)
+JsonValue* JsonManager::ToImmutable(JsonValue* handle)
 {
 	if (!handle || !handle->IsMutable()) {
 		return nullptr;
 	}
 
-	auto pYYJSONValue = CreateWrapper();
+	auto pJSONValue = CreateWrapper();
 	yyjson_doc* mdoc = yyjson_mut_doc_imut_copy(handle->m_pDocument_mut.get(), nullptr);
-	pYYJSONValue->m_pDocument = WrapImmutableDocument(mdoc);
-	pYYJSONValue->m_pVal = yyjson_doc_get_root(pYYJSONValue->m_pDocument.get());
+	pJSONValue->m_pDocument = WrapImmutableDocument(mdoc);
+	pJSONValue->m_pVal = yyjson_doc_get_root(pJSONValue->m_pDocument.get());
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-yyjson_type YYJSONManager::GetType(YYJSONValue* handle)
+yyjson_type JsonManager::GetType(JsonValue* handle)
 {
 	if (!handle) {
 		return YYJSON_TYPE_NONE;
@@ -321,7 +350,7 @@ yyjson_type YYJSONManager::GetType(YYJSONValue* handle)
 	}
 }
 
-yyjson_subtype YYJSONManager::GetSubtype(YYJSONValue* handle)
+yyjson_subtype JsonManager::GetSubtype(JsonValue* handle)
 {
 	if (!handle) {
 		return YYJSON_SUBTYPE_NONE;
@@ -334,7 +363,7 @@ yyjson_subtype YYJSONManager::GetSubtype(YYJSONValue* handle)
 	}
 }
 
-bool YYJSONManager::IsArray(YYJSONValue* handle)
+bool JsonManager::IsArray(JsonValue* handle)
 {
 	if (!handle) {
 		return false;
@@ -347,7 +376,7 @@ bool YYJSONManager::IsArray(YYJSONValue* handle)
 	}
 }
 
-bool YYJSONManager::IsObject(YYJSONValue* handle)
+bool JsonManager::IsObject(JsonValue* handle)
 {
 	if (!handle) {
 		return false;
@@ -360,7 +389,7 @@ bool YYJSONManager::IsObject(YYJSONValue* handle)
 	}
 }
 
-bool YYJSONManager::IsInt(YYJSONValue* handle)
+bool JsonManager::IsInt(JsonValue* handle)
 {
 	if (!handle) {
 		return false;
@@ -373,7 +402,7 @@ bool YYJSONManager::IsInt(YYJSONValue* handle)
 	}
 }
 
-bool YYJSONManager::IsUint(YYJSONValue* handle)
+bool JsonManager::IsUint(JsonValue* handle)
 {
 	if (!handle) {
 		return false;
@@ -386,7 +415,7 @@ bool YYJSONManager::IsUint(YYJSONValue* handle)
 	}
 }
 
-bool YYJSONManager::IsSint(YYJSONValue* handle)
+bool JsonManager::IsSint(JsonValue* handle)
 {
 	if (!handle) {
 		return false;
@@ -399,7 +428,7 @@ bool YYJSONManager::IsSint(YYJSONValue* handle)
 	}
 }
 
-bool YYJSONManager::IsNum(YYJSONValue* handle)
+bool JsonManager::IsNum(JsonValue* handle)
 {
 	if (!handle) {
 		return false;
@@ -412,7 +441,7 @@ bool YYJSONManager::IsNum(YYJSONValue* handle)
 	}
 }
 
-bool YYJSONManager::IsBool(YYJSONValue* handle)
+bool JsonManager::IsBool(JsonValue* handle)
 {
 	if (!handle) {
 		return false;
@@ -425,7 +454,7 @@ bool YYJSONManager::IsBool(YYJSONValue* handle)
 	}
 }
 
-bool YYJSONManager::IsTrue(YYJSONValue* handle)
+bool JsonManager::IsTrue(JsonValue* handle)
 {
 	if (!handle) {
 		return false;
@@ -438,7 +467,7 @@ bool YYJSONManager::IsTrue(YYJSONValue* handle)
 	}
 }
 
-bool YYJSONManager::IsFalse(YYJSONValue* handle)
+bool JsonManager::IsFalse(JsonValue* handle)
 {
 	if (!handle) {
 		return false;
@@ -451,7 +480,7 @@ bool YYJSONManager::IsFalse(YYJSONValue* handle)
 	}
 }
 
-bool YYJSONManager::IsFloat(YYJSONValue* handle)
+bool JsonManager::IsFloat(JsonValue* handle)
 {
 	if (!handle) {
 		return false;
@@ -464,7 +493,7 @@ bool YYJSONManager::IsFloat(YYJSONValue* handle)
 	}
 }
 
-bool YYJSONManager::IsStr(YYJSONValue* handle)
+bool JsonManager::IsStr(JsonValue* handle)
 {
 	if (!handle) {
 		return false;
@@ -477,7 +506,7 @@ bool YYJSONManager::IsStr(YYJSONValue* handle)
 	}
 }
 
-bool YYJSONManager::IsNull(YYJSONValue* handle)
+bool JsonManager::IsNull(JsonValue* handle)
 {
 	if (!handle) {
 		return false;
@@ -490,7 +519,7 @@ bool YYJSONManager::IsNull(YYJSONValue* handle)
 	}
 }
 
-bool YYJSONManager::IsCtn(YYJSONValue* handle)
+bool JsonManager::IsCtn(JsonValue* handle)
 {
 	if (!handle) {
 		return false;
@@ -503,7 +532,7 @@ bool YYJSONManager::IsCtn(YYJSONValue* handle)
 	}
 }
 
-bool YYJSONManager::IsMutable(YYJSONValue* handle)
+bool JsonManager::IsMutable(JsonValue* handle)
 {
 	if (!handle) {
 		return false;
@@ -512,7 +541,7 @@ bool YYJSONManager::IsMutable(YYJSONValue* handle)
 	return handle->IsMutable();
 }
 
-bool YYJSONManager::IsImmutable(YYJSONValue* handle)
+bool JsonManager::IsImmutable(JsonValue* handle)
 {
 	if (!handle) {
 		return false;
@@ -521,13 +550,12 @@ bool YYJSONManager::IsImmutable(YYJSONValue* handle)
 	return handle->IsImmutable();
 }
 
-size_t YYJSONManager::GetReadSize(YYJSONValue* handle)
+size_t JsonManager::GetReadSize(JsonValue* handle)
 {
 	if (!handle) {
 		return 0;
 	}
 
-	// this not happen in normal case, but it's possible if the document is not from parsing.
 	if (handle->m_readSize == 0) {
 		return 0;
 	}
@@ -535,39 +563,39 @@ size_t YYJSONManager::GetReadSize(YYJSONValue* handle)
 	return handle->m_readSize + 1;
 }
 
-YYJSONValue* YYJSONManager::ObjectInit()
+JsonValue* JsonManager::ObjectInit()
 {
-	auto pYYJSONValue = CreateWrapper();
-	pYYJSONValue->m_pDocument_mut = CreateDocument();
-	pYYJSONValue->m_pVal_mut = yyjson_mut_obj(pYYJSONValue->m_pDocument_mut.get());
-	yyjson_mut_doc_set_root(pYYJSONValue->m_pDocument_mut.get(), pYYJSONValue->m_pVal_mut);
+	auto pJSONValue = CreateWrapper();
+	pJSONValue->m_pDocument_mut = CreateDocument();
+	pJSONValue->m_pVal_mut = yyjson_mut_obj(pJSONValue->m_pDocument_mut.get());
+	yyjson_mut_doc_set_root(pJSONValue->m_pDocument_mut.get(), pJSONValue->m_pVal_mut);
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-YYJSONValue* YYJSONManager::ObjectInitWithStrings(const char** pairs, size_t count)
+JsonValue* JsonManager::ObjectInitWithStrings(const char** pairs, size_t count)
 {
 	if (!pairs || count == 0) {
 		return nullptr;
 	}
 
-	auto pYYJSONValue = CreateWrapper();
-	pYYJSONValue->m_pDocument_mut = CreateDocument();
+	auto pJSONValue = CreateWrapper();
+	pJSONValue->m_pDocument_mut = CreateDocument();
 
-	pYYJSONValue->m_pVal_mut = yyjson_mut_obj_with_kv(
-		pYYJSONValue->m_pDocument_mut.get(),
+	pJSONValue->m_pVal_mut = yyjson_mut_obj_with_kv(
+		pJSONValue->m_pDocument_mut.get(),
 		pairs,
 		count
 	);
 
-	if (!pYYJSONValue->m_pVal_mut) {
+	if (!pJSONValue->m_pVal_mut) {
 		return nullptr;
 	}
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-YYJSONValue* YYJSONManager::ObjectParseString(const char* str, yyjson_read_flag read_flg,
+JsonValue* JsonManager::ObjectParseString(const char* str, yyjson_read_flag read_flg,
 	char* error, size_t error_size)
 {
 	if (!str) {
@@ -577,7 +605,7 @@ YYJSONValue* YYJSONManager::ObjectParseString(const char* str, yyjson_read_flag 
 		return nullptr;
 	}
 
-	auto pYYJSONValue = CreateWrapper();
+	auto pJSONValue = CreateWrapper();
 
 	yyjson_read_err readError;
 	yyjson_doc* idoc = yyjson_read_opts(const_cast<char*>(str), strlen(str), read_flg, nullptr, &readError);
@@ -603,14 +631,14 @@ YYJSONValue* YYJSONManager::ObjectParseString(const char* str, yyjson_read_flag 
 		return nullptr;
 	}
 
-	pYYJSONValue->m_readSize = yyjson_doc_get_read_size(idoc);
-	pYYJSONValue->m_pDocument = WrapImmutableDocument(idoc);
-	pYYJSONValue->m_pVal = root;
+	pJSONValue->m_readSize = yyjson_doc_get_read_size(idoc);
+	pJSONValue->m_pDocument = WrapImmutableDocument(idoc);
+	pJSONValue->m_pVal = root;
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-YYJSONValue* YYJSONManager::ObjectParseFile(const char* path, yyjson_read_flag read_flg,
+JsonValue* JsonManager::ObjectParseFile(const char* path, yyjson_read_flag read_flg,
 	char* error, size_t error_size)
 {
 	if (!path) {
@@ -622,7 +650,7 @@ YYJSONValue* YYJSONManager::ObjectParseFile(const char* path, yyjson_read_flag r
 
 	char realpath[PLATFORM_MAX_PATH];
 	smutils->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", path);
-	auto pYYJSONValue = CreateWrapper();
+	auto pJSONValue = CreateWrapper();
 
 	yyjson_read_err readError;
 	yyjson_doc* idoc = yyjson_read_file(realpath, read_flg, nullptr, &readError);
@@ -648,14 +676,14 @@ YYJSONValue* YYJSONManager::ObjectParseFile(const char* path, yyjson_read_flag r
 		return nullptr;
 	}
 
-	pYYJSONValue->m_readSize = yyjson_doc_get_read_size(idoc);
-	pYYJSONValue->m_pDocument = WrapImmutableDocument(idoc);
-	pYYJSONValue->m_pVal = root;
+	pJSONValue->m_readSize = yyjson_doc_get_read_size(idoc);
+	pJSONValue->m_pDocument = WrapImmutableDocument(idoc);
+	pJSONValue->m_pVal = root;
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-size_t YYJSONManager::ObjectGetSize(YYJSONValue* handle)
+size_t JsonManager::ObjectGetSize(JsonValue* handle)
 {
 	if (!handle) {
 		return 0;
@@ -668,7 +696,7 @@ size_t YYJSONManager::ObjectGetSize(YYJSONValue* handle)
 	}
 }
 
-bool YYJSONManager::ObjectGetKey(YYJSONValue* handle, size_t index, const char** out_key)
+bool JsonManager::ObjectGetKey(JsonValue* handle, size_t index, const char** out_key)
 {
 	if (!handle || !out_key) {
 		return false;
@@ -717,20 +745,21 @@ bool YYJSONManager::ObjectGetKey(YYJSONValue* handle, size_t index, const char**
 	}
 }
 
-YYJSONValue* YYJSONManager::ObjectGetValueAt(YYJSONValue* handle, size_t index)
+JsonValue* JsonManager::ObjectGetValueAt(JsonValue* handle, size_t index)
 {
 	if (!handle) {
 		return nullptr;
 	}
 
-	auto pYYJSONValue = CreateWrapper();
+	size_t obj_size = handle->IsMutable() ? yyjson_mut_obj_size(handle->m_pVal_mut) : yyjson_obj_size(handle->m_pVal);
+
+	if (index >= obj_size) {
+		return nullptr;
+	}
+
+	auto pJSONValue = CreateWrapper();
 
 	if (handle->IsMutable()) {
-		size_t obj_size = yyjson_mut_obj_size(handle->m_pVal_mut);
-		if (index >= obj_size) {
-			return nullptr;
-		}
-
 		yyjson_mut_obj_iter iter;
 		yyjson_mut_obj_iter_init(handle->m_pVal_mut, &iter);
 
@@ -743,40 +772,34 @@ YYJSONValue* YYJSONManager::ObjectGetValueAt(YYJSONValue* handle, size_t index)
 			return nullptr;
 		}
 
-		pYYJSONValue->m_pDocument_mut = handle->m_pDocument_mut;
-		pYYJSONValue->m_pVal_mut = yyjson_mut_obj_iter_get_val(key);
+		pJSONValue->m_pDocument_mut = handle->m_pDocument_mut;
+		pJSONValue->m_pVal_mut = yyjson_mut_obj_iter_get_val(key);
 	} else {
-		size_t obj_size = yyjson_obj_size(handle->m_pVal);
-		if (index >= obj_size) {
-			return nullptr;
-		}
-
 		yyjson_obj_iter iter;
 		yyjson_obj_iter_init(handle->m_pVal, &iter);
 
-		for (size_t i = 0; i < index; i++) {
-			yyjson_obj_iter_next(&iter);
+		yyjson_val* key = nullptr;
+		for (size_t i = 0; i <= index; i++) {
+			key = yyjson_obj_iter_next(&iter);
+			if (!key) {
+				return nullptr;
+			}
 		}
 
-		yyjson_val* key = yyjson_obj_iter_next(&iter);
-		if (!key) {
-			return nullptr;
-		}
-
-		pYYJSONValue->m_pDocument = handle->m_pDocument;
-		pYYJSONValue->m_pVal = yyjson_obj_iter_get_val(key);
+		pJSONValue->m_pDocument = handle->m_pDocument;
+		pJSONValue->m_pVal = yyjson_obj_iter_get_val(key);
 	}
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-YYJSONValue* YYJSONManager::ObjectGet(YYJSONValue* handle, const char* key)
+JsonValue* JsonManager::ObjectGet(JsonValue* handle, const char* key)
 {
 	if (!handle || !key) {
 		return nullptr;
 	}
 
-	auto pYYJSONValue = CreateWrapper();
+	auto pJSONValue = CreateWrapper();
 
 	if (handle->IsMutable()) {
 		yyjson_mut_val* val = yyjson_mut_obj_get(handle->m_pVal_mut, key);
@@ -784,22 +807,22 @@ YYJSONValue* YYJSONManager::ObjectGet(YYJSONValue* handle, const char* key)
 			return nullptr;
 		}
 
-		pYYJSONValue->m_pDocument_mut = handle->m_pDocument_mut;
-		pYYJSONValue->m_pVal_mut = val;
+		pJSONValue->m_pDocument_mut = handle->m_pDocument_mut;
+		pJSONValue->m_pVal_mut = val;
 	} else {
 		yyjson_val* val = yyjson_obj_get(handle->m_pVal, key);
 		if (!val) {
 			return nullptr;
 		}
 
-		pYYJSONValue->m_pDocument = handle->m_pDocument;
-		pYYJSONValue->m_pVal = val;
+		pJSONValue->m_pDocument = handle->m_pDocument;
+		pJSONValue->m_pVal = val;
 	}
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-bool YYJSONManager::ObjectGetBool(YYJSONValue* handle, const char* key, bool* out_value)
+bool JsonManager::ObjectGetBool(JsonValue* handle, const char* key, bool* out_value)
 {
 	if (!handle || !key || !out_value) {
 		return false;
@@ -824,7 +847,7 @@ bool YYJSONManager::ObjectGetBool(YYJSONValue* handle, const char* key, bool* ou
 	}
 }
 
-bool YYJSONManager::ObjectGetFloat(YYJSONValue* handle, const char* key, double* out_value)
+bool JsonManager::ObjectGetFloat(JsonValue* handle, const char* key, double* out_value)
 {
 	if (!handle || !key || !out_value) {
 		return false;
@@ -849,7 +872,7 @@ bool YYJSONManager::ObjectGetFloat(YYJSONValue* handle, const char* key, double*
 	}
 }
 
-bool YYJSONManager::ObjectGetInt(YYJSONValue* handle, const char* key, int* out_value)
+bool JsonManager::ObjectGetInt(JsonValue* handle, const char* key, int* out_value)
 {
 	if (!handle || !key || !out_value) {
 		return false;
@@ -874,7 +897,7 @@ bool YYJSONManager::ObjectGetInt(YYJSONValue* handle, const char* key, int* out_
 	}
 }
 
-bool YYJSONManager::ObjectGetInt64(YYJSONValue* handle, const char* key, int64_t* out_value)
+bool JsonManager::ObjectGetInt64(JsonValue* handle, const char* key, std::variant<int64_t, uint64_t>* out_value)
 {
 	if (!handle || !key || !out_value) {
 		return false;
@@ -886,7 +909,7 @@ bool YYJSONManager::ObjectGetInt64(YYJSONValue* handle, const char* key, int64_t
 			return false;
 		}
 
-		*out_value = yyjson_mut_get_sint(val);
+		ReadInt64FromMutVal(val, out_value);
 		return true;
 	} else {
 		yyjson_val* val = yyjson_obj_get(handle->m_pVal, key);
@@ -894,12 +917,12 @@ bool YYJSONManager::ObjectGetInt64(YYJSONValue* handle, const char* key, int64_t
 			return false;
 		}
 
-		*out_value = yyjson_get_sint(val);
+		ReadInt64FromVal(val, out_value);
 		return true;
 	}
 }
 
-bool YYJSONManager::ObjectGetString(YYJSONValue* handle, const char* key, const char** out_str, size_t* out_len)
+bool JsonManager::ObjectGetString(JsonValue* handle, const char* key, const char** out_str, size_t* out_len)
 {
 	if (!handle || !key || !out_str) {
 		return false;
@@ -930,7 +953,7 @@ bool YYJSONManager::ObjectGetString(YYJSONValue* handle, const char* key, const 
 	}
 }
 
-bool YYJSONManager::ObjectIsNull(YYJSONValue* handle, const char* key, bool* out_is_null)
+bool JsonManager::ObjectIsNull(JsonValue* handle, const char* key, bool* out_is_null)
 {
 	if (!handle || !key || !out_is_null) {
 		return false;
@@ -955,7 +978,7 @@ bool YYJSONManager::ObjectIsNull(YYJSONValue* handle, const char* key, bool* out
 	}
 }
 
-bool YYJSONManager::ObjectHasKey(YYJSONValue* handle, const char* key, bool use_pointer)
+bool JsonManager::ObjectHasKey(JsonValue* handle, const char* key, bool use_pointer)
 {
 	if (!handle || !key) {
 		return false;
@@ -978,7 +1001,7 @@ bool YYJSONManager::ObjectHasKey(YYJSONValue* handle, const char* key, bool use_
 	}
 }
 
-bool YYJSONManager::ObjectRenameKey(YYJSONValue* handle, const char* old_key, const char* new_key, bool allow_duplicate)
+bool JsonManager::ObjectRenameKey(JsonValue* handle, const char* old_key, const char* new_key, bool allow_duplicate)
 {
 	if (!handle || !handle->IsMutable() || !old_key || !new_key) {
 		return false;
@@ -995,7 +1018,7 @@ bool YYJSONManager::ObjectRenameKey(YYJSONValue* handle, const char* old_key, co
 	return yyjson_mut_obj_rename_key(handle->m_pDocument_mut.get(), handle->m_pVal_mut, old_key, new_key);
 }
 
-bool YYJSONManager::ObjectSet(YYJSONValue* handle, const char* key, YYJSONValue* value)
+bool JsonManager::ObjectSet(JsonValue* handle, const char* key, JsonValue* value)
 {
 	if (!handle || !handle->IsMutable() || !key || !value) {
 		return false;
@@ -1015,7 +1038,7 @@ bool YYJSONManager::ObjectSet(YYJSONValue* handle, const char* key, YYJSONValue*
 	return yyjson_mut_obj_put(handle->m_pVal_mut, yyjson_mut_strcpy(handle->m_pDocument_mut.get(), key), val_copy);
 }
 
-bool YYJSONManager::ObjectSetBool(YYJSONValue* handle, const char* key, bool value)
+bool JsonManager::ObjectSetBool(JsonValue* handle, const char* key, bool value)
 {
 	if (!handle || !handle->IsMutable() || !key) {
 		return false;
@@ -1024,7 +1047,7 @@ bool YYJSONManager::ObjectSetBool(YYJSONValue* handle, const char* key, bool val
 	return yyjson_mut_obj_put(handle->m_pVal_mut, yyjson_mut_strcpy(handle->m_pDocument_mut.get(), key), yyjson_mut_bool(handle->m_pDocument_mut.get(), value));
 }
 
-bool YYJSONManager::ObjectSetFloat(YYJSONValue* handle, const char* key, double value)
+bool JsonManager::ObjectSetFloat(JsonValue* handle, const char* key, double value)
 {
 	if (!handle || !handle->IsMutable() || !key) {
 		return false;
@@ -1033,7 +1056,7 @@ bool YYJSONManager::ObjectSetFloat(YYJSONValue* handle, const char* key, double 
 	return yyjson_mut_obj_put(handle->m_pVal_mut, yyjson_mut_strcpy(handle->m_pDocument_mut.get(), key), yyjson_mut_real(handle->m_pDocument_mut.get(), value));
 }
 
-bool YYJSONManager::ObjectSetInt(YYJSONValue* handle, const char* key, int value)
+bool JsonManager::ObjectSetInt(JsonValue* handle, const char* key, int value)
 {
 	if (!handle || !handle->IsMutable() || !key) {
 		return false;
@@ -1042,16 +1065,24 @@ bool YYJSONManager::ObjectSetInt(YYJSONValue* handle, const char* key, int value
 	return yyjson_mut_obj_put(handle->m_pVal_mut, yyjson_mut_strcpy(handle->m_pDocument_mut.get(), key), yyjson_mut_int(handle->m_pDocument_mut.get(), value));
 }
 
-bool YYJSONManager::ObjectSetInt64(YYJSONValue* handle, const char* key, int64_t value)
+bool JsonManager::ObjectSetInt64(JsonValue* handle, const char* key, std::variant<int64_t, uint64_t> value)
 {
 	if (!handle || !handle->IsMutable() || !key) {
 		return false;
 	}
 
-	return yyjson_mut_obj_put(handle->m_pVal_mut, yyjson_mut_strcpy(handle->m_pDocument_mut.get(), key), yyjson_mut_sint(handle->m_pDocument_mut.get(), value));
+	return std::visit([&](auto&& val) -> bool {
+		using T = std::decay_t<decltype(val)>;
+		if constexpr (std::is_same_v<T, int64_t>) {
+			return yyjson_mut_obj_put(handle->m_pVal_mut, yyjson_mut_strcpy(handle->m_pDocument_mut.get(), key), yyjson_mut_sint(handle->m_pDocument_mut.get(), val));
+		} else if constexpr (std::is_same_v<T, uint64_t>) {
+			return yyjson_mut_obj_put(handle->m_pVal_mut, yyjson_mut_strcpy(handle->m_pDocument_mut.get(), key), yyjson_mut_uint(handle->m_pDocument_mut.get(), val));
+		}
+		return false;
+	}, value);
 }
 
-bool YYJSONManager::ObjectSetNull(YYJSONValue* handle, const char* key)
+bool JsonManager::ObjectSetNull(JsonValue* handle, const char* key)
 {
 	if (!handle || !handle->IsMutable() || !key) {
 		return false;
@@ -1060,7 +1091,7 @@ bool YYJSONManager::ObjectSetNull(YYJSONValue* handle, const char* key)
 	return yyjson_mut_obj_put(handle->m_pVal_mut, yyjson_mut_strcpy(handle->m_pDocument_mut.get(), key), yyjson_mut_null(handle->m_pDocument_mut.get()));
 }
 
-bool YYJSONManager::ObjectSetString(YYJSONValue* handle, const char* key, const char* value)
+bool JsonManager::ObjectSetString(JsonValue* handle, const char* key, const char* value)
 {
 	if (!handle || !handle->IsMutable() || !key || !value) {
 		return false;
@@ -1069,7 +1100,7 @@ bool YYJSONManager::ObjectSetString(YYJSONValue* handle, const char* key, const 
 	return yyjson_mut_obj_put(handle->m_pVal_mut, yyjson_mut_strcpy(handle->m_pDocument_mut.get(), key), yyjson_mut_strcpy(handle->m_pDocument_mut.get(), value));
 }
 
-bool YYJSONManager::ObjectRemove(YYJSONValue* handle, const char* key)
+bool JsonManager::ObjectRemove(JsonValue* handle, const char* key)
 {
 	if (!handle || !handle->IsMutable() || !key) {
 		return false;
@@ -1078,7 +1109,7 @@ bool YYJSONManager::ObjectRemove(YYJSONValue* handle, const char* key)
 	return yyjson_mut_obj_remove_key(handle->m_pVal_mut, key) != nullptr;
 }
 
-bool YYJSONManager::ObjectClear(YYJSONValue* handle)
+bool JsonManager::ObjectClear(JsonValue* handle)
 {
 	if (!handle || !handle->IsMutable()) {
 		return false;
@@ -1087,7 +1118,7 @@ bool YYJSONManager::ObjectClear(YYJSONValue* handle)
 	return yyjson_mut_obj_clear(handle->m_pVal_mut);
 }
 
-bool YYJSONManager::ObjectSort(YYJSONValue* handle, YYJSON_SORT_ORDER sort_mode)
+bool JsonManager::ObjectSort(JsonValue* handle, JSON_SORT_ORDER sort_mode)
 {
 	if (!handle || !handle->IsMutable()) {
 		return false;
@@ -1097,78 +1128,209 @@ bool YYJSONManager::ObjectSort(YYJSONValue* handle, YYJSON_SORT_ORDER sort_mode)
 		return false;
 	}
 
-	if (sort_mode < YYJSON_SORT_ASC || sort_mode > YYJSON_SORT_RANDOM) {
+	if (sort_mode < JSON_SORT_ASC || sort_mode > JSON_SORT_RANDOM) {
 		return false;
 	}
 
 	size_t obj_size = yyjson_mut_obj_size(handle->m_pVal_mut);
 	if (obj_size <= 1) return true;
 
-	static std::vector<std::pair<yyjson_mut_val*, yyjson_mut_val*>> pairs;
-	pairs.clear();
+	struct KeyValuePair {
+		yyjson_mut_val* key;
+		const char* key_str;
+		size_t key_len;
+		yyjson_mut_val* val;
+	};
+	std::vector<KeyValuePair> pairs;
 	pairs.reserve(obj_size);
 
 	size_t idx, max;
 	yyjson_mut_val *key, *val;
 	yyjson_mut_obj_foreach(handle->m_pVal_mut, idx, max, key, val) {
-		pairs.emplace_back(key, val);
+		const char* key_str = yyjson_mut_get_str(key);
+		size_t key_len = yyjson_mut_get_len(key);
+		pairs.push_back({key, key_str, key_len, val});
 	}
 
-	if (sort_mode == YYJSON_SORT_RANDOM) {
+	if (sort_mode == JSON_SORT_RANDOM) {
 		std::shuffle(pairs.begin(), pairs.end(), m_randomGenerator);
 	}
 	else {
-		auto compare = [sort_mode](const auto& a, const auto& b) {
-			const char* key_a = yyjson_mut_get_str(a.first);
-			const char* key_b = yyjson_mut_get_str(b.first);
-			int cmp = strcmp(key_a, key_b);
-			return sort_mode == YYJSON_SORT_ASC ? cmp < 0 : cmp > 0;
+		auto compare = [sort_mode](const KeyValuePair& a, const KeyValuePair& b) {
+			size_t min_len = a.key_len < b.key_len ? a.key_len : b.key_len;
+			int cmp = memcmp(a.key_str, b.key_str, min_len);
+			if (cmp == 0) {
+				cmp = (a.key_len < b.key_len) ? -1 : (a.key_len > b.key_len ? 1 : 0);
+			}
+			return sort_mode == JSON_SORT_ASC ? cmp < 0 : cmp > 0;
 		};
 
 		std::sort(pairs.begin(), pairs.end(), compare);
 	}
 
 	yyjson_mut_obj_clear(handle->m_pVal_mut);
+
 	for (const auto& pair : pairs) {
-		yyjson_mut_obj_add(handle->m_pVal_mut, pair.first, pair.second);
+		yyjson_mut_obj_add(handle->m_pVal_mut, pair.key, pair.val);
 	}
 
 	return true;
 }
 
-YYJSONValue* YYJSONManager::ArrayInit()
+JsonValue* JsonManager::ArrayInit()
 {
-	auto pYYJSONValue = CreateWrapper();
-	pYYJSONValue->m_pDocument_mut = CreateDocument();
-	pYYJSONValue->m_pVal_mut = yyjson_mut_arr(pYYJSONValue->m_pDocument_mut.get());
-	yyjson_mut_doc_set_root(pYYJSONValue->m_pDocument_mut.get(), pYYJSONValue->m_pVal_mut);
+	auto pJSONValue = CreateWrapper();
+	pJSONValue->m_pDocument_mut = CreateDocument();
+	pJSONValue->m_pVal_mut = yyjson_mut_arr(pJSONValue->m_pDocument_mut.get());
+	yyjson_mut_doc_set_root(pJSONValue->m_pDocument_mut.get(), pJSONValue->m_pVal_mut);
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-YYJSONValue* YYJSONManager::ArrayInitWithStrings(const char** strings, size_t count)
+JsonValue* JsonManager::ArrayInitWithStrings(const char** strings, size_t count)
 {
 	if (!strings) {
 		return nullptr;
 	}
 
-	auto pYYJSONValue = CreateWrapper();
-	pYYJSONValue->m_pDocument_mut = CreateDocument();
+	auto pJSONValue = CreateWrapper();
+	pJSONValue->m_pDocument_mut = CreateDocument();
 
-	pYYJSONValue->m_pVal_mut = yyjson_mut_arr_with_strcpy(
-		pYYJSONValue->m_pDocument_mut.get(),
+	pJSONValue->m_pVal_mut = yyjson_mut_arr_with_strcpy(
+		pJSONValue->m_pDocument_mut.get(),
 		strings,
 		count
 	);
 
-	if (!pYYJSONValue->m_pVal_mut) {
+	if (!pJSONValue->m_pVal_mut) {
 		return nullptr;
 	}
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-YYJSONValue* YYJSONManager::ArrayParseString(const char* str, yyjson_read_flag read_flg,
+JsonValue* JsonManager::ArrayInitWithInt32(const int32_t* values, size_t count)
+{
+	if (!values) {
+		return nullptr;
+	}
+
+	auto pJSONValue = CreateWrapper();
+	pJSONValue->m_pDocument_mut = CreateDocument();
+
+	pJSONValue->m_pVal_mut = yyjson_mut_arr_with_sint32(
+		pJSONValue->m_pDocument_mut.get(),
+		values,
+		count
+	);
+
+	if (!pJSONValue->m_pVal_mut) {
+		return nullptr;
+	}
+
+	return pJSONValue.release();
+}
+
+JsonValue* JsonManager::ArrayInitWithInt64(const char** values, size_t count, char* error, size_t error_size)
+{
+	if (!values) {
+		if (error && error_size > 0) {
+			snprintf(error, error_size, "Invalid values parameter");
+		}
+		return nullptr;
+	}
+
+	if (count == 0) {
+		auto pJSONValue = CreateWrapper();
+		pJSONValue->m_pDocument_mut = CreateDocument();
+		pJSONValue->m_pVal_mut = yyjson_mut_arr(pJSONValue->m_pDocument_mut.get());
+		return pJSONValue.release();
+	}
+
+	auto pJSONValue = CreateWrapper();
+	pJSONValue->m_pDocument_mut = CreateDocument();
+	auto doc = pJSONValue->m_pDocument_mut.get();
+
+	pJSONValue->m_pVal_mut = yyjson_mut_arr(doc);
+	if (!pJSONValue->m_pVal_mut) {
+		if (error && error_size > 0) {
+			snprintf(error, error_size, "Failed to create array");
+		}
+		return nullptr;
+	}
+
+	for (size_t i = 0; i < count; i++) {
+		std::variant<int64_t, uint64_t> variant_value;
+		if (!ParseInt64Variant(values[i], &variant_value, error, error_size)) {
+			return nullptr;
+		}
+
+		yyjson_mut_val* val = nullptr;
+		std::visit([&](auto&& arg) {
+			using T = std::decay_t<decltype(arg)>;
+			if constexpr (std::is_same_v<T, int64_t>) {
+				val = yyjson_mut_sint(doc, arg);
+			} else if constexpr (std::is_same_v<T, uint64_t>) {
+				val = yyjson_mut_uint(doc, arg);
+			}
+		}, variant_value);
+
+		if (!val || !yyjson_mut_arr_append(pJSONValue->m_pVal_mut, val)) {
+			if (error && error_size > 0) {
+				snprintf(error, error_size, "Failed to append value at index %zu", i);
+			}
+			return nullptr;
+		}
+	}
+
+	return pJSONValue.release();
+}
+
+JsonValue* JsonManager::ArrayInitWithBool(const bool* values, size_t count)
+{
+	if (!values) {
+		return nullptr;
+	}
+
+	auto pJSONValue = CreateWrapper();
+	pJSONValue->m_pDocument_mut = CreateDocument();
+
+	pJSONValue->m_pVal_mut = yyjson_mut_arr_with_bool(
+		pJSONValue->m_pDocument_mut.get(),
+		values,
+		count
+	);
+
+	if (!pJSONValue->m_pVal_mut) {
+		return nullptr;
+	}
+
+	return pJSONValue.release();
+}
+
+JsonValue* JsonManager::ArrayInitWithFloat(const double* values, size_t count)
+{
+	if (!values) {
+		return nullptr;
+	}
+
+	auto pJSONValue = CreateWrapper();
+	pJSONValue->m_pDocument_mut = CreateDocument();
+
+	pJSONValue->m_pVal_mut = yyjson_mut_arr_with_real(
+		pJSONValue->m_pDocument_mut.get(),
+		values,
+		count
+	);
+
+	if (!pJSONValue->m_pVal_mut) {
+		return nullptr;
+	}
+
+	return pJSONValue.release();
+}
+
+JsonValue* JsonManager::ArrayParseString(const char* str, yyjson_read_flag read_flg,
 	char* error, size_t error_size)
 {
 	if (!str) {
@@ -1178,7 +1340,7 @@ YYJSONValue* YYJSONManager::ArrayParseString(const char* str, yyjson_read_flag r
 		return nullptr;
 	}
 
-	auto pYYJSONValue = CreateWrapper();
+	auto pJSONValue = CreateWrapper();
 
 	yyjson_read_err readError;
 	yyjson_doc* idoc = yyjson_read_opts(const_cast<char*>(str), strlen(str), read_flg, nullptr, &readError);
@@ -1204,14 +1366,14 @@ YYJSONValue* YYJSONManager::ArrayParseString(const char* str, yyjson_read_flag r
 		return nullptr;
 	}
 
-	pYYJSONValue->m_readSize = yyjson_doc_get_read_size(idoc);
-	pYYJSONValue->m_pDocument = WrapImmutableDocument(idoc);
-	pYYJSONValue->m_pVal = root;
+	pJSONValue->m_readSize = yyjson_doc_get_read_size(idoc);
+	pJSONValue->m_pDocument = WrapImmutableDocument(idoc);
+	pJSONValue->m_pVal = root;
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-YYJSONValue* YYJSONManager::ArrayParseFile(const char* path, yyjson_read_flag read_flg,
+JsonValue* JsonManager::ArrayParseFile(const char* path, yyjson_read_flag read_flg,
 	char* error, size_t error_size)
 {
 	if (!path) {
@@ -1223,7 +1385,7 @@ YYJSONValue* YYJSONManager::ArrayParseFile(const char* path, yyjson_read_flag re
 
 	char realpath[PLATFORM_MAX_PATH];
 	smutils->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", path);
-	auto pYYJSONValue = CreateWrapper();
+	auto pJSONValue = CreateWrapper();
 
 	yyjson_read_err readError;
 	yyjson_doc* idoc = yyjson_read_file(realpath, read_flg, nullptr, &readError);
@@ -1249,14 +1411,14 @@ YYJSONValue* YYJSONManager::ArrayParseFile(const char* path, yyjson_read_flag re
 		return nullptr;
 	}
 
-	pYYJSONValue->m_readSize = yyjson_doc_get_read_size(idoc);
-	pYYJSONValue->m_pDocument = WrapImmutableDocument(idoc);
-	pYYJSONValue->m_pVal = root;
+	pJSONValue->m_readSize = yyjson_doc_get_read_size(idoc);
+	pJSONValue->m_pDocument = WrapImmutableDocument(idoc);
+	pJSONValue->m_pVal = root;
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-size_t YYJSONManager::ArrayGetSize(YYJSONValue* handle)
+size_t JsonManager::ArrayGetSize(JsonValue* handle)
 {
 	if (!handle) {
 		return 0;
@@ -1269,13 +1431,13 @@ size_t YYJSONManager::ArrayGetSize(YYJSONValue* handle)
 	}
 }
 
-YYJSONValue* YYJSONManager::ArrayGet(YYJSONValue* handle, size_t index)
+JsonValue* JsonManager::ArrayGet(JsonValue* handle, size_t index)
 {
 	if (!handle) {
 		return nullptr;
 	}
 
-	auto pYYJSONValue = CreateWrapper();
+	auto pJSONValue = CreateWrapper();
 
 	if (handle->IsMutable()) {
 		size_t arr_size = yyjson_mut_arr_size(handle->m_pVal_mut);
@@ -1288,8 +1450,8 @@ YYJSONValue* YYJSONManager::ArrayGet(YYJSONValue* handle, size_t index)
 			return nullptr;
 		}
 
-		pYYJSONValue->m_pDocument_mut = handle->m_pDocument_mut;
-		pYYJSONValue->m_pVal_mut = val;
+		pJSONValue->m_pDocument_mut = handle->m_pDocument_mut;
+		pJSONValue->m_pVal_mut = val;
 	} else {
 		size_t arr_size = yyjson_arr_size(handle->m_pVal);
 		if (index >= arr_size) {
@@ -1301,20 +1463,20 @@ YYJSONValue* YYJSONManager::ArrayGet(YYJSONValue* handle, size_t index)
 			return nullptr;
 		}
 
-		pYYJSONValue->m_pDocument = handle->m_pDocument;
-		pYYJSONValue->m_pVal = val;
+		pJSONValue->m_pDocument = handle->m_pDocument;
+		pJSONValue->m_pVal = val;
 	}
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-YYJSONValue* YYJSONManager::ArrayGetFirst(YYJSONValue* handle)
+JsonValue* JsonManager::ArrayGetFirst(JsonValue* handle)
 {
 	if (!handle) {
 		return nullptr;
 	}
 
-	auto pYYJSONValue = CreateWrapper();
+	auto pJSONValue = CreateWrapper();
 
 	if (handle->IsMutable()) {
 		size_t arr_size = yyjson_mut_arr_size(handle->m_pVal_mut);
@@ -1327,8 +1489,8 @@ YYJSONValue* YYJSONManager::ArrayGetFirst(YYJSONValue* handle)
 			return nullptr;
 		}
 
-		pYYJSONValue->m_pDocument_mut = handle->m_pDocument_mut;
-		pYYJSONValue->m_pVal_mut = val;
+		pJSONValue->m_pDocument_mut = handle->m_pDocument_mut;
+		pJSONValue->m_pVal_mut = val;
 	} else {
 		size_t arr_size = yyjson_arr_size(handle->m_pVal);
 		if (arr_size == 0) {
@@ -1340,20 +1502,20 @@ YYJSONValue* YYJSONManager::ArrayGetFirst(YYJSONValue* handle)
 			return nullptr;
 		}
 
-		pYYJSONValue->m_pDocument = handle->m_pDocument;
-		pYYJSONValue->m_pVal = val;
+		pJSONValue->m_pDocument = handle->m_pDocument;
+		pJSONValue->m_pVal = val;
 	}
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-YYJSONValue* YYJSONManager::ArrayGetLast(YYJSONValue* handle)
+JsonValue* JsonManager::ArrayGetLast(JsonValue* handle)
 {
 	if (!handle) {
 		return nullptr;
 	}
 
-	auto pYYJSONValue = CreateWrapper();
+	auto pJSONValue = CreateWrapper();
 
 	if (handle->IsMutable()) {
 		size_t arr_size = yyjson_mut_arr_size(handle->m_pVal_mut);
@@ -1366,8 +1528,8 @@ YYJSONValue* YYJSONManager::ArrayGetLast(YYJSONValue* handle)
 			return nullptr;
 		}
 
-		pYYJSONValue->m_pDocument_mut = handle->m_pDocument_mut;
-		pYYJSONValue->m_pVal_mut = val;
+		pJSONValue->m_pDocument_mut = handle->m_pDocument_mut;
+		pJSONValue->m_pVal_mut = val;
 	} else {
 		size_t arr_size = yyjson_arr_size(handle->m_pVal);
 		if (arr_size == 0) {
@@ -1379,14 +1541,14 @@ YYJSONValue* YYJSONManager::ArrayGetLast(YYJSONValue* handle)
 			return nullptr;
 		}
 
-		pYYJSONValue->m_pDocument = handle->m_pDocument;
-		pYYJSONValue->m_pVal = val;
+		pJSONValue->m_pDocument = handle->m_pDocument;
+		pJSONValue->m_pVal = val;
 	}
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-bool YYJSONManager::ArrayGetBool(YYJSONValue* handle, size_t index, bool* out_value)
+bool JsonManager::ArrayGetBool(JsonValue* handle, size_t index, bool* out_value)
 {
 	if (!handle || !out_value) {
 		return false;
@@ -1421,7 +1583,7 @@ bool YYJSONManager::ArrayGetBool(YYJSONValue* handle, size_t index, bool* out_va
 	}
 }
 
-bool YYJSONManager::ArrayGetFloat(YYJSONValue* handle, size_t index, double* out_value)
+bool JsonManager::ArrayGetFloat(JsonValue* handle, size_t index, double* out_value)
 {
 	if (!handle || !out_value) {
 		return false;
@@ -1456,7 +1618,7 @@ bool YYJSONManager::ArrayGetFloat(YYJSONValue* handle, size_t index, double* out
 	}
 }
 
-bool YYJSONManager::ArrayGetInt(YYJSONValue* handle, size_t index, int* out_value)
+bool JsonManager::ArrayGetInt(JsonValue* handle, size_t index, int* out_value)
 {
 	if (!handle || !out_value) {
 		return false;
@@ -1491,7 +1653,7 @@ bool YYJSONManager::ArrayGetInt(YYJSONValue* handle, size_t index, int* out_valu
 	}
 }
 
-bool YYJSONManager::ArrayGetInt64(YYJSONValue* handle, size_t index, int64_t* out_value)
+bool JsonManager::ArrayGetInt64(JsonValue* handle, size_t index, std::variant<int64_t, uint64_t>* out_value)
 {
 	if (!handle || !out_value) {
 		return false;
@@ -1508,7 +1670,7 @@ bool YYJSONManager::ArrayGetInt64(YYJSONValue* handle, size_t index, int64_t* ou
 			return false;
 		}
 
-		*out_value = yyjson_mut_get_sint(val);
+		ReadInt64FromMutVal(val, out_value);
 		return true;
 	} else {
 		size_t arr_size = yyjson_arr_size(handle->m_pVal);
@@ -1521,12 +1683,12 @@ bool YYJSONManager::ArrayGetInt64(YYJSONValue* handle, size_t index, int64_t* ou
 			return false;
 		}
 
-		*out_value = yyjson_get_sint(val);
+		ReadInt64FromVal(val, out_value);
 		return true;
 	}
 }
 
-bool YYJSONManager::ArrayGetString(YYJSONValue* handle, size_t index, const char** out_str, size_t* out_len)
+bool JsonManager::ArrayGetString(JsonValue* handle, size_t index, const char** out_str, size_t* out_len)
 {
 	if (!handle || !out_str) {
 		return false;
@@ -1567,7 +1729,7 @@ bool YYJSONManager::ArrayGetString(YYJSONValue* handle, size_t index, const char
 	}
 }
 
-bool YYJSONManager::ArrayIsNull(YYJSONValue* handle, size_t index)
+bool JsonManager::ArrayIsNull(JsonValue* handle, size_t index)
 {
 	if (!handle) {
 		return false;
@@ -1592,7 +1754,7 @@ bool YYJSONManager::ArrayIsNull(YYJSONValue* handle, size_t index)
 	}
 }
 
-bool YYJSONManager::ArrayReplace(YYJSONValue* handle, size_t index, YYJSONValue* value)
+bool JsonManager::ArrayReplace(JsonValue* handle, size_t index, JsonValue* value)
 {
 	if (!handle || !handle->IsMutable() || !value) {
 		return false;
@@ -1617,7 +1779,7 @@ bool YYJSONManager::ArrayReplace(YYJSONValue* handle, size_t index, YYJSONValue*
 	return yyjson_mut_arr_replace(handle->m_pVal_mut, index, val_copy) != nullptr;
 }
 
-bool YYJSONManager::ArrayReplaceBool(YYJSONValue* handle, size_t index, bool value)
+bool JsonManager::ArrayReplaceBool(JsonValue* handle, size_t index, bool value)
 {
 	if (!handle || !handle->IsMutable()) {
 		return false;
@@ -1631,7 +1793,7 @@ bool YYJSONManager::ArrayReplaceBool(YYJSONValue* handle, size_t index, bool val
 	return yyjson_mut_arr_replace(handle->m_pVal_mut, index, yyjson_mut_bool(handle->m_pDocument_mut.get(), value)) != nullptr;
 }
 
-bool YYJSONManager::ArrayReplaceFloat(YYJSONValue* handle, size_t index, double value)
+bool JsonManager::ArrayReplaceFloat(JsonValue* handle, size_t index, double value)
 {
 	if (!handle || !handle->IsMutable()) {
 		return false;
@@ -1645,7 +1807,7 @@ bool YYJSONManager::ArrayReplaceFloat(YYJSONValue* handle, size_t index, double 
 	return yyjson_mut_arr_replace(handle->m_pVal_mut, index, yyjson_mut_real(handle->m_pDocument_mut.get(), value)) != nullptr;
 }
 
-bool YYJSONManager::ArrayReplaceInt(YYJSONValue* handle, size_t index, int value)
+bool JsonManager::ArrayReplaceInt(JsonValue* handle, size_t index, int value)
 {
 	if (!handle || !handle->IsMutable()) {
 		return false;
@@ -1659,7 +1821,7 @@ bool YYJSONManager::ArrayReplaceInt(YYJSONValue* handle, size_t index, int value
 	return yyjson_mut_arr_replace(handle->m_pVal_mut, index, yyjson_mut_int(handle->m_pDocument_mut.get(), value)) != nullptr;
 }
 
-bool YYJSONManager::ArrayReplaceInt64(YYJSONValue* handle, size_t index, int64_t value)
+bool JsonManager::ArrayReplaceInt64(JsonValue* handle, size_t index, std::variant<int64_t, uint64_t> value)
 {
 	if (!handle || !handle->IsMutable()) {
 		return false;
@@ -1670,10 +1832,18 @@ bool YYJSONManager::ArrayReplaceInt64(YYJSONValue* handle, size_t index, int64_t
 		return false;
 	}
 
-	return yyjson_mut_arr_replace(handle->m_pVal_mut, index, yyjson_mut_sint(handle->m_pDocument_mut.get(), value)) != nullptr;
+	return std::visit([&](auto&& val) -> bool {
+		using T = std::decay_t<decltype(val)>;
+		if constexpr (std::is_same_v<T, int64_t>) {
+			return yyjson_mut_arr_replace(handle->m_pVal_mut, index, yyjson_mut_sint(handle->m_pDocument_mut.get(), val)) != nullptr;
+		} else if constexpr (std::is_same_v<T, uint64_t>) {
+			return yyjson_mut_arr_replace(handle->m_pVal_mut, index, yyjson_mut_uint(handle->m_pDocument_mut.get(), val)) != nullptr;
+		}
+		return false;
+	}, value);
 }
 
-bool YYJSONManager::ArrayReplaceNull(YYJSONValue* handle, size_t index)
+bool JsonManager::ArrayReplaceNull(JsonValue* handle, size_t index)
 {
 	if (!handle || !handle->IsMutable()) {
 		return false;
@@ -1687,7 +1857,7 @@ bool YYJSONManager::ArrayReplaceNull(YYJSONValue* handle, size_t index)
 	return yyjson_mut_arr_replace(handle->m_pVal_mut, index, yyjson_mut_null(handle->m_pDocument_mut.get())) != nullptr;
 }
 
-bool YYJSONManager::ArrayReplaceString(YYJSONValue* handle, size_t index, const char* value)
+bool JsonManager::ArrayReplaceString(JsonValue* handle, size_t index, const char* value)
 {
 	if (!handle || !handle->IsMutable() || !value) {
 		return false;
@@ -1701,7 +1871,7 @@ bool YYJSONManager::ArrayReplaceString(YYJSONValue* handle, size_t index, const 
 	return yyjson_mut_arr_replace(handle->m_pVal_mut, index, yyjson_mut_strcpy(handle->m_pDocument_mut.get(), value)) != nullptr;
 }
 
-bool YYJSONManager::ArrayAppend(YYJSONValue* handle, YYJSONValue* value)
+bool JsonManager::ArrayAppend(JsonValue* handle, JsonValue* value)
 {
 	if (!handle || !handle->IsMutable() || !value) {
 		return false;
@@ -1721,7 +1891,7 @@ bool YYJSONManager::ArrayAppend(YYJSONValue* handle, YYJSONValue* value)
 	return yyjson_mut_arr_append(handle->m_pVal_mut, val_copy);
 }
 
-bool YYJSONManager::ArrayAppendBool(YYJSONValue* handle, bool value)
+bool JsonManager::ArrayAppendBool(JsonValue* handle, bool value)
 {
 	if (!handle || !handle->IsMutable()) {
 		return false;
@@ -1730,7 +1900,7 @@ bool YYJSONManager::ArrayAppendBool(YYJSONValue* handle, bool value)
 	return yyjson_mut_arr_append(handle->m_pVal_mut, yyjson_mut_bool(handle->m_pDocument_mut.get(), value));
 }
 
-bool YYJSONManager::ArrayAppendFloat(YYJSONValue* handle, double value)
+bool JsonManager::ArrayAppendFloat(JsonValue* handle, double value)
 {
 	if (!handle || !handle->IsMutable()) {
 		return false;
@@ -1739,7 +1909,7 @@ bool YYJSONManager::ArrayAppendFloat(YYJSONValue* handle, double value)
 	return yyjson_mut_arr_append(handle->m_pVal_mut, yyjson_mut_real(handle->m_pDocument_mut.get(), value));
 }
 
-bool YYJSONManager::ArrayAppendInt(YYJSONValue* handle, int value)
+bool JsonManager::ArrayAppendInt(JsonValue* handle, int value)
 {
 	if (!handle || !handle->IsMutable()) {
 		return false;
@@ -1748,16 +1918,24 @@ bool YYJSONManager::ArrayAppendInt(YYJSONValue* handle, int value)
 	return yyjson_mut_arr_append(handle->m_pVal_mut, yyjson_mut_int(handle->m_pDocument_mut.get(), value));
 }
 
-bool YYJSONManager::ArrayAppendInt64(YYJSONValue* handle, int64_t value)
+bool JsonManager::ArrayAppendInt64(JsonValue* handle, std::variant<int64_t, uint64_t> value)
 {
 	if (!handle || !handle->IsMutable()) {
 		return false;
 	}
 
-	return yyjson_mut_arr_append(handle->m_pVal_mut, yyjson_mut_sint(handle->m_pDocument_mut.get(), value));
+	return std::visit([&](auto&& val) -> bool {
+		using T = std::decay_t<decltype(val)>;
+		if constexpr (std::is_same_v<T, int64_t>) {
+			return yyjson_mut_arr_append(handle->m_pVal_mut, yyjson_mut_sint(handle->m_pDocument_mut.get(), val));
+		} else if constexpr (std::is_same_v<T, uint64_t>) {
+			return yyjson_mut_arr_append(handle->m_pVal_mut, yyjson_mut_uint(handle->m_pDocument_mut.get(), val));
+		}
+		return false;
+	}, value);
 }
 
-bool YYJSONManager::ArrayAppendNull(YYJSONValue* handle)
+bool JsonManager::ArrayAppendNull(JsonValue* handle)
 {
 	if (!handle || !handle->IsMutable()) {
 		return false;
@@ -1766,7 +1944,7 @@ bool YYJSONManager::ArrayAppendNull(YYJSONValue* handle)
 	return yyjson_mut_arr_append(handle->m_pVal_mut, yyjson_mut_null(handle->m_pDocument_mut.get()));
 }
 
-bool YYJSONManager::ArrayAppendString(YYJSONValue* handle, const char* value)
+bool JsonManager::ArrayAppendString(JsonValue* handle, const char* value)
 {
 	if (!handle || !handle->IsMutable() || !value) {
 		return false;
@@ -1775,7 +1953,161 @@ bool YYJSONManager::ArrayAppendString(YYJSONValue* handle, const char* value)
 	return yyjson_mut_arr_append(handle->m_pVal_mut, yyjson_mut_strcpy(handle->m_pDocument_mut.get(), value));
 }
 
-bool YYJSONManager::ArrayRemove(YYJSONValue* handle, size_t index)
+bool JsonManager::ArrayInsert(JsonValue* handle, size_t index, JsonValue* value)
+{
+	if (!handle || !handle->IsMutable() || !value) {
+		return false;
+	}
+
+	return yyjson_mut_arr_insert(handle->m_pVal_mut, value->m_pVal_mut, index);
+}
+
+bool JsonManager::ArrayInsertBool(JsonValue* handle, size_t index, bool value)
+{
+	if (!handle || !handle->IsMutable()) {
+		return false;
+	}
+
+	return yyjson_mut_arr_insert(handle->m_pVal_mut, yyjson_mut_bool(handle->m_pDocument_mut.get(), value), index);
+}
+
+bool JsonManager::ArrayInsertInt(JsonValue* handle, size_t index, int value)
+{
+	if (!handle || !handle->IsMutable()) {
+		return false;
+	}
+
+	return yyjson_mut_arr_insert(handle->m_pVal_mut, yyjson_mut_sint(handle->m_pDocument_mut.get(), value), index);
+}
+
+bool JsonManager::ArrayInsertInt64(JsonValue* handle, size_t index, std::variant<int64_t, uint64_t> value)
+{
+	if (!handle || !handle->IsMutable()) {
+		return false;
+	}
+
+	yyjson_mut_val* val = nullptr;
+	std::visit([&](auto&& arg) {
+		using T = std::decay_t<decltype(arg)>;
+		if constexpr (std::is_same_v<T, int64_t>) {
+			val = yyjson_mut_sint(handle->m_pDocument_mut.get(), arg);
+		} else if constexpr (std::is_same_v<T, uint64_t>) {
+			val = yyjson_mut_uint(handle->m_pDocument_mut.get(), arg);
+		}
+	}, value);
+
+	if (!val) {
+		return false;
+	}
+
+	return yyjson_mut_arr_insert(handle->m_pVal_mut, val, index);
+}
+
+bool JsonManager::ArrayInsertFloat(JsonValue* handle, size_t index, double value)
+{
+	if (!handle || !handle->IsMutable()) {
+		return false;
+	}
+
+	return yyjson_mut_arr_insert(handle->m_pVal_mut, yyjson_mut_real(handle->m_pDocument_mut.get(), value), index);
+}
+
+bool JsonManager::ArrayInsertString(JsonValue* handle, size_t index, const char* value)
+{
+	if (!handle || !handle->IsMutable() || !value) {
+		return false;
+	}
+
+	return yyjson_mut_arr_insert(handle->m_pVal_mut, yyjson_mut_strcpy(handle->m_pDocument_mut.get(), value), index);
+}
+
+bool JsonManager::ArrayInsertNull(JsonValue* handle, size_t index)
+{
+	if (!handle || !handle->IsMutable()) {
+		return false;
+	}
+
+	return yyjson_mut_arr_insert(handle->m_pVal_mut, yyjson_mut_null(handle->m_pDocument_mut.get()), index);
+}
+
+bool JsonManager::ArrayPrepend(JsonValue* handle, JsonValue* value)
+{
+	if (!handle || !handle->IsMutable() || !value) {
+		return false;
+	}
+
+	return yyjson_mut_arr_prepend(handle->m_pVal_mut, value->m_pVal_mut);
+}
+
+bool JsonManager::ArrayPrependBool(JsonValue* handle, bool value)
+{
+	if (!handle || !handle->IsMutable()) {
+		return false;
+	}
+
+	return yyjson_mut_arr_prepend(handle->m_pVal_mut, yyjson_mut_bool(handle->m_pDocument_mut.get(), value));
+}
+
+bool JsonManager::ArrayPrependInt(JsonValue* handle, int value)
+{
+	if (!handle || !handle->IsMutable()) {
+		return false;
+	}
+
+	return yyjson_mut_arr_prepend(handle->m_pVal_mut, yyjson_mut_sint(handle->m_pDocument_mut.get(), value));
+}
+
+bool JsonManager::ArrayPrependInt64(JsonValue* handle, std::variant<int64_t, uint64_t> value)
+{
+	if (!handle || !handle->IsMutable()) {
+		return false;
+	}
+
+	yyjson_mut_val* val = nullptr;
+	std::visit([&](auto&& arg) {
+		using T = std::decay_t<decltype(arg)>;
+		if constexpr (std::is_same_v<T, int64_t>) {
+			val = yyjson_mut_sint(handle->m_pDocument_mut.get(), arg);
+		} else if constexpr (std::is_same_v<T, uint64_t>) {
+			val = yyjson_mut_uint(handle->m_pDocument_mut.get(), arg);
+		}
+	}, value);
+
+	if (!val) {
+		return false;
+	}
+
+	return yyjson_mut_arr_prepend(handle->m_pVal_mut, val);
+}
+
+bool JsonManager::ArrayPrependFloat(JsonValue* handle, double value)
+{
+	if (!handle || !handle->IsMutable()) {
+		return false;
+	}
+
+	return yyjson_mut_arr_prepend(handle->m_pVal_mut, yyjson_mut_real(handle->m_pDocument_mut.get(), value));
+}
+
+bool JsonManager::ArrayPrependString(JsonValue* handle, const char* value)
+{
+	if (!handle || !handle->IsMutable() || !value) {
+		return false;
+	}
+
+	return yyjson_mut_arr_prepend(handle->m_pVal_mut, yyjson_mut_strcpy(handle->m_pDocument_mut.get(), value));
+}
+
+bool JsonManager::ArrayPrependNull(JsonValue* handle)
+{
+	if (!handle || !handle->IsMutable()) {
+		return false;
+	}
+
+	return yyjson_mut_arr_prepend(handle->m_pVal_mut, yyjson_mut_null(handle->m_pDocument_mut.get()));
+}
+
+bool JsonManager::ArrayRemove(JsonValue* handle, size_t index)
 {
 	if (!handle || !handle->IsMutable()) {
 		return false;
@@ -1789,7 +2121,7 @@ bool YYJSONManager::ArrayRemove(YYJSONValue* handle, size_t index)
 	return yyjson_mut_arr_remove(handle->m_pVal_mut, index) != nullptr;
 }
 
-bool YYJSONManager::ArrayRemoveFirst(YYJSONValue* handle)
+bool JsonManager::ArrayRemoveFirst(JsonValue* handle)
 {
 	if (!handle || !handle->IsMutable()) {
 		return false;
@@ -1802,7 +2134,7 @@ bool YYJSONManager::ArrayRemoveFirst(YYJSONValue* handle)
 	return yyjson_mut_arr_remove_first(handle->m_pVal_mut) != nullptr;
 }
 
-bool YYJSONManager::ArrayRemoveLast(YYJSONValue* handle)
+bool JsonManager::ArrayRemoveLast(JsonValue* handle)
 {
 	if (!handle || !handle->IsMutable()) {
 		return false;
@@ -1815,7 +2147,7 @@ bool YYJSONManager::ArrayRemoveLast(YYJSONValue* handle)
 	return yyjson_mut_arr_remove_last(handle->m_pVal_mut) != nullptr;
 }
 
-bool YYJSONManager::ArrayRemoveRange(YYJSONValue* handle, size_t start_index, size_t end_index)
+bool JsonManager::ArrayRemoveRange(JsonValue* handle, size_t start_index, size_t end_index)
 {
 	if (!handle || !handle->IsMutable()) {
 		return false;
@@ -1830,7 +2162,7 @@ bool YYJSONManager::ArrayRemoveRange(YYJSONValue* handle, size_t start_index, si
 	return yyjson_mut_arr_remove_range(handle->m_pVal_mut, start_index, end_index);
 }
 
-bool YYJSONManager::ArrayClear(YYJSONValue* handle)
+bool JsonManager::ArrayClear(JsonValue* handle)
 {
 	if (!handle || !handle->IsMutable()) {
 		return false;
@@ -1839,7 +2171,7 @@ bool YYJSONManager::ArrayClear(YYJSONValue* handle)
 	return yyjson_mut_arr_clear(handle->m_pVal_mut);
 }
 
-int YYJSONManager::ArrayIndexOfBool(YYJSONValue* handle, bool search_value)
+int JsonManager::ArrayIndexOfBool(JsonValue* handle, bool search_value)
 {
 	if (!handle) {
 		return -1;
@@ -1866,7 +2198,7 @@ int YYJSONManager::ArrayIndexOfBool(YYJSONValue* handle, bool search_value)
 	return -1;
 }
 
-int YYJSONManager::ArrayIndexOfString(YYJSONValue* handle, const char* search_value)
+int JsonManager::ArrayIndexOfString(JsonValue* handle, const char* search_value)
 {
 	if (!handle || !search_value) {
 		return -1;
@@ -1893,7 +2225,7 @@ int YYJSONManager::ArrayIndexOfString(YYJSONValue* handle, const char* search_va
 	return -1;
 }
 
-int YYJSONManager::ArrayIndexOfInt(YYJSONValue* handle, int search_value)
+int JsonManager::ArrayIndexOfInt(JsonValue* handle, int search_value)
 {
 	if (!handle) {
 		return -1;
@@ -1920,7 +2252,7 @@ int YYJSONManager::ArrayIndexOfInt(YYJSONValue* handle, int search_value)
 	return -1;
 }
 
-int YYJSONManager::ArrayIndexOfInt64(YYJSONValue* handle, int64_t search_value)
+int JsonManager::ArrayIndexOfInt64(JsonValue* handle, int64_t search_value)
 {
 	if (!handle) {
 		return -1;
@@ -1947,7 +2279,34 @@ int YYJSONManager::ArrayIndexOfInt64(YYJSONValue* handle, int64_t search_value)
 	return -1;
 }
 
-int YYJSONManager::ArrayIndexOfFloat(YYJSONValue* handle, double search_value)
+int JsonManager::ArrayIndexOfUint64(JsonValue* handle, uint64_t search_value)
+{
+	if (!handle) {
+		return -1;
+	}
+
+	if (handle->IsMutable()) {
+		size_t idx, max;
+		yyjson_mut_val *val;
+		yyjson_mut_arr_foreach(handle->m_pVal_mut, idx, max, val) {
+			if (yyjson_mut_is_int(val) && yyjson_mut_get_uint(val) == search_value) {
+				return static_cast<int>(idx);
+			}
+		}
+	} else {
+		size_t idx, max;
+		yyjson_val *val;
+		yyjson_arr_foreach(handle->m_pVal, idx, max, val) {
+			if (yyjson_is_int(val) && yyjson_get_uint(val) == search_value) {
+				return static_cast<int>(idx);
+			}
+		}
+	}
+
+	return -1;
+}
+
+int JsonManager::ArrayIndexOfFloat(JsonValue* handle, double search_value)
 {
 	if (!handle) {
 		return -1;
@@ -1980,7 +2339,7 @@ int YYJSONManager::ArrayIndexOfFloat(YYJSONValue* handle, double search_value)
 	return -1;
 }
 
-bool YYJSONManager::ArraySort(YYJSONValue* handle, YYJSON_SORT_ORDER sort_mode)
+bool JsonManager::ArraySort(JsonValue* handle, JSON_SORT_ORDER sort_mode)
 {
 	if (!handle || !handle->IsMutable()) {
 		return false;
@@ -1990,57 +2349,105 @@ bool YYJSONManager::ArraySort(YYJSONValue* handle, YYJSON_SORT_ORDER sort_mode)
 		return false;
 	}
 
-	if (sort_mode < YYJSON_SORT_ASC || sort_mode > YYJSON_SORT_RANDOM) {
+	if (sort_mode < JSON_SORT_ASC || sort_mode > JSON_SORT_RANDOM) {
 		return false;
 	}
 
 	size_t arr_size = yyjson_mut_arr_size(handle->m_pVal_mut);
 	if (arr_size <= 1) return true;
 
-	static std::vector<yyjson_mut_val*> values;
-	values.clear();
+	struct ValueInfo {
+		yyjson_mut_val* val;
+		uint8_t type;
+		uint8_t subtype;  // 0=float, 1=signed int, 2=unsigned int
+	};
+
+	std::vector<ValueInfo> values;
 	values.reserve(arr_size);
 
 	size_t idx, max;
 	yyjson_mut_val *val;
 	yyjson_mut_arr_foreach(handle->m_pVal_mut, idx, max, val) {
-		values.push_back(val);
+		uint8_t type = yyjson_mut_get_type(val);
+		uint8_t subtype = 0;
+
+		if (type == YYJSON_TYPE_NUM) {
+			if (yyjson_mut_is_int(val)) {
+				subtype = yyjson_mut_is_sint(val) ? 1 : 2;
+			}
+		}
+
+		values.push_back({val, type, subtype});
 	}
 
-	if (sort_mode == YYJSON_SORT_RANDOM) {
+	if (sort_mode == JSON_SORT_RANDOM) {
 		std::shuffle(values.begin(), values.end(), m_randomGenerator);
 	}
 	else {
-		auto compare = [sort_mode](yyjson_mut_val* a, yyjson_mut_val* b) {
-			if (a == b) return false;
+		auto compare = [sort_mode](const ValueInfo& a, const ValueInfo& b) {
+			if (a.val == b.val) return false;
 
-			uint8_t type_a = yyjson_mut_get_type(a);
-			uint8_t type_b = yyjson_mut_get_type(b);
-			if (type_a != type_b) {
-				return sort_mode == YYJSON_SORT_ASC ? type_a < type_b : type_a > type_b;
+			if (a.type != b.type) {
+				return sort_mode == JSON_SORT_ASC ? a.type < b.type : a.type > b.type;
 			}
 
-			switch (type_a) {
+			switch (a.type) {
 			case YYJSON_TYPE_STR: {
-				const char* str_a = yyjson_mut_get_str(a);
-				const char* str_b = yyjson_mut_get_str(b);
+				const char* str_a = yyjson_mut_get_str(a.val);
+				const char* str_b = yyjson_mut_get_str(b.val);
 				int cmp = strcmp(str_a, str_b);
-				return sort_mode == YYJSON_SORT_ASC ? cmp < 0 : cmp > 0;
+				return sort_mode == JSON_SORT_ASC ? cmp < 0 : cmp > 0;
 			}
 			case YYJSON_TYPE_NUM: {
-				if (yyjson_mut_is_int(a) && yyjson_mut_is_int(b)) {
-					int64_t num_a = yyjson_mut_get_int(a);
-					int64_t num_b = yyjson_mut_get_int(b);
-					return sort_mode == YYJSON_SORT_ASC ? num_a < num_b : num_a > num_b;
+				if (a.subtype > 0 && b.subtype > 0) {
+					if (a.subtype == 1 && b.subtype == 1) {
+						int64_t num_a = yyjson_mut_get_sint(a.val);
+						int64_t num_b = yyjson_mut_get_sint(b.val);
+						return sort_mode == JSON_SORT_ASC ? num_a < num_b : num_a > num_b;
+					}
+					else if (a.subtype == 2 && b.subtype == 2) {
+						uint64_t num_a = yyjson_mut_get_uint(a.val);
+						uint64_t num_b = yyjson_mut_get_uint(b.val);
+						return sort_mode == JSON_SORT_ASC ? num_a < num_b : num_a > num_b;
+					}
+					else {
+						int64_t signed_val;
+						uint64_t unsigned_val;
+						bool a_is_signed = (a.subtype == 1);
+
+						if (a_is_signed) {
+							signed_val = yyjson_mut_get_sint(a.val);
+							unsigned_val = yyjson_mut_get_uint(b.val);
+
+							if (signed_val < 0) {
+								return sort_mode == JSON_SORT_ASC;
+							}
+							uint64_t a_as_unsigned = static_cast<uint64_t>(signed_val);
+							return sort_mode == JSON_SORT_ASC ?
+								a_as_unsigned < unsigned_val :
+								a_as_unsigned > unsigned_val;
+						} else {
+							unsigned_val = yyjson_mut_get_uint(a.val);
+							signed_val = yyjson_mut_get_sint(b.val);
+
+							if (signed_val < 0) {
+								return sort_mode == JSON_SORT_DESC;
+							}
+							uint64_t b_as_unsigned = static_cast<uint64_t>(signed_val);
+							return sort_mode == JSON_SORT_ASC ?
+								unsigned_val < b_as_unsigned :
+								unsigned_val > b_as_unsigned;
+						}
+					}
 				}
-				double num_a = yyjson_mut_get_num(a);
-				double num_b = yyjson_mut_get_num(b);
-				return sort_mode == YYJSON_SORT_ASC ? num_a < num_b : num_a > num_b;
+				double num_a = yyjson_mut_get_num(a.val);
+				double num_b = yyjson_mut_get_num(b.val);
+				return sort_mode == JSON_SORT_ASC ? num_a < num_b : num_a > num_b;
 			}
 			case YYJSON_TYPE_BOOL: {
-				bool val_a = yyjson_mut_get_bool(a);
-				bool val_b = yyjson_mut_get_bool(b);
-				return sort_mode == YYJSON_SORT_ASC ? val_a < val_b : val_a > val_b;
+				bool val_a = yyjson_mut_get_bool(a.val);
+				bool val_b = yyjson_mut_get_bool(b.val);
+				return sort_mode == JSON_SORT_ASC ? val_a < val_b : val_a > val_b;
 			}
 			default:
 				return false;
@@ -2051,14 +2458,14 @@ bool YYJSONManager::ArraySort(YYJSONValue* handle, YYJSON_SORT_ORDER sort_mode)
 	}
 
 	yyjson_mut_arr_clear(handle->m_pVal_mut);
-	for (auto val : values) {
-		yyjson_mut_arr_append(handle->m_pVal_mut, val);
+	for (const auto& info : values) {
+		yyjson_mut_arr_append(handle->m_pVal_mut, info.val);
 	}
 
 	return true;
 }
 
-const char* YYJSONManager::SkipSeparators(const char* ptr)
+const char* JsonManager::SkipSeparators(const char* ptr)
 {
 	while (*ptr && (isspace(*ptr) || *ptr == ':' || *ptr == ',')) {
 		ptr++;
@@ -2066,7 +2473,7 @@ const char* YYJSONManager::SkipSeparators(const char* ptr)
 	return ptr;
 }
 
-void YYJSONManager::SetPackError(char* error, size_t error_size, const char* fmt, ...)
+void JsonManager::SetPackError(char* error, size_t error_size, const char* fmt, ...)
 {
 	if (error && error_size > 0) {
 		va_list args;
@@ -2077,8 +2484,8 @@ void YYJSONManager::SetPackError(char* error, size_t error_size, const char* fmt
 	}
 }
 
-yyjson_mut_val* YYJSONManager::PackImpl(yyjson_mut_doc* doc, const char* format, 
-                                          IPackParamProvider* provider, 
+yyjson_mut_val* JsonManager::PackImpl(yyjson_mut_doc* doc, const char* format,
+                                          IPackParamProvider* provider,
                                           char* error, size_t error_size,
                                           const char** out_end_ptr)
 {
@@ -2133,7 +2540,7 @@ yyjson_mut_val* YYJSONManager::PackImpl(yyjson_mut_doc* doc, const char* format,
 					}
 
 					ptr = SkipSeparators(ptr + 1);
-					if (*ptr != 's' && *ptr != 'i' && *ptr != 'f' && *ptr != 'b' && 
+					if (*ptr != 's' && *ptr != 'i' && *ptr != 'f' && *ptr != 'b' &&
 						*ptr != 'n' && *ptr != '{' && *ptr != '[') {
 						SetPackError(error, error_size, "Invalid value type after key");
 						return nullptr;
@@ -2296,117 +2703,125 @@ yyjson_mut_val* YYJSONManager::PackImpl(yyjson_mut_doc* doc, const char* format,
 	return root;
 }
 
-YYJSONValue* YYJSONManager::Pack(const char* format, IPackParamProvider* param_provider, char* error, size_t error_size)
+JsonValue* JsonManager::Pack(const char* format, IPackParamProvider* param_provider, char* error, size_t error_size)
 {
 	if (!format || !param_provider) {
 		SetPackError(error, error_size, "Invalid arguments");
 		return nullptr;
 	}
 
-	auto pYYJSONValue = CreateWrapper();
-	pYYJSONValue->m_pDocument_mut = CreateDocument();
+	auto pJSONValue = CreateWrapper();
+	pJSONValue->m_pDocument_mut = CreateDocument();
 
-	if (!pYYJSONValue->m_pDocument_mut) {
+	if (!pJSONValue->m_pDocument_mut) {
 		SetPackError(error, error_size, "Failed to create document");
 		return nullptr;
 	}
 
 	const char* end_ptr = nullptr;
-	pYYJSONValue->m_pVal_mut = PackImpl(pYYJSONValue->m_pDocument_mut.get(), format, 
+	pJSONValue->m_pVal_mut = PackImpl(pJSONValue->m_pDocument_mut.get(), format,
 	                                       param_provider, error, error_size, &end_ptr);
 
-	if (!pYYJSONValue->m_pVal_mut) {
+	if (!pJSONValue->m_pVal_mut) {
 		return nullptr;
 	}
 
-	yyjson_mut_doc_set_root(pYYJSONValue->m_pDocument_mut.get(), pYYJSONValue->m_pVal_mut);
+	yyjson_mut_doc_set_root(pJSONValue->m_pDocument_mut.get(), pJSONValue->m_pVal_mut);
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-YYJSONValue* YYJSONManager::CreateBool(bool value)
+JsonValue* JsonManager::CreateBool(bool value)
 {
-	auto pYYJSONValue = CreateWrapper();
-	pYYJSONValue->m_pDocument_mut = CreateDocument();
-	pYYJSONValue->m_pVal_mut = yyjson_mut_bool(pYYJSONValue->m_pDocument_mut.get(), value);
+	auto pJSONValue = CreateWrapper();
+	pJSONValue->m_pDocument_mut = CreateDocument();
+	pJSONValue->m_pVal_mut = yyjson_mut_bool(pJSONValue->m_pDocument_mut.get(), value);
 
-	if (!pYYJSONValue->m_pVal_mut) {
+	if (!pJSONValue->m_pVal_mut) {
 		return nullptr;
 	}
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-YYJSONValue* YYJSONManager::CreateFloat(double value)
+JsonValue* JsonManager::CreateFloat(double value)
 {
-	auto pYYJSONValue = CreateWrapper();
-	pYYJSONValue->m_pDocument_mut = CreateDocument();
-	pYYJSONValue->m_pVal_mut = yyjson_mut_real(pYYJSONValue->m_pDocument_mut.get(), value);
+	auto pJSONValue = CreateWrapper();
+	pJSONValue->m_pDocument_mut = CreateDocument();
+	pJSONValue->m_pVal_mut = yyjson_mut_real(pJSONValue->m_pDocument_mut.get(), value);
 
-	if (!pYYJSONValue->m_pVal_mut) {
+	if (!pJSONValue->m_pVal_mut) {
 		return nullptr;
 	}
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-YYJSONValue* YYJSONManager::CreateInt(int value)
+JsonValue* JsonManager::CreateInt(int value)
 {
-	auto pYYJSONValue = CreateWrapper();
-	pYYJSONValue->m_pDocument_mut = CreateDocument();
-	pYYJSONValue->m_pVal_mut = yyjson_mut_int(pYYJSONValue->m_pDocument_mut.get(), value);
+	auto pJSONValue = CreateWrapper();
+	pJSONValue->m_pDocument_mut = CreateDocument();
+	pJSONValue->m_pVal_mut = yyjson_mut_int(pJSONValue->m_pDocument_mut.get(), value);
 
-	if (!pYYJSONValue->m_pVal_mut) {
+	if (!pJSONValue->m_pVal_mut) {
 		return nullptr;
 	}
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-YYJSONValue* YYJSONManager::CreateInt64(int64_t value)
+JsonValue* JsonManager::CreateInt64(std::variant<int64_t, uint64_t> value)
 {
-	auto pYYJSONValue = CreateWrapper();
-	pYYJSONValue->m_pDocument_mut = CreateDocument();
-	pYYJSONValue->m_pVal_mut = yyjson_mut_sint(pYYJSONValue->m_pDocument_mut.get(), value);
+	auto pJSONValue = CreateWrapper();
+	pJSONValue->m_pDocument_mut = CreateDocument();
 
-	if (!pYYJSONValue->m_pVal_mut) {
+	std::visit([&](auto&& val) {
+		using T = std::decay_t<decltype(val)>;
+		if constexpr (std::is_same_v<T, int64_t>) {
+			pJSONValue->m_pVal_mut = yyjson_mut_sint(pJSONValue->m_pDocument_mut.get(), val);
+		} else if constexpr (std::is_same_v<T, uint64_t>) {
+			pJSONValue->m_pVal_mut = yyjson_mut_uint(pJSONValue->m_pDocument_mut.get(), val);
+		}
+	}, value);
+
+	if (!pJSONValue->m_pVal_mut) {
 		return nullptr;
 	}
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-YYJSONValue* YYJSONManager::CreateNull()
+JsonValue* JsonManager::CreateNull()
 {
-	auto pYYJSONValue = CreateWrapper();
-	pYYJSONValue->m_pDocument_mut = CreateDocument();
-	pYYJSONValue->m_pVal_mut = yyjson_mut_null(pYYJSONValue->m_pDocument_mut.get());
+	auto pJSONValue = CreateWrapper();
+	pJSONValue->m_pDocument_mut = CreateDocument();
+	pJSONValue->m_pVal_mut = yyjson_mut_null(pJSONValue->m_pDocument_mut.get());
 
-	if (!pYYJSONValue->m_pVal_mut) {
+	if (!pJSONValue->m_pVal_mut) {
 		return nullptr;
 	}
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-YYJSONValue* YYJSONManager::CreateString(const char* value)
+JsonValue* JsonManager::CreateString(const char* value)
 {
 	if (!value) {
 		return nullptr;
 	}
 
-	auto pYYJSONValue = CreateWrapper();
-	pYYJSONValue->m_pDocument_mut = CreateDocument();
-	pYYJSONValue->m_pVal_mut = yyjson_mut_strcpy(pYYJSONValue->m_pDocument_mut.get(), value);
+	auto pJSONValue = CreateWrapper();
+	pJSONValue->m_pDocument_mut = CreateDocument();
+	pJSONValue->m_pVal_mut = yyjson_mut_strcpy(pJSONValue->m_pDocument_mut.get(), value);
 
-	if (!pYYJSONValue->m_pVal_mut) {
+	if (!pJSONValue->m_pVal_mut) {
 		return nullptr;
 	}
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-bool YYJSONManager::GetBool(YYJSONValue* handle, bool* out_value)
+bool JsonManager::GetBool(JsonValue* handle, bool* out_value)
 {
 	if (!handle || !out_value) {
 		return false;
@@ -2427,7 +2842,7 @@ bool YYJSONManager::GetBool(YYJSONValue* handle, bool* out_value)
 	}
 }
 
-bool YYJSONManager::GetFloat(YYJSONValue* handle, double* out_value)
+bool JsonManager::GetFloat(JsonValue* handle, double* out_value)
 {
 	if (!handle || !out_value) {
 		return false;
@@ -2448,7 +2863,7 @@ bool YYJSONManager::GetFloat(YYJSONValue* handle, double* out_value)
 	}
 }
 
-bool YYJSONManager::GetInt(YYJSONValue* handle, int* out_value)
+bool JsonManager::GetInt(JsonValue* handle, int* out_value)
 {
 	if (!handle || !out_value) {
 		return false;
@@ -2469,7 +2884,7 @@ bool YYJSONManager::GetInt(YYJSONValue* handle, int* out_value)
 	}
 }
 
-bool YYJSONManager::GetInt64(YYJSONValue* handle, int64_t* out_value)
+bool JsonManager::GetInt64(JsonValue* handle, std::variant<int64_t, uint64_t>* out_value)
 {
 	if (!handle || !out_value) {
 		return false;
@@ -2479,18 +2894,18 @@ bool YYJSONManager::GetInt64(YYJSONValue* handle, int64_t* out_value)
 		if (!yyjson_mut_is_int(handle->m_pVal_mut)) {
 			return false;
 		}
-		*out_value = yyjson_mut_get_sint(handle->m_pVal_mut);
+		ReadInt64FromMutVal(handle->m_pVal_mut, out_value);
 		return true;
 	} else {
 		if (!yyjson_is_int(handle->m_pVal)) {
 			return false;
 		}
-		*out_value = yyjson_get_sint(handle->m_pVal);
+		ReadInt64FromVal(handle->m_pVal, out_value);
 		return true;
 	}
 }
 
-bool YYJSONManager::GetString(YYJSONValue* handle, const char** out_str, size_t* out_len)
+bool JsonManager::GetString(JsonValue* handle, const char** out_str, size_t* out_len)
 {
 	if (!handle || !out_str) {
 		return false;
@@ -2517,7 +2932,7 @@ bool YYJSONManager::GetString(YYJSONValue* handle, const char** out_str, size_t*
 	}
 }
 
-YYJSONValue* YYJSONManager::PtrGet(YYJSONValue* handle, const char* path, char* error, size_t error_size)
+JsonValue* JsonManager::PtrGet(JsonValue* handle, const char* path, char* error, size_t error_size)
 {
 	if (!handle || !path) {
 		if (error && error_size > 0) {
@@ -2526,7 +2941,7 @@ YYJSONValue* YYJSONManager::PtrGet(YYJSONValue* handle, const char* path, char* 
 		return nullptr;
 	}
 
-	auto pYYJSONValue = CreateWrapper();
+	auto pJSONValue = CreateWrapper();
 	yyjson_ptr_err ptrGetError;
 
 	if (handle->IsMutable()) {
@@ -2534,33 +2949,33 @@ YYJSONValue* YYJSONManager::PtrGet(YYJSONValue* handle, const char* path, char* 
 
 		if (!val || ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return nullptr;
 		}
 
-		pYYJSONValue->m_pDocument_mut = handle->m_pDocument_mut;
-		pYYJSONValue->m_pVal_mut = val;
+		pJSONValue->m_pDocument_mut = handle->m_pDocument_mut;
+		pJSONValue->m_pVal_mut = val;
 	} else {
 		yyjson_val* val = yyjson_doc_ptr_getx(handle->m_pDocument.get(), path, strlen(path), &ptrGetError);
 
 		if (!val || ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return nullptr;
 		}
 
-		pYYJSONValue->m_pDocument = handle->m_pDocument;
-		pYYJSONValue->m_pVal = val;
+		pJSONValue->m_pDocument = handle->m_pDocument;
+		pJSONValue->m_pVal = val;
 	}
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-bool YYJSONManager::PtrGetBool(YYJSONValue* handle, const char* path, bool* out_value, char* error, size_t error_size)
+bool JsonManager::PtrGetBool(JsonValue* handle, const char* path, bool* out_value, char* error, size_t error_size)
 {
 	if (!handle || !path || !out_value) {
 		if (error && error_size > 0) {
@@ -2576,7 +2991,7 @@ bool YYJSONManager::PtrGetBool(YYJSONValue* handle, const char* path, bool* out_
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -2596,7 +3011,7 @@ bool YYJSONManager::PtrGetBool(YYJSONValue* handle, const char* path, bool* out_
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -2614,7 +3029,7 @@ bool YYJSONManager::PtrGetBool(YYJSONValue* handle, const char* path, bool* out_
 	}
 }
 
-bool YYJSONManager::PtrGetFloat(YYJSONValue* handle, const char* path, double* out_value, char* error, size_t error_size)
+bool JsonManager::PtrGetFloat(JsonValue* handle, const char* path, double* out_value, char* error, size_t error_size)
 {
 	if (!handle || !path || !out_value) {
 		if (error && error_size > 0) {
@@ -2630,7 +3045,7 @@ bool YYJSONManager::PtrGetFloat(YYJSONValue* handle, const char* path, double* o
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -2650,7 +3065,7 @@ bool YYJSONManager::PtrGetFloat(YYJSONValue* handle, const char* path, double* o
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -2668,7 +3083,7 @@ bool YYJSONManager::PtrGetFloat(YYJSONValue* handle, const char* path, double* o
 	}
 }
 
-bool YYJSONManager::PtrGetInt(YYJSONValue* handle, const char* path, int* out_value, char* error, size_t error_size)
+bool JsonManager::PtrGetInt(JsonValue* handle, const char* path, int* out_value, char* error, size_t error_size)
 {
 	if (!handle || !path || !out_value) {
 		if (error && error_size > 0) {
@@ -2684,7 +3099,7 @@ bool YYJSONManager::PtrGetInt(YYJSONValue* handle, const char* path, int* out_va
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -2704,7 +3119,7 @@ bool YYJSONManager::PtrGetInt(YYJSONValue* handle, const char* path, int* out_va
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -2722,7 +3137,7 @@ bool YYJSONManager::PtrGetInt(YYJSONValue* handle, const char* path, int* out_va
 	}
 }
 
-bool YYJSONManager::PtrGetInt64(YYJSONValue* handle, const char* path, int64_t* out_value, char* error, size_t error_size)
+bool JsonManager::PtrGetInt64(JsonValue* handle, const char* path, std::variant<int64_t, uint64_t>* out_value, char* error, size_t error_size)
 {
 	if (!handle || !path || !out_value) {
 		if (error && error_size > 0) {
@@ -2736,9 +3151,9 @@ bool YYJSONManager::PtrGetInt64(YYJSONValue* handle, const char* path, int64_t* 
 	if (handle->IsMutable()) {
 		yyjson_mut_val* val = yyjson_mut_doc_ptr_getx(handle->m_pDocument_mut.get(), path, strlen(path), nullptr, &ptrGetError);
 
-		if (ptrGetError.code) {
+		if (!val || ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -2751,14 +3166,14 @@ bool YYJSONManager::PtrGetInt64(YYJSONValue* handle, const char* path, int64_t* 
 			return false;
 		}
 
-		*out_value = yyjson_mut_get_sint(val);
+		ReadInt64FromMutVal(val, out_value);
 		return true;
 	} else {
 		yyjson_val* val = yyjson_doc_ptr_getx(handle->m_pDocument.get(), path, strlen(path), &ptrGetError);
 
-		if (ptrGetError.code) {
+		if (!val || ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -2771,12 +3186,12 @@ bool YYJSONManager::PtrGetInt64(YYJSONValue* handle, const char* path, int64_t* 
 			return false;
 		}
 
-		*out_value = yyjson_get_sint(val);
+		ReadInt64FromVal(val, out_value);
 		return true;
 	}
 }
 
-bool YYJSONManager::PtrGetString(YYJSONValue* handle, const char* path, const char** out_str, size_t* out_len, char* error, size_t error_size)
+bool JsonManager::PtrGetString(JsonValue* handle, const char* path, const char** out_str, size_t* out_len, char* error, size_t error_size)
 {
 	if (!handle || !path || !out_str) {
 		if (error && error_size > 0) {
@@ -2792,7 +3207,7 @@ bool YYJSONManager::PtrGetString(YYJSONValue* handle, const char* path, const ch
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -2815,7 +3230,7 @@ bool YYJSONManager::PtrGetString(YYJSONValue* handle, const char* path, const ch
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -2836,7 +3251,7 @@ bool YYJSONManager::PtrGetString(YYJSONValue* handle, const char* path, const ch
 	}
 }
 
-bool YYJSONManager::PtrGetIsNull(YYJSONValue* handle, const char* path, bool* out_is_null, char* error, size_t error_size)
+bool JsonManager::PtrGetIsNull(JsonValue* handle, const char* path, bool* out_is_null, char* error, size_t error_size)
 {
 	if (!handle || !path || !out_is_null) {
 		if (error && error_size > 0) {
@@ -2852,7 +3267,7 @@ bool YYJSONManager::PtrGetIsNull(YYJSONValue* handle, const char* path, bool* ou
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -2865,7 +3280,7 @@ bool YYJSONManager::PtrGetIsNull(YYJSONValue* handle, const char* path, bool* ou
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -2876,7 +3291,7 @@ bool YYJSONManager::PtrGetIsNull(YYJSONValue* handle, const char* path, bool* ou
 	}
 }
 
-bool YYJSONManager::PtrGetLength(YYJSONValue* handle, const char* path, size_t* out_len, char* error, size_t error_size)
+bool JsonManager::PtrGetLength(JsonValue* handle, const char* path, size_t* out_len, char* error, size_t error_size)
 {
 	if (!handle || !path || !out_len) {
 		if (error && error_size > 0) {
@@ -2892,7 +3307,7 @@ bool YYJSONManager::PtrGetLength(YYJSONValue* handle, const char* path, size_t* 
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -2909,7 +3324,7 @@ bool YYJSONManager::PtrGetLength(YYJSONValue* handle, const char* path, size_t* 
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -2924,7 +3339,7 @@ bool YYJSONManager::PtrGetLength(YYJSONValue* handle, const char* path, size_t* 
 	}
 }
 
-bool YYJSONManager::PtrSet(YYJSONValue* handle, const char* path, YYJSONValue* value, char* error, size_t error_size)
+bool JsonManager::PtrSet(JsonValue* handle, const char* path, JsonValue* value, char* error, size_t error_size)
 {
 	if (!handle || !handle->IsMutable() || !path || !value) {
 		if (error && error_size > 0) {
@@ -2951,14 +3366,14 @@ bool YYJSONManager::PtrSet(YYJSONValue* handle, const char* path, YYJSONValue* v
 	bool success = yyjson_mut_doc_ptr_setx(handle->m_pDocument_mut.get(), path, strlen(path), val_copy, true, nullptr, &ptrSetError);
 
 	if (ptrSetError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+		snprintf(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrSetError.msg, ptrSetError.code, ptrSetError.pos, path);
 	}
 
 	return success;
 }
 
-bool YYJSONManager::PtrSetBool(YYJSONValue* handle, const char* path, bool value, char* error, size_t error_size)
+bool JsonManager::PtrSetBool(JsonValue* handle, const char* path, bool value, char* error, size_t error_size)
 {
 	if (!handle || !handle->IsMutable() || !path) {
 		if (error && error_size > 0) {
@@ -2971,14 +3386,14 @@ bool YYJSONManager::PtrSetBool(YYJSONValue* handle, const char* path, bool value
 	bool success = yyjson_mut_doc_ptr_setx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_bool(handle->m_pDocument_mut.get(), value), true, nullptr, &ptrSetError);
 
 	if (ptrSetError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+		snprintf(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrSetError.msg, ptrSetError.code, ptrSetError.pos, path);
 	}
 
 	return success;
 }
 
-bool YYJSONManager::PtrSetFloat(YYJSONValue* handle, const char* path, double value, char* error, size_t error_size)
+bool JsonManager::PtrSetFloat(JsonValue* handle, const char* path, double value, char* error, size_t error_size)
 {
 	if (!handle || !handle->IsMutable() || !path) {
 		if (error && error_size > 0) {
@@ -2991,14 +3406,14 @@ bool YYJSONManager::PtrSetFloat(YYJSONValue* handle, const char* path, double va
 	bool success = yyjson_mut_doc_ptr_setx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_real(handle->m_pDocument_mut.get(), value), true, nullptr, &ptrSetError);
 
 	if (ptrSetError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+		snprintf(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrSetError.msg, ptrSetError.code, ptrSetError.pos, path);
 	}
 
 	return success;
 }
 
-bool YYJSONManager::PtrSetInt(YYJSONValue* handle, const char* path, int value, char* error, size_t error_size)
+bool JsonManager::PtrSetInt(JsonValue* handle, const char* path, int value, char* error, size_t error_size)
 {
 	if (!handle || !handle->IsMutable() || !path) {
 		if (error && error_size > 0) {
@@ -3011,14 +3426,14 @@ bool YYJSONManager::PtrSetInt(YYJSONValue* handle, const char* path, int value, 
 	bool success = yyjson_mut_doc_ptr_setx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_int(handle->m_pDocument_mut.get(), value), true, nullptr, &ptrSetError);
 
 	if (ptrSetError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+		snprintf(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrSetError.msg, ptrSetError.code, ptrSetError.pos, path);
 	}
 
 	return success;
 }
 
-bool YYJSONManager::PtrSetInt64(YYJSONValue* handle, const char* path, int64_t value, char* error, size_t error_size)
+bool JsonManager::PtrSetInt64(JsonValue* handle, const char* path, std::variant<int64_t, uint64_t> value, char* error, size_t error_size)
 {
 	if (!handle || !handle->IsMutable() || !path) {
 		if (error && error_size > 0) {
@@ -3028,17 +3443,25 @@ bool YYJSONManager::PtrSetInt64(YYJSONValue* handle, const char* path, int64_t v
 	}
 
 	yyjson_ptr_err ptrSetError;
-	bool success = yyjson_mut_doc_ptr_setx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_sint(handle->m_pDocument_mut.get(), value), true, nullptr, &ptrSetError);
+	bool success = std::visit([&](auto&& val) -> bool {
+		using T = std::decay_t<decltype(val)>;
+		if constexpr (std::is_same_v<T, int64_t>) {
+			return yyjson_mut_doc_ptr_setx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_sint(handle->m_pDocument_mut.get(), val), true, nullptr, &ptrSetError);
+		} else if constexpr (std::is_same_v<T, uint64_t>) {
+			return yyjson_mut_doc_ptr_setx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_uint(handle->m_pDocument_mut.get(), val), true, nullptr, &ptrSetError);
+		}
+		return false;
+	}, value);
 
-	if (ptrSetError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+	if (!success && ptrSetError.code && error && error_size > 0) {
+		snprintf(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrSetError.msg, ptrSetError.code, ptrSetError.pos, path);
 	}
 
 	return success;
 }
 
-bool YYJSONManager::PtrSetString(YYJSONValue* handle, const char* path, const char* value, char* error, size_t error_size)
+bool JsonManager::PtrSetString(JsonValue* handle, const char* path, const char* value, char* error, size_t error_size)
 {
 	if (!handle || !handle->IsMutable() || !path || !value) {
 		if (error && error_size > 0) {
@@ -3051,14 +3474,14 @@ bool YYJSONManager::PtrSetString(YYJSONValue* handle, const char* path, const ch
 	bool success = yyjson_mut_doc_ptr_setx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_strcpy(handle->m_pDocument_mut.get(), value), true, nullptr, &ptrSetError);
 
 	if (ptrSetError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+		snprintf(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrSetError.msg, ptrSetError.code, ptrSetError.pos, path);
 	}
 
 	return success;
 }
 
-bool YYJSONManager::PtrSetNull(YYJSONValue* handle, const char* path, char* error, size_t error_size)
+bool JsonManager::PtrSetNull(JsonValue* handle, const char* path, char* error, size_t error_size)
 {
 	if (!handle || !handle->IsMutable() || !path) {
 		if (error && error_size > 0) {
@@ -3071,14 +3494,14 @@ bool YYJSONManager::PtrSetNull(YYJSONValue* handle, const char* path, char* erro
 	bool success = yyjson_mut_doc_ptr_setx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_null(handle->m_pDocument_mut.get()), true, nullptr, &ptrSetError);
 
 	if (ptrSetError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+		snprintf(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrSetError.msg, ptrSetError.code, ptrSetError.pos, path);
 	}
 
 	return success;
 }
 
-bool YYJSONManager::PtrAdd(YYJSONValue* handle, const char* path, YYJSONValue* value, char* error, size_t error_size)
+bool JsonManager::PtrAdd(JsonValue* handle, const char* path, JsonValue* value, char* error, size_t error_size)
 {
 	if (!handle || !handle->IsMutable() || !path || !value) {
 		if (error && error_size > 0) {
@@ -3105,14 +3528,14 @@ bool YYJSONManager::PtrAdd(YYJSONValue* handle, const char* path, YYJSONValue* v
 	bool success = yyjson_mut_doc_ptr_addx(handle->m_pDocument_mut.get(), path, strlen(path), val_copy, true, nullptr, &ptrAddError);
 
 	if (ptrAddError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+		snprintf(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrAddError.msg, ptrAddError.code, ptrAddError.pos, path);
 	}
 
 	return success;
 }
 
-bool YYJSONManager::PtrAddBool(YYJSONValue* handle, const char* path, bool value, char* error, size_t error_size)
+bool JsonManager::PtrAddBool(JsonValue* handle, const char* path, bool value, char* error, size_t error_size)
 {
 	if (!handle || !handle->IsMutable() || !path) {
 		if (error && error_size > 0) {
@@ -3125,14 +3548,14 @@ bool YYJSONManager::PtrAddBool(YYJSONValue* handle, const char* path, bool value
 	bool success = yyjson_mut_doc_ptr_addx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_bool(handle->m_pDocument_mut.get(), value), true, nullptr, &ptrAddError);
 
 	if (ptrAddError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+		snprintf(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrAddError.msg, ptrAddError.code, ptrAddError.pos, path);
 	}
 
 	return success;
 }
 
-bool YYJSONManager::PtrAddFloat(YYJSONValue* handle, const char* path, double value, char* error, size_t error_size)
+bool JsonManager::PtrAddFloat(JsonValue* handle, const char* path, double value, char* error, size_t error_size)
 {
 	if (!handle || !handle->IsMutable() || !path) {
 		if (error && error_size > 0) {
@@ -3145,14 +3568,14 @@ bool YYJSONManager::PtrAddFloat(YYJSONValue* handle, const char* path, double va
 	bool success = yyjson_mut_doc_ptr_addx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_real(handle->m_pDocument_mut.get(), value), true, nullptr, &ptrAddError);
 
 	if (ptrAddError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+		snprintf(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrAddError.msg, ptrAddError.code, ptrAddError.pos, path);
 	}
 
 	return success;
 }
 
-bool YYJSONManager::PtrAddInt(YYJSONValue* handle, const char* path, int value, char* error, size_t error_size)
+bool JsonManager::PtrAddInt(JsonValue* handle, const char* path, int value, char* error, size_t error_size)
 {
 	if (!handle || !handle->IsMutable() || !path) {
 		if (error && error_size > 0) {
@@ -3165,14 +3588,14 @@ bool YYJSONManager::PtrAddInt(YYJSONValue* handle, const char* path, int value, 
 	bool success = yyjson_mut_doc_ptr_addx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_int(handle->m_pDocument_mut.get(), value), true, nullptr, &ptrAddError);
 
 	if (ptrAddError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+		snprintf(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrAddError.msg, ptrAddError.code, ptrAddError.pos, path);
 	}
 
 	return success;
 }
 
-bool YYJSONManager::PtrAddInt64(YYJSONValue* handle, const char* path, int64_t value, char* error, size_t error_size)
+bool JsonManager::PtrAddInt64(JsonValue* handle, const char* path, std::variant<int64_t, uint64_t> value, char* error, size_t error_size)
 {
 	if (!handle || !handle->IsMutable() || !path) {
 		if (error && error_size > 0) {
@@ -3182,17 +3605,25 @@ bool YYJSONManager::PtrAddInt64(YYJSONValue* handle, const char* path, int64_t v
 	}
 
 	yyjson_ptr_err ptrAddError;
-	bool success = yyjson_mut_doc_ptr_addx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_sint(handle->m_pDocument_mut.get(), value), true, nullptr, &ptrAddError);
+	bool success = std::visit([&](auto&& val) -> bool {
+		using T = std::decay_t<decltype(val)>;
+		if constexpr (std::is_same_v<T, int64_t>) {
+			return yyjson_mut_doc_ptr_addx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_sint(handle->m_pDocument_mut.get(), val), true, nullptr, &ptrAddError);
+		} else if constexpr (std::is_same_v<T, uint64_t>) {
+			return yyjson_mut_doc_ptr_addx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_uint(handle->m_pDocument_mut.get(), val), true, nullptr, &ptrAddError);
+		}
+		return false;
+	}, value);
 
 	if (ptrAddError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+		snprintf(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrAddError.msg, ptrAddError.code, ptrAddError.pos, path);
 	}
 
 	return success;
 }
 
-bool YYJSONManager::PtrAddString(YYJSONValue* handle, const char* path, const char* value, char* error, size_t error_size)
+bool JsonManager::PtrAddString(JsonValue* handle, const char* path, const char* value, char* error, size_t error_size)
 {
 	if (!handle || !handle->IsMutable() || !path || !value) {
 		if (error && error_size > 0) {
@@ -3205,14 +3636,14 @@ bool YYJSONManager::PtrAddString(YYJSONValue* handle, const char* path, const ch
 	bool success = yyjson_mut_doc_ptr_addx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_strcpy(handle->m_pDocument_mut.get(), value), true, nullptr, &ptrAddError);
 
 	if (ptrAddError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+		snprintf(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrAddError.msg, ptrAddError.code, ptrAddError.pos, path);
 	}
 
 	return success;
 }
 
-bool YYJSONManager::PtrAddNull(YYJSONValue* handle, const char* path, char* error, size_t error_size)
+bool JsonManager::PtrAddNull(JsonValue* handle, const char* path, char* error, size_t error_size)
 {
 	if (!handle || !handle->IsMutable() || !path) {
 		if (error && error_size > 0) {
@@ -3225,14 +3656,14 @@ bool YYJSONManager::PtrAddNull(YYJSONValue* handle, const char* path, char* erro
 	bool success = yyjson_mut_doc_ptr_addx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_null(handle->m_pDocument_mut.get()), true, nullptr, &ptrAddError);
 
 	if (ptrAddError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+		snprintf(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrAddError.msg, ptrAddError.code, ptrAddError.pos, path);
 	}
 
 	return success;
 }
 
-bool YYJSONManager::PtrRemove(YYJSONValue* handle, const char* path, char* error, size_t error_size)
+bool JsonManager::PtrRemove(JsonValue* handle, const char* path, char* error, size_t error_size)
 {
 	if (!handle || !handle->IsMutable() || !path) {
 		if (error && error_size > 0) {
@@ -3245,192 +3676,200 @@ bool YYJSONManager::PtrRemove(YYJSONValue* handle, const char* path, char* error
 	bool success = yyjson_mut_doc_ptr_removex(handle->m_pDocument_mut.get(), path, strlen(path), nullptr, &ptrRemoveError) != nullptr;
 
 	if (ptrRemoveError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to remove JSON pointer: %s (error code: %u, position: %zu, path: %s)", 
+		snprintf(error, error_size, "Failed to remove JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrRemoveError.msg, ptrRemoveError.code, ptrRemoveError.pos, path);
 	}
 
 	return success;
 }
 
-YYJSONValue* YYJSONManager::PtrTryGet(YYJSONValue* handle, const char* path)
+JsonManager::PtrGetValueResult JsonManager::PtrGetValueInternal(JsonValue* handle, const char* path)
+{
+	PtrGetValueResult result;
+	result.success = false;
+
+	if (!handle || !path) {
+		return result;
+	}
+
+	yyjson_ptr_err ptrGetError;
+
+	if (handle->IsMutable()) {
+		result.mut_val = yyjson_mut_doc_ptr_getx(handle->m_pDocument_mut.get(), path, strlen(path), nullptr, &ptrGetError);
+		if (result.mut_val && !ptrGetError.code) {
+			result.success = true;
+		}
+	} else {
+		result.imm_val = yyjson_doc_ptr_getx(handle->m_pDocument.get(), path, strlen(path), &ptrGetError);
+		if (result.imm_val && !ptrGetError.code) {
+			result.success = true;
+		}
+	}
+
+	return result;
+}
+
+JsonValue* JsonManager::PtrTryGet(JsonValue* handle, const char* path)
 {
 	if (!handle || !path) {
-		return nullptr;
-	}
-
-	auto pYYJSONValue = CreateWrapper();
-	yyjson_ptr_err ptrGetError;
-
-	if (handle->IsMutable()) {
-		yyjson_mut_val* val = yyjson_mut_doc_ptr_getx(handle->m_pDocument_mut.get(), path, strlen(path), nullptr, &ptrGetError);
-
-		if (!val || ptrGetError.code) {
 			return nullptr;
 		}
 
-		pYYJSONValue->m_pDocument_mut = handle->m_pDocument_mut;
-		pYYJSONValue->m_pVal_mut = val;
-	} else {
-		yyjson_val* val = yyjson_doc_ptr_getx(handle->m_pDocument.get(), path, strlen(path), &ptrGetError);
-
-		if (!val || ptrGetError.code) {
+	auto result = PtrGetValueInternal(handle, path);
+	if (!result.success) {
 			return nullptr;
 		}
 
-		pYYJSONValue->m_pDocument = handle->m_pDocument;
-		pYYJSONValue->m_pVal = val;
+	auto pJSONValue = CreateWrapper();
+	if (handle->IsMutable()) {
+		pJSONValue->m_pDocument_mut = handle->m_pDocument_mut;
+		pJSONValue->m_pVal_mut = result.mut_val;
+	} else {
+		pJSONValue->m_pDocument = handle->m_pDocument;
+		pJSONValue->m_pVal = result.imm_val;
 	}
 
-	return pYYJSONValue.release();
+	return pJSONValue.release();
 }
 
-bool YYJSONManager::PtrTryGetBool(YYJSONValue* handle, const char* path, bool* out_value)
+bool JsonManager::PtrTryGetBool(JsonValue* handle, const char* path, bool* out_value)
 {
 	if (!handle || !path || !out_value) {
 		return false;
 	}
 
-	yyjson_ptr_err ptrGetError;
+	auto result = PtrGetValueInternal(handle, path);
+	if (!result.success) {
+		return false;
+	}
 
 	if (handle->IsMutable()) {
-		yyjson_mut_val* val = yyjson_mut_doc_ptr_getx(handle->m_pDocument_mut.get(), path, strlen(path), nullptr, &ptrGetError);
-
-		if (!val || ptrGetError.code || !yyjson_mut_is_bool(val)) {
+		if (!yyjson_mut_is_bool(result.mut_val)) {
 			return false;
 		}
-
-		*out_value = yyjson_mut_get_bool(val);
+		*out_value = yyjson_mut_get_bool(result.mut_val);
 		return true;
 	} else {
-		yyjson_val* val = yyjson_doc_ptr_getx(handle->m_pDocument.get(), path, strlen(path), &ptrGetError);
-
-		if (!val || ptrGetError.code || !yyjson_is_bool(val)) {
+		if (!yyjson_is_bool(result.imm_val)) {
 			return false;
 		}
-
-		*out_value = yyjson_get_bool(val);
+		*out_value = yyjson_get_bool(result.imm_val);
 		return true;
 	}
 }
 
-bool YYJSONManager::PtrTryGetFloat(YYJSONValue* handle, const char* path, double* out_value)
+bool JsonManager::PtrTryGetFloat(JsonValue* handle, const char* path, double* out_value)
 {
 	if (!handle || !path || !out_value) {
 		return false;
 	}
 
-	yyjson_ptr_err ptrGetError;
+	auto result = PtrGetValueInternal(handle, path);
+	if (!result.success) {
+		return false;
+	}
 
 	if (handle->IsMutable()) {
-		yyjson_mut_val* val = yyjson_mut_doc_ptr_getx(handle->m_pDocument_mut.get(), path, strlen(path), nullptr, &ptrGetError);
-
-		if (!val || ptrGetError.code || !yyjson_mut_is_num(val)) {
+		if (!yyjson_mut_is_num(result.mut_val)) {
 			return false;
 		}
-
-		*out_value = yyjson_mut_get_num(val);
+		*out_value = yyjson_mut_get_num(result.mut_val);
 		return true;
 	} else {
-		yyjson_val* val = yyjson_doc_ptr_getx(handle->m_pDocument.get(), path, strlen(path), &ptrGetError);
-
-		if (!val || ptrGetError.code || !yyjson_is_num(val)) {
+		if (!yyjson_is_num(result.imm_val)) {
 			return false;
 		}
-
-		*out_value = yyjson_get_num(val);
+		*out_value = yyjson_get_num(result.imm_val);
 		return true;
 	}
 }
 
-bool YYJSONManager::PtrTryGetInt(YYJSONValue* handle, const char* path, int* out_value)
+bool JsonManager::PtrTryGetInt(JsonValue* handle, const char* path, int* out_value)
 {
 	if (!handle || !path || !out_value) {
 		return false;
 	}
 
-	yyjson_ptr_err ptrGetError;
+	auto result = PtrGetValueInternal(handle, path);
+	if (!result.success) {
+		return false;
+	}
 
 	if (handle->IsMutable()) {
-		yyjson_mut_val* val = yyjson_mut_doc_ptr_getx(handle->m_pDocument_mut.get(), path, strlen(path), nullptr, &ptrGetError);
-
-		if (!val || ptrGetError.code || !yyjson_mut_is_int(val)) {
+		if (!yyjson_mut_is_int(result.mut_val)) {
 			return false;
 		}
-		*out_value = yyjson_mut_get_int(val);
+		*out_value = yyjson_mut_get_int(result.mut_val);
 		return true;
 	} else {
-		yyjson_val* val = yyjson_doc_ptr_getx(handle->m_pDocument.get(), path, strlen(path), &ptrGetError);
-
-		if (!val || ptrGetError.code || !yyjson_is_int(val)) {
+		if (!yyjson_is_int(result.imm_val)) {
 			return false;
 		}
-		*out_value = yyjson_get_int(val);
+		*out_value = yyjson_get_int(result.imm_val);
 		return true;
 	}
 }
 
-bool YYJSONManager::PtrTryGetInt64(YYJSONValue* handle, const char* path, int64_t* out_value)
+bool JsonManager::PtrTryGetInt64(JsonValue* handle, const char* path, std::variant<int64_t, uint64_t>* out_value)
 {
 	if (!handle || !path || !out_value) {
 		return false;
 	}
 
-	yyjson_ptr_err ptrGetError;
+	auto result = PtrGetValueInternal(handle, path);
+	if (!result.success) {
+		return false;
+	}
 
 	if (handle->IsMutable()) {
-		yyjson_mut_val* val = yyjson_mut_doc_ptr_getx(handle->m_pDocument_mut.get(), path, strlen(path), nullptr, &ptrGetError);
-		if (!val || ptrGetError.code || !yyjson_mut_is_int(val)) {
+		if (!yyjson_mut_is_int(result.mut_val)) {
 			return false;
 		}
-		*out_value = yyjson_mut_get_sint(val);
+		ReadInt64FromMutVal(result.mut_val, out_value);
 		return true;
 	} else {
-		yyjson_val* val = yyjson_doc_ptr_getx(handle->m_pDocument.get(), path, strlen(path), &ptrGetError);
-		if (!val || ptrGetError.code || !yyjson_is_int(val)) {
+		if (!yyjson_is_int(result.imm_val)) {
 			return false;
 		}
-		*out_value = yyjson_get_sint(val);
+		ReadInt64FromVal(result.imm_val, out_value);
 		return true;
 	}
 }
 
-bool YYJSONManager::PtrTryGetString(YYJSONValue* handle, const char* path, const char** out_str, size_t* out_len)
+bool JsonManager::PtrTryGetString(JsonValue* handle, const char* path, const char** out_str, size_t* out_len)
 {
 	if (!handle || !path || !out_str) {
+			return false;
+		}
+
+	auto result = PtrGetValueInternal(handle, path);
+	if (!result.success) {
 		return false;
 	}
 
-	yyjson_ptr_err ptrGetError;
-
 	if (handle->IsMutable()) {
-		yyjson_mut_val* val = yyjson_mut_doc_ptr_getx(handle->m_pDocument_mut.get(), path, strlen(path), nullptr, &ptrGetError);
-
-		if (!val || ptrGetError.code || !yyjson_mut_is_str(val)) {
+		if (!yyjson_mut_is_str(result.mut_val)) {
 			return false;
 		}
-
-		*out_str = yyjson_mut_get_str(val);
+		*out_str = yyjson_mut_get_str(result.mut_val);
 		if (out_len) {
-			*out_len = yyjson_mut_get_len(val);
+			*out_len = yyjson_mut_get_len(result.mut_val);
 		}
 		return true;
 	} else {
-		yyjson_val* val = yyjson_doc_ptr_getx(handle->m_pDocument.get(), path, strlen(path), &ptrGetError);
-
-		if (!val || ptrGetError.code || !yyjson_is_str(val)) {
+		if (!yyjson_is_str(result.imm_val)) {
 			return false;
 		}
-
-		*out_str = yyjson_get_str(val);
+		*out_str = yyjson_get_str(result.imm_val);
 		if (out_len) {
-			*out_len = yyjson_get_len(val);
+			*out_len = yyjson_get_len(result.imm_val);
 		}
 		return true;
 	}
 }
 
-bool YYJSONManager::ObjectForeachNext(YYJSONValue* handle, const char** out_key, 
-                                       size_t* out_key_len, YYJSONValue** out_value)
+bool JsonManager::ObjectForeachNext(JsonValue* handle, const char** out_key,
+                                       size_t* out_key_len, JsonValue** out_value)
 {
 	if (!handle || !IsObject(handle)) {
 		return false;
@@ -3490,8 +3929,8 @@ bool YYJSONManager::ObjectForeachNext(YYJSONValue* handle, const char** out_key,
 	return false;
 }
 
-bool YYJSONManager::ArrayForeachNext(YYJSONValue* handle, size_t* out_index, 
-                                      YYJSONValue** out_value)
+bool JsonManager::ArrayForeachNext(JsonValue* handle, size_t* out_index,
+                                      JsonValue** out_value)
 {
 	if (!handle || !IsArray(handle)) {
 		return false;
@@ -3543,7 +3982,7 @@ bool YYJSONManager::ArrayForeachNext(YYJSONValue* handle, size_t* out_index,
 	return false;
 }
 
-bool YYJSONManager::ObjectForeachKeyNext(YYJSONValue* handle, const char** out_key, 
+bool JsonManager::ObjectForeachKeyNext(JsonValue* handle, const char** out_key,
                                           size_t* out_key_len)
 {
 	if (!handle || !IsObject(handle)) {
@@ -3588,7 +4027,7 @@ bool YYJSONManager::ObjectForeachKeyNext(YYJSONValue* handle, const char** out_k
 	return false;
 }
 
-bool YYJSONManager::ArrayForeachIndexNext(YYJSONValue* handle, size_t* out_index)
+bool JsonManager::ArrayForeachIndexNext(JsonValue* handle, size_t* out_index)
 {
 	if (!handle || !IsArray(handle)) {
 		return false;
@@ -3628,29 +4067,607 @@ bool YYJSONManager::ArrayForeachIndexNext(YYJSONValue* handle, size_t* out_index
 	return false;
 }
 
-void YYJSONManager::Release(YYJSONValue* value)
+void JsonManager::Release(JsonValue* value)
 {
 	if (value) {
 		delete value;
 	}
 }
 
-HandleType_t YYJSONManager::GetHandleType()
+HandleType_t JsonManager::GetHandleType()
 {
-  return g_htJSON;
+  return g_JsonType;
 }
 
-YYJSONValue* YYJSONManager::GetFromHandle(IPluginContext* pContext, Handle_t handle)
+JsonValue* JsonManager::GetFromHandle(IPluginContext* pContext, Handle_t handle)
 {
 	HandleError err;
 	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
 
-	YYJSONValue* pYYJSONValue;
-	if ((err = handlesys->ReadHandle(handle, g_htJSON, &sec, (void**)&pYYJSONValue)) != HandleError_None)
+	JsonValue* pJSONValue;
+	if ((err = handlesys->ReadHandle(handle, g_JsonType, &sec, (void**)&pJSONValue)) != HandleError_None)
 	{
-		pContext->ReportError("Invalid YYJSON handle %x (error %d)", handle, err);
+		pContext->ReportError("Invalid JSON handle %x (error %d)", handle, err);
 		return nullptr;
 	}
 
-	return pYYJSONValue;
+	return pJSONValue;
+}
+
+JsonArrIter* JsonManager::ArrIterInit(JsonValue* handle)
+{
+	return ArrIterWith(handle);
+}
+
+JsonArrIter* JsonManager::ArrIterWith(JsonValue* handle)
+{
+	if (!handle || !IsArray(handle)) {
+		return nullptr;
+	}
+
+	auto iter = new JsonArrIter();
+	iter->m_isMutable = handle->IsMutable();
+	iter->m_pDocument_mut = handle->m_pDocument_mut;
+	iter->m_pDocument = handle->m_pDocument;
+
+	if (handle->IsMutable()) {
+		if (!yyjson_mut_arr_iter_init(handle->m_pVal_mut, &iter->m_iterMut)) {
+			delete iter;
+			return nullptr;
+		}
+	} else {
+		if (!yyjson_arr_iter_init(handle->m_pVal, &iter->m_iterImm)) {
+			delete iter;
+			return nullptr;
+		}
+	}
+
+	iter->m_initialized = true;
+	return iter;
+}
+
+JsonValue* JsonManager::ArrIterNext(JsonArrIter* iter)
+{
+	if (!iter || !iter->m_initialized) {
+		return nullptr;
+	}
+
+	JsonValue* val = nullptr;
+
+	if (iter->m_isMutable) {
+		yyjson_mut_val* raw_val = yyjson_mut_arr_iter_next(&iter->m_iterMut);
+		if (!raw_val) {
+			return nullptr;
+		}
+
+		auto pWrapper = CreateWrapper();
+		pWrapper->m_pDocument_mut = iter->m_pDocument_mut;
+		pWrapper->m_pVal_mut = raw_val;
+		val = pWrapper.release();
+	} else {
+		yyjson_val* raw_val = yyjson_arr_iter_next(&iter->m_iterImm);
+		if (!raw_val) {
+			return nullptr;
+		}
+
+		auto pWrapper = CreateWrapper();
+		pWrapper->m_pDocument = iter->m_pDocument;
+		pWrapper->m_pVal = raw_val;
+		val = pWrapper.release();
+	}
+
+	return val;
+}
+
+bool JsonManager::ArrIterHasNext(JsonArrIter* iter)
+{
+	if (!iter || !iter->m_initialized) {
+		return false;
+	}
+
+	if (iter->m_isMutable) {
+		return yyjson_mut_arr_iter_has_next(&iter->m_iterMut);
+	} else {
+		return yyjson_arr_iter_has_next(&iter->m_iterImm);
+	}
+}
+
+size_t JsonManager::ArrIterGetIndex(JsonArrIter* iter)
+{
+	if (!iter || !iter->m_initialized) {
+		return SIZE_MAX;
+	}
+
+	if (iter->m_isMutable) {
+		if (iter->m_iterMut.idx == 0) {
+			return SIZE_MAX;
+		}
+		return iter->m_iterMut.idx - 1;
+	} else {
+		if (iter->m_iterImm.idx == 0) {
+			return SIZE_MAX;
+		}
+		return iter->m_iterImm.idx - 1;
+	}
+}
+
+void* JsonManager::ArrIterRemove(JsonArrIter* iter)
+{
+	if (!iter || !iter->m_isMutable) {
+		return nullptr;
+	}
+
+	return yyjson_mut_arr_iter_remove(&iter->m_iterMut);
+}
+
+JsonObjIter* JsonManager::ObjIterInit(JsonValue* handle)
+{
+	return ObjIterWith(handle);
+}
+
+JsonObjIter* JsonManager::ObjIterWith(JsonValue* handle)
+{
+	if (!handle || !IsObject(handle)) {
+		return nullptr;
+	}
+
+	auto iter = new JsonObjIter();
+	iter->m_isMutable = handle->IsMutable();
+	iter->m_pDocument_mut = handle->m_pDocument_mut;
+	iter->m_pDocument = handle->m_pDocument;
+
+	if (handle->IsMutable()) {
+		if (!yyjson_mut_obj_iter_init(handle->m_pVal_mut, &iter->m_iterMut)) {
+			delete iter;
+			return nullptr;
+		}
+	} else {
+		if (!yyjson_obj_iter_init(handle->m_pVal, &iter->m_iterImm)) {
+			delete iter;
+			return nullptr;
+		}
+	}
+
+	iter->m_initialized = true;
+	return iter;
+}
+
+void* JsonManager::ObjIterNext(JsonObjIter* iter)
+{
+	if (!iter || !iter->m_initialized) {
+		return nullptr;
+	}
+
+	if (iter->m_isMutable) {
+		yyjson_mut_val* current_key = yyjson_mut_obj_iter_next(&iter->m_iterMut);
+		if (!current_key) {
+			return nullptr;
+		}
+		iter->m_currentKey = current_key;
+		return current_key;
+	} else {
+		void* key = yyjson_obj_iter_next(&iter->m_iterImm);
+		iter->m_currentKey = key;
+		return key;
+	}
+}
+
+bool JsonManager::ObjIterHasNext(JsonObjIter* iter)
+{
+	if (!iter || !iter->m_initialized) {
+		return false;
+	}
+
+	if (iter->m_isMutable) {
+		return yyjson_mut_obj_iter_has_next(&iter->m_iterMut);
+	} else {
+		return yyjson_obj_iter_has_next(&iter->m_iterImm);
+	}
+}
+
+JsonValue* JsonManager::ObjIterGetVal(JsonObjIter* iter, void* key)
+{
+	if (!iter || !iter->m_initialized || !key) {
+		return nullptr;
+	}
+
+	auto pWrapper = CreateWrapper();
+
+	if (iter->m_isMutable) {
+		yyjson_mut_val* val = yyjson_mut_obj_iter_get_val(reinterpret_cast<yyjson_mut_val*>(key));
+		if (!val) {
+			return nullptr;
+		}
+		pWrapper->m_pDocument_mut = iter->m_pDocument_mut;
+		pWrapper->m_pVal_mut = val;
+	} else {
+		yyjson_val* val = yyjson_obj_iter_get_val(reinterpret_cast<yyjson_val*>(key));
+		if (!val) {
+			return nullptr;
+		}
+		pWrapper->m_pDocument = iter->m_pDocument;
+		pWrapper->m_pVal = val;
+	}
+
+	return pWrapper.release();
+}
+
+JsonValue* JsonManager::ObjIterGet(JsonObjIter* iter, const char* key)
+{
+	if (!iter || !iter->m_initialized || !key) {
+		return nullptr;
+	}
+
+	auto pWrapper = CreateWrapper();
+
+	if (iter->m_isMutable) {
+		yyjson_mut_val* val = yyjson_mut_obj_iter_get(&iter->m_iterMut, key);
+		if (!val) {
+			return nullptr;
+		}
+		pWrapper->m_pDocument_mut = iter->m_pDocument_mut;
+		pWrapper->m_pVal_mut = val;
+	} else {
+		yyjson_val* val = yyjson_obj_iter_get(&iter->m_iterImm, key);
+		if (!val) {
+			return nullptr;
+		}
+		pWrapper->m_pDocument = iter->m_pDocument;
+		pWrapper->m_pVal = val;
+	}
+
+	return pWrapper.release();
+}
+
+size_t JsonManager::ObjIterGetIndex(JsonObjIter* iter)
+{
+	if (!iter || !iter->m_initialized) {
+		return SIZE_MAX;
+	}
+	if (iter->m_isMutable) {
+		if (iter->m_currentKey == nullptr) {
+			return SIZE_MAX;
+		}
+		if (iter->m_iterMut.idx >= iter->m_iterMut.max) {
+			return iter->m_iterMut.max - 1;
+		}
+		return iter->m_iterMut.idx - 1;
+	} else {
+		if (iter->m_iterImm.idx == 0) {
+			return SIZE_MAX;
+		}
+		if (iter->m_iterImm.idx >= iter->m_iterImm.max) {
+			return iter->m_iterImm.max - 1;
+		}
+		return iter->m_iterImm.idx - 1;
+	}
+}
+
+void* JsonManager::ObjIterRemove(JsonObjIter* iter)
+{
+	if (!iter || !iter->m_isMutable) {
+		return nullptr;
+	}
+
+	return yyjson_mut_obj_iter_remove(&iter->m_iterMut);
+}
+
+void JsonManager::ReleaseArrIter(JsonArrIter* iter)
+{
+	if (iter) {
+		delete iter;
+	}
+}
+
+void JsonManager::ReleaseObjIter(JsonObjIter* iter)
+{
+	if (iter) {
+		delete iter;
+	}
+}
+
+HandleType_t JsonManager::GetArrIterHandleType()
+{
+	return g_ArrIterType;
+}
+
+HandleType_t JsonManager::GetObjIterHandleType()
+{
+	return g_ObjIterType;
+}
+
+JsonArrIter* JsonManager::GetArrIterFromHandle(IPluginContext* pContext, Handle_t handle)
+{
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
+
+	JsonArrIter* pIter;
+	if ((err = handlesys->ReadHandle(handle, g_ArrIterType, &sec, (void**)&pIter)) != HandleError_None)
+	{
+		pContext->ReportError("Invalid JSONArrIter handle %x (error %d)", handle, err);
+		return nullptr;
+	}
+
+	return pIter;
+}
+
+JsonObjIter* JsonManager::GetObjIterFromHandle(IPluginContext* pContext, Handle_t handle)
+{
+	HandleError err;
+	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
+
+	JsonObjIter* pIter;
+	if ((err = handlesys->ReadHandle(handle, g_ObjIterType, &sec, (void**)&pIter)) != HandleError_None)
+	{
+		pContext->ReportError("Invalid JSONObjIter handle %x (error %d)", handle, err);
+		return nullptr;
+	}
+
+	return pIter;
+}
+
+JsonValue* JsonManager::ReadNumber(const char* dat, uint32_t read_flg, char* error, size_t error_size, size_t* out_consumed)
+{
+	if (!dat) {
+		if (error && error_size > 0) {
+			snprintf(error, error_size, "Invalid input data");
+		}
+		return nullptr;
+	}
+
+	auto pJSONValue = CreateWrapper();
+	pJSONValue->m_pDocument_mut = CreateDocument();
+
+	yyjson_mut_val* val = yyjson_mut_int(pJSONValue->m_pDocument_mut.get(), 0);
+	if (!val) {
+		if (error && error_size > 0) {
+			snprintf(error, error_size, "Failed to create number value");
+		}
+		return nullptr;
+	}
+
+	yyjson_read_err readError;
+	const char* end_ptr = yyjson_mut_read_number(dat, val,
+		static_cast<yyjson_read_flag>(read_flg), nullptr, &readError);
+
+	if (!end_ptr || readError.code) {
+		if (error && error_size > 0) {
+			snprintf(error, error_size, "Failed to read number: %s (error code: %u, position: %zu)",
+				readError.msg, readError.code, readError.pos);
+		}
+		return nullptr;
+	}
+
+	if (out_consumed) {
+		*out_consumed = end_ptr - dat;
+	}
+
+	pJSONValue->m_pVal_mut = val;
+	yyjson_mut_doc_set_root(pJSONValue->m_pDocument_mut.get(), val);
+
+	return pJSONValue.release();
+}
+
+bool JsonManager::WriteNumber(JsonValue* handle, char* buffer, size_t buffer_size, size_t* out_written)
+{
+	if (!handle || !buffer || buffer_size == 0) {
+		return false;
+	}
+
+	if (!IsNum(handle)) {
+		return false;
+	}
+
+	char* result = nullptr;
+	if (handle->IsMutable()) {
+		result = yyjson_mut_write_number(handle->m_pVal_mut, buffer);
+	} else {
+		result = yyjson_write_number(handle->m_pVal, buffer);
+	}
+
+	if (!result) {
+		return false;
+	}
+
+	size_t written = result - buffer;
+	if (written >= buffer_size) {
+		return false;
+	}
+
+	if (out_written) {
+		*out_written = written;
+	}
+
+	return true;
+}
+
+bool JsonManager::SetFpToFloat(JsonValue* handle, bool flt)
+{
+	if (!handle) {
+		return false;
+	}
+
+	if (handle->IsMutable()) {
+		return yyjson_mut_set_fp_to_float(handle->m_pVal_mut, flt);
+	} else {
+		return yyjson_set_fp_to_float(handle->m_pVal, flt);
+	}
+}
+
+bool JsonManager::SetFpToFixed(JsonValue* handle, int prec)
+{
+	if (!handle) {
+		return false;
+	}
+
+	if (prec < 1 || prec > 15) {
+		return false;
+	}
+
+	if (handle->IsMutable()) {
+		return yyjson_mut_set_fp_to_fixed(handle->m_pVal_mut, prec);
+	} else {
+		return yyjson_set_fp_to_fixed(handle->m_pVal, prec);
+	}
+}
+
+bool JsonManager::SetBool(JsonValue* handle, bool value)
+{
+	if (!handle) {
+		return false;
+	}
+
+	if (handle->IsMutable()) {
+		return yyjson_mut_set_bool(handle->m_pVal_mut, value);
+	} else {
+		return yyjson_set_bool(handle->m_pVal, value);
+	}
+}
+
+bool JsonManager::SetInt(JsonValue* handle, int value)
+{
+	if (!handle) {
+		return false;
+	}
+
+	if (handle->IsMutable()) {
+		return yyjson_mut_set_int(handle->m_pVal_mut, value);
+	} else {
+		return yyjson_set_int(handle->m_pVal, value);
+	}
+}
+
+bool JsonManager::SetInt64(JsonValue* handle, std::variant<int64_t, uint64_t> value)
+{
+	if (!handle) {
+		return false;
+	}
+
+	return std::visit([&](auto&& val) -> bool {
+		using T = std::decay_t<decltype(val)>;
+		if (handle->IsMutable()) {
+			if constexpr (std::is_same_v<T, int64_t>) {
+				return yyjson_mut_set_sint(handle->m_pVal_mut, val);
+			} else if constexpr (std::is_same_v<T, uint64_t>) {
+				return yyjson_mut_set_uint(handle->m_pVal_mut, val);
+			}
+		} else {
+			if constexpr (std::is_same_v<T, int64_t>) {
+				return yyjson_set_sint(handle->m_pVal, val);
+			} else if constexpr (std::is_same_v<T, uint64_t>) {
+				return yyjson_set_uint(handle->m_pVal, val);
+			}
+		}
+		return false;
+	}, value);
+}
+
+bool JsonManager::SetFloat(JsonValue* handle, double value)
+{
+	if (!handle) {
+		return false;
+	}
+
+	if (handle->IsMutable()) {
+		return yyjson_mut_set_float(handle->m_pVal_mut, value);
+	} else {
+		return yyjson_set_float(handle->m_pVal, value);
+	}
+}
+
+bool JsonManager::SetString(JsonValue* handle, const char* value)
+{
+	if (!handle || !value) {
+		return false;
+	}
+
+	if (handle->IsMutable()) {
+		return yyjson_mut_set_str(handle->m_pVal_mut, value);
+	} else {
+		return yyjson_set_str(handle->m_pVal, value);
+	}
+}
+
+bool JsonManager::SetNull(JsonValue* handle)
+{
+	if (!handle) {
+		return false;
+	}
+
+	if (handle->IsMutable()) {
+		return yyjson_mut_set_null(handle->m_pVal_mut);
+	} else {
+		return yyjson_set_null(handle->m_pVal);
+	}
+}
+
+bool JsonManager::ParseInt64Variant(const char* value, std::variant<int64_t, uint64_t>* out_value, char* error, size_t error_size)
+{
+	if (!value || !*value) {
+		if (error && error_size > 0) {
+			snprintf(error, error_size, "Empty integer64 value");
+		}
+		return false;
+	}
+
+	if (!out_value) {
+		if (error && error_size > 0) {
+			snprintf(error, error_size, "Invalid output parameter");
+		}
+		return false;
+	}
+
+	std::string_view sv(value);
+	bool is_negative = (sv[0] == '-');
+
+	if (is_negative) {
+		int64_t signed_val;
+		auto result = std::from_chars(sv.data(), sv.data() + sv.size(), signed_val);
+
+		if (result.ec == std::errc{} && result.ptr == sv.data() + sv.size()) {
+			*out_value = signed_val;
+			return true;
+		}
+
+		if (error && error_size > 0) {
+			if (result.ec == std::errc::result_out_of_range) {
+				snprintf(error, error_size, "Integer64 value out of range: %s", value);
+			} else {
+				snprintf(error, error_size, "Invalid integer64 value: %s", value);
+			}
+		}
+		return false;
+	}
+
+	int64_t signed_val;
+	auto result = std::from_chars(sv.data(), sv.data() + sv.size(), signed_val);
+
+	if (result.ec == std::errc{} && result.ptr == sv.data() + sv.size()) {
+		*out_value = signed_val;
+		return true;
+	}
+
+	if (result.ec == std::errc::result_out_of_range) {
+		uint64_t unsigned_val;
+		auto unsigned_result = std::from_chars(sv.data(), sv.data() + sv.size(), unsigned_val);
+
+		if (unsigned_result.ec == std::errc{} && unsigned_result.ptr == sv.data() + sv.size()) {
+			*out_value = unsigned_val;
+			return true;
+		}
+
+		if (error && error_size > 0) {
+			if (unsigned_result.ec == std::errc::result_out_of_range) {
+				snprintf(error, error_size, "Integer64 value out of range: %s", value);
+			} else {
+				snprintf(error, error_size, "Invalid integer64 value: %s", value);
+			}
+		}
+		return false;
+	}
+
+	if (error && error_size > 0) {
+		snprintf(error, error_size, "Invalid integer64 value: %s", value);
+	}
+	return false;
 }
