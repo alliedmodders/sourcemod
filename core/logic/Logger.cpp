@@ -29,7 +29,7 @@
  * Version: $Id$
  */
 
- #include <string_view>
+#include <string_view>
 #include <time.h>
 #include <cstdarg>
 #include "Logger.h"
@@ -471,4 +471,5 @@ const char* Logger::GetFormattedDate() const
 	}
 
 	return date;
+
 }
