@@ -83,8 +83,7 @@ ConfigResult Logger::OnSourceModConfigChanged(const char *key,
 		}
 
 		return ConfigResult_Accept;
-	}
-	else if (strcasecmp(key, "LogTimeFormat") == 0) {
+	} else if (strcasecmp(key, "LogTimeFormat") == 0) {
 		if (strcasecmp(value, "default") == 0)
 		{
 			m_isUsingDefaultTimeFormat = true;
@@ -473,3 +472,4 @@ const char* Logger::GetFormattedDate() const
 	return date;
 
 }
+
