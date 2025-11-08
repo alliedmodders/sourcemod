@@ -196,23 +196,22 @@ public:
 	}
 	const char* GetGameBinArchSubdirectory() override
 	{
-#if defined KE_ARCH_X64
-#if SOURCE_ENGINE >= SE_BLADE
-#ifdef PLATFORM_WINDOWS
+#if defined( KE_ARCH_X64 ) && SOURCE_ENGINE >= SE_BLADE
+#if defined( PLATFORM_WINDOWS )
 #if SOURCE_ENGINE == SE_MCV
 		return "win64" PLATFORM_SEP;
 #else
 		return "x64" PLATFORM_SEP;
 #endif // SOURCE_ENGINE == SE_MCV
-#else
+#elif defined( PLATFORM_LINUX )
 		return "linux64" PLATFORM_SEP;
-#endif // PLATFORM_WINDOWS
+#else
+#error "Unsupported platform"
+#endif // PLATFORM
 #else
 		// Already included in the GameBin path(s), if required
 		return "";
-#endif // SOURCE_ENGINE >= SE_BLADE
-#endif // KE_ARCH_X64
-		return "win32" PLATFORM_SEP;
+#endif // defined( KE_ARCH_X64 ) && SOURCE_ENGINE >= SE_BLADE
 	}
 } fs_wrapper;
 
