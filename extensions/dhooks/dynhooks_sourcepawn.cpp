@@ -532,6 +532,7 @@ CDynamicHooksSourcePawn::CDynamicHooksSourcePawn(HookSetup *setup, CHook *pDetou
 	this->hookType = setup->hookType;
 	this->m_pDetour = pDetour;
 	this->callConv = setup->callConv;
+	this->thisFuncCallConv = setup->callConv;
 }
 
 HookReturnStruct *CDynamicHooksSourcePawn::GetReturnStruct()

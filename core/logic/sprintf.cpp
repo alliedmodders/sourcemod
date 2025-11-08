@@ -188,6 +188,15 @@ bool AddString(char **buf_p, size_t &maxlen, const char *string, int width, int 
 
 	width -= size;
 
+	if (!(flags & LADJUST))
+	{
+		while ((width-- > 0) && maxlen)
+		{
+			*buf++ = ' ';
+			maxlen--;
+		}
+	}
+
 	if (g_FormatEscapeDatabase && (flags & NOESCAPE) == 0)
 	{
 		char *tempBuffer = NULL;
@@ -226,10 +235,13 @@ bool AddString(char **buf_p, size_t &maxlen, const char *string, int width, int 
 		}
 	}
 
-	while ((width-- > 0) && maxlen)
+	if (flags & LADJUST)
 	{
-		*buf++ = ' ';
-		maxlen--;
+		while ((width-- > 0) && maxlen)
+		{
+			*buf++ = ' ';
+			maxlen--;
+		}
 	}
 
 	*buf_p = buf;
@@ -251,6 +263,12 @@ void AddFloat(char **buf_p, size_t &maxlen, double fval, int width, int prec, in
 	if (ke::IsNaN(fval))
 	{
 		AddString(buf_p, maxlen, "NaN", width, prec, flags | NOESCAPE);
+		return;
+	}
+
+	if (ke::IsInfinite(static_cast<float>(fval)))
+	{
+		AddString(buf_p, maxlen, "Inf", width, prec, flags | NOESCAPE);
 		return;
 	}
 
@@ -485,12 +503,14 @@ void AddInt(char **buf_p, size_t &maxlen, int val, int width, int flags)
 		unsignedVal /= 10;
 	} while (unsignedVal);
 
-	if (signedVal < 0)
-	{
-		text[digits++] = '-';
-	}
-
 	buf = *buf_p;
+
+	// minus sign BEFORE left padding if padding with zeros
+	if (signedVal < 0 && maxlen && (flags & ZEROPAD))
+	{
+		*buf++ = '-';
+		maxlen--;
+	}
 
 	if (!(flags & LADJUST))
 	{
@@ -500,6 +520,13 @@ void AddInt(char **buf_p, size_t &maxlen, int val, int width, int flags)
 			width--;
 			maxlen--;
 		}
+	}
+
+	// minus sign AFTER left padding if padding with spaces
+	if (signedVal < 0 && maxlen && !(flags & ZEROPAD))
+	{
+		*buf++ = '-';
+		maxlen--;
 	}
 
 	while (digits-- && maxlen)
