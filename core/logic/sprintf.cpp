@@ -491,12 +491,14 @@ void AddInt(char **buf_p, size_t &maxlen, int val, int width, int flags)
 		unsignedVal /= 10;
 	} while (unsignedVal);
 
-	if (signedVal < 0)
-	{
-		text[digits++] = '-';
-	}
-
 	buf = *buf_p;
+
+	// minus sign BEFORE left padding if padding with zeros
+	if (signedVal < 0 && maxlen && (flags & ZEROPAD))
+	{
+		*buf++ = '-';
+		maxlen--;
+	}
 
 	if (!(flags & LADJUST))
 	{
@@ -506,6 +508,13 @@ void AddInt(char **buf_p, size_t &maxlen, int val, int width, int flags)
 			width--;
 			maxlen--;
 		}
+	}
+
+	// minus sign AFTER left padding if padding with spaces
+	if (signedVal < 0 && maxlen && !(flags & ZEROPAD))
+	{
+		*buf++ = '-';
+		maxlen--;
 	}
 
 	while (digits-- && maxlen)
