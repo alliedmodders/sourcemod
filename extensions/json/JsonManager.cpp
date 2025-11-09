@@ -17,6 +17,20 @@ static inline void ReadInt64FromMutVal(yyjson_mut_val* val, std::variant<int64_t
 	}
 }
 
+// Set error message safely
+static inline void SetErrorSafe(char* error, size_t error_size, const char* format, ...) {
+	if (!error || error_size == 0) return;
+
+	va_list args;
+	va_start(args, format);
+	int needed = vsnprintf(error, error_size, format, args);
+	va_end(args);
+
+	if (needed >= static_cast<int>(error_size)) {
+		error[error_size - 1] = '\0';
+	}
+}
+
 std::unique_ptr<JsonValue> JsonManager::CreateWrapper() {
 	return std::make_unique<JsonValue>();
 }
@@ -46,7 +60,7 @@ JsonValue* JsonManager::ParseJSON(const char* json_str, bool is_file, bool is_mu
 {
 	if (!json_str) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid JSON string");
+			SetErrorSafe(error, error_size, "Invalid JSON string");
 		}
 		return nullptr;
 	}
@@ -66,10 +80,10 @@ JsonValue* JsonManager::ParseJSON(const char* json_str, bool is_file, bool is_mu
 	if (!idoc || readError.code) {
 		if (error && error_size > 0) {
 			if (is_file) {
-				snprintf(error, error_size, "Failed to parse JSON file: %s (error code: %u, msg: %s, position: %zu)",
+				SetErrorSafe(error, error_size, "Failed to parse JSON file: %s (error code: %u, msg: %s, position: %zu)",
 					json_str, readError.code, readError.msg, readError.pos);
 			} else {
-				snprintf(error, error_size, "Failed to parse JSON str: %s (error code: %u, position: %zu)",
+				SetErrorSafe(error, error_size, "Failed to parse JSON str: %s (error code: %u, position: %zu)",
 					readError.msg, readError.code, readError.pos);
 			}
 		}
@@ -135,7 +149,7 @@ bool JsonManager::WriteToFile(JsonValue* handle, const char* path, yyjson_write_
 {
 	if (!handle || !path) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters");
+			SetErrorSafe(error, error_size, "Invalid parameters");
 		}
 		return false;
 	}
@@ -153,7 +167,7 @@ bool JsonManager::WriteToFile(JsonValue* handle, const char* path, yyjson_write_
 	}
 
 	if (writeError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to write JSON to file: %s (error code: %u)", writeError.msg, writeError.code);
+		SetErrorSafe(error, error_size, "Failed to write JSON to file: %s (error code: %u)", writeError.msg, writeError.code);
 	}
 
 	return is_success;
@@ -600,7 +614,7 @@ JsonValue* JsonManager::ObjectParseString(const char* str, yyjson_read_flag read
 {
 	if (!str) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid string");
+			SetErrorSafe(error, error_size, "Invalid string");
 		}
 		return nullptr;
 	}
@@ -612,7 +626,7 @@ JsonValue* JsonManager::ObjectParseString(const char* str, yyjson_read_flag read
 
 	if (!idoc || readError.code) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Failed to parse JSON str: %s (error code: %u, position: %zu)",
+			SetErrorSafe(error, error_size, "Failed to parse JSON str: %s (error code: %u, position: %zu)",
 				readError.msg, readError.code, readError.pos);
 		}
 		if (idoc) {
@@ -625,7 +639,7 @@ JsonValue* JsonManager::ObjectParseString(const char* str, yyjson_read_flag read
 
 	if (!yyjson_is_obj(root)) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Root value is not an object (got %s)", yyjson_get_type_desc(root));
+			SetErrorSafe(error, error_size, "Root value is not an object (got %s)", yyjson_get_type_desc(root));
 		}
 		yyjson_doc_free(idoc);
 		return nullptr;
@@ -643,7 +657,7 @@ JsonValue* JsonManager::ObjectParseFile(const char* path, yyjson_read_flag read_
 {
 	if (!path) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid path");
+			SetErrorSafe(error, error_size, "Invalid path");
 		}
 		return nullptr;
 	}
@@ -657,7 +671,7 @@ JsonValue* JsonManager::ObjectParseFile(const char* path, yyjson_read_flag read_
 
 	if (!idoc || readError.code) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Failed to parse JSON file: %s (error code: %u, msg: %s, position: %zu)",
+			SetErrorSafe(error, error_size, "Failed to parse JSON file: %s (error code: %u, msg: %s, position: %zu)",
 				realpath, readError.code, readError.msg, readError.pos);
 		}
 		if (idoc) {
@@ -670,7 +684,7 @@ JsonValue* JsonManager::ObjectParseFile(const char* path, yyjson_read_flag read_
 
 	if (!yyjson_is_obj(root)) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Root value in file is not an object (got %s)", yyjson_get_type_desc(root));
+			SetErrorSafe(error, error_size, "Root value in file is not an object (got %s)", yyjson_get_type_desc(root));
 		}
 		yyjson_doc_free(idoc);
 		return nullptr;
@@ -1235,7 +1249,7 @@ JsonValue* JsonManager::ArrayInitWithInt64(const char** values, size_t count, ch
 {
 	if (!values) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid values parameter");
+			SetErrorSafe(error, error_size, "Invalid values parameter");
 		}
 		return nullptr;
 	}
@@ -1254,7 +1268,7 @@ JsonValue* JsonManager::ArrayInitWithInt64(const char** values, size_t count, ch
 	pJSONValue->m_pVal_mut = yyjson_mut_arr(doc);
 	if (!pJSONValue->m_pVal_mut) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Failed to create array");
+			SetErrorSafe(error, error_size, "Failed to create array");
 		}
 		return nullptr;
 	}
@@ -1277,7 +1291,7 @@ JsonValue* JsonManager::ArrayInitWithInt64(const char** values, size_t count, ch
 
 		if (!val || !yyjson_mut_arr_append(pJSONValue->m_pVal_mut, val)) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to append value at index %zu", i);
+				SetErrorSafe(error, error_size, "Failed to append value at index %zu", i);
 			}
 			return nullptr;
 		}
@@ -1335,7 +1349,7 @@ JsonValue* JsonManager::ArrayParseString(const char* str, yyjson_read_flag read_
 {
 	if (!str) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid string");
+			SetErrorSafe(error, error_size, "Invalid string");
 		}
 		return nullptr;
 	}
@@ -1347,7 +1361,7 @@ JsonValue* JsonManager::ArrayParseString(const char* str, yyjson_read_flag read_
 
 	if (!idoc || readError.code) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Failed to parse JSON string: %s (error code: %u, position: %zu)",
+			SetErrorSafe(error, error_size, "Failed to parse JSON string: %s (error code: %u, position: %zu)",
 				readError.msg, readError.code, readError.pos);
 		}
 		if (idoc) {
@@ -1360,7 +1374,7 @@ JsonValue* JsonManager::ArrayParseString(const char* str, yyjson_read_flag read_
 
 	if (!yyjson_is_arr(root)) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Root value is not an array (got %s)", yyjson_get_type_desc(root));
+			SetErrorSafe(error, error_size, "Root value is not an array (got %s)", yyjson_get_type_desc(root));
 		}
 		yyjson_doc_free(idoc);
 		return nullptr;
@@ -1378,7 +1392,7 @@ JsonValue* JsonManager::ArrayParseFile(const char* path, yyjson_read_flag read_f
 {
 	if (!path) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid path");
+			SetErrorSafe(error, error_size, "Invalid path");
 		}
 		return nullptr;
 	}
@@ -1392,7 +1406,7 @@ JsonValue* JsonManager::ArrayParseFile(const char* path, yyjson_read_flag read_f
 
 	if (!idoc || readError.code) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Failed to parse JSON file: %s (error code: %u, msg: %s, position: %zu)",
+			SetErrorSafe(error, error_size, "Failed to parse JSON file: %s (error code: %u, msg: %s, position: %zu)",
 				realpath, readError.code, readError.msg, readError.pos);
 		}
 		if (idoc) {
@@ -1405,7 +1419,7 @@ JsonValue* JsonManager::ArrayParseFile(const char* path, yyjson_read_flag read_f
 
 	if (!yyjson_is_arr(root)) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Root value in file is not an array (got %s)", yyjson_get_type_desc(root));
+			SetErrorSafe(error, error_size, "Root value in file is not an array (got %s)", yyjson_get_type_desc(root));
 		}
 		yyjson_doc_free(idoc);
 		return nullptr;
@@ -2473,24 +2487,13 @@ const char* JsonManager::SkipSeparators(const char* ptr)
 	return ptr;
 }
 
-void JsonManager::SetPackError(char* error, size_t error_size, const char* fmt, ...)
-{
-	if (error && error_size > 0) {
-		va_list args;
-		va_start(args, fmt);
-		vsnprintf(error, error_size, fmt, args);
-		va_end(args);
-		error[error_size - 1] = '\0';
-	}
-}
-
 yyjson_mut_val* JsonManager::PackImpl(yyjson_mut_doc* doc, const char* format,
                                           IPackParamProvider* provider,
                                           char* error, size_t error_size,
                                           const char** out_end_ptr)
 {
 	if (!doc || !format || !*format) {
-		SetPackError(error, error_size, "Invalid argument(s)");
+		SetErrorSafe(error, error_size, "Invalid argument(s)");
 		return nullptr;
 	}
 
@@ -2506,12 +2509,12 @@ yyjson_mut_val* JsonManager::PackImpl(yyjson_mut_doc* doc, const char* format,
 		root = yyjson_mut_arr(doc);
 		ptr = SkipSeparators(ptr + 1);
 	} else {
-		SetPackError(error, error_size, "Invalid format string: expected '{' or '['");
+		SetErrorSafe(error, error_size, "Invalid format string: expected '{' or '['");
 		return nullptr;
 	}
 
 	if (!root) {
-		SetPackError(error, error_size, "Failed to create root object/array");
+		SetErrorSafe(error, error_size, "Failed to create root object/array");
 		return nullptr;
 	}
 
@@ -2521,7 +2524,7 @@ yyjson_mut_val* JsonManager::PackImpl(yyjson_mut_doc* doc, const char* format,
 	while (*ptr && *ptr != '}' && *ptr != ']') {
 		if (is_obj) {
 			if (*ptr != 's') {
-				SetPackError(error, error_size, "Object key must be string, got '%c'", *ptr);
+				SetErrorSafe(error, error_size, "Object key must be string, got '%c'", *ptr);
 				return nullptr;
 			}
 		}
@@ -2530,19 +2533,19 @@ yyjson_mut_val* JsonManager::PackImpl(yyjson_mut_doc* doc, const char* format,
 				if (is_obj) {
 					const char* key;
 					if (!provider->GetNextString(&key)) {
-						SetPackError(error, error_size, "Invalid string key");
+						SetErrorSafe(error, error_size, "Invalid string key");
 						return nullptr;
 					}
 					key_val = yyjson_mut_strcpy(doc, key);
 					if (!key_val) {
-						SetPackError(error, error_size, "Failed to create key");
+						SetErrorSafe(error, error_size, "Failed to create key");
 						return nullptr;
 					}
 
 					ptr = SkipSeparators(ptr + 1);
 					if (*ptr != 's' && *ptr != 'i' && *ptr != 'f' && *ptr != 'b' &&
 						*ptr != 'n' && *ptr != '{' && *ptr != '[') {
-						SetPackError(error, error_size, "Invalid value type after key");
+							SetErrorSafe(error, error_size, "Invalid value type after key");
 						return nullptr;
 					}
 
@@ -2556,7 +2559,7 @@ yyjson_mut_val* JsonManager::PackImpl(yyjson_mut_doc* doc, const char* format,
 							case 's': {
 								const char* val_str;
 								if (!provider->GetNextString(&val_str)) {
-									SetPackError(error, error_size, "Invalid string value");
+									SetErrorSafe(error, error_size, "Invalid string value");
 									return nullptr;
 								}
 								val = yyjson_mut_strcpy(doc, val_str);
@@ -2566,7 +2569,7 @@ yyjson_mut_val* JsonManager::PackImpl(yyjson_mut_doc* doc, const char* format,
 							case 'i': {
 								int val_int;
 								if (!provider->GetNextInt(&val_int)) {
-									SetPackError(error, error_size, "Invalid integer value");
+									SetErrorSafe(error, error_size, "Invalid integer value");
 									return nullptr;
 								}
 								val = yyjson_mut_int(doc, val_int);
@@ -2576,7 +2579,7 @@ yyjson_mut_val* JsonManager::PackImpl(yyjson_mut_doc* doc, const char* format,
 							case 'f': {
 								float val_float;
 								if (!provider->GetNextFloat(&val_float)) {
-									SetPackError(error, error_size, "Invalid float value");
+									SetErrorSafe(error, error_size, "Invalid float value");
 									return nullptr;
 								}
 								val = yyjson_mut_real(doc, val_float);
@@ -2586,7 +2589,7 @@ yyjson_mut_val* JsonManager::PackImpl(yyjson_mut_doc* doc, const char* format,
 							case 'b': {
 								bool val_bool;
 								if (!provider->GetNextBool(&val_bool)) {
-									SetPackError(error, error_size, "Invalid boolean value");
+									SetErrorSafe(error, error_size, "Invalid boolean value");
 									return nullptr;
 								}
 								val = yyjson_mut_bool(doc, val_bool);
@@ -2602,22 +2605,22 @@ yyjson_mut_val* JsonManager::PackImpl(yyjson_mut_doc* doc, const char* format,
 					}
 
 					if (!val) {
-						SetPackError(error, error_size, "Failed to create value");
+						SetErrorSafe(error, error_size, "Failed to create value");
 						return nullptr;
 					}
 
 					if (!yyjson_mut_obj_add(root, key_val, val)) {
-						SetPackError(error, error_size, "Failed to add value to object");
+						SetErrorSafe(error, error_size, "Failed to add value to object");
 						return nullptr;
 					}
 				} else {
 					const char* val_str;
 					if (!provider->GetNextString(&val_str)) {
-						SetPackError(error, error_size, "Invalid string value");
+						SetErrorSafe(error, error_size, "Invalid string value");
 						return nullptr;
 					}
 					if (!yyjson_mut_arr_add_strcpy(doc, root, val_str)) {
-						SetPackError(error, error_size, "Failed to add string to array");
+						SetErrorSafe(error, error_size, "Failed to add string to array");
 						return nullptr;
 					}
 					ptr++;
@@ -2627,11 +2630,11 @@ yyjson_mut_val* JsonManager::PackImpl(yyjson_mut_doc* doc, const char* format,
 			case 'i': {
 				int val_int;
 				if (!provider->GetNextInt(&val_int)) {
-					SetPackError(error, error_size, "Invalid integer value");
+					SetErrorSafe(error, error_size, "Invalid integer value");
 					return nullptr;
 				}
 				if (!yyjson_mut_arr_add_int(doc, root, val_int)) {
-					SetPackError(error, error_size, "Failed to add integer to array");
+					SetErrorSafe(error, error_size, "Failed to add integer to array");
 					return nullptr;
 				}
 				ptr++;
@@ -2640,11 +2643,11 @@ yyjson_mut_val* JsonManager::PackImpl(yyjson_mut_doc* doc, const char* format,
 			case 'b': {
 				bool val_bool;
 				if (!provider->GetNextBool(&val_bool)) {
-					SetPackError(error, error_size, "Invalid boolean value");
+					SetErrorSafe(error, error_size, "Invalid boolean value");
 					return nullptr;
 				}
 				if (!yyjson_mut_arr_add_bool(doc, root, val_bool)) {
-					SetPackError(error, error_size, "Failed to add boolean to array");
+					SetErrorSafe(error, error_size, "Failed to add boolean to array");
 					return nullptr;
 				}
 				ptr++;
@@ -2652,7 +2655,7 @@ yyjson_mut_val* JsonManager::PackImpl(yyjson_mut_doc* doc, const char* format,
 			}
 			case 'n': {
 				if (!yyjson_mut_arr_add_null(doc, root)) {
-					SetPackError(error, error_size, "Failed to add null to array");
+					SetErrorSafe(error, error_size, "Failed to add null to array");
 					return nullptr;
 				}
 				ptr++;
@@ -2661,11 +2664,11 @@ yyjson_mut_val* JsonManager::PackImpl(yyjson_mut_doc* doc, const char* format,
 			case 'f': {
 				float val_float;
 				if (!provider->GetNextFloat(&val_float)) {
-					SetPackError(error, error_size, "Invalid float value");
+					SetErrorSafe(error, error_size, "Invalid float value");
 					return nullptr;
 				}
 				if (!yyjson_mut_arr_add_real(doc, root, val_float)) {
-					SetPackError(error, error_size, "Failed to add float to array");
+					SetErrorSafe(error, error_size, "Failed to add float to array");
 					return nullptr;
 				}
 				ptr++;
@@ -2678,13 +2681,13 @@ yyjson_mut_val* JsonManager::PackImpl(yyjson_mut_doc* doc, const char* format,
 					return nullptr;
 				}
 				if (!yyjson_mut_arr_append(root, val)) {
-					SetPackError(error, error_size, "Failed to add nested value to array");
+					SetErrorSafe(error, error_size, "Failed to add nested value to array");
 					return nullptr;
 				}
 				break;
 			}
 			default: {
-				SetPackError(error, error_size, "Invalid format character: %c", *ptr);
+				SetErrorSafe(error, error_size, "Invalid format character: %c", *ptr);
 				return nullptr;
 			}
 		}
@@ -2692,7 +2695,7 @@ yyjson_mut_val* JsonManager::PackImpl(yyjson_mut_doc* doc, const char* format,
 	}
 
 	if (*ptr != (is_obj ? '}' : ']')) {
-		SetPackError(error, error_size, "Unexpected end of format string");
+		SetErrorSafe(error, error_size, "Unexpected end of format string");
 		return nullptr;
 	}
 
@@ -2706,7 +2709,7 @@ yyjson_mut_val* JsonManager::PackImpl(yyjson_mut_doc* doc, const char* format,
 JsonValue* JsonManager::Pack(const char* format, IPackParamProvider* param_provider, char* error, size_t error_size)
 {
 	if (!format || !param_provider) {
-		SetPackError(error, error_size, "Invalid arguments");
+		SetErrorSafe(error, error_size, "Invalid arguments");
 		return nullptr;
 	}
 
@@ -2714,7 +2717,7 @@ JsonValue* JsonManager::Pack(const char* format, IPackParamProvider* param_provi
 	pJSONValue->m_pDocument_mut = CreateDocument();
 
 	if (!pJSONValue->m_pDocument_mut) {
-		SetPackError(error, error_size, "Failed to create document");
+		SetErrorSafe(error, error_size, "Failed to create document");
 		return nullptr;
 	}
 
@@ -2936,7 +2939,7 @@ JsonValue* JsonManager::PtrGet(JsonValue* handle, const char* path, char* error,
 {
 	if (!handle || !path) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters");
+			SetErrorSafe(error, error_size, "Invalid parameters");
 		}
 		return nullptr;
 	}
@@ -2949,7 +2952,7 @@ JsonValue* JsonManager::PtrGet(JsonValue* handle, const char* path, char* error,
 
 		if (!val || ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+				SetErrorSafe(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return nullptr;
@@ -2962,7 +2965,7 @@ JsonValue* JsonManager::PtrGet(JsonValue* handle, const char* path, char* error,
 
 		if (!val || ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+				SetErrorSafe(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return nullptr;
@@ -2979,7 +2982,7 @@ bool JsonManager::PtrGetBool(JsonValue* handle, const char* path, bool* out_valu
 {
 	if (!handle || !path || !out_value) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters");
+			SetErrorSafe(error, error_size, "Invalid parameters");
 		}
 		return false;
 	}
@@ -2991,7 +2994,7 @@ bool JsonManager::PtrGetBool(JsonValue* handle, const char* path, bool* out_valu
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+				SetErrorSafe(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -2999,7 +3002,7 @@ bool JsonManager::PtrGetBool(JsonValue* handle, const char* path, bool* out_valu
 
 		if (!yyjson_mut_is_bool(val)) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Type mismatch at path '%s': expected boolean value, got %s", path, yyjson_mut_get_type_desc(val));
+				SetErrorSafe(error, error_size, "Type mismatch at path '%s': expected boolean value, got %s", path, yyjson_mut_get_type_desc(val));
 			}
 			return false;
 		}
@@ -3011,7 +3014,7 @@ bool JsonManager::PtrGetBool(JsonValue* handle, const char* path, bool* out_valu
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+				SetErrorSafe(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -3019,7 +3022,7 @@ bool JsonManager::PtrGetBool(JsonValue* handle, const char* path, bool* out_valu
 
 		if (!yyjson_is_bool(val)) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Type mismatch at path '%s': expected boolean value, got %s", path, yyjson_get_type_desc(val));
+				SetErrorSafe(error, error_size, "Type mismatch at path '%s': expected boolean value, got %s", path, yyjson_get_type_desc(val));
 			}
 			return false;
 		}
@@ -3033,7 +3036,7 @@ bool JsonManager::PtrGetFloat(JsonValue* handle, const char* path, double* out_v
 {
 	if (!handle || !path || !out_value) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters");
+			SetErrorSafe(error, error_size, "Invalid parameters");
 		}
 		return false;
 	}
@@ -3045,7 +3048,7 @@ bool JsonManager::PtrGetFloat(JsonValue* handle, const char* path, double* out_v
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+				SetErrorSafe(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -3053,7 +3056,7 @@ bool JsonManager::PtrGetFloat(JsonValue* handle, const char* path, double* out_v
 
 		if (!yyjson_mut_is_real(val)) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Type mismatch at path '%s': expected float value, got %s", path, yyjson_mut_get_type_desc(val));
+				SetErrorSafe(error, error_size, "Type mismatch at path '%s': expected float value, got %s", path, yyjson_mut_get_type_desc(val));
 			}
 			return false;
 		}
@@ -3065,7 +3068,7 @@ bool JsonManager::PtrGetFloat(JsonValue* handle, const char* path, double* out_v
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+				SetErrorSafe(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -3073,7 +3076,7 @@ bool JsonManager::PtrGetFloat(JsonValue* handle, const char* path, double* out_v
 
 		if (!yyjson_is_real(val)) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Type mismatch at path '%s': expected float value, got %s", path, yyjson_get_type_desc(val));
+				SetErrorSafe(error, error_size, "Type mismatch at path '%s': expected float value, got %s", path, yyjson_get_type_desc(val));
 			}
 			return false;
 		}
@@ -3087,7 +3090,7 @@ bool JsonManager::PtrGetInt(JsonValue* handle, const char* path, int* out_value,
 {
 	if (!handle || !path || !out_value) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters");
+			SetErrorSafe(error, error_size, "Invalid parameters");
 		}
 		return false;
 	}
@@ -3099,7 +3102,7 @@ bool JsonManager::PtrGetInt(JsonValue* handle, const char* path, int* out_value,
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+				SetErrorSafe(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -3107,7 +3110,7 @@ bool JsonManager::PtrGetInt(JsonValue* handle, const char* path, int* out_value,
 
 		if (!yyjson_mut_is_int(val)) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Type mismatch at path '%s': expected integer value, got %s", path, yyjson_mut_get_type_desc(val));
+				SetErrorSafe(error, error_size, "Type mismatch at path '%s': expected integer value, got %s", path, yyjson_mut_get_type_desc(val));
 			}
 			return false;
 		}
@@ -3119,7 +3122,7 @@ bool JsonManager::PtrGetInt(JsonValue* handle, const char* path, int* out_value,
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+				SetErrorSafe(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -3127,7 +3130,7 @@ bool JsonManager::PtrGetInt(JsonValue* handle, const char* path, int* out_value,
 
 		if (!yyjson_is_int(val)) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Type mismatch at path '%s': expected integer value, got %s", path, yyjson_get_type_desc(val));
+				SetErrorSafe(error, error_size, "Type mismatch at path '%s': expected integer value, got %s", path, yyjson_get_type_desc(val));
 			}
 			return false;
 		}
@@ -3141,7 +3144,7 @@ bool JsonManager::PtrGetInt64(JsonValue* handle, const char* path, std::variant<
 {
 	if (!handle || !path || !out_value) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters");
+			SetErrorSafe(error, error_size, "Invalid parameters");
 		}
 		return false;
 	}
@@ -3153,7 +3156,7 @@ bool JsonManager::PtrGetInt64(JsonValue* handle, const char* path, std::variant<
 
 		if (!val || ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+				SetErrorSafe(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -3161,7 +3164,7 @@ bool JsonManager::PtrGetInt64(JsonValue* handle, const char* path, std::variant<
 
 		if (!yyjson_mut_is_int(val)) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Type mismatch at path '%s': expected integer64 value, got %s", path, yyjson_mut_get_type_desc(val));
+				SetErrorSafe(error, error_size, "Type mismatch at path '%s': expected integer64 value, got %s", path, yyjson_mut_get_type_desc(val));
 			}
 			return false;
 		}
@@ -3173,7 +3176,7 @@ bool JsonManager::PtrGetInt64(JsonValue* handle, const char* path, std::variant<
 
 		if (!val || ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+				SetErrorSafe(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -3181,7 +3184,7 @@ bool JsonManager::PtrGetInt64(JsonValue* handle, const char* path, std::variant<
 
 		if (!yyjson_is_int(val)) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Type mismatch at path '%s': expected integer64 value, got %s", path, yyjson_get_type_desc(val));
+				SetErrorSafe(error, error_size, "Type mismatch at path '%s': expected integer64 value, got %s", path, yyjson_get_type_desc(val));
 			}
 			return false;
 		}
@@ -3195,7 +3198,7 @@ bool JsonManager::PtrGetString(JsonValue* handle, const char* path, const char**
 {
 	if (!handle || !path || !out_str) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters");
+			SetErrorSafe(error, error_size, "Invalid parameters");
 		}
 		return false;
 	}
@@ -3207,7 +3210,7 @@ bool JsonManager::PtrGetString(JsonValue* handle, const char* path, const char**
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+				SetErrorSafe(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -3215,7 +3218,7 @@ bool JsonManager::PtrGetString(JsonValue* handle, const char* path, const char**
 
 		if (!yyjson_mut_is_str(val)) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Type mismatch at path '%s': expected string value, got %s", path, yyjson_mut_get_type_desc(val));
+				SetErrorSafe(error, error_size, "Type mismatch at path '%s': expected string value, got %s", path, yyjson_mut_get_type_desc(val));
 			}
 			return false;
 		}
@@ -3230,7 +3233,7 @@ bool JsonManager::PtrGetString(JsonValue* handle, const char* path, const char**
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+				SetErrorSafe(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -3238,7 +3241,7 @@ bool JsonManager::PtrGetString(JsonValue* handle, const char* path, const char**
 
 		if (!yyjson_is_str(val)) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Type mismatch at path '%s': expected string value, got %s", path, yyjson_get_type_desc(val));
+				SetErrorSafe(error, error_size, "Type mismatch at path '%s': expected string value, got %s", path, yyjson_get_type_desc(val));
 			}
 			return false;
 		}
@@ -3255,7 +3258,7 @@ bool JsonManager::PtrGetIsNull(JsonValue* handle, const char* path, bool* out_is
 {
 	if (!handle || !path || !out_is_null) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters");
+			SetErrorSafe(error, error_size, "Invalid parameters");
 		}
 		return false;
 	}
@@ -3267,7 +3270,7 @@ bool JsonManager::PtrGetIsNull(JsonValue* handle, const char* path, bool* out_is
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+				SetErrorSafe(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -3280,7 +3283,7 @@ bool JsonManager::PtrGetIsNull(JsonValue* handle, const char* path, bool* out_is
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+				SetErrorSafe(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -3295,7 +3298,7 @@ bool JsonManager::PtrGetLength(JsonValue* handle, const char* path, size_t* out_
 {
 	if (!handle || !path || !out_len) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters");
+			SetErrorSafe(error, error_size, "Invalid parameters");
 		}
 		return false;
 	}
@@ -3307,7 +3310,7 @@ bool JsonManager::PtrGetLength(JsonValue* handle, const char* path, size_t* out_
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+				SetErrorSafe(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -3324,7 +3327,7 @@ bool JsonManager::PtrGetLength(JsonValue* handle, const char* path, size_t* out_
 
 		if (ptrGetError.code) {
 			if (error && error_size > 0) {
-				snprintf(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+				SetErrorSafe(error, error_size, "Failed to resolve JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 					ptrGetError.msg, ptrGetError.code, ptrGetError.pos, path);
 			}
 			return false;
@@ -3343,7 +3346,7 @@ bool JsonManager::PtrSet(JsonValue* handle, const char* path, JsonValue* value, 
 {
 	if (!handle || !handle->IsMutable() || !path || !value) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters or immutable document");
+			SetErrorSafe(error, error_size, "Invalid parameters or immutable document");
 		}
 		return false;
 	}
@@ -3357,7 +3360,7 @@ bool JsonManager::PtrSet(JsonValue* handle, const char* path, JsonValue* value, 
 
 	if (!val_copy) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Failed to copy JSON value");
+			SetErrorSafe(error, error_size, "Failed to copy JSON value");
 		}
 		return false;
 	}
@@ -3366,7 +3369,7 @@ bool JsonManager::PtrSet(JsonValue* handle, const char* path, JsonValue* value, 
 	bool success = yyjson_mut_doc_ptr_setx(handle->m_pDocument_mut.get(), path, strlen(path), val_copy, true, nullptr, &ptrSetError);
 
 	if (ptrSetError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+		SetErrorSafe(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrSetError.msg, ptrSetError.code, ptrSetError.pos, path);
 	}
 
@@ -3377,7 +3380,7 @@ bool JsonManager::PtrSetBool(JsonValue* handle, const char* path, bool value, ch
 {
 	if (!handle || !handle->IsMutable() || !path) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters or immutable document");
+			SetErrorSafe(error, error_size, "Invalid parameters or immutable document");
 		}
 		return false;
 	}
@@ -3386,7 +3389,7 @@ bool JsonManager::PtrSetBool(JsonValue* handle, const char* path, bool value, ch
 	bool success = yyjson_mut_doc_ptr_setx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_bool(handle->m_pDocument_mut.get(), value), true, nullptr, &ptrSetError);
 
 	if (ptrSetError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+		SetErrorSafe(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrSetError.msg, ptrSetError.code, ptrSetError.pos, path);
 	}
 
@@ -3397,7 +3400,7 @@ bool JsonManager::PtrSetFloat(JsonValue* handle, const char* path, double value,
 {
 	if (!handle || !handle->IsMutable() || !path) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters or immutable document");
+			SetErrorSafe(error, error_size, "Invalid parameters or immutable document");
 		}
 		return false;
 	}
@@ -3406,7 +3409,7 @@ bool JsonManager::PtrSetFloat(JsonValue* handle, const char* path, double value,
 	bool success = yyjson_mut_doc_ptr_setx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_real(handle->m_pDocument_mut.get(), value), true, nullptr, &ptrSetError);
 
 	if (ptrSetError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+		SetErrorSafe(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrSetError.msg, ptrSetError.code, ptrSetError.pos, path);
 	}
 
@@ -3417,7 +3420,7 @@ bool JsonManager::PtrSetInt(JsonValue* handle, const char* path, int value, char
 {
 	if (!handle || !handle->IsMutable() || !path) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters or immutable document");
+			SetErrorSafe(error, error_size, "Invalid parameters or immutable document");
 		}
 		return false;
 	}
@@ -3426,7 +3429,7 @@ bool JsonManager::PtrSetInt(JsonValue* handle, const char* path, int value, char
 	bool success = yyjson_mut_doc_ptr_setx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_int(handle->m_pDocument_mut.get(), value), true, nullptr, &ptrSetError);
 
 	if (ptrSetError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+		SetErrorSafe(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrSetError.msg, ptrSetError.code, ptrSetError.pos, path);
 	}
 
@@ -3437,7 +3440,7 @@ bool JsonManager::PtrSetInt64(JsonValue* handle, const char* path, std::variant<
 {
 	if (!handle || !handle->IsMutable() || !path) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters or immutable document");
+			SetErrorSafe(error, error_size, "Invalid parameters or immutable document");
 		}
 		return false;
 	}
@@ -3454,7 +3457,7 @@ bool JsonManager::PtrSetInt64(JsonValue* handle, const char* path, std::variant<
 	}, value);
 
 	if (!success && ptrSetError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+		SetErrorSafe(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrSetError.msg, ptrSetError.code, ptrSetError.pos, path);
 	}
 
@@ -3465,7 +3468,7 @@ bool JsonManager::PtrSetString(JsonValue* handle, const char* path, const char* 
 {
 	if (!handle || !handle->IsMutable() || !path || !value) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters or immutable document");
+			SetErrorSafe(error, error_size, "Invalid parameters or immutable document");
 		}
 		return false;
 	}
@@ -3474,7 +3477,7 @@ bool JsonManager::PtrSetString(JsonValue* handle, const char* path, const char* 
 	bool success = yyjson_mut_doc_ptr_setx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_strcpy(handle->m_pDocument_mut.get(), value), true, nullptr, &ptrSetError);
 
 	if (ptrSetError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+		SetErrorSafe(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrSetError.msg, ptrSetError.code, ptrSetError.pos, path);
 	}
 
@@ -3485,7 +3488,7 @@ bool JsonManager::PtrSetNull(JsonValue* handle, const char* path, char* error, s
 {
 	if (!handle || !handle->IsMutable() || !path) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters or immutable document");
+			SetErrorSafe(error, error_size, "Invalid parameters or immutable document");
 		}
 		return false;
 	}
@@ -3494,7 +3497,7 @@ bool JsonManager::PtrSetNull(JsonValue* handle, const char* path, char* error, s
 	bool success = yyjson_mut_doc_ptr_setx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_null(handle->m_pDocument_mut.get()), true, nullptr, &ptrSetError);
 
 	if (ptrSetError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+		SetErrorSafe(error, error_size, "Failed to set JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrSetError.msg, ptrSetError.code, ptrSetError.pos, path);
 	}
 
@@ -3505,7 +3508,7 @@ bool JsonManager::PtrAdd(JsonValue* handle, const char* path, JsonValue* value, 
 {
 	if (!handle || !handle->IsMutable() || !path || !value) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters or immutable document");
+			SetErrorSafe(error, error_size, "Invalid parameters or immutable document");
 		}
 		return false;
 	}
@@ -3519,7 +3522,7 @@ bool JsonManager::PtrAdd(JsonValue* handle, const char* path, JsonValue* value, 
 
 	if (!val_copy) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Failed to copy JSON value");
+			SetErrorSafe(error, error_size, "Failed to copy JSON value");
 		}
 		return false;
 	}
@@ -3528,7 +3531,7 @@ bool JsonManager::PtrAdd(JsonValue* handle, const char* path, JsonValue* value, 
 	bool success = yyjson_mut_doc_ptr_addx(handle->m_pDocument_mut.get(), path, strlen(path), val_copy, true, nullptr, &ptrAddError);
 
 	if (ptrAddError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+		SetErrorSafe(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrAddError.msg, ptrAddError.code, ptrAddError.pos, path);
 	}
 
@@ -3539,7 +3542,7 @@ bool JsonManager::PtrAddBool(JsonValue* handle, const char* path, bool value, ch
 {
 	if (!handle || !handle->IsMutable() || !path) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters or immutable document");
+			SetErrorSafe(error, error_size, "Invalid parameters or immutable document");
 		}
 		return false;
 	}
@@ -3548,7 +3551,7 @@ bool JsonManager::PtrAddBool(JsonValue* handle, const char* path, bool value, ch
 	bool success = yyjson_mut_doc_ptr_addx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_bool(handle->m_pDocument_mut.get(), value), true, nullptr, &ptrAddError);
 
 	if (ptrAddError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+		SetErrorSafe(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrAddError.msg, ptrAddError.code, ptrAddError.pos, path);
 	}
 
@@ -3559,7 +3562,7 @@ bool JsonManager::PtrAddFloat(JsonValue* handle, const char* path, double value,
 {
 	if (!handle || !handle->IsMutable() || !path) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters or immutable document");
+			SetErrorSafe(error, error_size, "Invalid parameters or immutable document");
 		}
 		return false;
 	}
@@ -3568,7 +3571,7 @@ bool JsonManager::PtrAddFloat(JsonValue* handle, const char* path, double value,
 	bool success = yyjson_mut_doc_ptr_addx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_real(handle->m_pDocument_mut.get(), value), true, nullptr, &ptrAddError);
 
 	if (ptrAddError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+		SetErrorSafe(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrAddError.msg, ptrAddError.code, ptrAddError.pos, path);
 	}
 
@@ -3579,7 +3582,7 @@ bool JsonManager::PtrAddInt(JsonValue* handle, const char* path, int value, char
 {
 	if (!handle || !handle->IsMutable() || !path) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters or immutable document");
+			SetErrorSafe(error, error_size, "Invalid parameters or immutable document");
 		}
 		return false;
 	}
@@ -3588,7 +3591,7 @@ bool JsonManager::PtrAddInt(JsonValue* handle, const char* path, int value, char
 	bool success = yyjson_mut_doc_ptr_addx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_int(handle->m_pDocument_mut.get(), value), true, nullptr, &ptrAddError);
 
 	if (ptrAddError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+		SetErrorSafe(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrAddError.msg, ptrAddError.code, ptrAddError.pos, path);
 	}
 
@@ -3599,7 +3602,7 @@ bool JsonManager::PtrAddInt64(JsonValue* handle, const char* path, std::variant<
 {
 	if (!handle || !handle->IsMutable() || !path) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters or immutable document");
+			SetErrorSafe(error, error_size, "Invalid parameters or immutable document");
 		}
 		return false;
 	}
@@ -3616,7 +3619,7 @@ bool JsonManager::PtrAddInt64(JsonValue* handle, const char* path, std::variant<
 	}, value);
 
 	if (ptrAddError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+		SetErrorSafe(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrAddError.msg, ptrAddError.code, ptrAddError.pos, path);
 	}
 
@@ -3627,7 +3630,7 @@ bool JsonManager::PtrAddString(JsonValue* handle, const char* path, const char* 
 {
 	if (!handle || !handle->IsMutable() || !path || !value) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters or immutable document");
+			SetErrorSafe(error, error_size, "Invalid parameters or immutable document");
 		}
 		return false;
 	}
@@ -3636,7 +3639,7 @@ bool JsonManager::PtrAddString(JsonValue* handle, const char* path, const char* 
 	bool success = yyjson_mut_doc_ptr_addx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_strcpy(handle->m_pDocument_mut.get(), value), true, nullptr, &ptrAddError);
 
 	if (ptrAddError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+		SetErrorSafe(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrAddError.msg, ptrAddError.code, ptrAddError.pos, path);
 	}
 
@@ -3647,7 +3650,7 @@ bool JsonManager::PtrAddNull(JsonValue* handle, const char* path, char* error, s
 {
 	if (!handle || !handle->IsMutable() || !path) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters or immutable document");
+			SetErrorSafe(error, error_size, "Invalid parameters or immutable document");
 		}
 		return false;
 	}
@@ -3656,7 +3659,7 @@ bool JsonManager::PtrAddNull(JsonValue* handle, const char* path, char* error, s
 	bool success = yyjson_mut_doc_ptr_addx(handle->m_pDocument_mut.get(), path, strlen(path), yyjson_mut_null(handle->m_pDocument_mut.get()), true, nullptr, &ptrAddError);
 
 	if (ptrAddError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+		SetErrorSafe(error, error_size, "Failed to add JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrAddError.msg, ptrAddError.code, ptrAddError.pos, path);
 	}
 
@@ -3667,7 +3670,7 @@ bool JsonManager::PtrRemove(JsonValue* handle, const char* path, char* error, si
 {
 	if (!handle || !handle->IsMutable() || !path) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid parameters or immutable document");
+			SetErrorSafe(error, error_size, "Invalid parameters or immutable document");
 		}
 		return false;
 	}
@@ -3676,7 +3679,7 @@ bool JsonManager::PtrRemove(JsonValue* handle, const char* path, char* error, si
 	bool success = yyjson_mut_doc_ptr_removex(handle->m_pDocument_mut.get(), path, strlen(path), nullptr, &ptrRemoveError) != nullptr;
 
 	if (ptrRemoveError.code && error && error_size > 0) {
-		snprintf(error, error_size, "Failed to remove JSON pointer: %s (error code: %u, position: %zu, path: %s)",
+		SetErrorSafe(error, error_size, "Failed to remove JSON pointer: %s (error code: %u, position: %zu, path: %s)",
 			ptrRemoveError.msg, ptrRemoveError.code, ptrRemoveError.pos, path);
 	}
 
@@ -4410,7 +4413,7 @@ JsonValue* JsonManager::ReadNumber(const char* dat, uint32_t read_flg, char* err
 {
 	if (!dat) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid input data");
+			SetErrorSafe(error, error_size, "Invalid input data");
 		}
 		return nullptr;
 	}
@@ -4421,7 +4424,7 @@ JsonValue* JsonManager::ReadNumber(const char* dat, uint32_t read_flg, char* err
 	yyjson_mut_val* val = yyjson_mut_int(pJSONValue->m_pDocument_mut.get(), 0);
 	if (!val) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Failed to create number value");
+			SetErrorSafe(error, error_size, "Failed to create number value");
 		}
 		return nullptr;
 	}
@@ -4432,7 +4435,7 @@ JsonValue* JsonManager::ReadNumber(const char* dat, uint32_t read_flg, char* err
 
 	if (!end_ptr || readError.code) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Failed to read number: %s (error code: %u, position: %zu)",
+			SetErrorSafe(error, error_size, "Failed to read number: %s (error code: %u, position: %zu)",
 				readError.msg, readError.code, readError.pos);
 		}
 		return nullptr;
@@ -4569,9 +4572,9 @@ bool JsonManager::SetFloat(JsonValue* handle, double value)
 	}
 
 	if (handle->IsMutable()) {
-		return yyjson_mut_set_float(handle->m_pVal_mut, value);
+		return yyjson_mut_set_real(handle->m_pVal_mut, value);
 	} else {
-		return yyjson_set_float(handle->m_pVal, value);
+		return yyjson_set_real(handle->m_pVal, value);
 	}
 }
 
@@ -4605,14 +4608,14 @@ bool JsonManager::ParseInt64Variant(const char* value, std::variant<int64_t, uin
 {
 	if (!value || !*value) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Empty integer64 value");
+			SetErrorSafe(error, error_size, "Empty integer64 value");
 		}
 		return false;
 	}
 
 	if (!out_value) {
 		if (error && error_size > 0) {
-			snprintf(error, error_size, "Invalid output parameter");
+			SetErrorSafe(error, error_size, "Invalid output parameter");
 		}
 		return false;
 	}
@@ -4631,9 +4634,9 @@ bool JsonManager::ParseInt64Variant(const char* value, std::variant<int64_t, uin
 
 		if (error && error_size > 0) {
 			if (result.ec == std::errc::result_out_of_range) {
-				snprintf(error, error_size, "Integer64 value out of range: %s", value);
+				SetErrorSafe(error, error_size, "Integer64 value out of range: %s", value);
 			} else {
-				snprintf(error, error_size, "Invalid integer64 value: %s", value);
+				SetErrorSafe(error, error_size, "Invalid integer64 value: %s", value);
 			}
 		}
 		return false;
@@ -4658,16 +4661,16 @@ bool JsonManager::ParseInt64Variant(const char* value, std::variant<int64_t, uin
 
 		if (error && error_size > 0) {
 			if (unsigned_result.ec == std::errc::result_out_of_range) {
-				snprintf(error, error_size, "Integer64 value out of range: %s", value);
+				SetErrorSafe(error, error_size, "Integer64 value out of range: %s", value);
 			} else {
-				snprintf(error, error_size, "Invalid integer64 value: %s", value);
+				SetErrorSafe(error, error_size, "Invalid integer64 value: %s", value);
 			}
 		}
 		return false;
 	}
 
 	if (error && error_size > 0) {
-		snprintf(error, error_size, "Invalid integer64 value: %s", value);
+		SetErrorSafe(error, error_size, "Invalid integer64 value: %s", value);
 	}
 	return false;
 }

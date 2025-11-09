@@ -17,10 +17,10 @@ class JsonValue {
 public:
 	JsonValue() = default;
 	~JsonValue() {
-		if (m_pDocument_mut.unique()) {
+		if (m_pDocument_mut.use_count() == 1) {
 			yyjson_mut_doc_free(m_pDocument_mut.get());
 		}
-		if (m_pDocument.unique()) {
+		if (m_pDocument.use_count() == 1) {
 			yyjson_doc_free(m_pDocument.get());
 		}
 	}
@@ -385,7 +385,6 @@ private:
 
 	// Pack helper methods
 	static const char* SkipSeparators(const char* ptr);
-	static void SetPackError(char* error, size_t error_size, const char* fmt, ...);
 	static yyjson_mut_val* PackImpl(yyjson_mut_doc* doc, const char* format,
 	                                 IPackParamProvider* provider, char* error,
 	                                 size_t error_size, const char** out_end_ptr);

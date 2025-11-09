@@ -836,9 +836,8 @@ static cell_t json_arr_init_with_bool(IPluginContext* pContext, const cell_t* pa
 	pContext->LocalToPhysAddr(params[1], &addr);
 	cell_t array_size = params[2];
 
-	// Use unique_ptr for automatic memory management
-	// Note: std::vector<bool> is specialized and doesn't work with .data()
-	std::unique_ptr<bool[]> values(new bool[array_size]);
+	// std::vector<bool> is specialized and doesn't work with .data() so we use a unique_ptr
+	auto values = std::make_unique<bool[]>(array_size);
 
 	for (cell_t i = 0; i < array_size; i++) {
 		values[i] = (addr[i] != 0);
@@ -1254,8 +1253,6 @@ static cell_t json_arr_append_str(IPluginContext* pContext, const cell_t* params
 	return g_pJsonManager->ArrayAppendString(handle, str);
 }
 
-// ========== Array Insert Operations ==========
-
 static cell_t json_arr_insert(IPluginContext* pContext, const cell_t* params)
 {
 	JsonValue* handle = g_pJsonManager->GetFromHandle(pContext, params[1]);
@@ -1368,8 +1365,6 @@ static cell_t json_arr_insert_null(IPluginContext* pContext, const cell_t* param
 
 	return g_pJsonManager->ArrayInsertNull(handle, index);
 }
-
-// ========== Array Prepend Operations ==========
 
 static cell_t json_arr_prepend(IPluginContext* pContext, const cell_t* params)
 {
@@ -3010,7 +3005,7 @@ static cell_t json_set_float(IPluginContext* pContext, const cell_t* params)
 	JsonValue* handle = g_pJsonManager->GetFromHandle(pContext, params[1]);
 	if (!handle) return 0;
 
-	double value = sp_ctof(params[2]);
+	float value = sp_ctof(params[2]);
 	if (!g_pJsonManager->SetFloat(handle, value)) {
 		return pContext->ThrowNativeError("Failed to set value to float (value is object or array)");
 	}
