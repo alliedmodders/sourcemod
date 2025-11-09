@@ -1,0 +1,106 @@
+# vim: sts=2 ts=8 sw=2 tw=99 et ft=python: 
+import os, platform
+
+builder.SetBuildFolder('libmariadb')
+
+rvalue = {}
+for cxx in builder.targets:
+  binary = SM.StaticLibrary(builder, cxx, 'mariadb')
+  binary.compiler.includes += [
+    os.path.join(builder.sourcePath, 'extensions', 'mysql', 'mariadb', 'include'),
+    os.path.join(builder.sourcePath, 'extensions', 'mysql', 'mariadb', 'connector', 'include'),
+    os.path.join(builder.sourcePath, 'extensions', 'mysql', 'mariadb', 'connector', 'libmariadb'),
+    os.path.join(builder.sourcePath, 'extensions', 'mysql', 'mariadb', 'connector', 'external', 'zlib'),
+
+    os.path.join(builder.sourcePath, 'extensions', 'mysql', 'openssl', 'include'),
+    os.path.join(builder.sourcePath, 'extensions', 'mysql', 'openssl', 'lib', 'include'),
+  ]
+
+  binary.compiler.defines += [
+    'HAVE_COMPRESS',
+    'LIBMARIADB',
+    'THREAD',
+  ]
+  # Work around mariadb warnings.
+  if binary.compiler.target.platform == 'linux':
+    binary.compiler.cflags += [
+      '-Wno-shift-count-overflow',
+      '-Wno-tautological-constant-out-of-range-compare',
+    ]
+
+  binary.sources += [
+    'connector/plugins/auth/my_auth.c',
+    'connector/plugins/auth/old_password.c',
+    'connector/plugins/compress/c_zlib.c',
+    'connector/plugins/pvio/pvio_socket.c',
+    'connector/libmariadb/ma_array.c',
+    'connector/libmariadb/ma_charset.c',
+    'connector/libmariadb/ma_decimal.c',
+    'connector/libmariadb/ma_hashtbl.c',
+    'connector/libmariadb/ma_net.c',
+    'connector/libmariadb/mariadb_charset.c',
+    'connector/libmariadb/ma_time.c',
+    'connector/libmariadb/ma_default.c',
+    'connector/libmariadb/ma_errmsg.c',
+    'connector/libmariadb/mariadb_lib.c',
+    'connector/libmariadb/ma_list.c',
+    'connector/libmariadb/ma_pvio.c',
+    'connector/libmariadb/ma_tls.c',
+    'connector/libmariadb/ma_alloc.c',
+    'connector/libmariadb/ma_compress.c',
+    'connector/libmariadb/ma_init.c',
+    'connector/libmariadb/ma_password.c',
+    'connector/libmariadb/ma_ll2str.c',
+    'connector/libmariadb/ma_sha1.c',
+    'connector/libmariadb/mariadb_stmt.c',
+    'connector/libmariadb/ma_loaddata.c',
+    'connector/libmariadb/ma_stmt_codec.c',
+    'connector/libmariadb/ma_string.c',
+    'connector/libmariadb/ma_dtoa.c',
+    'connector/libmariadb/mariadb_rpl.c',
+    'connector/libmariadb/ma_io.c',
+    'connector/libmariadb/mariadb_async.c',
+    'connector/libmariadb/ma_context.c',
+    'ma_client_plugin.c',
+  ]
+
+  if binary.compiler.target.platform == 'linux':
+    # TLS
+    binary.compiler.defines += [
+      'HAVE_OPENSSL', 'HAVE_TLS'
+    ]
+    binary.sources += [
+      'connector/libmariadb/secure/openssl.c',
+    ]
+  elif binary.compiler.target.platform == 'windows':
+    binary.compiler.defines += [
+      'HAVE_DLOPEN',
+      '_CRT_SECURE_NO_WARNINGS',
+      '_CRT_NONSTDC_NO_DEPRECATE',
+      'HAVE_SCHANNEL', 'HAVE_TLS'
+    ]
+    binary.sources += [
+      'connector/libmariadb/win32_errmsg.c',
+      # TLS
+      'connector/libmariadb/secure/schannel.c',
+      'connector/libmariadb/secure/ma_schannel.c',
+      'connector/libmariadb/secure/schannel_certs.c',
+      # ZLIB
+      'connector/external/zlib/adler32.c',
+      'connector/external/zlib/compress.c',
+      'connector/external/zlib/crc32.c',
+      'connector/external/zlib/deflate.c',
+      'connector/external/zlib/gzclose.c',
+      'connector/external/zlib/gzlib.c',
+      'connector/external/zlib/gzread.c',
+      'connector/external/zlib/gzwrite.c',
+      'connector/external/zlib/infback.c',
+      'connector/external/zlib/inffast.c',
+      'connector/external/zlib/inflate.c',
+      'connector/external/zlib/inftrees.c',
+      'connector/external/zlib/trees.c',
+      'connector/external/zlib/uncompr.c',
+      'connector/external/zlib/zutil.c',
+    ]
+
+  rvalue[binary.compiler.target.arch] = builder.Add(binary)

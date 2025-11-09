@@ -3,22 +3,11 @@
 
 trap "exit" INT
 
-download_mysql=1
-download_mysql_debug=1
-
 # List of HL2SDK branch names to download.
 # ./checkout-deps.sh -s tf2,css
-# Disable downloading of mysql libraries.
-# ./checkout-deps.sh -m
-# Disable downloading of mysql debug libraries on Windows.
-# ./checkout-deps.sh -d
-while getopts ":s:m" opt; do
+while getopts ":s:" opt; do
   case $opt in
     s) IFS=', ' read -r -a sdks <<< "$OPTARG"
-    ;;
-    m) download_mysql=0
-    ;;
-    d) download_mysql_debug=0
     ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
@@ -44,75 +33,6 @@ if [ ! -d "sourcemod" ]; then
     echo "Could not find a SourceMod repository; make sure you aren't running this script inside it."
     exit 1
   fi
-fi
-
-getmysql ()
-{
-  if [ ! -d $mysqlfolder ]; then
-    if [ `command -v wget` ]; then
-      wget -q $mysqlurl -O $mysqlfolder.$archive_ext
-    elif [ `command -v curl` ]; then
-      curl -sS -o $mysqlfolder.$archive_ext $mysqlurl
-    else
-      echo "Failed to locate wget or curl. Install one of these programs to download MySQL."
-      exit 1
-    fi
-    $decomp $mysqlfolder.$archive_ext
-    mv $mysqlver $mysqlfolder
-    rm $mysqlfolder.$archive_ext
-  fi
-}
-
-# 32-bit MySQL
-mysqlfolder=mysql-5.7
-if [ $ismac -eq 1 ]; then
-  mysqlfolder=mysql-5.5
-  mysqlver=mysql-5.5.28-osx10.5-x86
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.5/$mysqlver.$archive_ext
-elif [ $iswin -eq 1 ]; then
-  mysqlver=mysql-5.7.44-win32
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.7/$mysqlver.$archive_ext
-  # The folder in the zip archive does not contain the substring "-noinstall", so strip it
-  mysqlver=${mysqlver/-noinstall}
-else
-  mysqlver=mysql-5.7.44-linux-glibc2.12-i686
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.7/$mysqlver.$archive_ext
-fi
-if [ $download_mysql -eq 1 ]; then
-  getmysql
-fi
-
-# 64-bit MySQL
-mysqlfolder=mysql-5.7-x86_64
-if [ $ismac -eq 1 ]; then
-  mysqlfolder=mysql-5.5-x86_64
-  mysqlver=mysql-5.5.28-osx10.5-x86_64
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.5/$mysqlver.$archive_ext
-elif [ $iswin -eq 1 ]; then
-  mysqlver=mysql-5.7.44-winx64
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.7/$mysqlver.$archive_ext
-else
-  mysqlver=mysql-5.7.44-linux-glibc2.12-x86_64
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.7/$mysqlver.$archive_ext
-fi
-if [ $download_mysql -eq 1 ]; then
-  getmysql
-fi
-
-if [ $iswin -eq 1 ] && [ $download_mysql_debug -eq 1 ]; then
-  mysqlfolder=mysql-5.7-debug
-  mysqlver=mysql-5.7.44-win32
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.7/$mysqlver-debug-test.$archive_ext
-  getmysql
-  cp -r $mysqlfolder/lib/* mysql-5.7/lib
-  rm -rf $mysqlfolder
-
-  mysqlfolder=mysql-5.7-debug-x86_64
-  mysqlver=mysql-5.7.44-winx64
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.7/$mysqlver-debug-test.$archive_ext
-  getmysql
-  cp -r $mysqlfolder/lib/* mysql-5.7-x86_64/lib
-  rm -rf $mysqlfolder
 fi
 
 checkout ()
