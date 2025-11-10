@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS sm_cookie_cache
 	PRIMARY KEY (player, cookie_id)
 );
 
-CREATE LANGUAGE plpgsql;
+CREATE OR REPLACE LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION add_or_update_cookie(in_player VARCHAR(65), in_cookie INT, in_value VARCHAR(100), in_time INT) RETURNS VOID AS
 $$
