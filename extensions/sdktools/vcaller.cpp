@@ -63,7 +63,8 @@ inline void DecodePassMethod(ValveType vtype, SDKPassMethod method, PassType &ty
 		type = PassType_Basic;
 		if (vtype == Valve_POD
 			|| vtype == Valve_Float
-			|| vtype == Valve_Bool)
+			|| vtype == Valve_Bool
+			|| vtype == Valve_VirtualAddress)
 		{
 			flags = PASSFLAG_BYVAL | PASSFLAG_ASPOINTER;
 		} else {
@@ -573,12 +574,12 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 			}
 			return *addr ? 1 : 0;
         } else if (vc->retinfo->vtype == Valve_VirtualAddress) {
-            void *addr = (void *)vc->retbuf;
+            void *addr = *(void **)vc->retbuf;
             if (vc->retinfo->flags & PASSFLAG_ASPOINTER)
 			{
 				addr = *(void **)addr;
 			}
-			return g_pSM->ToPseudoAddress((void*)addr);
+			return g_pSM->ToPseudoAddress(addr);
 		} else {
 			cell_t *addr = (cell_t *)vc->retbuf;
 			if (vc->retinfo->flags & PASSFLAG_ASPOINTER)

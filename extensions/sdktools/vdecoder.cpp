@@ -295,11 +295,14 @@ DataStatus EncodeValveParam(IPluginContext *pContext,
 		}
 	case Valve_VirtualAddress:
 	    {
+			cell_t *addr;
+			pContext->LocalToPhysAddr(param, &addr);
+
 			if (data->flags & PASSFLAG_ASPOINTER)
 			{
 				buffer = *(void **)buffer;
 			}
-			param = g_pSM->ToPseudoAddress((void*)buffer);
+			*addr = g_pSM->ToPseudoAddress(*(void**)buffer);
 
 			return Data_Okay;
 		}
@@ -612,6 +615,17 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 		}
 	case Valve_VirtualAddress:
 	    {
+			if (data->decflags & VDECODE_FLAG_BYREF)
+			{
+				cell_t *addr;
+				pContext->LocalToPhysAddr(param, &addr);
+				param = *addr;
+			}
+			if (data->flags & PASSFLAG_ASPOINTER)
+			{
+				*(void **)buffer = (unsigned char *)_buffer + pCall->stackEnd + data->obj_offset;
+				buffer = *(void **)buffer;
+			}
 			void* addr = g_pSM->FromPseudoAddress(param);
 			if (addr == nullptr && (data->decflags & VDECODE_FLAG_ALLOWNULL) == 0)
 			{
