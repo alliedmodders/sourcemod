@@ -758,8 +758,6 @@ native void StoreToAddress(Address addr, any data, NumberType size, bool updateM
  * Load sizeof(void*) from a memory address.
  *
  * @param addr          Address to a memory location.
- * @param size          How many bytes should be read.
- *                      If loading a floating-point value, use NumberType_Int32.
  * @return              The address that is stored at that address.
  * @error               Address is null or pointing to reserved memory.
  */
