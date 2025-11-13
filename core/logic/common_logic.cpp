@@ -57,6 +57,7 @@
 #include "RootConsoleMenu.h"
 #include "CellArray.h"
 #include "smn_entitylump.h"
+#include "PseudoAddrManager.h"
 #include <bridge/include/BridgeAPI.h>
 #include <bridge/include/IProviderCallbacks.h>
 
@@ -86,9 +87,7 @@ IScriptManager *scripts = &g_PluginSys;
 IExtensionSys *extsys = &g_Extensions;
 ILogger *logger = &g_Logger;
 CNativeOwner g_CoreNatives;
-#ifdef KE_ARCH_X64
 PseudoAddressManager pseudoAddr;
-#endif
 
 EntityLumpParseResult lastParseResult;
 
@@ -122,20 +121,12 @@ static void RegisterProfiler(IProfilingTool *tool)
 
 static void *FromPseudoAddress(uint32_t paddr)
 {
-#ifdef KE_ARCH_X64
 	return pseudoAddr.FromPseudoAddress(paddr);
-#else
-	return nullptr;
-#endif
 }
 
 static uint32_t ToPseudoAddress(void *addr)
 {
-#ifdef KE_ARCH_X64
 	return pseudoAddr.ToPseudoAddress(addr);
-#else
-	return 0;
-#endif
 }
 
 static void SetEntityLumpWritable(bool writable)
@@ -236,6 +227,7 @@ static void logic_init(CoreProvider* core, sm_logic_t* _logic)
 	g_pSourcePawn2 = *core->spe2;
 	SMGlobalClass::head = core->listeners;
 
+	pseudoAddr.Initialize();
 	g_ShareSys.Initialize();
 	g_pCoreIdent = g_ShareSys.CreateCoreIdentity();
 	

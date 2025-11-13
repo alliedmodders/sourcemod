@@ -754,6 +754,26 @@ native any LoadFromAddress(Address addr, NumberType size);
  */
 native void StoreToAddress(Address addr, any data, NumberType size, bool updateMemAccess = true);
 
+/**
+ * Load sizeof(void*) from a memory address.
+ *
+ * @param addr          Address to a memory location.
+ * @return              The address that is stored at that address.
+ * @error               Address is null or pointing to reserved memory.
+ */
+native Address LoadAddressFromAddress(Address addr);
+
+/**
+ * Store sizeof(void*) bytes to a memory address.
+ *
+ * @param addr                     Address to a memory location.
+ * @param data                     Address to store at that location.
+ * @param updateMemAccess          If true, SourceMod will set read / write / exec permissions
+ *                                 on the memory page being written to.
+ * @error                          Address is null or pointing to reserved memory.
+ */
+native void StoreAddressToAddress(Address addr, Address data, bool updateMemAccess = true);
+
 methodmap FrameIterator < Handle {
 	// Creates a stack frame iterator to build your own stack traces.
 	// @return              New handle to a FrameIterator.

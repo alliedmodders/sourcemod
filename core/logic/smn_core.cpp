@@ -59,6 +59,7 @@
 #include <bridge/include/CoreProvider.h>
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/IExtensionBridge.h>
+#include "PseudoAddrManager.h"
 #include <sh_vector.h>
 
 using namespace SourceMod;
@@ -863,11 +864,10 @@ enum NumberType
 
 static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
 {
-#ifdef KE_ARCH_X86
 	void *addr = reinterpret_cast<void*>(params[1]);
-#else
-	void *addr = pseudoAddr.FromPseudoAddress(params[1]);
-#endif
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
+		addr = pseudoAddr.FromPseudoAddress(params[1]);
+	}
 
 	if (addr == NULL)
 	{
@@ -892,14 +892,12 @@ static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
 	}
 }
 
-
 static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 {
-#ifdef KE_ARCH_X86
 	void *addr = reinterpret_cast<void*>(params[1]);
-#else
-	void *addr = pseudoAddr.FromPseudoAddress(params[1]);
-#endif
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
+		addr = pseudoAddr.FromPseudoAddress(params[1]);
+	}
 
 	if (addr == NULL)
 	{
@@ -946,6 +944,60 @@ static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 	default:
 		return pContext->ThrowNativeError("Invalid number types %d", size);
 	}
+
+	return 0;
+}
+
+static cell_t LoadAddressFromAddress(IPluginContext *pContext, const cell_t *params)
+{
+	void *addr = reinterpret_cast<void*>(params[1]);
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
+		addr = pseudoAddr.FromPseudoAddress(params[1]);
+	}
+
+	if (addr == NULL)
+	{
+		return pContext->ThrowNativeError("Address cannot be null");
+	}
+	else if (reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
+	{
+		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory.", addr);
+	}
+
+	void* data = *reinterpret_cast<void**>(addr);
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
+		return pseudoAddr.ToPseudoAddress(data);
+	}
+	return reinterpret_cast<uintptr_t>(data);
+}
+
+static cell_t StoreAddressToAddress(IPluginContext *pContext, const cell_t *params)
+{
+	void *addr = reinterpret_cast<void*>(params[1]);
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
+		addr = pseudoAddr.FromPseudoAddress(params[1]);
+	}
+
+	if (addr == NULL)
+	{
+		return pContext->ThrowNativeError("Address cannot be null");
+	}
+	else if (reinterpret_cast<uintptr_t>(addr) < VALID_MINIMUM_MEMORY_ADDRESS)
+	{
+		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory.", addr);
+	}
+
+	void *data = reinterpret_cast<void*>(params[2]);
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
+		data = pseudoAddr.FromPseudoAddress(params[2]);
+	}
+
+	bool updateMemAccess = params[3];
+
+	if (updateMemAccess) {
+		SourceHook::SetMemAccess(addr, sizeof(void*), SH_MEM_READ|SH_MEM_WRITE|SH_MEM_EXEC);
+	}
+	*reinterpret_cast<void**>(addr) = data;
 
 	return 0;
 }
@@ -1157,6 +1209,8 @@ REGISTER_NATIVES(coreNatives)
 	{"RequireFeature",          RequireFeature},
 	{"LoadFromAddress",         LoadFromAddress},
 	{"StoreToAddress",          StoreToAddress},
+	{"LoadAddressFromAddress",  LoadAddressFromAddress},
+	{"StoreAddressToAddress",   StoreAddressToAddress},
 	{"IsNullVector",			IsNullVector},
 	{"IsNullString",			IsNullString},
 	{"LogStackTrace",           LogStackTrace},
