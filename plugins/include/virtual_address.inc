@@ -1,14 +1,15 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod
- * Copyright (C) 2004-2017 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2004-2025 AlliedModders LLC.  All rights reserved.
  * =============================================================================
+ *
+ * This file is part of the SourceMod/SourcePawn SDK.
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -25,24 +26,14 @@
  * this exception to all derivative works.  AlliedModders LLC defines further
  * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
  * or <http://www.sourcemod.net/license.php>.
+ *
+ * Version: $Id$
  */
 
-#ifndef _INCLUDE_SOURCEMOD_PSEUDOADDRESSMANAGER_H_
-#define _INCLUDE_SOURCEMOD_PSEUDOADDRESSMANAGER_H_
+#if defined _virtual_address_included
+ #endinput
+#endif
+#define _virtual_address_included
 
-#include "common_logic.h"
-#include "libaddrz/addrz.h"
-
-class PseudoAddressManager
-{
-public:
-	PseudoAddressManager();
-public:
-	void *FromPseudoAddress(uint32_t paddr);
-	uint32_t ToPseudoAddress(void *addr);
-	void Initialize();
-private:
-	am::AddressDict m_dictionary;
-};
-
-#endif // _INCLUDE_SOURCEMOD_PSEUDOADDRESSMANAGER_H_
+public const Address __Virtual_Address__ = view_as<Address>(0);
+public const Address PointerSize = view_as<Address>(0); /**< Size of a pointer in bytes (same as `sizeof(void*)`) */

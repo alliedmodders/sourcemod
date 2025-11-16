@@ -42,6 +42,8 @@ enum SDKFuncConfSource
 	SDKConf_Address
 };
 
+using ParamVector = SourceHook::CVector<ParamInfo>;
+
 bool GetHandleIfValidOrError(HandleType_t type, void **object, IPluginContext *pContext, cell_t param)
 {
 	if(param == BAD_HANDLE)
@@ -78,6 +80,56 @@ bool GetCallbackArgHandleIfValidOrError(HandleType_t type, HandleType_t otherTyp
 			return pContext->ThrowNativeError("Invalid Handle %x (error %d). It looks like you've chosen the wrong hook callback signature for your setup and you're trying to access the wrong handle.", param, err) != 0;
 		return pContext->ThrowNativeError("Invalid Handle %x (error %d)", param, err) != 0;
 	}
+	return true;
+}
+
+bool GetObjectAddrOrThis(IPluginContext *pContext, const cell_t *params, void *&retAddr)
+{
+	HookParamsStruct *paramStruct = NULL;
+	retAddr = NULL;
+
+	if(!GetCallbackArgHandleIfValidOrError(g_HookParamsHandle, g_HookReturnHandle, (void **)&paramStruct, pContext, params[1]))
+	{
+		return false;
+	}
+
+	if(params[2] != 0)
+	{
+		const ParamVector &paramsVec = paramStruct->dg->params;
+
+		if(params[2] < 0 || params[2] > static_cast<int>(paramsVec.size()))
+		{
+			return pContext->ThrowNativeError("Invalid param number %i max params is %i", params[2], paramsVec.size());
+		}
+
+		int index = params[2] - 1;
+		const ParamInfo &param = paramsVec.at(index);
+
+		if(param.type != HookParamType_ObjectPtr && param.type != HookParamType_Object)
+		{
+			return pContext->ThrowNativeError("Invalid object value type %i", param.type);
+		}
+
+		size_t offset = GetParamOffset(paramStruct, index);
+		retAddr = GetObjectAddr(param.type, param.flags, paramStruct->orgParams, offset);
+		return true;
+	}
+
+	const DHooksInfo* dgInfo = paramStruct->dg;
+
+	if(dgInfo->thisFuncCallConv != CallConv_THISCALL)
+	{
+		return pContext->ThrowNativeError("Parameter 'this' is only available in member functions");
+	}
+
+	if(dgInfo->thisType != ThisPointer_Address
+		&& dgInfo->thisType != ThisPointer_CBaseEntity
+		&& dgInfo->hookType != HookType_GameRules)
+	{
+		return pContext->ThrowNativeError("Parameter 'this' is not specified as an address, it is not available");
+	}
+
+	retAddr = g_SHPtr->GetIfacePtr();
 	return true;
 }
 
@@ -122,7 +174,12 @@ cell_t Native_CreateHook(IPluginContext *pContext, const cell_t *params)
 //native Handle:DHookCreateDetour(Address:funcaddr, CallingConvention:callConv, ReturnType:returntype, ThisPointerType:thistype);
 cell_t Native_CreateDetour(IPluginContext *pContext, const cell_t *params)
 {
-	HookSetup *setup = new HookSetup((ReturnType)params[3], PASSFLAG_BYVAL, (CallingConvention)params[2], (ThisPointerType)params[4], (void *)params[1]);
+	void* addr = reinterpret_cast<void*>(params[1]);
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
+		addr = g_pSM->FromPseudoAddress(params[1]);
+	}
+
+	HookSetup *setup = new HookSetup((ReturnType)params[3], PASSFLAG_BYVAL, (CallingConvention)params[2], (ThisPointerType)params[4], addr);
 
 	Handle_t hndl = handlesys->CreateHandle(g_HookSetupHandle, setup, pContext->GetIdentity(), myself->GetIdentity(), NULL);
 
@@ -589,7 +646,10 @@ cell_t HookRawImpl(IPluginContext *pContext, const cell_t *params, int callbackI
 	if (removalcbIndex > 0)
 		removalcb = pContext->GetFunctionById(params[removalcbIndex]);
 
-	void *iface = (void *)(params[3]);
+	void* iface = reinterpret_cast<void*>(params[3]);
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
+		iface = g_pSM->FromPseudoAddress(params[3]);
+	}
 
 	for(int i = g_pHooks.size() -1; i >= 0; i--)
 	{
@@ -1089,27 +1149,11 @@ cell_t Native_RemoveEntityListener(IPluginContext *pContext, const cell_t *param
 //native any:DHookGetParamObjectPtrVar(Handle:hParams, num, offset, ObjectValueType:type);
 cell_t Native_GetParamObjectPtrVar(IPluginContext *pContext, const cell_t *params)
 {
-	HookParamsStruct *paramStruct;
-
-	if(!GetCallbackArgHandleIfValidOrError(g_HookParamsHandle, g_HookReturnHandle, (void **)&paramStruct, pContext, params[1]))
+	void *addr = NULL;
+	if(!GetObjectAddrOrThis(pContext, params, addr))
 	{
 		return 0;
 	}
-
-	if(params[2] <= 0 || params[2] > (int)paramStruct->dg->params.size())
-	{
-		return pContext->ThrowNativeError("Invalid param number %i max params is %i", params[2], paramStruct->dg->params.size());
-	}
-
-	int index = params[2] - 1;
-
-	if(paramStruct->dg->params.at(index).type != HookParamType_ObjectPtr && paramStruct->dg->params.at(index).type != HookParamType_Object)
-	{
-		return pContext->ThrowNativeError("Invalid object value type %i", paramStruct->dg->params.at(index).type);
-	}
-
-	size_t offset = GetParamOffset(paramStruct, index);
-	void *addr = GetObjectAddr(paramStruct->dg->params.at(index).type, paramStruct->dg->params.at(index).flags, paramStruct->orgParams, offset);
 
 	switch((ObjectValueType)params[4])
 	{
@@ -1160,27 +1204,11 @@ cell_t Native_GetParamObjectPtrVar(IPluginContext *pContext, const cell_t *param
 //native DHookSetParamObjectPtrVar(Handle:hParams, num, offset, ObjectValueType:type, value)
 cell_t Native_SetParamObjectPtrVar(IPluginContext *pContext, const cell_t *params)
 {
-	HookParamsStruct *paramStruct;
-
-	if(!GetCallbackArgHandleIfValidOrError(g_HookParamsHandle, g_HookReturnHandle, (void **)&paramStruct, pContext, params[1]))
+	void *addr = NULL;
+	if(!GetObjectAddrOrThis(pContext, params, addr))
 	{
 		return 0;
 	}
-
-	if(params[2] <= 0 || params[2] > (int)paramStruct->dg->params.size())
-	{
-		return pContext->ThrowNativeError("Invalid param number %i max params is %i", params[2], paramStruct->dg->params.size());
-	}
-
-	int index = params[2] - 1;
-
-	if(paramStruct->dg->params.at(index).type != HookParamType_ObjectPtr && paramStruct->dg->params.at(index).type != HookParamType_Object)
-	{
-		return pContext->ThrowNativeError("Invalid object value type %i", paramStruct->dg->params.at(index).type);
-	}
-	
-	size_t offset = GetParamOffset(paramStruct, index);
-	void *addr = GetObjectAddr(paramStruct->dg->params.at(index).type, paramStruct->dg->params.at(index).flags, paramStruct->orgParams, offset);
 
 	switch((ObjectValueType)params[4])
 	{
@@ -1245,27 +1273,11 @@ cell_t Native_SetParamObjectPtrVar(IPluginContext *pContext, const cell_t *param
 //native DHookGetParamObjectPtrVarVector(Handle:hParams, num, offset, ObjectValueType:type, Float:buffer[3]);
 cell_t Native_GetParamObjectPtrVarVector(IPluginContext *pContext, const cell_t *params)
 {
-	HookParamsStruct *paramStruct;
-
-	if(!GetCallbackArgHandleIfValidOrError(g_HookParamsHandle, g_HookReturnHandle, (void **)&paramStruct, pContext, params[1]))
+	void *addr = NULL;
+	if(!GetObjectAddrOrThis(pContext, params, addr))
 	{
 		return 0;
 	}
-
-	if(params[2] <= 0 || params[2] > (int)paramStruct->dg->params.size())
-	{
-		return pContext->ThrowNativeError("Invalid param number %i max params is %i", params[2], paramStruct->dg->params.size());
-	}
-
-	int index = params[2] - 1;
-
-	if(paramStruct->dg->params.at(index).type != HookParamType_ObjectPtr && paramStruct->dg->params.at(index).type != HookParamType_Object)
-	{
-		return pContext->ThrowNativeError("Invalid object value type %i", paramStruct->dg->params.at(index).type);
-	}
-
-	size_t offset = GetParamOffset(paramStruct, index);
-	void *addr = GetObjectAddr(paramStruct->dg->params.at(index).type, paramStruct->dg->params.at(index).flags, paramStruct->orgParams, offset);
 
 	cell_t *buffer;
 	pContext->LocalToPhysAddr(params[5], &buffer);
@@ -1299,27 +1311,11 @@ cell_t Native_GetParamObjectPtrVarVector(IPluginContext *pContext, const cell_t 
 //native DHookSetParamObjectPtrVarVector(Handle:hParams, num, offset, ObjectValueType:type, Float:value[3]);
 cell_t Native_SetParamObjectPtrVarVector(IPluginContext *pContext, const cell_t *params)
 {
-	HookParamsStruct *paramStruct;
-
-	if(!GetCallbackArgHandleIfValidOrError(g_HookParamsHandle, g_HookReturnHandle, (void **)&paramStruct, pContext, params[1]))
+	void *addr = NULL;
+	if(!GetObjectAddrOrThis(pContext, params, addr))
 	{
 		return 0;
 	}
-
-	if(params[2] <= 0 || params[2] > (int)paramStruct->dg->params.size())
-	{
-		return pContext->ThrowNativeError("Invalid param number %i max params is %i", params[2], paramStruct->dg->params.size());
-	}
-
-	int index = params[2] - 1;
-
-	if(paramStruct->dg->params.at(index).type != HookParamType_ObjectPtr && paramStruct->dg->params.at(index).type != HookParamType_Object)
-	{
-		return pContext->ThrowNativeError("Invalid object value type %i", paramStruct->dg->params.at(index).type);
-	}
-
-	size_t offset = GetParamOffset(paramStruct, index);
-	void *addr = GetObjectAddr(paramStruct->dg->params.at(index).type, paramStruct->dg->params.at(index).flags, paramStruct->orgParams, offset);
 
 	cell_t *buffer;
 	pContext->LocalToPhysAddr(params[5], &buffer);
@@ -1352,27 +1348,11 @@ cell_t Native_SetParamObjectPtrVarVector(IPluginContext *pContext, const cell_t 
 //native DHookGetParamObjectPtrString(Handle:hParams, num, offset, ObjectValueType:type, String:buffer[], size)
 cell_t Native_GetParamObjectPtrString(IPluginContext *pContext, const cell_t *params)
 {
-	HookParamsStruct *paramStruct;
-
-	if(!GetCallbackArgHandleIfValidOrError(g_HookParamsHandle, g_HookReturnHandle, (void **)&paramStruct, pContext, params[1]))
+	void *addr = NULL;
+	if (!GetObjectAddrOrThis(pContext, params, addr))
 	{
 		return 0;
 	}
-
-	if(params[2] <= 0 || params[2] > (int)paramStruct->dg->params.size())
-	{
-		return pContext->ThrowNativeError("Invalid param number %i max params is %i", params[2], paramStruct->dg->params.size());
-	}
-
-	int index = params[2] - 1;
-
-	if(paramStruct->dg->params.at(index).type != HookParamType_ObjectPtr && paramStruct->dg->params.at(index).type != HookParamType_Object)
-	{
-		return pContext->ThrowNativeError("Invalid object value type %i", paramStruct->dg->params.at(index).type);
-	}
-
-	size_t offset = GetParamOffset(paramStruct, index);
-	void *addr = GetObjectAddr(paramStruct->dg->params.at(index).type, paramStruct->dg->params.at(index).flags, paramStruct->orgParams, offset);
 
 	switch((ObjectValueType)params[4])
 	{
@@ -1510,6 +1490,10 @@ cell_t Native_GetParamAddress(IPluginContext *pContext, const cell_t *params)
 	}
 
 	size_t offset = GetParamOffset(paramStruct, index);
+
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
+		return g_pSM->ToPseudoAddress(*(void**)((intptr_t)paramStruct->orgParams + offset));
+	}
 	return *(cell_t *)((intptr_t)paramStruct->orgParams + offset);
 }
 

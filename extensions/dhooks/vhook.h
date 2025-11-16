@@ -162,6 +162,7 @@ public:
 	int entity;
 	ThisPointerType thisType;
 	HookType hookType;
+	CallingConvention thisFuncCallConv;
 };
 
 class DHooksCallback : public SourceHook::ISHDelegate, public DHooksInfo
@@ -338,7 +339,7 @@ public:
 };
 
 size_t GetStackArgsSize(DHooksCallback *dg);
-cell_t GetThisPtr(void *iface, ThisPointerType type);
+cell_t GetThisPtr(IPluginContext* pContext, void *iface, ThisPointerType type);
 
 extern IBinTools *g_pBinTools;
 extern HandleType_t g_HookParamsHandle;

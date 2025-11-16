@@ -31,6 +31,7 @@
 #include <am-float.h>
 #include <am-string.h>
 #include <IDBDriver.h>
+#include <IGameHelpers.h>
 #include <ITranslator.h>
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/CoreProvider.h>
@@ -188,6 +189,15 @@ bool AddString(char **buf_p, size_t &maxlen, const char *string, int width, int 
 
 	width -= size;
 
+	if (!(flags & LADJUST))
+	{
+		while ((width-- > 0) && maxlen)
+		{
+			*buf++ = ' ';
+			maxlen--;
+		}
+	}
+
 	if (g_FormatEscapeDatabase && (flags & NOESCAPE) == 0)
 	{
 		char *tempBuffer = NULL;
@@ -226,10 +236,13 @@ bool AddString(char **buf_p, size_t &maxlen, const char *string, int width, int 
 		}
 	}
 
-	while ((width-- > 0) && maxlen)
+	if (flags & LADJUST)
 	{
-		*buf++ = ' ';
-		maxlen--;
+		while ((width-- > 0) && maxlen)
+		{
+			*buf++ = ' ';
+			maxlen--;
+		}
 	}
 
 	*buf_p = buf;
@@ -251,6 +264,12 @@ void AddFloat(char **buf_p, size_t &maxlen, double fval, int width, int prec, in
 	if (ke::IsNaN(fval))
 	{
 		AddString(buf_p, maxlen, "NaN", width, prec, flags | NOESCAPE);
+		return;
+	}
+
+	if (ke::IsInfinite(static_cast<float>(fval)))
+	{
+		AddString(buf_p, maxlen, "Inf", width, prec, flags | NOESCAPE);
 		return;
 	}
 
@@ -485,12 +504,14 @@ void AddInt(char **buf_p, size_t &maxlen, int val, int width, int flags)
 		unsignedVal /= 10;
 	} while (unsignedVal);
 
-	if (signedVal < 0)
-	{
-		text[digits++] = '-';
-	}
-
 	buf = *buf_p;
+
+	// minus sign BEFORE left padding if padding with zeros
+	if (signedVal < 0 && maxlen && (flags & ZEROPAD))
+	{
+		*buf++ = '-';
+		maxlen--;
+	}
 
 	if (!(flags & LADJUST))
 	{
@@ -500,6 +521,13 @@ void AddInt(char **buf_p, size_t &maxlen, int val, int width, int flags)
 			width--;
 			maxlen--;
 		}
+	}
+
+	// minus sign AFTER left padding if padding with spaces
+	if (signedVal < 0 && maxlen && !(flags & ZEROPAD))
+	{
+		*buf++ = '-';
+		maxlen--;
 	}
 
 	while (digits-- && maxlen)
@@ -1195,6 +1223,22 @@ reswitch:
 						return pCtx->ThrowNativeError("Client index %d is invalid (arg %d)", *value, arg);
 				}
 				if (!AddString(&buf_p, llen, name, width, prec, flags))
+					return pCtx->ThrowNativeError("Escaped string would be truncated (arg %d)", arg);
+				arg++;
+				break;
+			}
+		case 'E':
+			{
+				CHECK_ARGS(0);
+				cell_t *value;
+				pCtx->LocalToPhysAddr(params[arg], &value);
+
+				CBaseEntity *entity = gamehelpers->ReferenceToEntity(*value);
+				if (!entity) 
+					return pCtx->ThrowNativeError("Entity index %d is invalid (arg %d)", *value, arg);
+
+				const char *classname = gamehelpers->GetEntityClassname(entity);
+				if (!AddString(&buf_p, llen, classname, width, prec, flags))
 					return pCtx->ThrowNativeError("Escaped string would be truncated (arg %d)", arg);
 				arg++;
 				break;

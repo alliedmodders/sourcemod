@@ -1,6 +1,8 @@
 #ifndef _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_
 #define _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_
 
+#include "takedamageinfohack.h"
+
 #include "smsdk_ext.h"
 #include <ISDKHooks.h>
 #include <convar.h>
@@ -14,8 +16,6 @@
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 #include <itoolentity.h>
 #endif
-
-#include "takedamageinfohack.h"
 
 #if SOURCE_ENGINE >= SE_CSS && SOURCE_ENGINE != SE_LEFT4DEAD
 #define GETMAXHEALTH_IS_VIRTUAL

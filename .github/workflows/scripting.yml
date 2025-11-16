@@ -31,9 +31,9 @@ jobs:
 
       # Setup Python for AMBuild
       - uses: actions/setup-python@v6
-        name: Setup Python 3.8
+        name: Setup Python 3.12
         with:
-          python-version: 3.8
+          python-version: 3.12
       - name: Install AMBuild
         run: |
           python -m pip install --upgrade pip setuptools wheel
@@ -67,7 +67,7 @@ jobs:
           echo "SM_VERSION=$(cat ../product.version)" >> $GITHUB_ENV
 
       - name: Archive tooling
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: sourcemod-tooling-${{ env.SM_VERSION }}-${{ matrix.os_short }}
           path: build/package
