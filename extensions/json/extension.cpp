@@ -42,7 +42,6 @@ bool JsonExtension::SDK_OnLoad(char* error, size_t maxlen, bool late)
 		return false;
 	}
 
-	// Delete the existing instance if it exists
 	if (g_pJsonManager) {
 		delete g_pJsonManager;
 		g_pJsonManager = nullptr;

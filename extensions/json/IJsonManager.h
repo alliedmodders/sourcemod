@@ -1,5 +1,5 @@
-#ifndef _INCLUDE_SM_JSON_IJSONMANAGER_H_
-#define _INCLUDE_SM_JSON_IJSONMANAGER_H_
+#ifndef _INCLUDE_IJSONMANAGER_H_
+#define _INCLUDE_IJSONMANAGER_H_
 
 #include <IHandleSys.h>
 #include <variant>
@@ -15,7 +15,7 @@ class JsonArrIter;
 class JsonObjIter;
 
 #define SMINTERFACE_JSONMANAGER_NAME "IJsonManager"
-#define SMINTERFACE_JSONMANAGER_VERSION 1
+#define SMINTERFACE_JSONMANAGER_VERSION 2
 #define JSON_PACK_ERROR_SIZE 256
 #define JSON_ERROR_BUFFER_SIZE 256
 #define JSON_INT64_BUFFER_SIZE 32
@@ -99,9 +99,68 @@ public:
 	 *
 	 * @note The out_size parameter returns the size including null terminator
 	 * @note Use GetSerializedSize() with the same write_flg to determine buffer size
+	 * @warning This method performs multiple memory allocations and copies, resulting in poor performance.
+	 *          For better performance, use WriteToStringPtr() instead, which avoids intermediate buffers
 	 */
 	virtual bool WriteToString(JsonValue* handle, char* buffer, size_t buffer_size,
 		uint32_t write_flg = 0, size_t* out_size = nullptr) = 0;
+
+	/**
+	 * Write JSON to string and return allocated string (performance-optimized version)
+	 * @param handle JSON value
+	 * @param write_flg Write flags (YYJSON_WRITE_FLAG values, default: 0)
+	 * @param out_size Pointer to receive actual size written (including null terminator) optional
+	 * @return Allocated string pointer on success, nullptr on error. Caller must free() the returned pointer
+	 *
+	 * @note This is the recommended method for serialization as it avoids intermediate buffer allocations
+	 */
+	virtual char* WriteToStringPtr(JsonValue* handle, uint32_t write_flg = 0, size_t* out_size = nullptr) = 0;
+
+	/**
+	 * Apply JSON Patch (RFC 6902) and return a new JSON value
+	 * @param target Target JSON value
+	 * @param patch JSON Patch document
+	 * @param result_mutable true to return mutable result, false for immutable
+	 * @param error Error buffer (optional)
+	 * @param error_size Error buffer size
+	 * @return Patched JSON value on success, nullptr on failure
+	 */
+	virtual JsonValue* ApplyJsonPatch(JsonValue* target, JsonValue* patch, bool result_mutable,
+		char* error = nullptr, size_t error_size = 0) = 0;
+
+	/**
+	 * Apply JSON Patch in place (target must be mutable)
+	 * @param target Target JSON value (mutable document)
+	 * @param patch JSON Patch document
+	 * @param error Error buffer (optional)
+	 * @param error_size Error buffer size
+	 * @return true on success, false on failure
+	 */
+	virtual bool JsonPatchInPlace(JsonValue* target, JsonValue* patch,
+		char* error = nullptr, size_t error_size = 0) = 0;
+
+	/**
+	 * Apply JSON Merge Patch (RFC 7396) and return a new JSON value
+	 * @param target Target JSON value
+	 * @param patch JSON Merge Patch document
+	 * @param result_mutable true to return mutable result, false for immutable
+	 * @param error Error buffer (optional)
+	 * @param error_size Error buffer size
+	 * @return Patched JSON value on success, nullptr on failure
+	 */
+	virtual JsonValue* ApplyMergePatch(JsonValue* target, JsonValue* patch, bool result_mutable,
+		char* error = nullptr, size_t error_size = 0) = 0;
+
+	/**
+	 * Apply JSON Merge Patch in place (target must be mutable)
+	 * @param target Target JSON value (mutable document)
+	 * @param patch JSON Merge Patch document
+	 * @param error Error buffer (optional)
+	 * @param error_size Error buffer size
+	 * @return true on success, false on failure
+	 */
+	virtual bool MergePatchInPlace(JsonValue* target, JsonValue* patch,
+		char* error = nullptr, size_t error_size = 0) = 0;
 
 	/**
 	 * Write JSON to file
@@ -315,6 +374,14 @@ public:
 	 * @note The returned size includes the null terminator
 	 */
 	virtual size_t GetReadSize(JsonValue* handle) = 0;
+
+	/**
+	 * Get the reference count of the document
+	 * @param handle JSON value
+	 * @return Reference count of the document (number of JsonValue objects sharing this document)
+	 * @note Returns 0 if handle is null or has no document
+	 */
+	virtual size_t GetRefCount(JsonValue* handle) = 0;
 
 	/**
 	 * Create an empty mutable JSON object
@@ -964,10 +1031,10 @@ public:
 	 * Remove range of elements (mutable only)
 	 * @param handle JSON array
 	 * @param start_index Start index (inclusive)
-	 * @param end_index End index (exclusive)
+	 * @param count Number of elements to remove
 	 * @return true on success
 	 */
-	virtual bool ArrayRemoveRange(JsonValue* handle, size_t start_index, size_t end_index) = 0;
+	virtual bool ArrayRemoveRange(JsonValue* handle, size_t start_index, size_t count) = 0;
 
 	/**
 	 * Remove all elements (mutable only)
@@ -1001,20 +1068,12 @@ public:
 	virtual int ArrayIndexOfInt(JsonValue* handle, int search_value) = 0;
 
 	/**
-	 * Find index of 64-bit integer value
+	 * Find index of 64-bit integer value (auto-detects signed/unsigned)
 	 * @param handle JSON array
-	 * @param search_value 64-bit integer value to search for
+	 * @param search_value 64-bit integer value to search for (std::variant<int64_t, uint64_t>)
 	 * @return Index of first match, or -1 if not found
 	 */
-	virtual int ArrayIndexOfInt64(JsonValue* handle, int64_t search_value) = 0;
-
-	/**
-	 * Find index of 64-bit unsigned integer value
-	 * @param handle JSON array
-	 * @param search_value 64-bit unsigned integer value to search for
-	 * @return Index of first match, or -1 if not found
-	 */
-	virtual int ArrayIndexOfUint64(JsonValue* handle, uint64_t search_value) = 0;
+	virtual int ArrayIndexOfInt64(JsonValue* handle, std::variant<int64_t, uint64_t> search_value) = 0;
 
 	/**
 	 * Find index of float value
@@ -1538,6 +1597,8 @@ public:
 	 * Initialize an array iterator (same as ArrIterWith but returns pointer)
 	 * @param handle JSON array value
 	 * @return New array iterator or nullptr on error
+	 * @note Caller must release the iterator using ReleaseArrIter() once finished
+	 * @note Iterators are single-pass; once ArrIterNext() returns nullptr, create a new iterator or call ArrIterReset() to iterate again
 	 */
 	virtual JsonArrIter* ArrIterInit(JsonValue* handle) = 0;
 
@@ -1545,8 +1606,17 @@ public:
 	 * Create an array iterator with an array
 	 * @param handle JSON array value
 	 * @return New array iterator or nullptr on error
+	 * @note Caller must release the iterator using ReleaseArrIter() once finished
+	 * @note Iterators are single-pass; once ArrIterNext() returns nullptr, create a new iterator or call ArrIterReset() to iterate again
 	 */
 	virtual JsonArrIter* ArrIterWith(JsonValue* handle) = 0;
+
+	/**
+	 * Reset an array iterator to the beginning
+	 * @param iter Array iterator
+	 * @return true on success, false if iterator is invalid or reset failed
+	 */
+	virtual bool ArrIterReset(JsonArrIter* iter) = 0;
 
 	/**
 	 * Get next element from array iterator
@@ -1580,6 +1650,8 @@ public:
 	 * Initialize an object iterator (same as ObjIterWith but returns pointer)
 	 * @param handle JSON object value
 	 * @return New object iterator or nullptr on error
+	 * @note Caller must release the iterator using ReleaseObjIter() once finished
+	 * @note Iterators are single-pass; once ObjIterNext() returns nullptr, create a new iterator or call ObjIterReset() to iterate again
 	 */
 	virtual JsonObjIter* ObjIterInit(JsonValue* handle) = 0;
 
@@ -1587,8 +1659,17 @@ public:
 	 * Create an object iterator with an object
 	 * @param handle JSON object value
 	 * @return New object iterator or nullptr on error
+	 * @note Caller must release the iterator using ReleaseObjIter() once finished
+	 * @note Iterators are single-pass; once ObjIterNext() returns nullptr, create a new iterator or call ObjIterReset() to iterate again
 	 */
 	virtual JsonObjIter* ObjIterWith(JsonValue* handle) = 0;
+
+	/**
+	 * Reset an object iterator to the beginning
+	 * @param iter Object iterator
+	 * @return true on success, false if iterator is invalid or reset failed
+	 */
+	virtual bool ObjIterReset(JsonObjIter* iter) = 0;
 
 	/**
 	 * Get next key from object iterator
@@ -1707,16 +1788,18 @@ public:
 	 * @param flt true to use single-precision (float), false to use double-precision (double)
 	 * @return true on success, false if handle is not a floating-point number
 	 * @note Only works on floating-point numbers (not integers)
+	 * @note This affects how the number is serialized in all write operations
 	 */
 	virtual bool SetFpToFloat(JsonValue* handle, bool flt) = 0;
 
 	/**
 	 * Set floating-point number's output format to fixed-point notation
 	 * @param handle JSON floating-point number value
-	 * @param prec Precision (1-15), similar to ECMAScript Number.prototype.toFixed(prec) but with trailing zeros removed
+	 * @param prec Precision (1-15), similar to ECMAScript `Number.prototype.toFixed(prec)` but with trailing zeros removed
 	 * @return true on success, false if handle is not a floating-point number or prec is out of range
 	 * @note Only works on floating-point numbers (not integers)
 	 * @note This will produce shorter output but may lose some precision
+	 * @note This affects how the number is serialized in all write operations
 	 */
 	virtual bool SetFpToFixed(JsonValue* handle, int prec) = 0;
 
@@ -1794,4 +1877,4 @@ public:
 		char* error = nullptr, size_t error_size = 0) = 0;
 };
 
-#endif // _INCLUDE_SM_JSON_IJSONMANAGER_H_
+#endif // _INCLUDE_IJSONMANAGER_H_

@@ -405,19 +405,19 @@ void Test_BasicValues()
 
 		char buffer[32];
 
-		JSON.GetTypeDesc(boolVal, buffer, sizeof(buffer));
+		boolVal.GetTypeDesc(buffer, sizeof(buffer));
 		AssertStrEq(buffer, "true");
 
-		JSON.GetTypeDesc(intVal, buffer, sizeof(buffer));
+		intVal.GetTypeDesc(buffer, sizeof(buffer));
 		AssertTrue(strcmp(buffer, "uint") == 0 || strcmp(buffer, "sint") == 0);
 
-		JSON.GetTypeDesc(floatVal, buffer, sizeof(buffer));
+		floatVal.GetTypeDesc(buffer, sizeof(buffer));
 		AssertStrEq(buffer, "real");
 
-		JSON.GetTypeDesc(strVal, buffer, sizeof(buffer));
+		strVal.GetTypeDesc(buffer, sizeof(buffer));
 		AssertStrEq(buffer, "string");
 
-		JSON.GetTypeDesc(nullVal, buffer, sizeof(buffer));
+		nullVal.GetTypeDesc(buffer, sizeof(buffer));
 		AssertStrEq(buffer, "null");
 
 		delete boolVal;
@@ -1547,7 +1547,7 @@ void Test_ParseAndSerialize()
 
 	TestStart("Parse_MutableDocument");
 	{
-		JSON json = JSON.Parse("{\"key\":\"value\"}", false, true);
+		JSON json = JSON.Parse("{\"key\":\"value\"}", .is_mutable_doc = true);
 		AssertValidHandle(json);
 		AssertTrue(json.IsMutable);
 		AssertFalse(json.IsImmutable);
@@ -1607,7 +1607,7 @@ void Test_ParseAndSerialize()
 	// Test read flags
 	TestStart("Parse_WithTrailingCommas");
 	{
-		JSON json = JSON.Parse("[1,2,3,]", false, false, JSON_READ_ALLOW_TRAILING_COMMAS);
+		JSON json = JSON.Parse("[1,2,3,]", .flag = JSON_READ_ALLOW_TRAILING_COMMAS);
 		AssertValidHandle(json);
 		delete json;
 	}
@@ -1615,7 +1615,7 @@ void Test_ParseAndSerialize()
 
 	TestStart("Parse_WithComments");
 	{
-		JSON json = JSON.Parse("/* comment */ {\"key\":\"value\"}", false, false, JSON_READ_ALLOW_COMMENTS);
+		JSON json = JSON.Parse("/* comment */ {\"key\":\"value\"}", .flag = JSON_READ_ALLOW_COMMENTS);
 		AssertValidHandle(json);
 		delete json;
 	}
@@ -1687,16 +1687,30 @@ void Test_Iterators()
 
 		int count = 0;
 		char key[32];
-		JSON value;
+		JSONObjIter iter = new JSONObjIter(obj);
 
-		while (obj.ForeachObject(key, sizeof(key), value))
+		while (iter.Next(key, sizeof(key)))
 		{
 			count++;
+			JSON value = iter.Value;
 			AssertValidHandle(value);
 			delete value;
 		}
-
+		AssertFalse(iter.HasNext);
 		AssertEq(count, 3);
+
+		AssertTrue(iter.Reset());
+
+		count = 0;
+		while (iter.Next(key, sizeof(key)))
+		{
+			count++;
+			JSON value = iter.Value;
+			AssertValidHandle(value);
+			delete value;
+		}
+		AssertEq(count, 3);
+		delete iter;
 		delete obj;
 	}
 	TestEnd();
@@ -1710,18 +1724,32 @@ void Test_Iterators()
 		arr.PushInt(30);
 
 		int count = 0;
-		int index;
-		JSON value;
+		JSONArrIter iter = new JSONArrIter(arr);
 
-		while (arr.ForeachArray(index, value))
+		while (iter.HasNext)
 		{
-			AssertEq(index, count);
+			JSON value = iter.Next;
 			AssertValidHandle(value);
+			AssertEq(iter.Index, count);
 			delete value;
 			count++;
 		}
-
+		AssertFalse(iter.HasNext);
 		AssertEq(count, 3);
+
+		AssertTrue(iter.Reset());
+
+		count = 0;
+		while (iter.HasNext)
+		{
+			JSON value = iter.Next;
+			AssertValidHandle(value);
+			AssertEq(iter.Index, count);
+			delete value;
+			count++;
+		}
+		AssertEq(count, 3);
+		delete iter;
 		delete arr;
 	}
 	TestEnd();
@@ -1736,14 +1764,26 @@ void Test_Iterators()
 
 		int count = 0;
 		char key[32];
+		JSONObjIter iter = new JSONObjIter(obj);
 
-		while (obj.ForeachKey(key, sizeof(key)))
+		while (iter.Next(key, sizeof(key)))
 		{
 			AssertTrue(strlen(key) > 0);
 			count++;
 		}
-
+		AssertFalse(iter.HasNext);
 		AssertEq(count, 3);
+
+		AssertTrue(iter.Reset());
+
+		count = 0;
+		while (iter.Next(key, sizeof(key)))
+		{
+			AssertTrue(strlen(key) > 0);
+			count++;
+		}
+		AssertEq(count, 3);
+		delete iter;
 		delete obj;
 	}
 	TestEnd();
@@ -1757,15 +1797,30 @@ void Test_Iterators()
 		arr.PushInt(3);
 
 		int count = 0;
-		int index;
+		JSONArrIter iter = new JSONArrIter(arr);
 
-		while (arr.ForeachIndex(index))
+		while (iter.HasNext)
 		{
-			AssertEq(index, count);
+			JSON value = iter.Next;
+			AssertEq(iter.Index, count);
+			delete value;
 			count++;
 		}
-
+		AssertFalse(iter.HasNext);
 		AssertEq(count, 3);
+
+		AssertTrue(iter.Reset());
+
+		count = 0;
+		while (iter.HasNext)
+		{
+			JSON value = iter.Next;
+			AssertEq(iter.Index, count);
+			delete value;
+			count++;
+		}
+		AssertEq(count, 3);
+		delete iter;
 		delete arr;
 	}
 	TestEnd();
@@ -1774,10 +1829,12 @@ void Test_Iterators()
 	TestStart("Iterator_EmptyObject");
 	{
 		JSONObject obj = new JSONObject();
-
 		char key[32];
-		JSON value;
-		AssertFalse(obj.ForeachObject(key, sizeof(key), value));
+		JSONObjIter iter = new JSONObjIter(obj);
+		AssertFalse(iter.Next(key, sizeof(key)));
+		AssertTrue(iter.Reset());
+		AssertFalse(iter.Next(key, sizeof(key)));
+		delete iter;
 
 		delete obj;
 	}
@@ -1786,10 +1843,11 @@ void Test_Iterators()
 	TestStart("Iterator_EmptyArray");
 	{
 		JSONArray arr = new JSONArray();
-
-		int index;
-		JSON value;
-		AssertFalse(arr.ForeachArray(index, value));
+		JSONArrIter iter = new JSONArrIter(arr);
+		AssertFalse(iter.HasNext);
+		AssertTrue(iter.Reset());
+		AssertFalse(iter.HasNext);
+		delete iter;
 
 		delete arr;
 	}
@@ -2146,6 +2204,144 @@ void Test_AdvancedFeatures()
 	}
 	TestEnd();
 
+	// Test ApplyJsonPatch (new value, immutable result)
+	TestStart("Advanced_ApplyJsonPatch");
+	{
+		JSONObject original = new JSONObject();
+		original.SetInt("score", 10);
+		original.SetString("name", "bot");
+
+		JSON patch = JSON.Parse("[{\"op\":\"replace\",\"path\":\"/score\",\"value\":42}]");
+		AssertValidHandle(patch);
+
+		JSON result = original.ApplyJsonPatch(patch);
+		AssertValidHandle(result);
+		AssertTrue(result.IsImmutable);
+
+		AssertEq(result.PtrGetInt("/score"), 42);
+		char buffer[32];
+		result.PtrGetString("/name", buffer, sizeof(buffer));
+		AssertStrEq(buffer, "bot");
+
+		// ensure original unchanged
+		AssertEq(original.GetInt("score"), 10);
+
+		delete result;
+		delete patch;
+		delete original;
+	}
+	TestEnd();
+
+	// Test ApplyJsonPatch resultMutable = true
+	TestStart("Advanced_ApplyJsonPatch_MutableResult");
+	{
+		JSONObject original = new JSONObject();
+		original.SetInt("count", 1);
+
+		JSON patch = JSON.Parse("[{\"op\":\"add\",\"path\":\"/newField\",\"value\":\"hello\"}]");
+		AssertValidHandle(patch);
+
+		JSON result = original.ApplyJsonPatch(patch, true);
+		AssertValidHandle(result);
+		AssertTrue(result.IsMutable);
+
+		char buffer[16];
+		result.PtrGetString("/newField", buffer, sizeof(buffer));
+		AssertStrEq(buffer, "hello");
+
+		delete result;
+		delete patch;
+		delete original;
+	}
+	TestEnd();
+
+	// Test JsonPatchInPlace
+	TestStart("Advanced_JsonPatchInPlace");
+	{
+		JSONObject target = new JSONObject();
+		target.SetInt("score", 5);
+		target.SetInt("lives", 3);
+
+		JSON patch = JSON.Parse("[{\"op\":\"remove\",\"path\":\"/lives\"},{\"op\":\"replace\",\"path\":\"/score\",\"value\":9}]");
+		AssertValidHandle(patch);
+
+		AssertTrue(target.JsonPatchInPlace(patch));
+		AssertEq(target.GetInt("score"), 9);
+		AssertFalse(target.HasKey("lives"));
+
+		delete patch;
+		delete target;
+	}
+	TestEnd();
+
+	// Test ApplyMergePatch (immutable result)
+	TestStart("Advanced_ApplyMergePatch");
+	{
+		JSONObject original = new JSONObject();
+		original.PtrSetString("/settings/mode", "coop");
+		original.PtrSetInt("/settings/difficulty", 1);
+
+		JSON mergePatch = JSON.Parse("{\"settings\":{\"difficulty\":3,\"friendlyFire\":true}}");
+		AssertValidHandle(mergePatch);
+
+		JSON result = original.ApplyMergePatch(mergePatch);
+		AssertValidHandle(result);
+		AssertTrue(result.IsImmutable);
+
+		AssertEq(result.PtrGetInt("/settings/difficulty"), 3);
+		AssertTrue(result.PtrGetBool("/settings/friendlyFire"));
+
+		delete result;
+		delete mergePatch;
+		delete original;
+	}
+	TestEnd();
+
+	// Test ApplyMergePatch resultMutable = true
+	TestStart("Advanced_ApplyMergePatch_MutableResult");
+	{
+		JSONObject original = new JSONObject();
+		original.PtrSetString("/profile/name", "player");
+
+		JSON mergePatch = JSON.Parse("{\"profile\":{\"rank\":10}}");
+		AssertValidHandle(mergePatch);
+
+		JSON result = original.ApplyMergePatch(mergePatch, true);
+		AssertValidHandle(result);
+		AssertTrue(result.IsMutable);
+
+		AssertEq(result.PtrGetInt("/profile/rank"), 10);
+		char buffer[16];
+		result.PtrGetString("/profile/name", buffer, sizeof(buffer));
+		AssertStrEq(buffer, "player");
+
+		delete result;
+		delete mergePatch;
+		delete original;
+	}
+	TestEnd();
+
+	// Test MergePatchInPlace
+	TestStart("Advanced_MergePatchInPlace");
+	{
+		JSONObject target = new JSONObject();
+		target.PtrSetString("/config/mode", "coop");
+		target.PtrSetInt("/config/players", 4);
+
+		JSON mergePatch = JSON.Parse("{\"config\":{\"players\":6,\"region\":\"EU\"}}");
+		AssertValidHandle(mergePatch);
+
+		AssertTrue(target.MergePatchInPlace(mergePatch));
+		AssertEq(target.PtrGetInt("/config/players"), 6);
+		char buffer[16];
+		target.PtrGetString("/config/region", buffer, sizeof(buffer));
+		AssertStrEq(buffer, "EU");
+
+		delete mergePatch;
+		delete target;
+	}
+	TestEnd();
+
 	// Test Pack
 	TestStart("Advanced_Pack_SimpleObject");
 	{
@@ -2210,7 +2406,7 @@ void Test_AdvancedFeatures()
 	// Test mixed type array sorting
 	TestStart("Advanced_MixedTypeSort");
 	{
-		JSONArray json = JSON.Parse("[true, 42, \"hello\", 1.5, false]", false, true);
+		JSONArray json = JSON.Parse("[true, 42, \"hello\", 1.5, false]", .is_mutable_doc = true);
 		JSONArray arr = json;
 
 		AssertTrue(arr.Sort(JSON_SORT_ASC));

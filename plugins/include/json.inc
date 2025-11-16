@@ -71,12 +71,17 @@ enum JSON_WRITE_FLAG
   JSON_WRITE_FP_TO_FLOAT            = 1 << 27 // Write floating-point numbers using single-precision (float)
 }
 
-/** Write floating-point number using fixed-point notation
- - This is similar to ECMAScript Number.prototype.toFixed(prec) but with trailing zeros removed. The prec ranges from 1 to 15
- - This will produce shorter output but may lose some precision
-*/
+/**
+ * Write floating-point number using fixed-point notation
+ * This is similar to ECMAScript Number.prototype.toFixed(prec) but with trailing zeros removed
+ *
+ * @param n    Precision digits (1-7)
+ * @return     JSON write flag with precision setting
+ * @note       This will produce shorter output but may lose some precision
+ */
 stock JSON_WRITE_FLAG JSON_WRITE_FP_TO_FIXED(int n)
 {
+  n = (n < 1) ? 1 : (n > 7 ? 7 : n);
   return view_as<JSON_WRITE_FLAG>(n << 28);
 }
 
@@ -102,6 +107,10 @@ methodmap JSON < Handle
   * - }: end object
   * - [: start array
   * - ]: end array
+  *
+  * @note                    Needs to be freed using delete or CloseHandle()
+  * @note                    There is a limit of 32 parameters (defined in SourcePawn)
+  *                          including the format string, so the number of arguments must be less than or equal to 31
   *
   * @param format            Format string
   * @param ...               Arguments based on format string
@@ -178,6 +187,8 @@ methodmap JSON < Handle
   /**
   * Converts an immutable JSON document to a mutable one
   *
+  * @note                    Needs to be freed using delete or CloseHandle()
+  *
   * @return                  Handle to the new mutable JSON document, INVALID_HANDLE on failure
   * @error                   If the document is already mutable
   */
@@ -186,10 +197,58 @@ methodmap JSON < Handle
   /**
   * Converts a mutable JSON document to an immutable one
   *
+  * @note                    Needs to be freed using delete or CloseHandle()
+  *
   * @return                  Handle to the new immutable JSON document, INVALID_HANDLE on failure
   * @error                   If the document is already immutable
   */
   public native any ToImmutable();
+
+  /**
+   * Apply a JSON Patch (RFC 6902) to this value and return a new JSON handle
+   *
+   * @note                    Needs to be freed using delete or CloseHandle()
+   *
+   * @param patch             JSON Patch document
+   * @param resultMutable     True to return a mutable result, false for immutable
+   *
+   * @return                  New JSON handle on success
+   * @error                   Throws if the patch cannot be applied
+   */
+  public native any ApplyJsonPatch(const JSON patch, bool resultMutable = false);
+
+  /**
+   * Apply a JSON Patch (RFC 6902) to this value in place
+   *
+   * @param patch             JSON Patch document
+   *
+   * @return                  True on success, false otherwise
+   * @error                   Throws if this value is immutable or patch failed
+   */
+  public native bool JsonPatchInPlace(const JSON patch);
+
+  /**
+   * Apply a JSON Merge Patch (RFC 7396) to this value and return a new JSON handle
+   *
+   * @note                    Needs to be freed using delete or CloseHandle()
+   *
+   * @param patch             JSON Merge Patch document
+   * @param resultMutable     True to return a mutable result, false for immutable
+   *
+   * @return                  New JSON handle on success
+   * @error                   Throws if the merge patch cannot be applied
+   */
+  public native any ApplyMergePatch(const JSON patch, bool resultMutable = false);
+
+  /**
+   * Apply a JSON Merge Patch (RFC 7396) to this value in place
+   *
+   * @param patch             JSON Merge Patch document
+   *
+   * @return                  True on success, false otherwise
+   * @error                   Throws if this value is immutable or merge patch failed
+   */
+  public native bool MergePatchInPlace(const JSON patch);
 
   /**
   * Write a document to JSON file with options
@@ -233,7 +292,7 @@ methodmap JSON < Handle
   * Set floating-point number's output format to single-precision
   *
   * @note                    Only works on floating-point numbers (not integers)
-  * @note                    This affects how the number is serialized when using ToString()
+  * @note                    This affects how the number is serialized in all write operations
   *
   * @param flt               True to use single-precision (float), false to use double-precision (double)
   *
@@ -248,12 +307,12 @@ methodmap JSON < Handle
   * @note                    Only works on floating-point numbers (not integers)
   * @note                    This is similar to ECMAScript Number.prototype.toFixed(prec) but with trailing zeros removed
   * @note                    This will produce shorter output but may lose some precision
-  * @note                    This affects how the number is serialized when using ToString()
+  * @note                    This affects how the number is serialized in all write operations
   *
-  * @param prec              Precision (1-15)
+  * @param prec              Precision (1-7)
   *
   * @return                  True on success, false if handle is not a floating-point number or prec is out of range
-  * @error                   Invalid handle, handle is not a floating-point number, or precision out of range (1-15)
+  * @error                   Invalid handle, handle is not a floating-point number, or precision out of range (1-7)
   */
   public native bool SetFpToFixed(int prec);
 
@@ -381,14 +440,13 @@ methodmap JSON < Handle
   /**
   * Returns the JSON value's type description
   *
-  * @param value             JSON handle
   * @param buffer            String buffer to write to
   * @param maxlength         Maximum length of the string buffer
   *
   * @return                  The return value should be one of these strings: "raw", "null", "string",
   *                          "array", "object", "true", "false", "uint", "sint", "real", "unknown"
   */
-  public static native void GetTypeDesc(const JSON value, char[] buffer, int maxlength);
+  public native void GetTypeDesc(char[] buffer, int maxlength);
 
   /**
   * Returns whether two JSON values are equal (deep compare)
@@ -396,8 +454,8 @@ methodmap JSON < Handle
   * @note                    This function is recursive and may cause a stack overflow if the object level is too deep
   * @note                    the result may be inaccurate if object has duplicate keys
   *
-  * @param value1            JSON handle
-  * @param value2            JSON handle
+  * @param value1            First JSON value to compare
+  * @param value2            Second JSON value to compare
   *
   * @return                  True if they are the same, false otherwise
   */
@@ -537,6 +595,7 @@ methodmap JSON < Handle
   * Get value by a JSON Pointer
   *
   * @note                    Needs to be freed using delete or CloseHandle()
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
   *
   * @param path              The JSON pointer string
   *
@@ -547,6 +606,8 @@ methodmap JSON < Handle
   /**
   * Get boolean value by a JSON Pointer
   *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
+  *
   * @param path              The JSON pointer string
   *
   * @return                  boolean value referenced by the JSON pointer
@@ -555,6 +616,8 @@ methodmap JSON < Handle
 
   /**
   * Get float value by a JSON Pointer
+  *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
   *
   * @param path              The JSON pointer string
   *
@@ -565,6 +628,8 @@ methodmap JSON < Handle
   /**
   * Get integer value by a JSON Pointer
   *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
+  *
   * @param path              The JSON pointer string
   *
   * @return                  integer value referenced by the JSON pointer
@@ -574,16 +639,20 @@ methodmap JSON < Handle
   /**
    * Get integer64 value by a JSON Pointer (auto-detects signed/unsigned)
    *
+   * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
+   *
    * @param path              The JSON pointer string
    * @param buffer            Buffer to copy to
    * @param maxlength         Maximum size of the buffer
    *
-   * @return                  integer64 value referenced by the JSON pointer
+   * @return                  True on success, false on failure
    */
   public native bool PtrGetInt64(const char[] path, char[] buffer, int maxlength);
 
   /**
   * Get string value by a JSON Pointer
+  *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
   *
   * @param path              The JSON pointer string
   * @param buffer            Buffer to copy to
@@ -596,6 +665,8 @@ methodmap JSON < Handle
   /**
   * Get value is null by a JSON Pointer
   *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
+  *
   * @param path              The JSON pointer string
   *
   * @return                  True if the value is null, false otherwise
@@ -605,6 +676,7 @@ methodmap JSON < Handle
   /**
   * Get JSON content length (string length, array size, object size)
   *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
   * @note                    For strings: returns string length including null-terminator
   * @note                    For arrays/objects: returns number of elements
   * @note                    Returns 0 if value is null or type is not string/array/object
@@ -618,6 +690,7 @@ methodmap JSON < Handle
   /**
   * Set value by a JSON Pointer
   *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
   * @note                    The parent nodes will be created if they do not exist.
   *                          If the target value already exists, it will be replaced by the new value
   *
@@ -631,6 +704,7 @@ methodmap JSON < Handle
   /**
   * Set boolean value by a JSON Pointer
   *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
   * @note                    The parent nodes will be created if they do not exist.
   *                          If the target value already exists, it will be replaced by the new value
   *
@@ -644,6 +718,7 @@ methodmap JSON < Handle
   /**
   * Set float value by a JSON Pointer
   *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
   * @note                    The parent nodes will be created if they do not exist.
   *                          If the target value already exists, it will be replaced by the new value
   *
@@ -657,6 +732,7 @@ methodmap JSON < Handle
   /**
   * Set integer value by a JSON Pointer
   *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
   * @note                    The parent nodes will be created if they do not exist.
   *                          If the target value already exists, it will be replaced by the new value
   *
@@ -670,6 +746,7 @@ methodmap JSON < Handle
   /**
   * Set integer64 value by a JSON Pointer
   *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
   * @note                    The parent nodes will be created if they do not exist.
   *                          If the target value already exists, it will be replaced by the new value
   * @note                    This function auto-detects whether the value is signed or unsigned
@@ -684,6 +761,7 @@ methodmap JSON < Handle
   /**
   * Set string value by a JSON Pointer
   *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
   * @note                    The parent nodes will be created if they do not exist.
   *                          If the target value already exists, it will be replaced by the new value
   *
@@ -697,6 +775,7 @@ methodmap JSON < Handle
   /**
   * Set null value by a JSON Pointer
   *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
   * @note                    The parent nodes will be created if they do not exist.
   *                          If the target value already exists, it will be replaced by the new value
   *
@@ -709,6 +788,8 @@ methodmap JSON < Handle
   /**
   * Add (insert) value by a JSON pointer
   *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
+  *
   * @param path              The JSON pointer string
   * @param value             The value to be added
   *
@@ -718,6 +799,8 @@ methodmap JSON < Handle
 
   /**
   * Add (insert) boolean value by a JSON pointer
+  *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
   *
   * @param path              The JSON pointer string
   * @param value             The boolean value to be added
@@ -729,6 +812,8 @@ methodmap JSON < Handle
   /**
   * Add (insert) float value by a JSON pointer
   *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
+  *
   * @param path              The JSON pointer string
   * @param value             The float value to be added
   *
@@ -738,6 +823,8 @@ methodmap JSON < Handle
 
   /**
   * Add (insert) integer value by a JSON pointer
+  *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
   *
   * @param path              The JSON pointer string
   * @param value             The int value to be added
@@ -749,6 +836,8 @@ methodmap JSON < Handle
   /**
   * Add (insert) integer64 value by a JSON pointer
   *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
+  *
   * @param path              The JSON pointer string
   * @param value             The integer64 value to be added
   *
@@ -758,6 +847,8 @@ methodmap JSON < Handle
 
   /**
   * Add (insert) string value by a JSON pointer
+  *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
   *
   * @param path              The JSON pointer string
   * @param value             The str value to be added
@@ -769,6 +860,8 @@ methodmap JSON < Handle
   /**
   * Add (insert) null value by a JSON pointer
   *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
+  *
   * @param path              The JSON pointer string
   *
   * @return                  true if JSON pointer is valid and new value is set, false otherwise
@@ -778,6 +871,8 @@ methodmap JSON < Handle
   /**
   * Remove value by a JSON pointer
   *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
+  *
   * @param path              The JSON pointer string
   *
   * @return                  true if removed value, false otherwise
@@ -786,6 +881,8 @@ methodmap JSON < Handle
 
   /**
   * Try to get value by a JSON Pointer
+  *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
   *
   * @param path              The JSON pointer string
   * @param value             Handle to store value
@@ -797,6 +894,8 @@ methodmap JSON < Handle
   /**
   * Try to get boolean value by a JSON Pointer
   *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
+  *
   * @param path              The JSON pointer string
   * @param value             Store the boolean value
   *
@@ -806,6 +905,8 @@ methodmap JSON < Handle
 
   /**
   * Try to get float value by a JSON Pointer
+  *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
   *
   * @param path              The JSON pointer string
   * @param value             Store the float value
@@ -817,6 +918,8 @@ methodmap JSON < Handle
   /**
   * Try to get integer value by a JSON Pointer
   *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
+  *
   * @param path              The JSON pointer string
   * @param value             Store the integer value
   *
@@ -826,6 +929,8 @@ methodmap JSON < Handle
 
   /**
    * Try to get integer64 value by a JSON Pointer (automatically detects signed/unsigned)
+   *
+   * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
    *
    * @param path              The JSON pointer string
    * @param buffer            Buffer to store the integer64 value
@@ -837,6 +942,8 @@ methodmap JSON < Handle
 
   /**
   * Try to get string value by a JSON Pointer
+  *
+  * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
   *
   * @param path              The JSON pointer string
   * @param buffer            Buffer to store the string value
@@ -978,6 +1085,17 @@ methodmap JSON < Handle
   property int ReadSize {
     public native get();
   }
+
+  /**
+  * Get the reference count of the document (debugging purpose)
+  *
+  * @return                  Reference count (number of JSON objects sharing this document)
+  *
+  * @note                    Returns 0 if the handle is invalid
+  */
+  property int RefCount {
+    public native get();
+  }
 };
 
 methodmap JSONObject < JSON
@@ -995,6 +1113,8 @@ methodmap JSONObject < JSON
   * The array must contain an even number of strings, where even indices are keys
   * and odd indices are values. Keys cannot be empty strings
   *
+  * @note                    Needs to be freed using delete or CloseHandle()
+  *
   * @param pairs             Array of strings containing alternating keys and values
   * @param size              Total size of the array (must be even)
   *
@@ -1007,6 +1127,8 @@ methodmap JSONObject < JSON
   /**
   * Loads a JSON object from a file
   *
+  * @note                    Needs to be freed using delete or CloseHandle()
+  *
   * @param file              File to read from
   * @param flag              The JSON read options
   *
@@ -1016,6 +1138,8 @@ methodmap JSONObject < JSON
 
   /**
   * Loads a JSON object from a string
+  *
+  * @note                    Needs to be freed using delete or CloseHandle()
   *
   * @param buffer            String buffer to load into the JSON object
   * @param flag              The JSON read options
@@ -1027,6 +1151,7 @@ methodmap JSONObject < JSON
   /**
   * Gets a value from the object
   *
+  * @note                    Needs to be freed using delete or CloseHandle()
   * @note                    This function takes a linear search time
   *
   * @param key               Key name
@@ -1262,6 +1387,8 @@ methodmap JSONArray < JSON
   /**
   * Creates a new JSON array from an array of strings
   *
+  * @note                    Needs to be freed using delete or CloseHandle()
+  *
   * @param strings           Array of strings to create array from
   * @param size              Size of the array
   * @return                  New JSON array handle, or null if creation failed
@@ -1271,6 +1398,8 @@ methodmap JSONArray < JSON
   /**
   * Creates a new JSON array from an array of integer values
   *
+  * @note                    Needs to be freed using delete or CloseHandle()
+  *
   * @param values            Array of int values to create array from
   * @param size              Size of the array
   * @return                  New JSON array handle, or null if creation failed
@@ -1279,6 +1408,8 @@ methodmap JSONArray < JSON
 
   /**
   * Creates a new JSON array from an array of 64-bit integer strings (auto-detects signed/unsigned)
+  *
+  * @note                    Needs to be freed using delete or CloseHandle()
   *
   * @param values            Array of int64 string values (can be signed or unsigned)
   * @param size              Size of the array
@@ -1290,6 +1421,8 @@ methodmap JSONArray < JSON
   /**
   * Creates a new JSON array from an array of boolean values
   *
+  * @note                    Needs to be freed using delete or CloseHandle()
+  *
   * @param values            Array of bool values to create array from
   * @param size              Size of the array
   * @return                  New JSON array handle, or null if creation failed
@@ -1298,6 +1431,8 @@ methodmap JSONArray < JSON
 
   /**
   * Creates a new JSON array from an array of float values
+  *
+  * @note                    Needs to be freed using delete or CloseHandle()
   *
   * @param values            Array of float values to create array from
   * @param size              Size of the array
@@ -1308,6 +1443,8 @@ methodmap JSONArray < JSON
   /**
   * Loads a JSON array from a file
   *
+  * @note                    Needs to be freed using delete or CloseHandle()
+  *
   * @param file              File to read from
   * @param flag              Read flag
   * @return                  Array handle, or null on failure
@@ -1316,6 +1453,8 @@ methodmap JSONArray < JSON
 
   /**
   * Loads a JSON array from a string
+  *
+  * @note                    Needs to be freed using delete or CloseHandle()
   *
   * @param buffer            String buffer to load into the JSON array
   * @param flag              Read flag
@@ -1326,6 +1465,7 @@ methodmap JSONArray < JSON
   /**
   * Gets a value from the array
   *
+  * @note                    Needs to be freed using delete or CloseHandle()
   * @note                    This function takes a linear search time
   *
   * @param index             Position in the array (starting from 0)
@@ -1368,9 +1508,9 @@ methodmap JSONArray < JSON
    * @param buffer            Buffer to copy to
    * @param maxlength         Maximum size of the buffer
    *
-   * @return                  64-bit integer
+   * @return                  True on success, false on failure
    */
-  public native void GetInt64(int index, char[] buffer, int maxlength);
+  public native bool GetInt64(int index, char[] buffer, int maxlength);
 
   /**
   * Gets string data from the array
@@ -1470,7 +1610,7 @@ methodmap JSONArray < JSON
   *
   * @param value             JSON handle to set
   *
-  * @return                  The value to be inserted. Returns false if it is null
+  * @return                  True if succeed, false otherwise
   */
   public native bool Push(const JSON value);
 
@@ -1479,7 +1619,7 @@ methodmap JSONArray < JSON
   *
   * @param value             Boolean value to set
   *
-  * @return                  The value to be inserted. Returns false if it is null
+  * @return                  True if succeed, false otherwise
   */
   public native bool PushBool(bool value);
 
@@ -1488,7 +1628,7 @@ methodmap JSONArray < JSON
   *
   * @param value             float to set
   *
-  * @return                  The value to be inserted. Returns false if it is null
+  * @return                  True if succeed, false otherwise
   */
   public native bool PushFloat(float value);
 
@@ -1497,7 +1637,7 @@ methodmap JSONArray < JSON
   *
   * @param value             integer to set
   *
-  * @return                  The value to be inserted. Returns false if it is null
+  * @return                  True if succeed, false otherwise
   */
   public native bool PushInt(int value);
 
@@ -1506,7 +1646,7 @@ methodmap JSONArray < JSON
   *
   * @param value             integer64 value
   *
-  * @return                  The value to be inserted. Returns false if it is null
+  * @return                  True if succeed, false otherwise
   */
   public native bool PushInt64(const char[] value);
 
@@ -1515,19 +1655,21 @@ methodmap JSONArray < JSON
   *
   * @param value             String to copy
   *
-  * @return                  The value to be inserted. Returns false if it is null
+  * @return                  True if succeed, false otherwise
   */
   public native bool PushString(const char[] value);
 
   /**
   * Inserts a null value at the end of the array
   *
-  * @return                  The value to be inserted. Returns false if it is null
+  * @return                  True if succeed, false otherwise
   */
   public native bool PushNull();
 
   /**
   * Inserts a JSON value at specific index
+  *
+  * @note                    This function takes a linear search time
   *
   * @param index             Position to insert (0 to size, size means append)
   * @param value             JSON handle to insert
@@ -1539,6 +1681,8 @@ methodmap JSONArray < JSON
   /**
   * Inserts a boolean value at specific index
   *
+  * @note                    This function takes a linear search time
+  *
   * @param index             Position to insert
   * @param value             Boolean value
   *
@@ -1548,6 +1692,8 @@ methodmap JSONArray < JSON
 
   /**
   * Inserts an integer value at specific index
+  *
+  * @note                    This function takes a linear search time
   *
   * @param index             Position to insert
   * @param value             Integer value
@@ -1559,6 +1705,8 @@ methodmap JSONArray < JSON
   /**
   * Inserts an integer64 value at specific index
   *
+  * @note                    This function takes a linear search time
+  *
   * @param index             Position to insert
   * @param value             Integer64 value (as string)
   *
@@ -1568,6 +1716,8 @@ methodmap JSONArray < JSON
 
   /**
   * Inserts a float value at specific index
+  *
+  * @note                    This function takes a linear search time
   *
   * @param index             Position to insert
   * @param value             Float value
@@ -1579,6 +1729,8 @@ methodmap JSONArray < JSON
   /**
   * Inserts a string value at specific index
   *
+  * @note                    This function takes a linear search time
+  *
   * @param index             Position to insert
   * @param value             String value
   *
@@ -1588,6 +1740,8 @@ methodmap JSONArray < JSON
 
   /**
   * Inserts a null value at specific index
+  *
+  * @note                    This function takes a linear search time
   *
   * @param index             Position to insert
   *
@@ -1675,7 +1829,7 @@ methodmap JSONArray < JSON
   public native bool RemoveFirst();
 
   /**
-  * Removes and returns the last value in this array
+  * Removes the last value in this array
   *
   * @return                  True if succeed, false otherwise
   */
@@ -1687,12 +1841,11 @@ methodmap JSONArray < JSON
   * @note                    This function takes a linear search time
   *
   * @param start_index       The start index of the range (0 is the first)
-  * @param end_index         The number of items in the range (can be 0, but do nothing)
-  *
+  * @param count             Number of items to remove (can be 0, in which case nothing happens)
   *
   * @return                  True if succeed, false otherwise
   */
-  public native bool RemoveRange(int start_index, int end_index);
+  public native bool RemoveRange(int start_index, int count);
 
   /**
   * Searches for a boolean value in the array and returns its index
@@ -1802,6 +1955,8 @@ methodmap JSONArrIter < Handle
    * Creates an array iterator from a JSON array value
    *
    * @note                    Needs to be freed using delete or CloseHandle()
+   * @note                    Iterators are single-pass. Once Next returns null, call Reset() or create
+   *                          a new iterator to traverse the array again
    *
    * @param array             JSON array value to iterate
    *
@@ -1811,7 +1966,19 @@ methodmap JSONArrIter < Handle
   public native JSONArrIter(JSON array);
 
   /**
+   * Resets the iterator to the beginning of the array
+   *
+   * @note                    Only resets the iterator, does not free the iterator handle
+   *
+   * @return                  True on success, false on failure
+   * @error                   Invalid iterator handle
+   */
+  public native bool Reset();
+
+  /**
    * Moves the iterator to the next element
+   *
+   * @note                    Needs to be freed using delete or CloseHandle()
    *
    * @return                  JSON value handle for the next element, or null if iteration is complete
    * @error                   Invalid iterator handle
@@ -1858,6 +2025,8 @@ methodmap JSONObjIter < Handle
    * Creates an object iterator from a JSON object value
    *
    * @note                    Needs to be freed using delete or CloseHandle()
+   * @note                    Iterators are single-pass. Once Next returns null, call Reset() or create
+   *                          a new iterator to traverse the object again
    *
    * @param obj               JSON object value to iterate
    *
@@ -1865,6 +2034,16 @@ methodmap JSONObjIter < Handle
    * @error                   Invalid handle or handle is not an object
    */
   public native JSONObjIter(JSON obj);
+
+  /**
+   * Resets the iterator to the beginning of the object
+   *
+   * @note                    Only resets the iterator, does not free the iterator handle
+   *
+   * @return                  True on success, false on failure
+   * @error                   Invalid iterator handle
+   */
+  public native bool Reset();
 
   /**
    * Moves the iterator to the next key
@@ -2055,6 +2234,7 @@ public void __pl_json_SetNTVOptional()
   MarkNativeAsOptional("JSON.GetTypeDesc");
   MarkNativeAsOptional("JSON.GetSerializedSize");
   MarkNativeAsOptional("JSON.ReadSize.get");
+  MarkNativeAsOptional("JSON.RefCount.get");
   MarkNativeAsOptional("JSON.Type.get");
   MarkNativeAsOptional("JSON.SubType.get");
   MarkNativeAsOptional("JSON.IsArray.get");
@@ -2078,6 +2258,10 @@ public void __pl_json_SetNTVOptional()
   MarkNativeAsOptional("JSON.ForeachIndex");
   MarkNativeAsOptional("JSON.ToMutable");
   MarkNativeAsOptional("JSON.ToImmutable");
+  MarkNativeAsOptional("JSON.ApplyJsonPatch");
+  MarkNativeAsOptional("JSON.JsonPatchInPlace");
+  MarkNativeAsOptional("JSON.ApplyMergePatch");
+  MarkNativeAsOptional("JSON.MergePatchInPlace");
 
   // JSON CREATE & GET
   MarkNativeAsOptional("JSON.Pack");
@@ -2140,14 +2324,16 @@ public void __pl_json_SetNTVOptional()
   MarkNativeAsOptional("JSONArrIter.HasNext.get");
   MarkNativeAsOptional("JSONArrIter.Index.get");
   MarkNativeAsOptional("JSONArrIter.Remove");
+  MarkNativeAsOptional("JSONArrIter.Reset");
 
   // JSONObjIter
   MarkNativeAsOptional("JSONObjIter.JSONObjIter");
   MarkNativeAsOptional("JSONObjIter.Next");
-  MarkNativeAsOptional("JSONObjIter.HasNext");
+  MarkNativeAsOptional("JSONObjIter.HasNext.get");
   MarkNativeAsOptional("JSONObjIter.Value.get");
   MarkNativeAsOptional("JSONObjIter.Get");
   MarkNativeAsOptional("JSONObjIter.Index.get");
   MarkNativeAsOptional("JSONObjIter.Remove");
+  MarkNativeAsOptional("JSONObjIter.Reset");
 }
 #endif
