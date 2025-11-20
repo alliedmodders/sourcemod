@@ -121,6 +121,13 @@
 				"linux"		"259"
 				"linux64"	"259"
 			}
+			"GetAttachment"
+			{
+				"windows"	"211"
+				"windows64"	"211"
+				"linux"		"212"
+				"linux64"	"212"
+			}
 		}
 		
 		"Keys"
