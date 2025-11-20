@@ -346,6 +346,7 @@ public:
 	virtual bool IsImmutable(JsonValue* handle) override;
 	virtual size_t GetReadSize(JsonValue* handle) override;
 	virtual size_t GetRefCount(JsonValue* handle) override;
+	virtual size_t GetValCount(JsonValue* handle) override;
 
 	// ========== Object Operations ==========
 	virtual JsonValue* ObjectInit() override;
@@ -359,7 +360,7 @@ public:
 	virtual JsonValue* ObjectGetValueAt(JsonValue* handle, size_t index) override;
 	virtual JsonValue* ObjectGet(JsonValue* handle, const char* key) override;
 	virtual bool ObjectGetBool(JsonValue* handle, const char* key, bool* out_value) override;
-	virtual bool ObjectGetFloat(JsonValue* handle, const char* key, double* out_value) override;
+	virtual bool ObjectGetDouble(JsonValue* handle, const char* key, double* out_value) override;
 	virtual bool ObjectGetInt(JsonValue* handle, const char* key, int* out_value) override;
 	virtual bool ObjectGetInt64(JsonValue* handle, const char* key, std::variant<int64_t, uint64_t>* out_value) override;
 	virtual bool ObjectGetString(JsonValue* handle, const char* key, const char** out_str, size_t* out_len) override;
@@ -368,7 +369,7 @@ public:
 	virtual bool ObjectRenameKey(JsonValue* handle, const char* old_key, const char* new_key, bool allow_duplicate) override;
 	virtual bool ObjectSet(JsonValue* handle, const char* key, JsonValue* value) override;
 	virtual bool ObjectSetBool(JsonValue* handle, const char* key, bool value) override;
-	virtual bool ObjectSetFloat(JsonValue* handle, const char* key, double value) override;
+	virtual bool ObjectSetDouble(JsonValue* handle, const char* key, double value) override;
 	virtual bool ObjectSetInt(JsonValue* handle, const char* key, int value) override;
 	virtual bool ObjectSetInt64(JsonValue* handle, const char* key, std::variant<int64_t, uint64_t> value) override;
 	virtual bool ObjectSetNull(JsonValue* handle, const char* key) override;
@@ -376,6 +377,7 @@ public:
 	virtual bool ObjectRemove(JsonValue* handle, const char* key) override;
 	virtual bool ObjectClear(JsonValue* handle) override;
 	virtual bool ObjectSort(JsonValue* handle, JSON_SORT_ORDER sort_mode) override;
+	virtual bool ObjectRotate(JsonValue* handle, size_t idx) override;
 
 	// ========== Array Operations ==========
 	virtual JsonValue* ArrayInit() override;
@@ -384,7 +386,7 @@ public:
 	virtual JsonValue* ArrayInitWithInt64(const char** values, size_t count,
 		char* error, size_t error_size) override;
 	virtual JsonValue* ArrayInitWithBool(const bool* values, size_t count) override;
-	virtual JsonValue* ArrayInitWithFloat(const double* values, size_t count) override;
+	virtual JsonValue* ArrayInitWithDouble(const double* values, size_t count) override;
 	virtual JsonValue* ArrayParseString(const char* str, yyjson_read_flag read_flg,
 		char* error, size_t error_size) override;
 	virtual JsonValue* ArrayParseFile(const char* path, yyjson_read_flag read_flg,
@@ -394,21 +396,21 @@ public:
 	virtual JsonValue* ArrayGetFirst(JsonValue* handle) override;
 	virtual JsonValue* ArrayGetLast(JsonValue* handle) override;
 	virtual bool ArrayGetBool(JsonValue* handle, size_t index, bool* out_value) override;
-	virtual bool ArrayGetFloat(JsonValue* handle, size_t index, double* out_value) override;
+	virtual bool ArrayGetDouble(JsonValue* handle, size_t index, double* out_value) override;
 	virtual bool ArrayGetInt(JsonValue* handle, size_t index, int* out_value) override;
 	virtual bool ArrayGetInt64(JsonValue* handle, size_t index, std::variant<int64_t, uint64_t>* out_value) override;
 	virtual bool ArrayGetString(JsonValue* handle, size_t index, const char** out_str, size_t* out_len) override;
 	virtual bool ArrayIsNull(JsonValue* handle, size_t index) override;
 	virtual bool ArrayReplace(JsonValue* handle, size_t index, JsonValue* value) override;
 	virtual bool ArrayReplaceBool(JsonValue* handle, size_t index, bool value) override;
-	virtual bool ArrayReplaceFloat(JsonValue* handle, size_t index, double value) override;
+	virtual bool ArrayReplaceDouble(JsonValue* handle, size_t index, double value) override;
 	virtual bool ArrayReplaceInt(JsonValue* handle, size_t index, int value) override;
 	virtual bool ArrayReplaceInt64(JsonValue* handle, size_t index, std::variant<int64_t, uint64_t> value) override;
 	virtual bool ArrayReplaceNull(JsonValue* handle, size_t index) override;
 	virtual bool ArrayReplaceString(JsonValue* handle, size_t index, const char* value) override;
 	virtual bool ArrayAppend(JsonValue* handle, JsonValue* value) override;
 	virtual bool ArrayAppendBool(JsonValue* handle, bool value) override;
-	virtual bool ArrayAppendFloat(JsonValue* handle, double value) override;
+	virtual bool ArrayAppendDouble(JsonValue* handle, double value) override;
 	virtual bool ArrayAppendInt(JsonValue* handle, int value) override;
 	virtual bool ArrayAppendInt64(JsonValue* handle, std::variant<int64_t, uint64_t> value) override;
 	virtual bool ArrayAppendNull(JsonValue* handle) override;
@@ -417,14 +419,14 @@ public:
 	virtual bool ArrayInsertBool(JsonValue* handle, size_t index, bool value) override;
 	virtual bool ArrayInsertInt(JsonValue* handle, size_t index, int value) override;
 	virtual bool ArrayInsertInt64(JsonValue* handle, size_t index, std::variant<int64_t, uint64_t> value) override;
-	virtual bool ArrayInsertFloat(JsonValue* handle, size_t index, double value) override;
+	virtual bool ArrayInsertDouble(JsonValue* handle, size_t index, double value) override;
 	virtual bool ArrayInsertString(JsonValue* handle, size_t index, const char* value) override;
 	virtual bool ArrayInsertNull(JsonValue* handle, size_t index) override;
 	virtual bool ArrayPrepend(JsonValue* handle, JsonValue* value) override;
 	virtual bool ArrayPrependBool(JsonValue* handle, bool value) override;
 	virtual bool ArrayPrependInt(JsonValue* handle, int value) override;
 	virtual bool ArrayPrependInt64(JsonValue* handle, std::variant<int64_t, uint64_t> value) override;
-	virtual bool ArrayPrependFloat(JsonValue* handle, double value) override;
+	virtual bool ArrayPrependDouble(JsonValue* handle, double value) override;
 	virtual bool ArrayPrependString(JsonValue* handle, const char* value) override;
 	virtual bool ArrayPrependNull(JsonValue* handle) override;
 	virtual bool ArrayRemove(JsonValue* handle, size_t index) override;
@@ -436,19 +438,20 @@ public:
 	virtual int ArrayIndexOfString(JsonValue* handle, const char* search_value) override;
 	virtual int ArrayIndexOfInt(JsonValue* handle, int search_value) override;
 	virtual int ArrayIndexOfInt64(JsonValue* handle, std::variant<int64_t, uint64_t> search_value) override;
-	virtual int ArrayIndexOfFloat(JsonValue* handle, double search_value) override;
+	virtual int ArrayIndexOfDouble(JsonValue* handle, double search_value) override;
 	virtual bool ArraySort(JsonValue* handle, JSON_SORT_ORDER sort_mode) override;
+	virtual bool ArrayRotate(JsonValue* handle, size_t idx) override;
 
 	// ========== Value Operations ==========
 	virtual JsonValue* Pack(const char* format, IPackParamProvider* param_provider, char* error, size_t error_size) override;
 	virtual JsonValue* CreateBool(bool value) override;
-	virtual JsonValue* CreateFloat(double value) override;
+	virtual JsonValue* CreateDouble(double value) override;
 	virtual JsonValue* CreateInt(int value) override;
 	virtual JsonValue* CreateInt64(std::variant<int64_t, uint64_t> value) override;
 	virtual JsonValue* CreateNull() override;
 	virtual JsonValue* CreateString(const char* value) override;
 	virtual bool GetBool(JsonValue* handle, bool* out_value) override;
-	virtual bool GetFloat(JsonValue* handle, double* out_value) override;
+	virtual bool GetDouble(JsonValue* handle, double* out_value) override;
 	virtual bool GetInt(JsonValue* handle, int* out_value) override;
 	virtual bool GetInt64(JsonValue* handle, std::variant<int64_t, uint64_t>* out_value) override;
 	virtual bool GetString(JsonValue* handle, const char** out_str, size_t* out_len) override;
@@ -456,7 +459,7 @@ public:
 	// ========== Pointer Operations ==========
 	virtual JsonValue* PtrGet(JsonValue* handle, const char* path, char* error, size_t error_size) override;
 	virtual bool PtrGetBool(JsonValue* handle, const char* path, bool* out_value, char* error, size_t error_size) override;
-	virtual bool PtrGetFloat(JsonValue* handle, const char* path, double* out_value, char* error, size_t error_size) override;
+	virtual bool PtrGetDouble(JsonValue* handle, const char* path, double* out_value, char* error, size_t error_size) override;
 	virtual bool PtrGetInt(JsonValue* handle, const char* path, int* out_value, char* error, size_t error_size) override;
 	virtual bool PtrGetInt64(JsonValue* handle, const char* path, std::variant<int64_t, uint64_t>* out_value, char* error, size_t error_size) override;
 	virtual bool PtrGetString(JsonValue* handle, const char* path, const char** out_str, size_t* out_len, char* error, size_t error_size) override;
@@ -464,14 +467,14 @@ public:
 	virtual bool PtrGetLength(JsonValue* handle, const char* path, size_t* out_len, char* error, size_t error_size) override;
 	virtual bool PtrSet(JsonValue* handle, const char* path, JsonValue* value, char* error, size_t error_size) override;
 	virtual bool PtrSetBool(JsonValue* handle, const char* path, bool value, char* error, size_t error_size) override;
-	virtual bool PtrSetFloat(JsonValue* handle, const char* path, double value, char* error, size_t error_size) override;
+	virtual bool PtrSetDouble(JsonValue* handle, const char* path, double value, char* error, size_t error_size) override;
 	virtual bool PtrSetInt(JsonValue* handle, const char* path, int value, char* error, size_t error_size) override;
 	virtual bool PtrSetInt64(JsonValue* handle, const char* path, std::variant<int64_t, uint64_t> value, char* error, size_t error_size) override;
 	virtual bool PtrSetString(JsonValue* handle, const char* path, const char* value, char* error, size_t error_size) override;
 	virtual bool PtrSetNull(JsonValue* handle, const char* path, char* error, size_t error_size) override;
 	virtual bool PtrAdd(JsonValue* handle, const char* path, JsonValue* value, char* error, size_t error_size) override;
 	virtual bool PtrAddBool(JsonValue* handle, const char* path, bool value, char* error, size_t error_size) override;
-	virtual bool PtrAddFloat(JsonValue* handle, const char* path, double value, char* error, size_t error_size) override;
+	virtual bool PtrAddDouble(JsonValue* handle, const char* path, double value, char* error, size_t error_size) override;
 	virtual bool PtrAddInt(JsonValue* handle, const char* path, int value, char* error, size_t error_size) override;
 	virtual bool PtrAddInt64(JsonValue* handle, const char* path, std::variant<int64_t, uint64_t> value, char* error, size_t error_size) override;
 	virtual bool PtrAddString(JsonValue* handle, const char* path, const char* value, char* error, size_t error_size) override;
@@ -479,7 +482,7 @@ public:
 	virtual bool PtrRemove(JsonValue* handle, const char* path, char* error, size_t error_size) override;
 	virtual JsonValue* PtrTryGet(JsonValue* handle, const char* path) override;
 	virtual bool PtrTryGetBool(JsonValue* handle, const char* path, bool* out_value) override;
-	virtual bool PtrTryGetFloat(JsonValue* handle, const char* path, double* out_value) override;
+	virtual bool PtrTryGetDouble(JsonValue* handle, const char* path, double* out_value) override;
 	virtual bool PtrTryGetInt(JsonValue* handle, const char* path, int* out_value) override;
 	virtual bool PtrTryGetInt64(JsonValue* handle, const char* path, std::variant<int64_t, uint64_t>* out_value) override;
 	virtual bool PtrTryGetString(JsonValue* handle, const char* path, const char** out_str, size_t* out_len) override;
@@ -512,6 +515,7 @@ public:
 	virtual JsonValue* ObjIterGet(JsonObjIter* iter, const char* key) override;
 	virtual size_t ObjIterGetIndex(JsonObjIter* iter) override;
 	virtual void* ObjIterRemove(JsonObjIter* iter) override;
+	virtual bool ObjIterGetKeyString(JsonObjIter* iter, void* key, const char** out_str, size_t* out_len = nullptr) override;
 
 	// ========== Iterator Release Operations ==========
 	virtual void ReleaseArrIter(JsonArrIter* iter) override;
@@ -527,10 +531,10 @@ public:
 	virtual void Release(JsonValue* value) override;
 
 	// ========== Handle Type Operations ==========
-	virtual HandleType_t GetHandleType() override;
+	virtual HandleType_t GetJsonHandleType() override;
 
 	// ========== Handle Operations ==========
-	virtual JsonValue* GetFromHandle(IPluginContext* pContext, Handle_t handle) override;
+	virtual JsonValue* GetValueFromHandle(IPluginContext* pContext, Handle_t handle) override;
 
 	// ========== Number Read/Write Operations ==========
 	virtual JsonValue* ReadNumber(const char* dat, uint32_t read_flg = 0,
@@ -546,7 +550,7 @@ public:
 	virtual bool SetBool(JsonValue* handle, bool value) override;
 	virtual bool SetInt(JsonValue* handle, int value) override;
 	virtual bool SetInt64(JsonValue* handle, std::variant<int64_t, uint64_t> value) override;
-	virtual bool SetFloat(JsonValue* handle, double value) override;
+	virtual bool SetDouble(JsonValue* handle, double value) override;
 	virtual bool SetString(JsonValue* handle, const char* value) override;
 	virtual bool SetNull(JsonValue* handle) override;
 

@@ -653,6 +653,64 @@ void Test_ObjectOperations()
 	}
 	TestEnd();
 
+	// Test Rotate
+	TestStart("Object_Rotate_Forward");
+	{
+		JSONObject obj = new JSONObject();
+		obj.SetInt("a", 1);
+		obj.SetInt("b", 2);
+		obj.SetInt("c", 3);
+		obj.SetInt("d", 4);
+
+		AssertTrue(obj.Rotate(1));
+
+		char key[32];
+		obj.GetKey(0, key, sizeof(key));
+		AssertStrEq(key, "b", "First key should be 'b' after rotate 1");
+		obj.GetKey(3, key, sizeof(key));
+		AssertStrEq(key, "a", "Last key should be 'a' after rotate 1");
+
+		delete obj;
+	}
+	TestEnd();
+
+	TestStart("Object_Rotate_Multiple");
+	{
+		JSONObject obj = new JSONObject();
+		obj.SetInt("first", 1);
+		obj.SetInt("second", 2);
+		obj.SetInt("third", 3);
+		obj.SetInt("fourth", 4);
+		obj.SetInt("fifth", 5);
+
+		AssertTrue(obj.Rotate(2));
+
+		char key[32];
+		obj.GetKey(0, key, sizeof(key));
+		AssertStrEq(key, "third", "First key should be 'third' after rotate 2");
+		obj.GetKey(4, key, sizeof(key));
+		AssertStrEq(key, "second", "Last key should be 'second' after rotate 2");
+
+		delete obj;
+	}
+	TestEnd();
+
+	TestStart("Object_Rotate_Zero");
+	{
+		JSONObject obj = new JSONObject();
+		obj.SetInt("x", 1);
+		obj.SetInt("y", 2);
+
+		AssertTrue(obj.Rotate(0));
+
+		char key[32];
+		obj.GetKey(0, key, sizeof(key));
+		AssertStrEq(key, "x", "Order should not change after rotate 0");
+
+		delete obj;
+	}
+	TestEnd();
+
 	// Test Set with handle
 	TestStart("Object_SetWithHandle");
 	{
@@ -1008,6 +1066,83 @@ void Test_ArrayOperations()
 		AssertTrue(arr.Sort(JSON_SORT_DESC));
 		AssertEq(arr.GetInt(0), 5);
 		AssertEq(arr.GetInt(4), 1);
+
+		delete arr;
+	}
+	TestEnd();
+
+	// Test Rotate
+	TestStart("Array_Rotate_Forward");
+	{
+		JSONArray arr = new JSONArray();
+		arr.PushInt(1);
+		arr.PushInt(2);
+		arr.PushInt(3);
+		arr.PushInt(4);
+		arr.PushInt(5);
+
+		AssertTrue(arr.Rotate(2));
+		AssertEq(arr.GetInt(0), 3, "First element should be 3 after rotate 2");
+		AssertEq(arr.GetInt(1), 4, "Second element should be 4");
+		AssertEq(arr.GetInt(2), 5, "Third element should be 5");
+		AssertEq(arr.GetInt(3), 1, "Fourth element should be 1");
+		AssertEq(arr.GetInt(4), 2, "Fifth element should be 2");
+
+		delete arr;
+	}
+	TestEnd();
+
+	TestStart("Array_Rotate_Single");
+	{
+		JSONArray arr = new JSONArray();
+		arr.PushString("a");
+		arr.PushString("b");
+		arr.PushString("c");
+		arr.PushString("d");
+
+		AssertTrue(arr.Rotate(1));
+
+		char buffer[32];
+		arr.GetString(0, buffer, sizeof(buffer));
+		AssertStrEq(buffer, "b", "First element should be 'b' after rotate 1");
+		arr.GetString(3, buffer, sizeof(buffer));
+		AssertStrEq(buffer, "a", "Last element should be 'a' after rotate 1");
+
+		delete arr;
+	}
+	TestEnd();
+
+	TestStart("Array_Rotate_Zero");
+	{
+		JSONArray arr = new JSONArray();
+		arr.PushInt(10);
+		arr.PushInt(20);
+		arr.PushInt(30);
+
+		AssertTrue(arr.Rotate(0));
+		AssertEq(arr.GetInt(0), 10, "Order should not change after rotate 0");
+		AssertEq(arr.GetInt(1), 20);
+		AssertEq(arr.GetInt(2), 30);
+
+		delete arr;
+	}
+	TestEnd();
+
+	TestStart("Array_Rotate_LargeIndex");
+	{
+		JSONArray arr = new JSONArray();
+		arr.PushInt(1);
+		arr.PushInt(2);
+		arr.PushInt(3);
+
+		// Rotate by array length or greater should fail (idx must be < length)
+		AssertFalse(arr.Rotate(3), "Rotate by array length should fail");
+		AssertFalse(arr.Rotate(10), "Rotate by value > length should fail");
+
+		// Values should remain unchanged
+		AssertEq(arr.GetInt(0), 1);
+		AssertEq(arr.GetInt(1), 2);
+		AssertEq(arr.GetInt(2), 3);
 
 		delete arr;
 	}
@@ -1552,6 +1687,68 @@ void Test_ParseAndSerialize()
 		AssertTrue(json.IsMutable);
 		AssertFalse(json.IsImmutable);
 		delete json;
+	}
+	TestEnd();
+
+	// Test ValCount (only works on immutable documents)
+	TestStart("Parse_ValCount_SimpleObject");
+	{
+		JSON json = JSON.Parse("{\"a\":1,\"b\":2,\"c\":3}");
+		AssertValidHandle(json);
+		int valCount = json.ValCount;
+		// Object has 7 values: 1 object + 3 keys ("a","b","c") + 3 integer values (1,2,3)
+		AssertEq(valCount, 7, "Simple object should have 7 values (object + keys + values)");
+		delete json;
+	}
+	TestEnd();
+
+	TestStart("Parse_ValCount_NestedStructure");
+	{
+		// {"user":{"name":"John","age":30},"items":[1,2,3]}
+		// Root object: 1
+		// "user" key + nested object: 2
+		// "name" key + "John" value: 2
+		// "age" key + 30 value: 2
+		// "items" key + array: 2
+		// Three integers in array: 3
+		// Total: 1 + 2 + 2 + 2 + 2 + 3 = 12
+		JSON json = JSON.Parse("{\"user\":{\"name\":\"John\",\"age\":30},\"items\":[1,2,3]}");
+		AssertValidHandle(json);
+		int valCount = json.ValCount;
+		AssertTrue(valCount > 0, "Nested structure should have multiple values");
+		delete json;
+	}
+	TestEnd();
+
+	TestStart("Parse_ValCount_Array");
+	{
+		JSON json = JSON.Parse("[1,2,3,4,5]");
+		AssertValidHandle(json);
+		int valCount = json.ValCount;
+		// Array itself + 5 integers = 6
+		AssertEq(valCount, 6, "Array with 5 elements should have 6 values");
+		delete json;
+	}
+	TestEnd();
+
+	TestStart("Parse_ValCount_MutableReturnsZero");
+	{
+		JSON json = JSON.Parse("{\"key\":\"value\"}", .is_mutable_doc = true);
+		AssertValidHandle(json);
+		int valCount = json.ValCount;
+		AssertEq(valCount, 0, "ValCount should return 0 for mutable documents");
+		delete json;
+	}
+	TestEnd();
+
+	TestStart("Parse_ValCount_CreatedObjectReturnsZero");
+	{
+		JSONObject obj = new JSONObject();
+		obj.SetInt("a", 1);
+		obj.SetInt("b", 2);
+		int valCount = obj.ValCount;
+		AssertEq(valCount, 0, "ValCount should return 0 for created (mutable) objects");
+		delete obj;
 	}
 	TestEnd();
 

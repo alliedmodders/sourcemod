@@ -15,8 +15,7 @@ class JsonArrIter;
 class JsonObjIter;
 
 #define SMINTERFACE_JSONMANAGER_NAME "IJsonManager"
-#define SMINTERFACE_JSONMANAGER_VERSION 2
-#define JSON_PACK_ERROR_SIZE 256
+#define SMINTERFACE_JSONMANAGER_VERSION 3
 #define JSON_ERROR_BUFFER_SIZE 256
 #define JSON_INT64_BUFFER_SIZE 32
 
@@ -98,21 +97,36 @@ public:
 	 * @return true on success, false if buffer is too small or on error
 	 *
 	 * @note The out_size parameter returns the size including null terminator
-	 * @note Use GetSerializedSize() with the same write_flg to determine buffer size
-	 * @warning This method performs multiple memory allocations and copies, resulting in poor performance.
-	 *          For better performance, use WriteToStringPtr() instead, which avoids intermediate buffers
+	 *
+	 * @warning Buffer Size Requirements:
+	 *          This function does not allocate memory, but the buffer must be larger than
+	 *          the final JSON size to allow temporary space.
+	 *
+	 *          The extra space is needed temporarily for each value while it is written,
+	 *          and is reused for later values:
+	 *          - Number: 40 bytes
+	 *          - String: 16 + (str_len * 6) bytes
+	 *          - Other values: 16 bytes
+	 *          - Nesting depth: 16 * max_json_depth bytes
+	 *
+	 * @note GetSerializedSize() only returns the final JSON size, NOT including the temporary space
+	 *       You must manually add extra buffer space based on your JSON content
+	 * @note For most use cases, prefer WriteToStringPtr() for simplicity
+	 *       Use this method only when you need to avoid heap allocation (e.g., stack buffers, pre-allocated pools)
 	 */
 	virtual bool WriteToString(JsonValue* handle, char* buffer, size_t buffer_size,
 		uint32_t write_flg = 0, size_t* out_size = nullptr) = 0;
 
 	/**
-	 * Write JSON to string and return allocated string (performance-optimized version)
+	 * Write JSON to string and return allocated string
 	 * @param handle JSON value
 	 * @param write_flg Write flags (YYJSON_WRITE_FLAG values, default: 0)
 	 * @param out_size Pointer to receive actual size written (including null terminator) optional
 	 * @return Allocated string pointer on success, nullptr on error. Caller must free() the returned pointer
 	 *
-	 * @note This is the recommended method for serialization as it avoids intermediate buffer allocations
+	 * @note This function handles memory allocation internally,
+	 *       avoiding the complexity of manual buffer size calculation required by WriteToString()
+	 * @note This is the recommended method for most use cases due to its simplicity and safety
 	 */
 	virtual char* WriteToStringPtr(JsonValue* handle, uint32_t write_flg = 0, size_t* out_size = nullptr) = 0;
 
@@ -384,6 +398,17 @@ public:
 	virtual size_t GetRefCount(JsonValue* handle) = 0;
 
 	/**
+	 * Get the total number of values in a document
+	 * @param handle JSON value
+	 * @return Total number of values in the document tree, 0 if handle is null or mutable
+	 * @note Only works on immutable documents (parsed from JSON)
+	 * @note Useful for performance planning and memory estimation
+	 * @note Counts ALL values including containers, keys, and leaf values
+	 *       Example: {"a":1,"b":2,"c":3} returns 7 (1 object + 3 keys + 3 values)
+	 */
+	virtual size_t GetValCount(JsonValue* handle) = 0;
+
+	/**
 	 * Create an empty mutable JSON object
 	 * @return New mutable JSON object or nullptr on failure
 	 */
@@ -466,10 +491,11 @@ public:
 	 * Get float value by key
 	 * @param handle JSON object
 	 * @param key Key name
-	 * @param out_value Pointer to receive float value
+	 * @param out_value Pointer to receive double value
 	 * @return true on success, false if key not found or type mismatch
+	 * @note Integers values are auto converted to double
 	 */
-	virtual bool ObjectGetFloat(JsonValue* handle, const char* key, double* out_value) = 0;
+	virtual bool ObjectGetDouble(JsonValue* handle, const char* key, double* out_value) = 0;
 
 	/**
 	 * Get integer value by key
@@ -547,13 +573,13 @@ public:
 	virtual bool ObjectSetBool(JsonValue* handle, const char* key, bool value) = 0;
 
 	/**
-	 * Set float value by key (mutable only)
+	 * Set double value by key (mutable only)
 	 * @param handle Mutable JSON object
 	 * @param key Key name
-	 * @param value Float value
+	 * @param value Double value
 	 * @return true on success
 	 */
-	virtual bool ObjectSetFloat(JsonValue* handle, const char* key, double value) = 0;
+	virtual bool ObjectSetDouble(JsonValue* handle, const char* key, double value) = 0;
 
 	/**
 	 * Set integer value by key (mutable only)
@@ -615,6 +641,18 @@ public:
 	virtual bool ObjectSort(JsonValue* handle, JSON_SORT_ORDER sort_mode) = 0;
 
 	/**
+	 * Rotate key-value pairs in the object
+	 * @param handle Mutable JSON object
+	 * @param idx Number of positions to rotate (must be less than object size)
+	 * @return true on success, false if idx >= object size or object is immutable
+	 * @note Only works on mutable objects
+	 * @note Example: {"a":1,"b":2,"c":3,"d":4} rotate 1 becomes {"b":2,"c":3,"d":4,"a":1}
+	 * @note Valid range: 0 <= idx < object size
+	 * @warning This function takes linear time proportional to the rotation amount
+	 */
+	virtual bool ObjectRotate(JsonValue* handle, size_t idx) = 0;
+
+	/**
 	 * Create an empty mutable JSON array
 	 * @return New mutable JSON array or nullptr on failure
 	 */
@@ -657,12 +695,12 @@ public:
 	virtual JsonValue* ArrayInitWithBool(const bool* values, size_t count) = 0;
 
 	/**
-	 * Create a JSON array from float values
-	 * @param values Array of float values
+	 * Create a JSON array from double values
+	 * @param values Array of double values
 	 * @param count Number of values
 	 * @return New JSON array or nullptr on failure
 	 */
-	virtual JsonValue* ArrayInitWithFloat(const double* values, size_t count) = 0;
+	virtual JsonValue* ArrayInitWithDouble(const double* values, size_t count) = 0;
 
 	/**
 	 * Parse a JSON array from string
@@ -727,13 +765,14 @@ public:
 	virtual bool ArrayGetBool(JsonValue* handle, size_t index, bool* out_value) = 0;
 
 	/**
-	 * Get float value at index
+	 * Get double value at index
 	 * @param handle JSON array
 	 * @param index Element index
-	 * @param out_value Pointer to receive float value
+	 * @param out_value Pointer to receive double value
 	 * @return true on success, false if index out of bounds or type mismatch
+	 * @note Integers values are auto converted to double
 	 */
-	virtual bool ArrayGetFloat(JsonValue* handle, size_t index, double* out_value) = 0;
+	virtual bool ArrayGetDouble(JsonValue* handle, size_t index, double* out_value) = 0;
 
 	/**
 	 * Get integer value at index
@@ -790,13 +829,13 @@ public:
 	virtual bool ArrayReplaceBool(JsonValue* handle, size_t index, bool value) = 0;
 
 	/**
-	 * Replace element at index with float (mutable only)
+	 * Replace element at index with double (mutable only)
 	 * @param handle Mutable JSON array
 	 * @param index Element index
-	 * @param value Float value
+	 * @param value Double value
 	 * @return true on success
 	 */
-	virtual bool ArrayReplaceFloat(JsonValue* handle, size_t index, double value) = 0;
+	virtual bool ArrayReplaceDouble(JsonValue* handle, size_t index, double value) = 0;
 
 	/**
 	 * Replace element at index with integer (mutable only)
@@ -850,12 +889,12 @@ public:
 	virtual bool ArrayAppendBool(JsonValue* handle, bool value) = 0;
 
 	/**
-	 * Append float to end of array (mutable only)
+	 * Append double to end of array (mutable only)
 	 * @param handle Mutable JSON array
-	 * @param value Float value
+	 * @param value Double value
 	 * @return true on success
 	 */
-	virtual bool ArrayAppendFloat(JsonValue* handle, double value) = 0;
+	virtual bool ArrayAppendDouble(JsonValue* handle, double value) = 0;
 
 	/**
 	 * Append integer to end of array (mutable only)
@@ -925,13 +964,13 @@ public:
 	virtual bool ArrayInsertInt64(JsonValue* handle, size_t index, std::variant<int64_t, uint64_t> value) = 0;
 
 	/**
-	 * Insert float at specific index (mutable only)
+	 * Insert double at specific index (mutable only)
 	 * @param handle Mutable JSON array
 	 * @param index Element index
-	 * @param value Float value
+	 * @param value Double value
 	 * @return true on success
 	 */
-	virtual bool ArrayInsertFloat(JsonValue* handle, size_t index, double value) = 0;
+	virtual bool ArrayInsertDouble(JsonValue* handle, size_t index, double value) = 0;
 
 	/**
 	 * Insert string at specific index (mutable only)
@@ -983,12 +1022,12 @@ public:
 	virtual bool ArrayPrependInt64(JsonValue* handle, std::variant<int64_t, uint64_t> value) = 0;
 
 	/**
-	 * Prepend float to beginning of array (mutable only)
+	 * Prepend double to beginning of array (mutable only)
 	 * @param handle Mutable JSON array
-	 * @param value Float value
+	 * @param value Double value
 	 * @return true on success
 	 */
-	virtual bool ArrayPrependFloat(JsonValue* handle, double value) = 0;
+	virtual bool ArrayPrependDouble(JsonValue* handle, double value) = 0;
 
 	/**
 	 * Prepend string to beginning of array (mutable only)
@@ -1076,12 +1115,12 @@ public:
 	virtual int ArrayIndexOfInt64(JsonValue* handle, std::variant<int64_t, uint64_t> search_value) = 0;
 
 	/**
-	 * Find index of float value
+	 * Find index of double value
 	 * @param handle JSON array
-	 * @param search_value Float value to search for
+	 * @param search_value Double value to search for
 	 * @return Index of first match, or -1 if not found
 	 */
-	virtual int ArrayIndexOfFloat(JsonValue* handle, double search_value) = 0;
+	virtual int ArrayIndexOfDouble(JsonValue* handle, double search_value) = 0;
 
 	/**
 	 * Sort array elements
@@ -1091,6 +1130,18 @@ public:
 	 * @note Only works on mutable arrays
 	 */
 	virtual bool ArraySort(JsonValue* handle, JSON_SORT_ORDER sort_mode) = 0;
+
+	/**
+	 * Rotate array elements
+	 * @param handle Mutable JSON array
+	 * @param idx Number of positions to rotate (must be less than array length)
+	 * @return true on success, false if idx >= array length or array is immutable
+	 * @note Only works on mutable arrays
+	 * @note Example: [1,2,3,4,5] rotate 2 becomes [3,4,5,1,2]
+	 * @note Valid range: 0 <= idx < array length
+	 * @warning This function takes linear time proportional to the rotation amount
+	 */
+	virtual bool ArrayRotate(JsonValue* handle, size_t idx) = 0;
 
 	/**
 	 * Create JSON value from format string and parameters
@@ -1120,11 +1171,11 @@ public:
 	virtual JsonValue* CreateBool(bool value) = 0;
 
 	/**
-	 * Create a JSON float value
-	 * @param value Float value
-	 * @return New JSON float or nullptr on failure
+	 * Create a JSON double value
+	 * @param value Double value
+	 * @return New JSON double or nullptr on failure
 	 */
-	virtual JsonValue* CreateFloat(double value) = 0;
+	virtual JsonValue* CreateDouble(double value) = 0;
 
 	/**
 	 * Create a JSON integer value
@@ -1162,12 +1213,13 @@ public:
 	virtual bool GetBool(JsonValue* handle, bool* out_value) = 0;
 
 	/**
-	 * Get float value from JSON
+	 * Get double value from JSON
 	 * @param handle JSON value
-	 * @param out_value Pointer to receive float value
+	 * @param out_value Pointer to receive double value
 	 * @return true on success, false on type mismatch
+	 * @note Integers values are auto converted to double
 	 */
-	virtual bool GetFloat(JsonValue* handle, double* out_value) = 0;
+	virtual bool GetDouble(JsonValue* handle, double* out_value) = 0;
 
 	/**
 	 * Get integer value from JSON
@@ -1218,15 +1270,16 @@ public:
 		char* error = nullptr, size_t error_size = 0) = 0;
 
 	/**
-	 * Get float value using JSON Pointer
+	 * Get double value using JSON Pointer
 	 * @param handle JSON value
 	 * @param path JSON Pointer path
-	 * @param out_value Pointer to receive float value
+	 * @param out_value Pointer to receive double value
 	 * @param error Error buffer (optional)
 	 * @param error_size Error buffer size
 	 * @return true on success, false on error
+	 * @note Integers values are auto converted to double
 	 */
-	virtual bool PtrGetFloat(JsonValue* handle, const char* path, double* out_value,
+	virtual bool PtrGetDouble(JsonValue* handle, const char* path, double* out_value,
 		char* error = nullptr, size_t error_size = 0) = 0;
 
 	/**
@@ -1315,15 +1368,15 @@ public:
 		char* error = nullptr, size_t error_size = 0) = 0;
 
 	/**
-	 * Set float value using JSON Pointer (mutable only)
+	 * Set double value using JSON Pointer (mutable only)
 	 * @param handle Mutable JSON value
 	 * @param path JSON Pointer path
-	 * @param value Float value
+	 * @param value Double value
 	 * @param error Error buffer (optional)
 	 * @param error_size Error buffer size
 	 * @return true on success, false on error
 	 */
-	virtual bool PtrSetFloat(JsonValue* handle, const char* path, double value,
+	virtual bool PtrSetDouble(JsonValue* handle, const char* path, double value,
 		char* error = nullptr, size_t error_size = 0) = 0;
 
 	/**
@@ -1398,15 +1451,15 @@ public:
 		char* error = nullptr, size_t error_size = 0) = 0;
 
 	/**
-	 * Add float to array using JSON Pointer (mutable only)
+	 * Add double to array using JSON Pointer (mutable only)
 	 * @param handle Mutable JSON value
 	 * @param path JSON Pointer path to array
-	 * @param value Float value
+	 * @param value Double value
 	 * @param error Error buffer (optional)
 	 * @param error_size Error buffer size
 	 * @return true on success, false on error
 	 */
-	virtual bool PtrAddFloat(JsonValue* handle, const char* path, double value,
+	virtual bool PtrAddDouble(JsonValue* handle, const char* path, double value,
 		char* error = nullptr, size_t error_size = 0) = 0;
 
 	/**
@@ -1485,13 +1538,14 @@ public:
 	virtual bool PtrTryGetBool(JsonValue* handle, const char* path, bool* out_value) = 0;
 
 	/**
-	 * Try to get float value using JSON Pointer (returns false on failure)
+	 * Try to get double value using JSON Pointer (returns false on failure)
 	 * @param handle JSON value
 	 * @param path JSON Pointer path
-	 * @param out_value Pointer to receive float value
+	 * @param out_value Pointer to receive double value
 	 * @return true on success, false if not found or type mismatch
+	 * @note Integers values are auto converted to double
 	 */
-	virtual bool PtrTryGetFloat(JsonValue* handle, const char* path, double* out_value) = 0;
+	virtual bool PtrTryGetDouble(JsonValue* handle, const char* path, double* out_value) = 0;
 
 	/**
 	 * Try to get integer value using JSON Pointer (returns false on failure)
@@ -1583,7 +1637,7 @@ public:
 	 * External extensions MUST use this method to obtain the handle type
 	 * @return The HandleType_t for JSON handles
 	 */
-	virtual HandleType_t GetHandleType() = 0;
+	virtual HandleType_t GetJsonHandleType() = 0;
 
 	/**
 	 * Read JsonValue from a SourceMod handle
@@ -1591,7 +1645,7 @@ public:
 	 * @param handle Handle to read from
 	 * @return JsonValue pointer, or nullptr on error (error will be reported to context)
 	 */
-	virtual JsonValue* GetFromHandle(IPluginContext* pContext, Handle_t handle) = 0;
+	virtual JsonValue* GetValueFromHandle(IPluginContext* pContext, Handle_t handle) = 0;
 
 	/**
 	 * Initialize an array iterator (same as ArrIterWith but returns pointer)
@@ -1718,6 +1772,17 @@ public:
 	virtual void* ObjIterRemove(JsonObjIter* iter) = 0;
 
 	/**
+	 * Get key string from object iterator key pointer
+	 * @param iter Object iterator
+	 * @param key Key pointer (returned from ObjIterNext)
+	 * @param out_str Pointer to receive key string
+	 * @param out_len Pointer to receive key length (optional)
+	 * @return true on success, false on error
+	 * @note Do not free the returned string - it is owned by the JSON document
+	 */
+	virtual bool ObjIterGetKeyString(JsonObjIter* iter, void* key, const char** out_str, size_t* out_len = nullptr) = 0;
+
+	/**
 	 * Release an array iterator
 	 * @param iter Iterator to release
 	 */
@@ -1836,12 +1901,12 @@ public:
 	/**
 	 * Directly modify a JSON value to floating-point type
 	 * @param handle JSON value to modify (cannot be object or array)
-	 * @param value Float value
+	 * @param value Double value
 	 * @return true on success, false if handle is object or array
 	 * @warning For immutable documents, this breaks immutability. Use with caution.
 	 * @note This modifies the value in-place without creating a new value
 	 */
-	virtual bool SetFloat(JsonValue* handle, double value) = 0;
+	virtual bool SetDouble(JsonValue* handle, double value) = 0;
 
 	/**
 	 * Directly modify a JSON value to string type

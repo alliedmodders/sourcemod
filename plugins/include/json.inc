@@ -109,8 +109,8 @@ methodmap JSON < Handle
   * - ]: end array
   *
   * @note                    Needs to be freed using delete or CloseHandle()
-  * @note                    There is a limit of 32 parameters (defined in SourcePawn)
-  *                          including the format string, so the number of arguments must be less than or equal to 31
+  * @note                    SourcePawn imposes a limit of 32 parameters per function (defined by SP_MAX_EXEC_PARAMS),
+  *                          which precludes the construction of complex objects with this method.
   *
   * @param format            Format string
   * @param ...               Arguments based on format string
@@ -546,6 +546,8 @@ methodmap JSON < Handle
   /**
   * Get float value
   *
+  * @note                    Integers values are auto converted to float
+  *
   * @return                  float value
   */
   public native float GetFloat();
@@ -618,6 +620,7 @@ methodmap JSON < Handle
   * Get float value by a JSON Pointer
   *
   * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
+  * @note                    Integers values are auto converted to float
   *
   * @param path              The JSON pointer string
   *
@@ -907,6 +910,7 @@ methodmap JSON < Handle
   * Try to get float value by a JSON Pointer
   *
   * @note                    JSON Pointer paths are always resolved from the document root, not from the current value
+  * @note                    Integers values are auto converted to float
   *
   * @param path              The JSON pointer string
   * @param value             Store the float value
@@ -1096,6 +1100,17 @@ methodmap JSON < Handle
   property int RefCount {
     public native get();
   }
+
+  /**
+  * Get the total number of values in the document
+  *
+  * @note                    Only works on immutable documents (parsed from JSON)
+  * @note                    Returns 0 for mutable documents or null handles
+  * @note                    Useful for performance planning and memory estimation
+  */
+  property int ValCount {
+    public native get();
+  }
 };
 
 methodmap JSONObject < JSON
@@ -1181,6 +1196,8 @@ methodmap JSONObject < JSON
 
   /**
   * Gets a float value from the object
+  *
+  * @note                    Integers values are auto converted to float
   *
   * @param key               Key name
   *
@@ -1368,6 +1385,20 @@ methodmap JSONObject < JSON
   public native bool Sort(JSON_SORT_ORDER order = JSON_SORT_ASC);
 
   /**
+  * Rotates key-value pairs in the object
+  *
+  * @note                    This function takes a linear search time
+  * @note                    Only works on mutable objects
+  * @note                    Example: {"a":1,"b":2,"c":3,"d":4} rotate 1 becomes {"b":2,"c":3,"d":4,"a":1}
+  *
+  * @param idx               Number of positions to rotate
+  *
+  * @return                  True on success, false if object is immutable or operation failed
+  * @error                   Invalid handle or attempting to rotate an immutable object
+  */
+  public native bool Rotate(int idx);
+
+  /**
   * Retrieves the size of the object
   */
   property int Size {
@@ -1485,6 +1516,8 @@ methodmap JSONArray < JSON
 
   /**
   * Gets a float value from the array
+  *
+  * @note                    Integers values are auto converted to float
   *
   * @param index             Position in the array (starting from 0)
   *
@@ -1922,6 +1955,20 @@ methodmap JSONArray < JSON
   public native bool Sort(JSON_SORT_ORDER order = JSON_SORT_ASC);
 
   /**
+  * Rotates array elements
+  *
+  * @note                    This function takes a linear search time
+  * @note                    Only works on mutable arrays
+  * @note                    Example: [1,2,3,4,5] rotate 2 becomes [3,4,5,1,2]
+  *
+  * @param idx               Number of positions to rotate
+  *
+  * @return                  True on success, false if array is immutable or operation failed
+  * @error                   Invalid handle or attempting to rotate an immutable array
+  */
+  public native bool Rotate(int idx);
+
+  /**
   * Retrieves the size of the array
   */
   property int Length {
@@ -2164,6 +2211,7 @@ public void __pl_json_SetNTVOptional()
   MarkNativeAsOptional("JSONObject.FromString");
   MarkNativeAsOptional("JSONObject.FromFile");
   MarkNativeAsOptional("JSONObject.Sort");
+  MarkNativeAsOptional("JSONObject.Rotate");
 
   // JSONArray
   MarkNativeAsOptional("JSONArray.JSONArray");
@@ -2223,6 +2271,7 @@ public void __pl_json_SetNTVOptional()
   MarkNativeAsOptional("JSONArray.IndexOfInt64");
   MarkNativeAsOptional("JSONArray.IndexOfFloat");
   MarkNativeAsOptional("JSONArray.Sort");
+  MarkNativeAsOptional("JSONArray.Rotate");
 
   // JSON
   MarkNativeAsOptional("JSON.ToString");
@@ -2235,6 +2284,7 @@ public void __pl_json_SetNTVOptional()
   MarkNativeAsOptional("JSON.GetSerializedSize");
   MarkNativeAsOptional("JSON.ReadSize.get");
   MarkNativeAsOptional("JSON.RefCount.get");
+  MarkNativeAsOptional("JSON.ValCount.get");
   MarkNativeAsOptional("JSON.Type.get");
   MarkNativeAsOptional("JSON.SubType.get");
   MarkNativeAsOptional("JSON.IsArray.get");
