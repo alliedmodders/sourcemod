@@ -107,6 +107,7 @@ namespace SourceMod
 
 	#define TIMER_FLAG_REPEAT			(1<<0)		/**< Timer will repeat until stopped */
 	#define TIMER_FLAG_NO_MAPCHANGE		(1<<1)		/**< Timer will not carry over mapchanges */
+	#define TIMER_FLAG_TICK_PRECISE		(1<<2)		/**< Timer will have tick level time precision */
 
 	class ITimerSystem : public SMInterface
 	{
