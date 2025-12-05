@@ -21,32 +21,13 @@
 		
 		"Offsets"
 		{
-			/* Offset into LevelShutdown */
-			"gEntList"
-			{
-				"windows"	"11"
-			}
-
+			/* Blade Symphony has VSERVERTOOLS003, so we already have gEntList and only need the EntInfo offset from it */
+			/* It's the first member after the vtable */
 			"EntInfo"
 			{
-				"windows"	"4"	
-				"linux"		"4"
-				"mac"		"4"
-			}
-		}
-		
-		"Signatures"
-		{
-			"LevelShutdown"
-			{
-				"library"	"server"
-				"windows"	"\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8"
-			}
-			"gEntList"
-			{
-				"library"	"server"
-				"linux"		"@gEntList"
-				"mac"		"@gEntList"
+				"windows"	"4"
+				"windows64"	"8"
+				"linux64"	"8"
 			}
 		}
 	}
