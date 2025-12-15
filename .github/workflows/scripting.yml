@@ -67,7 +67,7 @@ jobs:
           echo "SM_VERSION=$(cat ../product.version)" >> $GITHUB_ENV
 
       - name: Archive tooling
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: sourcemod-tooling-${{ env.SM_VERSION }}-${{ matrix.os_short }}
           path: build/package
