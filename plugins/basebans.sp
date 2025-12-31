@@ -10,7 +10,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -76,12 +76,12 @@ public void OnPluginStart()
 
 	RegAdminCmd("sm_ban", Command_Ban, ADMFLAG_BAN, "sm_ban <#userid|name> <minutes|0> [reason]");
 	RegAdminCmd("sm_unban", Command_Unban, ADMFLAG_UNBAN, "sm_unban <steamid|ip>");
-	RegAdminCmd("sm_addban", Command_AddBan, ADMFLAG_RCON, "sm_addban <time> <steamid> [reason]");
-	RegAdminCmd("sm_banip", Command_BanIp, ADMFLAG_BAN, "sm_banip <ip|#userid|name> <time> [reason]");
-	
+	RegAdminCmd("sm_addban", Command_AddBan, ADMFLAG_RCON, "sm_addban <minutes|0> <steamid> [reason]");
+	RegAdminCmd("sm_banip", Command_BanIp, ADMFLAG_BAN, "sm_banip <ip|#userid|name> <minutes|0> [reason]");
+
 	//This to manage custom ban reason messages
 	RegConsoleCmd("sm_abortban", Command_AbortBan, "sm_abortban");
-	
+
 	/* Account for late loading */
 	TopMenu topmenu;
 	if (LibraryExists("adminmenu") && ((topmenu = GetAdminTopMenu()) != null))
@@ -121,7 +121,7 @@ void LoadBanReasons()
 			SetFailState("Error in %s: Couldn't find 'banreasons'", g_BanReasonsPath);
 			return;
 		}
-		
+
 		//Reset kvHandle
 		g_hKvBanReasons.Rewind();
 	} else {
@@ -139,10 +139,10 @@ public void OnAdminMenuReady(Handle aTopMenu)
 	{
 		return;
 	}
-	
+
 	/* Save the Handle */
 	hTopMenu = topmenu;
-	
+
 	/* Find the "Player Commands" category */
 	TopMenuObject player_commands = hTopMenu.FindCategory(ADMINMENU_PLAYERCOMMANDS);
 
@@ -156,17 +156,17 @@ public Action Command_BanIp(int client, int args)
 {
 	if (args < 2)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_banip <ip|#userid|name> <time> [reason]");
+		ReplyToCommand(client, "[SM] Usage: sm_banip <ip|#userid|name> <minutes|0> [reason]");
 		return Plugin_Handled;
 	}
 
 	int len, next_len;
 	char Arguments[256];
 	char arg[50], time[20];
-	
+
 	GetCmdArgString(Arguments, sizeof(Arguments));
 	len = BreakString(Arguments, arg, sizeof(arg));
-	
+
 	if ((next_len = BreakString(Arguments[len], time, sizeof(time))) != -1)
 	{
 		len += next_len;
@@ -182,17 +182,17 @@ public Action Command_BanIp(int client, int args)
 		ReplyToCommand(client, "[SM] %t", "Cannot ban that IP");
 		return Plugin_Handled;
 	}
-	
+
 	char target_name[MAX_TARGET_LENGTH];
 	int target_list[1];
 	bool tn_is_ml;
 	int found_client = -1;
-	
+
 	if (ProcessTargetString(
 			arg,
-			client, 
-			target_list, 
-			1, 
+			client,
+			target_list,
+			1,
 			COMMAND_FILTER_CONNECTED|COMMAND_FILTER_NO_MULTI,
 			target_name,
 			sizeof(target_name),
@@ -200,9 +200,9 @@ public Action Command_BanIp(int client, int args)
 	{
 		found_client = target_list[0];
 	}
-	
+
 	bool has_rcon;
-	
+
 	if (client == 0 || (client == 1 && !IsDedicatedServer()))
 	{
 		has_rcon = true;
@@ -212,7 +212,7 @@ public Action Command_BanIp(int client, int args)
 		AdminId id = GetUserAdmin(client);
 		has_rcon = (id == INVALID_ADMIN_ID) ? false : GetAdminFlag(id, Admin_RCON);
 	}
-	
+
 	int hit_client = -1;
 	if (found_client != -1
 		&& !IsFakeClient(found_client)
@@ -221,32 +221,41 @@ public Action Command_BanIp(int client, int args)
 		GetClientIP(found_client, arg, sizeof(arg));
 		hit_client = found_client;
 	}
-	
+
 	if (hit_client == -1 && !has_rcon)
 	{
 		ReplyToCommand(client, "[SM] %t", "No Access");
 		return Plugin_Handled;
 	}
 
+	for (int i = 0; i < strlen(time); i++)
+	{
+		if (!IsCharNumeric(time[i]))
+		{
+			ReplyToCommand(client, "[SM] Usage: sm_banip <ip|#userid|name> <minutes|0> [reason]");
+			return Plugin_Handled;
+		}
+	}
+
 	int minutes = StringToInt(time);
 
-	LogAction(client, 
-			  hit_client, 
-			  "\"%L\" added ban (minutes \"%d\") (ip \"%s\") (reason \"%s\")", 
-			  client, 
-			  minutes, 
-			  arg, 
+	LogAction(client,
+			  hit_client,
+			  "\"%L\" added ban (minutes \"%d\") (ip \"%s\") (reason \"%s\")",
+			  client,
+			  minutes,
+			  arg,
 			  Arguments[len]);
-				
+
 	ReplyToCommand(client, "[SM] %t", "Ban added");
-	
-	BanIdentity(arg, 
-				minutes, 
-				BANFLAG_IP, 
-				Arguments[len], 
-				"sm_banip", 
+
+	BanIdentity(arg,
+				minutes,
+				BANFLAG_IP,
+				Arguments[len],
+				"sm_banip",
 				client);
-				
+
 	if (hit_client != -1)
 	{
 		KickClient(hit_client, "Banned: %s", Arguments[len]);
@@ -259,7 +268,7 @@ public Action Command_AddBan(int client, int args)
 {
 	if (args < 2)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_addban <time> <steamid> [reason]");
+		ReplyToCommand(client, "[SM] Usage: sm_addban <minutes|0> <steamid> [reason]");
 		return Plugin_Handled;
 	}
 
@@ -274,9 +283,9 @@ public Action Command_AddBan(int client, int args)
 	/* Get time */
 	if ((len = BreakString(arg_string, time, sizeof(time))) == -1)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_addban <time> <steamid> [reason]");
+		ReplyToCommand(client, "[SM] Usage: sm_addban <minutes|0> <steamid> [reason]");
 		return Plugin_Handled;
-	}	
+	}
 	total_len += len;
 
 	/* Get steamid */
@@ -296,7 +305,7 @@ public Action Command_AddBan(int client, int args)
 		idValid = true;
 	else if (!strncmp(authid, "[U:", 3))
 		idValid = true;
-	
+
 	if (!idValid)
 	{
 		ReplyToCommand(client, "[SM] %t", "Invalid SteamID specified");
@@ -310,20 +319,29 @@ public Action Command_AddBan(int client, int args)
 		return Plugin_Handled;
 	}
 
+	for (int i = 0; i < strlen(time); i++)
+	{
+		if (!IsCharNumeric(time[i]))
+		{
+			ReplyToCommand(client, "[SM] Usage: sm_addban <minutes|0> <steamid> [reason]");
+			return Plugin_Handled;
+		}
+	}
+
 	int minutes = StringToInt(time);
 
-	LogAction(client, 
-			  -1, 
-			  "\"%L\" added ban (minutes \"%d\") (id \"%s\") (reason \"%s\")", 
-			  client, 
-			  minutes, 
-			  authid, 
+	LogAction(client,
+			  -1,
+			  "\"%L\" added ban (minutes \"%d\") (id \"%s\") (reason \"%s\")",
+			  client,
+			  minutes,
+			  authid,
 			  arg_string[total_len]);
-	BanIdentity(authid, 
-				minutes, 
-				BANFLAG_AUTHID, 
-				arg_string[total_len], 
-				"sm_addban", 
+	BanIdentity(authid,
+				minutes,
+				BANFLAG_AUTHID,
+				arg_string[total_len],
+				"sm_addban",
 				client);
 
 	ReplyToCommand(client, "[SM] %t", "Ban added");
@@ -342,7 +360,7 @@ public Action Command_Unban(int client, int args)
 	char arg[50];
 	GetCmdArgString(arg, sizeof(arg));
 
-	ReplaceString(arg, sizeof(arg), "\"", "");	
+	ReplaceString(arg, sizeof(arg), "\"", "");
 
 	int ban_flags;
 	if (IsCharNumeric(arg[0]))
@@ -378,7 +396,7 @@ public Action Command_AbortBan(int client, int args)
 	{
 		ReplyToCommand(client, "[SM] %t", "AbortBan not waiting for custom reason");
 	}
-	
+
 	return Plugin_Handled;
 }
 
