@@ -315,6 +315,15 @@ public Action Command_Ban(int client, int args)
 		Arguments[0] = '\0';
 	}
 
+	for (int i = 0; i < strlen(s_time); i++)
+	{
+		if (!IsCharNumeric(s_time[i]))
+		{
+			ReplyToCommand(client, "[SM] Usage: sm_ban <#userid|name> <minutes|0> [reason]");
+			return Plugin_Handled;
+		}
+	}
+
 	playerinfo[client].banTargetUserId = GetClientUserId(target);
 
 	int time = StringToInt(s_time);

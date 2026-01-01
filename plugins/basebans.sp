@@ -76,8 +76,8 @@ public void OnPluginStart()
 
 	RegAdminCmd("sm_ban", Command_Ban, ADMFLAG_BAN, "sm_ban <#userid|name> <minutes|0> [reason]");
 	RegAdminCmd("sm_unban", Command_Unban, ADMFLAG_UNBAN, "sm_unban <steamid|ip>");
-	RegAdminCmd("sm_addban", Command_AddBan, ADMFLAG_RCON, "sm_addban <time> <steamid> [reason]");
-	RegAdminCmd("sm_banip", Command_BanIp, ADMFLAG_BAN, "sm_banip <ip|#userid|name> <time> [reason]");
+	RegAdminCmd("sm_addban", Command_AddBan, ADMFLAG_RCON, "sm_addban <minutes|0> <steamid> [reason]");
+	RegAdminCmd("sm_banip", Command_BanIp, ADMFLAG_BAN, "sm_banip <ip|#userid|name> <minutes|0> [reason]");
 	
 	//This to manage custom ban reason messages
 	RegConsoleCmd("sm_abortban", Command_AbortBan, "sm_abortban");
@@ -156,7 +156,7 @@ public Action Command_BanIp(int client, int args)
 {
 	if (args < 2)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_banip <ip|#userid|name> <time> [reason]");
+		ReplyToCommand(client, "[SM] Usage: sm_banip <ip|#userid|name> <minutes|0> [reason]");
 		return Plugin_Handled;
 	}
 
@@ -228,6 +228,15 @@ public Action Command_BanIp(int client, int args)
 		return Plugin_Handled;
 	}
 
+	for (int i = 0; i < strlen(time); i++)
+	{
+		if (!IsCharNumeric(time[i]))
+		{
+			ReplyToCommand(client, "[SM] Usage: sm_banip <ip|#userid|name> <minutes|0> [reason]");
+			return Plugin_Handled;
+		}
+	}
+
 	int minutes = StringToInt(time);
 
 	LogAction(client, 
@@ -259,7 +268,7 @@ public Action Command_AddBan(int client, int args)
 {
 	if (args < 2)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_addban <time> <steamid> [reason]");
+		ReplyToCommand(client, "[SM] Usage: sm_addban <minutes|0> <steamid> [reason]");
 		return Plugin_Handled;
 	}
 
@@ -274,7 +283,7 @@ public Action Command_AddBan(int client, int args)
 	/* Get time */
 	if ((len = BreakString(arg_string, time, sizeof(time))) == -1)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_addban <time> <steamid> [reason]");
+		ReplyToCommand(client, "[SM] Usage: sm_addban <minutes|0> <steamid> [reason]");
 		return Plugin_Handled;
 	}	
 	total_len += len;
@@ -308,6 +317,15 @@ public Action Command_AddBan(int client, int args)
 	{
 		ReplyToCommand(client, "[SM] %t", "No Access");
 		return Plugin_Handled;
+	}
+
+	for (int i = 0; i < strlen(time); i++)
+	{
+		if (!IsCharNumeric(time[i]))
+		{
+			ReplyToCommand(client, "[SM] Usage: sm_addban <minutes|0> <steamid> [reason]");
+			return Plugin_Handled;
+		}
 	}
 
 	int minutes = StringToInt(time);
