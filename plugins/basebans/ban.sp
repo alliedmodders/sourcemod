@@ -129,26 +129,26 @@ void DisplayBanReasonMenu(int client)
 	Format(title, sizeof(title), "%T: %N", "Ban reason", client, playerinfo[client].banTarget);
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
-
+	
 	//Add custom chat reason entry first
 	menu.AddItem("", "Custom reason (type in chat)");
-
+	
 	//Loading configurable entries from the kv-file
 	char reasonName[100];
 	char reasonFull[255];
-
+	
 	//Iterate through the kv-file
 	g_hKvBanReasons.GotoFirstSubKey(false);
 	do
 	{
 		g_hKvBanReasons.GetSectionName(reasonName, sizeof(reasonName));
 		g_hKvBanReasons.GetString(NULL_STRING, reasonFull, sizeof(reasonFull));
-
+		
 		//Add entry
 		menu.AddItem(reasonFull, reasonName);
-
+		
 	} while (g_hKvBanReasons.GotoNextKey(false));
-
+	
 	//Reset kvHandle
 	g_hKvBanReasons.Rewind();
 
@@ -164,7 +164,7 @@ public void AdminMenu_Ban(TopMenu topmenu,
 {
 	//Reset chat reason first
 	playerinfo[param].isWaitingForChatReason = false;
-
+	
 	if (action == TopMenuAction_DisplayOption)
 	{
 		Format(buffer, maxlength, "%T", "Ban player", param);
@@ -199,9 +199,9 @@ public int MenuHandler_BanReasonList(Menu menu, MenuAction action, int param1, i
 		else
 		{
 			char info[64];
-
+			
 			menu.GetItem(param2, info, sizeof(info));
-
+			
 			PrepareBan(param1, playerinfo[param1].banTarget, playerinfo[param1].banTime, info);
 		}
 	}
@@ -287,7 +287,7 @@ public Action Command_Ban(int client, int args)
 		{
 			ReplyToCommand(client, "[SM] Usage: sm_ban <#userid|name> <minutes|0> [reason]");
 		}
-
+		
 		return Plugin_Handled;
 	}
 
