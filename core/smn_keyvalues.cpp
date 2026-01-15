@@ -945,7 +945,7 @@ static cell_t smn_KvDeleteKey(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
 	}
 
-	if (pStk->pCurRoot.size() < 2)
+	if (pStk->pCurRoot.size() < 1)
 	{
 		return 0;
 	}
