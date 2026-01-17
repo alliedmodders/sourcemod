@@ -515,12 +515,12 @@ static cell_t sm_OpenFile(IPluginContext *pContext, const cell_t *params)
 			}
 			has_plus = true;
 		} else if (mode[pos] == 'b') {
-			if (has_b || has_t || has_plus) {
+			if (has_b || has_t) {
 				is_invalid = true;
 			}
 			has_b = true;
 		} else if (mode[pos] == 't') {
-			if (has_b || has_t || has_plus) {
+			if (has_b || has_t) {
 				is_invalid = true;
 			}
 			has_t = true;
