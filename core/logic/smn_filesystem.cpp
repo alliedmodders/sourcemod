@@ -499,39 +499,44 @@ static cell_t sm_OpenFile(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[1], &name);
 	pContext->LocalToString(params[2], &mode);
 
-    if (mode == nullptr || mode[0] == '\0') {
-        return pContext->ThrowNativeError("File open mode cannot be empty!");
-    }
-    
-    if (mode[0] != 'r' && mode[0] != 'w' && mode[0] != 'a') {
+	if (mode == nullptr || mode[0] == '\0') {
+		return pContext->ThrowNativeError("File open mode cannot be empty!");
+	}
+	
+	if (mode[0] != 'r' && mode[0] != 'w' && mode[0] != 'a') {
 		return pContext->ThrowNativeError("File open mode is invalid \"%s\"!", mode);
-    }
+	}
 
-	bool has_plus = false, has_b = false, has_x = false, is_invalid = false;
-    for (int pos = 1; mode[pos] && !is_invalid; pos++) {
-        if (mode[pos] == '+') {
-            if (has_plus) {
+	bool has_plus = false, has_t = false, has_b = false, has_x = false, is_invalid = false;
+	for (int pos = 1; mode[pos] && !is_invalid; pos++) {
+		if (mode[pos] == '+') {
+			if (has_plus) {
 				is_invalid = true;
 			}
-            has_plus = true;
-        } else if (mode[pos] == 'b') {
-            if (has_b) {
+			has_plus = true;
+		} else if (mode[pos] == 'b') {
+			if (has_b || has_t) {
 				is_invalid = true;
 			}
-            has_b = true;
-        } else if (mode[pos] == 'x') {
-            if (has_x) {
+			has_b = true;
+		} else if (mode[pos] == 't') {
+			if (has_b || has_t) {
+				is_invalid = true;
+			}
+			has_t = true;
+		} else if (mode[pos] == 'x') {
+			if (has_x) {
 				is_invalid = true;
 			}
 			// 'x' mode is only valid with 'w'
-            if (mode[0] != 'w') {
+			if (mode[0] != 'w') {
 				is_invalid = true;
 			}
-            has_x = true;
-        } else {
-            is_invalid = true;
-        }
-    }
+			has_x = true;
+		} else {
+			is_invalid = true;
+		}
+	}
 
 	if (is_invalid) {
 		return pContext->ThrowNativeError("File open mode is invalid \"%s\"!", mode);
