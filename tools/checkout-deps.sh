@@ -51,9 +51,6 @@ getsqlite ()
       wget -q $sqliteurl -O $sqlitefolder.$archive_ext
     elif [ `command -v curl` ]; then
       curl -sS -L -o $sqlitefolder.$archive_ext $sqliteurl
-    else
-      echo "Failed to locate wget or curl. Install one of these programs to download SQLite."
-      exit 1
     fi
     $decomp $sqlitefolder.$archive_ext
     mv $sqlitefolder/sqlite3.c sourcemod/extensions/sqlite/sqlite-source
@@ -80,22 +77,31 @@ getmysql ()
 }
 
 # SQLite
-if [ $iswin -eq 1 ]; then
-  sqlitever=$(curl -s https://www.sqlite.org/download.html |
-    grep -o '[0-9]\{4\}/sqlite-amalgamation-[0-9]\+\.zip' |
-    sort -V |
-    tail -1 |
-    sed 's/\.zip//')
+if [ `command -v wget` ]; then
+  sqlitedlcmd="wget -qO- https://www.sqlite.org/download.html"
+elif [ `command -v curl` ]; then
+  sqlitedlcmd="curl -sS https://www.sqlite.org/download.html"
 else
-  sqlitever=$(curl -s https://www.sqlite.org/download.html |
-    grep -o '[0-9]\{4\}/sqlite-autoconf-[0-9]\+\.tar\.gz' |
-    sort -V |
-    tail -1 |
-    sed 's/\.tar\.gz//')
+  echo "Failed to locate wget or curl. Install one of these programs to download SQLite. Using the built-in version of SQLite"
 fi
-sqlitefolder=$(basename "$sqlitever")
-sqliteurl=https://www.sqlite.org/$sqlitever.$archive_ext
-getsqlite
+if [ -n "$sqlitedlcmd" ]; then
+  if [ $iswin -eq 1 ]; then
+    sqlitever=$($sqlitedlcmd |
+      grep -o '[0-9]\{4\}/sqlite-amalgamation-[0-9]\+\.zip' |
+      sort -V |
+      tail -1 |
+      sed 's/\.zip//')
+  else
+    sqlitever=$($sqlitedlcmd |
+      grep -o '[0-9]\{4\}/sqlite-autoconf-[0-9]\+\.tar\.gz' |
+      sort -V |
+      tail -1 |
+      sed 's/\.tar\.gz//')
+  fi
+  sqlitefolder=$(basename "$sqlitever")
+  sqliteurl=https://www.sqlite.org/$sqlitever.$archive_ext
+  getsqlite
+fi
 
 # 32-bit MySQL
 mysqlfolder=mysql-5.7
