@@ -53,8 +53,9 @@ getsqlite ()
       curl -sS -L -o $sqlitefolder.$archive_ext $sqliteurl
     fi
     $decomp $sqlitefolder.$archive_ext
-    mv $sqlitefolder/sqlite3.c sourcemod/extensions/sqlite/sqlite-source
-    mv $sqlitefolder/sqlite3.h sourcemod/extensions/sqlite/sqlite-source
+    smdir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+    mv $sqlitefolder/sqlite3.c "$smdir"/extensions/sqlite/sqlite-source
+    mv $sqlitefolder/sqlite3.h "$smdir"/extensions/sqlite/sqlite-source
     rm $sqlitefolder.$archive_ext
   fi
 }
