@@ -46,7 +46,7 @@ fi
 
 getsqlite ()
 {
-  if [ ! -d $sqlitever ]; then
+  if [ ! -d $sqlitefolder ]; then
     if [ `command -v wget` ]; then
       wget -q $sqliteurl -O $sqlitefolder.$archive_ext
     elif [ `command -v curl` ]; then
