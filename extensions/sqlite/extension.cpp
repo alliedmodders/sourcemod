@@ -82,3 +82,7 @@ const char *SqliteExt::GetExtensionDateString()
 	return SOURCEMOD_BUILD_TIME;
 }
 
+const char *SqliteExt::GetExtensionDescription()
+{
+    return "SQLite " SQLITE_VERSION " Driver";
+}

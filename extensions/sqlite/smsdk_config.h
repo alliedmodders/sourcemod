@@ -39,7 +39,7 @@
 
 /* Basic information exposed publicly */
 #define SMEXT_CONF_NAME			"SQLite"
-#define SMEXT_CONF_DESCRIPTION	"SQLite Driver"
+#define SMEXT_CONF_DESCRIPTION	""
 #define SMEXT_CONF_VERSION		""
 #define SMEXT_CONF_AUTHOR		"AlliedModders LLC"
 #define SMEXT_CONF_URL			"http://www.sourcemod.net/"
