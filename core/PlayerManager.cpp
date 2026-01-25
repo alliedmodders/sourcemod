@@ -2046,9 +2046,10 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	else
   #endif
 	{
-#if SOURCE_ENGINE >= SE_ORANGEBOX
+		m_pIClient = nullptr;
+
 		const char *folder = g_HL2.GetGameFolderName();
-		bool allowNetchanClient =
+		const bool allowNetchanClient =
 			(folder && (
 				strcmp(folder, "cstrike") == 0 ||
 				strcmp(folder, "tf") == 0 ||
@@ -2057,7 +2058,6 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 			));
 
 		if (allowNetchanClient)
-#endif
 		{
 			INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex));
 			if (pNetChan)
@@ -2693,4 +2693,5 @@ void CPlayer::PrintToConsole(const char *pMsg)
 
 	engine->ClientPrintf(m_pEdict, pMsg);
 }
+
 
