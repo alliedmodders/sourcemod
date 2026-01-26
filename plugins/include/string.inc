@@ -591,3 +591,859 @@ stock int ImplodeStrings(const char[][] strings, int numStrings, const char[] jo
 	}
 	return total;
 }
+
+
+
+
+
+
+// =======================================================================================================================
+// New funcs below
+
+
+
+
+
+
+
+stock bool IsStringInteger(const char[] str, int nBase=10)
+{
+	int dummy;
+	return StringToIntStrict(str, dummy, nBase);
+}
+
+stock bool IsStringDecimal(const char[] str)
+{
+	float dummy;
+	return StringToFloatStrict(str, dummy);
+}
+
+stock void StringToLower(char[] str)
+{
+	for (int i = 0; str[i] != '\0'; ++i)
+	{
+		str[i] = CharToLower(str[i]);
+	}
+}
+
+stock void StringToUpper(char[] str)
+{
+	for (int i = 0; str[i] != '\0'; ++i)
+	{
+		str[i] = CharToUpper(str[i]);
+	}
+}
+
+stock bool IsStringUpper(const char[] str, bool lettersOnly=false)  // <<<<<<<<<<<<<<<<<<<<<<<<<<< Is lettersOnly worth it/implemented right?
+{
+	if (str[0] == '\0')
+	{
+		return false;                                               // <<<<<<<<<<<<<<<<<<<<<<<<<<< Should empty string return false?
+	}
+
+	for (int i = 0; str[i] != '\0'; ++i)
+	{
+		if (!IsCharAlpha(str[i]))
+		{
+			if (lettersOnly)
+			{
+				return false;
+			}
+			
+			continue;
+		}
+
+		if (!IsCharUpper(str[i]))
+		{
+			return false;
+		}
+	}
+
+	return true;                                                    // <<<<<<<<<<<<<<<<<<<<<<<<<<< Is this return logic correct?
+}
+
+stock bool IsStringLower(const char[] str, bool lettersOnly=false)  // <<<<<<<<<<<<<<<<<<<<<<<<<<< Is lettersOnly worth it/implemented right?
+{
+	if (str[0] == '\0')
+	{
+		return false;                                               // <<<<<<<<<<<<<<<<<<<<<<<<<<< Should empty string return false?
+	}
+
+	for (int i = 0; str[i] != '\0'; ++i)
+	{
+		if (!IsCharAlpha(str[i]))
+		{
+			if (lettersOnly)
+			{
+				return false;
+			}
+			
+			continue;
+		}
+
+		if (!IsCharLower(str[i]))
+		{
+			return false;
+		}
+	}
+
+	return true;                                                    // <<<<<<<<<<<<<<<<<<<<<<<<<<< Is this return logic correct?
+}
+
+stock bool IsStringTitle(const char[] str)
+{
+	if (str[0] == '\0')
+	{
+		return false;                                               // <<<<<<<<<<<<<<<<<<<<<<<<<<< Should empty string return false?
+	}
+
+	bool wasLastCharSpace = true;
+	bool isStartOfWord = true;
+
+	for (int i = 0; str[i] != '\0'; ++i)
+	{
+		bool isSpace = IsCharSpace(str[i]);
+		isStartOfWord = wasLastCharSpace && !isSpace;
+
+		if (isStartOfWord && IsCharAlpha(str[i]) && !IsCharUpper(str[i]))
+		{
+			return false;
+		}
+
+		wasLastCharSpace = isSpace;
+	}
+
+	return true;
+}
+
+stock bool IsStringASCII(const char[] str)
+{
+	for (int i = 0; str[i] != '\0'; ++i)
+	{
+		if (str[i] & 0x80)
+		{
+			return false;
+		}
+	}
+
+	return true;                                                    // <<<<<<<<<<<<<<<<<<<<<<<<<<< Should empty strings return true?
+}
+
+stock bool IsStringUTF8(const char[] str)                           // <<<<<<<<<<<<<<<<<<<<<<<<<<< Is this func needed? And is this correct?
+{
+	return !IsStringASCII(str);
+}
+
+stock bool IsStringAlpha(const char[] str, bool allowSpace=false)   // <<<<<<<<<<<<<<<<<<<<<<<<<<< Is allowSpace a good idea?
+{
+	if (str[0] == '\0')
+	{
+		return false;                                               // <<<<<<<<<<<<<<<<<<<<<<<<<<< Should empty string return false?
+	}
+
+	for (int i = 0; str[i] != '\0'; ++i)
+	{
+		if (IsCharSpace(str[i]))
+		{
+			if (allowSpace)
+			{
+				continue;
+			}
+			
+			return false;
+		}
+		
+		if (!IsCharAlpha(str[i]))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+stock bool IsStringAlphaNumeric(const char[] str, bool allowSpace=false)    // <<<<<<<<<<<<<<<<<<<<<<<<<<< Is allowSpace a good idea?
+{
+	if (str[0] == '\0')
+	{
+		return false;                                               // <<<<<<<<<<<<<<<<<<<<<<<<<<< Should empty string return ?
+	}
+
+	for (int i = 0; str[i] != '\0'; ++i)
+	{
+		if (IsCharSpace(str[i]))
+		{
+			if (allowSpace)
+			{
+				continue;
+			}
+
+			return false;
+		}
+		
+		if (!IsCharAlphaNumeric(str[i]))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+stock bool IsCharAlphaNumeric(char c)                               // <<<<<<<<<<<<<<<<<<<<<<<<<<< Is this worth adding? It is cleaner.
+{
+	return IsCharAlpha(c) || IsCharNumeric(c);
+}
+
+stock bool IsCharHex(char c)
+{
+	if (c >= '0' && c <= '9')
+	{
+		return true;
+	}
+
+	if (c >= 'A' && c <= 'F')
+	{
+		return true;
+	}
+
+	if (c >= 'a' && c <= 'f')
+	{
+		return true;
+	}
+
+	return false;
+}
+
+stock bool IsStringHex(const char[] str, bool allowSpace=false) // <<<<<<<<<<<<<<<<<<<<<<<<<<< Is allowSpace a good idea?
+{
+	if (str[0] == '\0')
+	{
+		return false;                                           // <<<<<<<<<<<<<<<<<<<<<<<<<<< Should empty string return false
+	}
+
+	for (int i = 0; str[i] != '\0'; ++i)
+	{
+		if (IsCharSpace(str[i]))
+		{
+			if (allowSpace)
+			{
+				continue;
+			}
+			
+			return false;
+		}
+
+		if (!IsCharHex(str[i]))
+		{
+			return false;
+		}
+	}
+
+	return true; 
+}
+
+stock bool IsCharVisible(char c, bool allowSpace=false)
+{
+	// Non-space, non-control ASCII chars
+	if (c >= 0x21 && c <= 0x7E)
+	{
+		return true;
+	}
+	
+	if (IsCharSpace(c))
+	{
+		return allowSpace;
+	}
+	
+	if (IsCharMB(c))                                                // <<<<<<<<<<<<<<<<<<<<<<<<<<< How [in]correct is this condition?
+	{
+		return true;
+	}
+
+	return false;
+}
+
+stock bool IsStringVisible(const char[] str, bool allowSpace=false) // <<<<<<<<<<<<<<<<<<<<<<<<<<< Is allowSpace a good idea?
+{
+	if (str[0] == '\0')
+	{
+		return false;
+	}
+
+	for (int i = 0; str[i] != '\0'; ++i)
+	{
+		if (!IsCharVisible(str[i], allowSpace))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+stock bool IsStringWhitespace(const char[] str)                     // <<<<<<<<<<<<<<<<<<<<<<<<<<< Should name be IsStringSpace to match IsCharSpace
+{
+	if (str[0] == '\0')
+	{
+		return false;                                               // <<<<<<<<<<<<<<<<<<<<<<<<<<< Should empty string return false?
+	}
+
+	for (int i = 0; str[i] != '\0'; ++i)
+	{
+		if (!IsCharSpace(str[i]))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+stock bool StringEndsWith(const char[] str, const char[] substring, bool caseSensitive=true)
+{
+	if (str[0] == '\0')
+	{
+		return substring[0] == '\0';                                // <<<<<<<<<<<<<<<<<<<<<<<<<<< Does an empty string contain an empty substring?
+	}
+	
+	int len = strlen(str);
+	int subLen = strlen(substring);
+	
+	if (subLen > len)
+	{
+		return false;
+	}
+
+	return strcmp(str[len - subLen], substring, caseSensitive) == 0;
+}
+
+stock bool StringStartsWith(const char[] str, const char[] substring, bool caseSensitive=true)
+{
+	if (str[0] == '\0')
+	{
+		return substring[0] == '\0';                                // <<<<<<<<<<<<<<<<<<<<<<<<<<< Does an empty string contain an empty substring?
+	}
+
+	return StrContains(str, substring, caseSensitive) == 0;
+}
+
+stock int TrimStringEx(char[] str, const char[] charset)            // <<<<<<<<<<<<<<<<<<<<<<<<<<< This whole function needs checking. I don't trust it and it looks bad.
+{
+	int len = strlen(str);
+	int start = 0;
+	int stop = len - 1;
+	
+	// Trim left
+	for ( ; start < len; ++start)
+	{
+		if (FindCharInString(charset, str[start]) == -1)
+		{
+			break;
+		}
+	}
+	
+	// No valid characters; trim everything
+	if (start == len)
+	{
+		str[0] = '\0';
+		return 0;
+	}
+	
+	// Trim right
+	for ( ; stop > start; --stop)
+	{
+		if (FindCharInString(charset, str[stop]) == -1)
+		{
+			break;
+		}
+	}
+
+	len = stop - start + 1;
+
+	// Output untrimmed range
+	for (int i = 0; start <= stop; ++i)
+	{
+		str[i] = str[start++];
+	}
+	
+	str[len] = '\0';
+	return len;
+}
+
+stock int TrimStringLeft(char[] str)
+{
+	int len = strlen(str);
+	if (!len)
+	{
+		return 0;
+	}
+
+	int index = 0;
+	while (index < len)
+	{
+		if (!IsCharSpace(str[index]))
+		{
+			break;
+		}
+		
+		++index;
+	}
+	
+	return strcopy(str, len - index, str[index]);
+}
+
+stock int TrimStringRight(char[] str)
+{
+	int len = strlen(str);
+	if (!len)
+	{
+		return 0;
+	}
+
+	int index = len - 1;
+	while (index >= 0)
+	{
+		if (!IsCharSpace(str[index]))
+		{
+			break;
+		}
+		
+		--index;
+	}
+	
+	str[++index] = '\0';
+	return index;
+}
+
+stock int TrimStringSuffix(char[] str, const char[] suffix, bool caseSensitive=true)
+{
+	if (!str[0] || !suffix[0])
+	{
+		return 0;                                                   // <<<<<<<<<<<<<<<<<<<<<<<<<<< Returns 0 if suffix is empty, so non-zero return value means a trim was performed.
+	}
+	
+	int len = strlen(str);
+	int suffixLen = strlen(suffix);
+	
+	if (suffixLen > len)
+	{
+		return 0;
+	}
+	
+	len -= suffixLen;
+
+	if (strcmp(str[len], suffix, caseSensitive) == 0)
+	{
+		str[len] = '\0';
+		return len;
+	}
+	
+	return 0;
+}
+
+stock int TrimStringPrefix(char[] str, const char[] prefix, bool caseSensitive=true)
+{
+	if (!str[0] || !prefix[0])
+	{
+		return 0;                                                   // <<<<<<<<<<<<<<<<<<<<<<<<<<< Returns 0 if prefix is empty, so non-zero return value means a trim was performed.
+	}
+	
+	int len = strlen(str);
+	int prefixLen = strlen(prefix);
+	
+	if (prefixLen > len)
+	{
+		return 0;
+	}
+	
+	if (strncmp(str, prefix, prefixLen, caseSensitive) == 0)
+	{
+		return strcopy(str, len - prefixLen, str[prefixLen]);
+	}
+	
+	return 0;
+}
+
+stock int FilterString(char[] str, const char[] charset)
+{
+	int writeIndex = 0;
+	for (int i = 0; str[i] != '\0'; ++i)
+	{
+		if (FindCharInString(charset, str[i]) == -1)
+		{
+			str[writeIndex++] = str[i];
+		}
+	}
+	
+	str[writeIndex] = '\0';
+	return writeIndex;
+}
+
+stock int NormalizeString(char[] str)
+{
+	int start = 0;
+	while (str[start] == '\"' || str[start] == '\'' || IsCharSpace(str[start]))
+	{
+		++start;
+	}
+
+	int end = strlen(str) - 1;
+	while (str[end] == '\"' || str[end] == '\'' || IsCharSpace(str[end]))
+	{
+		--end;
+	}
+
+	int writeIndex = 0;
+	while (start <= end)
+	{
+		str[writeIndex++] = CharToLower(str[start]);
+		++start;
+	}
+	
+	str[writeIndex] = '\0';
+	return writeIndex;
+}
+
+stock int TruncateString(const char[] source, char[] dest, int maxlength, const char[] clip="...", bool breakWords=false)
+{
+	if (maxlength <= 0)
+	{
+		return 0;
+	}
+	
+	int len = strlen(source);
+	if (len < maxlength)
+	{
+		return strcopy(dest, maxlength, source);
+	}
+	
+	int clipLen = strlen(clip);
+	int maxlengthWithClip = maxlength - clipLen - 1;
+	
+	if (maxlengthWithClip < 0)
+	{
+		return 0;
+	}
+	
+	if (breakWords)
+	{
+		len = strcopy(dest, maxlengthWithClip, source);
+		len += strcopy(dest[maxlengthWithClip], clipLen, clip);
+		return len;
+	}
+	
+	bool wasLastCharWord = false;
+	int boundaryIndex = maxlengthWithClip;
+	
+	for (int i = 0; i <= maxlengthWithClip && source[i] != '\0'; ++i)
+	{
+		bool isSpace = IsCharSpace(source[i]);
+		
+		if (wasLastCharWord && isSpace)
+		{
+			boundaryIndex = i;
+		}
+		
+		wasLastCharWord = !isSpace;
+	}
+
+	len = strcopy(dest, boundaryIndex, source);
+	len += strcopy(dest[boundaryIndex], clipLen, clip);
+	return len;
+}
+
+stock void StringToTitle(char[] str)
+{
+	if (str[0] == '\0')
+	{
+		return;
+	}
+
+	bool wasLastCharSpace = true;
+
+	for (int i = 0; str[i] != '\0'; ++i)
+	{
+		bool isSpace = IsCharSpace(str[i]);
+
+		if (wasLastCharSpace && !isSpace)
+		{
+			str[i] = CharToUpper(str[i]);
+		}
+		
+		wasLastCharSpace = isSpace;
+	}
+}
+
+stock void StringLeftPad(char[] str, int maxlength, char padding=' ')
+{
+	int len = strlen(str);
+	int indexOffset = maxlength - len - 1;
+	
+	if (indexOffset < 0)
+	{
+		indexOffset = 0;
+	}
+	
+	strcopy(str[indexOffset], len + 1, str);
+	for (int i = 0; i < indexOffset; ++i)
+	{
+		str[i] = padding;
+	}
+}
+
+stock void StringRightPad(char[] str, int maxlength, char padding=' ')
+{
+	int len = strlen(str);
+	
+	for ( ; len < maxlength; ++len)
+	{
+		str[len] = padding;
+	}
+	
+	str[len] = '\0';
+}
+
+stock void StringCenterPad(char[] str, int maxlength, char padding=' ')
+{
+	int len = strlen(str);
+	if (len >= maxlength)
+	{
+		return;
+	}
+
+	int available = maxlength - len;
+	int left = available / 2;
+	
+	strcopy(str[left], len, str);
+	
+	for (int i = 0; i < left; ++i)
+	{
+		str[i] = padding;
+	}
+	
+	for (int i = left + len; i < maxlength; ++i)
+	{
+		str[i] = padding;
+	}
+	
+	str[maxlength] = '\0';
+}
+
+stock int StringRepeat(const char[] source, int count, char[] buffer, int maxlength, bool truncate=true)
+{
+	int writeIndex = 0;
+	int len = strlen(source);
+	if (!len || count < 1)
+	{
+		buffer[0] = '\0';
+		return 0;
+	}
+	   
+	for (int i = 0; i < count && writeIndex < maxlength; ++i)
+	{      
+		if (!truncate)
+		{
+			int charsRemaining = maxlength - writeIndex;
+			if (charsRemaining < len)
+			{
+				break;
+			}
+		}
+		
+		for (int j = 0; j < len && writeIndex < maxlength; ++j)
+		{
+			buffer[writeIndex++] = source[j];
+		}
+	}
+	
+	buffer[writeIndex] = '\0';
+	return writeIndex;
+}
+
+stock char CharAt(char c)                                               // <<<<<<<<<<<<<<<<<<<<<<<<<<< Is this function worth adding
+{
+	return c;
+}
+
+stock int strncopy(char[] dest, int destLen, const char[] source, int n)  // <<<<<<<<<<<<<<<<<<<<<<<<<<< idk if this works at all and i even tested it
+{
+	if (destLen <= 0 || n <= 0)
+	{
+		return 0;
+	}
+	
+	if (n >= destLen)
+	{
+		n = destLen - 1;
+	}
+	
+	// Source string might be shorter than n, so use i to set terminator
+	int i = 0
+	for ( ; source[i] != '\0' && i < n; ++i)
+	{
+		dest[i] = source[i];
+	}
+	
+	if (i > destLen)
+	{
+		i = destLen;
+	}
+	
+	dest[i] = '\0';
+	return i;
+}
+
+stock bool StringToIntStrict(const char[] str, int &result, int nBase=10)
+{
+	int len = strlen(str);
+	if (len == 0)
+	{
+		return false;
+	}
+	
+	int temp;
+	if (StringToIntEx(str, temp, nBase) != len)
+	{
+		return false;
+	}
+	result = temp;
+	return true;
+}
+
+stock bool StringToFloatStrict(const char[] str, float &result)
+{
+	int len = strlen(str);
+	if (len == 0)
+	{
+		return false;
+	}
+
+	float temp;
+	if (StringToFloatEx(str, temp) != len)
+	{
+		return false;
+	}
+	result = temp;
+	return true;
+}
+
+stock ArrayList ExplodeStringToList(const char[] text, const char[] split, int maxStringLength, bool copyRemainder=false, int blockSize=0)
+{
+	ArrayList list;
+	if (blockSize <= 0)
+	{
+		list = new ArrayList(ByteCountToCells(maxStringLength));
+	}
+	else
+	{
+		list = new ArrayList(blockSize);
+	}
+	
+	char[] buffer = new char[maxStringLength];
+	int index;
+	
+	if (split[0])
+	{
+		while ((index += SplitString(text[index], split, buffer, maxStringLength)) != -1)
+		{
+			list.PushString(buffer);
+		}
+	}
+	
+	if (copyRemainder) 
+	{
+		list.PushString(text[index]);                               // <<<<<<<<<<<<<<<<<<<<<<<<<<< Does this work as expected? Does any of this function?
+	}
+
+	return list;
+}
+
+stock int SubstringToInt(const char[] str, int length, int nBase=10) // <<<<<<<<<<<<<<<<<<<<<<<<<<< StringToInt with a length param, so it can specify any substring.
+{
+	int len = strlen(str);
+	if (length <= 0 || len == 0)
+	{
+		return 0;
+	}
+	
+	if (length > len)
+	{
+		length = len;
+	}
+
+	char[] substring = new char[length + 1];
+	strcopy(substring, length + 1, str);
+	
+	return StringToInt(substring, nBase);
+}
+
+stock int SubstringToIntEx(const char[] str, int length, int &result, int nBase=10)
+{
+	int len = strlen(str);
+	if (length <= 0 || len == 0)
+	{
+		return 0;
+	}
+	
+	if (length > len)
+	{
+		length = len;
+	}
+
+	char[] substring = new char[length + 1];
+	strcopy(substring, length + 1, str);
+	
+	return StringToIntEx(substring, result, nBase);
+}
+
+stock float SubstringToFloat(const char[] str, int length)
+{
+	int len = strlen(str);
+	if (length <= 0 || len == 0)
+	{
+		return 0.0;
+	}
+	
+	if (length > len)
+	{
+		length = len;
+	}
+
+	char[] substring = new char[length + 1];
+	strcopy(substring, length + 1, str);
+	
+	return StringToFloat(substring);
+}
+
+stock int SubstringToFloatEx(const char[] str, int length, float &result)
+{
+	int len = strlen(str);
+	if (length <= 0 || len == 0)
+	{
+		return 0;
+	}
+	
+	if (length > len)
+	{
+		length = len;
+	}
+
+	char[] substring = new char[length + 1];
+	strcopy(substring, length + 1, str);
+	
+	return StringToFloatEx(substring, result);
+}
+
+stock int SubstringCount(const char[] str, const char[] substring, bool caseSensitive=true)
+{
+	int count = 0;
+	int index = 0;
+
+	while ((index += StrContains(str[index], substring, caseSensitive)) != -1)
+	{
+		++count;
+	}
+
+	return count;
+}
