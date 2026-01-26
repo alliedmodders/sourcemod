@@ -2048,16 +2048,19 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	{
 		m_pIClient = nullptr;
 
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 		const char *folder = g_HL2.GetGameFolderName();
-		const bool allowNetchanClient =
+
+		// Blocklist: known non-stock 2007 forks where INetChannel::GetMsgHandler()
+		// is not an IClient (vtable/layout mismatch) and can crash on connect.
+		const bool blockNetchanClient =
 			(folder && (
-				strcmp(folder, "cstrike") == 0 ||
-				strcmp(folder, "tf") == 0 ||
-				strcmp(folder, "dod") == 0 ||
-				strcmp(folder, "hl2mp") == 0
+				strcmp(folder, "KumaWar2MP") == 0 ||
+				strcmp(folder, "DinoHuntersMP") == 0 ||
+				strcmp(folder, "KillpointMP") == 0
 			));
 
-		if (allowNetchanClient)
+		if (!blockNetchanClient)
 		{
 			INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex));
 			if (pNetChan)
@@ -2693,5 +2696,6 @@ void CPlayer::PrintToConsole(const char *pMsg)
 
 	engine->ClientPrintf(m_pEdict, pMsg);
 }
+
 
 
