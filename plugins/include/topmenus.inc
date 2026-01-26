@@ -244,7 +244,14 @@ methodmap TopMenu < Handle
 	// @return              TopMenuObject ID on success, or
 	//                     INVALID_TOPMENUOBJECT on failure.
 	public native TopMenuObject FindCategory(const char[] name);
-
+	
+	// Finds an item's topobj ID in a TopMenu.
+	//
+	// @param name         Object's unique name.
+	// @return              TopMenuObject ID on success, or
+	//                     INVALID_TOPMENUOBJECT on failure.
+	public native TopMenuObject FindItem(const char[] name);
+	
 	// Set the menu title caching behavior of the TopMenu. By default titles
 	// are cached to reduce overhead. If you need dynamic menu titles which
 	// change each time the menu is displayed to a user, set this to false.
@@ -441,6 +448,7 @@ public void __ext_topmenus_SetNTVOptional()
 	MarkNativeAsOptional("TopMenu.Display");
 	MarkNativeAsOptional("TopMenu.DisplayCategory");
 	MarkNativeAsOptional("TopMenu.FindCategory");
+	MarkNativeAsOptional("TopMenu.FindItem");
 	MarkNativeAsOptional("TopMenu.CacheTitles.set");
 }
 #endif

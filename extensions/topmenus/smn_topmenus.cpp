@@ -300,6 +300,24 @@ static cell_t FindTopMenuCategory(IPluginContext *pContext, const cell_t *params
 	return pMenu->FindCategory(name);
 }
 
+static cell_t FindTopMenuItem(IPluginContext *pContext, const cell_t *params)
+{
+	HandleError err;
+	ITopMenu *pMenu;
+	HandleSecurity sec(pContext->GetIdentity(), myself->GetIdentity());
+
+	if ((err = handlesys->ReadHandle(params[1], hTopMenuType, &sec, (void **)&pMenu))
+		!= HandleError_None)
+	{
+		return pContext->ThrowNativeError("Invalid Handle %x (error: %d)", params[1], err);
+	}
+
+	char *name;
+	pContext->LocalToString(params[2], &name);
+
+	return pMenu->FindItem(name);
+}
+
 static cell_t DisplayTopMenu(IPluginContext *pContext, const cell_t *params)
 {
 	HandleError err;
@@ -486,6 +504,7 @@ sp_nativeinfo_t g_TopMenuNatives[] =
 	{"TopMenu.LoadConfig",		LoadTopMenuConfig},
 	{"TopMenu.Remove",			RemoveFromTopMenu},
 	{"TopMenu.FindCategory",	FindTopMenuCategory},
+	{"TopMenu.FindItem",		FindTopMenuItem},
 	{"TopMenu.GetInfoString",	GetTopMenuInfoString},
 	{"TopMenu.GetObjName",		GetTopMenuName},
 	{"TopMenu.CacheTitles.set",	SetTopMenuTitleCaching},
