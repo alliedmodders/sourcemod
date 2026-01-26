@@ -178,7 +178,19 @@ public:
 	}
 
 	static SystemFile *Open(const char *path, const char *mode) {
+#if defined(_WIN32)
+		static thread_local bool invalid_fopen = false;
+		static auto handler = [](const wchar_t*, const wchar_t*, const wchar_t*, unsigned int, uintptr_t) { invalid_fopen = true; };
+		auto old = _set_thread_local_invalid_parameter_handler(handler);
+		invalid_fopen = false;
+#endif
 		FILE *fp = fopen(path, mode);
+#if defined(_WIN32)
+		_set_thread_local_invalid_parameter_handler(old);
+		if (invalid_fopen)
+			return NULL;
+#endif
+
 		if (!fp)
 			return NULL;
 		return new SystemFile(fp);
@@ -504,41 +516,6 @@ static cell_t sm_OpenFile(IPluginContext *pContext, const cell_t *params)
 	}
 	
 	if (mode[0] != 'r' && mode[0] != 'w' && mode[0] != 'a') {
-		return pContext->ThrowNativeError("File open mode is invalid \"%s\"!", mode);
-	}
-
-	bool has_plus = false, has_t = false, has_b = false, has_x = false, is_invalid = false;
-	for (int pos = 1; mode[pos] && !is_invalid; pos++) {
-		if (mode[pos] == '+') {
-			if (has_plus) {
-				is_invalid = true;
-			}
-			has_plus = true;
-		} else if (mode[pos] == 'b') {
-			if (has_b || has_t) {
-				is_invalid = true;
-			}
-			has_b = true;
-		} else if (mode[pos] == 't') {
-			if (has_b || has_t) {
-				is_invalid = true;
-			}
-			has_t = true;
-		} else if (mode[pos] == 'x') {
-			if (has_x) {
-				is_invalid = true;
-			}
-			// 'x' mode is only valid with 'w'
-			if (mode[0] != 'w') {
-				is_invalid = true;
-			}
-			has_x = true;
-		} else {
-			is_invalid = true;
-		}
-	}
-
-	if (is_invalid) {
 		return pContext->ThrowNativeError("File open mode is invalid \"%s\"!", mode);
 	}
 
