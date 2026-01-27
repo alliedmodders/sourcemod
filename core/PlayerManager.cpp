@@ -2048,8 +2048,18 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	{
 		m_pIClient = nullptr;
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-		const char *folder = g_HL2.GetGameFolderName();
+  #if SOURCE_ENGINE >= SE_ORANGEBOX
+		char gameDir[PLATFORM_MAX_PATH];
+		engine->GetGameDir(gameDir, sizeof(gameDir));
+
+		const char *folder = gameDir;
+		for (const char *p = gameDir; *p; p++)
+		{
+			if (*p == '/' || *p == '\\')
+			{
+				folder = p + 1;
+			}
+		}
 
 		// Blocklist: known non-stock 2007 forks where INetChannel::GetMsgHandler()
 		// is not an IClient (vtable/layout mismatch) and can crash on connect.
@@ -2696,6 +2706,7 @@ void CPlayer::PrintToConsole(const char *pMsg)
 
 	engine->ClientPrintf(m_pEdict, pMsg);
 }
+
 
 
 
