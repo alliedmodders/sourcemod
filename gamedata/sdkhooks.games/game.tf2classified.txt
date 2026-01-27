@@ -1,0 +1,139 @@
+"Games"
+{
+	"tf2classified"
+	{
+		"Offsets"
+		{
+			"EntityListeners"
+			{
+				"windows64"	"262200"
+				"linux64"	"262200"
+			}
+			"CanBeAutobalanced"
+			{
+				"windows64"	"519"
+				"linux64"	"522"
+			}
+			"EndTouch"
+			{
+				"windows64"	"118"
+				"linux64"	"119"
+			}
+			"FireBullets"
+			{
+				"windows64"	"130"
+				"linux64"	"131"
+			}
+			"GetMaxHealth"
+			{
+				"windows64"	"135"
+				"linux64"	"136"
+			}
+			"GroundEntChanged"
+			{
+				"windows64"	"201"
+				"linux64"	"203"
+			}
+			"OnTakeDamage"
+			{
+				"windows64"	"76"
+				"linux64"	"77"
+			}
+			"OnTakeDamage_Alive"
+			{
+				"windows64"	"313"
+				"linux64"	"314"
+			}
+			"PreThink"
+			{
+				"windows64"	"381"
+				"linux64"	"382"
+			}
+			"PostThink"
+			{
+				"windows64"	"382"
+				"linux64"	"383"
+			}
+			"Reload"
+			{
+				"windows64"	"309"
+				"linux64"	"315"
+			}
+			"SetTransmit"
+			{
+				"windows64"	"22"
+				"linux64"	"23"
+			}
+			"ShouldCollide"
+			{
+				"windows64"	"17"
+				"linux64"	"18"
+			}
+			"Spawn"
+			{
+				"windows64"	"24"
+				"linux64"	"25"
+			}
+			"StartTouch"
+			{
+				"windows64"	"116"
+				"linux64"	"117"
+			}
+			"Think"
+			{
+				"windows64"	"60"
+				"linux64"	"61"
+			}
+			"Touch"
+			{
+				"windows64"	"117"
+				"linux64"	"118"
+			}
+			"TraceAttack"
+			{
+				"windows64"	"74"
+				"linux64"	"75"
+			}
+			"Use"
+			{
+				"windows64"	"115"
+				"linux64"	"116"
+			}
+			"VPhysicsUpdate"
+			{
+				"windows64"	"179"
+				"linux64"	"180"
+			}
+			"Blocked"
+			{
+				"windows64"	"120"
+				"linux64"	"121"
+			}
+			"Weapon_CanSwitchTo"
+			{
+				"windows64"	"306"
+				"linux64"	"307"
+			}
+			"Weapon_CanUse"
+			{
+				"windows64"	"297"
+				"linux64"	"298"
+			}
+			"Weapon_Drop"
+			{
+				"windows64"	"303"
+				"linux64"	"304"
+			}
+			"Weapon_Equip"
+			{
+				"windows64"	"299"
+				"linux64"	"300"
+			}
+			"Weapon_Switch"
+			{
+				"windows64"	"304"
+				"linux64"	"305"
+			}
+		}
+	}
+}
