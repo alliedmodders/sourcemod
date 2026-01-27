@@ -62,7 +62,8 @@ ConVar g_Cvar_ExtendTimeStep;
 ConVar g_Cvar_ExtendRoundStep;
 ConVar g_Cvar_ExtendFragStep;
 ConVar g_Cvar_ExcludeMaps;
-ConVar g_Cvar_IncludeMaps;
+ConVar g_Cvar_IncludeMinMaps;
+ConVar g_Cvar_IncludeMaxMaps;
 ConVar g_Cvar_PersistentMaps;
 ConVar g_Cvar_NoVoteMode;
 ConVar g_Cvar_Extend;
@@ -127,7 +128,8 @@ public void OnPluginStart()
 	g_Cvar_ExtendRoundStep = CreateConVar("sm_extendmap_roundstep", "5", "Specifies how many more rounds each extension makes", _, true, 1.0);
 	g_Cvar_ExtendFragStep = CreateConVar("sm_extendmap_fragstep", "10", "Specifies how many more frags are allowed when map is extended.", _, true, 5.0);	
 	g_Cvar_ExcludeMaps = CreateConVar("sm_mapvote_exclude", "5", "Specifies how many past maps to exclude from the vote.", _, true, 0.0);
-	g_Cvar_IncludeMaps = CreateConVar("sm_mapvote_include", "5", "Specifies how many maps to include in the vote.", _, true, 2.0, true, 6.0);
+	g_Cvar_IncludeMinMaps = CreateConVar("sm_mapvote_include_min", "4", "Specifies the minimum number of maps to include in the vote.", _, true, 2.0, true, 6.0);
+	g_Cvar_IncludeMaxMaps = CreateConVar("sm_mapvote_include_max", "6", "Specifies the maximum number of maps to include in the vote.", _, true, 2.0, true, 6.0);
 	g_Cvar_PersistentMaps = CreateConVar("sm_mapvote_persistentmaps", "0", "Specifies if previous maps should be stored persistently.", _, true, 0.0, true, 1.0);
 	g_Cvar_NoVoteMode = CreateConVar("sm_mapvote_novote", "1", "Specifies whether or not MapChooser should pick a map if no votes are received.", _, true, 0.0, true, 1.0);
 	g_Cvar_Extend = CreateConVar("sm_mapvote_extend", "0", "Number of extensions allowed each map.", _, true, 0.0);
@@ -609,7 +611,7 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 	if (inputlist == null)
 	{
 		int nominateCount = g_NominateList.Length;
-		int voteSize = g_Cvar_IncludeMaps.IntValue;
+		int voteSize = g_Cvar_IncludeMaxMaps.IntValue;
 		
 		/* Smaller of the two - It should be impossible for nominations to exceed the size though (cvar changed mid-map?) */
 		int nominationsToAdd = nominateCount >= voteSize ? voteSize : nominateCount;
@@ -993,16 +995,20 @@ void CreateNextVote()
 	GetCurrentMap(map, sizeof(map));
 	RemoveStringFromArray(tempMaps, map);
 	
-	if (g_Cvar_ExcludeMaps.IntValue && tempMaps.Length > g_Cvar_ExcludeMaps.IntValue)
+	// Start excluding the most recently played maps first
+	for (int i = g_OldMapList.Length-1; i >= 0; i--)
 	{
-		for (int i = 0; i < g_OldMapList.Length; i++)
+		if (tempMaps.Length <= g_Cvar_IncludeMinMaps.IntValue)
 		{
-			g_OldMapList.GetString(i, map, sizeof(map));
-			RemoveStringFromArray(tempMaps, map);
+			// Exit if we hit the minimum option count
+			break;
 		}
+		
+		g_OldMapList.GetString(i, map, sizeof(map));
+		RemoveStringFromArray(tempMaps, map);
 	}
 
-	int limit = (g_Cvar_IncludeMaps.IntValue < tempMaps.Length ? g_Cvar_IncludeMaps.IntValue : tempMaps.Length);
+	int limit = (g_Cvar_IncludeMaxMaps.IntValue < tempMaps.Length ? g_Cvar_IncludeMaxMaps.IntValue : tempMaps.Length);
 	for (int i = 0; i < limit; i++)
 	{
 		int b = GetRandomInt(0, tempMaps.Length - 1);
@@ -1054,7 +1060,7 @@ NominateResult InternalNominateMap(char[] map, bool force, int owner)
 	}
 	
 	/* Too many nominated maps. */
-	if (g_NominateList.Length >= g_Cvar_IncludeMaps.IntValue && !force)
+	if (g_NominateList.Length >= g_Cvar_IncludeMaxMaps.IntValue && !force)
 	{
 		return Nominate_VoteFull;
 	}
@@ -1062,7 +1068,7 @@ NominateResult InternalNominateMap(char[] map, bool force, int owner)
 	g_NominateList.PushString(map);
 	g_NominateOwners.Push(owner);
 	
-	while (g_NominateList.Length > g_Cvar_IncludeMaps.IntValue)
+	while (g_NominateList.Length > g_Cvar_IncludeMaxMaps.IntValue)
 	{
 		char oldmap[PLATFORM_MAX_PATH];
 		g_NominateList.GetString(0, oldmap, sizeof(oldmap));
