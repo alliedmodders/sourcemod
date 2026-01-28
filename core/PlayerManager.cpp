@@ -2048,11 +2048,10 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	{
 		m_pIClient = nullptr;
 
-		const char *skip = g_pGameConf ? g_pGameConf->GetKeyValue("SkipNetchanIClient") : nullptr;
-		if (!(skip && strcmp(skip, "yes") == 0))
+		const char *skip = g_pGameConf->GetKeyValue("SkipNetchanIClient");
+		if (skip == nullptr || strcmp(skip, "yes") != 0)
 		{
-			INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex));
-			if (pNetChan)
+			if (INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex)))
 			{
 				m_pIClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
 			}
@@ -2685,8 +2684,3 @@ void CPlayer::PrintToConsole(const char *pMsg)
 
 	engine->ClientPrintf(m_pEdict, pMsg);
 }
-
-
-
-
-
