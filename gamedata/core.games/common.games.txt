@@ -405,6 +405,7 @@
 		"Keys"
 		{
 			"RadioMenuClosesOnInvalidSlot"	"yes"
+			"SkipNetchanIClient" 			"no"
 		}
 	}
 
