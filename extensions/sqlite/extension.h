@@ -65,6 +65,7 @@ public:
 
 	const char *GetExtensionVerString();
 	const char *GetExtensionDateString();
+	const char *GetExtensionDescription();
 
 	/**
 	 * @brief This is called once all known extensions have been loaded.
