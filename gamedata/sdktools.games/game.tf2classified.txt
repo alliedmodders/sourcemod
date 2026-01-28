@@ -1,0 +1,129 @@
+"Games"
+{
+	/* Team Fortress 2 Classified STEAM BUILD */
+	"tf2classified"
+	{
+		"Offsets"
+		{
+			"SetOwnerEntity"
+			{
+				"windows64"	"18"
+				"linux64"	"19"
+			}
+			"GiveNamedItem"
+			{
+				"windows64"	"452"
+				"linux64"	"453"
+			}
+			"RemovePlayerItem"
+			{
+				"windows64"	"310"
+				"linux64"	"311"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows64"	"308"
+				"linux64"	"309"
+			}
+			"Ignite"
+			{
+				"windows64"	"241"
+				"linux64"	"242"
+			}
+			"Extinguish"
+			{
+				"windows64"	"245"
+				"linux64"	"246"
+			}
+			"Teleport"
+			{
+				"windows64"	"126"
+				"linux64"	"127"
+			}
+			"CommitSuicide"
+			{
+				"windows64"	"497"
+				"linux64"	"497"
+			}
+			"GetVelocity"
+			{
+				"windows64"	"161"
+				"linux64"	"162"
+			}
+			"EyeAngles"
+			{
+				"windows64"	"152"
+				"linux64"	"153"
+			}
+			"SetEntityModel"
+			{
+				"windows64"	"26"
+				"linux64"	"27"
+			}
+			"AcceptInput"
+			{
+				"windows64"	"40"
+				"linux64"	"41"
+			}
+			"WeaponEquip"
+			{
+				"windows64"	"299"
+				"linux64"	"300"
+			}
+			"Activate"
+			{
+				"windows64"	"37"
+				"linux64"	"38"
+			}
+			"PlayerRunCmd"
+			{
+				"windows64"	"472"
+				"linux64"	"473"
+			}
+			"GiveAmmo"
+			{
+				"windows64"	"289"
+				"linux64"	"290"
+			}
+			"GetAttachment"
+			{
+				"windows64"	"237"
+				"linux64"	"238"
+			}
+		}
+		
+		"Keys"
+		{
+			"GameRulesProxy"	"CTFGameRulesProxy"
+			"GameRulesDataTable" "tf_gamerules_data"
+		}
+	}
+	
+	"#default"
+	{
+		"Signatures"
+		{
+			"FireOutput"
+			{
+				"library"	"server"
+				"windows64"	"\x48\x8B\xC4\x48\x89\x50\x10\x48\x89\x48\x08\x41\x54"
+				"linux64"	"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+			}
+		}
+	}
+	
+	"#default"
+	{
+		"Signatures"
+		{
+			"LookupAttachment"
+			{
+				/* CBaseAnimating::LookupAttachment */
+				/* String: "vehicle_driver_eyes", middle length top function, with 4 calls, pick the first one. */
+				"library"	"server"
+				//"windows64"	"\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x80\xB9\x65\x04\x00\x00\x00\x48\x8B\xFA\x48\x8B\xD9\x75\x2A\x48\x83\xB9\xC0\x05\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x48\x85\xC0\x74\x2A\x48\x8B\xCB\xE8\x2A\x2A\x2A\x2A\x48\x8B\x8B\xC0\x05\x00\x00\x48\x85\xC9\x74\x2A\x48\x83\x39\x00\x74\x2A\x48\x8B\xD7\xE8\x2A\x2A\x2A\x2A"
+				"linux64"	"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
+			}
+		}
+	}
+}
