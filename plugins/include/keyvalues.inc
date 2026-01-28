@@ -62,6 +62,12 @@ methodmap KeyValues < Handle
 	// @param firstValue    If firstKey is non-empty, specifies the first key's value.
 	public native KeyValues(const char[] name, const char[] firstKey="", const char[] firstValue="");
 
+	// Exports a KeyValues tree to new descriptor. The tree is dumped from the current position.
+	// The Handle must be closed.
+	//
+	// @return              A Handle to a new KeyValues structure.
+	public native KeyValues Export();
+
 	// Exports a KeyValues tree to a file. The tree is dumped from the current position.
 	//
 	// @param file          File to dump write to.

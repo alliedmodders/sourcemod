@@ -763,6 +763,34 @@ static cell_t smn_KvGetDataType(IPluginContext *pCtx, const cell_t *params)
 	return pStk->pCurRoot.front()->GetDataType(name);
 }
 
+static cell_t smn_KeyValuesExport(IPluginContext *pCtx, const cell_t *params)
+{
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
+	HandleError herr;
+	HandleSecurity sec;
+	KeyValueStack *pStk;
+
+	sec.pOwner = NULL;
+	sec.pIdentity = g_pCoreIdent;
+
+	if ((herr=handlesys->ReadHandle(hndl, g_KeyValueType, &sec, (void **)&pStk))
+		!= HandleError_None)
+	{
+		return pCtx->ThrowNativeError("Invalid key value handle %x (error %d)", hndl, herr);
+	}
+
+	KeyValues *pNewKV = new KeyValues(NULL /* Will be initialized in KeyValues::operator=() */ ); 
+
+	*pNewKV = *(pStk->pCurRoot.front()); // KeyValues::operator=() to recursive copy.
+
+	KeyValueStack *pExportStk = new KeyValueStack;
+
+	pExportStk->pBase = pNewKV;
+	pExportStk->pCurRoot.push(pNewKV);
+
+	return handlesys->CreateHandle(g_KeyValueType, pExportStk, pCtx->GetIdentity(), g_pCoreIdent, NULL);
+}
+
 static cell_t smn_KeyValuesToFile(IPluginContext *pCtx, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
@@ -1253,6 +1281,7 @@ REGISTER_NATIVES(keyvaluenatives)
 	{"KeyValues.Import",				KeyValues_Import},
 	{"KeyValues.ImportFromFile",		smn_FileToKeyValues},
 	{"KeyValues.ImportFromString",		smn_StringToKeyValues},
+	{"KeyValues.Export",				smn_KeyValuesExport},
 	{"KeyValues.ExportToFile",			smn_KeyValuesToFile},
 	{"KeyValues.ExportToString",		smn_KeyValuesToString},
 	{"KeyValues.ExportLength.get",		smn_KeyValuesExportLength},
