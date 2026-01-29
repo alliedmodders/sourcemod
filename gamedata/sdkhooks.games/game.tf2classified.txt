@@ -11,8 +11,8 @@
 			}
 			"CanBeAutobalanced"
 			{
-				"windows64"	"519"
-				"linux64"	"522"
+				"windows64"	"520"
+				"linux64"	"523"
 			}
 			"EndTouch"
 			{
@@ -29,10 +29,11 @@
 				"windows64"	"135"
 				"linux64"	"136"
 			}
+			// CBasePlayer::NetworkStateChanged_m_hGroundEntity(void*)
 			"GroundEntChanged"
 			{
-				"windows64"	"201"
-				"linux64"	"203"
+				"windows64"	"202"
+				"linux64"	"204"
 			}
 			"OnTakeDamage"
 			{
@@ -41,23 +42,23 @@
 			}
 			"OnTakeDamage_Alive"
 			{
-				"windows64"	"313"
-				"linux64"	"314"
+				"windows64"	"314"
+				"linux64"	"315"
 			}
 			"PreThink"
-			{
-				"windows64"	"381"
-				"linux64"	"382"
-			}
-			"PostThink"
 			{
 				"windows64"	"382"
 				"linux64"	"383"
 			}
+			"PostThink"
+			{
+				"windows64"	"383"
+				"linux64"	"384"
+			}
 			"Reload"
 			{
-				"windows64"	"309"
-				"linux64"	"315"
+				"windows64"	"310"
+				"linux64"	"316"
 			}
 			"SetTransmit"
 			{
@@ -111,28 +112,28 @@
 			}
 			"Weapon_CanSwitchTo"
 			{
-				"windows64"	"306"
-				"linux64"	"307"
+				"windows64"	"307"
+				"linux64"	"308"
 			}
 			"Weapon_CanUse"
 			{
-				"windows64"	"297"
-				"linux64"	"298"
+				"windows64"	"298"
+				"linux64"	"299"
 			}
 			"Weapon_Drop"
 			{
-				"windows64"	"303"
-				"linux64"	"304"
+				"windows64"	"304"
+				"linux64"	"305"
 			}
 			"Weapon_Equip"
 			{
-				"windows64"	"299"
-				"linux64"	"300"
+				"windows64"	"300"
+				"linux64"	"301"
 			}
 			"Weapon_Switch"
 			{
-				"windows64"	"304"
-				"linux64"	"305"
+				"windows64"	"305"
+				"linux64"	"306"
 			}
 		}
 	}
