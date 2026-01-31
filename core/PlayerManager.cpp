@@ -2048,7 +2048,7 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	{
 		m_pIClient = nullptr;
 
-		const char *skip = g_pGameConf->GetKeyValue("SkipNetchanIClient");
+		const char *skip = g_pGameConf ? g_pGameConf->GetKeyValue("SkipNetchanIClient") : nullptr;
 		if (skip == nullptr || strcmp(skip, "yes") != 0)
 		{
 			if (INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex)))
@@ -2115,7 +2115,7 @@ void CPlayer::UpdateAuthIds()
 	}
 	
 	EUniverse steam2universe = m_SteamId.GetEUniverse();
-	const char *keyUseInvalidUniverse = g_pGameConf->GetKeyValue("UseInvalidUniverseInSteam2IDs");
+	const char *keyUseInvalidUniverse = g_pGameConf ? g_pGameConf->GetKeyValue("UseInvalidUniverseInSteam2IDs") : nullptr;
 	if (keyUseInvalidUniverse && atoi(keyUseInvalidUniverse) == 1)
 	{
 		steam2universe = k_EUniverseInvalid;
