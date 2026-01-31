@@ -40,11 +40,25 @@ elif [ `uname` != "Linux" ] && [ -n "${COMSPEC:+1}" ]; then
 fi
 
 if [ ! -d "sourcemod" ]; then
-  if [ ! -d "sourcemod-1.5" ]; then
-    echo "Could not find a SourceMod repository; make sure you aren't running this script inside it."
-    exit 1
-  fi
+  echo "Could not find a SourceMod repository; make sure you aren't running this script inside it."
+  exit 1
 fi
+
+getsqlite ()
+{
+  if [ ! -d $sqlitefolder ]; then
+    if [ `command -v wget` ]; then
+      wget -q $sqliteurl -O $sqlitefolder.$archive_ext
+    elif [ `command -v curl` ]; then
+      curl -sS -L -o $sqlitefolder.$archive_ext $sqliteurl
+    fi
+    $decomp $sqlitefolder.$archive_ext
+    smdir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+    mv $sqlitefolder/sqlite3.c "$smdir"/extensions/sqlite/sqlite-source
+    mv $sqlitefolder/sqlite3.h "$smdir"/extensions/sqlite/sqlite-source
+    rm $sqlitefolder.$archive_ext
+  fi
+}
 
 getmysql ()
 {
@@ -62,6 +76,33 @@ getmysql ()
     rm $mysqlfolder.$archive_ext
   fi
 }
+
+# SQLite
+if [ `command -v wget` ]; then
+  sqlitedlcmd="wget -qO- https://www.sqlite.org/download.html"
+elif [ `command -v curl` ]; then
+  sqlitedlcmd="curl -sS https://www.sqlite.org/download.html"
+else
+  echo "Failed to locate wget or curl. Install one of these programs to download SQLite. Using the built-in version of SQLite"
+fi
+if [ -n "$sqlitedlcmd" ]; then
+  if [ $iswin -eq 1 ]; then
+    sqlitever=$($sqlitedlcmd |
+      grep -o '[0-9]\{4\}/sqlite-amalgamation-[0-9]\+\.zip' |
+      sort -V |
+      tail -1 |
+      sed 's/\.zip//')
+  else
+    sqlitever=$($sqlitedlcmd |
+      grep -o '[0-9]\{4\}/sqlite-autoconf-[0-9]\+\.tar\.gz' |
+      sort -V |
+      tail -1 |
+      sed 's/\.tar\.gz//')
+  fi
+  sqlitefolder=$(basename "$sqlitever")
+  sqliteurl=https://www.sqlite.org/$sqlitever.$archive_ext
+  getsqlite
+fi
 
 # 32-bit MySQL
 mysqlfolder=mysql-5.7
