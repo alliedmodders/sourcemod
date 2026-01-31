@@ -1,6 +1,6 @@
 "Games"
 {
-	"tf2classified"
+	"#default"
 	{
 		"Offsets"
 		{

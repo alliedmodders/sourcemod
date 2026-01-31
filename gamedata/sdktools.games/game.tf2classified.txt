@@ -1,7 +1,7 @@
 "Games"
 {
 	/* Team Fortress 2 Classified STEAM BUILD */
-	"tf2classified"
+	"#default"
 	{
 		"Offsets"
 		{
