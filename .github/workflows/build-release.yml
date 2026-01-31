@@ -1,0 +1,221 @@
+name: Build master branch
+on:
+  push:
+    branches:
+      - master
+env:
+  ARCH: x86,x86_64
+  # Used for caching
+  # TODO: Handle this better so that we don't have to update this in lockstep with checkout-deps
+  MYSQL_VERSION: '5.5'
+  MMSOURCE_VERSION: '1.12'
+jobs:
+  build:
+    permissions:
+      # For release creation, at the end
+      contents: write
+    strategy:
+      matrix:
+        include:
+          - platform: windows
+            os: windows-latest
+            os_short: win
+          - platform: linux
+            os: ubuntu-latest
+            os_short: linux
+            container_image: ghcr.io/alliedmodders/build-containers/debian11:latest
+      fail-fast: false
+    name: ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+    container:
+      image: ${{ matrix.container_image }}
+    steps:
+      - name: Checkout SourceMod
+        uses: actions/checkout@v4
+        with:
+          path: sourcemod
+          fetch-depth: 0
+          submodules: recursive
+      
+      - name: Install Windows dependencies
+        if: startsWith(matrix.os, 'windows')
+        shell: pwsh
+        run: |
+          choco install -y gzip
+          choco install -y 7zip
+
+          # Add DIA SDK bin directory to PATH for dump_syms
+          Install-Module -Name VSSetup -Scope AllUsers -Force -AllowClobber
+          $vsRoot = Get-VSSetupInstance |
+            Sort-Object -Property InstallationVersion -Descending |
+            Select-Object -First 1 |
+            Select-Object -ExpandProperty InstallationPath
+          $diaDir = (Join-Path -Path $vsRoot -ChildPath 'DIA SDK\bin')
+          $diaDir | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          
+          $toolsDir = New-Item -Path '_tools' -ItemType Directory -Force
+          $toolsDir.FullName | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          Push-Location $toolsDir
+          # TODO: Move this somewhere more official
+          curl -sSL -o dump_syms.exe https://users.alliedmods.net/~psychonic/dump_syms.exe
+          Unblock-File -Path dump_syms.exe
+          Pop-Location
+      
+      # Largely a workaround for issue where github.workspace doesn't match $GITHUB_WORKSPACE
+      # in containerized jobs. See https://github.com/actions/runner/issues/2058
+      - name: Resolve paths
+        id: path_helper
+        shell: bash
+        run: |
+          echo "dependencies=$GITHUB_WORKSPACE/dependencies" >> $GITHUB_OUTPUT
+      
+      - name: Generate SDK list
+        id: sdk_list
+        shell: bash
+        run: |
+            sdk_list=()
+            for file in sourcemod/hl2sdk-manifests/manifests/*.json; do
+              sdk=$(basename "$file" .json)
+              if [[ $sdk == "mock" ]]; then
+                # We don't need to ship a build for the mock SDK
+                continue
+              fi
+
+              platform=$(jq -r '.platforms.${{ matrix.platform }}' "$file")
+              if [[ -z $platform || $platform == "null" || ${#platform[@]} -eq 0 ]]; then
+                continue
+              fi
+
+              source2=$(jq -r '.source2' "$file")
+              if [[ $source2 == "null" || $source2 == "true" ]]; then
+                continue
+              fi
+
+              sdk_list+=("$sdk")
+            done
+            echo "sdk_list=$(printf '%s\n' "${sdk_list[@]}" | jq --raw-input . | jq --slurp --compact-output .)" >> $GITHUB_OUTPUT
+      
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        env:
+          cache-name: hl2sdk-mysql-mmsource
+        with:
+          path: ${{ steps.path_helper.outputs.dependencies }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-mysql${{ env.MYSQL_VERSION }}-mmsource${{ env.MMSOURCE_VERSION }}-${{ join(fromJson(steps.sdk_list.outputs.sdk_list), '') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-mysql${{ env.MYSQL_VERSION }}-mmsource${{ env.MMSOURCE_VERSION }}-
+            ${{ runner.os }}-build-${{ env.cache-name }}-mysql${{ env.MYSQL_VERSION }}-
+      
+      - name: Install dependencies
+        shell: bash
+        run: |
+          mkdir -p '${{ steps.path_helper.outputs.dependencies }}'
+          cd '${{ steps.path_helper.outputs.dependencies }}'
+
+          # Satisfy checkout-deps requirement for a "sourcemod" folder.
+          mkdir -p sourcemod
+          ../sourcemod/tools/checkout-deps.sh -s ${{ join(fromJson(steps.sdk_list.outputs.sdk_list), ',') }}
+
+          if [ ! -f GeoLite2-City_20191217/GeoLite2-City.mmdb ]; then
+            geotar="GeoLite2-City_20191217.tar.gz"
+            curl -sSL "https://sm.alliedmods.net/$geotar" -o $geotar
+            tar -xzf "$geotar"
+            rm "$geotar"
+          fi
+
+      - name: Build
+        working-directory: sourcemod
+        shell: bash
+        env:
+          BREAKPAD_SYMBOL_SERVER: ${{ vars.BREAKPAD_SYMBOL_SERVER }}
+          BREAKPAD_SYMBOL_SERVER_TOKEN: ${{ secrets.BREAKPAD_SYMBOL_SERVER_TOKEN }}
+        run: |
+          mkdir build
+          cd build
+          python3 ../configure.py \
+            --enable-optimize \
+            --breakpad-dump \
+            --no-color \
+            --symbol-files \
+            --sdks=${{ join(fromJson(steps.sdk_list.outputs.sdk_list), ',') }} \
+            --targets=${{ env.ARCH }} \
+            '--mms-path=${{ steps.path_helper.outputs.dependencies }}/mmsource-${{ env.MMSOURCE_VERSION }}' \
+            '--hl2sdk-root=${{ steps.path_helper.outputs.dependencies }}' \
+            '--mysql-path=${{ steps.path_helper.outputs.dependencies }}/mysql-${{ env.MYSQL_VERSION }}' \
+            '--mysql64-path=${{ steps.path_helper.outputs.dependencies }}/mysql-${{ env.MYSQL_VERSION }}-x86_64'
+          ambuild
+
+          mkdir -p addons/sourcemod/configs/geoip
+          cp '${{ steps.path_helper.outputs.dependencies }}/GeoLite2-City_20191217/GeoLite2-City.mmdb' addons/sourcemod/configs/geoip/GeoLite2-City.mmdb
+      
+      - name: Package
+        id: package
+        working-directory: sourcemod/build/package
+        shell: bash
+        run: |
+          version_base=$(cat ../../product.version)
+          version_base=${version_base%-dev} # Ex. 1.12.0
+          version_rev=$(git rev-list --count HEAD)
+          version="${version_base}.${version_rev}"
+          expanded_version="${version_base}-git-${version_rev}"
+
+          if [ "${{ matrix.platform}}" == "windows" ]; then
+            filename="sourcemod-${expanded_version}-${{ matrix.platform }}.zip"
+            7z a "$filename" addons cfg
+            content_type="application/zip"
+          else
+            filename="sourcemod-${expanded_version}-${{ matrix.platform }}.tar.gz"
+            tar zcvf "$filename" addons cfg
+            content_type="application/gzip"
+          fi
+          echo "version=$version" >> $GITHUB_OUTPUT
+          echo "expanded_version=$expanded_version" >> $GITHUB_OUTPUT
+          echo "filename=$filename" >> $GITHUB_OUTPUT
+          echo "content_type=$content_type" >> $GITHUB_OUTPUT
+        
+      - name: Create Release
+        id: create_release
+        uses: ncipollo/release-action@v1.14.0
+        with:
+          # Windows and Linux packages will need to upload to the same release
+          allowUpdates: true
+          replacesArtifacts: false
+          omitBodyDuringUpdate: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          omitPrereleaseDuringUpdate: true
+
+          artifacts: sourcemod/build/package/${{ steps.package.outputs.filename }}
+          artifactContentType: ${{ steps.package.outputs.content_type }}
+          artifactErrorsFailBuild: true
+
+          tag: ${{ steps.package.outputs.version }}
+          commit: ${{ github.sha }}
+          generateReleaseNotes: true
+                    
+          draft: false
+          prerelease: ${{ github.ref == 'refs/heads/master' }}
+          makeLatest: ${{ github.ref != 'refs/heads/master' }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Output PDBs
+        if: startsWith(matrix.os, 'windows')
+        shell: pwsh
+        id: output_pdbs
+        working-directory: sourcemod/build
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $paths = (Get-Content -Path "pdblog.txt" | ForEach-Object -Process {
+              $fullRelPath = Join-Path -Path 'sourcemod/build' -ChildPath $_
+              $fullRelPath -replace '\.pdb$', '.*'
+            }) -join "`n"
+          "PDB_PATHS<<EOF" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          $paths | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "EOF" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      
+      - name: Upload PDBs
+        if: startsWith(matrix.os, 'windows')
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdbs
+          path: ${{ env.PDB_PATHS }}
