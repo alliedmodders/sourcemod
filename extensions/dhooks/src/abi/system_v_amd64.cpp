@@ -385,7 +385,7 @@ void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original
 	// Store the return value in a local variable
 	auto local_size = 0;
 	std::uintptr_t init_op = 0;
-	std::uintptr_t delete_op = 0;
+	std::uintptr_t deinit_op = 0;
 	switch (Classify_ReturnType(ret).value()) {
 		case INTEGER:
 		// Store RAX
@@ -394,7 +394,7 @@ void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original
 		jit.mov(rsp(), rax);
 
 		init_op = reinterpret_cast<std::uintptr_t>(KHook::init_operator<std::uintptr_t>);
-		delete_op = reinterpret_cast<std::uintptr_t>(KHook::delete_operator<std::uintptr_t>);
+		deinit_op = reinterpret_cast<std::uintptr_t>(KHook::delete_operator<std::uintptr_t>);
 		break;
 		case SSE:
 			local_size = 0x10;
@@ -405,12 +405,12 @@ void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original
 				jit.movsd(rsp(0x8), xmm1);
 
 				init_op = reinterpret_cast<std::uintptr_t>(KHook::init_operator<sdk::Vector>);
-				delete_op = reinterpret_cast<std::uintptr_t>(KHook::delete_operator<sdk::Vector>);
+				deinit_op = reinterpret_cast<std::uintptr_t>(KHook::delete_operator<sdk::Vector>);
 			} else {
 				jit.movsd(rsp(), xmm0);
 
 				init_op = reinterpret_cast<std::uintptr_t>(KHook::init_operator<float>);
-				delete_op = reinterpret_cast<std::uintptr_t>(KHook::delete_operator<float>);
+				deinit_op = reinterpret_cast<std::uintptr_t>(KHook::delete_operator<float>);
 			}
 		break;
 		default:
@@ -423,7 +423,7 @@ void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original
 	jit.mov(rsi, rsp); // ptr_to_return
 	jit.mov(rdx, ret.dhook_size); // return_size
 	jit.mov(rcx, init_op); // init_op
-	jit.mov(r8, delete_op); // delete_op
+	jit.mov(r8, deinit_op); // deinit_op
 	jit.mov(r9, true); // original
 
 	jit.mov(rax, reinterpret_cast<std::uintptr_t>(::KHook::SaveReturnValue));
