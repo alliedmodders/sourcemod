@@ -1027,7 +1027,7 @@ static cell_t StoreAddressToAddress(IPluginContext *pContext, const cell_t *para
 	bool updateMemAccess = params[3];
 
 	if (updateMemAccess) {
-		SourceHook::SetMemAccess(addr, sizeof(void*), SH_MEM_READ|SH_MEM_WRITE|SH_MEM_EXEC);
+		KHook::Memory::SetAccess(addr, sizeof(void*), KHook::Memory::Flags::READ|KHook::Memory::Flags::WRITE|KHook::Memory::Flags::EXECUTE);
 	}
 	*reinterpret_cast<void**>(addr) = data;
 
