@@ -1,8 +1,15 @@
 #pragma once
 
 #include <cstdint>
+#include <optional>
 
 namespace dhooks::sp {
+
+enum HookMode
+{
+	Hook_Pre,
+	Hook_Post
+};
 
 enum HookType
 {
@@ -152,6 +159,14 @@ enum ObjectValueType
 	ObjectValueType_String
 };
 
-std::size_t GetParamTypeSize(HookParamType type);
+enum SDKFuncConfSource
+{
+	SDKConf_Virtual,
+	SDKConf_Signature,
+	SDKConf_Address
+};
+
+std::optional<std::size_t> GetParamTypeSize(HookParamType type);
+std::optional<std::size_t> GetReturnTypeSize(ReturnType type);
 
 }
