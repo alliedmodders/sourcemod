@@ -3,6 +3,7 @@
 #include <IHandleSys.h>
 #include <IExtensionSys.h>
 #include <IGameHelpers.h>
+#include <IGameConfigs.h>
 #include <ISourceMod.h>
 #include <sp_vm_types.h>
 
@@ -20,6 +21,7 @@ extern SourceMod::IHandleSys* handlesys;
 extern SourceMod::IGameHelpers* gamehelpers;
 extern SourceMod::IExtension* myself;
 extern SourceMod::ISourceMod* sourcemod;
+extern SourceMod::IGameConfigManager* gameconfs;
 extern std::vector<sp_nativeinfo_t> natives;
 extern dhooks::SignatureGameConfig* dhooks_config;
 
@@ -41,6 +43,13 @@ inline const char *HandleErrorToString(SourceMod::HandleError err) {
 		case SourceMod::HandleError_NoInherit: { return "This type cannot be inherited"; }
 	}
 	return "";
+}
+
+inline void* cell_to_ptr(SourcePawn::IPluginContext* ctx, const cell_t addr) {
+	if (ctx->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) != SP_ERROR_NONE) {
+		return sourcemod->FromPseudoAddress(addr);
+	}
+	return reinterpret_cast<void*>(addr);
 }
 
 }

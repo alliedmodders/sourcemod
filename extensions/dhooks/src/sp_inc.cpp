@@ -3,7 +3,7 @@
 
 namespace dhooks::sp {
 
-std::size_t GetParamTypeSize(HookParamType type) {
+std::optional<std::size_t> GetParamTypeSize(HookParamType type) {
 	switch (type) {
 		case HookParamType_Int:
 			return sizeof(int);
@@ -25,9 +25,36 @@ std::size_t GetParamTypeSize(HookParamType type) {
 			return sizeof(void*);
 		case HookParamType_Edict:
 			return sizeof(sdk::edict_t*);
-		default:
-			return 0;
 	}
+	return {};
+}
+
+std::optional<std::size_t> GetReturnTypeSize(ReturnType type) {
+	switch (type) {
+		case sp::ReturnType_Void:
+			return 0;
+		case sp::ReturnType_Int:
+			return sizeof(int);
+		case sp::ReturnType_Bool:
+			return sizeof(bool);
+		case sp::ReturnType_Float:
+			return sizeof(float);
+		case sp::ReturnType_String:
+			return sizeof(sdk::string_t);
+		case sp::ReturnType_StringPtr:
+			return sizeof(sdk::string_t*);
+		case sp::ReturnType_CharPtr:
+			return sizeof(const char*);
+		case sp::ReturnType_Vector:
+			return sizeof(sdk::Vector);
+		case sp::ReturnType_VectorPtr:
+			return sizeof(sdk::Vector*);
+		case sp::ReturnType_CBaseEntity:
+			return sizeof(sdk::CBaseEntity*);
+		case sp::ReturnType_Edict:
+			return sizeof(sdk::edict_t*);
+	}
+	return {};
 }
 
 }

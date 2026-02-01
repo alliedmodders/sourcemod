@@ -155,10 +155,6 @@ SourceMod::SMCResult SignatureGameConfig::ReadSMC_NewSection(const SourceMod::SM
 
 			// Reset the parameter info.
 			ParamInfo info;
-			info.type = sp::HookParamType_Unknown;
-			info.size = 0;
-			info.custom_register = sp::DHookRegister_Default;
-			info.flags = sp::DHookPass_ByVal;
 			g_CurrentArgumentInfo.info = info;
 
 			// See if we already have info about this argument.
@@ -256,13 +252,22 @@ SourceMod::SMCResult SignatureGameConfig::ReadSMC_KeyValue(const SourceMod::SMCS
 			}
 			else if (!strcmp(key, "return"))
 			{
-				g_CurrentSignature->retType = GetReturnTypeFromString(value);
+				g_CurrentSignature->ret.type = GetReturnTypeFromString(value);
 
-				if (g_CurrentSignature->retType == sp::ReturnType_Unknown)
+				if (g_CurrentSignature->ret.type == sp::ReturnType_Unknown)
 				{
 					globals::sourcemod->LogError(globals::myself, "Invalid return type \"%s\": line: %i col: %i", value, states->line, states->col);
 					return SourceMod::SMCResult_HaltFail;
 				}
+
+				g_CurrentSignature->ret.size = sp::GetReturnTypeSize(g_CurrentSignature->ret.type).value_or(0);
+				if (g_CurrentSignature->ret.size == 0 && g_CurrentSignature->ret.type != sp::ReturnType_Void)
+				{
+					globals::sourcemod->LogError(globals::myself, "Invalid return type \"%s\": its is 0 bytes", value, states->line, states->col);
+					return SourceMod::SMCResult_HaltFail;
+				}
+
+				g_CurrentSignature->ret.flags = sp::DHookPass_ByVal;
 			}
 			else if (!strcmp(key, "this"))
 			{
@@ -289,7 +294,7 @@ SourceMod::SMCResult SignatureGameConfig::ReadSMC_KeyValue(const SourceMod::SMCS
 			if (!strcmp(key, "type"))
 			{
 				g_CurrentArgumentInfo.info.type = GetHookParamTypeFromString(value);
-				if (g_CurrentArgumentInfo.info.type == sp::HookParamType_Unknown)
+				if (g_CurrentArgumentInfo.info.type == sp::HookParamType_Unknown || g_CurrentArgumentInfo.info.type == sp::HookParamType_Object)
 				{
 					globals::sourcemod->LogError(globals::myself, "Invalid argument type \"%s\" for argument \"%s\": line: %i col: %i", value, g_CurrentArgumentInfo.name.c_str(), states->line, states->col);
 					return SourceMod::SMCResult_HaltFail;
@@ -423,7 +428,7 @@ SourceMod::SMCResult SignatureGameConfig::ReadSMC_LeavingSection(const SourceMod
 			}
 			else
 			{
-				g_CurrentArgumentInfo.info.size = sp::GetParamTypeSize(g_CurrentArgumentInfo.info.type);
+				g_CurrentArgumentInfo.info.size = sp::GetParamTypeSize(g_CurrentArgumentInfo.info.type).value_or(0);
 				if (g_CurrentArgumentInfo.info.size == 0)
 				{
 					globals::sourcemod->LogError(globals::myself, "param \"%s\" size could not be auto-determined!", g_CurrentArgumentInfo.name.c_str(), states->line, states->col);
