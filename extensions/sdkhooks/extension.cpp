@@ -596,138 +596,138 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 		switch(type)
 		{
 			case SDKHook_EndTouch:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, &SDKHooks::Hook_EndTouch, nullptr);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_EndTouch, nullptr);
 				break;
 			case SDKHook_EndTouchPost:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, nullptr, &SDKHooks::Hook_EndTouchPost);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_EndTouchPost);
 				break;
 			case SDKHook_FireBulletsPost:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, nullptr, &SDKHooks::Hook_FireBulletsPost);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_FireBulletsPost);
 				break;
 #ifdef GETMAXHEALTH_IS_VIRTUAL
 			case SDKHook_GetMaxHealth:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, &SDKHooks::Hook_GetMaxHealth, nullptr);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_GetMaxHealth, nullptr);
 				break;
 #endif
 			case SDKHook_GroundEntChangedPost:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, nullptr, &SDKHooks::Hook_GroundEntChangedPost);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_GroundEntChangedPost);
 				break;
 			case SDKHook_OnTakeDamage:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, &SDKHooks::Hook_OnTakeDamage, nullptr);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_OnTakeDamage, nullptr);
 				break;
 			case SDKHook_OnTakeDamagePost:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, nullptr, &SDKHooks::Hook_OnTakeDamagePost);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_OnTakeDamagePost);
 				break;
 			case SDKHook_OnTakeDamage_Alive:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, &SDKHooks::Hook_OnTakeDamage_Alive, nullptr);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_OnTakeDamage_Alive, nullptr);
 				break;
 			case SDKHook_OnTakeDamage_AlivePost:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, nullptr, &SDKHooks::Hook_OnTakeDamage_AlivePost);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_OnTakeDamage_AlivePost);
 				break;
 			case SDKHook_PreThink:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, &SDKHooks::Hook_PreThink, nullptr);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_PreThink, nullptr);
 				break;
 			case SDKHook_PreThinkPost:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, nullptr, &SDKHooks::Hook_PreThinkPost);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_PreThinkPost);
 				break;
 			case SDKHook_PostThink:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, &SDKHooks::Hook_PostThink, nullptr);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_PostThink, nullptr);
 				break;
 			case SDKHook_PostThinkPost:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, nullptr, &SDKHooks::Hook_PostThinkPost);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_PostThinkPost);
 				break;
 			case SDKHook_Reload:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, &SDKHooks::Hook_Reload, nullptr);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_Reload, nullptr);
 				break;
 			case SDKHook_ReloadPost:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, nullptr, &SDKHooks::Hook_ReloadPost);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_ReloadPost);
 				break;
 			case SDKHook_SetTransmit:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, &SDKHooks::Hook_SetTransmit, nullptr);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_SetTransmit, nullptr);
 				break;
 			case SDKHook_Spawn:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, &SDKHooks::Hook_Spawn, nullptr);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_Spawn, nullptr);
 				break;
 			case SDKHook_SpawnPost:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, nullptr, &SDKHooks::Hook_SpawnPost);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_SpawnPost);
 				break;
 			case SDKHook_StartTouch:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, &SDKHooks::Hook_StartTouch, nullptr);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_StartTouch, nullptr);
 				break;
 			case SDKHook_StartTouchPost:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, nullptr, &SDKHooks::Hook_StartTouchPost);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_StartTouchPost);
 				break;
 			case SDKHook_Think:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, &SDKHooks::Hook_Think, nullptr);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_Think, nullptr);
 				break;
 			case SDKHook_ThinkPost:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, nullptr, &SDKHooks::Hook_ThinkPost);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_ThinkPost);
 				break;
 			case SDKHook_Touch:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, &SDKHooks::Hook_Touch, nullptr);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_Touch, nullptr);
 				break;
 			case SDKHook_TouchPost:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, nullptr, &SDKHooks::Hook_TouchPost);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_TouchPost);
 				break;
 			case SDKHook_TraceAttack:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, &SDKHooks::Hook_TraceAttack, nullptr);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_TraceAttack, nullptr);
 				break;
 			case SDKHook_TraceAttackPost:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, nullptr, &SDKHooks::Hook_TraceAttackPost);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_TraceAttackPost);
 				break;
 			case SDKHook_Use:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, &SDKHooks::Hook_Use, nullptr);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_Use, nullptr);
 				break;
 			case SDKHook_UsePost:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, nullptr, &SDKHooks::Hook_UsePost);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_UsePost);
 				break;
 			case SDKHook_VPhysicsUpdate:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, &SDKHooks::Hook_VPhysicsUpdate, nullptr);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_VPhysicsUpdate, nullptr);
 				break;
 			case SDKHook_VPhysicsUpdatePost:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, nullptr, &SDKHooks::Hook_VPhysicsUpdatePost);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_VPhysicsUpdatePost);
 				break;
 			case SDKHook_WeaponCanSwitchTo:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, &SDKHooks::Hook_WeaponCanSwitchTo, nullptr);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_WeaponCanSwitchTo, nullptr);
 				break;
 			case SDKHook_WeaponCanSwitchToPost:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, nullptr, &SDKHooks::Hook_WeaponCanSwitchToPost);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_WeaponCanSwitchToPost);
 				break;
 			case SDKHook_WeaponCanUse:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, &SDKHooks::Hook_WeaponCanUse, nullptr);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_WeaponCanUse, nullptr);
 				break;
 			case SDKHook_WeaponCanUsePost:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, nullptr, &SDKHooks::Hook_WeaponCanUsePost);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_WeaponCanUsePost);
 				break;
 			case SDKHook_WeaponDrop:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, &SDKHooks::Hook_WeaponDrop, nullptr);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_WeaponDrop, nullptr);
 				break;
 			case SDKHook_WeaponDropPost:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, nullptr, &SDKHooks::Hook_WeaponDropPost);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_WeaponDropPost);
 				break;
 			case SDKHook_WeaponEquip:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, &SDKHooks::Hook_WeaponEquip, nullptr);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_WeaponEquip, nullptr);
 				break;
 			case SDKHook_WeaponEquipPost:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, nullptr, &SDKHooks::Hook_WeaponEquipPost);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_WeaponEquipPost);
 				break;
 			case SDKHook_WeaponSwitch:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, &SDKHooks::Hook_WeaponSwitch, nullptr);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_WeaponSwitch, nullptr);
 				break;
 			case SDKHook_WeaponSwitchPost:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, nullptr, &SDKHooks::Hook_WeaponSwitchPost);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_WeaponSwitchPost);
 				break;
 			case SDKHook_ShouldCollide:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, nullptr, &SDKHooks::Hook_ShouldCollide);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_ShouldCollide);
 				break;
 			case SDKHook_Blocked:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, &SDKHooks::Hook_Blocked, nullptr);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_Blocked, nullptr);
 				break;
 			case SDKHook_BlockedPost:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, nullptr, &SDKHooks::Hook_BlockedPost);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_BlockedPost);
 				break;
 			case SDKHook_CanBeAutobalanced:
-				khook = new KHook::Member(vtable[g_HookTypes[type].offset], this, &SDKHooks::Hook_CanBeAutobalanced, nullptr);
+				khook = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_CanBeAutobalanced, nullptr);
 				break;
 		}
 
@@ -935,7 +935,7 @@ KHook::Return<bool> SDKHooks::Hook_CanBeAutobalanced(CBaseEntity* this_ptr)
 
 		int entity = gamehelpers->EntityToBCompatRef(pPlayer);
 
-		auto mfp = KHook::BuildMFP<CBaseEntity, bool>(KHook::GetOriginal((*(void***)this_ptr)[g_HookTypes[SDKHook_CanBeAutobalanced].offset]));
+		auto mfp = KHook::BuildMFP<CBaseEntity, bool>(KHook::FindOriginalVirtual(*(void***)this_ptr, g_HookTypes[SDKHook_CanBeAutobalanced].offset));
 		bool origRet = (this_ptr->*mfp)();
 		bool newRet = origRet;
 
@@ -1025,7 +1025,7 @@ KHook::Return<void> SDKHooks::Hook_FireBulletsPost(CBaseEntity* this_ptr, const 
 KHook::Return<int> SDKHooks::Hook_GetMaxHealth(CBaseEntity* this_ptr)
 {
 	CBaseEntity *pEntity = this_ptr;
-	auto mfp = KHook::BuildMFP<CBaseEntity, int>(KHook::GetOriginal((*(void***)pEntity)[g_HookTypes[SDKHook_GetMaxHealth].offset]));
+	auto mfp = KHook::BuildMFP<CBaseEntity, int>(KHook::FindOriginalVirtual(*(void***)pEntity, g_HookTypes[SDKHook_GetMaxHealth].offset));
 	int original_max = (pEntity->*mfp)();
 
 	void** vtable = *(void***)this_ptr;
