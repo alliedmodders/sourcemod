@@ -177,7 +177,7 @@ cell_t Native_TakeDamage(IPluginContext *pContext, const cell_t *params)
 
 	if (params[0] < 9 || params[9] != 0)
 	{
-		auto func = KHook::GetOriginal((*(void***)pVictim)[g_HookTypes[SDKHook_OnTakeDamage].offset]);
+		auto func = KHook::FindOriginalVirtual(*(void***)pVictim, g_HookTypes[SDKHook_OnTakeDamage].offset);
 		auto mfp = KHook::BuildMFP<CBaseEntity, int, const CTakeDamageInfoHack&>(func);
 		(pVictim->*mfp)(info);
 	}
@@ -291,7 +291,7 @@ cell_t Native_DropWeapon(IPluginContext *pContext, const cell_t *params)
 
 	if (params[0] < 5 || params[5] != 0)
 	{
-		auto func = KHook::GetOriginal((*(void***)pPlayer)[g_HookTypes[SDKHook_WeaponDrop].offset]);
+		auto func = KHook::FindOriginalVirtual(*(void***)pPlayer, g_HookTypes[SDKHook_WeaponDrop].offset);
 		auto mfp = KHook::BuildMFP<CBaseEntity, void, CBaseCombatWeapon*, const Vector*, const Vector*>(func);
 		(pPlayer->*mfp)((CBaseCombatWeapon*)pWeapon, pVecTarget, pVecVelocity);
 	}
