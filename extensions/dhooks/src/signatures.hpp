@@ -33,6 +33,7 @@
 #define _INCLUDE_SIGNATURES_H_
 
 #include "sp_inc.hpp"
+#include "variable.hpp"
 
 #include "ITextParsers.h"
 
@@ -44,10 +45,38 @@ namespace dhooks {
 
 struct ParamInfo
 {
+	ParamInfo() : type(sp::HookParamType_Unknown), size(0), flags(sp::DHookPass_ByVal), custom_register(sp::DHookRegister_Default) {}
 	sp::HookParamType type;
 	size_t size;
 	sp::DHookPassFlag flags;
 	sp::DHookRegister custom_register;
+
+	operator Variable() const {
+		Variable var;
+		var.dhook_type = type;
+		var.dhook_size = size;
+		var.dhook_pass_flags = flags;
+		var.dhook_custom_register = custom_register;
+		return var;
+	}
+};
+
+struct ReturnInfo
+{
+	ReturnInfo() : type(sp::ReturnType_Unknown), size(0), flags(sp::DHookPass_ByVal), custom_register(sp::DHookRegister_Default) {}
+	sp::ReturnType type;
+	size_t size;
+	sp::DHookPassFlag flags;
+	sp::DHookRegister custom_register;
+
+	operator ReturnVariable() const {
+		ReturnVariable var;
+		var.dhook_type = type;
+		var.dhook_size = size;
+		var.dhook_pass_flags = flags;
+		var.dhook_custom_register = custom_register;
+		return var;
+	}
 };
 
 struct ArgumentInfo {
@@ -69,7 +98,7 @@ public:
 	std::vector<ArgumentInfo> args;
 	sp::CallingConvention callConv;
 	sp::HookType hookType;
-	sp::ReturnType retType;
+	ReturnInfo ret;
 	sp::ThisPointerType thisType;
 };
 

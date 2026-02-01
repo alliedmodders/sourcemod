@@ -1,7 +1,7 @@
 #pragma once
 
 #include "register.hpp"
-#include "variable.hpp"
+#include "signatures.hpp"
 
 #include <sp_vm_types.h>
 #include <IHandleSys.h>
@@ -48,21 +48,52 @@ private:
 
 class HookSetup {
 public:
-	HookSetup(sp::ThisPointerType, sp::CallingConvention, void* address, const std::vector<Variable>& params, const ReturnVariable& ret);
-	HookSetup(sp::ThisPointerType, std::uint32_t offset, const std::vector<Variable>& params, const ReturnVariable& ret);
-	~HookSetup();
+	virtual ~HookSetup();
+	static SourceMod::HandleType_t HANDLE_TYPE;
 
-	static SourceMod::HandleType_t VIRTUAL_HANDLE_TYPE;
-	static SourceMod::HandleType_t ADDRESS_HANDLE_TYPE;
+	bool IsImmutable() const { return _immutable; }
+	void SetImmutable() { _immutable = true; }
+
+	void AddParam(const Variable& var) { if (!_immutable) { _dhook_params.push_back(var); } }
+	cell_t GetHandle() const { return _handle; }
 private:
 	cell_t _handle;
-	std::optional<std::uint32_t> _virtual_offset;
-	std::optional<void*> _address;
-
+	bool _immutable = false;
 	sp::ThisPointerType _this_pointer;
 	sp::CallingConvention _dhook_call_conv;
 	std::vector<Variable> _dhook_params;
 	ReturnVariable _dhook_return;
+};
+
+class DynamicHook : public HookSetup {
+public:
+	DynamicHook(sp::ThisPointerType, std::uint32_t offset, const std::vector<ArgumentInfo>& params, const ReturnInfo& ret);
+	static SourceMod::HandleType_t HANDLE_TYPE;
+
+	void SetOffset(int offset) {
+		if (offset < 0) {
+			return;
+		}
+		_offset = offset;
+	}
+protected:
+	std::uint32_t _offset;
+};
+
+
+class DynamicDetour : public HookSetup {
+public:
+	DynamicDetour(sp::ThisPointerType, sp::CallingConvention, void* address, const std::vector<ArgumentInfo>& params, const ReturnInfo& ret);
+	static SourceMod::HandleType_t HANDLE_TYPE;
+
+	void SetAddress(void* address) {
+		if (address == nullptr) {
+			return;
+		}
+		_address = address;
+	}
+protected:
+	void* _address;
 };
 
 };
