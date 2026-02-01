@@ -7,8 +7,9 @@
 namespace dhooks::handle {
 
 SourceMod::HandleType_t ParamReturn::HANDLE_TYPE = 0;
-SourceMod::HandleType_t HookSetup::VIRTUAL_HANDLE_TYPE = 0;
-SourceMod::HandleType_t HookSetup::ADDRESS_HANDLE_TYPE = 0;
+SourceMod::HandleType_t HookSetup::HANDLE_TYPE = 0;
+SourceMod::HandleType_t DynamicHook::HANDLE_TYPE = 0;
+SourceMod::HandleType_t DynamicDetour::HANDLE_TYPE = 0;
 
 ParamReturn::ParamReturn(const Capsule* capsule, GeneralRegister* generalregs, FloatRegister* floatregs, void* return_ptr) :
 	_handle(globals::handlesys->CreateHandle(handle::ParamReturn::HANDLE_TYPE, this, globals::myself->GetIdentity(), globals::myself->GetIdentity(), nullptr)),
@@ -66,8 +67,9 @@ void init() {
 	// Do not allow cloning, the struct self-manage its handle
 	security.access[SourceMod::HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY;
 	ParamReturn::HANDLE_TYPE = globals::handlesys->CreateType("DHookParamReturn", nullptr, 0, nullptr, &security, globals::myself->GetIdentity(), nullptr);
-	HookSetup::VIRTUAL_HANDLE_TYPE = globals::handlesys->CreateType("DynamicHook", nullptr, 0, nullptr, &security, globals::myself->GetIdentity(), nullptr);
-	HookSetup::ADDRESS_HANDLE_TYPE = globals::handlesys->CreateType("DynamicDetour", nullptr, 0, nullptr, &security, globals::myself->GetIdentity(), nullptr);
+	HookSetup::HANDLE_TYPE = globals::handlesys->CreateType("DHookSetup", nullptr, 0, nullptr, &security, globals::myself->GetIdentity(), nullptr);
+	DynamicHook::HANDLE_TYPE = globals::handlesys->CreateType("DynamicHook", nullptr, HookSetup::HANDLE_TYPE, nullptr, &security, globals::myself->GetIdentity(), nullptr);
+	DynamicDetour::HANDLE_TYPE = globals::handlesys->CreateType("DynamicDetour", nullptr, HookSetup::HANDLE_TYPE, nullptr, &security, globals::myself->GetIdentity(), nullptr);
 }
 
 }
