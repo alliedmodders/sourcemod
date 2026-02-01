@@ -9,7 +9,9 @@ sources = [
   'src/signatures.cpp',
   'src/sp_inc.cpp',
   'src/natives/dhookparam.cpp',
-  'src/natives/dhookreturn.cpp'
+  'src/natives/dhookreturn.cpp',
+  'src/natives/dhooksetup.cpp',
+  'src/natives/dynamicdetour.cpp'
 ]
 
 for cxx in builder.targets:
