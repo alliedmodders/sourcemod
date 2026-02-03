@@ -170,6 +170,7 @@ void JIT_CallMemberFunction(AsmJit& jit, bool save_general_register[MAX_GENERAL_
 	jit.push(rbp);
 
 	static constexpr size_t stack_size = (MAX_GENERAL_REGISTERS * 0x8) + (MAX_FLOAT_REGISTERS * 0x10);
+	static_assert(stack_size % 16 == 0); // System-V requires the stack to be aligned for any call operation
 	jit.sub(rsp, stack_size);
 
 	// Independently of anything else, RAX gets saved always
@@ -298,13 +299,13 @@ void JIT_Recall(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], 
 		jit.push(rdi);
 		jit.push(rsi);
 
-		jit.mov(rax, reinterpret_cast<std::uintptr_t>(memcpy));
 		// Skip the two parameters we just saved
 		jit.lea(rdi, rsp(0x8 * 2));
-		// Skip return value
+		// Skip return value contained in the stack
 		jit.lea(rsi, rax(0x8));
 		jit.mov(rdx, stack_size);
 
+		jit.mov(rax, reinterpret_cast<std::uintptr_t>(memcpy));
 		jit.call(rax);
 
 		jit.pop(rsi);

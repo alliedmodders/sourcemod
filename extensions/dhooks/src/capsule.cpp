@@ -21,11 +21,16 @@ void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original
 void JIT_Recall(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], bool save_float_register[MAX_FLOAT_REGISTERS], size_t stack_size, std::uintptr_t* call_function);
 }
 
-Capsule::Capsule(void* address, sp::CallingConvention conv, const std::vector<Variable>& params, const ReturnVariable& ret) :
+Capsule::Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::CallingConvention conv, const std::vector<Variable>& params, const ReturnVariable& ret) :
 	_parameters(params),
 	_return(ret),
 	_call_conv(conv) {
 	if (!abi::Proccess(conv, _parameters, _return, _stack_size)) {
+		return;
+	}
+
+	// Well we need to know what we're detouring here
+	if (address == nullptr && vtable == nullptr) {
 		return;
 	}
 
@@ -125,19 +130,35 @@ Capsule::Capsule(void* address, sp::CallingConvention conv, const std::vector<Va
 	_jit.SetRE();
 	_jit_start = reinterpret_cast<std::uintptr_t>(_jit.GetData());
 
-	auto id = KHook::SetupHook(
-		address,
-		this,
-		KHook::ExtractMFP(&Capsule::_KHook_RemovedHook),
-		reinterpret_cast<void*>(_jit_start + offset_to_pre_callback),
-		reinterpret_cast<void*>(_jit_start + offset_to_post_callback),
-		reinterpret_cast<void*>(_jit_start + offset_to_make_return),
-		reinterpret_cast<void*>(_jit_start + offset_to_call_original),
-		true
-	);
+	auto id = (address != nullptr) ?
+		KHook::SetupHook(
+			address,
+			this,
+			KHook::ExtractMFP(&Capsule::_KHook_RemovedHook),
+			reinterpret_cast<void*>(_jit_start + offset_to_pre_callback),
+			reinterpret_cast<void*>(_jit_start + offset_to_post_callback),
+			reinterpret_cast<void*>(_jit_start + offset_to_make_return),
+			reinterpret_cast<void*>(_jit_start + offset_to_call_original),
+			true
+		)
+	:
+		KHook::SetupVirtualHook(
+			vtable,
+			vtable_index,
+			this,
+			KHook::ExtractMFP(&Capsule::_KHook_RemovedHook),
+			reinterpret_cast<void*>(_jit_start + offset_to_pre_callback),
+			reinterpret_cast<void*>(_jit_start + offset_to_post_callback),
+			reinterpret_cast<void*>(_jit_start + offset_to_make_return),
+			reinterpret_cast<void*>(_jit_start + offset_to_call_original),
+			true
+		);
 
 	if (id != KHook::INVALID_HOOK) {
-		_original_function = reinterpret_cast<std::uintptr_t>(KHook::GetOriginal(address));
+		_original_function = (address != nullptr) ?
+				reinterpret_cast<std::uintptr_t>(KHook::FindOriginal(address))
+			:
+				reinterpret_cast<std::uintptr_t>(KHook::FindOriginalVirtual(vtable, vtable_index));
 		_recall_function = reinterpret_cast<decltype(_recall_function)>(_jit_start + offset_to_recall);
 	}
 }
