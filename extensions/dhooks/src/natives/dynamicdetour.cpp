@@ -1,7 +1,7 @@
 #include "../handle.hpp"
 #include "../globals.hpp"
 
-namespace dhooks::natives::dhooksetup {
+namespace dhooks::natives::dynamicdetour {
 
 inline handle::DynamicDetour* Get(SourcePawn::IPluginContext* context, const cell_t param) {
 	SourceMod::HandleSecurity security;
@@ -49,6 +49,8 @@ cell_t DynamicDetour_Enable(SourcePawn::IPluginContext* context, const cell_t* p
 
 	auto mode = static_cast<sp::HookMode>(params[2]);
 
+	// As soon as a detour is enabled, it becomes immuteable 
+/*
 	// Check if we already detoured that function.
 	CHookManager *pDetourManager = GetHookManager();
 	CHook* pDetour = pDetourManager->FindHook(setup->funcAddr);
@@ -66,6 +68,8 @@ cell_t DynamicDetour_Enable(SourcePawn::IPluginContext* context, const cell_t* p
 
 	// Add the plugin callback to the map.
 	return AddDetourPluginHook(hookType, pDetour, setup, callback);
+*/
+	return 0;
 }
 
 void init(std::vector<sp_nativeinfo_t>& natives) {
@@ -74,7 +78,7 @@ void init(std::vector<sp_nativeinfo_t>& natives) {
 		{"DynamicDetour.DynamicDetour",        DynamicDetour_DynamicDetour},
 		/* DynamicDetour.FromConf is implemented in dhooksetup.cpp */
 		{"DynamicDetour.Enable",               DynamicDetour_Enable},
-		{"DynamicDetour.Disable",              DynamicDetour_Disable},
+		//{"DynamicDetour.Disable",              DynamicDetour_Disable},
 	};
 	natives.insert(natives.end(), std::begin(list), std::end(list));
 }
