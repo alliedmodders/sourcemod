@@ -31,7 +31,7 @@ using AsmJit = KHook::Asm::x86_Jit;
 struct HookCallback;
 class Capsule {
 public:
-    Capsule(void* address, sp::CallingConvention conv, const std::vector<Variable>& params, const ReturnVariable& ret);
+    Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::CallingConvention conv, const std::vector<Variable>& params, const ReturnVariable& ret);
 
     const std::vector<Variable>& GetParameters() const { return _parameters; };
     const ReturnVariable& GetReturn() const { return _return; };
@@ -90,7 +90,7 @@ void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post) const {
 		return_ptr = new RETURN;
         temp_ptr = new RETURN;
 		init_op = reinterpret_cast<void*>(::KHook::init_operator<RETURN>);
-		delete_op = reinterpret_cast<void*>(::KHook::delete_operator<RETURN>);
+		delete_op = reinterpret_cast<void*>(::KHook::deinit_operator<RETURN>);
 		return_size = sizeof(RETURN);
 	}
 
@@ -104,6 +104,11 @@ void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post) const {
             reinterpret_cast<FloatRegister*>(saved_register + sizeof(GeneralRegister) * MAX_GENERAL_REGISTERS),
             return_ptr
         );
+
+        // If this is a post hook, fill in the return ptr with the current value (original or override)
+        if (post) {
+            *return_ptr = *reinterpret_cast<RETURN*>(KHook::GetCurrentValuePtr());
+        }
 
         // Save some time and pre-save a this pointer (if it even exists)
         void* this_ptr = nullptr;
