@@ -1,5 +1,6 @@
 #include "../handle.hpp"
 #include "../globals.hpp"
+#include "../capsule.hpp"
 
 namespace dhooks::natives::dynamicdetour {
 
@@ -11,7 +12,7 @@ inline handle::DynamicDetour* Get(SourcePawn::IPluginContext* context, const cel
 	handle::DynamicDetour* obj = nullptr;
 	SourceMod::HandleError chnderr = globals::handlesys->ReadHandle(hndl, handle::DynamicDetour::HANDLE_TYPE, &security, (void **)&obj);
 	if (chnderr != SourceMod::HandleError_None) {
-		context->ThrowNativeError("Invalid Handle %x (error %i: %s)", hndl, chnderr, globals::HandleErrorToString(chnderr));
+		context->ThrowNativeError("Invalid DynamicDetour Handle %x (error %i: %s)", hndl, chnderr, globals::HandleErrorToString(chnderr));
 		return nullptr;
 	}
 	return obj;
@@ -49,27 +50,9 @@ cell_t DynamicDetour_Enable(SourcePawn::IPluginContext* context, const cell_t* p
 
 	auto mode = static_cast<sp::HookMode>(params[2]);
 
-	// As soon as a detour is enabled, it becomes immuteable 
-/*
-	// Check if we already detoured that function.
-	CHookManager *pDetourManager = GetHookManager();
-	CHook* pDetour = pDetourManager->FindHook(setup->funcAddr);
-
-	// If there is no detour on this function yet, create it.
-	if (!pDetour) {
-		ICallingConvention *pCallConv = ConstructCallingConvention(setup);
-		pDetour = pDetourManager->HookFunction(setup->funcAddr, pCallConv);
-		if (!UpdateRegisterArgumentSizes(pDetour, setup))
-			return pContext->ThrowNativeError("A custom register for a parameter isn't supported.");
-	}
-
-	// Register our pre/post handler.
-	pDetour->AddCallback(hookType, (HookHandlerFn *)&HandleDetour);
-
-	// Add the plugin callback to the map.
-	return AddDetourPluginHook(hookType, pDetour, setup, callback);
-*/
-	return 0;
+	// As soon as a detour is enabled, it becomes immutable
+	setup->SetImmutable();
+	return setup->Enable(callback, mode);
 }
 
 void init(std::vector<sp_nativeinfo_t>& natives) {
