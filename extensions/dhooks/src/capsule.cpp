@@ -1,25 +1,10 @@
 #include "capsule.hpp"
+#include "abi.hpp"
 #include "sdk_types.hpp"
 
 namespace dhooks {
 
 using namespace KHook::Asm;
-
-namespace abi {
-
-void JIT_Align(AsmJit& jit) {
-	auto realign = (16 - (jit.get_outputpos() % 16)) % 16;
-	for (;realign; realign--) {
-		jit.breakpoint();
-	}
-}
-
-bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnVariable& ret, size_t& stack_size);
-void JIT_CallMemberFunction(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], bool save_float_register[MAX_FLOAT_REGISTERS], void* this_ptr, const void* mfp, bool post);
-void JIT_MakeReturn(AsmJit& jit, ReturnVariable& ret);
-void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original_function, std::uintptr_t* call_function);
-void JIT_Recall(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], bool save_float_register[MAX_FLOAT_REGISTERS], size_t stack_size, std::uintptr_t* call_function);
-}
 
 Capsule::Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::CallingConvention conv, const std::vector<Variable>& params, const ReturnVariable& ret) :
 	_parameters(params),
@@ -130,7 +115,7 @@ Capsule::Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::C
 	_jit.SetRE();
 	_jit_start = reinterpret_cast<std::uintptr_t>(_jit.GetData());
 
-	auto id = (address != nullptr) ?
+	_linked_hook = (address != nullptr) ?
 		KHook::SetupHook(
 			address,
 			this,
@@ -154,7 +139,7 @@ Capsule::Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::C
 			true
 		);
 
-	if (id != KHook::INVALID_HOOK) {
+	if (_linked_hook != KHook::INVALID_HOOK) {
 		_original_function = (address != nullptr) ?
 				reinterpret_cast<std::uintptr_t>(KHook::FindOriginal(address))
 			:
