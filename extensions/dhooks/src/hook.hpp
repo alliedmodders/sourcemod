@@ -14,6 +14,7 @@ struct HookCallback {
 	std::optional<void*> associated_this;
 	Capsule* associated_capsule;
 	SourcePawn::IPluginFunction* callback;
+	std::uint32_t hook_id;
 };
 
 }
