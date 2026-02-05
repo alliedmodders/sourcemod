@@ -9,6 +9,8 @@
 
 #include <thread>
 #include <vector>
+#include <unordered_map>
+#include <memory>
 
 namespace dhooks {
 class SignatureGameConfig;
@@ -24,6 +26,11 @@ extern SourceMod::ISourceMod* sourcemod;
 extern SourceMod::IGameConfigManager* gameconfs;
 extern std::vector<sp_nativeinfo_t> natives;
 extern dhooks::SignatureGameConfig* dhooks_config;
+
+extern std::uint32_t last_hook_id;
+extern std::unordered_map<std::uint32_t, std::unique_ptr<class HookCallback>> hook_callbacks;
+extern std::unordered_map<void*, std::unique_ptr<class Capsule>> address_detours;
+extern std::unordered_map<void*, std::unique_ptr<class Capsule>> virtual_detours;
 
 void init();
 

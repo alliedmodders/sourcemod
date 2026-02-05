@@ -61,6 +61,37 @@ void* ParamReturn::_Get(size_t index) const {
 	}
 }
 
+bool DynamicDetour::Enable(SourcePawn::IPluginFunction* callback, sp::HookMode mode) const {
+	// Let's see if a hook already exists
+	auto it = globals::address_detours.find(this->GetAddress());
+	if (it == globals::address_detours.end()) {
+		// It does not, so let's create it
+		auto hook = new Capsule(this->GetAddress(), nullptr, 0, this->GetCallConv(), this->GetParameters(), this->GetReturn());
+		if (!hook->IsActive()) {
+			delete hook;
+			return false;
+		}
+		auto insert = globals::address_detours.try_emplace(this->GetAddress(), hook);
+		if (!insert.second) {
+			delete hook;
+			return false;
+		}
+		it = insert.first;
+	}
+
+	const auto& hook = it->second;
+	auto id = ++globals::last_hook_id;
+	HookCallback cb;
+
+	cb.this_pointer_type = _this_pointer;
+	cb.associated_this = nullptr;
+	cb.associated_capsule = hook.get();
+	cb.callback = callback;
+	cb.hook_id = id;
+
+	globals::hook_callbacks.try_emplace(id, cb);
+}
+
 void init() {
 	SourceMod::HandleAccess security;
 	globals::handlesys->InitAccessDefaults(nullptr, &security);
