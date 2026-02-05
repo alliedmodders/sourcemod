@@ -32,10 +32,25 @@ struct HookCallback;
 class Capsule {
 public:
     Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::CallingConvention conv, const std::vector<Variable>& params, const ReturnVariable& ret);
+    ~Capsule() {
+        if (_linked_hook != KHook::INVALID_HOOK) {
+            KHook::RemoveHook(_linked_hook, false);
+        }
+        for (const auto& it : _pre_hooks) {
+            globals::hook_callbacks.erase(it.second->hook_id);
+        }
+        for (const auto& it : _post_hooks) {
+            globals::hook_callbacks.erase(it.second->hook_id);
+        }
+    }
 
     const std::vector<Variable>& GetParameters() const { return _parameters; };
     const ReturnVariable& GetReturn() const { return _return; };
     const sp::CallingConvention GetCallConv() const { return _call_conv; };
+
+    bool IsActive() const { return _linked_hook != KHook::INVALID_HOOK; }
+
+    void AddCallback(const HookCallback& cb);
 protected:
     //void JIT_SaveRegisters(AsmJit& jit);
     void JIT_RestoreRegisters(AsmJit& jit);
@@ -67,12 +82,13 @@ protected:
 
     AsmJit _jit;
     size_t _stack_size;
+    KHook::HookID_t _linked_hook;
     std::uintptr_t _original_function;
     std::uintptr_t _jit_start;
     void (*_recall_function)(void* recall_func, std::uint8_t* saved_register);
 
-    std::unordered_set<HookCallback*> _pre_hooks;
-    std::unordered_set<HookCallback*> _post_hooks;
+    std::unordered_map<std::uint32_t, HookCallback*> _pre_hooks;
+    std::unordered_map<std::uint32_t, HookCallback*> _post_hooks;
 
     // Only for dhook natives
     sp::CallingConvention _call_conv;
@@ -119,7 +135,8 @@ void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post) const {
 
         // Make deep-copy to allow deletion of hooks under callbacks
         auto hooks = (post) ? _post_hooks : _pre_hooks;
-        for (auto hook : hooks) {
+        for (const auto& it : hooks) {
+            const auto& hook = it.second;
             if (hook->callback->IsRunnable()) {
                 if (hook->this_pointer_type != sp::ThisPointer_Ignore) {
                     // Push the associated this pointer
