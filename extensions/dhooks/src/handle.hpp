@@ -56,7 +56,11 @@ public:
 
 	void AddParam(const Variable& var) { if (!_immutable) { _dhook_params.push_back(var); } }
 	cell_t GetHandle() const { return _handle; }
-private:
+
+	const sp::CallingConvention GetCallConv() const { return _dhook_call_conv; }
+	const std::vector<Variable>& GetParameters() const { return _dhook_params; }
+	const ReturnVariable& GetReturn() const { return _dhook_return; }
+protected:
 	cell_t _handle;
 	bool _immutable = false;
 	sp::ThisPointerType _this_pointer;
@@ -92,6 +96,12 @@ public:
 		}
 		_address = address;
 	}
+
+	void* GetAddress() const {
+		return _address;
+	}
+
+	bool Enable(SourcePawn::IPluginFunction*, sp::HookMode) const;
 protected:
 	void* _address;
 };
