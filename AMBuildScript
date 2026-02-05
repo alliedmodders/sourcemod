@@ -498,6 +498,11 @@ class SMConfig(object):
       os.path.join(builder.sourcePath, 'public', 'amtl', 'amtl'),
       os.path.join(builder.sourcePath, 'public', 'amtl'),
     ]
+
+    compiler.cxxincludes += [
+      os.path.join(self.mms_root, 'core'),
+      os.path.join(self.mms_root, 'third_party', 'khook', 'include'),
+    ]
     return compiler
 
   def ExtLibrary(self, context, compiler, name):
@@ -515,11 +520,6 @@ class SMConfig(object):
   def ConfigureForHL2(self, context, binary, sdk):
     compiler = binary.compiler
     SetArchFlags(compiler)
-
-    compiler.cxxincludes += [
-      os.path.join(self.mms_root, 'core'),
-      os.path.join(self.mms_root, 'third_party', 'khook', 'include'),
-    ]
 
     for other_sdk in self.sdk_manifests:
       compiler.defines += ['SE_{}={}'.format(other_sdk['define'], other_sdk['code'])]
@@ -645,7 +645,7 @@ else:
     'extensions/clientprefs/AMBuilder',
     'extensions/curl/AMBuilder',
     #'extensions/cstrike/AMBuilder',
-    #'extensions/dhooks/AMBuilder',
+    'extensions/dhooks/AMBuilder',
     'extensions/geoip/AMBuilder',
     #'extensions/mysql/AMBuilder',
     'extensions/pgsql/AMBuilder',
