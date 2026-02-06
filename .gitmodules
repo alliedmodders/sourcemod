@@ -15,3 +15,6 @@
 [submodule "core/logic/libaddrz"]
 	path = core/logic/libaddrz
 	url = https://github.com/dvander/libaddrz.git
+[submodule "extensions/sqlite/sqlite-source"]
+	path = extensions/sqlite/sqlite-source
+	url = https://github.com/sqlite/sqlite
