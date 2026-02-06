@@ -24,23 +24,23 @@ for cxx in builder.targets:
     binary.compiler.postlink += ['-ldl', '-lpthread']
 
   sqlite_dir = os.path.join(os.path.dirname(__file__), 'sqlite-source')
-    if not os.path.exists(os.path.join(sqlite_dir, 'sqlite3.c')):
-	  original_cwd = os.getcwd()
-	  try:
-		  os.chdir(sqlite_dir)
-		  if os.name == 'nt':
-			  subprocess.run(['nmake', '/f', 'Makefile.msc', 'clean'], check=False, capture_output=True)
-			  subprocess.run(['nmake', '/f', 'Makefile.msc', 'sqlite3.c'], check=True, capture_output=True)
-		  else:
-			  subprocess.run(['make', 'distclean'], check=False, capture_output=True)
-			  subprocess.run(['./configure'], check=True, capture_output=True)
-			  subprocess.run(['make', 'sqlite3.c'], check=True, capture_output=True)
-	  except subprocess.CalledProcessError as e:
-		  if e.stderr:
-			  print(e.stderr.decode(errors='replace'), file=sys.stderr)
-		  raise
-	  finally:
-		  os.chdir(original_cwd)
+  if not os.path.exists(os.path.join(sqlite_dir, 'sqlite3.c')):
+    original_cwd = os.getcwd()
+    try:
+        os.chdir(sqlite_dir)
+        if os.name == 'nt':
+            subprocess.run(['nmake', '/f', 'Makefile.msc', 'clean'], check=False, capture_output=True)
+            subprocess.run(['nmake', '/f', 'Makefile.msc', 'sqlite3.c'], check=True, capture_output=True)
+        else:
+            subprocess.run(['make', 'distclean'], check=False, capture_output=True)
+            subprocess.run(['./configure'], check=True, capture_output=True)
+            subprocess.run(['make', 'sqlite3.c'], check=True, capture_output=True)
+      except subprocess.CalledProcessError as e:
+        if e.stderr:
+            print(e.stderr.decode(errors='replace'), file=sys.stderr)
+        raise
+    finally:
+      os.chdir(original_cwd)
 
   binary.sources += [
     '../../public/smsdk_ext.cpp',
