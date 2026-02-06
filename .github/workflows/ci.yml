@@ -9,7 +9,29 @@ on:
      - master
      - '[0-9]+.[0-9]+-dev'
 jobs:
+  sqlite-amalgamation:
+    runs-on: ubuntu-latest
+    name: Generate SQLite amalgamation
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+          path: sourcemod
+
+      - name: Generate amalgamation
+        working-directory: sourcemod/extensions/sqlite/sqlite-source
+        run: |
+          ./configure
+          make sqlite3.c
+
+      - name: Upload SQLite amalgamation
+        uses: actions/upload-artifact@v6
+        with:
+          name: sqlite-amalgamation
+          path: sourcemod/extensions/sqlite/sqlite-source/sqlite3.*
+          if-no-files-found: error
   test:
+    needs: sqlite-amalgamation
     strategy:
       matrix:
         os: [ubuntu-22.04, ubuntu-latest, windows-latest]
@@ -88,6 +110,12 @@ jobs:
           echo "CXX=${{ matrix.compiler_cxx }}" >> $GITHUB_ENV
           ${{ matrix.compiler_cc }} --version
           ${{ matrix.compiler_cxx }} --version
+
+      - name: Download SQLite amalgamation
+        uses: actions/download-artifact@v7
+        with:
+          name: sqlite-amalgamation
+          path: sourcemod/extensions/sqlite/sqlite-source
 
       - name: Build
         working-directory: sourcemod
