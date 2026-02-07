@@ -61,35 +61,35 @@ void* ParamReturn::_Get(size_t index) const {
 	}
 }
 
-bool DynamicDetour::Enable(SourcePawn::IPluginFunction* callback, sp::HookMode mode) const {
-	// Let's see if a hook already exists
-	auto it = globals::address_detours.find(this->GetAddress());
-	if (it == globals::address_detours.end()) {
-		// It does not, so let's create it
-		auto hook = new Capsule(this->GetAddress(), nullptr, 0, this->GetCallConv(), this->GetParameters(), this->GetReturn());
-		if (!hook->IsActive()) {
-			delete hook;
-			return false;
-		}
-		auto insert = globals::address_detours.try_emplace(this->GetAddress(), hook);
-		if (!insert.second) {
-			delete hook;
-			return false;
-		}
-		it = insert.first;
+bool DynamicDetour::Enable(SourcePawn::IPluginFunction* callback, sp::HookMode mode) {
+	auto& detours = (mode == sp::HookMode::Hook_Post) ? _post_detours : _pre_detours;
+	if (detours.find(callback) != detours.end()) {
+		return false;
 	}
 
-	const auto& hook = it->second;
-	auto id = ++globals::last_hook_id;
-	HookCallback cb;
+	const auto& capsule = Capsule::FindOrCreate(this);
+	if (capsule.get() == nullptr) {
+		return false;
+	}
 
-	cb.this_pointer_type = _this_pointer;
-	cb.associated_this = nullptr;
-	cb.associated_capsule = hook.get();
-	cb.callback = callback;
-	cb.hook_id = id;
+	auto id = capsule->AddCallback(callback, nullptr, mode, this->_this_pointer, nullptr);
+	if (detours.try_emplace(callback, id).second == false) {
+		Capsule::RemoveCallbackById(id);
+		return false;
+	}
+	return true;
+}
 
-	globals::hook_callbacks.try_emplace(id, cb);
+bool DynamicDetour::Disable(SourcePawn::IPluginFunction* callback, sp::HookMode mode) {
+	auto& detours = (mode == sp::HookMode::Hook_Post) ? _post_detours : _pre_detours;
+	auto it = detours.find(callback);
+	if (it != detours.end()) {
+		return false;
+	}
+
+	Capsule::RemoveCallbackById(it->second);
+	detours.erase(it);
+	return true;
 }
 
 void init() {

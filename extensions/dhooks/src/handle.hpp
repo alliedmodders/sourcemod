@@ -8,6 +8,7 @@
 
 #include <optional>
 #include <vector>
+#include <unordered_map>
 
 namespace dhooks {
 class Capsule;
@@ -84,7 +85,6 @@ protected:
 	std::uint32_t _offset;
 };
 
-
 class DynamicDetour : public HookSetup {
 public:
 	DynamicDetour(sp::ThisPointerType, sp::CallingConvention, void* address, const std::vector<ArgumentInfo>& params, const ReturnInfo& ret);
@@ -101,9 +101,12 @@ public:
 		return _address;
 	}
 
-	bool Enable(SourcePawn::IPluginFunction*, sp::HookMode) const;
+	bool Enable(SourcePawn::IPluginFunction*, sp::HookMode);
+	bool Disable(SourcePawn::IPluginFunction*, sp::HookMode);
 protected:
 	void* _address;
+	std::unordered_map<SourcePawn::IPluginFunction*, std::uint32_t> _pre_detours;
+	std::unordered_map<SourcePawn::IPluginFunction*, std::uint32_t> _post_detours;
 };
 
 };
