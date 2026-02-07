@@ -11,10 +11,10 @@ class Capsule;
 
 struct HookCallback {
 	sp::ThisPointerType this_pointer_type;
-	std::optional<void*> associated_this;
+	void* associated_this;
 	Capsule* associated_capsule;
 	SourcePawn::IPluginFunction* callback;
-	std::uint32_t hook_id;
+	SourcePawn::IPluginFunction* remove_callback;
 };
 
 }

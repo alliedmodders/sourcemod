@@ -55,13 +55,28 @@ cell_t DynamicDetour_Enable(SourcePawn::IPluginContext* context, const cell_t* p
 	return setup->Enable(callback, mode);
 }
 
+cell_t DynamicDetour_Disable(SourcePawn::IPluginContext* context, const cell_t* params) {
+	auto setup = Get(context, params[1]);
+	if (setup == nullptr) {
+		return 0;
+	}
+
+	SourcePawn::IPluginFunction* callback = context->GetFunctionById(params[3]);
+	if (!callback) {
+		return context->ThrowNativeError("Failed to retrieve function by id");
+	}
+
+	auto mode = static_cast<sp::HookMode>(params[2]);
+	return setup->Disable(callback, mode);
+}
+
 void init(std::vector<sp_nativeinfo_t>& natives) {
 	sp_nativeinfo_t list[] = {
 		{"DHookCreateDetour",                  DynamicDetour_DynamicDetour},
 		{"DynamicDetour.DynamicDetour",        DynamicDetour_DynamicDetour},
 		/* DynamicDetour.FromConf is implemented in dhooksetup.cpp */
 		{"DynamicDetour.Enable",               DynamicDetour_Enable},
-		//{"DynamicDetour.Disable",              DynamicDetour_Disable},
+		{"DynamicDetour.Disable",              DynamicDetour_Disable},
 	};
 	natives.insert(natives.end(), std::begin(list), std::end(list));
 }

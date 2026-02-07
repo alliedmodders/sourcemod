@@ -1,6 +1,6 @@
-#include "sp_inc.hpp"
-#include "capsule.hpp"
-#include "sdk_types.hpp"
+#include "../sp_inc.hpp"
+#include "../capsule.hpp"
+#include "../sdk_types.hpp"
 
 #include <cstdlib>
 #include <vector>
@@ -164,10 +164,12 @@ bool Process(sp::CallingConvention conv, std::vector<Variable>& params, ReturnVa
 	}
 	/* Stack size here only means the size the parameters occupy, so remove the space occupied by return address */
 	stack_size = stack_offset - sizeof(void*);
+	return true;
 }
 
 void JIT_CallMemberFunction(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], bool save_float_register[MAX_FLOAT_REGISTERS], void* this_ptr, const void* mfp, bool post) {
 	jit.push(rbp);
+	jit.mov(rbp, rsp);
 
 	static constexpr size_t stack_size = (MAX_GENERAL_REGISTERS * 0x8) + (MAX_FLOAT_REGISTERS * 0x10);
 	static_assert(stack_size % 16 == 0); // System-V requires the stack to be aligned for any call operation
@@ -276,13 +278,11 @@ void JIT_MakeReturn(AsmJit& jit, ReturnVariable& ret) {
 }
 
 void JIT_Recall(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], bool save_float_register[MAX_FLOAT_REGISTERS], size_t stack_size, std::uintptr_t* jit_start) {
-	auto start = jit.get_outputpos();
-
 	jit.push(rbp);
 	jit.mov(rbp, rsp);
 
-	// 1st - is ptr to function to call
-	// 2nd - is ptr to registers
+	// 1st - rdi - is ptr to function to call
+	// 2nd - rsi - is ptr to registers
 
 	if (stack_size != 0) {
 		if (save_general_register[STACK_REG] == false) {
@@ -350,7 +350,7 @@ void JIT_Recall(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], 
 	// Call the recall
 	jit.retn();
 	// Rewrite the add value
-	jit.rewrite<std::int32_t>(add - sizeof(std::int32_t), jit.get_outputpos() - start);
+	jit.rewrite<std::int32_t>(add - sizeof(std::int32_t), jit.get_outputpos());
 
 	jit.mov(rsp, rbp);
 	jit.pop(rbp);
@@ -360,27 +360,32 @@ void JIT_Recall(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], 
 void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original_function, std::uintptr_t* jit_start) {
 	auto start = jit.get_outputpos();
 
-	jit.push(rsp()); // Save return address
-	jit.push(rsp());
+	// Save rax
+	jit.push(rax);
+	jit.push(rax);
 
-	jit.mov(r15, reinterpret_cast<std::uintptr_t>(jit_start));
-	jit.mov(r15, r15());
-	jit.add(r15, INT32_MAX);
+	// Save return address (We are going to assume R15 is never used. Even by strange callconvs)
+	jit.mov(r15, rsp(0x10));
+
+	// Overwrite the return address to later in this function
+	jit.mov(rax, reinterpret_cast<std::uintptr_t>(jit_start));
+	jit.mov(rax, rax());
+	jit.add(rax, INT32_MAX);
 	auto add = jit.get_outputpos();
+	jit.mov(rsp(0x10), rax);
 
-	// Change return address to later in this function
-	jit.mov(rsp(0x10), r15);
+	// Now invoke the original function
+	jit.mov(rax, reinterpret_cast<std::uintptr_t>(original_function));
+	jit.mov(rax, rax());
+	jit.mov(rsp(0x8), rax);
 
-	jit.mov(r15, reinterpret_cast<std::uintptr_t>(original_function));
-	jit.mov(r15, r15());
-	jit.mov(rsp(0x8), r15);
-	// Save the original return address in r15, KHook saves that register and ABI promises not to use it
-	jit.pop(r15);
-	// Now go to original function
+	// Restore rax
+	jit.pop(rax);
+	// Pop again, we wrote the original function address there
 	jit.retn();
 
-	// Rewrite the add r15, X - operation
-	jit.rewrite<std::int32_t>(add - sizeof(std::int32_t), jit.get_outputpos() - start);
+	// Rewrite the add rax, X - operation
+	jit.rewrite<std::int32_t>(add - sizeof(std::int32_t), jit.get_outputpos());
 
 	// Stack is currently aligned
 	// Store the return value in a local variable
@@ -390,15 +395,15 @@ void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original
 	switch (Classify_ReturnType(ret).value()) {
 		case INTEGER:
 		// Store RAX
-		local_size = 0x10;
+		local_size = 0x10; // Keep stack aligned
 		jit.sub(rsp, local_size);
 		jit.mov(rsp(), rax);
 
 		init_op = reinterpret_cast<std::uintptr_t>(KHook::init_operator<std::uintptr_t>);
-		deinit_op = reinterpret_cast<std::uintptr_t>(KHook::delete_operator<std::uintptr_t>);
+		deinit_op = reinterpret_cast<std::uintptr_t>(KHook::deinit_operator<std::uintptr_t>);
 		break;
 		case SSE:
-			local_size = 0x10;
+			local_size = 0x10; // Keep stack aligned
 			jit.sub(rsp, local_size);
 			// TO-DO: handle this better...
 			if (ret.dhook_type == sp::ReturnType_Vector) {
@@ -406,12 +411,12 @@ void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original
 				jit.movsd(rsp(0x8), xmm1);
 
 				init_op = reinterpret_cast<std::uintptr_t>(KHook::init_operator<sdk::Vector>);
-				deinit_op = reinterpret_cast<std::uintptr_t>(KHook::delete_operator<sdk::Vector>);
+				deinit_op = reinterpret_cast<std::uintptr_t>(KHook::deinit_operator<sdk::Vector>);
 			} else {
 				jit.movsd(rsp(), xmm0);
 
 				init_op = reinterpret_cast<std::uintptr_t>(KHook::init_operator<float>);
-				deinit_op = reinterpret_cast<std::uintptr_t>(KHook::delete_operator<float>);
+				deinit_op = reinterpret_cast<std::uintptr_t>(KHook::deinit_operator<float>);
 			}
 		break;
 		default:

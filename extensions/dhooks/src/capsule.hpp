@@ -30,27 +30,21 @@ using AsmJit = KHook::Asm::x86_Jit;
 
 struct HookCallback;
 class Capsule {
-public:
+protected:
     Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::CallingConvention conv, const std::vector<Variable>& params, const ReturnVariable& ret);
-    ~Capsule() {
-        if (_linked_hook != KHook::INVALID_HOOK) {
-            KHook::RemoveHook(_linked_hook, false);
-        }
-        for (const auto& it : _pre_hooks) {
-            globals::hook_callbacks.erase(it.second->hook_id);
-        }
-        for (const auto& it : _post_hooks) {
-            globals::hook_callbacks.erase(it.second->hook_id);
-        }
-    }
+public:
+    ~Capsule();
+    
+    static const std::unique_ptr<Capsule>& FindOrCreate(const class handle::HookSetup* setup);
+    std::uint32_t AddCallback(SourcePawn::IPluginFunction* callback, SourcePawn::IPluginFunction* remove_callback, sp::HookMode mode, sp::ThisPointerType this_ptr, void* associated_this);
+    static void RemoveCallbackById(std::uint32_t id);
+    static void RemoveCallbackByPlugin(SourcePawn::IPluginContext* default_context);
 
     const std::vector<Variable>& GetParameters() const { return _parameters; };
     const ReturnVariable& GetReturn() const { return _return; };
     const sp::CallingConvention GetCallConv() const { return _call_conv; };
 
     bool IsActive() const { return _linked_hook != KHook::INVALID_HOOK; }
-
-    void AddCallback(const HookCallback& cb);
 protected:
     //void JIT_SaveRegisters(AsmJit& jit);
     void JIT_RestoreRegisters(AsmJit& jit);
@@ -87,8 +81,8 @@ protected:
     std::uintptr_t _jit_start;
     void (*_recall_function)(void* recall_func, std::uint8_t* saved_register);
 
-    std::unordered_map<std::uint32_t, HookCallback*> _pre_hooks;
-    std::unordered_map<std::uint32_t, HookCallback*> _post_hooks;
+    std::unordered_map<std::uint32_t, HookCallback> _pre_hooks;
+    std::unordered_map<std::uint32_t, HookCallback> _post_hooks;
 
     // Only for dhook natives
     sp::CallingConvention _call_conv;
@@ -122,8 +116,10 @@ void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post) const {
         );
 
         // If this is a post hook, fill in the return ptr with the current value (original or override)
-        if (post) {
-            *return_ptr = *reinterpret_cast<RETURN*>(KHook::GetCurrentValuePtr());
+        if constexpr(!std::is_same<RETURN, void>::value) {
+            if (post) {
+                *return_ptr = *reinterpret_cast<RETURN*>(KHook::GetCurrentValuePtr());
+            }
         }
 
         // Save some time and pre-save a this pointer (if it even exists)
@@ -137,29 +133,33 @@ void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post) const {
         auto hooks = (post) ? _post_hooks : _pre_hooks;
         for (const auto& it : hooks) {
             const auto& hook = it.second;
-            if (hook->callback->IsRunnable()) {
-                if (hook->this_pointer_type != sp::ThisPointer_Ignore) {
+            if (hook.callback->IsRunnable()) {
+                if (hook.associated_this != nullptr && hook.associated_this != this_ptr) {
+                    continue;
+                }
+
+                if (hook.this_pointer_type != sp::ThisPointer_Ignore) {
                     // Push the associated this pointer
-                    if (hook->this_pointer_type == sp::ThisPointer_CBaseEntity) {
+                    if (hook.this_pointer_type == sp::ThisPointer_CBaseEntity) {
                         if (!entity_index) {
                             entity_index = globals::gamehelpers->EntityToBCompatRef(reinterpret_cast<CBaseEntity*>(this_ptr));
                         }
-                        hook->callback->PushCell(entity_index.value_or(-1));
-                    } else if (hook->this_pointer_type == sp::ThisPointer_Address) {
-                        hook->callback->PushCell(globals::sourcemod->ToPseudoAddress(this_ptr));
+                        hook.callback->PushCell(entity_index.value_or(-1));
+                    } else if (hook.this_pointer_type == sp::ThisPointer_Address) {
+                        hook.callback->PushCell(globals::sourcemod->ToPseudoAddress(this_ptr));
                     }
                 }
 
                 if (_return.dhook_type != sp::ReturnType_Void) {
-                    hook->callback->PushCell(paramret);
+                    hook.callback->PushCell(paramret);
                 }
 
                 if (_parameters.size() != 0) {
-                    hook->callback->PushCell(paramret);
+                    hook.callback->PushCell(paramret);
                 }
 
                 cell_t result = (cell_t)sp::MRES_Ignored;
-                hook->callback->Execute(&result);
+                hook.callback->Execute(&result);
 
                 if (result == (cell_t)sp::MRES_Supercede) {
                     final_action = KHook::Action::Supersede;
