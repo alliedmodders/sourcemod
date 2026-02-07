@@ -1,10 +1,148 @@
 #include "capsule.hpp"
+#include "handle.hpp"
 #include "abi.hpp"
 #include "sdk_types.hpp"
 
 namespace dhooks {
 
 using namespace KHook::Asm;
+
+namespace locals {
+std::uint32_t last_hook_id = 1;
+std::unordered_map<void*, std::unique_ptr<Capsule>> address_detours;
+std::unordered_map<void*, std::unique_ptr<Capsule>> virtual_detours;
+std::unordered_map<std::uint32_t, HookCallback> hook_callbacks;
+std::unordered_map<SourcePawn::IPluginContext*, std::unordered_set<std::uint32_t>> plugin_hook_ids;
+
+static std::unique_ptr<Capsule> nullptr_capsule(nullptr);
+}
+
+const std::unique_ptr<Capsule>& Capsule::FindOrCreate(const handle::HookSetup* setup) {
+	auto dyndetour = dynamic_cast<const handle::DynamicDetour*>(setup);
+	if (dyndetour) {
+		// Let's see if a hook already exists
+		auto it = locals::address_detours.find(dyndetour->GetAddress());
+		if (it == locals::address_detours.end()) {
+			// It does not, so let's create it
+			auto hook = new Capsule(dyndetour->GetAddress(), nullptr, 0, setup->GetCallConv(), setup->GetParameters(), setup->GetReturn());
+			if (!hook->IsActive()) {
+				delete hook;
+				return locals::nullptr_capsule;
+			}
+			auto insert = locals::address_detours.try_emplace(dyndetour->GetAddress(), hook);
+			if (!insert.second) {
+				delete hook;
+				return locals::nullptr_capsule;
+			}
+			it = insert.first;
+		}
+		return it->second;
+	}
+	return locals::nullptr_capsule;
+}
+
+std::uint32_t Capsule::AddCallback(SourcePawn::IPluginFunction* callback, SourcePawn::IPluginFunction* remove_callback, sp::HookMode mode, sp::ThisPointerType this_ptr, void* associated_this) {
+	auto id = ++locals::last_hook_id;
+	
+	HookCallback cb;
+	cb.this_pointer_type = this_ptr;
+	cb.associated_this = associated_this;
+	cb.associated_capsule = this;
+	cb.callback = callback;
+	cb.remove_callback = remove_callback;
+
+	auto plugin_it = locals::plugin_hook_ids.find(callback->GetParentRuntime()->GetDefaultContext());
+	if (plugin_it == locals::plugin_hook_ids.end()) {
+		auto plugin_insert = locals::plugin_hook_ids.try_emplace(callback->GetParentRuntime()->GetDefaultContext());
+		if (!plugin_insert.second) {
+			return 0;
+		}
+		plugin_it = plugin_insert.first;
+	}
+	if (plugin_it->second.find(id) != plugin_it->second.end()) {
+		return 0;
+	}
+	if (plugin_it->second.insert(id).second == false) {
+		return 0;
+	}
+
+	auto it = locals::hook_callbacks.find(id);
+	if (it == locals::hook_callbacks.end()) {
+		auto it_insert = locals::hook_callbacks.try_emplace(id, cb);
+		if (!it_insert.second) {
+			plugin_it->second.erase(id);
+			return 0;
+		}
+		it = it_insert.first;
+	} else {
+		plugin_it->second.erase(id);
+		return 0;
+	}
+
+	auto& callbacks = (mode == sp::HookMode::Hook_Post) ? this->_post_hooks : this->_pre_hooks;
+	auto capsule_it = callbacks.find(id);
+	if (capsule_it == callbacks.end()) {
+		auto capsule_emplace = callbacks.try_emplace(id, cb);
+		if (!capsule_emplace.second) {
+			locals::hook_callbacks.erase(id);
+			plugin_it->second.erase(id);
+			return 0;
+		}
+		capsule_it = capsule_emplace.first;
+	} else {
+		locals::hook_callbacks.erase(id);
+		plugin_it->second.erase(id);
+		return 0;
+	}
+	return id;
+}
+
+void Capsule::RemoveCallbackById(std::uint32_t id) {
+	auto it = locals::hook_callbacks.find(id);
+	if (locals::hook_callbacks.end() == it) {
+		return;
+	}
+	const auto& cb = it->second;
+	if (cb.associated_capsule != nullptr) {
+		cb.associated_capsule->_pre_hooks.erase(id);
+		cb.associated_capsule->_post_hooks.erase(id);
+	}
+	auto plugin_hooks_it = locals::plugin_hook_ids.find(cb.callback->GetParentRuntime()->GetDefaultContext());
+	if (locals::plugin_hook_ids.end() != plugin_hooks_it) {
+		plugin_hooks_it->second.erase(id);
+	}
+	if (cb.remove_callback != nullptr && cb.remove_callback->IsRunnable()) {
+		cb.remove_callback->PushCell(id);
+		cell_t ignore;
+		cb.remove_callback->Execute(&ignore);
+	}
+	locals::hook_callbacks.erase(id);
+}
+
+void Capsule::RemoveCallbackByPlugin(SourcePawn::IPluginContext* default_context) {
+	auto plugin_hooks_it = locals::plugin_hook_ids.find(default_context);
+	if (locals::plugin_hook_ids.end() == plugin_hooks_it) {
+		return;
+	}
+	for (auto id : plugin_hooks_it->second) {
+		auto it = locals::hook_callbacks.find(id);
+		if (locals::hook_callbacks.end() == it) {
+			continue;
+		}
+		const auto& cb = it->second;
+		if (cb.associated_capsule != nullptr) {
+			cb.associated_capsule->_pre_hooks.erase(id);
+			cb.associated_capsule->_post_hooks.erase(id);
+		}
+		if (cb.remove_callback != nullptr && cb.remove_callback->IsRunnable()) {
+			cb.remove_callback->PushCell(id);
+			cell_t ignore;
+			cb.remove_callback->Execute(&ignore);
+		}
+		locals::hook_callbacks.erase(id);
+	}
+	locals::plugin_hook_ids.erase(default_context);
+}
 
 Capsule::Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::CallingConvention conv, const std::vector<Variable>& params, const ReturnVariable& ret) :
 	_parameters(params),
@@ -145,6 +283,28 @@ Capsule::Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::C
 			:
 				reinterpret_cast<std::uintptr_t>(KHook::FindOriginalVirtual(vtable, vtable_index));
 		_recall_function = reinterpret_cast<decltype(_recall_function)>(_jit_start + offset_to_recall);
+	}
+}
+
+Capsule::~Capsule() {
+	if (_linked_hook != KHook::INVALID_HOOK) {
+		KHook::RemoveHook(_linked_hook, false);
+	}
+	for (const auto& it : _pre_hooks) {
+		locals::hook_callbacks.erase(it.first);
+		auto default_ctx = it.second.callback->GetParentRuntime()->GetDefaultContext();
+		auto plugin_it = locals::plugin_hook_ids.find(default_ctx);
+		if (plugin_it != locals::plugin_hook_ids.end()) {
+			plugin_it->second.erase(it.first);
+		}
+	}
+	for (const auto& it : _post_hooks) {
+		locals::hook_callbacks.erase(it.first);
+		auto default_ctx = it.second.callback->GetParentRuntime()->GetDefaultContext();
+		auto plugin_it = locals::plugin_hook_ids.find(default_ctx);
+		if (plugin_it != locals::plugin_hook_ids.end()) {
+			plugin_it->second.erase(it.first);
+		}
 	}
 }
 
