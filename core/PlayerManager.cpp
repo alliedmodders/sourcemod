@@ -1560,10 +1560,23 @@ int PlayerManager::InternalFilterCommandTarget(CPlayer *pAdmin, CPlayer *pTarget
 
 	if (pAdmin != NULL)
 	{
-		if ((flags & COMMAND_FILTER_NO_IMMUNITY) != COMMAND_FILTER_NO_IMMUNITY
-			&& !adminsys->CanAdminTarget(pAdmin->GetAdminId(), pTarget->GetAdminId()))
+		if ((flags & COMMAND_FILTER_NO_IMMUNITY) != COMMAND_FILTER_NO_IMMUNITY)
 		{
-			return COMMAND_TARGET_IMMUNE;
+			AdminId tid = pTarget->GetAdminId();
+			/* If the target is pre-auth they're targetable; bypassing immunity rules... */
+			if (tid == INVALID_ADMIN_ID && !pTarget->IsAuthStringValidated())
+			{
+				tid = adminsys->FindAdminByIdentity("steam", pTarget->GetAuthString(false));
+				if (tid == INVALID_ADMIN_ID)
+				{
+					tid = adminsys->FindAdminByIdentity("ip", pTarget->GetIPAddress());
+				}
+			}
+
+			if (!adminsys->CanAdminTarget(pAdmin->GetAdminId(), tid))
+			{
+				return COMMAND_TARGET_IMMUNE;
+			}
 		}
 	}
 
