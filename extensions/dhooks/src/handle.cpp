@@ -92,6 +92,53 @@ bool DynamicDetour::Disable(SourcePawn::IPluginFunction* callback, sp::HookMode 
 	return true;
 }
 
+HookSetup::HookSetup(
+	dhooks::sp::ThisPointerType thisptr_type,
+	dhooks::sp::CallingConvention callconv,
+	std::vector<dhooks::ArgumentInfo> const& args,
+	dhooks::ReturnInfo const& ret
+	) : 
+	_handle(BAD_HANDLE),
+	_immutable(false),
+	_this_pointer(thisptr_type),
+	_dhook_call_conv(callconv) {
+	
+	for (const auto& arg : args) {
+		Variable var;
+		var.dhook_type = arg.info.type;
+		var.dhook_size = arg.info.size;
+		var.dhook_pass_flags = arg.info.flags;
+		var.dhook_custom_register = arg.info.custom_register;
+
+		_dhook_params.push_back(var);
+	}
+
+	_dhook_return.dhook_type;
+    size_t dhook_size;
+    sp::DHookPassFlag dhook_pass_flags;
+    sp::DHookRegister dhook_custom_register;
+}
+
+DynamicDetour::DynamicDetour(	
+	dhooks::sp::ThisPointerType thisptr_type,
+	dhooks::sp::CallingConvention callconv,
+	void* address,
+	std::vector<dhooks::ArgumentInfo> const& params,
+	dhooks::ReturnInfo const& ret) :
+	HookSetup(thisptr_type, callconv, params, ret),
+	_address(address)
+	{
+}
+
+DynamicHook::DynamicHook(
+	sp::ThisPointerType thisptr_type,
+	std::uint32_t offset,
+	const std::vector<ArgumentInfo>& params,
+	const ReturnInfo& ret) :
+	HookSetup(thisptr_type, sp::CallingConvention::CallConv_THISCALL, params, ret),
+	_offset(offset) {
+}
+
 void init() {
 	SourceMod::HandleAccess security;
 	globals::handlesys->InitAccessDefaults(nullptr, &security);

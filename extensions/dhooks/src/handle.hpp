@@ -48,8 +48,16 @@ private:
 };
 
 class HookSetup {
+protected:
+	HookSetup(
+		dhooks::sp::ThisPointerType,
+		dhooks::sp::CallingConvention,
+		std::vector<dhooks::ArgumentInfo> const&,
+		dhooks::ReturnInfo const&
+	);
 public:
-	virtual ~HookSetup();
+
+	virtual ~HookSetup() = default;
 	static SourceMod::HandleType_t HANDLE_TYPE;
 
 	bool IsImmutable() const { return _immutable; }

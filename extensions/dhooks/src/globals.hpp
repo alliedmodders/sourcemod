@@ -5,6 +5,9 @@
 #include <IGameHelpers.h>
 #include <IGameConfigs.h>
 #include <ISourceMod.h>
+#include <IShareSys.h>
+#define META_NO_HL2SDK
+#include <ISmmPlugin.h>
 #include <sp_vm_types.h>
 
 #include <thread>
@@ -25,9 +28,9 @@ extern SourceMod::IExtension* myself;
 extern SourceMod::ISourceMod* sourcemod;
 extern SourceMod::IGameConfigManager* gameconfs;
 extern std::vector<sp_nativeinfo_t> natives;
-extern dhooks::SignatureGameConfig* dhooks_config;
+extern dhooks::SignatureGameConfig dhooks_config;
 
-void init();
+bool init(SourceMM::ISmmAPI* smmapi, SourceMod::IExtension* me, SourceMod::IShareSys* sys, char *error, size_t maxlength, bool late);
 
 inline const char *HandleErrorToString(SourceMod::HandleError err) {
 	switch(err) {
