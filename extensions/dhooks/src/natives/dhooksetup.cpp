@@ -132,7 +132,7 @@ cell_t DHookCreateFromConf_Ex(SourcePawn::IPluginContext* context, const cell_t*
 	char* function;
 	context->LocalToString(params[2], &function);
 
-	SignatureWrapper* sig = globals::dhooks_config->GetFunctionSignature(function);
+	SignatureWrapper* sig = globals::dhooks_config.GetFunctionSignature(function);
 	if (!sig) {
 		return context->ThrowNativeError("Hook definition \"%s\" was not found.", function);
 	}

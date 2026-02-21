@@ -286,6 +286,9 @@ Capsule::Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::C
 	}
 }
 
+void Capsule::_KHook_RemovedHook(unsigned int) {
+}
+
 Capsule::~Capsule() {
 	if (_linked_hook != KHook::INVALID_HOOK) {
 		KHook::RemoveHook(_linked_hook, false);
