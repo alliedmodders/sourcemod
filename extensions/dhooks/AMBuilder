@@ -5,19 +5,22 @@ sources = [
   'src/capsule.cpp',
   'src/globals.cpp',
   'src/handle.cpp',
+  'src/main.cpp',
   'src/register.cpp',
   'src/signatures.cpp',
   'src/sp_inc.cpp',
   'src/natives/dhookparam.cpp',
   'src/natives/dhookreturn.cpp',
   'src/natives/dhooksetup.cpp',
-  'src/natives/dynamicdetour.cpp'
+  'src/natives/dynamicdetour.cpp',
+  '../../public/smsdk_ext.cpp'
 ]
 
 for cxx in builder.targets:
   binary = SM.ExtLibrary(builder, cxx, 'dhooks.ext')
-
+  binary.compiler.includes += [os.path.join(builder.sourcePath, 'extensions', 'dhooks', 'src')]
   binary.sources += sources
+
   if cxx.target.platform == 'linux':
     if cxx.target.arch == 'x86_64':
       binary.sources += ['src/abi/system_v_amd64.cpp']
