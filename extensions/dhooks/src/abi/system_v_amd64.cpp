@@ -70,7 +70,7 @@ std::optional<TypeClass> Classify_ReturnType(const ReturnVariable& info) {
 	return {};
 }
 
-bool Process(sp::CallingConvention conv, std::vector<Variable>& params, ReturnVariable& ret, size_t& stack_size) {
+bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnVariable& ret, size_t& stack_size) {
 	// 3.2.3 Parameter Passing
 	static const AsmReg available_general_registers[] = { rdi, rsi, rdx, rcx, r8, r9 };
 	static const AsmFloatReg available_float_registers[] = { xmm0, xmm1, xmm2, xmm3, xmm4, xmm5, xmm6, xmm7 };
