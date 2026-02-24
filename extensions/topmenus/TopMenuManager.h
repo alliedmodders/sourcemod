@@ -36,10 +36,10 @@
 #include <ITopMenus.h>
 #include <IPlayerHelpers.h>
 #include <IPluginSys.h>
-#include <sh_list.h>
+
+#include <list>
 
 using namespace SourceMod;
-using namespace SourceHook;
 
 class TopMenu;
 
@@ -60,7 +60,7 @@ public:
 	void OnPluginUnloaded(IPlugin *plugin);
 	void OnMaxPlayersChanged(int newvalue);
 private:
-	List<TopMenu *> m_TopMenus;
+	std::list<TopMenu *> m_TopMenus;
 };
 
 extern TopMenuManager g_TopMenus;
