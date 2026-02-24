@@ -181,3 +181,13 @@ unsigned int CallWrapper::GetFunctionFlags()
 {
 	return m_FnFlags;
 }
+
+void CallWrapper::SetVtableIndex(unsigned int index)
+{
+	m_VTableIndex = index;
+}
+
+unsigned int CallWrapper::GetVtableIndex()
+{
+	return m_VTableIndex;
+}
