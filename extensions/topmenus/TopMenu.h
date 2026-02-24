@@ -32,12 +32,13 @@
 #ifndef _INCLUDE_SOURCEMOD_TOP_MENU_H_
 #define _INCLUDE_SOURCEMOD_TOP_MENU_H_
 
-#include <list>
-#include <vector>
 #include <ITopMenus.h>
 #include "smsdk_ext.h"
 #include "sm_memtable.h"
 #include <sm_namehashset.h>
+
+#include <list>
+#include <vector>
 
 using namespace SourceMod;
 
