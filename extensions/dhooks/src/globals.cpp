@@ -39,7 +39,7 @@ bool init(SourceMM::ISmmAPI* smmapi, SourceMod::IExtension* me, SourceMod::IShar
 		SMINTERFACE_HANDLESYSTEM_NAME,
 		SMINTERFACE_HANDLESYSTEM_VERSION,
 		error,
-		maxlength)) != nullptr) {
+		maxlength)) == nullptr) {
 		return false;
 	}
 
@@ -47,7 +47,7 @@ bool init(SourceMM::ISmmAPI* smmapi, SourceMod::IExtension* me, SourceMod::IShar
 		SMINTERFACE_GAMEHELPERS_NAME,
 		SMINTERFACE_GAMEHELPERS_VERSION,
 		error,
-		maxlength)) != nullptr) {
+		maxlength)) == nullptr) {
 		return false;
 	}
 
@@ -55,7 +55,7 @@ bool init(SourceMM::ISmmAPI* smmapi, SourceMod::IExtension* me, SourceMod::IShar
 		SMINTERFACE_SOURCEMOD_NAME,
 		SMINTERFACE_SOURCEMOD_VERSION,
 		error,
-		maxlength)) != nullptr) {
+		maxlength)) == nullptr) {
 		return false;
 	}
 
@@ -63,7 +63,7 @@ bool init(SourceMM::ISmmAPI* smmapi, SourceMod::IExtension* me, SourceMod::IShar
 		SMINTERFACE_GAMECONFIG_NAME,
 		SMINTERFACE_GAMECONFIG_VERSION,
 		error,
-		maxlength)) != nullptr) {
+		maxlength)) == nullptr) {
 		return false;
 	}
 
