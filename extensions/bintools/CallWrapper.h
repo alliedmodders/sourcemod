@@ -85,6 +85,7 @@ private:
 	void *m_AddrCallee;
 	void *m_AddrCodeBase;
 	unsigned int m_FnFlags;
+	unsigned int m_VTableIndex;
 };
 
 #endif //_INCLUDE_SOURCEMOD_CALLWRAPPER_H_
