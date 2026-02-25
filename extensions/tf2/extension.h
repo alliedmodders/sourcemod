@@ -145,7 +145,7 @@ extern sm_sendprop_info_t *playerSharedOffset;
 
 extern CGlobalVars *gpGlobals;
 
-void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
+KHook::Return<void> OnServerActivate(IServerGameDLL*, edict_t *pEdictList, int edictCount, int clientMax);
 
 int FindResourceEntity();
 int FindEntityByNetClass(int start, const char *classname);
