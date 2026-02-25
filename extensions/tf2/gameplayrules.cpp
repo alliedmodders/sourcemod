@@ -30,16 +30,15 @@
  */
 
 #include "gameplayrules.h"
+#include "extension.h"
 
-CDetour *setInWaitingForPlayersDetour = NULL;
+class CTeamplayRoundBasedRules;
 
 IForward *g_waitingPlayersStartForward = NULL;
 IForward *g_waitingPlayersEndForward = NULL;
 
-DETOUR_DECL_MEMBER1(SetInWaitingForPlayers, void, bool, bWaitingForPlayers)
+KHook::Return<void> SetInWaitingForPlayers(CTeamplayRoundBasedRules*, bool bWaitingForPlayers)
 {
-	DETOUR_MEMBER_CALL(SetInWaitingForPlayers)(bWaitingForPlayers);
-
 	if (bWaitingForPlayers)
 	{
 		if (!g_waitingPlayersStartForward)
@@ -62,23 +61,22 @@ DETOUR_DECL_MEMBER1(SetInWaitingForPlayers, void, bool, bWaitingForPlayers)
 			g_waitingPlayersEndForward->Execute(NULL);
 		}
 	}
+
+	return { KHook::Action::Ignore };
 }
+KHook::Member<CTeamplayRoundBasedRules, void, bool> g_HookSetInWaitingForPlayers(nullptr, SetInWaitingForPlayers);
 
 bool InitialiseRulesDetours()
 {
-	setInWaitingForPlayersDetour = DETOUR_CREATE_MEMBER(SetInWaitingForPlayers, "SetInWaitingForPlayers");
-
-	if (setInWaitingForPlayersDetour != NULL)
-	{
-		setInWaitingForPlayersDetour->EnableDetour();
-		return true;
+	void* addr = nullptr;
+	if (!g_pGameConf->GetMemSig("SetInWaitingForPlayers", &addr) || addr == nullptr) {
+		g_pSM->LogError(myself, "Failed to retrieve SetInWaitingForPlayers.");
+		return false;
 	}
-
-	g_pSM->LogError(myself, "No Gameplay Rules detours could be initialized - Disabled Gameplay Rules functions");
-	return false;
+	g_HookSetInWaitingForPlayers.Configure(KHook::BuildMFP<CTeamplayRoundBasedRules, void, bool>(addr));
+	return true;
 }
 
 void RemoveRulesDetours()
 {
-	setInWaitingForPlayersDetour->Destroy();
 }

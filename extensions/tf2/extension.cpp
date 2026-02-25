@@ -40,7 +40,6 @@
 #include "conditions.h"
 #include "gameplayrules.h"
 #include "teleporter.h"
-#include "CDetour/detours.h"
 #include "ISDKHooks.h"
 #include "ISDKTools.h"
 
@@ -69,7 +68,7 @@ extern sp_nativeinfo_t g_TFNatives[];
 
 int g_resourceEntity;
 
-SH_DECL_HOOK3_void(IServerGameDLL, ServerActivate, SH_NOATTRIB, 0, edict_t *, int , int);
+KHook::Virtual g_HookServerActivate(&IServerGameDLL::ServerActivate, nullptr, OnServerActivate);
 
 bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
@@ -107,8 +106,6 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		}
 		return false;
 	}
-
-	CDetourManager::Init(g_pSM->GetScriptingEngine(), g_pGameConf);
 
 	sharesys->AddNatives(myself, g_TFNatives);
 	sharesys->RegisterLibrary(myself, "tf2");
@@ -152,7 +149,7 @@ bool TF2Tools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 
 	gpGlobals = ismm->GetCGlobals();
 
-	SH_ADD_HOOK(IServerGameDLL, ServerActivate, gamedll, SH_STATIC(OnServerActivate), true);
+	g_HookServerActivate.Add(gamedll);
 
 	GET_V_IFACE_CURRENT(GetEngineFactory, icvar, ICvar, CVAR_INTERFACE_VERSION);
 
@@ -164,7 +161,7 @@ bool TF2Tools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 
 void TF2Tools::SDK_OnUnload()
 {
-	SH_REMOVE_HOOK(IServerGameDLL, ServerActivate, gamedll, SH_STATIC(OnServerActivate), true);
+	g_HookServerActivate.Remove(gamedll);
 
 	g_HolidayManager.OnSDKUnload();
 	m_GameEventManager->RemoveListener(this);
@@ -265,10 +262,12 @@ void TF2Tools::NotifyInterfaceDrop(SMInterface *pInterface)
 	g_RegNatives.UnregisterAll();
 }
 
-void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
+KHook::Return<void> OnServerActivate(IServerGameDLL*, edict_t *pEdictList, int edictCount, int clientMax)
 {
 	g_resourceEntity = FindResourceEntity();
 	g_HolidayManager.OnServerActivated();
+
+	return { KHook::Action::Ignore };
 }
 
 bool TF2Tools::ProcessCommandTarget(cmd_target_info_t *info)

@@ -1,6 +1,19 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
+sources = [
+  'extension.cpp',
+  'natives.cpp',
+  'RegNatives.cpp',
+  'util.cpp',
+  'criticals.cpp',
+  'holiday.cpp',
+  'teleporter.cpp',
+  'gameplayrules.cpp',
+  'conditions.cpp',
+  '../../public/smsdk_ext.cpp'
+]
+
 if 'tf2' in SM.sdks:
   sdk = SM.sdks['tf2']
   
@@ -8,18 +21,6 @@ if 'tf2' in SM.sdks:
     if not cxx.target.arch in sdk['platforms'][cxx.target.platform]:
       continue
     binary = SM.HL2Library(builder, cxx, 'game.tf2.ext.' + sdk['extension'], sdk)
-    SM.AddCDetour(binary)
-    binary.sources += [
-      'extension.cpp',
-      'natives.cpp',
-      'RegNatives.cpp',
-      'util.cpp',
-      'criticals.cpp',
-      'holiday.cpp',
-      'teleporter.cpp',
-      'gameplayrules.cpp',
-      'conditions.cpp',
-      '../../public/smsdk_ext.cpp'
-    ]
+    binary.sources += sources
     binary.compiler.defines += ['HAVE_STRING_H']
     SM.extensions += [builder.Add(binary)]
