@@ -32,12 +32,11 @@
 #include "criticals.h"
 #include "util.h"
 
-CritManager g_CritManager;
-
 IForward *g_critForward = NULL;
 
 KHook::Virtual<CBaseEntity, bool> g_HookCalcIsAttackCriticalHelper;
 KHook::Virtual<CBaseEntity, bool> g_HookCalcIsAttackCriticalHelperNoCrits;
+CritManager g_CritManager;
 
 const char TF_WEAPON_DATATABLE[] = "DT_TFWeaponBase";
 
