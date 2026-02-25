@@ -33,9 +33,6 @@
 #define _INCLUDE_SOURCEMOD_GAMEPLAY_RULES_H_
 
 #include "extension.h"
-#include <jit/jit_helpers.h>
-#include <jit/x86/x86_macros.h>
-#include "CDetour/detours.h"
 
 bool InitialiseRulesDetours();
 void RemoveRulesDetours();
