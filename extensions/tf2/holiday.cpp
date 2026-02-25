@@ -31,13 +31,13 @@
 
 #include "holiday.h"
 
-SH_DECL_MANUALHOOK1(IsHolidayActive, 0, 0, 0, bool, int);
-SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, 0);
+class CTFGameRules;
+KHook::Virtual<CTFGameRules, bool, int> g_HookIsHolidayActive;
+KHook::Virtual g_HookLevelShutdown(&IServerGameDLL::LevelShutdown);
 
 HolidayManager g_HolidayManager;
 
 HolidayManager::HolidayManager() :
-m_iHookID(0),
 m_isHolidayForward(NULL),
 m_bInMap(false)
 {
@@ -50,13 +50,17 @@ void HolidayManager::OnSDKLoad(bool bLate)
 	plsys->AddPluginsListener(this);
 	m_isHolidayForward = forwards->CreateForward("TF2_OnIsHolidayActive", ET_Event, 2, NULL, Param_Cell, Param_CellByRef);
 
-	SH_ADD_HOOK(IServerGameDLL, LevelShutdown, gamedll, SH_MEMBER(this, &HolidayManager::Hook_LevelShutdown), false);
+	g_HookLevelShutdown.AddContext(this, &HolidayManager::Hook_LevelShutdown, nullptr);
+	g_HookIsHolidayActive.AddContext(this, &HolidayManager::Hook_IsHolidayActive, nullptr);
+	g_HookLevelShutdown.Add(gamedll);
 }
 
 void HolidayManager::OnSDKUnload()
 {
+	g_HookLevelShutdown.RemoveContext(this);
+	g_HookIsHolidayActive.RemoveContext(this);
 	Unhook();
-	SH_REMOVE_HOOK(IServerGameDLL, LevelShutdown, gamedll, SH_MEMBER(this, &HolidayManager::Hook_LevelShutdown), false);
+	g_HookLevelShutdown.Remove(gamedll);
 
 	plsys->RemovePluginsListener(this);
 	forwards->ReleaseForward(m_isHolidayForward);
@@ -69,25 +73,26 @@ void HolidayManager::OnServerActivated()
 	HookIfNecessary();
 }
 
-void HolidayManager::Hook_LevelShutdown()
+KHook::Return<void> HolidayManager::Hook_LevelShutdown(IServerGameDLL*)
 {
 	// GameRules is going away momentarily. Unhook before it does.
 	Unhook();
 
 	m_bInMap = false;
+	return { KHook::Action::Ignore };
 }
 
 void HolidayManager::HookIfNecessary()
 {
 	// Already hooked
-	if (m_iHookID)
+	if (g_HookIsHolidayActive.IsActive())
 		return;
 
 	// Nothing wants us
 	if (m_isHolidayForward->GetFunctionCount() == 0)
 		return;
 
-	void *pGameRules = GetGameRules();
+	auto *pGameRules = GetGameRules();
 	if (!pGameRules)
 	{
 		if (m_bInMap)
@@ -106,20 +111,15 @@ void HolidayManager::HookIfNecessary()
 			return;
 		}
 
-		SH_MANUALHOOK_RECONFIGURE(IsHolidayActive, offset, 0, 0);
+		g_HookIsHolidayActive.Configure(offset);
 	}
 
-	m_iHookID = SH_ADD_MANUALHOOK(IsHolidayActive, pGameRules, SH_MEMBER(this, &HolidayManager::Hook_IsHolidayActive), false);
+	g_HookIsHolidayActive.Add(pGameRules);
 }
 
 void HolidayManager::Unhook()
 {
-	// Not hooked
-	if (!m_iHookID)
-		return;
-
-	SH_REMOVE_HOOK_ID(m_iHookID);
-	m_iHookID = 0;
+	g_HookIsHolidayActive.ClearHooks();
 }
 
 static inline void PopulateHolidayVar(IPluginRuntime *pRuntime, const char *pszName)
@@ -169,15 +169,13 @@ void HolidayManager::OnPluginUnloaded(IPlugin *plugin)
 	Unhook();
 }
 
-bool HolidayManager::Hook_IsHolidayActive(int holiday)
+KHook::Return<bool> HolidayManager::Hook_IsHolidayActive(CTFGameRules* pGameRules, int holiday)
 {
-	void *pGameRules = META_IFACEPTR(void *);
-
-	bool actualres = SH_MCALL(pGameRules, IsHolidayActive)(holiday);
+	bool actualres = g_HookIsHolidayActive.CallOriginal(pGameRules, holiday);
 	if (!m_isHolidayForward)
 	{
 		g_pSM->LogMessage(myself, "Invalid Forward");
-		RETURN_META_VALUE(MRES_IGNORED, true);
+		return { KHook::Action::Ignore };
 	}
 
 	cell_t result = 0;
@@ -189,8 +187,12 @@ bool HolidayManager::Hook_IsHolidayActive(int holiday)
 
 	if (result > Pl_Continue)
 	{
-		RETURN_META_VALUE(MRES_SUPERCEDE, (newres == 0) ? false : true);
+		return { KHook::Action::Supersede, (newres == 0) ? false : true };
 	}
 
-	RETURN_META_VALUE(MRES_IGNORED, true);
+	return { KHook::Action::Ignore };
+}
+
+bool HolidayManager::IsHookEnabled() const {
+	return g_HookIsHolidayActive.IsActive();
 }
