@@ -33,7 +33,6 @@
 #define _INCLUDE_SOURCEMOD_TELEPORTER_H_
 
 #include "extension.h"
-#include "CDetour/detours.h"
 
 bool InitialiseTeleporterDetour();
 void RemoveTeleporterDetour();
