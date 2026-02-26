@@ -115,7 +115,7 @@ SDKTools::SDKTools() :
 	m_HookLevelInit(&IServerGameDLL::LevelInit, this, nullptr, &SDKTools::LevelInit),
 	m_HookLevelShutdown(&IServerGameDLL::LevelShutdown, this, nullptr, &SDKTools::LevelShutdown)
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
-	,m_HookClientCommand(&IVEngineServer::ClientCommand, this, &SDKTools::OnSendClientCommand, nullptr)
+	,m_HookOnSendClientCommand(&IVEngineServer::ClientCommand, this, &SDKTools::OnSendClientCommand, nullptr)
 #endif
 #if defined CLIENTVOICE_HOOK_SUPPORT
 	,m_HookClientVoice(&IServerGameClients::ClientVoice, this, nullptr, &SDKTools::OnClientVoice)
@@ -315,7 +315,7 @@ bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 	GET_V_IFACE_ANY(GetEngineFactory, soundemitterbase, ISoundEmitterSystemBase, SOUNDEMITTERSYSTEM_INTERFACE_VERSION);
 
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
-	m_HookClientCommand.Add(engine);
+	m_HookOnSendClientCommand.Add(engine);
 #endif
 #if defined CLIENTVOICE_HOOK_SUPPORT
 	m_HookClientVoice.Add(serverClients);
@@ -328,7 +328,7 @@ bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 bool SDKTools::SDK_OnMetamodUnload(char *error, size_t maxlen)
 {
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
-	m_HookClientCommand.Remove(engine);
+	m_HookOnSendClientCommand.Remove(engine);
 #endif
 #if defined CLIENTVOICE_HOOK_SUPPORT
 	m_HookClientVoice.Remove(serverClients);
