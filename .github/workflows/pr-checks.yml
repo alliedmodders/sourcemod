@@ -31,7 +31,7 @@ jobs:
       ARCH: x86,x86_64
       MARIADB_CONNECTOR_C_VERSION: '3.4.9'
       MARIADB_CONNECTOR_C_RELEASE: '3.4.9-sm.5'
-      MMSOURCE_VERSION: '1.12'
+      MMSOURCE_VERSION: '2.0'
     steps:
       - uses: actions/checkout@v7
         with:
