@@ -2046,15 +2046,10 @@ void CPlayer::Initialize(const char *name, const char *ip, edict_t *pEntity)
 	else
   #endif
 	{
-		m_pIClient = nullptr;
-
-		const char *skip = g_pGameConf->GetKeyValue("SkipNetchanIClient");
-		if (skip == nullptr || strcmp(skip, "yes") != 0)
+		INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex));
+		if (pNetChan)
 		{
-			if (INetChannel *pNetChan = static_cast<INetChannel *>(engine->GetPlayerNetInfo(m_iIndex)))
-			{
-				m_pIClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
-			}
+			m_pIClient = static_cast<IClient *>(pNetChan->GetMsgHandler());
 		}
 	}
 #endif
