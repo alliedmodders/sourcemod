@@ -30,7 +30,7 @@ jobs:
       SDKS: '["episode1","css","tf2","l4d2","csgo","dods"]'
       ARCH: x86,x86_64
       MYSQL_VERSION: '5.7'
-      MMSOURCE_VERSION: '1.12'
+      MMSOURCE_VERSION: '2.0'
     steps:
       - uses: actions/checkout@v6
         with:
