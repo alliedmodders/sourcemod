@@ -166,8 +166,12 @@ cell_t DHookCreateFromConf_Ex(SourcePawn::IPluginContext* context, const cell_t*
 	if (hook_type == DHookCreateFromConf::ANY || hook_type == DHookCreateFromConf::VIRTUAL) {
 		int offset = 0;
 		if (conf->GetOffset(sig->offset.c_str(), &offset)) {
-			auto setup = new handle::DynamicHook(sig->thisType, offset, sig->args, sig->ret);
-			return setup->GetHandle();
+			auto setup = new handle::DynamicHook(context->GetIdentity(), sig->thisType, offset, sig->args, sig->ret);
+			auto hndl = setup->GetHandle();
+			if (hndl == BAD_HANDLE) {
+				delete setup;
+			}
+			return hndl;
 		}
 		if (hook_type == DHookCreateFromConf::VIRTUAL) {
 			return context->ThrowNativeError("Failed to retrieve offset \"%s\" for hook.", sig->offset.c_str());
@@ -177,11 +181,15 @@ cell_t DHookCreateFromConf_Ex(SourcePawn::IPluginContext* context, const cell_t*
 	if (hook_type == DHookCreateFromConf::ANY || hook_type == DHookCreateFromConf::ADDRESS) {
 		void* addr = nullptr;
 		if (conf->GetAddress(sig->address.c_str(), &addr) || conf->GetMemSig(sig->signature.c_str(), &addr)) {
-			auto setup = new handle::DynamicDetour(sig->thisType, sig->callConv, addr, sig->args, sig->ret);
-			return setup->GetHandle();
+			auto setup = new handle::DynamicDetour(context->GetIdentity(), sig->thisType, sig->callConv, addr, sig->args, sig->ret);
+			auto hndl = setup->GetHandle();
+			if (hndl == BAD_HANDLE) {
+				delete setup;
+			}
+			return hndl;
 		}
 		if (hook_type == DHookCreateFromConf::ADDRESS) {
-			return context->ThrowNativeError("Failed to retrieve offset \"%s\" for hook.", sig->offset.c_str());
+			return context->ThrowNativeError("Failed to retrieve signature \"%s\" for hook.", sig->offset.c_str());
 		}
 	}
 
