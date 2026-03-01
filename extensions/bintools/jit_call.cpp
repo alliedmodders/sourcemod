@@ -412,7 +412,7 @@ inline void Write_CallFunction(JitWriter *jit, FuncAddrMethod method, CallWrappe
 		//call edx
 		//SourceHook::MemFuncInfo *funcInfo = pWrapper->GetMemFuncInfo();
 		jit_uint32_t total_offs = 0; /*funcInfo->thisptroffs + funcInfo->vtbloffs;*/
-		jit_uint32_t vfunc_pos = pWrapper->GetVtableIndex(); /*funcInfo->vtblindex * 4;*/
+		jit_uint32_t vfunc_pos = pWrapper->GetVtableIndex() * sizeof(void*); /*funcInfo->vtblindex * 4;*/
 
 		IA32_Mov_Reg_Rm(jit, kREG_EDX, kREG_EBX, MOD_MEM_REG);
 		if (total_offs < SCHAR_MAX)
