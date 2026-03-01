@@ -41,6 +41,26 @@ const std::unique_ptr<Capsule>& Capsule::FindOrCreate(const handle::HookSetup* s
 	return locals::nullptr_capsule;
 }
 
+class EmptyClass {
+public:
+	bool AllowedToHealTarget_MakeReturn( CBaseEntity* pTarget ) {
+		printf("MAKE RETURN\n");
+
+		bool ret = *(bool*)::KHook::GetCurrentValuePtr(true);
+		::KHook::DestroyReturnValue();
+		return ret;
+	}
+
+	bool AllowedToHealTarget_CallOriginal( CBaseEntity* pTarget ) {
+		printf("CALLED ORIGINAL 0x%lX\n", (uintptr_t)this);
+
+		auto ptr = KHook::BuildMFP<EmptyClass, bool, CBaseEntity*>(::KHook::GetOriginalFunction());
+		bool ret = (((EmptyClass*)this)->*ptr)(pTarget);
+		::KHook::__internal__savereturnvalue(KHook::Return<bool>{ KHook::Action::Ignore, ret }, true);
+		return ret;
+	}
+};
+
 std::uint32_t Capsule::AddCallback(SourcePawn::IPluginFunction* callback, SourcePawn::IPluginFunction* remove_callback, sp::HookMode mode, sp::ThisPointerType this_ptr, void* associated_this) {
 	auto id = ++locals::last_hook_id;
 	
@@ -158,7 +178,7 @@ Capsule::Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::C
 	}
 
 	// For every parameter found, and return value, save the associated registers
-	for (auto& param : params) {
+	for (auto& param : _parameters) {
 		if (param.float_reg_index) {
 			_save_float_register[param.float_reg_index.value()] = true;
 		}
@@ -170,6 +190,7 @@ Capsule::Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::C
 			// A parameter must be associated with a register
 			// If a parameter is on the stack, then it must be
 			// associated with the stack and the offset into it
+			globals::sourcemod->LogError(globals::myself, "Param isn't associated with register. Kill server");
 			std::abort();
 		}
 	}
@@ -216,6 +237,7 @@ Capsule::Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::C
 		mfp = KHook::ExtractMFP(&Capsule::PrePostHookLoop<sdk::edict_t*>);
 		break;
 		default:
+		globals::sourcemod->LogError(globals::myself, "Invalid return type. Kill server");
 		std::abort();
 		break;
 	}
@@ -244,7 +266,7 @@ Capsule::Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::C
 
 	abi::JIT_Align(_jit);
 	auto offset_to_call_original = _jit.get_outputpos();
-	abi::JIT_CallOriginal(_jit, _return, &_original_function, &_jit_start);
+	abi::JIT_CallOriginal(_jit, _return, &_original_function, _stack_size, &_jit_start);
 
 	abi::JIT_Align(_jit);
 	auto offset_to_recall = _jit.get_outputpos();
@@ -260,8 +282,8 @@ Capsule::Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::C
 			KHook::ExtractMFP(&Capsule::_KHook_RemovedHook),
 			reinterpret_cast<void*>(_jit_start + offset_to_pre_callback),
 			reinterpret_cast<void*>(_jit_start + offset_to_post_callback),
-			reinterpret_cast<void*>(_jit_start + offset_to_make_return),
-			reinterpret_cast<void*>(_jit_start + offset_to_call_original),
+			reinterpret_cast<void*>(_jit_start + offset_to_make_return), // KHook::ExtractMFP(&EmptyClass::AllowedToHealTarget_MakeReturn), //reinterpret_cast<void*>(_jit_start + offset_to_make_return),
+			reinterpret_cast<void*>(_jit_start + offset_to_call_original), // KHook::ExtractMFP(&EmptyClass::AllowedToHealTarget_CallOriginal), //reinterpret_cast<void*>(_jit_start + offset_to_call_original),
 			true
 		)
 	:
