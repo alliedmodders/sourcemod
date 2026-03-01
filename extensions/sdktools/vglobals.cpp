@@ -45,7 +45,6 @@ void *GameRules()
 void InitializeValveGlobals()
 {
 	g_EntList = gamehelpers->GetGlobalEntityList();
-
 	/*
 	 * g_pGameRules
 	 *
@@ -53,8 +52,7 @@ void InitializeValveGlobals()
 	 * If symbols aren't present (Windows or stripped Linux/Mac), 
 	 * attempt find via CreateGameRulesObject + offset
 	 */
-
-	char *addr;
+	char *addr = nullptr;
 	if (g_pGameConf->GetMemSig("g_pGameRules", (void **)&addr) && addr)
 	{
 		g_ppGameRules = reinterpret_cast<void **>(addr);
