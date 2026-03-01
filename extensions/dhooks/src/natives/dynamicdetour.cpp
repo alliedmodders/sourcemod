@@ -33,7 +33,7 @@ cell_t DynamicDetour_DynamicDetour(SourcePawn::IPluginContext* context, const ce
 		return context->ThrowNativeError("Return type size cannot be 0 bytes");
 	}
 
-	auto hndl = new handle::DynamicDetour(thisptrtype, callconv, addr, {}, info);
+	auto hndl = new handle::DynamicDetour(context->GetIdentity(), thisptrtype, callconv, addr, {}, info);
 	return hndl->GetHandle();
 }
 
