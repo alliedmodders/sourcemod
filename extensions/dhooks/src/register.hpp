@@ -48,7 +48,7 @@ public:
     operator std::uint16_t() { return (std::uint16_t)_value; }
     operator std::int8_t() { return (std::int8_t)_value; }
     operator std::uint8_t() { return (std::int8_t)_value; }
-protected:
+
     std::uintptr_t _value;
 };
 

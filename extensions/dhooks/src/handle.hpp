@@ -80,7 +80,7 @@ protected:
 
 class DynamicHook : public HookSetup {
 public:
-	DynamicHook(sp::ThisPointerType, std::uint32_t offset, const std::vector<ArgumentInfo>& params, const ReturnInfo& ret);
+	DynamicHook(SourceMod::IdentityToken_t*, sp::ThisPointerType, std::uint32_t offset, const std::vector<ArgumentInfo>& params, const ReturnInfo& ret);
 	static SourceMod::HandleType_t HANDLE_TYPE;
 
 	void SetOffset(int offset) {
@@ -95,7 +95,7 @@ protected:
 
 class DynamicDetour : public HookSetup {
 public:
-	DynamicDetour(sp::ThisPointerType, sp::CallingConvention, void* address, const std::vector<ArgumentInfo>& params, const ReturnInfo& ret);
+	DynamicDetour(SourceMod::IdentityToken_t*, sp::ThisPointerType, sp::CallingConvention, void* address, const std::vector<ArgumentInfo>& params, const ReturnInfo& ret);
 	static SourceMod::HandleType_t HANDLE_TYPE;
 
 	void SetAddress(void* address) {

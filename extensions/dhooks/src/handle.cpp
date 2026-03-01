@@ -36,6 +36,7 @@ void* ParamReturn::_Get(size_t index) const {
 
 	const auto& variable = params[index];
 	if (variable.reg_index) {
+		//printf("Reg code: %d Offset: %lu (%d)\n", variable.reg_index.value(), variable.reg_offset.value_or(0), variable.reg_offset.has_value());
 		AsmRegCode code = variable.reg_index.value();
 
 		if (variable.reg_offset) {
@@ -113,13 +114,14 @@ HookSetup::HookSetup(
 		_dhook_params.push_back(var);
 	}
 
-	_dhook_return.dhook_type;
-    size_t dhook_size;
-    sp::DHookPassFlag dhook_pass_flags;
-    sp::DHookRegister dhook_custom_register;
+	_dhook_return.dhook_type = ret.type;
+    _dhook_return.dhook_size = ret.size;
+    _dhook_return.dhook_pass_flags = ret.flags;
+    _dhook_return.dhook_custom_register = ret.custom_register;
 }
 
-DynamicDetour::DynamicDetour(	
+DynamicDetour::DynamicDetour(
+	SourceMod::IdentityToken_t* plugin_ident,
 	dhooks::sp::ThisPointerType thisptr_type,
 	dhooks::sp::CallingConvention callconv,
 	void* address,
@@ -128,26 +130,57 @@ DynamicDetour::DynamicDetour(
 	HookSetup(thisptr_type, callconv, params, ret),
 	_address(address)
 	{
+	SourceMod::HandleError err = SourceMod::HandleError_None;
+	_handle = globals::handlesys->CreateHandle(
+		DynamicDetour::HANDLE_TYPE,
+		this,
+		plugin_ident,
+		globals::myself->GetIdentity(),
+		&err
+	);
+	if (_handle == BAD_HANDLE) {
+		globals::sourcemod->LogError(globals::myself, "Failed to create DynamicDetour: \"%s\" (%d)", globals::HandleErrorToString(err), err);
+	}
 }
 
 DynamicHook::DynamicHook(
+	SourceMod::IdentityToken_t* plugin_ident,
 	sp::ThisPointerType thisptr_type,
 	std::uint32_t offset,
 	const std::vector<ArgumentInfo>& params,
 	const ReturnInfo& ret) :
 	HookSetup(thisptr_type, sp::CallingConvention::CallConv_THISCALL, params, ret),
 	_offset(offset) {
+	_handle = globals::handlesys->CreateHandle(
+		DynamicHook::HANDLE_TYPE,
+		this,
+		plugin_ident,
+		globals::myself->GetIdentity(),
+		nullptr
+	);
 }
+
+class HookSetupDispatch : public SourceMod::IHandleTypeDispatch {
+	virtual void OnHandleDestroy(SourceMod::HandleType_t type, void* object) override {
+		if (type == DynamicDetour::HANDLE_TYPE) {
+			delete (DynamicDetour*)object;
+		}
+		if (type == DynamicHook::HANDLE_TYPE) {
+			delete (DynamicHook*)object;
+		}
+	}
+};
+HookSetupDispatch gHookSetupDispatcher;
 
 void init() {
 	SourceMod::HandleAccess security;
 	globals::handlesys->InitAccessDefaults(nullptr, &security);
 	// Do not allow cloning, the struct self-manage its handle
 	security.access[SourceMod::HandleAccess_Clone] = HANDLE_RESTRICT_IDENTITY;
-	ParamReturn::HANDLE_TYPE = globals::handlesys->CreateType("DHookParamReturn", nullptr, 0, nullptr, &security, globals::myself->GetIdentity(), nullptr);
-	HookSetup::HANDLE_TYPE = globals::handlesys->CreateType("DHookSetup", nullptr, 0, nullptr, &security, globals::myself->GetIdentity(), nullptr);
-	DynamicHook::HANDLE_TYPE = globals::handlesys->CreateType("DynamicHook", nullptr, HookSetup::HANDLE_TYPE, nullptr, &security, globals::myself->GetIdentity(), nullptr);
-	DynamicDetour::HANDLE_TYPE = globals::handlesys->CreateType("DynamicDetour", nullptr, HookSetup::HANDLE_TYPE, nullptr, &security, globals::myself->GetIdentity(), nullptr);
+	ParamReturn::HANDLE_TYPE = globals::handlesys->CreateType("DHookParamReturn", &gHookSetupDispatcher, 0, nullptr, &security, globals::myself->GetIdentity(), nullptr);
+	HookSetup::HANDLE_TYPE = globals::handlesys->CreateType("DHookSetup", &gHookSetupDispatcher, 0, nullptr, &security, globals::myself->GetIdentity(), nullptr);
+	DynamicHook::HANDLE_TYPE = globals::handlesys->CreateType("DynamicHook", &gHookSetupDispatcher, HookSetup::HANDLE_TYPE, nullptr, &security, globals::myself->GetIdentity(), nullptr);
+	DynamicDetour::HANDLE_TYPE = globals::handlesys->CreateType("DynamicDetour", &gHookSetupDispatcher, HookSetup::HANDLE_TYPE, nullptr, &security, globals::myself->GetIdentity(), nullptr);
 }
 
 }
