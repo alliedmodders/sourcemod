@@ -127,6 +127,7 @@ void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post) const {
         std::optional<cell_t> entity_index;
         if (_parameters.size() != 0) {
             this_ptr = *(paramret.Get<void*>(0));
+            //printf("this_ptr 0x%lX\n", (uintptr_t)this_ptr);
         }
 
         // Make deep-copy to allow deletion of hooks under callbacks
