@@ -88,7 +88,7 @@ bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnV
 			// RDI is used by the Return
 			// Unsupported for now
 			ret.reg_index = available_general_registers[general_register_available++];
-			ret.reg_offset = 0;
+			ret.reg_offset = {};
 			return false;
 		} 
 		// We don't know how to handle it
@@ -98,7 +98,7 @@ bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnV
 	} else {
 		ret.reg_index = Translate_DHookRegister(ret.dhook_custom_register);
 		ret.float_reg_index = Translate_DHookRegister_Float(ret.dhook_custom_register);
-		ret.reg_offset = 0;
+		ret.reg_offset = {};
 		// Need better support
 		return false;
 	}
@@ -138,7 +138,7 @@ bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnV
 						stack_offset += sizeof(void*);
 					} else {
 						param.reg_index = available_general_registers[general_register_available++];
-						param.reg_offset = 0;
+						param.reg_offset = {};
 					}
 				break;
 				case SSE:
@@ -149,7 +149,7 @@ bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnV
 						stack_offset += sizeof(void*);
 					} else {
 						param.float_reg_index = available_float_registers[float_register_available++];
-						param.reg_offset = 0;
+						param.reg_offset = {};
 						float_register_available++;
 					}
 				break;
@@ -159,7 +159,7 @@ bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnV
 		} else {
 			param.reg_index = Translate_DHookRegister(param.dhook_custom_register);
 			param.float_reg_index = Translate_DHookRegister_Float(param.dhook_custom_register);
-			ret.reg_offset = 0;
+			ret.reg_offset = {};
 		}
 	}
 	/* Stack size here only means the size the parameters occupy, so remove the space occupied by return address */
@@ -207,12 +207,11 @@ void JIT_CallMemberFunction(AsmJit& jit, bool save_general_register[MAX_GENERAL_
 
 	jit.add(rsp, stack_size);
 	jit.pop(rbp);
-
-	jit.retn();
 }
 
 void JIT_MakeReturn(AsmJit& jit, ReturnVariable& ret) {
 	jit.push(rbp); // Re-align stack
+	jit.sub(rsp, 0x10); // Make space to save data
 	jit.mov(rbp, rsp);
 
 	jit.mov(rax, reinterpret_cast<std::uintptr_t>(::KHook::GetCurrentValuePtr));
@@ -235,7 +234,6 @@ void JIT_MakeReturn(AsmJit& jit, ReturnVariable& ret) {
 		case SSE:
 			// TO-DO: handle this better...
 			if (ret.dhook_type == sp::ReturnType_Vector) {
-				jit.sub(rsp, 0x10);
 				jit.movsd(xmm0, rax());
 				jit.movsd(rsp(), xmm0);
 				jit.movsd(xmm1, rax(0x8));
@@ -263,7 +261,6 @@ void JIT_MakeReturn(AsmJit& jit, ReturnVariable& ret) {
 			if (ret.dhook_type == sp::ReturnType_Vector) {
 				jit.movsd(xmm0, rsp());
 				jit.movsd(xmm1, rsp(0x8));
-				jit.add(rsp, 0x10);
 			} else {
 				jit.movsd(xmm0, rsp());
 			}
@@ -273,6 +270,7 @@ void JIT_MakeReturn(AsmJit& jit, ReturnVariable& ret) {
 		return;
 	}
 
+	jit.add(rsp, 0x10);
 	jit.pop(rbp);
 	jit.retn();
 }
@@ -357,54 +355,60 @@ void JIT_Recall(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], 
 	jit.retn();
 }
 
-void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original_function, std::uintptr_t* jit_start) {
+void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original_function, size_t stack_size, std::uintptr_t* jit_start) {
 	auto start = jit.get_outputpos();
 
-	// Save rax
-	jit.push(rax);
+	// save rax (and re-align stack)
 	jit.push(rax);
 
-	// Save return address (We are going to assume R15 is never used. Even by strange callconvs)
-	jit.mov(r15, rsp(0x10));
+	// Ensure stack size is aligned on 16 bytes
+	stack_size = (stack_size + 15) & ~15;
+	jit.sub(rsp, stack_size);
 
-	// Overwrite the return address to later in this function
+	// Now copy stack over
+	for (int i = 0; i < stack_size; i += sizeof(void*)) {
+		// Skip saved RAX, skip return value
+		jit.mov(rax, rsp(stack_size + 0x8 + 0x8 + i));
+		jit.mov(rsp(i), rax);
+	}
+
+	// Setup the return address to later in this function
 	jit.mov(rax, reinterpret_cast<std::uintptr_t>(jit_start));
 	jit.mov(rax, rax());
 	jit.add(rax, INT32_MAX);
 	auto add = jit.get_outputpos();
-	jit.mov(rsp(0x10), rax);
 
-	// Now invoke the original function
+	// Place the return address
+	jit.push(rax);
+
 	jit.mov(rax, reinterpret_cast<std::uintptr_t>(original_function));
 	jit.mov(rax, rax());
-	jit.mov(rsp(0x8), rax);
 
-	// Restore rax
-	jit.pop(rax);
-	// Pop again, we wrote the original function address there
+	// Place the call address
+	jit.push(rax);
+	// Restore rax (call addr, return addr) + stack_size
+	jit.mov(rax, rsp(0x8 + 0x8 + stack_size));
 	jit.retn();
 
-	// Rewrite the add rax, X - operation
 	jit.rewrite<std::int32_t>(add - sizeof(std::int32_t), jit.get_outputpos());
+
+	// Free up the stack
+	jit.add(rsp, stack_size);
+	jit.sub(rsp, 0x10); // Make some space for local save data
 
 	// Stack is currently aligned
 	// Store the return value in a local variable
-	auto local_size = 0;
 	std::uintptr_t init_op = 0;
 	std::uintptr_t deinit_op = 0;
 	switch (Classify_ReturnType(ret).value()) {
 		case INTEGER:
 		// Store RAX
-		local_size = 0x10; // Keep stack aligned
-		jit.sub(rsp, local_size);
 		jit.mov(rsp(), rax);
 
 		init_op = reinterpret_cast<std::uintptr_t>(KHook::init_operator<std::uintptr_t>);
 		deinit_op = reinterpret_cast<std::uintptr_t>(KHook::deinit_operator<std::uintptr_t>);
 		break;
 		case SSE:
-			local_size = 0x10; // Keep stack aligned
-			jit.sub(rsp, local_size);
 			// TO-DO: handle this better...
 			if (ret.dhook_type == sp::ReturnType_Vector) {
 				jit.movsd(rsp(), xmm0);
@@ -435,13 +439,9 @@ void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original
 	jit.mov(rax, reinterpret_cast<std::uintptr_t>(::KHook::SaveReturnValue));
 	jit.call(rax);
 
-	// Free local variable
-	jit.add(rsp, local_size);
+	// Free local save data + RAX
+	jit.add(rsp, 0x10 + 0x8);
 
-	// The return address should still be in r15
-	jit.push(r15);
-	// We don't have to worry about re-aligning the stack (though it should be fine)
-	// KHook will align it on its own
 	jit.retn();
 }
 
