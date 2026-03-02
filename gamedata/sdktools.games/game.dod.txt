@@ -16,6 +16,13 @@
 	{
 		"Offsets"
 		{
+			"SetOwnerEntity"
+			{
+				"windows"	"18"
+				"windows64"	"18"
+				"linux"		"19"
+				"linux64"	"19"
+			}
 			"GiveNamedItem"
 			{
 				"windows"	"407"
