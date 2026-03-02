@@ -50,7 +50,7 @@ for cxx in builder.targets:
   SM.AddCDetour(binary)
 
   if binary.compiler.target.arch == 'x86':
-    binary.sources += ['../../sourcepawn/vm/x86/assembler-x86.cpp']
+    #binary.sources += ['../../sourcepawn/vm/x86/assembler-x86.cpp']
     
     binary.compiler.cxxincludes += [
       os.path.join(builder.sourcePath, 'public', 'jit', 'x86'),
