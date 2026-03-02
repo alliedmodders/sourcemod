@@ -473,8 +473,8 @@ cell_t GetThisPtr(IPluginContext* pContext, void *iface, ThisPointerType type)
 			return -1;
 		return gamehelpers->EntityToBCompatRef((CBaseEntity *)iface);
 	}
-	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
-		return g_pSM->ToPseudoAddress(iface);
+	if (pContext->GetRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE) {
+		return 0;
 	}
 	return (cell_t)iface;
 }

@@ -1,14 +1,15 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod
- * Copyright (C) 2004-2017 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2026 AlliedModders LLC.  All rights reserved.
  * =============================================================================
+ *
+ * This file is part of the SourceMod/SourcePawn SDK.
  *
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -25,24 +26,24 @@
  * this exception to all derivative works.  AlliedModders LLC defines further
  * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
  * or <http://www.sourcemod.net/license.php>.
+ *
+ * Version: $Id$
  */
 
-#ifndef _INCLUDE_SOURCEMOD_PSEUDOADDRESSMANAGER_H_
-#define _INCLUDE_SOURCEMOD_PSEUDOADDRESSMANAGER_H_
+#if defined _virtual_address_included
+ #endinput
+#endif
+#define _virtual_address_included
 
-#include "common_logic.h"
-#include "libaddrz/addrz.h"
+#if defined _sourcemod_included
+#error <virtual_address> must be included before <sourcemod>!
+#endif
 
-class PseudoAddressManager
-{
-public:
-	PseudoAddressManager();
-public:
-	void *FromPseudoAddress(uint32_t paddr);
-	uint32_t ToPseudoAddress(void *addr);
-	void Initialize();
-private:
-	am::AddressDict m_dictionary;
-};
-
-#endif // _INCLUDE_SOURCEMOD_PSEUDOADDRESSMANAGER_H_
+// Including this file in your plugin will turn on SM's Virtual Address
+// 
+// For pointer-sized reading/storage, we recommend the usage of
+// - LoadAddressFromAddress over LoadFromAddress
+// - StoreAddressToAddress over StoreToAddress
+// 
+// For SDKCalls involving raw pointers, we discourage the usage of
+// - SDKType_PlainOldData (32 bits wide) - Use SDKType_VirtualAddress instead
