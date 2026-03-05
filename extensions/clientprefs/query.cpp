@@ -183,7 +183,7 @@ bool TQueryOp::BindParamsAndRun()
 				g_pSM->Format(query,
 					sizeof(query),
 					"INSERT INTO sm_cookies (name, description, access) \
-					VALUES ('%s', '%s', %d)",
+					VALUES ('%s', '%s', %d) ON CONFLICT (name) DO NOTHING",
 					safe_name,
 					safe_desc,
 					m_params.cookie->access);
