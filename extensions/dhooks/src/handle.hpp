@@ -9,6 +9,7 @@
 #include <optional>
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace dhooks {
 class Capsule;
@@ -109,11 +110,13 @@ protected:
 	std::uint32_t _offset;
 	sp::HookType _hook_type;
 	SourcePawn::IPluginFunction* _default_callback;
+	std::unordered_set<std::uint32_t> _associated_hook;
 };
 
 class DynamicDetour : public HookSetup {
 public:
 	DynamicDetour(SourceMod::IdentityToken_t*, sp::ThisPointerType, sp::CallingConvention, void* address, const std::vector<ArgumentInfo>& params, const ReturnInfo& ret);
+	virtual ~DynamicDetour();
 	static SourceMod::HandleType_t HANDLE_TYPE;
 
 	void SetAddress(void* address) {
