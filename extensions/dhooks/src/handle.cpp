@@ -147,10 +147,14 @@ DynamicHook::DynamicHook(
 	SourceMod::IdentityToken_t* plugin_ident,
 	sp::ThisPointerType thisptr_type,
 	std::uint32_t offset,
+	sp::HookType type,
 	const std::vector<ArgumentInfo>& params,
-	const ReturnInfo& ret) :
+	const ReturnInfo& ret,
+    SourcePawn::IPluginFunction* default_callbakc) :
 	HookSetup(thisptr_type, sp::CallingConvention::CallConv_THISCALL, params, ret),
-	_offset(offset) {
+	_offset(offset),
+	_hook_type(type),
+	_default_callback(default_callbakc) {
 	_handle = globals::handlesys->CreateHandle(
 		DynamicHook::HANDLE_TYPE,
 		this,
