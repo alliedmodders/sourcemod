@@ -1,7 +1,7 @@
 /**
  * vim: set ts=4 :
  * =============================================================================
- * SourceMod (C)2004-2025 AlliedModders LLC.  All rights reserved.
+ * SourceMod (C)2026 AlliedModders LLC.  All rights reserved.
  * =============================================================================
  *
  * This file is part of the SourceMod/SourcePawn SDK.
@@ -35,5 +35,15 @@
 #endif
 #define _virtual_address_included
 
-public const Address __Virtual_Address__ = view_as<Address>(0);
-public const Address PointerSize = view_as<Address>(0); /**< Size of a pointer in bytes (same as `sizeof(void*)`) */
+#if defined _sourcemod_included
+#error <virtual_address> must be included before <sourcemod>!
+#endif
+
+// Including this file in your plugin will turn on SM's Virtual Address
+// 
+// For pointer-sized reading/storage, we recommend the usage of
+// - LoadAddressFromAddress over LoadFromAddress
+// - StoreAddressToAddress over StoreToAddress
+// 
+// For SDKCalls involving raw pointers, we discourage the usage of
+// - SDKType_PlainOldData (32 bits wide) - Use SDKType_VirtualAddress instead
