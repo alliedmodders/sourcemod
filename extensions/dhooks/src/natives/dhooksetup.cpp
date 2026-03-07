@@ -166,7 +166,7 @@ cell_t DHookCreateFromConf_Ex(SourcePawn::IPluginContext* context, const cell_t*
 	if (hook_type == DHookCreateFromConf::ANY || hook_type == DHookCreateFromConf::VIRTUAL) {
 		int offset = 0;
 		if (conf->GetOffset(sig->offset.c_str(), &offset)) {
-			auto setup = new handle::DynamicHook(context->GetIdentity(), sig->thisType, offset, sig->args, sig->ret);
+			auto setup = new handle::DynamicHook(context->GetIdentity(), sig->thisType, offset, sig->hookType, sig->args, sig->ret, nullptr);
 			auto hndl = setup->GetHandle();
 			if (hndl == BAD_HANDLE) {
 				delete setup;
