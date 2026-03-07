@@ -109,7 +109,7 @@ PlayerManager::PlayerManager() :
 	m_HookClientSettingsChanged(&IServerGameClients::ClientSettingsChanged, this, nullptr, &PlayerManager::OnClientSettingsChanged),
 	m_HookServerActivate(&IServerGameDLL::ServerActivate, this, nullptr, &PlayerManager::OnServerActivate),
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
-	m_HookServerHibernationUpdate(&IServerGameDLL::ServerHibernationUpdate, this, nullptr, &PlayerManager::OnServerHibernationUpdate),
+	m_HookOnServerHibernationUpdate(&IServerGameDLL::ServerHibernationUpdate, this, nullptr, &PlayerManager::OnServerHibernationUpdate),
 #elif SOURCE_ENGINE > SE_EYE
 	m_HookSetServerHibernation(&IServerGameDLL::SetServerHibernation, this, nullptr, &PlayerManager::OnServerHibernationUpdate),
 #endif
@@ -162,7 +162,7 @@ void PlayerManager::OnSourceModAllInitialized()
 	m_HookClientSettingsChanged.Add(serverClients);
 	m_HookServerActivate.Add(gamedll);
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
-	m_HookServerHibernationUpdate.Add(gamedll);
+	m_HookOnServerHibernationUpdate.Add(gamedll);
 #elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox.
 	m_HookSetServerHibernation.Add(gamedll);
 #endif
@@ -216,7 +216,7 @@ void PlayerManager::OnSourceModShutdown()
 	m_HookClientSettingsChanged.Remove(serverClients);
 	m_HookServerActivate.Remove(gamedll);
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
-	m_HookServerHibernationUpdate.Remove(gamedll);
+	m_HookOnServerHibernationUpdate.Remove(gamedll);
 #elif SOURCE_ENGINE > SE_EYE // 2013/orangebox, but not original orangebox.
 	m_HookSetServerHibernation.Remove(gamedll);
 #endif
