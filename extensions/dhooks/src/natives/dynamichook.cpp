@@ -86,8 +86,7 @@ cell_t DynamicHook_HookEntity(SourcePawn::IPluginContext* context, const cell_t*
 
 	auto removal_callback = context->GetFunctionById(params[5]);
 
-	// TO-DO : Hook code
-	return context->ThrowNativeError("TO-DO IMPLEMENT!!");
+	return dynhook->AddHook(callback, removal_callback, mode, entity);
 }
 
 cell_t DynamicHook_DHookEntity(SourcePawn::IPluginContext* context, const cell_t* params) {
@@ -118,11 +117,19 @@ cell_t DynamicHook_DHookEntity(SourcePawn::IPluginContext* context, const cell_t
 		return context->ThrowNativeError("A callback must be provided to the hook!");
 	}
 
-	// TO-DO : Hook code
-	return context->ThrowNativeError("TO-DO IMPLEMENT!!");
+	return dynhook->AddHook(callback, removal_callback, (post) ? sp::HookMode::Hook_Post : sp::HookMode::Hook_Pre, entity);
 }
 
 cell_t DynamicHook_HookGamerules(SourcePawn::IPluginContext* context, const cell_t* params) {
+	if (dhooks::globals::sdktools == nullptr) {
+		return context->ThrowNativeError("SDKTools is not loaded!");
+	}
+
+	auto gamerules = dhooks::globals::sdktools->GetGameRules();
+	if (gamerules == nullptr) {
+		return context->ThrowNativeError("Failed to retrieve GameRules with SDKTools!");
+	}
+
 	auto dynhook = Get(context, params[1]);
 	if (dynhook == nullptr) {
 		return 0;
@@ -146,10 +153,19 @@ cell_t DynamicHook_HookGamerules(SourcePawn::IPluginContext* context, const cell
 	auto removal_callback = context->GetFunctionById(params[4]);
 
 	// TO-DO : Hook code
-	return context->ThrowNativeError("TO-DO IMPLEMENT!!");
+	return dynhook->AddHook(callback, removal_callback, mode, gamerules);
 }
 
 cell_t DynamicHook_DHookGamerules(SourcePawn::IPluginContext* context, const cell_t* params) {
+	if (dhooks::globals::sdktools == nullptr) {
+		return context->ThrowNativeError("SDKTools is not loaded!");
+	}
+
+	auto gamerules = dhooks::globals::sdktools->GetGameRules();
+	if (gamerules == nullptr) {
+		return context->ThrowNativeError("Failed to retrieve GameRules with SDKTools!");
+	}
+
 	auto dynhook = Get(context, params[1]);
 	if (dynhook == nullptr) {
 		return 0;
@@ -172,8 +188,7 @@ cell_t DynamicHook_DHookGamerules(SourcePawn::IPluginContext* context, const cel
 		return context->ThrowNativeError("A callback must be provided to the hook!");
 	}
 
-	// TO-DO : Hook code
-	return context->ThrowNativeError("TO-DO IMPLEMENT!!");
+	return dynhook->AddHook(callback, removal_callback, (post) ? sp::HookMode::Hook_Post : sp::HookMode::Hook_Pre, gamerules);
 }
 
 cell_t DynamicHook_HookRaw(SourcePawn::IPluginContext* context, const cell_t* params) {
@@ -195,8 +210,7 @@ cell_t DynamicHook_HookRaw(SourcePawn::IPluginContext* context, const cell_t* pa
 		callback = dynhook->GetDefaultCallback();
 	}
 
-	// TO-DO : Hook code
-	return context->ThrowNativeError("TO-DO IMPLEMENT!!");
+	return dynhook->AddHook(callback, nullptr, mode, addr);
 }
 
 cell_t DynamicHook_DHookRaw(SourcePawn::IPluginContext* context, const cell_t* params) {
@@ -224,13 +238,19 @@ cell_t DynamicHook_DHookRaw(SourcePawn::IPluginContext* context, const cell_t* p
 		return context->ThrowNativeError("A callback must be provided to the hook!");
 	}
 
-	// TO-DO : Hook code
-	return context->ThrowNativeError("TO-DO IMPLEMENT!!");
+	return dynhook->AddHook(callback, removal_callback, (post) ? sp::HookMode::Hook_Post : sp::HookMode::Hook_Pre, addr);
 }
 
 cell_t DynamicHook_RemoveHook(SourcePawn::IPluginContext* context, const cell_t* params) {
-	// TO-DO : Hook removal
-	return context->ThrowNativeError("TO-DO IMPLEMENT!!");
+	auto hndl = handle::DynamicHook::FindByHookID(params[1]);
+	if (hndl == BAD_HANDLE) {
+		return 0;
+	}
+	auto dynhook = Get(context, hndl);
+	if (dynhook == nullptr) {
+		return 0;
+	}
+	return (dynhook->RemoveHook(params[1])) ? 1 : 0;
 }
 
 void init(std::vector<sp_nativeinfo_t>& natives) {
