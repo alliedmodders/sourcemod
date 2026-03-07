@@ -143,6 +143,15 @@ DynamicDetour::DynamicDetour(
 	}
 }
 
+DynamicDetour::~DynamicDetour() {
+	for (const auto& it : _post_detours) {
+		Capsule::RemoveCallbackById(it.second);
+	}
+	for (const auto& it : _pre_detours) {
+		Capsule::RemoveCallbackById(it.second);
+	}
+}
+
 DynamicHook::DynamicHook(
 	SourceMod::IdentityToken_t* plugin_ident,
 	sp::ThisPointerType thisptr_type,
