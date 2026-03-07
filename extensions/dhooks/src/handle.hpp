@@ -80,7 +80,15 @@ protected:
 
 class DynamicHook : public HookSetup {
 public:
-	DynamicHook(SourceMod::IdentityToken_t*, sp::ThisPointerType, std::uint32_t offset, const std::vector<ArgumentInfo>& params, const ReturnInfo& ret);
+	DynamicHook(
+		SourceMod::IdentityToken_t*,
+		sp::ThisPointerType,
+		std::uint32_t,
+		sp::HookType,
+		const std::vector<ArgumentInfo>& params,
+		const ReturnInfo& ret,
+		SourcePawn::IPluginFunction*
+	);
 	static SourceMod::HandleType_t HANDLE_TYPE;
 
 	void SetOffset(int offset) {
@@ -89,8 +97,18 @@ public:
 		}
 		_offset = offset;
 	}
+
+	sp::HookType GetType() const {
+		return _hook_type;
+	}
+
+	SourcePawn::IPluginFunction* GetDefaultCallback() const {
+		return _default_callback;
+	}
 protected:
 	std::uint32_t _offset;
+	sp::HookType _hook_type;
+	SourcePawn::IPluginFunction* _default_callback;
 };
 
 class DynamicDetour : public HookSetup {
