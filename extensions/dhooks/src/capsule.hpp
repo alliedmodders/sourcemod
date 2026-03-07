@@ -35,7 +35,7 @@ protected:
 public:
     ~Capsule();
     
-    static const std::unique_ptr<Capsule>& FindOrCreate(const class handle::HookSetup* setup);
+    static const std::unique_ptr<Capsule>& FindOrCreate(const class handle::HookSetup* setup, void** vtable = nullptr);
     std::uint32_t AddCallback(SourcePawn::IPluginFunction* callback, SourcePawn::IPluginFunction* remove_callback, sp::HookMode mode, sp::ThisPointerType this_ptr, void* associated_this);
     static void RemoveCallbackById(std::uint32_t id);
     static void RemoveCallbackByPlugin(SourcePawn::IPluginContext* default_context);
