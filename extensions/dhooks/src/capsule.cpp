@@ -17,7 +17,7 @@ std::unordered_map<SourcePawn::IPluginContext*, std::unordered_set<std::uint32_t
 static std::unique_ptr<Capsule> nullptr_capsule(nullptr);
 }
 
-const std::unique_ptr<Capsule>& Capsule::FindOrCreate(const handle::HookSetup* setup) {
+const std::unique_ptr<Capsule>& Capsule::FindOrCreate(const handle::HookSetup* setup, void** vtable) {
 	auto dyndetour = dynamic_cast<const handle::DynamicDetour*>(setup);
 	if (dyndetour) {
 		// Let's see if a hook already exists
@@ -123,6 +123,8 @@ void Capsule::RemoveCallbackById(std::uint32_t id) {
 		return;
 	}
 	const auto& cb = it->second;
+	auto rm_callback = cb.remove_callback;
+
 	if (cb.associated_capsule != nullptr) {
 		cb.associated_capsule->_pre_hooks.erase(id);
 		cb.associated_capsule->_post_hooks.erase(id);
@@ -137,6 +139,12 @@ void Capsule::RemoveCallbackById(std::uint32_t id) {
 		cb.remove_callback->Execute(&ignore);
 	}
 	locals::hook_callbacks.erase(id);
+
+	if (rm_callback != nullptr && rm_callback->IsRunnable()) {
+		rm_callback->PushCell((cell_t)id);
+		cell_t result;
+		rm_callback->Execute(&result);
+	}
 }
 
 void Capsule::RemoveCallbackByPlugin(SourcePawn::IPluginContext* default_context) {
@@ -150,6 +158,8 @@ void Capsule::RemoveCallbackByPlugin(SourcePawn::IPluginContext* default_context
 			continue;
 		}
 		const auto& cb = it->second;
+		auto rm_callback = cb.remove_callback;
+		
 		if (cb.associated_capsule != nullptr) {
 			cb.associated_capsule->_pre_hooks.erase(id);
 			cb.associated_capsule->_post_hooks.erase(id);
@@ -160,6 +170,12 @@ void Capsule::RemoveCallbackByPlugin(SourcePawn::IPluginContext* default_context
 			cb.remove_callback->Execute(&ignore);
 		}
 		locals::hook_callbacks.erase(id);
+
+		if (rm_callback != nullptr && rm_callback->IsRunnable()) {
+			rm_callback->PushCell((cell_t)id);
+			cell_t result;
+			rm_callback->Execute(&result);
+		}
 	}
 	locals::plugin_hook_ids.erase(default_context);
 }
