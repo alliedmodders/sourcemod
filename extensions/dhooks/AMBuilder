@@ -19,6 +19,9 @@ sources = [
 ]
 
 for cxx in builder.targets:
+  if cxx.target.platform != 'linux' or cxx.target.arch != 'x86_64':
+    continue
+
   binary = SM.ExtLibrary(builder, cxx, 'dhooks.ext')
   binary.compiler.includes += [os.path.join(builder.sourcePath, 'extensions', 'dhooks', 'src')]
   binary.sources += sources
