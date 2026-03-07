@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ISDKTools.h>
 #include <IHandleSys.h>
 #include <IExtensionSys.h>
 #include <IGameHelpers.h>
@@ -27,6 +28,7 @@ extern SourceMod::IGameHelpers* gamehelpers;
 extern SourceMod::IExtension* myself;
 extern SourceMod::ISourceMod* sourcemod;
 extern SourceMod::IGameConfigManager* gameconfs;
+extern SourceMod::ISDKTools* sdktools;
 extern std::vector<sp_nativeinfo_t> natives;
 extern dhooks::SignatureGameConfig dhooks_config;
 

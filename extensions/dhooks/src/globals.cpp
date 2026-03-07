@@ -10,6 +10,7 @@ SourceMod::IHandleSys* handlesys;
 SourceMod::IGameHelpers* gamehelpers;
 SourceMod::ISourceMod* sourcemod;
 SourceMod::IGameConfigManager* gameconfs;
+SourceMod::ISDKTools* sdktools;
 dhooks::SignatureGameConfig dhooks_config;
 
 template<typename Interface>
@@ -66,6 +67,8 @@ bool init(SourceMM::ISmmAPI* smmapi, SourceMod::IExtension* me, SourceMod::IShar
 		maxlength)) == nullptr) {
 		return false;
 	}
+
+	globals::sdktools = nullptr;
 
 	return true;
 }

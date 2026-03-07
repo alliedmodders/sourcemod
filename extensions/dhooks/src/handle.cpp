@@ -3,6 +3,8 @@
 #include "capsule.hpp"
 
 #include <cstdlib>
+#include <cstdint>
+#include <unordered_map>
 
 namespace dhooks::handle {
 
@@ -10,6 +12,10 @@ SourceMod::HandleType_t ParamReturn::HANDLE_TYPE = 0;
 SourceMod::HandleType_t HookSetup::HANDLE_TYPE = 0;
 SourceMod::HandleType_t DynamicHook::HANDLE_TYPE = 0;
 SourceMod::HandleType_t DynamicDetour::HANDLE_TYPE = 0;
+
+namespace locals {
+std::unordered_map<std::uint32_t, cell_t> associated_handle;
+}
 
 ParamReturn::ParamReturn(const Capsule* capsule, GeneralRegister* generalregs, FloatRegister* floatregs, void* return_ptr) :
 	_handle(globals::handlesys->CreateHandle(handle::ParamReturn::HANDLE_TYPE, this, globals::myself->GetIdentity(), globals::myself->GetIdentity(), nullptr)),
@@ -63,6 +69,10 @@ void* ParamReturn::_Get(size_t index) const {
 }
 
 bool DynamicDetour::Enable(SourcePawn::IPluginFunction* callback, sp::HookMode mode) {
+	if (!this->IsImmutable()) {
+		return false;
+	}
+
 	auto& detours = (mode == sp::HookMode::Hook_Post) ? _post_detours : _pre_detours;
 	if (detours.find(callback) != detours.end()) {
 		return false;
@@ -91,6 +101,41 @@ bool DynamicDetour::Disable(SourcePawn::IPluginFunction* callback, sp::HookMode 
 	Capsule::RemoveCallbackById(it->second);
 	detours.erase(it);
 	return true;
+}
+
+std::uint32_t DynamicHook::AddHook(SourcePawn::IPluginFunction* callback, SourcePawn::IPluginFunction* rm_callback, sp::HookMode mode, void* obj) {
+	if (!this->IsImmutable()) {
+		return 0;
+	}
+	
+	const auto& capsule = Capsule::FindOrCreate(this, *(void***)obj);
+	if (capsule.get() == nullptr) {
+		return 0;
+	}
+
+	auto id = capsule->AddCallback(callback, rm_callback, mode, this->_this_pointer, obj);
+	if (_associated_hook.insert(id).second == false || locals::associated_handle.try_emplace(id, this->GetHandle()).second == false) {
+		Capsule::RemoveCallbackById(id);
+		return 0;
+	}
+	return id;
+}
+
+bool DynamicHook::RemoveHook(std::uint32_t id) {
+	if (_associated_hook.find(id) == _associated_hook.end()) {
+		return false;
+	}
+	Capsule::RemoveCallbackById(id);
+	_associated_hook.erase(id);
+	return true;
+}
+
+cell_t DynamicHook::FindByHookID(std::uint32_t id) {
+	auto it = locals::associated_handle.find(id);
+	if (locals::associated_handle.end() == it) {
+		return BAD_HANDLE;
+	}
+	return it->second;
 }
 
 HookSetup::HookSetup(
