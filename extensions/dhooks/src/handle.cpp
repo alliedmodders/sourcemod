@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <cstdint>
 #include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 namespace dhooks::handle {
 
@@ -13,8 +15,11 @@ SourceMod::HandleType_t HookSetup::HANDLE_TYPE = 0;
 SourceMod::HandleType_t DynamicHook::HANDLE_TYPE = 0;
 SourceMod::HandleType_t DynamicDetour::HANDLE_TYPE = 0;
 
+class CGenericClass;
 namespace locals {
 std::unordered_map<std::uint32_t, cell_t> associated_handle;
+std::unordered_map<CGenericClass*, std::vector<std::uint32_t>> class_dynamichooks;
+std::unordered_set<void**> class_vtables;
 }
 
 ParamReturn::ParamReturn(const Capsule* capsule, GeneralRegister* generalregs, FloatRegister* floatregs, void* return_ptr) :
@@ -68,6 +73,61 @@ void* ParamReturn::_Get(size_t index) const {
 	}
 }
 
+#if defined(_LINUX)
+#define DTOR_PARAMS void
+#define DTOR_PARAMS_NONAME
+#define DTOR_PARAMS_ARGS
+#define DTOR_VTABLE_INDEX 1
+#elif defined(_WIN32)
+#define DTOR_PARAMS unsigned int arg
+#define DTOR_PARAMS_NONAME , unsigned int
+#define DTOR_PARAMS_ARGS arg
+#define DTOR_VTABLE_INDEX 0
+#else
+static_assert(false, "You forgort to provide a platform define!");
+#endif
+
+class CGenericClass {
+public:
+	void KHook_Detour_PRE(DTOR_PARAMS) {
+		auto it = locals::class_dynamichooks.find(this);
+		if (it != locals::class_dynamichooks.end()) {
+			const auto& ids = it->second;
+			for (auto id : ids) {
+				auto hndl = DynamicHook::FindByHookID(id);
+				SourceMod::HandleSecurity security;
+				security.pOwner = globals::myself->GetIdentity();
+				security.pIdentity = globals::myself->GetIdentity();
+				handle::DynamicHook* obj = nullptr;
+				SourceMod::HandleError chnderr = globals::handlesys->ReadHandle(hndl, DynamicHook::HANDLE_TYPE, &security, (void **)&obj);
+				if (chnderr != SourceMod::HandleError_None) {
+					obj = nullptr;
+				}
+
+				if (obj) {
+					obj->RemoveHook(id);
+				} else {
+					Capsule::RemoveCallbackById(id);
+				}
+			}
+			locals::class_dynamichooks.erase(it);
+		}
+
+		::KHook::SaveReturnValue(KHook::Action::Ignore, nullptr, 0, nullptr, nullptr, false);
+		return;
+	}
+	void KHook_Make_CallOriginal(DTOR_PARAMS) {
+		void (CGenericClass::*ptr)(DTOR_PARAMS) = ::KHook::BuildMFP<CGenericClass, void DTOR_PARAMS_NONAME>(::KHook::GetOriginalFunction());
+		(this->*ptr)(DTOR_PARAMS_ARGS);
+		::KHook::SaveReturnValue(KHook::Action::Ignore, nullptr, 0, nullptr, nullptr, true);
+		return;
+	}
+	void KHook_Make_Return(DTOR_PARAMS) {
+		::KHook::DestroyReturnValue();
+		return;
+	}
+};
+
 bool DynamicDetour::Enable(SourcePawn::IPluginFunction* callback, sp::HookMode mode) {
 	if (!this->IsImmutable()) {
 		return false;
@@ -108,7 +168,8 @@ std::uint32_t DynamicHook::AddHook(SourcePawn::IPluginFunction* callback, Source
 		return 0;
 	}
 	
-	const auto& capsule = Capsule::FindOrCreate(this, *(void***)obj);
+	auto vtable = *(void***)obj;
+	const auto& capsule = Capsule::FindOrCreate(this, vtable);
 	if (capsule.get() == nullptr) {
 		globals::sourcemod->LogError(globals::myself, "Failed to create capsule");
 		return 0;
@@ -120,6 +181,32 @@ std::uint32_t DynamicHook::AddHook(SourcePawn::IPluginFunction* callback, Source
 		globals::sourcemod->LogError(globals::myself, "Failed to insert callback");
 		return 0;
 	}
+
+	auto it = locals::class_dynamichooks.find((CGenericClass*)obj);
+	if (it == locals::class_dynamichooks.end()) {
+		auto insert = locals::class_dynamichooks.emplace((CGenericClass*)obj, std::vector<std::uint32_t>());
+		if (insert.second == false) {
+			return id;
+		}
+		it = insert.first;
+
+		if (locals::class_vtables.find(vtable) == locals::class_vtables.end()) {
+			// Create the detour
+			KHook::SetupVirtualHook(
+				vtable,
+				DTOR_VTABLE_INDEX,
+				nullptr,
+				nullptr,
+				KHook::ExtractMFP(&CGenericClass::KHook_Detour_PRE),
+				nullptr,
+				KHook::ExtractMFP(&CGenericClass::KHook_Make_Return),
+				KHook::ExtractMFP(&CGenericClass::KHook_Make_CallOriginal),
+				true
+			);
+			locals::class_vtables.insert(vtable);
+		}
+	}
+	it->second.push_back(id);
 	return id;
 }
 
