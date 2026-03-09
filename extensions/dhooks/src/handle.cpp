@@ -110,12 +110,14 @@ std::uint32_t DynamicHook::AddHook(SourcePawn::IPluginFunction* callback, Source
 	
 	const auto& capsule = Capsule::FindOrCreate(this, *(void***)obj);
 	if (capsule.get() == nullptr) {
+		globals::sourcemod->LogError(globals::myself, "Failed to create capsule");
 		return 0;
 	}
 
 	auto id = capsule->AddCallback(callback, rm_callback, mode, this->_this_pointer, obj);
 	if (_associated_hook.insert(id).second == false || locals::associated_handle.try_emplace(id, this->GetHandle()).second == false) {
 		Capsule::RemoveCallbackById(id);
+		globals::sourcemod->LogError(globals::myself, "Failed to insert callback");
 		return 0;
 	}
 	return id;
