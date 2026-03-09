@@ -86,6 +86,7 @@ cell_t DynamicHook_HookEntity(SourcePawn::IPluginContext* context, const cell_t*
 
 	auto removal_callback = context->GetFunctionById(params[5]);
 
+	dynhook->SetImmutable();
 	return dynhook->AddHook(callback, removal_callback, mode, entity);
 }
 
@@ -117,6 +118,7 @@ cell_t DynamicHook_DHookEntity(SourcePawn::IPluginContext* context, const cell_t
 		return context->ThrowNativeError("A callback must be provided to the hook!");
 	}
 
+	dynhook->SetImmutable();
 	return dynhook->AddHook(callback, removal_callback, (post) ? sp::HookMode::Hook_Post : sp::HookMode::Hook_Pre, entity);
 }
 
@@ -152,7 +154,7 @@ cell_t DynamicHook_HookGamerules(SourcePawn::IPluginContext* context, const cell
 
 	auto removal_callback = context->GetFunctionById(params[4]);
 
-	// TO-DO : Hook code
+	dynhook->SetImmutable();
 	return dynhook->AddHook(callback, removal_callback, mode, gamerules);
 }
 
@@ -188,6 +190,7 @@ cell_t DynamicHook_DHookGamerules(SourcePawn::IPluginContext* context, const cel
 		return context->ThrowNativeError("A callback must be provided to the hook!");
 	}
 
+	dynhook->SetImmutable();
 	return dynhook->AddHook(callback, removal_callback, (post) ? sp::HookMode::Hook_Post : sp::HookMode::Hook_Pre, gamerules);
 }
 
@@ -210,6 +213,7 @@ cell_t DynamicHook_HookRaw(SourcePawn::IPluginContext* context, const cell_t* pa
 		callback = dynhook->GetDefaultCallback();
 	}
 
+	dynhook->SetImmutable();
 	return dynhook->AddHook(callback, nullptr, mode, addr);
 }
 
@@ -238,6 +242,7 @@ cell_t DynamicHook_DHookRaw(SourcePawn::IPluginContext* context, const cell_t* p
 		return context->ThrowNativeError("A callback must be provided to the hook!");
 	}
 
+	dynhook->SetImmutable();
 	return dynhook->AddHook(callback, removal_callback, (post) ? sp::HookMode::Hook_Post : sp::HookMode::Hook_Pre, addr);
 }
 
