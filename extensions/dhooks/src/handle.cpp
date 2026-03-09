@@ -95,17 +95,21 @@ public:
 			const auto& ids = it->second;
 			for (auto id : ids) {
 				auto hndl = DynamicHook::FindByHookID(id);
-				SourceMod::HandleSecurity security;
-				security.pOwner = globals::myself->GetIdentity();
-				security.pIdentity = globals::myself->GetIdentity();
-				handle::DynamicHook* obj = nullptr;
-				SourceMod::HandleError chnderr = globals::handlesys->ReadHandle(hndl, DynamicHook::HANDLE_TYPE, &security, (void **)&obj);
-				if (chnderr != SourceMod::HandleError_None) {
-					obj = nullptr;
-				}
+				if (hndl != BAD_HANDLE) {
+					SourceMod::HandleSecurity security;
+					security.pOwner = globals::myself->GetIdentity();
+					security.pIdentity = globals::myself->GetIdentity();
+					handle::DynamicHook* obj = nullptr;
+					SourceMod::HandleError chnderr = globals::handlesys->ReadHandle(hndl, DynamicHook::HANDLE_TYPE, &security, (void **)&obj);
+					if (chnderr != SourceMod::HandleError_None) {
+						obj = nullptr;
+					}
 
-				if (obj) {
-					obj->RemoveHook(id);
+					if (obj) {
+						obj->RemoveHook(id);
+					} else {
+						Capsule::RemoveCallbackById(id);
+					}
 				} else {
 					Capsule::RemoveCallbackById(id);
 				}
@@ -191,7 +195,7 @@ std::uint32_t DynamicHook::AddHook(SourcePawn::IPluginFunction* callback, Source
 		it = insert.first;
 
 		if (locals::class_vtables.find(vtable) == locals::class_vtables.end()) {
-			// Create the detour
+			// Hook the virtual destructor, and perform hook cleaning actions under there
 			KHook::SetupVirtualHook(
 				vtable,
 				DTOR_VTABLE_INDEX,
