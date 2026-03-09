@@ -12,7 +12,7 @@ namespace dhooks::abi {
 
 using namespace KHook::Asm;
 
-enum TypeClass {
+enum class TypeClass {
 	VOID,
 	INTEGER,
 	SSE,
@@ -23,6 +23,31 @@ enum TypeClass {
 	NO_CLASS,
 	MEMORY
 };
+
+const char* TypeToString(TypeClass type) {
+	switch (type) {
+	case TypeClass::VOID:
+	return "VOID";
+	case TypeClass::INTEGER:
+	return "INTEGER";
+	case TypeClass::SSE:
+	return "SSE";
+	case TypeClass::SSEUP:
+	return "SSEUP";
+	case TypeClass::X87:
+	return "X87";
+	case TypeClass::X87UP:
+	return "X87UP";
+	case TypeClass::COMPLEX_X87:
+	return "X87UP";
+	case TypeClass::NO_CLASS:
+	return "NO_CLASS";
+	case TypeClass::MEMORY:
+	return "MEMORY";
+	default:
+	return "UNKNOWN";
+	}
+}
 
 // Chapter 3.2.3 Parameter Passing
 std::optional<TypeClass> Classify_ParamType(sp::HookParamType type) {
@@ -35,9 +60,9 @@ std::optional<TypeClass> Classify_ParamType(sp::HookParamType type) {
 	case sp::HookParamType_CBaseEntity:
 	case sp::HookParamType_ObjectPtr:
 	case sp::HookParamType_Edict:
-		return INTEGER;
+		return TypeClass::INTEGER;
 	case sp::HookParamType_Float:
-		return SSE;
+		return TypeClass::SSE;
 	default:
 		break;
 	}
@@ -46,7 +71,7 @@ std::optional<TypeClass> Classify_ParamType(sp::HookParamType type) {
 
 std::optional<TypeClass> Classify_ReturnType(const ReturnVariable& info) {
 	if (info.dhook_size > (4 * 8)) {
-		return MEMORY;
+		return TypeClass::MEMORY;
 	}
 
 	switch (info.dhook_type) {
@@ -58,12 +83,12 @@ std::optional<TypeClass> Classify_ReturnType(const ReturnVariable& info) {
 	case sp::ReturnType_VectorPtr:
 	case sp::ReturnType_CBaseEntity:
 	case sp::ReturnType_Edict:
-		return INTEGER;
+		return TypeClass::INTEGER;
 	case sp::ReturnType_Float:
 	case sp::ReturnType_Vector: // Not true but it's fine... Must be reworked if dhook ever introduces complex types
-		return SSE;
+		return TypeClass::SSE;
 	case sp::ReturnType_Void:
-		return VOID;
+		return TypeClass::VOID;
 	default:
 		break;
 	}
@@ -82,17 +107,22 @@ bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnV
 	if (ret.dhook_custom_register == sp::DHookRegister_Default) {
 		auto cls = Classify_ReturnType(ret);
 		if (!cls.has_value()) {
+			globals::sourcemod->LogError(globals::myself, "Couldn't classify return type!");
 			return false;
 		}
-		if (cls.value() == MEMORY) {
+		/*if (cls.value() == TypeClass::MEMORY) {
 			// RDI is used by the Return
 			// Unsupported for now
 			ret.reg_index = available_general_registers[general_register_available++];
 			ret.reg_offset = {};
+			globals::sourcemod->LogError(globals::myself, "!");
 			return false;
-		} 
+		}
 		// We don't know how to handle it
-		else if (!(cls.value() == INTEGER || cls.value() == SSE)) {
+		else*/ if (cls.value() != TypeClass::INTEGER
+		&& cls.value() != TypeClass::SSE
+		&& cls.value() != TypeClass::VOID) {
+			globals::sourcemod->LogError(globals::myself, "ABI classified return type as \"%s\", we don't know how to handle it!", TypeToString(cls.value()));
 			return false;
 		}
 	} else {
@@ -100,6 +130,7 @@ bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnV
 		ret.float_reg_index = Translate_DHookRegister_Float(ret.dhook_custom_register);
 		ret.reg_offset = {};
 		// Need better support
+		globals::sourcemod->LogError(globals::myself, "Custom register for return isn't supported!");
 		return false;
 	}
 
@@ -116,21 +147,23 @@ bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnV
 
 	/* Skip the return address */
 	size_t stack_offset = sizeof(void*);
-	for (auto& param : params) {
+	{auto len = params.size(); for (unsigned int i = 0; i < len; i++) {
+		auto& param = params[i];
 		if (param.dhook_custom_register == sp::DHookRegister_Default) {
 			auto cls = Classify_ParamType(param.dhook_type);
 			if (!cls.has_value()) {
 				if (param.dhook_pass_flags & sp::DHookPass_ByRef) {
 					// Its a pointer
-					cls = INTEGER;
+					cls = TypeClass::INTEGER;
 				} else {
 					// Otherwise not supported, end
 					// TO-DO: Update and support objects passed on the stack
+					globals::sourcemod->LogError(globals::myself, "ABI could not classify parameter (%d)!", i);
 					return false;
 				}
 			}
 			switch (cls.value()) {
-				case INTEGER:
+				case TypeClass::INTEGER:
 					if (general_register_count == general_register_available) {
 						// No regs left, its on the stack
 						param.reg_index = RSP;
@@ -141,7 +174,7 @@ bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnV
 						param.reg_offset = {};
 					}
 				break;
-				case SSE:
+				case TypeClass::SSE:
 					if (float_register_count == float_register_available) {
 						// No regs left, its on the stack
 						param.reg_index = RSP;
@@ -154,6 +187,7 @@ bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnV
 					}
 				break;
 				default:
+				globals::sourcemod->LogError(globals::myself, "ABI classified parameter (%d) as %s, we don't know how to handle it!", i, TypeToString(cls.value()));
 				return false;
 			}
 		} else {
@@ -161,7 +195,7 @@ bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnV
 			param.float_reg_index = Translate_DHookRegister_Float(param.dhook_custom_register);
 			ret.reg_offset = {};
 		}
-	}
+	}}
 	/* Stack size here only means the size the parameters occupy, so remove the space occupied by return address */
 	stack_size = stack_offset - sizeof(void*);
 	return true;
@@ -219,11 +253,14 @@ void JIT_MakeReturn(AsmJit& jit, ReturnVariable& ret) {
 	jit.call(rax);
 	// RAX now contains the return value ptr
 	switch (Classify_ReturnType(ret).value()) {
-		case MEMORY:
+		case TypeClass::VOID:
+		// Do nothing
+		break;
+		case TypeClass::MEMORY:
 		// Currently unsupported
 		std::abort();
 		break;
-		case INTEGER:
+		case TypeClass::INTEGER:
 		// At the present time, dhook has trivial INTEGER types
 		// However this will have to be revised to MOV on RDI too
 		// if there's an INTEGER return type that exceeds 8 bytes
@@ -231,7 +268,7 @@ void JIT_MakeReturn(AsmJit& jit, ReturnVariable& ret) {
 		// Save RAX, we're gonna call a function which could modify rax
 		jit.mov(rsp(), rax);
 		break;
-		case SSE:
+		case TypeClass::SSE:
 			// TO-DO: handle this better...
 			if (ret.dhook_type == sp::ReturnType_Vector) {
 				jit.movsd(xmm0, rax());
@@ -252,11 +289,13 @@ void JIT_MakeReturn(AsmJit& jit, ReturnVariable& ret) {
 	jit.call(rax);
 
 	switch (Classify_ReturnType(ret).value()) {
-		case INTEGER:
+		case TypeClass::VOID:
+		break;
+		case TypeClass::INTEGER:
 		// Restore RAX
 		jit.mov(rax, rsp());
 		break;
-		case SSE:
+		case TypeClass::SSE:
 			// TO-DO: handle this better...
 			if (ret.dhook_type == sp::ReturnType_Vector) {
 				jit.movsd(xmm0, rsp());
@@ -401,14 +440,16 @@ void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original
 	std::uintptr_t init_op = 0;
 	std::uintptr_t deinit_op = 0;
 	switch (Classify_ReturnType(ret).value()) {
-		case INTEGER:
+		case TypeClass::VOID:
+		break;
+		case TypeClass::INTEGER:
 		// Store RAX
 		jit.mov(rsp(), rax);
 
 		init_op = reinterpret_cast<std::uintptr_t>(KHook::init_operator<std::uintptr_t>);
 		deinit_op = reinterpret_cast<std::uintptr_t>(KHook::deinit_operator<std::uintptr_t>);
 		break;
-		case SSE:
+		case TypeClass::SSE:
 			// TO-DO: handle this better...
 			if (ret.dhook_type == sp::ReturnType_Vector) {
 				jit.movsd(rsp(), xmm0);
@@ -430,10 +471,17 @@ void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original
 
 	// KHook::SaveReturnValue(KHook::Action action, void* ptr_to_return, std::size_t return_size, void* init_op, void* delete_op, bool original)
 	jit.mov(rdi, (std::uint8_t)KHook::Action::Ignore); // action
-	jit.mov(rsi, rsp); // ptr_to_return
-	jit.mov(rdx, ret.dhook_size); // return_size
-	jit.mov(rcx, init_op); // init_op
-	jit.mov(r8, deinit_op); // deinit_op
+	if (Classify_ReturnType(ret).value() == TypeClass::VOID) {
+		jit.mov(rsi, 0x0); // ptr_to_return
+		jit.mov(rdx, 0x0); // return_size
+		jit.mov(rcx, 0x0); // init_op
+		jit.mov(r8,  0x0); // deinit_op
+	} else {
+		jit.mov(rsi, rsp);            // ptr_to_return
+		jit.mov(rdx, ret.dhook_size); // return_size
+		jit.mov(rcx, init_op);        // init_op
+		jit.mov(r8,  deinit_op);      // deinit_op	
+	}
 	jit.mov(r9, true); // original
 
 	jit.mov(rax, reinterpret_cast<std::uintptr_t>(::KHook::SaveReturnValue));
