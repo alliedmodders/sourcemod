@@ -38,6 +38,27 @@ const std::unique_ptr<Capsule>& Capsule::FindOrCreate(const handle::HookSetup* s
 		}
 		return it->second;
 	}
+	auto dynhook = dynamic_cast<const handle::DynamicHook*>(setup);
+	if (dynhook) {
+		auto key = reinterpret_cast<void*>(reinterpret_cast<std::uintptr_t>(vtable) + dynhook->GetOffset());
+		// Let's see if a hook already exists
+		auto it = locals::virtual_detours.find(key);
+		if (it == locals::virtual_detours.end()) {
+			// It does not, so let's create it
+			auto hook = new Capsule(nullptr, vtable, dynhook->GetOffset(), setup->GetCallConv(), setup->GetParameters(), setup->GetReturn());
+			if (!hook->IsActive()) {
+				delete hook;
+				return locals::nullptr_capsule;
+			}
+			auto insert = locals::virtual_detours.try_emplace(key, hook);
+			if (!insert.second) {
+				delete hook;
+				return locals::nullptr_capsule;
+			}
+			it = insert.first;
+		}
+		return it->second;
+	}
 	return locals::nullptr_capsule;
 }
 
@@ -183,13 +204,16 @@ void Capsule::RemoveCallbackByPlugin(SourcePawn::IPluginContext* default_context
 Capsule::Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::CallingConvention conv, const std::vector<Variable>& params, const ReturnVariable& ret) :
 	_parameters(params),
 	_return(ret),
+	_linked_hook(KHook::INVALID_HOOK),
 	_call_conv(conv) {
 	if (!abi::Proccess(conv, _parameters, _return, _stack_size)) {
+		globals::sourcemod->LogError(globals::myself, "Failed to create Capsule based on provided parameters");
 		return;
 	}
 
 	// Well we need to know what we're detouring here
 	if (address == nullptr && vtable == nullptr) {
+		globals::sourcemod->LogError(globals::myself, "Failed to create Capsule, neither a vtable or address was given");
 		return;
 	}
 
