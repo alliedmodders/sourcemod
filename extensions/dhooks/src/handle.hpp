@@ -99,6 +99,10 @@ public:
 		_offset = offset;
 	}
 
+	std::uint32_t GetOffset() const {
+		return _offset;
+	}
+
 	sp::HookType GetType() const {
 		return _hook_type;
 	}
