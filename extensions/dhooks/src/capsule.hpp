@@ -52,7 +52,7 @@ protected:
     template<typename T>
     void PrePostHookLoop(std::uint8_t* saved_register, bool post) const;
 protected:
-    void _KHook_RemovedHook(KHook::HookID_t id);
+    static void _KHook_RemovedHook(KHook::HookID_t id);
 
     // Parameters for the Capsule
     std::vector<Variable> _parameters;
