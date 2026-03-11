@@ -61,6 +61,7 @@ Function Get-Repository
         }
         & git checkout $Branch 2>&1 | Write-Host
         & git pull origin $Branch 2>&1 | Write-Host
+        & git submodule update --recursive 2>&1 | Write-Host
         If ($Origin)
         {
             & git remote set-url origin $Origin 2>&1 | Write-Host
