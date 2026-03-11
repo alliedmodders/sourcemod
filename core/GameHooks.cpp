@@ -30,7 +30,11 @@
 #include "command_args.h"
 #include "provider.h"
 
+#if SOURCE_ENGINE >= SE_ORANGEBOX
 KHook::Virtual CallGlobalChangeCallback_Hook(&ICvar::CallGlobalChangeCallbacks, &GameHooks::OnConVarChanged, nullptr);
+#else
+KHook::Virtual CallGlobalChangeCallback_Hook(&ICvar::CallGlobalChangeCallback, &GameHooks::OnConVarChanged, nullptr);
+#endif
 
 GameHooks::GameHooks()
 	:
