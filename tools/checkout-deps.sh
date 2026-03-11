@@ -131,6 +131,7 @@ checkout ()
     fi
     git checkout $branch
     git pull origin $branch
+    git submodule update --recursive
     if [ -n "$origin" ]; then
       git remote set-url origin $origin
     fi
