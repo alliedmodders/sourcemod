@@ -1017,7 +1017,7 @@ KHook::Return<const char*> SDKHooks::Hook_GetGameDescription(IServerGameDLL*)
 	cell_t result = Pl_Continue;
 
 	g_pSM->Format(szGameDesc, sizeof(szGameDesc), "%s",
-		KHook::Recall(&IServerGameDLL::GetGameDescription, KHook::Action<const char*>{ KHook::Action::Ignore, nullptr }, gamedll));
+		KHook::Recall(&IServerGameDLL::GetGameDescription, { KHook::Action::Ignore, nullptr }, gamedll));
 
 	// Call OnGetGameDescription forward
 	g_pOnGetGameNameDescription->PushStringEx(szGameDesc, sizeof(szGameDesc), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
