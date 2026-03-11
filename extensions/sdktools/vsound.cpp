@@ -821,7 +821,7 @@ static cell_t EmitAmbientSound(IPluginContext *pContext, const cell_t *params)
 
 	if (g_InSoundHook)
 	{
-		KHook::CallOriginal<IVEngineServer, void, int, const Vector &, const char *, float, soundlevel_t, int, int, float>
+		KHook::CallOriginal<void (IVEngineServer::*)(int, const Vector &, const char *, float, soundlevel_t, int, int, float)>
 		(&IVEngineServer::EmitAmbientSound, engine, entity, pos, name, vol, (soundlevel_t)level, flags, pitch, delay);
 	}
 	else
@@ -966,8 +966,8 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 			if (g_InSoundHook)
 			{
-				KHook::CallOriginal<IEngineSound, int, IRecipientFilter &, int, int, const char*, unsigned int, const char*, float, 
-					soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *>(
+				KHook::CallOriginal<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float, 
+					soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *)>(
 					&IEngineSound::EmitSound,
 					engsound,
 					crf, 
@@ -1013,8 +1013,8 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 #elif SOURCE_ENGINE >= SE_PORTAL2
 			if (g_InSoundHook)
 			{
-				KHook::CallOriginal<IEngineSound, int, IRecipientFilter &, int, int, const char*, unsigned int, const char*, float, 
-					soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int>(
+				KHook::CallOriginal<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float, 
+					soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(
 					&IEngineSound::EmitSound,
 					engsound,
 					crf, 
@@ -1059,8 +1059,8 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 			if (g_InSoundHook)
 			{
-				KHook::CallOriginal<IEngineSound, void, IRecipientFilter &, int, int, const char*, float, 
-				soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int>
+				KHook::CallOriginal<void (IEngineSound::*)(IRecipientFilter &, int, int, const char*, float, 
+				soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>
 				( 
 					&IEngineSound::EmitSound,
 					engsound,
@@ -1101,8 +1101,8 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 #else
 			if (g_InSoundHook)
 			{
-				KHook::CallOriginal<IEngineSound, void, IRecipientFilter &, int, int, const char*, float, 
-					soundlevel_t, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int>( 
+				KHook::CallOriginal<void (IEngineSound::*)(IRecipientFilter &, int, int, const char*, float, 
+					soundlevel_t, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>( 
 					&IEngineSound::EmitSound,
 					engsound,
 					crf, 
@@ -1143,8 +1143,8 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 		if (g_InSoundHook)
 		{
-			KHook::CallOriginal<IEngineSound, int, IRecipientFilter &, int, int, const char*, unsigned int, const char*, float, 
-				soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *>(
+			KHook::CallOriginal<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float, 
+				soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *)>(
 				&IEngineSound::EmitSound,
 				engsound,
 				crf, 
@@ -1190,8 +1190,8 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 #elif SOURCE_ENGINE >= SE_PORTAL2
 		if (g_InSoundHook)
 		{
-			KHook::CallOriginal<IEngineSound, int, IRecipientFilter &, int, int, const char*, unsigned int, const char*, float, 
-				soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int>(
+			KHook::CallOriginal<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float, 
+				soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(
 				&IEngineSound::EmitSound,
 				engsound,
 				crf, 
@@ -1236,8 +1236,8 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
 		if (g_InSoundHook)
 		{
-			KHook::CallOriginal<IEngineSound, void, IRecipientFilter &, int, int, const char*, float, 
-				soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int>(
+			KHook::CallOriginal<void (IEngineSound::*)(IRecipientFilter &, int, int, const char*, float, 
+				soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(
 				&IEngineSound::EmitSound,
 				engsound,
 				crf, 
@@ -1277,8 +1277,8 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 #else
 		if (g_InSoundHook)
 		{
-			KHook::CallOriginal<IEngineSound, void, IRecipientFilter &, int, int, const char*, float, 
-				soundlevel_t, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int>(
+			KHook::CallOriginal<void (IEngineSound::*)(IRecipientFilter &, int, int, const char*, float, 
+				soundlevel_t, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(
 				&IEngineSound::EmitSound,
 				engsound,
 				crf, 
