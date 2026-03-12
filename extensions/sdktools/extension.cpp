@@ -97,29 +97,29 @@ extern sp_nativeinfo_t g_ClientNatives[];
 static void InitSDKToolsAPI();
 
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
-CDetour *g_WriteBaselinesDetour = NULL;
-
-DETOUR_DECL_MEMBER3(CNetworkStringTableContainer__WriteBaselines, void, char const *, mapName, void *, buffer, int, currentTick)
-{
+class CNetworkStringTableContainer;
+KHook::Return<void> CNetworkStringTableContainer__WriteBaselines(CNetworkStringTableContainer* container, char const * mapName, void * buffer, int currentTick) {
 	// Replace nAtTick with INT_MAX to work around CS:GO engine bug.
 	// Due to a timing issue in the engine, stringtable entries added in OnConfigsExecuted can be considered
 	// to have been added in the future for the first client that connects, which causes them to be ignored
 	// when iterating for networking, which triggers a Host_Error encoding the CreateStringTable netmsg.
-	return DETOUR_MEMBER_CALL(CNetworkStringTableContainer__WriteBaselines)(mapName, buffer, INT_MAX);
+	void (CNetworkStringTableContainer::*dummy_func)(const char*, void*, int) = nullptr;
+	return KHook::Recall<decltype(dummy_func)>(dummy_func, { KHook::Action::Ignore }, container, mapName, buffer, INT_MAX);
 }
+KHook::Member<CNetworkStringTableContainer, void, const char*, void*, int> g_WriteBaselinesDetour(CNetworkStringTableContainer__WriteBaselines, nullptr);
 #endif
 
 SDKTools::SDKTools() :
+#if defined CLIENTVOICE_HOOK_SUPPORT
+	m_HookClientVoice(&IServerGameClients::ClientVoice, this, nullptr, &SDKTools::OnClientVoice),
+#endif
 	m_HookSetClientListening(&IVoiceServer::SetClientListening, this, &SDKTools::OnSetClientListening, nullptr),
 	m_HookClientCommand(&IServerGameClients::ClientCommand, this, nullptr, &SDKTools::OnClientCommand),
+#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
+	m_HookOnSendClientCommand(KHook::GetVtableIndex(&IVEngineServer::ClientCommand), this, &SDKTools::OnSendClientCommand, nullptr),
+#endif
 	m_HookLevelInit(&IServerGameDLL::LevelInit, this, nullptr, &SDKTools::LevelInit),
 	m_HookLevelShutdown(&IServerGameDLL::LevelShutdown, this, nullptr, &SDKTools::LevelShutdown)
-#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
-	,m_HookOnSendClientCommand(&IVEngineServer::ClientCommand, this, &SDKTools::OnSendClientCommand, nullptr)
-#endif
-#if defined CLIENTVOICE_HOOK_SUPPORT
-	,m_HookClientVoice(&IServerGameClients::ClientVoice, this, nullptr, &SDKTools::OnClientVoice)
-#endif
 {}
 
 bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
@@ -210,12 +210,12 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 #endif
 
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
-	g_WriteBaselinesDetour = DETOUR_CREATE_MEMBER(CNetworkStringTableContainer__WriteBaselines, "WriteBaselines");
-	if (g_WriteBaselinesDetour) {
-		g_WriteBaselinesDetour->EnableDetour();
-	} else {
-		g_pSM->LogError(myself, "Failed to find WriteBaselines signature -- stringtable error workaround disabled.");
+	void* addr = nullptr;
+	if (!g_pGameConf->GetMemSig("WriteBaselines", &addr) || addr == nullptr) {
+		ke::SafeSprintf(error, maxlength, "Failed to find WriteBaselines signature -- stringtable error workaround disabled.");
+		return false;
 	}
+	g_WriteBaselinesDetour.Configure(addr);
 #endif
 
 	return true;
@@ -247,10 +247,7 @@ void SDKTools::SDK_OnUnload()
 	ShutdownHelpers();
 
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
-	if (g_WriteBaselinesDetour) {
-		g_WriteBaselinesDetour->DisableDetour();
-		g_WriteBaselinesDetour = NULL;
-	}
+	g_WriteBaselinesDetour.Configure((void*)nullptr);
 #endif
 
 	if (g_pAcceptInput)

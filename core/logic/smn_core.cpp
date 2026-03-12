@@ -59,7 +59,6 @@
 #include <bridge/include/CoreProvider.h>
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/IExtensionBridge.h>
-#include <vector>
 
 using namespace SourceMod;
 using namespace SourcePawn;
