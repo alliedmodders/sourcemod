@@ -1343,16 +1343,14 @@ static cell_t EmitSoundEntry(IPluginContext *pContext, const cell_t *params)
 			if (g_InSoundHook)
 			{
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
-SH_CALL(enginesoundPatch,
-					static_cast<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float,
+				KHook::CallOriginal<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float,
 					soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *)>
-					(&IEngineSound::EmitSound))(crf, player[0], channel, soundEntry, soundEntryHash, sample, vol, (soundlevel_t)level, seed,
+					(&IEngineSound::EmitSound, engsound, crf, player[0], channel, soundEntry, soundEntryHash, sample, vol, (soundlevel_t)level, seed,
 					flags, pitch, pOrigin, pDir, pOrigVec, updatePos, soundtime, speakerentity, nullptr);
 #else
-				SH_CALL(enginesoundPatch,
-					static_cast<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float,
+				KHook::CallOriginal<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float,
 					soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>
-					(&IEngineSound::EmitSound))(crf, player[0], channel, soundEntry, soundEntryHash, sample, vol, (soundlevel_t)level, seed,
+					&IEngineSound::EmitSound, engsound, crf, player[0], channel, soundEntry, soundEntryHash, sample, vol, (soundlevel_t)level, seed,
 					flags, pitch, pOrigin, pDir, pOrigVec, updatePos, soundtime, speakerentity);
 #endif
 			}
@@ -1367,16 +1365,14 @@ SH_CALL(enginesoundPatch,
 		if (g_InSoundHook)
 		{
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
-			SH_CALL(enginesoundPatch,
-				static_cast<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float,
+			KHook::CallOriginal<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float,
 				soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *)>
-				(&IEngineSound::EmitSound))(crf, entity, channel, soundEntry, soundEntryHash, sample, vol, (soundlevel_t)level,
+				(&IEngineSound::EmitSound, engsound, crf, entity, channel, soundEntry, soundEntryHash, sample, vol, (soundlevel_t)level,
 				seed, flags, pitch, pOrigin, pDir, pOrigVec, updatePos, soundtime, speakerentity, nullptr);
 #else
-			SH_CALL(enginesoundPatch,
-				static_cast<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float,
+			KHook::CallOriginal<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float,
 				soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>
-				(&IEngineSound::EmitSound))(crf, entity, channel, soundEntry, soundEntryHash, sample, vol, (soundlevel_t)level,
+				(&IEngineSound::EmitSound, engsound, crf, entity, channel, soundEntry, soundEntryHash, sample, vol, (soundlevel_t)level,
 				seed, flags, pitch, pOrigin, pDir, pOrigVec, updatePos, soundtime, speakerentity);
 #endif
 		}
