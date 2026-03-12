@@ -58,7 +58,6 @@
 #include <bridge/include/CoreProvider.h>
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/IExtensionBridge.h>
-#include "PseudoAddrManager.h"
 
 using namespace SourceMod;
 using namespace SourcePawn;
