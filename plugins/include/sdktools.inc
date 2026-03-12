@@ -90,7 +90,7 @@ enum SDKType
 	SDKType_Edict,          /**< edict_t (always as pointer) */
 	SDKType_String,         /**< NULL-terminated string (always as pointer) */
 	SDKType_Bool,           /**< Boolean (any) */
-	SDKType_VirtualAddress, /**< SM Virtual Address */
+	SDKType_VirtualAddress, /**< SM Virtual Address (unavailable if plugin doesn't include <virtual_address>) */
 };
 
 enum SDKPassMethod
@@ -192,6 +192,7 @@ native Handle EndPrepSDKCall();
  * If the return value is a Vector or QAngles, the SECOND parameter must be a Float[3].
  * If the return value is a string, the THIRD parameter must be a String buffer, and the
  *  FOURTH parameter must be the maximum length.
+ * If the return value is a Virtual Address, the SECOND parameter must be an Address variable.
  * All parameters must be passed after the above is followed.  Failure to follow these
  *  rules will result in crashes or wildly unexpected behavior!
  *
