@@ -271,16 +271,15 @@ google::protobuf::Message *UserMessages::StartProtobufMessage(int msg_id, const 
 		protobuf::Message *msg = OnStartMessage_Pre(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id, messageName);
 		switch (m_FakeMetaRes)
 		{
-		case MRES_IGNORED:
-		case MRES_HANDLED:
+		case KHook::Action::Ignore:
 			m_FakeEngineBuffer = GetMessagePrototype(msg_id)->New();
 			buffer = m_FakeEngineBuffer;
 			break;		
 
-		case MRES_OVERRIDE:
+		case KHook::Action::Override:
 			m_FakeEngineBuffer = GetMessagePrototype(msg_id)->New();
 		// fallthrough
-		case MRES_SUPERCEDE:
+		case KHook::Action::Supersede:
 			buffer = msg;
 			break;
 		}
@@ -310,14 +309,13 @@ bool UserMessages::EndMessage()
 
 		switch (m_FakeMetaRes)
 		{
-		case MRES_IGNORED:
-		case MRES_HANDLED:
-		case MRES_OVERRIDE:
+		case KHook::Action::Ignore:
+		case KHook::Action::Override:
 			engine->SendUserMessage(static_cast<IRecipientFilter &>(m_CellRecFilter), m_CurId, *m_FakeEngineBuffer);
 			delete m_FakeEngineBuffer;
 			m_FakeEngineBuffer = NULL;
 			break;
-		//case MRES_SUPERCEDE:
+		//case KHook::Action::Supersede:
 		}
 
 		OnMessageEnd_Post();
@@ -500,7 +498,7 @@ void UserMessages::_DecRefCounter()
 }
 
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
-void UserMessages::OnSendUserMessage_Pre(IRecipientFilter &filter, int msg_type, const protobuf::Message &msg)
+KHook::Return<void> UserMessages::OnSendUserMessage_Pre(IVEngineServer*, IRecipientFilter &filter, int msg_type, const protobuf::Message &msg)
 {
 #if SOURCE_ENGINE == SE_CSGO
 	const char *pszName = g_Cstrike15UsermessageHelpers.GetName(msg_type);
@@ -512,7 +510,7 @@ void UserMessages::OnSendUserMessage_Pre(IRecipientFilter &filter, int msg_type,
 
 	OnStartMessage_Pre(&filter, msg_type, pszName);
 
-	if (m_FakeMetaRes == MRES_SUPERCEDE)
+	if (m_FakeMetaRes == KHook::Action::Supersede)
 	{
 		int size = msg.ByteSize();
 		uint8 *data = (uint8 *)stackalloc(size);
@@ -527,16 +525,16 @@ void UserMessages::OnSendUserMessage_Pre(IRecipientFilter &filter, int msg_type,
 	OnStartMessage_Post(&filter, msg_type, pszName);
 
 	OnMessageEnd_Pre();
-	if (m_FakeMetaRes == MRES_SUPERCEDE)
-		RETURN_META(MRES_SUPERCEDE);
+	if (m_FakeMetaRes == KHook::Action::Supersede)
+		return { KHook::Action::Supersede };
 
-	RETURN_META(MRES_IGNORED);
+	return { KHook::Action::Ignore };
 }
 
-void UserMessages::OnSendUserMessage_Post(IRecipientFilter &filter, int msg_type, const protobuf::Message &msg)
+KHook::Return<void> UserMessages::OnSendUserMessage_Post(IVEngineServer*, IRecipientFilter &filter, int msg_type, const protobuf::Message &msg)
 {
 	OnMessageEnd_Post();
-	RETURN_META(MRES_IGNORED);
+	return { KHook::Action::Ignore };
 }
 #endif
 
@@ -611,7 +609,7 @@ KHook::Return<bf_write*> UserMessages::OnStartMessage_Post(IVEngineServer*, IRec
 	}
 
 #ifdef USE_PROTOBUF_USERMESSAGES
-	if (m_FakeMetaRes == MRES_SUPERCEDE)
+	if (m_FakeMetaRes == KHook::Action::Supersede)
 		m_OrigBuffer = m_InterceptBuffer;
 	else
 		m_OrigBuffer = m_FakeEngineBuffer;

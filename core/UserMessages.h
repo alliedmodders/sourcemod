@@ -142,7 +142,7 @@ private:
 	// The engine used to provide this. Now we track it.
 	protobuf::Message *m_OrigBuffer;
 	protobuf::Message *m_FakeEngineBuffer;
-	META_RES m_FakeMetaRes;
+	KHook::Action m_FakeMetaRes;
 
 	protobuf::Message *m_InterceptBuffer;
 #endif
