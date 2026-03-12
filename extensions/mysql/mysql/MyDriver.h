@@ -51,13 +51,11 @@
 # undef max
 #endif
 
-#include <sh_string.h>
-#include <sh_list.h>
-
+#include <string>
+#include <list>
 #include <mutex>
 
 using namespace SourceMod;
-using namespace SourceHook;
 
 #define M_CLIENT_MULTI_RESULTS    ((1) << 17)  /* Enable/disable multi-results */
 
@@ -82,8 +80,8 @@ public:
 private:
 	std::mutex m_Lock;
 	Handle_t m_MyHandle;
-	List<MyDatabase *> m_TempDbs;
-	List<MyDatabase *> m_PermDbs;
+	std::list<MyDatabase *> m_TempDbs;
+	std::list<MyDatabase *> m_PermDbs;
 };
 
 extern MyDriver g_MyDriver;
