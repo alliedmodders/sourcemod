@@ -32,7 +32,7 @@
 #ifndef _INCLUDE_SOURCEMOD_SMPBMESSAGE_H_
 #define _INCLUDE_SOURCEMOD_SMPBMESSAGE_H_
 
-#include <sh_list.h>
+#include <list>
 #include <google/protobuf/descriptor.h>
 #include <amtl/am-string.h>
 
