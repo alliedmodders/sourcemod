@@ -268,7 +268,7 @@ google::protobuf::Message *UserMessages::StartProtobufMessage(int msg_id, const 
 			return NULL;
 		}
 
-		protobuf::Message *msg = OnStartMessage_Pre(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id, messageName);
+		protobuf::Message *msg = OnStartMessage_Pre(engine, static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id, messageName).ret;
 		switch (m_FakeMetaRes)
 		{
 		case KHook::Action::Ignore:
@@ -284,7 +284,7 @@ google::protobuf::Message *UserMessages::StartProtobufMessage(int msg_id, const 
 			break;
 		}
 		
-		OnStartMessage_Post(static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id, messageName);
+		OnStartMessage_Post(engine, static_cast<IRecipientFilter *>(&m_CellRecFilter), msg_id, messageName);
 	}
 
 	return buffer;
@@ -301,11 +301,11 @@ bool UserMessages::EndMessage()
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	if (m_CurFlags & USERMSG_BLOCKHOOKS)
 	{
-		ENGINE_CALL(SendUserMessage)(static_cast<IRecipientFilter &>(m_CellRecFilter), m_CurId, *m_FakeEngineBuffer);
+		KHook::CallOriginal(&IVEngineServer::SendUserMessage, engine, static_cast<IRecipientFilter &>(m_CellRecFilter), m_CurId, *m_FakeEngineBuffer);
 		delete m_FakeEngineBuffer;
 		m_FakeEngineBuffer = NULL;
 	} else {
-		OnMessageEnd_Pre();
+		OnMessageEnd_Pre(engine);
 
 		switch (m_FakeMetaRes)
 		{
@@ -318,7 +318,7 @@ bool UserMessages::EndMessage()
 		//case KHook::Action::Supersede:
 		}
 
-		OnMessageEnd_Post();
+		OnMessageEnd_Post(engine);
 	}
 #else
 	if (m_CurFlags & USERMSG_BLOCKHOOKS)
@@ -498,7 +498,7 @@ void UserMessages::_DecRefCounter()
 }
 
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
-KHook::Return<void> UserMessages::OnSendUserMessage_Pre(IVEngineServer*, IRecipientFilter &filter, int msg_type, const protobuf::Message &msg)
+KHook::Return<void> UserMessages::OnSendUserMessage_Pre(IVEngineServer* enginesrv, IRecipientFilter &filter, int msg_type, const protobuf::Message &msg)
 {
 #if SOURCE_ENGINE == SE_CSGO
 	const char *pszName = g_Cstrike15UsermessageHelpers.GetName(msg_type);
@@ -508,7 +508,7 @@ KHook::Return<void> UserMessages::OnSendUserMessage_Pre(IVEngineServer*, IRecipi
 	const char *pszName = g_VietnamUsermessageHelpers.GetName(msg_type);
 #endif
 
-	OnStartMessage_Pre(&filter, msg_type, pszName);
+	OnStartMessage_Pre(enginesrv, &filter, msg_type, pszName);
 
 	if (m_FakeMetaRes == KHook::Action::Supersede)
 	{
@@ -522,18 +522,18 @@ KHook::Return<void> UserMessages::OnSendUserMessage_Pre(IVEngineServer*, IRecipi
 		m_FakeEngineBuffer = &const_cast<protobuf::Message &>(msg);
 	}
 
-	OnStartMessage_Post(&filter, msg_type, pszName);
+	OnStartMessage_Post(enginesrv, &filter, msg_type, pszName);
 
-	OnMessageEnd_Pre();
+	OnMessageEnd_Pre(enginesrv);
 	if (m_FakeMetaRes == KHook::Action::Supersede)
 		return { KHook::Action::Supersede };
 
 	return { KHook::Action::Ignore };
 }
 
-KHook::Return<void> UserMessages::OnSendUserMessage_Post(IVEngineServer*, IRecipientFilter &filter, int msg_type, const protobuf::Message &msg)
+KHook::Return<void> UserMessages::OnSendUserMessage_Post(IVEngineServer* enginesrv, IRecipientFilter &filter, int msg_type, const protobuf::Message &msg)
 {
-	OnMessageEnd_Post();
+	OnMessageEnd_Post(enginesrv);
 	return { KHook::Action::Ignore };
 }
 #endif
@@ -541,11 +541,11 @@ KHook::Return<void> UserMessages::OnSendUserMessage_Post(IVEngineServer*, IRecip
 #ifdef USE_PROTOBUF_USERMESSAGES
 #define UM_RETURN_META_VALUE(res, val) \
 	m_FakeMetaRes = res;               \
-	return val;
+	return { res, val };
 
 #define UM_RETURN_META(res)            \
 	m_FakeMetaRes = res;               \
-	return;
+	return { res };
 #else
 #define UM_RETURN_META_VALUE(res, val) \
 	return { res, val };
