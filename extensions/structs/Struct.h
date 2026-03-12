@@ -33,7 +33,7 @@
 #define _INCLUDE_SOURCEMOD_STRUCT_H_
 
 #include "sm_trie_tpl.h"
-#include "sh_list.h"
+#include <list>
 
 enum MemberType
 {
@@ -75,7 +75,7 @@ struct StructInfo
 	char name[100];
 	int size;
 	KTrie<MemberInfo *> members;
-	SourceHook::List<MemberInfo *> membersList;
+	std::list<MemberInfo *> membersList;
 
 	bool getOffset(const char *member, int *offset);
 	bool getType(const char *member, MemberType*type);
