@@ -39,6 +39,7 @@
 
 #define TIMER_REPEAT            (1<<0)      /**< Timer will repeat until it returns Plugin_Stop */
 #define TIMER_FLAG_NO_MAPCHANGE (1<<1)      /**< Timer will not carry over mapchanges */
+#define TIMER_FLAG_TICK_PRECISE (1<<2)      /**< Timer will have tick level time precision */
 #define TIMER_HNDL_CLOSE        (1<<9)      /**< Deprecated define, replaced by below */
 #define TIMER_DATA_HNDL_CLOSE   (1<<9)      /**< Timer will automatically call CloseHandle() on its data when finished */
 
