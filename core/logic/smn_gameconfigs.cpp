@@ -32,6 +32,7 @@
 #include "common_logic.h"
 #include <IHandleSys.h>
 #include "GameConfigs.h"
+#include "PseudoAddrManager.h"
 
 HandleType_t g_GameConfigsType;
 
@@ -134,12 +135,7 @@ static cell_t smn_GameConfGetKeyValue(IPluginContext *pCtx, const cell_t *params
 
 static cell_t smn_GameConfGetAddress(IPluginContext *pCtx, const cell_t *params)
 {
-	cell_t shift_param = 0;
-	if (pCtx->GetRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE) {
-		shift_param = 1;
-	}
-
-	Handle_t hndl = static_cast<Handle_t>(params[shift_param + 1]);
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
 	IGameConfig *gc;
@@ -155,30 +151,20 @@ static cell_t smn_GameConfGetAddress(IPluginContext *pCtx, const cell_t *params)
 
 	char *key;
 	void* val;
-	pCtx->LocalToString(params[shift_param + 2], &key);
+	pCtx->LocalToString(params[2], &key);
 
-	if (!gc->GetAddress(key, &val)) {
-		val = nullptr;
-	}
+	if (!gc->GetAddress(key, &val))
+		return 0;
 
-	if (shift_param != 0) {
-		cell_t* sp_addr;
-		if (int err = pCtx->LocalToPhysAddr(params[1], &sp_addr); err != SP_ERROR_NONE) {
-			return pCtx->ThrowNativeErrorEx(err, "Could not read argument");
-		}
-		*reinterpret_cast<int64_t*>(sp_addr) = reinterpret_cast<uintptr_t>(val);
+	if (pCtx->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
+		return pseudoAddr.ToPseudoAddress(val);
 	}
 	return reinterpret_cast<uintptr_t>(val);
 }
 
 static cell_t smn_GameConfGetMemSig(IPluginContext *pCtx, const cell_t *params)
 {
-	cell_t shift_param = 0;
-	if (pCtx->GetRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE) {
-		shift_param = 1;
-	}
-
-	Handle_t hndl = static_cast<Handle_t>(params[shift_param + 1]);
+	Handle_t hndl = static_cast<Handle_t>(params[1]);
 	HandleError herr;
 	HandleSecurity sec;
 	IGameConfig *gc;
@@ -194,19 +180,15 @@ static cell_t smn_GameConfGetMemSig(IPluginContext *pCtx, const cell_t *params)
 
 	char *key;
 	void *val;
-	pCtx->LocalToString(params[shift_param + 2], &key);
+	pCtx->LocalToString(params[2], &key);
 
 	if (!gc->GetMemSig(key, &val))
 	{
-		val = nullptr;
+		return 0;
 	}
 
-	if (shift_param != 0) {
-		cell_t* sp_addr;
-		if (int err = pCtx->LocalToPhysAddr(params[1], &sp_addr); err != SP_ERROR_NONE) {
-			return pCtx->ThrowNativeErrorEx(err, "Could not read argument");
-		}
-		*reinterpret_cast<int64_t*>(sp_addr) = reinterpret_cast<uintptr_t>(val);
+	if (pCtx->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
+		return pseudoAddr.ToPseudoAddress(val);
 	}
 	return reinterpret_cast<uintptr_t>(val);
 }

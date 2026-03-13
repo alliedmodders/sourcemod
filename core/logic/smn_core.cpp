@@ -59,6 +59,7 @@
 #include <bridge/include/CoreProvider.h>
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/IExtensionBridge.h>
+#include "PseudoAddrManager.h"
 #include <sh_vector.h>
 
 using namespace SourceMod;
@@ -864,13 +865,8 @@ enum NumberType
 static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
 {
 	void *addr = reinterpret_cast<void*>(params[1]);
-	if (pContext->GetRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE) {
-		cell_t* sp_addr;
-		if (int err = pContext->LocalToPhysAddr(params[1], &sp_addr); err != SP_ERROR_NONE) {
-			return pContext->ThrowNativeErrorEx(err, "Could not read argument");
-		}
-		auto value = *reinterpret_cast<int64_t*>(sp_addr);
-		addr = (void*)value;
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
+		addr = pseudoAddr.FromPseudoAddress(params[1]);
 	}
 
 	if (addr == NULL)
@@ -899,13 +895,8 @@ static cell_t LoadFromAddress(IPluginContext *pContext, const cell_t *params)
 static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 {
 	void *addr = reinterpret_cast<void*>(params[1]);
-	if (pContext->GetRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE) {
-		cell_t* sp_addr;
-		if (int err = pContext->LocalToPhysAddr(params[1], &sp_addr); err != SP_ERROR_NONE) {
-			return pContext->ThrowNativeErrorEx(err, "Could not read argument");
-		}
-		auto value = *reinterpret_cast<int64_t*>(sp_addr);
-		addr = (void*)value;
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
+		addr = pseudoAddr.FromPseudoAddress(params[1]);
 	}
 
 	if (addr == NULL)
@@ -959,19 +950,9 @@ static cell_t StoreToAddress(IPluginContext *pContext, const cell_t *params)
 
 static cell_t LoadAddressFromAddress(IPluginContext *pContext, const cell_t *params)
 {
-	cell_t shift_param = 0;
-	if (pContext->GetRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE) {
-		shift_param = 1;
-	}
-
-	void *addr = reinterpret_cast<void*>(params[shift_param + 1]);
-	if (shift_param != 0) {
-		cell_t* sp_addr;
-		if (int err = pContext->LocalToPhysAddr(params[shift_param + 1], &sp_addr); err != SP_ERROR_NONE) {
-			return pContext->ThrowNativeErrorEx(err, "Could not read argument");
-		}
-		auto value = *reinterpret_cast<int64_t*>(sp_addr);
-		addr = (void*)value;
+	void *addr = reinterpret_cast<void*>(params[1]);
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
+		addr = pseudoAddr.FromPseudoAddress(params[1]);
 	}
 
 	if (addr == NULL)
@@ -982,14 +963,10 @@ static cell_t LoadAddressFromAddress(IPluginContext *pContext, const cell_t *par
 	{
 		return pContext->ThrowNativeError("Invalid address 0x%x is pointing to reserved memory.", addr);
 	}
-	void* data = *reinterpret_cast<void**>(addr);
 
-	if (shift_param != 0) {
-		cell_t* sp_addr;
-		if (int err = pContext->LocalToPhysAddr(params[1], &sp_addr); err != SP_ERROR_NONE) {
-			return pContext->ThrowNativeErrorEx(err, "Could not read argument");
-		}
-		*reinterpret_cast<int64_t*>(sp_addr) = reinterpret_cast<uintptr_t>(data);
+	void* data = *reinterpret_cast<void**>(addr);
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
+		return pseudoAddr.ToPseudoAddress(data);
 	}
 	return reinterpret_cast<uintptr_t>(data);
 }
@@ -997,13 +974,8 @@ static cell_t LoadAddressFromAddress(IPluginContext *pContext, const cell_t *par
 static cell_t StoreAddressToAddress(IPluginContext *pContext, const cell_t *params)
 {
 	void *addr = reinterpret_cast<void*>(params[1]);
-	if (pContext->GetRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE) {
-		cell_t* sp_addr;
-		if (int err = pContext->LocalToPhysAddr(params[1], &sp_addr); err != SP_ERROR_NONE) {
-			return pContext->ThrowNativeErrorEx(err, "Could not read argument");
-		}
-		auto value = *reinterpret_cast<int64_t*>(sp_addr);
-		addr = (void*)value;
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
+		addr = pseudoAddr.FromPseudoAddress(params[1]);
 	}
 
 	if (addr == NULL)
@@ -1016,13 +988,8 @@ static cell_t StoreAddressToAddress(IPluginContext *pContext, const cell_t *para
 	}
 
 	void *data = reinterpret_cast<void*>(params[2]);
-	if (pContext->GetRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE) {
-		cell_t* sp_addr;
-		if (int err = pContext->LocalToPhysAddr(params[2], &sp_addr); err != SP_ERROR_NONE) {
-			return pContext->ThrowNativeErrorEx(err, "Could not read argument");
-		}
-		auto value = *reinterpret_cast<int64_t*>(sp_addr);
-		data = (void*)value;
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
+		data = pseudoAddr.FromPseudoAddress(params[2]);
 	}
 
 	bool updateMemAccess = params[3];

@@ -88,11 +88,11 @@ inline void DecodePassMethod(ValveType vtype, SDKPassMethod method, PassType &ty
 static cell_t StartPrepSDKCall(IPluginContext *pContext, const cell_t *params)
 {
 	auto call_type = (ValveCallType)params[1];
-	if (call_type == ValveCall_Raw && pContext->GetRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE) {
-		return pContext->ThrowNativeError("SDKCall_Raw is unavailable for plugins that have enabled int64 address.");
+	if (call_type == ValveCall_Raw && pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
+		return pContext->ThrowNativeError("SDKCall_Raw is unavailable for plugins that have enabled virtual address.");
 	}
-	if (call_type == ValveCall_VirtualAddress && pContext->GetRuntime()->FindPubvarByName("__Int64_Address__", nullptr) != SP_ERROR_NONE) {
-		return pContext->ThrowNativeError("SDKCall_VirtualAddress is unavailable for plugins that haven't enabled int64 address.");
+	if (call_type == ValveCall_VirtualAddress && pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) != SP_ERROR_NONE) {
+		return pContext->ThrowNativeError("SDKCall_VirtualAddress is unavailable for plugins that haven't enabled virtual address.");
 	}
 	s_numparams = 0;
 	s_vtbl_index = -1;
@@ -181,13 +181,8 @@ static cell_t PrepSDKCall_SetSignature(IPluginContext *pContext, const cell_t *p
 static cell_t PrepSDKCall_SetAddress(IPluginContext *pContext, const cell_t *params)
 {
 	s_call_addr = reinterpret_cast<void*>(params[1]);
-	if (pContext->GetRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE) {
-		cell_t* sp_addr;
-		if (int err = pContext->LocalToPhysAddr(params[1], &sp_addr); err != SP_ERROR_NONE) {
-			return pContext->ThrowNativeErrorEx(err, "Could not read argument");
-		}
-		auto value = *reinterpret_cast<int64_t*>(sp_addr);
-		s_call_addr = (void*)value;
+	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
+		s_call_addr = g_pSM->FromPseudoAddress(params[1]);
 	}
 
 	return (s_call_addr != NULL) ? 1 : 0;
@@ -436,12 +431,9 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 				}
 
 				//note: varargs pawn args are passed by-ref
-				cell_t* sp_addr;
-				if (int err = pContext->LocalToPhysAddr(params[startparam], &sp_addr); err != SP_ERROR_NONE) {
-					return pContext->ThrowNativeErrorEx(err, "Could not read argument");
-				}
-				auto value = *reinterpret_cast<int64_t*>(sp_addr);
-				void* thisptr = (void*)value;
+				cell_t *cell;
+				pContext->LocalToPhysAddr(params[startparam], &cell);
+				void* thisptr = reinterpret_cast<void*>(g_pSM->FromPseudoAddress(*cell));
 
 				if (thisptr == nullptr)
 				{
@@ -475,9 +467,6 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 			startparam += 2;
 		} else if (vc->retinfo->vtype == Valve_Vector
 					|| vc->retinfo->vtype == Valve_QAngle)
-		{
-			startparam += 1;
-		} else if (vc->retinfo->vtype == Valve_VirtualAddress)
 		{
 			startparam += 1;
 		}
@@ -585,21 +574,12 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 			}
 			return *addr ? 1 : 0;
         } else if (vc->retinfo->vtype == Valve_VirtualAddress) {
-			if (numparams < 3)
-			{
-				return pContext->ThrowNativeError("Expected argument (3) for VirtualAddress storage");
-			}
-			void *addr = *(void **)vc->retbuf;
+            void *addr = *(void **)vc->retbuf;
             if (vc->retinfo->flags & PASSFLAG_ASPOINTER)
 			{
 				addr = *(void **)addr;
 			}
-			cell_t* sp_addr;
-			if (int err = pContext->LocalToPhysAddr(params[retparam], &sp_addr); err != SP_ERROR_NONE) {
-				return pContext->ThrowNativeErrorEx(err, "Could not read argument");
-			}
-			*reinterpret_cast<int64_t*>(sp_addr) = reinterpret_cast<intptr_t>(addr);
-			return 0;
+			return g_pSM->ToPseudoAddress(addr);
 		} else {
 			cell_t *addr = (cell_t *)vc->retbuf;
 			if (vc->retinfo->flags & PASSFLAG_ASPOINTER)

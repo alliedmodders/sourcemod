@@ -319,20 +319,18 @@ namespace SourceMod
 		virtual bool IsMapRunning() = 0;
 
 		/**
-		 * @brief DEPRECATED DO NOT USE
-		 * Converts 32-bit pseudo address to memory address on 64-bit platforms.
+		 * @brief Converts 32-bit pseudo address to memory address on 64-bit platforms.
 		 *
 		 * @return 			Memory address, or nullptr if pseudo address could not be converted.
 		 */
-		virtual void *FromPseudoAddress(uint32_t pseudoAddr) { return nullptr; }
+		virtual void *FromPseudoAddress(uint32_t pseudoAddr) = 0;
 
 		/**
-		 * @brief DEPRECATED DO NOT USE
-		 * Converts memory address to 32-bit pseudo address on 64-bit platforms.
+		 * @brief Converts memory address to 32-bit pseudo address on 64-bit platforms.
 		 *
 		 * @return			Pseudo address, or 0 if memory address could not be converted.
 		 */
-		virtual uint32_t ToPseudoAddress(void *addr) { return 0; }
+		virtual uint32_t ToPseudoAddress(void *addr) = 0;
 	};
 }
 
