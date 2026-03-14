@@ -164,7 +164,7 @@ size_t ValveParamToBinParam(ValveType type,
 				return sizeof(float);
 			}
 		}
-	case Valve_VirtualAddress:
+	case Valve_SMAddress:
 	    {
 			info->flags = flags;
 			if (flags & PASSFLAG_ASPOINTER)
@@ -293,7 +293,7 @@ DataStatus EncodeValveParam(IPluginContext *pContext,
 
 			return Data_Okay;
 		}
-	case Valve_VirtualAddress:
+	case Valve_SMAddress:
 	    {
 			if (data->flags & PASSFLAG_ASPOINTER)
 			{
@@ -615,7 +615,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			*(char **)buffer = addr;
 			return Data_Okay;
 		}
-	case Valve_VirtualAddress:
+	case Valve_SMAddress:
 	    {
 			if (data->decflags & VDECODE_FLAG_BYREF)
 			{

@@ -78,7 +78,6 @@ struct Plugin
 #include <commandline>
 #include <entitylump>
 
-#if defined _virtual_address_included
 typedef Address = int64;
 public const int64 __Int64_Address__ = 0;
 
@@ -86,11 +85,6 @@ public const int64 __Int64_Address__ = 0;
 public const int64 Address_Null = 0;
 /**< Size of a pointer in bytes (same as `sizeof(void*)`) */
 public const int64 Address_PointerSize = 0;
-#else
-enum Address {
-	Address_Null = 0
-};
-#endif
 
 enum APLRes
 {
