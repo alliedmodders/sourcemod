@@ -85,16 +85,7 @@ for cxx in builder.targets:
     'FrameIterator.cpp',
     'DatabaseConfBuilder.cpp',
     'LumpManager.cpp',
-    'smn_entitylump.cpp',
-    'libaddrz/addrz.cpp',
-    'libaddrz/mapping.cpp',
-    'libaddrz/platform.cpp',
-    'libaddrz/proc_maps.cpp',
-    'PseudoAddrManager.cpp',
+    'smn_entitylump.cpp'
   ]
-  if binary.compiler.target.platform == 'linux':
-    binary.sources += ['libaddrz/platform_linux.cpp']
-  elif binary.compiler.target.platform == 'windows':
-    binary.sources += ['libaddrz/platform_windows.cpp']
 
   SM.binaries += [builder.Add(binary)]
