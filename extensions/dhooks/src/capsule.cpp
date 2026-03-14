@@ -154,11 +154,6 @@ void Capsule::RemoveCallbackById(std::uint32_t id) {
 	if (locals::plugin_hook_ids.end() != plugin_hooks_it) {
 		plugin_hooks_it->second.erase(id);
 	}
-	if (cb.remove_callback != nullptr && cb.remove_callback->IsRunnable()) {
-		cb.remove_callback->PushCell(id);
-		cell_t ignore;
-		cb.remove_callback->Execute(&ignore);
-	}
 	locals::hook_callbacks.erase(id);
 
 	if (rm_callback != nullptr && rm_callback->IsRunnable()) {
@@ -184,11 +179,6 @@ void Capsule::RemoveCallbackByPlugin(SourcePawn::IPluginContext* default_context
 		if (cb.associated_capsule != nullptr) {
 			cb.associated_capsule->_pre_hooks.erase(id);
 			cb.associated_capsule->_post_hooks.erase(id);
-		}
-		if (cb.remove_callback != nullptr && cb.remove_callback->IsRunnable()) {
-			cb.remove_callback->PushCell(id);
-			cell_t ignore;
-			cb.remove_callback->Execute(&ignore);
 		}
 		locals::hook_callbacks.erase(id);
 
