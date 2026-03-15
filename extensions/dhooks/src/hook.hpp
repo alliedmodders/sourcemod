@@ -15,6 +15,7 @@ struct HookCallback {
 	Capsule* associated_capsule;
 	SourcePawn::IPluginFunction* callback;
 	SourcePawn::IPluginFunction* remove_callback;
+	bool using_int64_address;
 };
 
 }
