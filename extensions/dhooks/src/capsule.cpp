@@ -91,6 +91,7 @@ std::uint32_t Capsule::AddCallback(SourcePawn::IPluginFunction* callback, Source
 	cb.associated_capsule = this;
 	cb.callback = callback;
 	cb.remove_callback = remove_callback;
+	cb.using_int64_address = (callback->GetParentRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE);
 
 	auto plugin_it = locals::plugin_hook_ids.find(callback->GetParentRuntime()->GetDefaultContext());
 	if (plugin_it == locals::plugin_hook_ids.end()) {
