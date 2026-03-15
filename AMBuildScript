@@ -55,7 +55,6 @@ class SMConfig(object):
     self.target_archs = set()
     self.enable_asan = getattr(builder.options, 'enable_asan', False)
     self.asan_libs = {}
-    self.libsafetyhook = {}
 
     if builder.options.targets:
       target_archs = builder.options.targets.split(',')
@@ -128,7 +127,7 @@ class SMConfig(object):
     if builder.options.mms_path:
       self.mms_root = builder.options.mms_path
     else:
-      self.mms_root = ResolveEnvPath('MMSOURCE112', 'mmsource-1.12')
+      self.mms_root = ResolveEnvPath('MMSOURCE200', 'mmsource-2.0')
       if not self.mms_root:
         self.mms_root = ResolveEnvPath('MMSOURCE', 'metamod-source')
       if not self.mms_root:
@@ -499,6 +498,11 @@ class SMConfig(object):
       os.path.join(builder.sourcePath, 'public', 'amtl', 'amtl'),
       os.path.join(builder.sourcePath, 'public', 'amtl'),
     ]
+
+    compiler.cxxincludes += [
+      os.path.join(self.mms_root, 'core'),
+      os.path.join(self.mms_root, 'third_party', 'khook', 'include'),
+    ]
     return compiler
 
   def ExtLibrary(self, context, compiler, name):
@@ -517,28 +521,12 @@ class SMConfig(object):
     compiler = binary.compiler
     SetArchFlags(compiler)
 
-    compiler.cxxincludes += [
-      os.path.join(self.mms_root, 'core'),
-      os.path.join(self.mms_root, 'core', 'sourcehook'),
-    ]
-
     for other_sdk in self.sdk_manifests:
       compiler.defines += ['SE_{}={}'.format(other_sdk['define'], other_sdk['code'])]
 
     SdkHelpers.configureCxx(context, binary, sdk)
 
     return binary
-
-  def AddCDetour(self, binary):
-    public_path = os.path.join(builder.sourcePath, 'public')
-    binary.sources += [ os.path.join(public_path, 'CDetour', 'detours.cpp') ]
-    binary.compiler.cxxincludes += [ os.path.join(public_path, 'safetyhook', 'include') ]
-
-    for task in self.libsafetyhook:
-      if task.target.arch == binary.compiler.target.arch:
-        binary.compiler.linkflags += [task.binary]
-        return
-    raise Exception('No suitable build of safetyhook was found.')
 
   def HL2Library(self, context, compiler, name, sdk):
     binary = self.Library(context, compiler, name)
@@ -587,16 +575,6 @@ if SM.use_auto_versioning():
     'versionlib/AMBuilder',
     { 'SM': SM }
   )
-
-class SafetyHookShim(object):
-  def __init__(self):
-    self.all_targets = {}
-    self.libsafetyhook = {}
-
-SafetyHook = SafetyHookShim()
-SafetyHook.all_targets = SM.all_targets
-builder.Build('public/safetyhook/AMBuilder', {'SafetyHook': SafetyHook })
-SM.libsafetyhook = SafetyHook.libsafetyhook
 
 class SPRoot(object):
   def __init__(self):
@@ -666,10 +644,10 @@ else:
     'extensions/bintools/AMBuilder',
     'extensions/clientprefs/AMBuilder',
     'extensions/curl/AMBuilder',
-    'extensions/cstrike/AMBuilder',
+    #'extensions/cstrike/AMBuilder',
     'extensions/dhooks/AMBuilder',
     'extensions/geoip/AMBuilder',
-    'extensions/mysql/AMBuilder',
+    #'extensions/mysql/AMBuilder',
     'extensions/pgsql/AMBuilder',
     'extensions/regex/AMBuilder',
     'extensions/sdkhooks/AMBuilder',

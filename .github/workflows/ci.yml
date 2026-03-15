@@ -34,7 +34,7 @@ jobs:
       DEPENDENCIES_FOLDER: dependencies
       DEPENDENCIES_ROOT: ${{ github.workspace }}/dependencies
       MYSQL_VERSION: '5.7'
-      MMSOURCE_VERSION: '1.12'
+      MMSOURCE_VERSION: '2.0'
     steps:
       - uses: actions/checkout@v6
         with:

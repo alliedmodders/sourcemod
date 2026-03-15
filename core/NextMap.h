@@ -34,9 +34,10 @@
 
 #include "sm_globals.h"
 #include <eiface.h>
-#include "sh_list.h"
+#include <list>
 #include "sm_stringutil.h"
 #include <amtl/am-string.h>
+#include <khook.hpp>
 
 struct MapChangeData
 {
@@ -60,9 +61,9 @@ struct MapChangeData
 };
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-void CmdChangeLevelCallback(const CCommand &command);
+KHook::Return<void> CmdChangeLevelCallback(ConCommand*, const CCommand &command);
 #else
-void CmdChangeLevelCallback();
+KHook::Return<void> CmdChangeLevelCallback(ConCommand*);
 #endif
 
 class NextMapManager : public SMGlobalClass
@@ -71,9 +72,9 @@ public:
 	NextMapManager();
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-	friend void CmdChangeLevelCallback(const CCommand &command);
+	friend KHook::Return<void> CmdChangeLevelCallback(ConCommand*, const CCommand &command);
 #else
-	friend void CmdChangeLevelCallback();
+	friend KHook::Return<void> CmdChangeLevelCallback(ConCommand*);
 #endif
 
 	void OnSourceModAllInitialized_Post();
@@ -86,13 +87,15 @@ public:
 	void ForceChangeLevel(const char *mapName, const char* changeReason);
 
 #if SOURCE_ENGINE != SE_DARKMESSIAH
-	void HookChangeLevel(const char *map, const char *unknown);
+	KHook::Virtual<IVEngineServer, void, const char*, const char*> m_HookChangeLevel;
+	KHook::Return<void> HookChangeLevel(IVEngineServer*, const char *map, const char *unknown);
 #else
-	void HookChangeLevel(const char *map, const char *unknown, const char *video, bool bLongLoading);
+	KHook::Virtual<IVEngineServer, void, const char*, const char*, const char*, bool> m_HookChangeLevel;
+	KHook::Return<void> HookChangeLevel(IVEngineServer*, const char *map, const char *unknown, const char *video, bool bLongLoading);
 #endif
 
 public:
-	SourceHook::List<MapChangeData *> m_mapHistory;
+	std::list<MapChangeData *> m_mapHistory;
 
 private:
 	MapChangeData m_tempChangeInfo;
