@@ -147,7 +147,12 @@ void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post) const {
                         }
                         hook.callback->PushCell(entity_index.value_or(-1));
                     } else if (hook.this_pointer_type == sp::ThisPointer_Address) {
-                        hook.callback->PushCell(globals::sourcemod->ToPseudoAddress(this_ptr));
+                        if (hook.using_int64_address) {
+                            std::int64_t sm_address = reinterpret_cast<std::int64_t>(this_ptr);
+                            hook.callback->PushArray((cell_t*)&sm_address, 2);
+                        } else {
+                            hook.callback->PushCell(reinterpret_cast<std::intptr_t>(this_ptr));
+                        }
                     }
                 }
 
