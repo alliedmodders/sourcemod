@@ -32,6 +32,11 @@
 #include <stdlib.h>
 
 #include <memory>
+#include <algorithm>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include "ExtensionSys.h"
 #include <ILibrarySys.h>
@@ -254,11 +259,129 @@ bool CLocalExtension::Reload(char *error, size_t maxlength)
 {
 	if (m_pLib == NULL) // FIXME: just load it instead?
 		return false;
-	
+
+	// Step 1: Build a load-order map and identify direct dependents.
+	// We must save this before any cleanup since unloading plugins removes them from
+	// m_Dependents via DropRefsTo.
+	struct PluginInfo {
+		std::string filename;
+		PluginType type;
+		size_t order;
+		bool was_paused;
+	};
+
+	std::unordered_map<std::string, size_t> load_order;
+	std::unordered_set<std::string> was_running;
+	std::vector<PluginInfo> to_reload;
+
+	{
+		AutoPluginList list(scripts);
+		for (size_t i = 0; i < list->size(); i++) {
+			SMPlugin *plugin = list->at(i);
+			std::string filename(plugin->GetFilename());
+			load_order[filename] = i;
+
+			PluginStatus status = plugin->GetStatus();
+			if (status == Plugin_Running || status == Plugin_Paused)
+				was_running.insert(filename);
+
+			CPlugin *cp = static_cast<CPlugin *>(plugin);
+			if (m_Dependents.find(cp) != m_Dependents.end() &&
+				(status == Plugin_Running || status == Plugin_Paused))
+			{
+				to_reload.push_back({filename, plugin->GetType(), i, status == Plugin_Paused});
+			}
+		}
+	}
+
+	// Step 2: Clear native cache entries and unbind weak refs.
+	DropEverything();
+
+	// Step 3: Unload direct dependent plugins. They hold JIT-baked stale function
+	// pointers that will crash if called after dlclose.
+	// Copy and clear m_Dependents first — UnloadPlugin triggers OnPluginDestroyed
+	// which calls DropRefsTo, removing entries from m_Dependents during iteration.
+	// (UnloadExtension avoids this by removing itself from m_Libs first, but we
+	// can't do that since we need to stay in m_Libs for reload.)
+	List<CPlugin *> dependents_copy = m_Dependents;
+	m_Dependents.clear();
+	for (List<CPlugin *>::iterator p_iter = dependents_copy.begin();
+		 p_iter != dependents_copy.end();
+		 p_iter++)
+	{
+		scripts->UnloadPlugin((*p_iter));
+	}
+
+	// Step 3b: Collect and unload cascaded victims — plugins that entered Plugin_Error
+	// because they depended on a plugin we just unloaded (not on this extension directly).
+	bool found;
+	do {
+		found = false;
+		AutoPluginList list(scripts);
+		for (size_t i = 0; i < list->size(); i++) {
+			SMPlugin *plugin = list->at(i);
+			std::string filename(plugin->GetFilename());
+			if (plugin->GetStatus() == Plugin_Error && was_running.count(filename)) {
+				auto it = load_order.find(filename);
+				size_t order = (it != load_order.end()) ? it->second : SIZE_MAX;
+				to_reload.push_back({filename, plugin->GetType(), order, false});
+				was_running.erase(filename);
+				scripts->UnloadPlugin(plugin);
+				found = true;
+				break; // List was modified, restart scan.
+			}
+		}
+	} while (found);
+
+	// Sort by original load order so inter-plugin dependencies resolve correctly.
+	std::sort(to_reload.begin(), to_reload.end(),
+		[](const PluginInfo &a, const PluginInfo &b) {
+			return a.order < b.order;
+		});
+
+	// Step 4: Clean up extension state to prevent duplicates on reload.
+	g_ShareSys.RemoveInterfaces(this);
+	for (List<String>::iterator s_iter = m_Libraries.begin();
+		 s_iter != m_Libraries.end();
+		 s_iter++)
+	{
+		scripts->OnLibraryAction((*s_iter).c_str(), LibraryAction_Removed);
+	}
+	m_Libraries.clear();
+	m_Interfaces.clear();
+
+	// Step 5: Unload the extension (dlclose).
 	m_pAPI->OnExtensionUnload();
 	Unload();
-	
-	return Load(error, maxlength);
+
+	// Step 6: Reload the extension (dlopen). This calls OnExtensionLoad which
+	// re-registers natives, interfaces, and libraries.
+	if (!Load(error, maxlength))
+		return false;
+
+	// Step 7: Batch reload dependent plugins in original m_plugins order.
+	// Uses two-pass loading (compile all, then resolve dependencies) so that
+	// inter-plugin dependencies — including circular ones — resolve the same
+	// way they do during initial load.
+	std::vector<std::pair<std::string, PluginType>> batch;
+	for (auto &info : to_reload)
+		batch.push_back({info.filename, info.type});
+
+	std::vector<CPlugin *> results = g_PluginSys.LoadPluginBatch(batch);
+
+	for (size_t i = 0; i < to_reload.size(); i++) {
+		if (!results[i]) {
+			rootmenu->ConsolePrint("[SM] Failed to reload plugin \"%s\"",
+			                       to_reload[i].filename.c_str());
+		} else {
+			rootmenu->ConsolePrint("[SM] Reloaded plugin \"%s\"",
+			                       to_reload[i].filename.c_str());
+			if (to_reload[i].was_paused)
+				results[i]->SetPauseState(true);
+		}
+	}
+
+	return true;
 }
 
 bool CRemoteExtension::IsExternal()

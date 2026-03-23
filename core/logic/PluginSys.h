@@ -436,6 +436,17 @@ public:
 	void _SetPauseState(CPlugin *pPlugin, bool pause);
 
 	void ForEachPlugin(ke::Function<void(CPlugin *)> callback);
+
+	/**
+	 * Batch-loads plugins using the two-pass approach (compile all, then
+	 * run second pass for all) so that inter-plugin dependencies — including
+	 * circular ones — resolve the same way they do during initial load.
+	 *
+	 * Returns a vector of CPlugin pointers in the same order as the input.
+	 * Entries are nullptr for plugins that failed to load.
+	 */
+	std::vector<CPlugin *> LoadPluginBatch(
+		const std::vector<std::pair<std::string, PluginType>> &plugins);
 private:
 	LoadRes LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type);
 
