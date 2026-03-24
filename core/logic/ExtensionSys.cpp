@@ -1311,18 +1311,39 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 		{
 			if (argcount < 4)
 			{
-				rootmenu->ConsolePrint("[SM] Usage: sm exts reload <#>");
+				rootmenu->ConsolePrint("[SM] Usage: sm exts reload <# or file>");
 				return;
 			}
-			
+
 			const char *arg = command->Arg(3);
 			unsigned int num = atoi(arg);
-			CExtension *pExt = FindByOrder(num);
+			CExtension *pExt;
 
-			if (!pExt)
+			if (num != 0)
 			{
-				rootmenu->ConsolePrint("[SM] Extension number %d was not found.", num);
-				return;
+				pExt = FindByOrder(num);
+				if (!pExt)
+				{
+					rootmenu->ConsolePrint("[SM] Extension number %d was not found.", num);
+					return;
+				}
+			}
+			else
+			{
+				char path[PLATFORM_MAX_PATH];
+				ke::SafeSprintf(path, sizeof(path), "%s%s", arg, !strstr(arg, ".ext") ? ".ext" : "");
+
+				/* Strip platform extension if present, m_File doesn't include it. */
+				const char *ext = libsys->GetFileExtension(path);
+				if (ext && strcmp(ext, PLATFORM_LIB_EXT) == 0)
+					path[strlen(path) - strlen(PLATFORM_LIB_EXT) - 1] = '\0';
+
+				pExt = (CExtension *)FindExtensionByFile(path);
+				if (!pExt)
+				{
+					rootmenu->ConsolePrint("[SM] Extension %s is not loaded.", path);
+					return;
+				}
 			}
 			
 			if (pExt->IsLoaded())
@@ -1357,7 +1378,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 	rootmenu->DrawGenericOption("info", "Extra extension information");
 	rootmenu->DrawGenericOption("list", "List extensions");
 	rootmenu->DrawGenericOption("load", "Load an extension");
-	rootmenu->DrawGenericOption("reload", "Reload an extension");
+	rootmenu->DrawGenericOption("reload", "Reload an extension by # or file");
 	rootmenu->DrawGenericOption("unload", "Unload an extension");
 }
 
