@@ -631,7 +631,7 @@ REGISTER_NATIVES(basicStrings)
 	{"GetCharBytes",		GetCharBytes},
 	{"IntToString",			sm_numtostr},
 	{"Int64ToString",		Int64ToString},
-    {"Int64ToStringEx",	    Int64ToStringEx},
+	{"Int64ToStringEx",		Int64ToStringEx},
 	{"IsCharAlpha",			IsCharAlpha},
 	{"IsCharLower",			IsCharLower},
 	{"IsCharMB",			IsCharMB},
