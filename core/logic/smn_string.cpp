@@ -175,6 +175,18 @@ static cell_t Int64ToString(IPluginContext *pCtx, const cell_t *params)
 	return static_cast<cell_t>(res);
 }
 
+static cell_t Int64ToStringEx(IPluginContext *pCtx, const cell_t *params)
+{
+	char *str;
+	pCtx->LocalToString(params[3], &str);
+
+	int64_t number = (int64_t)(((uint64_t)(uint32_t)params[2] << 32ull) | (uint32_t)params[1]);
+
+	size_t res = ke::SafeSprintf(str, params[4], "%" KE_FMT_I64, number);
+
+	return static_cast<cell_t>(res);
+}
+
 static cell_t sm_strtofloat(IPluginContext *pCtx, const cell_t *params)
 {
 	char *str, *dummy;
@@ -619,6 +631,7 @@ REGISTER_NATIVES(basicStrings)
 	{"GetCharBytes",		GetCharBytes},
 	{"IntToString",			sm_numtostr},
 	{"Int64ToString",		Int64ToString},
+    {"Int64ToStringEx",	    Int64ToStringEx},
 	{"IsCharAlpha",			IsCharAlpha},
 	{"IsCharLower",			IsCharLower},
 	{"IsCharMB",			IsCharMB},
