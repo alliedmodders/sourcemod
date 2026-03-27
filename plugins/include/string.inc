@@ -244,7 +244,10 @@ native int Int64ToString(const int num[2], char[] str, int maxlength);
  * @return              Number of characters written to the buffer,
  *                      not including the null terminator.
  */
-native int Int64ToStringEx(int64 num, char[] str, int maxlength);
+stock int Int64ToStringEx(int64 num, char[] str, int maxlength)
+{
+	return Format(str, maxlength, "%li", num);
+}
 
 /** 
  * Converts a string to a floating point number.
