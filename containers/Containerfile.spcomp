@@ -1,0 +1,16 @@
+# Build stage - use the same image as sourcemod CI builds
+FROM ghcr.io/alliedmodders/build-containers/debian11:latest AS builder
+
+COPY sourcepawn/ /build/sourcepawn/
+
+WORKDIR /build/sourcepawn
+RUN mkdir build && cd build && \
+    python3 ../configure.py --enable-optimize --targets=x86_64 && \
+    ambuild
+
+# Runtime stage
+FROM debian:bullseye-slim
+
+COPY --from=builder /build/sourcepawn/build/spcomp /usr/local/bin/
+
+ENTRYPOINT ["/usr/local/bin/spcomp"]
