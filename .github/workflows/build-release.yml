@@ -183,6 +183,9 @@ jobs:
           omitNameDuringUpdate: true
           omitPrereleaseDuringUpdate: true
 
+          # This gets overly large and meaningless with our existing release patterns
+          omitBody: true
+
           artifacts: sourcemod/build/package/${{ steps.package.outputs.filename }}
           artifactContentType: ${{ steps.package.outputs.content_type }}
           artifactErrorsFailBuild: true
