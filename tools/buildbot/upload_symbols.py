@@ -3,10 +3,13 @@ import shutil
 import sys
 import subprocess
 import os
+import time
 try:
   import urllib.request as urllib
+  import urllib.error as urllib_error
 except ImportError:
   import urllib2 as urllib
+  urllib_error = urllib
 
 if len(sys.argv) < 3:
   sys.stderr.write('Usage: <symbol-file> <dump-syms-cmd> <args...>\n')
@@ -103,7 +106,7 @@ for i, line in enumerate(lines):
   roots[root] = (url, rev)
 
 index = 1
-while lines[index].split(None, 1)[0] == 'INFO':
+while index < len(lines) and lines[index].split(None, 1)[0] == 'INFO':
   index += 1
 
 for root, info in roots.items():
@@ -116,5 +119,26 @@ request = urllib.Request(SYMBOL_SERVER, out)
 request.add_header('Content-Type', 'text/plain')
 if 'BREAKPAD_SYMBOL_SERVER_TOKEN' in os.environ:
   request.add_header('X-Auth', os.environ['BREAKPAD_SYMBOL_SERVER_TOKEN'])
-server_response = urllib.urlopen(request).read().decode('utf8').strip()
-print(server_response)
+
+max_retries = 4
+for attempt in range(max_retries):
+  try:
+    server_response = urllib.urlopen(request).read().decode('utf8').strip()
+    print(server_response)
+    break
+  except urllib_error.HTTPError as e:
+    if e.code < 500:
+      raise
+    if attempt < max_retries - 1:
+      delay = 2 ** (attempt + 2)
+      sys.stderr.write('Symbol upload failed (HTTP {}), retrying in {}s...\n'.format(e.code, delay))
+      time.sleep(delay)
+    else:
+      raise
+  except Exception as e:
+    if attempt < max_retries - 1:
+      delay = 2 ** (attempt + 2)
+      sys.stderr.write('Symbol upload failed ({}), retrying in {}s...\n'.format(e, delay))
+      time.sleep(delay)
+    else:
+      raise
