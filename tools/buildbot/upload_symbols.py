@@ -30,7 +30,7 @@ p = subprocess.Popen(
 )
 stdout, stderr = p.communicate()
 out = stdout.decode('utf8')
-err = stdout.decode('utf8')
+err = stderr.decode('utf8')
 
 with open(symbol_file, 'w') as fp:
   fp.write(out)
