@@ -1,13 +1,13 @@
-name: Continuous Integration
+name: PR Checks
 on: 
-  push:
-    branches:
-     - master
-     - '[0-9]+.[0-9]+-dev'
   pull_request:
     branches:
      - master
      - '[0-9]+.[0-9]+-dev'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   test:
     strategy:
