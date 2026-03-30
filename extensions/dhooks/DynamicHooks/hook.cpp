@@ -31,6 +31,14 @@
 * Adopted to provide similar features to SourceHook by AlliedModders LLC.
 */
 
+// Yes this is bad, but whatever dhooks will be nuked soon
+#ifdef private
+#undef private
+#endif
+#define private public
+#include <../vm/code-allocator.h>
+#undef private
+
 // ============================================================================
 // >> INCLUDES
 // ============================================================================
@@ -642,8 +650,14 @@ void CHook::CreateBridge()
 	// This will still call post hooks, but will skip the original function.
 	masm.ret(m_pCallingConvention->GetPopSize());
 
-	void* base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.length());
-	masm.emitToExecutableMemory(base);
+	void* base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.total_size());
+	sp::LinkedCode code;
+	sp::CodeChunk chunk;
+	chunk.address_ = (uint8_t*)base;
+	chunk.bytes_ = masm.total_size();
+	masm.emitToExecutableMemory(&code);
+	chunk.address_ = nullptr;
+	chunk.bytes_ = 0;
 	m_pBridge = base;
 }
 
@@ -728,8 +742,14 @@ void CHook::CreatePostCallback()
 	masm.jmp(Operand(ExternalAddress(&pRetAddr)));
 
 	// Generate the code
-	void* base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.length());
-	masm.emitToExecutableMemory(base);
+	void* base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.total_size());
+	sp::LinkedCode code;
+	sp::CodeChunk chunk;
+	chunk.address_ = (uint8_t*)base;
+	chunk.bytes_ = masm.total_size();
+	masm.emitToExecutableMemory(&code);
+	chunk.address_ = nullptr;
+	chunk.bytes_ = 0;
 	m_pNewRetAddr = base;
 }
 

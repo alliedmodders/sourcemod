@@ -29,6 +29,28 @@
  * Version: $Id$
  */
 
+// Yes this is bad, but whatever dhooks will be nuked soon
+#ifdef private
+#undef private
+#endif
+#define private public
+#include <../vm/code-allocator.h>
+#undef private
+
+#ifdef WIN32
+#include <windows>
+#else
+#include <sys/mman.h>
+#endif
+
+sp::CodePool::~CodePool() {
+#if defined(_WIN32)
+    VirtualFree(start_, 0, MEM_RELEASE);
+#else
+    munmap(start_, size_);
+#endif
+}
+
 #include "vhook.h"
 #include "vfunc_call.h"
 #include "util.h"
@@ -175,8 +197,14 @@ void *GenerateThunk(HookSetup* hook)
 	masm.pop(ebp); // restore ebp
 	masm.ret();
 
-	void *base = g_pSM->GetScriptingEngine()->AllocatePageMemory(masm.length());
-	masm.emitToExecutableMemory(base);
+	void* base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.total_size());
+	sp::LinkedCode code;
+	sp::CodeChunk chunk;
+	chunk.address_ = (uint8_t*)base;
+	chunk.bytes_ = masm.total_size();
+	masm.emitToExecutableMemory(&code);
+	chunk.address_ = nullptr;
+	chunk.bytes_ = 0;
 	return base;
 }
 #else
@@ -215,8 +243,14 @@ void *GenerateThunk(HookSetup* hook)
 	masm.addl(esp, ecx); // remove arguments
 	masm.jmp(edx); // return to caller
 
-	void *base = g_pSM->GetScriptingEngine()->AllocatePageMemory(masm.length());
-	masm.emitToExecutableMemory(base);
+	void* base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.total_size());
+	sp::LinkedCode code;
+	sp::CodeChunk chunk;
+	chunk.address_ = (uint8_t*)base;
+	chunk.bytes_ = masm.total_size();
+	masm.emitToExecutableMemory(&code);
+	chunk.address_ = nullptr;
+	chunk.bytes_ = 0;
 	return base;
 }
 #endif
