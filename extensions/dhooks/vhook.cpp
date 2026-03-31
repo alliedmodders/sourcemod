@@ -29,13 +29,7 @@
  * Version: $Id$
  */
 
-// Yes this is bad, but whatever dhooks will be nuked soon
-#ifdef private
-#undef private
-#endif
-#define private public
-#include <../vm/code-allocator.h>
-#undef private
+#include "bandaid.h"
 
 #ifdef WIN32
 #include <windows>
@@ -198,13 +192,15 @@ void *GenerateThunk(HookSetup* hook)
 	masm.ret();
 
 	void* base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.total_size());
-	sp::LinkedCode code;
-	sp::CodeChunk chunk;
-	chunk.address_ = (uint8_t*)base;
-	chunk.bytes_ = masm.total_size();
-	masm.emitToExecutableMemory(&code);
-	chunk.address_ = nullptr;
-	chunk.bytes_ = 0;
+	DhookCodeChunk chunk((uint8_t*)base, masm.total_size());
+
+	// Can let dtor call happen
+	LinkedCode* code = (LinkedCode*)new uint8_t[sizeof(LinkedCode)];
+	*((DhookCodeChunk*)&code->chunk) = chunk;
+	masm.emitToExecutableMemory(code);
+
+	delete[] (uint8_t*)code;
+
 	return base;
 }
 #else
@@ -244,13 +240,14 @@ void *GenerateThunk(HookSetup* hook)
 	masm.jmp(edx); // return to caller
 
 	void* base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.total_size());
-	sp::LinkedCode code;
-	sp::CodeChunk chunk;
-	chunk.address_ = (uint8_t*)base;
-	chunk.bytes_ = masm.total_size();
-	masm.emitToExecutableMemory(&code);
-	chunk.address_ = nullptr;
-	chunk.bytes_ = 0;
+	DhookCodeChunk chunk((uint8_t*)base, masm.total_size());
+
+	// Can let dtor call happen
+	LinkedCode* code = (LinkedCode*)new uint8_t[sizeof(LinkedCode)];
+	*((DhookCodeChunk*)&code->chunk) = chunk;
+	masm.emitToExecutableMemory(code);
+
+	delete[] (uint8_t*)code;
 	return base;
 }
 #endif
