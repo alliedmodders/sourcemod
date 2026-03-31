@@ -30,6 +30,7 @@
 *
 * Adopted to provide similar features to SourceHook by AlliedModders LLC.
 */
+#include "bandaid.h"
 
 // ============================================================================
 // >> INCLUDES
@@ -642,8 +643,15 @@ void CHook::CreateBridge()
 	// This will still call post hooks, but will skip the original function.
 	masm.ret(m_pCallingConvention->GetPopSize());
 
-	void* base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.length());
-	masm.emitToExecutableMemory(base);
+	void* base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.total_size());
+	DhookCodeChunk chunk((uint8_t*)base, masm.total_size());
+
+	// Can't let dtor call happen
+	LinkedCode* code = (LinkedCode*)new uint8_t[sizeof(LinkedCode)];
+	*((DhookCodeChunk*)&code->chunk) = chunk;
+	masm.emitToExecutableMemory(code);
+
+	delete[] (uint8_t*)code;
 	m_pBridge = base;
 }
 
@@ -728,8 +736,15 @@ void CHook::CreatePostCallback()
 	masm.jmp(Operand(ExternalAddress(&pRetAddr)));
 
 	// Generate the code
-	void* base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.length());
-	masm.emitToExecutableMemory(base);
+	void* base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.total_size());
+	DhookCodeChunk chunk((uint8_t*)base, masm.total_size());
+
+	// Can't let dtor call happen
+	LinkedCode* code = (LinkedCode*)new uint8_t[sizeof(LinkedCode)];
+	*((DhookCodeChunk*)&code->chunk) = chunk;
+	masm.emitToExecutableMemory(code);
+
+	delete[] (uint8_t*)code;
 	m_pNewRetAddr = base;
 }
 

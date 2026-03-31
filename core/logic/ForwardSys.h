@@ -49,6 +49,7 @@ public: //ICallable
 	virtual int PushArray(cell_t *inarray, unsigned int cells, int flags);
 	virtual int PushString(const char *string);
 	virtual int PushStringEx(char *buffer, size_t length, int sz_flags, int cp_flags);
+	virtual int PushInt64(int64_t value);
 	virtual void Cancel();
 public: //IForward
 	virtual const char *GetForwardName();
