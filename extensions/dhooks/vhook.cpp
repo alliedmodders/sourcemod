@@ -31,20 +31,6 @@
 
 #include "bandaid.h"
 
-#ifdef WIN32
-#include <windows>
-#else
-#include <sys/mman.h>
-#endif
-
-sp::CodePool::~CodePool() {
-#if defined(_WIN32)
-    VirtualFree(start_, 0, MEM_RELEASE);
-#else
-    munmap(start_, size_);
-#endif
-}
-
 #include "vhook.h"
 #include "vfunc_call.h"
 #include "util.h"
@@ -194,7 +180,7 @@ void *GenerateThunk(HookSetup* hook)
 	void* base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.total_size());
 	DhookCodeChunk chunk((uint8_t*)base, masm.total_size());
 
-	// Can let dtor call happen
+	// Can't let dtor call happen
 	LinkedCode* code = (LinkedCode*)new uint8_t[sizeof(LinkedCode)];
 	*((DhookCodeChunk*)&code->chunk) = chunk;
 	masm.emitToExecutableMemory(code);
@@ -242,7 +228,7 @@ void *GenerateThunk(HookSetup* hook)
 	void* base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.total_size());
 	DhookCodeChunk chunk((uint8_t*)base, masm.total_size());
 
-	// Can let dtor call happen
+	// Can't let dtor call happen
 	LinkedCode* code = (LinkedCode*)new uint8_t[sizeof(LinkedCode)];
 	*((DhookCodeChunk*)&code->chunk) = chunk;
 	masm.emitToExecutableMemory(code);

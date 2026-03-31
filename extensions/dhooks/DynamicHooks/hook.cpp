@@ -646,7 +646,7 @@ void CHook::CreateBridge()
 	void* base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.total_size());
 	DhookCodeChunk chunk((uint8_t*)base, masm.total_size());
 
-	// Can let dtor call happen
+	// Can't let dtor call happen
 	LinkedCode* code = (LinkedCode*)new uint8_t[sizeof(LinkedCode)];
 	*((DhookCodeChunk*)&code->chunk) = chunk;
 	masm.emitToExecutableMemory(code);
@@ -739,7 +739,7 @@ void CHook::CreatePostCallback()
 	void* base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.total_size());
 	DhookCodeChunk chunk((uint8_t*)base, masm.total_size());
 
-	// Can let dtor call happen
+	// Can't let dtor call happen
 	LinkedCode* code = (LinkedCode*)new uint8_t[sizeof(LinkedCode)];
 	*((DhookCodeChunk*)&code->chunk) = chunk;
 	masm.emitToExecutableMemory(code);
