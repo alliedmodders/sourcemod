@@ -212,6 +212,7 @@ public void OnConfigsExecuted()
 					 "mapchooser",
 					 MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER)
 		!= null)
+		
 	{
 		if (g_mapFileSerial == -1)
 		{
@@ -336,11 +337,11 @@ public Action Command_SetNextmap(int client, int args)
 
 public Action Command_MapchooserRefresh(int client, int args)
 {
-	CreateTimer(0.0, refreshmapchoosermaplist, _, TIMER_FLAG_NO_MAPCHANGE); // delaying by extra CPU cycles helps to get fresh 'mapcyclefile' map list
+	CreateTimer(0.0, Timer_RefreshMapchooserList, _, TIMER_FLAG_NO_MAPCHANGE); // delaying by extra CPU cycles helps to get fresh 'mapcyclefile' map list
 	return Plugin_Handled;
 }
 
-public Action refreshmapchoosermaplist(Handle timer)
+public Action Timer_RefreshMapchooserList(Handle timer)
 {
 	if (g_HasVoteStarted) return Plugin_Stop;
 
