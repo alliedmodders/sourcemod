@@ -107,23 +107,3 @@ methodmap Handle __nullable__ {
      */
     public native Handle Clone(Handle plugin=INVALID_HANDLE);
 };
-
-/**
- * Do not use this function.  Returns if a Handle and its contents
- * are readable, whereas INVALID_HANDLE only checks for the absence
- * of a Handle.
- *
- * This function is intended only for tests where the validity of a
- * Handle can absolutely not be known.
- *
- * Do not use this to check the return values of functions, or to
- * check if timers should be closed (except in very rare cases).
- * This function is for very specific usage and using it for general
- * purpose routines can and will hide very subtle bugs.
- *
- * @param hndl      Handle to test for validity.
- * @return          True if handle is valid, false otherwise.
- * @deprecated      Do not use this function.
- */
-#pragma deprecated Do not use this function.
-native bool IsValidHandle(Handle hndl);

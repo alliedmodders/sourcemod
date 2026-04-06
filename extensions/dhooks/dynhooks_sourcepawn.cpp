@@ -109,7 +109,7 @@ bool AddDetourPluginHook(HookType_t hookType, CHook *pDetour, HookSetup *setup, 
 	}
 
 	// Add the plugin callback to the detour list.
-	CDynamicHooksSourcePawn *pWrapper = new CDynamicHooksSourcePawn(setup, pDetour, pCallback, hookType == HOOKTYPE_POST);
+	CDynamicHooksSourcePawn *pWrapper = new CDynamicHooksSourcePawn(setup, pDetour, pCallback, pCallback->GetParentRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE, hookType == HOOKTYPE_POST);
 	wrappers->push_back(pWrapper);
 
 	return true;
@@ -375,9 +375,21 @@ ReturnAction_t HandleDetour(HookType_t hookType, CHook* pDetour)
 		if (pWrapper->callConv == CallConv_THISCALL && pWrapper->thisType != ThisPointer_Ignore)
 		{
 			// The this pointer is implicitly always the first argument.
-			void *thisPtr = pDetour->GetArgument<void *>(0);
-			cell_t thisAddr = GetThisPtr(pCallback->GetParentContext(), thisPtr, pWrapper->thisType);
-			pCallback->PushCell(thisAddr);
+			auto thisAddr = pDetour->GetArgument<void *>(0);
+			if (pWrapper->thisType == ThisPointer_CBaseEntity) {
+				if (thisAddr == nullptr) {
+					pWrapper->plugin_callback->PushCell(-1);
+				} else {
+					pWrapper->plugin_callback->PushCell(gamehelpers->EntityToBCompatRef((CBaseEntity *)thisAddr));
+				}
+			} else {
+				if (pWrapper->int64_address) {
+					std::int64_t addr = reinterpret_cast<std::int64_t>(thisAddr);
+					pWrapper->plugin_callback->PushArray(reinterpret_cast<cell_t*>(&addr), 2);
+				} else {
+					pWrapper->plugin_callback->PushCell((cell_t)thisAddr);
+				}
+			}
 		}
 
 		// Create the structure for plugins to change/get the return value if the function returns something.
@@ -519,7 +531,7 @@ ReturnAction_t HandleDetour(HookType_t hookType, CHook* pDetour)
 	return finalRet;
 }
 
-CDynamicHooksSourcePawn::CDynamicHooksSourcePawn(HookSetup *setup, CHook *pDetour, IPluginFunction *pCallback, bool post)
+CDynamicHooksSourcePawn::CDynamicHooksSourcePawn(HookSetup *setup, CHook *pDetour, IPluginFunction *pCallback, bool int64_addr, bool post)
 {
 	this->params = setup->params;
 	this->offset = -1;
@@ -532,6 +544,7 @@ CDynamicHooksSourcePawn::CDynamicHooksSourcePawn(HookSetup *setup, CHook *pDetou
 	this->hookType = setup->hookType;
 	this->m_pDetour = pDetour;
 	this->callConv = setup->callConv;
+	this->int64_address = int64_addr;
 	this->thisFuncCallConv = setup->callConv;
 }
 

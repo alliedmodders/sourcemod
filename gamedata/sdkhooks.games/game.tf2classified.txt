@@ -1,0 +1,140 @@
+"Games"
+{
+	"#default"
+	{
+		"Offsets"
+		{
+			"EntityListeners"
+			{
+				"windows64"	"262200"
+				"linux64"	"262200"
+			}
+			"CanBeAutobalanced"
+			{
+				"windows64"	"520"
+				"linux64"	"523"
+			}
+			"EndTouch"
+			{
+				"windows64"	"118"
+				"linux64"	"119"
+			}
+			"FireBullets"
+			{
+				"windows64"	"130"
+				"linux64"	"131"
+			}
+			"GetMaxHealth"
+			{
+				"windows64"	"135"
+				"linux64"	"136"
+			}
+			// CBasePlayer::NetworkStateChanged_m_hGroundEntity(void*)
+			"GroundEntChanged"
+			{
+				"windows64"	"202"
+				"linux64"	"204"
+			}
+			"OnTakeDamage"
+			{
+				"windows64"	"76"
+				"linux64"	"77"
+			}
+			"OnTakeDamage_Alive"
+			{
+				"windows64"	"314"
+				"linux64"	"315"
+			}
+			"PreThink"
+			{
+				"windows64"	"382"
+				"linux64"	"383"
+			}
+			"PostThink"
+			{
+				"windows64"	"383"
+				"linux64"	"384"
+			}
+			"Reload"
+			{
+				"windows64"	"310"
+				"linux64"	"316"
+			}
+			"SetTransmit"
+			{
+				"windows64"	"22"
+				"linux64"	"23"
+			}
+			"ShouldCollide"
+			{
+				"windows64"	"17"
+				"linux64"	"18"
+			}
+			"Spawn"
+			{
+				"windows64"	"24"
+				"linux64"	"25"
+			}
+			"StartTouch"
+			{
+				"windows64"	"116"
+				"linux64"	"117"
+			}
+			"Think"
+			{
+				"windows64"	"60"
+				"linux64"	"61"
+			}
+			"Touch"
+			{
+				"windows64"	"117"
+				"linux64"	"118"
+			}
+			"TraceAttack"
+			{
+				"windows64"	"74"
+				"linux64"	"75"
+			}
+			"Use"
+			{
+				"windows64"	"115"
+				"linux64"	"116"
+			}
+			"VPhysicsUpdate"
+			{
+				"windows64"	"179"
+				"linux64"	"180"
+			}
+			"Blocked"
+			{
+				"windows64"	"120"
+				"linux64"	"121"
+			}
+			"Weapon_CanSwitchTo"
+			{
+				"windows64"	"307"
+				"linux64"	"308"
+			}
+			"Weapon_CanUse"
+			{
+				"windows64"	"298"
+				"linux64"	"299"
+			}
+			"Weapon_Drop"
+			{
+				"windows64"	"304"
+				"linux64"	"305"
+			}
+			"Weapon_Equip"
+			{
+				"windows64"	"300"
+				"linux64"	"301"
+			}
+			"Weapon_Switch"
+			{
+				"windows64"	"305"
+				"linux64"	"306"
+			}
+		}
+	}
+}

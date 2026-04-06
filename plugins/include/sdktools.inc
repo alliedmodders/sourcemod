@@ -60,10 +60,9 @@ enum SDKCallType
 	SDKCall_Player,         /**< CBasePlayer call */
 	SDKCall_GameRules,      /**< CGameRules call */
 	SDKCall_EntityList,     /**< CGlobalEntityList call */
-	SDKCall_Raw,            /**< |this| pointer with an arbitrary address. This is not available if SM's virtual addresses are enabled */
+	SDKCall_Raw,            /**< |this| pointer with an arbitrary address. You should pass a SourceMod's Address */
 	SDKCall_Server,         /**< CBaseServer call */
 	SDKCall_Engine,         /**< CVEngineServer call */
-	SDKCall_VirtualAddress  /**< |this| pointer with an arbitrary SM virtual address */
 };
 
 enum SDKLibrary
@@ -90,7 +89,7 @@ enum SDKType
 	SDKType_Edict,          /**< edict_t (always as pointer) */
 	SDKType_String,         /**< NULL-terminated string (always as pointer) */
 	SDKType_Bool,           /**< Boolean (any) */
-	SDKType_VirtualAddress, /**< SM Virtual Address */
+	SDKType_Address,        /**< SourceMod's Address */
 };
 
 enum SDKPassMethod
@@ -192,6 +191,7 @@ native Handle EndPrepSDKCall();
  * If the return value is a Vector or QAngles, the SECOND parameter must be a Float[3].
  * If the return value is a string, the THIRD parameter must be a String buffer, and the
  *  FOURTH parameter must be the maximum length.
+ * If the return value is a SourceMod's Address, the SECOND parameter must be an Address variable.
  * All parameters must be passed after the above is followed.  Failure to follow these
  *  rules will result in crashes or wildly unexpected behavior!
  *

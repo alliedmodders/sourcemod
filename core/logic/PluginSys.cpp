@@ -330,10 +330,10 @@ bool CPlugin::ReadInfo()
 	else
 		m_MaxClientsVar = nullptr;
 
-	if (base->FindPubvarByName("PointerSize", &idx) == SP_ERROR_NONE) {
+	if (base->FindPubvarByName("Address_PointerSize", &idx) == SP_ERROR_NONE) {
 		sp_pubvar_t* var = nullptr;
 		if (base->GetPubvarByIndex(idx, &var) == SP_ERROR_NONE && var) {
-			*var->offs = sizeof(void*);
+			*reinterpret_cast<int64_t*>(var->offs) = sizeof(void*);
 		}
 	}
 

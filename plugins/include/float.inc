@@ -35,7 +35,7 @@
 #endif
 #define _float_included
 
-#if !defined __sourcepawn2__
+#if !defined __sourcepawn_intrinsic_float
 /**
  * Converts an integer into a floating point value.
  *
@@ -274,7 +274,7 @@ stock int RoundFloat(float value)
 /**
  * User defined operators.
  */
-#if !defined __sourcepawn2__
+#if !defined __sourcepawn_intrinsic_float
 
 // Internal aliases for backwards compatibility.
 native float __FLOAT_MUL__(float a, float b);
@@ -410,7 +410,7 @@ stock float operator%(int oper1, float oper2)
 {
 	return __FLOAT_MOD__(float(oper1), oper2);
 }
-#endif // __sourcepawn2__
+#endif // __sourcepawn_intrinsic_float
 
 #define FLOAT_PI 3.1415926535897932384626433832795
 

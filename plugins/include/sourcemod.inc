@@ -78,6 +78,14 @@ struct Plugin
 #include <commandline>
 #include <entitylump>
 
+typedef Address = int64;
+public const int64 __Int64_Address__ = 0;
+
+/**< Equivallent to nullptr */
+public const Address Address_Null = 0;
+/**< Size of a pointer in bytes (same as `sizeof(void*)`) */
+public const Address Address_PointerSize = 0;
+
 enum APLRes
 {
 	APLRes_Success = 0,     /**< Plugin should load */
@@ -723,11 +731,6 @@ enum NumberType
     NumberType_Int8,
     NumberType_Int16,
     NumberType_Int32
-};
-
-enum Address
-{
-    Address_Null = 0               // a typical invalid result when an address lookup fails
 };
 
 /**

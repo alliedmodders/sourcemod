@@ -51,7 +51,7 @@ extern DetourMap g_pPostDetours;
 
 class CDynamicHooksSourcePawn : public DHooksInfo {
 public:
-	CDynamicHooksSourcePawn(HookSetup *setup, CHook *pDetour, IPluginFunction *pCallback, bool post);
+	CDynamicHooksSourcePawn(HookSetup *setup, CHook *pDetour, IPluginFunction *pCallback, bool int64_address, bool post);
 
 	HookReturnStruct *GetReturnStruct();
 	HookParamsStruct *GetParamStruct();

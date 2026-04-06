@@ -725,8 +725,13 @@ static cell_t GetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 static cell_t LoadEntityFromHandleAddress(IPluginContext *pContext, const cell_t *params)
 {
 	void *addr = reinterpret_cast<void*>(params[1]);
-	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
-		addr = g_SourceMod.FromPseudoAddress(params[1]);
+	if (pContext->GetRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE) {
+		cell_t* sp_addr;
+		if (int err = pContext->LocalToPhysAddr(params[1], &sp_addr); err != SP_ERROR_NONE) {
+			return pContext->ThrowNativeErrorEx(err, "Could not read argument");
+		}
+		auto value = *reinterpret_cast<int64_t*>(sp_addr);
+		addr = (void*)value;
 	}
 
 	if (addr == NULL)
@@ -835,8 +840,13 @@ static cell_t SetEntDataEnt2(IPluginContext *pContext, const cell_t *params)
 static cell_t StoreEntityToHandleAddress(IPluginContext *pContext, const cell_t *params)
 {
 	void *addr = reinterpret_cast<void*>(params[1]);
-	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
-		addr = g_SourceMod.FromPseudoAddress(params[1]);
+	if (pContext->GetRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE) {
+		cell_t* sp_addr;
+		if (int err = pContext->LocalToPhysAddr(params[1], &sp_addr); err != SP_ERROR_NONE) {
+			return pContext->ThrowNativeErrorEx(err, "Could not read argument");
+		}
+		auto value = *reinterpret_cast<int64_t*>(sp_addr);
+		addr = (void*)value;
 	}
 
 	if (addr == NULL)
@@ -2764,14 +2774,23 @@ static cell_t SetEntityFlags(IPluginContext *pContext, const cell_t *params)
 
 static cell_t GetEntityAddress(IPluginContext *pContext, const cell_t *params)
 {
-	CBaseEntity * pEntity = GetEntity(params[1]);
+	cell_t shift_param = 0;
+	if (pContext->GetRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE) {
+		shift_param = 1;
+	}
+
+	CBaseEntity * pEntity = GetEntity(params[shift_param + 1]);
 	if (!pEntity)
 	{
 		return pContext->ThrowNativeError("Entity %d (%d) is invalid", g_HL2.ReferenceToIndex(params[1]), params[1]);
 	}
 
-	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
-		return g_SourceMod.ToPseudoAddress(pEntity);
+	if (shift_param != 0) {
+		cell_t* sp_addr;
+		if (int err = pContext->LocalToPhysAddr(params[1], &sp_addr); err != SP_ERROR_NONE) {
+			return pContext->ThrowNativeErrorEx(err, "Could not read argument");
+		}
+		*reinterpret_cast<int64_t*>(sp_addr) = reinterpret_cast<uintptr_t>(pEntity);
 	}
 	return reinterpret_cast<uintptr_t>(pEntity);
 }

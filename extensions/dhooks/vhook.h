@@ -159,6 +159,7 @@ public:
 	ReturnType returnType;
 	bool post;
 	IPluginFunction *plugin_callback;
+	bool int64_address;
 	int entity;
 	ThisPointerType thisType;
 	HookType hookType;
@@ -339,7 +340,6 @@ public:
 };
 
 size_t GetStackArgsSize(DHooksCallback *dg);
-cell_t GetThisPtr(IPluginContext* pContext, void *iface, ThisPointerType type);
 
 extern IBinTools *g_pBinTools;
 extern HandleType_t g_HookParamsHandle;

@@ -446,6 +446,12 @@ int CForward::PushCell(cell_t cell)
 	return SP_ERROR_NONE;
 }
 
+int CForward::PushInt64(int64_t value)
+{
+	// Not supported yet
+	return SetError(SP_ERROR_PARAM);
+}
+
 int CForward::PushFloat(float number)
 {
 	if (m_curparam < m_numparams)

@@ -174,9 +174,14 @@ cell_t Native_CreateHook(IPluginContext *pContext, const cell_t *params)
 //native Handle:DHookCreateDetour(Address:funcaddr, CallingConvention:callConv, ReturnType:returntype, ThisPointerType:thistype);
 cell_t Native_CreateDetour(IPluginContext *pContext, const cell_t *params)
 {
-	void* addr = reinterpret_cast<void*>(params[1]);
-	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
-		addr = g_pSM->FromPseudoAddress(params[1]);
+	void *addr = reinterpret_cast<void*>(params[1]);
+	if (pContext->GetRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE) {
+		cell_t* sp_addr;
+		if (int err = pContext->LocalToPhysAddr(params[1], &sp_addr); err != SP_ERROR_NONE) {
+			return pContext->ThrowNativeErrorEx(err, "Could not read argument");
+		}
+		auto value = *reinterpret_cast<int64_t*>(sp_addr);
+		addr = (void*)value;
 	}
 
 	HookSetup *setup = new HookSetup((ReturnType)params[3], PASSFLAG_BYVAL, (CallingConvention)params[2], (ThisPointerType)params[4], addr);
@@ -646,9 +651,14 @@ cell_t HookRawImpl(IPluginContext *pContext, const cell_t *params, int callbackI
 	if (removalcbIndex > 0)
 		removalcb = pContext->GetFunctionById(params[removalcbIndex]);
 
-	void* iface = reinterpret_cast<void*>(params[3]);
-	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
-		iface = g_pSM->FromPseudoAddress(params[3]);
+	void *iface = reinterpret_cast<void*>(params[3]);
+	if (pContext->GetRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE) {
+		cell_t* sp_addr;
+		if (int err = pContext->LocalToPhysAddr(params[3], &sp_addr); err != SP_ERROR_NONE) {
+			return pContext->ThrowNativeErrorEx(err, "Could not read argument");
+		}
+		auto value = *reinterpret_cast<int64_t*>(sp_addr);
+		iface = (void*)value;
 	}
 
 	for(int i = g_pHooks.size() -1; i >= 0; i--)
@@ -1469,19 +1479,24 @@ cell_t Native_IsNullParam(IPluginContext *pContext, const cell_t *params)
 //native Address:DHookGetParamAddress(Handle:hParams, num);
 cell_t Native_GetParamAddress(IPluginContext *pContext, const cell_t *params)
 {
+	cell_t shift_param = 0;
+	if (pContext->GetRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE) {
+		shift_param = 1;
+	}
+
 	HookParamsStruct *paramStruct;
 
-	if(!GetCallbackArgHandleIfValidOrError(g_HookParamsHandle, g_HookReturnHandle, (void **)&paramStruct, pContext, params[1]))
+	if(!GetCallbackArgHandleIfValidOrError(g_HookParamsHandle, g_HookReturnHandle, (void **)&paramStruct, pContext, params[shift_param + 1]))
 	{
 		return 0;
 	}
 
-	if(params[2] <= 0 || params[2] > (int)paramStruct->dg->params.size())
+	if(params[shift_param + 2] <= 0 || params[shift_param + 2] > (int)paramStruct->dg->params.size())
 	{
-		return pContext->ThrowNativeError("Invalid param number %i max params is %i", params[2], paramStruct->dg->params.size());
+		return pContext->ThrowNativeError("Invalid param number %i max params is %i", params[shift_param + 2], paramStruct->dg->params.size());
 	}
 
-	int index = params[2] - 1;
+	int index = params[shift_param + 2] - 1;
 
 	HookParamType type = paramStruct->dg->params.at(index).type;
 	if(type != HookParamType_StringPtr && type != HookParamType_CharPtr && type != HookParamType_VectorPtr && type != HookParamType_CBaseEntity && type != HookParamType_ObjectPtr && type != HookParamType_Edict && type != HookParamType_Unknown)
@@ -1491,10 +1506,16 @@ cell_t Native_GetParamAddress(IPluginContext *pContext, const cell_t *params)
 
 	size_t offset = GetParamOffset(paramStruct, index);
 
-	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
-		return g_pSM->ToPseudoAddress(*(void**)((intptr_t)paramStruct->orgParams + offset));
+	auto return_ptr = *(void**)((intptr_t)paramStruct->orgParams + offset);
+
+	if (shift_param != 0) {
+		cell_t* sp_addr;
+		if (int err = pContext->LocalToPhysAddr(params[1], &sp_addr); err != SP_ERROR_NONE) {
+			return pContext->ThrowNativeErrorEx(err, "Could not read argument");
+		}
+		*reinterpret_cast<int64_t*>(sp_addr) = reinterpret_cast<uintptr_t>(return_ptr);
 	}
-	return *(cell_t *)((intptr_t)paramStruct->orgParams + offset);
+	return reinterpret_cast<uintptr_t>(return_ptr);
 }
 
 sp_nativeinfo_t g_Natives[] = 

@@ -164,7 +164,7 @@ size_t ValveParamToBinParam(ValveType type,
 				return sizeof(float);
 			}
 		}
-	case Valve_VirtualAddress:
+	case Valve_SMAddress:
 	    {
 			info->flags = flags;
 			if (flags & PASSFLAG_ASPOINTER)
@@ -293,16 +293,18 @@ DataStatus EncodeValveParam(IPluginContext *pContext,
 
 			return Data_Okay;
 		}
-	case Valve_VirtualAddress:
+	case Valve_SMAddress:
 	    {
-			cell_t *addr;
-			pContext->LocalToPhysAddr(param, &addr);
-
 			if (data->flags & PASSFLAG_ASPOINTER)
 			{
 				buffer = *(void **)buffer;
 			}
-			*addr = g_pSM->ToPseudoAddress(*(void**)buffer);
+
+			cell_t* sp_addr;
+			if (pContext->LocalToPhysAddr(param, &sp_addr) != SP_ERROR_NONE) {
+				return Data_Fail;
+			}
+			*reinterpret_cast<int64_t*>(sp_addr) = reinterpret_cast<intptr_t>(*(void**)buffer);
 
 			return Data_Okay;
 		}
@@ -613,7 +615,7 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 			*(char **)buffer = addr;
 			return Data_Okay;
 		}
-	case Valve_VirtualAddress:
+	case Valve_SMAddress:
 	    {
 			if (data->decflags & VDECODE_FLAG_BYREF)
 			{
@@ -626,7 +628,14 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 				*(void **)buffer = (unsigned char *)_buffer + pCall->stackEnd + data->obj_offset;
 				buffer = *(void **)buffer;
 			}
-			void* addr = g_pSM->FromPseudoAddress(param);
+			
+			cell_t* sp_addr;
+			if (pContext->LocalToPhysAddr(param, &sp_addr) != SP_ERROR_NONE) {
+				return Data_Fail;
+			}
+			void* addr = (void*)(*reinterpret_cast<int64_t*>(sp_addr));
+
+
 			if (addr == nullptr && (data->decflags & VDECODE_FLAG_ALLOWNULL) == 0)
 			{
 				pContext->ThrowNativeError("NULL Address not allowed");

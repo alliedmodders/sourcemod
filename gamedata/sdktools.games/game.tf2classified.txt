@@ -1,0 +1,132 @@
+"Games"
+{
+	/* Team Fortress 2 Classified STEAM BUILD */
+	"#default"
+	{
+		"Offsets"
+		{
+			"SetOwnerEntity"
+			{
+				"windows64"	"18"
+				"linux64"	"19"
+			}
+			"GiveNamedItem"
+			{
+				"windows64"	"453"
+				"linux64"	"454"
+			}
+			"RemovePlayerItem"
+			{
+				"windows64"	"311"
+				"linux64"	"312"
+			}
+			"Weapon_GetSlot"
+			{
+				"windows64"	"309"
+				"linux64"	"310"
+			}
+			"Ignite"
+			{
+				"windows64"	"242"
+				"linux64"	"243"
+			}
+			"Extinguish"
+			{
+				"windows64"	"246"
+				"linux64"	"247"
+			}
+			"Teleport"
+			{
+				"windows64"	"126"
+				"linux64"	"127"
+			}
+			"CommitSuicide"
+			{
+				"windows64"	"498"
+				"linux64"	"498"
+			}
+			"GetVelocity"
+			{
+				"windows64"	"161"
+				"linux64"	"162"
+			}
+			"EyeAngles"
+			{
+				"windows64"	"152"
+				"linux64"	"153"
+			}
+			// SetModel
+			"SetEntityModel"
+			{
+				"windows64"	"26"
+				"linux64"	"27"
+			}
+			"AcceptInput"
+			{
+				"windows64"	"40"
+				"linux64"	"41"
+			}
+			// CTFPlayer::Weapon_Equip
+			"WeaponEquip"
+			{
+				"windows64"	"300"
+				"linux64"	"301"
+			}
+			"Activate"
+			{
+				"windows64"	"37"
+				"linux64"	"38"
+			}
+			// CTFPlayer::PlayerRunCommand
+			"PlayerRunCmd"
+			{
+				"windows64"	"473"
+				"linux64"	"474"
+			}
+			"GiveAmmo"
+			{
+				"windows64"	"290"
+				"linux64"	"291"
+			}
+			"GetAttachment"
+			{
+				"windows64"	"238"
+				"linux64"	"239"
+			}
+		}
+		
+		"Keys"
+		{
+			"GameRulesProxy"	"CTFGameRulesProxy"
+			"GameRulesDataTable" "tf_gamerules_data"
+		}
+	}
+	
+	"#default"
+	{
+		"Signatures"
+		{
+			"FireOutput"
+			{
+				"library"	"server"
+				"windows64"	"@?FireOutput@CBaseEntityOutput@@QEAAXVvariant_t@@PEAVCBaseEntity@@1M@Z"
+				"linux64"	"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+			}
+		}
+	}
+	
+	"#default"
+	{
+		"Signatures"
+		{
+			"LookupAttachment"
+			{
+				/* CBaseAnimating::LookupAttachment */
+				/* String: "vehicle_driver_eyes", middle length top function, with 4 calls, pick the first one. */
+				"library"	"server"
+				"windows64"	"@?LookupAttachment@CBaseAnimating@@QEAAHPEBD@Z"
+				"linux64"	"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
+			}
+		}
+	}
+}

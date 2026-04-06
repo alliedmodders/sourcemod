@@ -29,6 +29,8 @@
  * Version: $Id$
  */
 
+#include "bandaid.h"
+
 #include "vhook.h"
 #include "vfunc_call.h"
 #include "util.h"
@@ -175,8 +177,16 @@ void *GenerateThunk(HookSetup* hook)
 	masm.pop(ebp); // restore ebp
 	masm.ret();
 
-	void *base = g_pSM->GetScriptingEngine()->AllocatePageMemory(masm.length());
-	masm.emitToExecutableMemory(base);
+	void* base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.total_size());
+	DhookCodeChunk chunk((uint8_t*)base, masm.total_size());
+
+	// Can't let dtor call happen
+	LinkedCode* code = (LinkedCode*)new uint8_t[sizeof(LinkedCode)];
+	*((DhookCodeChunk*)&code->chunk) = chunk;
+	masm.emitToExecutableMemory(code);
+
+	delete[] (uint8_t*)code;
+
 	return base;
 }
 #else
@@ -215,8 +225,15 @@ void *GenerateThunk(HookSetup* hook)
 	masm.addl(esp, ecx); // remove arguments
 	masm.jmp(edx); // return to caller
 
-	void *base = g_pSM->GetScriptingEngine()->AllocatePageMemory(masm.length());
-	masm.emitToExecutableMemory(base);
+	void* base = smutils->GetScriptingEngine()->AllocatePageMemory(masm.total_size());
+	DhookCodeChunk chunk((uint8_t*)base, masm.total_size());
+
+	// Can't let dtor call happen
+	LinkedCode* code = (LinkedCode*)new uint8_t[sizeof(LinkedCode)];
+	*((DhookCodeChunk*)&code->chunk) = chunk;
+	masm.emitToExecutableMemory(code);
+
+	delete[] (uint8_t*)code;
 	return base;
 }
 #endif
@@ -465,20 +482,6 @@ HookReturnStruct *GetReturnStruct(DHooksCallback *dg)
 	return res;
 }
 
-cell_t GetThisPtr(IPluginContext* pContext, void *iface, ThisPointerType type)
-{
-	if (type == ThisPointer_CBaseEntity)
-	{
-		if (!iface)
-			return -1;
-		return gamehelpers->EntityToBCompatRef((CBaseEntity *)iface);
-	}
-	if (pContext->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) == SP_ERROR_NONE) {
-		return g_pSM->ToPseudoAddress(iface);
-	}
-	return (cell_t)iface;
-}
-
 #if defined( WIN32 ) && !defined( KE_ARCH_X64 )
 void *Callback(DHooksCallback *dg, void **argStack, size_t *argsizep)
 #else
@@ -499,7 +502,21 @@ void *Callback(DHooksCallback *dg, void **argStack)
 
 	if(dg->thisType == ThisPointer_CBaseEntity || dg->thisType == ThisPointer_Address)
 	{
-		dg->plugin_callback->PushCell(GetThisPtr(dg->plugin_callback->GetParentContext(), g_SHPtr->GetIfacePtr(), dg->thisType));
+		auto thisAddr = g_SHPtr->GetIfacePtr();
+		if (dg->thisType == ThisPointer_CBaseEntity) {
+			if (thisAddr == nullptr) {
+				dg->plugin_callback->PushCell(-1);
+			} else {
+				dg->plugin_callback->PushCell(gamehelpers->EntityToBCompatRef((CBaseEntity *)thisAddr));
+			}
+		} else {
+			if (dg->int64_address) {
+				std::int64_t addr = reinterpret_cast<std::int64_t>(thisAddr);
+				dg->plugin_callback->PushArray(reinterpret_cast<cell_t*>(&addr), 2);
+			} else {
+				dg->plugin_callback->PushCell((cell_t)thisAddr);
+			}
+		}
 	}
 	if(dg->returnType != ReturnType_Void)
 	{
@@ -683,7 +700,21 @@ float Callback_float(DHooksCallback *dg, void **argStack)
 
 	if(dg->thisType == ThisPointer_CBaseEntity || dg->thisType == ThisPointer_Address)
 	{
-		dg->plugin_callback->PushCell(GetThisPtr(dg->plugin_callback->GetParentContext(), g_SHPtr->GetIfacePtr(), dg->thisType));
+		auto thisAddr = g_SHPtr->GetIfacePtr();
+		if (dg->thisType == ThisPointer_CBaseEntity) {
+			if (thisAddr == nullptr) {
+				dg->plugin_callback->PushCell(-1);
+			} else {
+				dg->plugin_callback->PushCell(gamehelpers->EntityToBCompatRef((CBaseEntity *)thisAddr));
+			}
+		} else {
+			if (dg->int64_address) {
+				std::int64_t addr = reinterpret_cast<std::int64_t>(thisAddr);
+				dg->plugin_callback->PushArray(reinterpret_cast<cell_t*>(&addr), 2);
+			} else {
+				dg->plugin_callback->PushCell((cell_t)thisAddr);
+			}
+		}
 	}
 
 	returnStruct = GetReturnStruct(dg);
@@ -840,7 +871,21 @@ SDKVector *Callback_vector(DHooksCallback *dg, void **argStack)
 
 	if(dg->thisType == ThisPointer_CBaseEntity || dg->thisType == ThisPointer_Address)
 	{
-		dg->plugin_callback->PushCell(GetThisPtr(dg->plugin_callback->GetParentContext(), g_SHPtr->GetIfacePtr(), dg->thisType));
+		auto thisAddr = g_SHPtr->GetIfacePtr();
+		if (dg->thisType == ThisPointer_CBaseEntity) {
+			if (thisAddr == nullptr) {
+				dg->plugin_callback->PushCell(-1);
+			} else {
+				dg->plugin_callback->PushCell(gamehelpers->EntityToBCompatRef((CBaseEntity *)thisAddr));
+			}
+		} else {
+			if (dg->int64_address) {
+				std::int64_t addr = reinterpret_cast<std::int64_t>(thisAddr);
+				dg->plugin_callback->PushArray(reinterpret_cast<cell_t*>(&addr), 2);
+			} else {
+				dg->plugin_callback->PushCell((cell_t)thisAddr);
+			}
+		}
 	}
 
 	returnStruct = GetReturnStruct(dg);
@@ -994,7 +1039,21 @@ string_t *Callback_stringt(DHooksCallback *dg, void **argStack)
 
 	if(dg->thisType == ThisPointer_CBaseEntity || dg->thisType == ThisPointer_Address)
 	{
-		dg->plugin_callback->PushCell(GetThisPtr(dg->plugin_callback->GetParentContext(), g_SHPtr->GetIfacePtr(), dg->thisType));
+		auto thisAddr = g_SHPtr->GetIfacePtr();
+		if (dg->thisType == ThisPointer_CBaseEntity) {
+			if (thisAddr == nullptr) {
+				dg->plugin_callback->PushCell(-1);
+			} else {
+				dg->plugin_callback->PushCell(gamehelpers->EntityToBCompatRef((CBaseEntity *)thisAddr));
+			}
+		} else {
+			if (dg->int64_address) {
+				std::int64_t addr = reinterpret_cast<std::int64_t>(thisAddr);
+				dg->plugin_callback->PushArray(reinterpret_cast<cell_t*>(&addr), 2);
+			} else {
+				dg->plugin_callback->PushCell((cell_t)thisAddr);
+			}
+		}
 	}
 
 	returnStruct = GetReturnStruct(dg);
