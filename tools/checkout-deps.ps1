@@ -75,7 +75,7 @@ if (-not (Test-Path "sourcemod" -PathType Container))
     Exit 1
 }
 
-Get-Repository -Name "mmsource-1.12" -Branch "mmsource-1.12" -Repo "https://github.com/alliedmodders/metamod-source.git"
+Get-Repository -Name "mmsource-1.12" -Branch "1.12-dev" -Repo "https://github.com/alliedmodders/metamod-source.git"
 
 if (-not (Test-Path "hl2sdk-proxy-repo" -PathType Container))
 {
