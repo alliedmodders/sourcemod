@@ -1,4 +1,4 @@
-name: Build master branch
+name: Build Release
 on:
   push:
     branches:
@@ -9,7 +9,7 @@ env:
   DUMP_SYMS_VERSION: '2.3.7'
   # Used for caching
   # TODO: Handle this better so that we don't have to update this in lockstep with checkout-deps
-  MYSQL_VERSION: '5.7'
+  MYSQL_VERSION: '5.5'
   MMSOURCE_VERSION: '1.12'
 jobs:
   build:
