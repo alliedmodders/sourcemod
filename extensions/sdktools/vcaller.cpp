@@ -546,9 +546,9 @@ static cell_t SDKCall(IPluginContext *pContext, const cell_t *params)
 			}
 			return *addr ? 1 : 0;
         } else if (vc->retinfo->vtype == Valve_SMAddress) {
-			if (numparams < 3)
+			if (numparams < 2)
 			{
-				return pContext->ThrowNativeError("Expected argument (3) for VirtualAddress storage");
+				return pContext->ThrowNativeError("Expected argument (2) for Address storage");
 			}
 			void *addr = *(void **)vc->retbuf;
             if (vc->retinfo->flags & PASSFLAG_ASPOINTER)
