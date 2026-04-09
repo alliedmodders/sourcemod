@@ -318,7 +318,7 @@ inline bool IsPathSepChar(char c)
 #endif
 }
 
-void SM_ParseConfig(FILE *fp, List<std::string> &cvars_list)
+void SM_ParseConfig(FILE *fp, ke::HashMap<std::string, std::string, StringPolicy> &cvars_list)
 {
 	char line[4096];
 	char cvar_name[256];
@@ -358,24 +358,46 @@ void SM_ParseConfig(FILE *fp, List<std::string> &cvars_list)
 			continue;
 		}
 
-		cvars_list.push_back(cvar_name);
-	}
-}
-
-bool SM_CvarExistsInConfig(List<std::string> cvars, const char *cvar_name)
-{
-	for (List<std::string>::iterator it = cvars.begin(); it != cvars.end(); it++)
-	{
-		if (strcmp(cvar_name, it->c_str()) == 0)
+		auto p = cvars_list.findForAdd(cvar_name);
+		if (p.found())
 		{
-			return true;
+			continue;
 		}
-	}
 
-	return false;
+		// Remove spaces and tabs before the value
+		while (*ptr == ' ' || *ptr == '\t')
+        	ptr++;
+
+		char *value_start = ptr;
+		char *value_end = value_start + strlen(value_start);
+
+		while (value_end > value_start &&
+			(*(value_end - 1) == '\n' ||
+			*(value_end - 1) == '\r' ||
+			*(value_end - 1) == ' '  ||
+			*(value_end - 1) == '\t' ||
+			*(value_end - 1) == '"'))
+		{
+			value_end--;
+		}
+
+		*value_end = '\0';
+
+		if (*value_start == '"')
+		{
+			value_start++;
+		}
+
+		cvars_list.add(p, cvar_name, value_start);
+	}
 }
 
-bool SM_CvarExistsInPlugin(List<const ConVar *> convars, const char *cvar_name)
+bool SM_CvarExistsInConfig(ke::HashMap<std::string, std::string, StringPolicy> &cvars, const char *cvar_name)
+{
+	return cvars.find(cvar_name).found();
+}
+
+bool SM_CvarExistsInPlugin(List<const ConVar *> &convars, const char *cvar_name)
 {
 	for (List<const ConVar *>::iterator iter = convars.begin(); iter != convars.end(); iter++)
 	{
@@ -480,7 +502,8 @@ bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 	List<const ConVar *>::iterator iter;
 	float x;
 
-	List<std::string> existing_cvars;
+	ke::HashMap<std::string, std::string, StringPolicy> existing_cvars;
+	existing_cvars.init();
 	bool needs_regeneration = false;
 
 	if (!will_create)
@@ -562,7 +585,19 @@ cfg_generate:
 		{
 			fprintf(fp, "// Maximum: \"%02f\"\n", x);
 		}
-		fprintf(fp, "%s \"%s\"\n", cvar->GetName(), cvar->GetDefault());
+
+		const char *value = cvar->GetDefault();
+
+		if (needs_regeneration)
+		{
+			auto p = existing_cvars.find(cvar->GetName());
+			if (p.found())
+			{
+				value = p->value.c_str();
+			}
+		}
+
+		fprintf(fp, "%s \"%s\"\n", cvar->GetName(), value);
 		fprintf(fp, "\n");
 	}
 	fprintf(fp, "\n");
@@ -609,9 +644,9 @@ cfg_read:
 	 */
 	if (!needs_regeneration)
 	{
-		for (List<std::string>::iterator it = existing_cvars.begin(); it != existing_cvars.end(); it++)
+		for (auto it = existing_cvars.iter(); !it.empty(); it.next())
 		{
-			if (!SM_CvarExistsInPlugin(*convars, it->c_str()))
+			if (!SM_CvarExistsInPlugin(*convars, it->key.c_str()))
 			{
 				needs_regeneration = true;
 				break;
