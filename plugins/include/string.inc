@@ -224,7 +224,7 @@ native int StringToInt64(const char[] str, int result[2], int nBase=10);
 native int IntToString(int num, char[] str, int maxlength);
 
 /**
- * Converts a 64-bit integer to a string.
+ * Converts a 64-bit integer in the legacy 2-cell representation to a string.
  *
  * @param num           Array containing the upper and lower
  *                      32-bits of a 64-bit integer.
@@ -234,6 +234,20 @@ native int IntToString(int num, char[] str, int maxlength);
  *                      not including the null terminator.
  */
 native int Int64ToString(const int num[2], char[] str, int maxlength);
+
+/**
+ * Converts an int64 value to a string.
+ *
+ * @param num           int64 value to convert.
+ * @param str           Buffer to store string in.
+ * @param maxlength     Maximum length of string buffer.
+ * @return              Number of characters written to the buffer,
+ *                      not including the null terminator.
+ */
+stock int Int64ToStringEx(int64 num, char[] str, int maxlength)
+{
+	return Format(str, maxlength, "%li", num);
+}
 
 /** 
  * Converts a string to a floating point number.
