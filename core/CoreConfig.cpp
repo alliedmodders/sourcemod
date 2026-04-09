@@ -589,9 +589,9 @@ cfg_read:
 	{
 		const ConVar *cvar = (*iter);
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-			if (cvar->IsFlagSet(FCVAR_DONTRECORD))
+		if (cvar->IsFlagSet(FCVAR_DONTRECORD))
 #else
-			if (cvar->IsBitSet(FCVAR_DONTRECORD))
+		if (cvar->IsBitSet(FCVAR_DONTRECORD))
 #endif
 		{
 			continue;
