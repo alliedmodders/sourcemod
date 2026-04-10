@@ -434,7 +434,7 @@ void AddBinary(char **buf_p, size_t &maxlen, unsigned int val, int width, int fl
 	*buf_p = buf;
 }
 
-void AddUInt(char **buf_p, size_t &maxlen, unsigned int val, int width, int flags)
+void AddUInt(char **buf_p, size_t &maxlen, uint64_t val, int width, int flags)
 {
 	char text[32];
 	int digits;
@@ -478,24 +478,23 @@ void AddUInt(char **buf_p, size_t &maxlen, unsigned int val, int width, int flag
 	*buf_p = buf;
 }
 
-void AddInt(char **buf_p, size_t &maxlen, int val, int width, int flags)
+void AddInt(char **buf_p, size_t &maxlen, int64_t val, int width, int flags)
 {
 	char text[32];
 	int digits;
-	int signedVal;
+	int64_t signedVal;
 	char *buf;
-	unsigned int unsignedVal;
+	uint64_t unsignedVal;
 
 	digits = 0;
 	signedVal = val;
 	if (val < 0)
 	{
-		/* we want the unsigned version */
-		unsignedVal = abs(val);
+		unsignedVal = 0 - static_cast<uint64_t>(val);
 	}
 	else
 	{
-		unsignedVal = val;
+		unsignedVal = static_cast<uint64_t>(val);
 	}
 
 	do
@@ -1115,6 +1114,31 @@ reswitch:
 			{
 				flags |= ZEROPAD;
 				goto rflag;
+			}
+		case 'l':
+			{
+				CHECK_ARGS(0);
+				ch = *fmt++;
+
+				if (ch != 'd' && ch != 'i' && ch != 'u')
+				{
+					return pCtx->ThrowNativeError("Invalid formatter. Only %%ld, %%li, %%lu are allowed.");
+				}
+
+				cell_t *addr;
+				pCtx->LocalToPhysAddr(params[arg], &addr);
+
+				if (ch == 'u')
+				{
+					AddUInt(&buf_p, llen, *reinterpret_cast<uint64_t *>(addr), width, flags);
+				}
+				else
+				{
+					AddInt(&buf_p, llen, *reinterpret_cast<int64_t *>(addr), width, flags);
+				}
+
+				arg++;
+				break;
 			}
 		case '1':
 		case '2':

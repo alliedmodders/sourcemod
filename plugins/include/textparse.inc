@@ -191,7 +191,7 @@ methodmap SMCParser < Handle
 	// @param buffer        A string buffer for the error (contents undefined on failure).
 	// @param buf_max       The maximum size of the buffer.
 	// @return              The number of characters written to buffer.
-	public native void GetErrorString(SMCError error, char[] buffer, int buf_max);
+	public native bool GetErrorString(SMCError error, char[] buffer, int buf_max);
 };
 
 /**

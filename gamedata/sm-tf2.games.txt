@@ -21,7 +21,7 @@
 				/* String : -> "afterburn_immunity"*/
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x51\x56\x8B\xF1\x8B\x8E\x2A\x2A\x2A\x2A\x8B\x01\x8B"
-				"windows64"	"\x40\x53\x41\x54\x41\x56\x48\x83\xEC\x60"
+				"windows64"	"\x40\x53\x41\x54\x41\x56\x48\x83\xEC\x2A\x48\x8B\xD9"
 				"linux"		"@_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef"
 				"linux64"	"@_ZN15CTFPlayerShared4BurnEP9CTFPlayerP13CTFWeaponBasef"
 			}
@@ -32,7 +32,7 @@
 				
 				"library"	"server"
 				"windows"	"\x56\x8B\xF1\x57\xF7\x86\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x2A\x74\x17\x8B"
-				"windows64"	"\x48\x89\x5C\x24\x10\x57\x48\x83\xEC\x40\xF7\x81\xF0\x00\x00\x00\x00\x00\x02\x00"
+				"windows64"	"\x48\x89\x5C\x24\x2A\x48\x89\x74\x24\x2A\x57\x48\x83\xEC\x2A\xF7\x81"
 				"linux"		"@_ZN15CTFPlayerShared14RemoveDisguiseEv"
 				"linux64"	"@_ZN15CTFPlayerShared14RemoveDisguiseEv"
 			}
@@ -62,7 +62,7 @@
 				/* String: "#TF_HALLOWEEN_MERASMUS_YOU_ARE_BOMB" -> walk back the graph, right before there should two subroutines call (CTFPlayerShared::AddCond) with 0x20 & 0x35 as parameter */
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\xEC\x2A\x57\x8B\xF9\x8B\x8F\x2A\x2A\x2A\x2A\x85\xC9\x0F\x84\x2A\x2A\x2A\x2A\x8B\x01\x8B"
-				"windows64"	"\x48\x89\x5C\x24\x18\x48\x89\x7C\x24\x20\x41\x56\x48\x83\xEC\x40"
+				"windows64"	"\x40\x53\x57\x41\x57\x48\x83\xEC\x2A\x48\x8B\xF9"
 				"linux"		"@_ZN15CTFPlayerShared7AddCondE7ETFCondfP11CBaseEntity"
 				"linux64"	"@_ZN15CTFPlayerShared7AddCondE7ETFCondfP11CBaseEntity"
 			}
@@ -72,7 +72,7 @@
 				/* String: "damage_prevented" */
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\xEC\x2A\x53\x8B\x5D\x2A\x57\x53\x8B\xF9\xE8"
-				"windows64"	"\x40\x53\x57\x41\x56\x48\x83\xEC\x20\x45\x0F\xB6\xF0"
+				"windows64"	"\x40\x53\x55\x57\x48\x83\xEC\x2A\x41\x0F\xB6\xE8"
 				"linux"		"@_ZN15CTFPlayerShared10RemoveCondE7ETFCondb"
 				"linux64"	"@_ZN15CTFPlayerShared10RemoveCondE7ETFCondb"
 			}
@@ -82,7 +82,7 @@
 				/* String: "scenes/player/pyro/low/1485.vcd" -> Main fuction -> That main function again.*/
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x80\x7D\x08\x00\x56\x57\x8B\xF9"
-				"windows64"	"\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x48\x8D\x99\x60\x28\x00\x00"
+				"windows64"	"\x48\x89\x5C\x24\x2A\x57\x48\x83\xEC\x2A\x48\x8D\x99\x2A\x2A\x2A\x2A\x48\x8B\xF9\x84\xD2"
 				"linux"		"@_ZN9CTFPlayer19SetPowerplayEnabledEb"
 				"linux64"	"@_ZN9CTFPlayer19SetPowerplayEnabledEb"
 			}
@@ -102,7 +102,7 @@
 				/* String: "player_stunned" */
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x83\xEC\x2A\x57\x8B\xF9\x8B\x87\x2A\x2A\x2A\x2A\x40\x3D"
-				"windows64"	"\x40\x57\x41\x57\x48\x81\xEC\x98\x00\x00\x00"
+				"windows64"	"\x40\x57\x41\x57\x48\x81\xEC\x2A\x2A\x2A\x2A\x8B\x81"
 				"linux"		"@_ZN15CTFPlayerShared10StunPlayerEffiP9CTFPlayer"
 				"linux64"	"@_ZN15CTFPlayerShared10StunPlayerEffiP9CTFPlayer"
 			}

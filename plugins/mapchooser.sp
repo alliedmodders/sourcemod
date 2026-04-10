@@ -138,6 +138,7 @@ public void OnPluginStart()
 	
 	RegAdminCmd("sm_mapvote", Command_Mapvote, ADMFLAG_CHANGEMAP, "sm_mapvote - Forces MapChooser to attempt to run a map vote now.");
 	RegAdminCmd("sm_setnextmap", Command_SetNextmap, ADMFLAG_CHANGEMAP, "sm_setnextmap <map>");
+	RegAdminCmd("sm_mapchooser_refresh", Command_MapchooserRefresh, ADMFLAG_CONVARS, "sm_mapchooser_refresh - refresh map vote map list.");
 
 	g_Cvar_Winlimit = FindConVar("mp_winlimit");
 	g_Cvar_Maxrounds = FindConVar("mp_maxrounds");
@@ -330,6 +331,27 @@ public Action Command_SetNextmap(int client, int args)
 
 	SetNextMap(map);
 	g_MapVoteCompleted = true;
+
+	return Plugin_Handled;
+}
+
+public Action Command_MapchooserRefresh(int client, int args)
+{
+	if (g_HasVoteStarted) return Plugin_Handled;
+
+	if (ReadMapList(g_MapList,
+					 g_mapFileSerial, 
+					 "mapchooser",
+					 MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER)
+		!= null)
+	{
+		if (g_mapFileSerial == -1)
+		{
+			LogError("Unable to create a valid map list. (Command_MapchooserRefresh)");
+		}
+	}
+
+	CreateNextVote();
 
 	return Plugin_Handled;
 }
