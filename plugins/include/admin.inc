@@ -175,7 +175,7 @@ methodmap AdminId {
 	// @param name          String buffer to store name.
 	// @param maxlength     Maximum size of string buffer.
 	// @return              Number of bytes written.
-	public native void GetUsername(char[] name, int maxlength);
+	public native int GetUsername(char[] name, int maxlength);
 
 	// Binds an admin to an identity for fast lookup later on.  The bind must be unique.
 	//
