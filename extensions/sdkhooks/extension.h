@@ -266,10 +266,6 @@ public:  // IClientListener
 public:  // ISDKHooks
 	virtual void AddEntityListener(ISMEntityListener *listener);
 	virtual void RemoveEntityListener(ISMEntityListener *listener);
-
-public:	// IServerGameDLL
-	KHook::Return<void> LevelShutdown(IServerGameDLL*);
-	KHook::Virtual<IServerGameDLL, void> m_HookLevelShutdown;
 private:
 	std::list<ISMEntityListener *> m_EntListeners;
 
