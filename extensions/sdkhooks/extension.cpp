@@ -150,7 +150,6 @@ CUtlVector<IEntityListener *> *EntListeners()
 }
 
 SDKHooks::SDKHooks() :
-	m_HookLevelShutdown(&IServerGameDLL::LevelShutdown, this, &SDKHooks::LevelShutdown, nullptr),
 #ifdef GAMEDESC_CAN_CHANGE
 	m_HookGetGameDescription(&IServerGameDLL::GetGameDescription, this, &SDKHooks::Hook_GetGameDescription, nullptr),
 #endif
@@ -212,8 +211,6 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	sharesys->AddInterface(myself, &g_Interface);
 	sharesys->AddCapabilityProvider(myself, this, "SDKHook_DmgCustomInOTD");
 	sharesys->AddCapabilityProvider(myself, this, "SDKHook_LogicalEntSupport");
-
-	m_HookLevelShutdown.Add(gamedll);
 
 	playerhelpers->AddClientListener(&g_Interface);
 	
@@ -320,8 +317,6 @@ void SDKHooks::SDK_OnUnload()
 
 	plsys->RemovePluginsListener(&g_Interface);
 	
-	m_HookLevelShutdown.Remove(gamedll);
-	
 	playerhelpers->RemoveClientListener(&g_Interface);
 
 	sharesys->DropCapabilityProvider(myself, this, "SDKHook_DmgCustomInOTD");
@@ -399,25 +394,6 @@ void SDKHooks::OnClientDisconnecting(int client)
 	CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(client);
 	
 	HandleEntityDeleted(pEntity);
-}
-
-KHook::Return<void> SDKHooks::LevelShutdown(IServerGameDLL*)
-{
-#if defined PLATFORM_LINUX
-	for (size_t type = 0; type < SDKHook_MAXHOOKS; ++type)
-	{
-		std::vector<CVTableList *> &vtablehooklist = g_HookList[type];
-		for (size_t listentry = 0; listentry < vtablehooklist.size(); ++listentry)
-		{
-			std::vector<HookList> &pawnhooks = vtablehooklist[listentry]->hooks;
-			pawnhooks.clear();
-			
-			delete vtablehooklist[listentry];
-		}
-		vtablehooklist.clear();
-	}
-#endif
-	return { KHook::Action::Ignore };
 }
 
 void SDKHooks::AddEntityListener(ISMEntityListener *listener)
@@ -897,15 +873,6 @@ void SDKHooks::Unhook(CBaseEntity *pEntity)
 				pawnhooks.erase(pawnhooks.begin() + entry);
 				entry--;
 			}
-
-#if !defined PLATFORM_LINUX
-			if (pawnhooks.size() == 0)
-			{
-				delete vtablehooklist[listentry];
-				vtablehooklist.erase(vtablehooklist.begin() + listentry);
-				listentry--;
-			}
-#endif
 		}
 	}
 }
@@ -928,15 +895,6 @@ void SDKHooks::Unhook(IPluginContext *pContext)
 				pawnhooks.erase(pawnhooks.begin() + entry);
 				entry--;
 			}
-
-#if !defined PLATFORM_LINUX
-			if (pawnhooks.size() == 0)
-			{
-				delete vtablehooklist[listentry];
-				vtablehooklist.erase(vtablehooklist.begin() + listentry);
-				listentry--;
-			}
-#endif
 		}
 	}
 }
