@@ -512,7 +512,7 @@ cell_t DHookParam_IsNullParam(SourcePawn::IPluginContext* context, const cell_t*
 
 	const auto& var = obj->GetCapsule()->GetParameters()[index];
 	if (sp::HookParamTypeIsPtr(var.dhook_type)) {
-		return (*obj->Get<void*>(index) != nullptr) ? 1 : 0;
+		return (*obj->Get<void*>(index) == nullptr) ? 1 : 0;
 	}
 	return context->ThrowNativeError("Param is not a pointer!");
 }
