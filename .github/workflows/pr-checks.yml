@@ -82,3 +82,9 @@ jobs:
             '--mariadb-path=${{ steps.path_helper.outputs.dependencies }}/mariadb-connector-c-${{ env.MARIADB_CONNECTOR_C_VERSION }}-x86' \
             '--mariadb64-path=${{ steps.path_helper.outputs.dependencies }}/mariadb-connector-c-${{ env.MARIADB_CONNECTOR_C_VERSION }}-x86_64'
           ambuild
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          path: sourcemod/build/package
+          name: ${{ matrix.os_short }}-${{ matrix.compiler_cc }}
