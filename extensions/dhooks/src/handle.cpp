@@ -20,6 +20,7 @@ namespace locals {
 std::unordered_map<std::uint32_t, cell_t> associated_handle;
 std::unordered_map<CGenericClass*, std::vector<std::uint32_t>> class_dynamichooks;
 std::unordered_set<void**> class_vtables;
+SourceMod::HandleSecurity* security = nullptr;
 }
 
 ParamReturn::ParamReturn(const Capsule* capsule, GeneralRegister* generalregs, FloatRegister* floatregs, void* return_ptr) :
@@ -32,7 +33,9 @@ ParamReturn::ParamReturn(const Capsule* capsule, GeneralRegister* generalregs, F
 
 ParamReturn::~ParamReturn() {
 	if (_handle != BAD_HANDLE) {
-		globals::handlesys->FreeHandle(_handle, nullptr);
+		if (globals::handlesys->FreeHandle(_handle, locals::security) != SourceMod::HandleError_None) {
+			globals::sourcemod->LogError(globals::myself, "Failed to delete ParamReturn handle. Contact a Sourcemod dev!");
+		}
 	}
 }
 
@@ -324,6 +327,8 @@ class HookSetupDispatch : public SourceMod::IHandleTypeDispatch {
 HookSetupDispatch gHookSetupDispatcher;
 
 void init() {
+	locals::security = new SourceMod::HandleSecurity(globals::myself->GetIdentity(), globals::myself->GetIdentity());
+
 	SourceMod::HandleAccess security;
 	globals::handlesys->InitAccessDefaults(nullptr, &security);
 	// Do not allow cloning, the struct self-manage its handle
