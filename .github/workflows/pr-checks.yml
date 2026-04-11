@@ -81,3 +81,9 @@ jobs:
             '--mysql-path=${{ steps.path_helper.outputs.dependencies }}/mysql-${{ env.MYSQL_VERSION }}' \
             '--mysql64-path=${{ steps.path_helper.outputs.dependencies }}/mysql-${{ env.MYSQL_VERSION }}-x86_64'
           ambuild
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          path: sourcemod/build/package
+          name: ${{ matrix.os_short }}-${{ matrix.compiler_cc }}
