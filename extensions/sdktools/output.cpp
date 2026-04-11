@@ -90,7 +90,11 @@ KHook::Return<void> EntityOutputManager::Hook_FireOutput(CBaseEntity* this_ptr, 
 
 bool EntityOutputManager::CreateFireEventDetour()
 {
+#if defined PLATFORM_WINDOWS && defined KE_ARCH_X86
+	void (CBaseEntity::*func)(int, int, int, int, void*, CBaseEntity*, CBaseEntity*, float) = nullptr;
+#else
 	void (CBaseEntity::*func)(void*, CBaseEntity*, CBaseEntity*, float) = nullptr;
+#endif
 	if (!g_pGameConf->GetMemSig("FireOutput", reinterpret_cast<void**>(&func)) || func == nullptr) {
 		return false;
 	}
