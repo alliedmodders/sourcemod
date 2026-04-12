@@ -111,7 +111,7 @@ public:
 		return _default_callback;
 	}
 
-	std::uint32_t AddHook(SourcePawn::IPluginFunction* callback, SourcePawn::IPluginFunction* rm_callback, sp::HookMode, void* obj);
+	std::uint32_t AddHook(SourcePawn::IPluginFunction* callback, SourcePawn::IPluginFunction* rm_callback, sp::HookMode, void* obj, bool dtor_cleanup);
 	bool RemoveHook(std::uint32_t id);
 	static cell_t FindByHookID(std::uint32_t id);
 protected:
