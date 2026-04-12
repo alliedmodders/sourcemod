@@ -170,7 +170,7 @@ bool DynamicDetour::Disable(SourcePawn::IPluginFunction* callback, sp::HookMode 
 	return true;
 }
 
-std::uint32_t DynamicHook::AddHook(SourcePawn::IPluginFunction* callback, SourcePawn::IPluginFunction* rm_callback, sp::HookMode mode, void* obj) {
+std::uint32_t DynamicHook::AddHook(SourcePawn::IPluginFunction* callback, SourcePawn::IPluginFunction* rm_callback, sp::HookMode mode, void* obj, bool dtor_cleanup) {
 	if (!this->IsImmutable()) {
 		return 0;
 	}
@@ -189,31 +189,33 @@ std::uint32_t DynamicHook::AddHook(SourcePawn::IPluginFunction* callback, Source
 		return 0;
 	}
 
-	auto it = locals::class_dynamichooks.find((CGenericClass*)obj);
-	if (it == locals::class_dynamichooks.end()) {
-		auto insert = locals::class_dynamichooks.emplace((CGenericClass*)obj, std::vector<std::uint32_t>());
-		if (insert.second == false) {
-			return id;
-		}
-		it = insert.first;
+	if (dtor_cleanup) {
+		auto it = locals::class_dynamichooks.find((CGenericClass*)obj);
+		if (it == locals::class_dynamichooks.end()) {
+			auto insert = locals::class_dynamichooks.emplace((CGenericClass*)obj, std::vector<std::uint32_t>());
+			if (insert.second == false) {
+				return id;
+			}
+			it = insert.first;
 
-		if (locals::class_vtables.find(vtable) == locals::class_vtables.end()) {
-			// Hook the virtual destructor, and perform hook cleaning actions under there
-			KHook::SetupVirtualHook(
-				vtable,
-				DTOR_VTABLE_INDEX,
-				nullptr,
-				nullptr,
-				KHook::ExtractMFP(&CGenericClass::KHook_Detour_PRE),
-				nullptr,
-				KHook::ExtractMFP(&CGenericClass::KHook_Make_Return),
-				KHook::ExtractMFP(&CGenericClass::KHook_Make_CallOriginal),
-				true
-			);
-			locals::class_vtables.insert(vtable);
+			if (locals::class_vtables.find(vtable) == locals::class_vtables.end()) {
+				// Hook the virtual destructor, and perform hook cleaning actions under there
+				KHook::SetupVirtualHook(
+					vtable,
+					DTOR_VTABLE_INDEX,
+					nullptr,
+					nullptr,
+					KHook::ExtractMFP(&CGenericClass::KHook_Detour_PRE),
+					nullptr,
+					KHook::ExtractMFP(&CGenericClass::KHook_Make_Return),
+					KHook::ExtractMFP(&CGenericClass::KHook_Make_CallOriginal),
+					true
+				);
+				locals::class_vtables.insert(vtable);
+			}
 		}
+		it->second.push_back(id);
 	}
-	it->second.push_back(id);
 	return id;
 }
 
