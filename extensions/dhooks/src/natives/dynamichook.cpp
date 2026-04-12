@@ -87,7 +87,7 @@ cell_t DynamicHook_HookEntity(SourcePawn::IPluginContext* context, const cell_t*
 	auto removal_callback = context->GetFunctionById(params[5]);
 
 	dynhook->SetImmutable();
-	return dynhook->AddHook(callback, removal_callback, mode, entity);
+	return dynhook->AddHook(callback, removal_callback, mode, entity, true);
 }
 
 cell_t DynamicHook_DHookEntity(SourcePawn::IPluginContext* context, const cell_t* params) {
@@ -119,7 +119,7 @@ cell_t DynamicHook_DHookEntity(SourcePawn::IPluginContext* context, const cell_t
 	}
 
 	dynhook->SetImmutable();
-	return dynhook->AddHook(callback, removal_callback, (post) ? sp::HookMode::Hook_Post : sp::HookMode::Hook_Pre, entity);
+	return dynhook->AddHook(callback, removal_callback, (post) ? sp::HookMode::Hook_Post : sp::HookMode::Hook_Pre, entity, true);
 }
 
 cell_t DynamicHook_HookGamerules(SourcePawn::IPluginContext* context, const cell_t* params) {
@@ -155,7 +155,7 @@ cell_t DynamicHook_HookGamerules(SourcePawn::IPluginContext* context, const cell
 	auto removal_callback = context->GetFunctionById(params[4]);
 
 	dynhook->SetImmutable();
-	return dynhook->AddHook(callback, removal_callback, mode, gamerules);
+	return dynhook->AddHook(callback, removal_callback, mode, gamerules, false);
 }
 
 cell_t DynamicHook_DHookGamerules(SourcePawn::IPluginContext* context, const cell_t* params) {
@@ -191,7 +191,7 @@ cell_t DynamicHook_DHookGamerules(SourcePawn::IPluginContext* context, const cel
 	}
 
 	dynhook->SetImmutable();
-	return dynhook->AddHook(callback, removal_callback, (post) ? sp::HookMode::Hook_Post : sp::HookMode::Hook_Pre, gamerules);
+	return dynhook->AddHook(callback, removal_callback, (post) ? sp::HookMode::Hook_Post : sp::HookMode::Hook_Pre, gamerules, false);
 }
 
 cell_t DynamicHook_HookRaw(SourcePawn::IPluginContext* context, const cell_t* params) {
@@ -214,7 +214,7 @@ cell_t DynamicHook_HookRaw(SourcePawn::IPluginContext* context, const cell_t* pa
 	}
 
 	dynhook->SetImmutable();
-	return dynhook->AddHook(callback, nullptr, mode, addr);
+	return dynhook->AddHook(callback, nullptr, mode, addr, (params[0] >= 5 && params[5] != 0));
 }
 
 cell_t DynamicHook_DHookRaw(SourcePawn::IPluginContext* context, const cell_t* params) {
@@ -243,7 +243,7 @@ cell_t DynamicHook_DHookRaw(SourcePawn::IPluginContext* context, const cell_t* p
 	}
 
 	dynhook->SetImmutable();
-	return dynhook->AddHook(callback, removal_callback, (post) ? sp::HookMode::Hook_Post : sp::HookMode::Hook_Pre, addr);
+	return dynhook->AddHook(callback, removal_callback, (post) ? sp::HookMode::Hook_Post : sp::HookMode::Hook_Pre, addr, false);
 }
 
 cell_t DynamicHook_RemoveHook(SourcePawn::IPluginContext* context, const cell_t* params) {

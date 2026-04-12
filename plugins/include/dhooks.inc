@@ -545,10 +545,11 @@ methodmap DynamicHook < DHookSetup
 	//                        You can access the parameters and get/set the return value.
 	// @param addr          This pointer address.
 	// @param callback      Callback function.
+	// @param dtorcleanup   If object has a virtual dtor, pass true for automatic hook cleanup.
 	//
 	// @return              A hookid on success, INVALID_HOOK_ID otherwise.
 	// @error               Invalid setup handle, invalid address, invalid hook type or invalid callback.
-	public native int HookRaw(HookMode mode, Address addr, DHookCallback callback);
+	public native int HookRaw(HookMode mode, Address addr, DHookCallback callback, bool dtorcleanup = false);
 
 	// Remove hook by hook id.
 	//
