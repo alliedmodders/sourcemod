@@ -120,7 +120,16 @@ bool IsVarProtected(const char[] cvar)
 
 bool IsClientAllowedToChangeCvar(int client, const char[] cvarname)
 {
+	if (StrEqual(cvarname, "rcon_password", false))
+	{
+		return false;
+	}
+
 	ConVar hndl = FindConVar(cvarname);
+	if (hndl == null)
+	{
+		return false;
+	}
 
 	bool allowed = false;
 	int client_flags = client == 0 ? ADMFLAG_ROOT : GetUserFlagBits(client);
