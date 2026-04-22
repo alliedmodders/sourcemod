@@ -151,6 +151,8 @@ public:
 	}
 	virtual IPlugin *GetPlugin() override
 	{
+		if (m_current == m_list.end())
+			return nullptr;
 		return *m_current;
 	}
 	virtual void NextPlugin() override
@@ -161,7 +163,8 @@ public:
 			return;
 		}
 
-		m_current++;
+		if (m_current != m_list.end())
+			m_current++;
 	}
 	virtual void Release() override
 	{
@@ -171,7 +174,7 @@ public:
 public:
 	virtual void OnPluginDestroyed(IPlugin *plugin) override
 	{
-		if (*m_current == plugin)
+		if (m_current != m_list.end() && *m_current == plugin)
 			m_current = m_list.erase(m_current);
 		else
 			m_list.remove(static_cast<SMPlugin *>(plugin));
@@ -402,12 +405,12 @@ static cell_t PluginIterator_Next(IPluginContext *pContext, const cell_t *params
 		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
 	}
 	
+	if(!pIter->MorePlugins())
+		return pContext->ThrowNativeError("PluginIterator %x is exhausted.", hndl);
+	
 	pIter->NextPlugin();
 	
-	if(!pIter->MorePlugins())
-		return 0;
-	
-	return 1;
+	return pIter->MorePlugins() ? 1 : 0;
 }
 
 static cell_t PluginIterator_Plugin_get(IPluginContext *pContext, const cell_t *params)
