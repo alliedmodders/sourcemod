@@ -401,11 +401,12 @@ static cell_t PluginIterator_Next(IPluginContext *pContext, const cell_t *params
 	{
 		return pContext->ThrowNativeError("Could not read Handle %x (error %d)", hndl, err);
 	}
-
+	
+	pIter->NextPlugin();
+	
 	if(!pIter->MorePlugins())
 		return 0;
-
-	pIter->NextPlugin();
+	
 	return 1;
 }
 
