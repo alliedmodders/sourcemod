@@ -269,7 +269,8 @@ void AddFloat(char **buf_p, size_t &maxlen, double fval, int width, int prec, in
 
 	if (ke::IsInfinite(static_cast<float>(fval)))
 	{
-		AddString(buf_p, maxlen, "Inf", width, prec, flags | NOESCAPE);
+		const char *str = ((fval < 0) ? "-Inf" : "Inf");
+		AddString(buf_p, maxlen, str, width, prec, flags | NOESCAPE);
 		return;
 	}
 
