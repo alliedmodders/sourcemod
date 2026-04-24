@@ -59,7 +59,10 @@ void KillAllTimeBombs()
 {
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		KillTimeBomb(i);
+		if (g_TimeBombSerial[i] != 0)
+		{
+			KillTimeBomb(i);
+		}
 	}
 }
 

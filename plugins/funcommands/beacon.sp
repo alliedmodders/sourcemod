@@ -55,7 +55,10 @@ void KillAllBeacons()
 {
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		KillBeacon(i);
+		if (g_BeaconSerial[i] != 0)
+		{
+			KillBeacon(i);
+		}
 	}
 }
 

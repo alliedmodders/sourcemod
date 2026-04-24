@@ -60,7 +60,10 @@ void KillAllFireBombs()
 {
 	for (int i = 1; i <= MaxClients; i++)
 	{
-		KillFireBomb(i);
+		if (g_FireBombSerial[i] != 0)
+		{
+			KillFireBomb(i);
+		}
 	}
 }
 
