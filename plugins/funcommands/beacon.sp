@@ -44,11 +44,6 @@ void CreateBeacon(int client)
 void KillBeacon(int client)
 {
 	g_BeaconSerial[client] = 0;
-
-	if (IsClientInGame(client))
-	{
-		SetEntityRenderColor(client, 255, 255, 255, 255);
-	}
 }
 
 void KillAllBeacons()
