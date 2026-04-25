@@ -50,7 +50,7 @@
 			/* Offset into "LevelShutdown" */
 			"gEntList"
 			{
-				"windows"	"28"
+				"windows"	"26"
 			}
 
 			"EntInfo"
@@ -65,7 +65,7 @@
 			"LevelShutdown"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x51\xA1\x2A\x2A\x2A\x2A\xC6\x05\x2A\x2A\x2A\x2A\x01"
+				"windows"	"\xA1\x2A\x2A\x2A\x2A\xC6\x05\x2A\x2A\x2A\x2A\x2A\x53"
 			}
 		}
 	}
