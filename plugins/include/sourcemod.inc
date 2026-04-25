@@ -262,7 +262,7 @@ methodmap PluginIterator < Handle
 	// Advances the iterator. Returns whether there are more plugins available in the iterator.
 	//
 	// @return              True on more plugins, false otherwise.
-	// @error               Invalid Handle.
+	// @error               Invalid Handle, or called when the iterator is already exhausted.
 	public native bool Next();
 
 	// Returns the current plugin in the iterator.
