@@ -492,6 +492,7 @@ void AddInt(char **buf_p, size_t &maxlen, int64_t val, int width, int flags)
 	if (val < 0)
 	{
 		unsignedVal = 0 - static_cast<uint64_t>(val);
+		width--; // Reserved for '-' sign
 	}
 	else
 	{
