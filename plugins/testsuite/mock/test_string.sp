@@ -8,8 +8,6 @@
 public void OnPluginStart()
 {
     Test_StringToInt64Ex();
-
-    // Bnechmark_StringToInt64Ex();
 }
 
 
@@ -108,55 +106,3 @@ void Test_StringToInt64Ex()
         1);
     AssertEq("bytes  1_234_567", bytes, 1);
 }
-
-
-
-// ================================================================================================
-
-/*
-stock int64 StringToInt64Ex_IncOnly(const char[] str, int &bytes=0, int nBase=10)
-{
-    // Error in: 9223372036854775807, -1234567654321
-    int result[2];
-    bytes = StringToInt64(str, result, nBase);
-    return (view_as<int64>(result[1]) << 32) | result[0];
-}
-
-#include <profiler>
-
-void Bnechmark_StringToInt64Ex()
-{
-    Profiler profile = new Profiler();
-    int iters = 1_000_000;
-
-    profile.Start();
-    for (int i = 0; i < iters; ++i)
-    {
-        StringToInt64Ex("1234567654321");
-    }
-    profile.Stop();
-    float delta = profile.Time;
-
-    profile.Start();
-    for (int i = 0; i < iters; ++i)
-    {
-        StringToInt64Ex_IncOnly("1234567654321");
-    }
-    profile.Stop();
-    float deltaIncOnly = profile.Time;
-
-    delete profile;
-
-    PrintToServer(
-        "[benchmark] [StringToInt64Ex] | Iters %7d | Elapsed %6.3f secs %9d/sec", 
-        iters, 
-        delta, 
-        RoundToFloor(iters / delta));
-
-    PrintToServer(
-        "[benchmark] [StringToInt64Ex_IncOnly] | Iters %7d | Elapsed %6.3f secs %9d/sec", 
-        iters, 
-        deltaIncOnly, 
-        RoundToFloor(iters / deltaIncOnly));
-}
-*/
