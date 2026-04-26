@@ -55,7 +55,7 @@ bool GeoIP_Extension::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		return true;
 	}
 
-	char m_GeoipDir[PLATFORM_MAX_PATH], m_GeoipDb[PLATFORM_MAX_PATH];
+	char m_GeoipDir[PLATFORM_MAX_PATH], m_GeoipDb[PLATFORM_MAX_PATH] = {0};
 	g_pSM->BuildPath(Path_SM, m_GeoipDir, sizeof(m_GeoipDir), "configs/geoip");
 
 	time_t modTime = 0;
