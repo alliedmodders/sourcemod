@@ -484,7 +484,7 @@ bool SM_GenerateConfigFile(
 	const char *file,
 	List<const ConVar *> &convars,
 	bool needs_regeneration = false,
-	ke::HashMap<std::string, std::string, StringPolicy> *existing_cvars = nullptr)
+	ke::HashMap<std::string, std::string, StringPolicy> *existing_cvars = NULL)
 {
 	FILE *fp = NULL;
 	char tmp_file[PLATFORM_MAX_PATH];
