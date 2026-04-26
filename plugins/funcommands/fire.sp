@@ -77,7 +77,7 @@ void PerformBurn(int client, int target, float seconds)
 
 void PerformFireBomb(int client, int target)
 {
-	if (g_FireBombSerial[client] == 0)
+	if (g_FireBombSerial[target] == 0)
 	{
 		CreateFireBomb(target);
 		LogAction(client, target, "\"%L\" set a FireBomb on \"%L\"", client, target);
