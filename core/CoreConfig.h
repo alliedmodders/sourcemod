@@ -79,7 +79,7 @@ struct StringPolicy
 	}
 	static inline bool matches(const char *find, const std::string &key)
 	{
-		return key.compare(find) == 0;
+		return strcasecmp(find, key.c_str()) == 0;
 	}
 };
 
