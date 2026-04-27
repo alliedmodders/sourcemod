@@ -29,15 +29,11 @@
  * Version: $Id$
  */
 
-#include <sh_list.h>
-#include <sh_string.h>
 #include <ISourceMod.h>
 #include "common_logic.h"
 #include "ShareSys.h"
 #include "PluginSys.h"
 #include "sprintf.h"
-
-using namespace SourceHook;
 
 static cell_t s_curparams[SP_MAX_EXEC_PARAMS+1];
 static FakeNative *s_curnative = NULL;

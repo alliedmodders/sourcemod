@@ -29,7 +29,7 @@
  * Version: $Id$
  */
 
-#include <sh_list.h>
+#include <list>
 #include <sm_namehashset.h>
 #include "common_logic.h"
 #include "CellArray.h"
@@ -41,8 +41,6 @@
 #include <bridge/include/CoreProvider.h>
 #include <bridge/include/ILogger.h>
 #include <bridge/include/IFileSystemBridge.h>
-
-using namespace SourceHook;
 
 struct maplist_info_t
 {
@@ -168,7 +166,7 @@ public:
 		m_pMapCycleFile = bridge->FindConVar("mapcyclefile");
 
 		/* Dump everything we know about. */
-		List<maplist_info_t *> compat;
+		std::list<maplist_info_t *> compat;
 		DumpCache(&compat);
 
 		/* All this is to add the default entry back in. */
@@ -206,7 +204,7 @@ public:
 		}
 
 		/* Now, re-add compat stuff back in if we can. */
-		List<maplist_info_t *>::iterator iter = compat.begin();
+		auto iter = compat.begin();
 		while (iter != compat.end())
 		{
 			if (m_ListLookup.contains((*iter)->name))
@@ -666,11 +664,11 @@ private:
 
 		return true;
 	}
-	void DumpCache(List<maplist_info_t *> *compat_list)
+	void DumpCache(std::list<maplist_info_t *> *compat_list)
 	{
 		m_ListLookup.clear();
 
-		List<maplist_info_t *>::iterator iter = m_MapLists.begin();
+		auto iter = m_MapLists.begin();
 		while (iter != m_MapLists.end())
 		{
 			if (compat_list != NULL && (*iter)->bIsCompat)
@@ -690,7 +688,7 @@ private:
 	time_t m_ConfigLastChanged;
 	ConVar *m_pMapCycleFile;
 	NameHashSet<maplist_info_t *> m_ListLookup;
-	List<maplist_info_t *> m_MapLists;
+	std::list<maplist_info_t *> m_MapLists;
 	MapListState m_CurState;
 	unsigned int m_IgnoreLevel;
 	maplist_info_t *m_pCurMapList;

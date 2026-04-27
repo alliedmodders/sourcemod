@@ -32,12 +32,11 @@
 #include "criticals.h"
 #include "util.h"
 
-CritManager g_CritManager;
-
 IForward *g_critForward = NULL;
 
-SH_DECL_MANUALHOOK0(CalcIsAttackCriticalHelper, 0, 0, 0, bool);
-SH_DECL_MANUALHOOK0(CalcIsAttackCriticalHelperNoCrits, 0, 0, 0, bool);
+KHook::Virtual<CBaseEntity, bool> g_HookCalcIsAttackCriticalHelper;
+KHook::Virtual<CBaseEntity, bool> g_HookCalcIsAttackCriticalHelperNoCrits;
+CritManager g_CritManager;
 
 const char TF_WEAPON_DATATABLE[] = "DT_TFWeaponBase";
 
@@ -46,6 +45,9 @@ CritManager::CritManager() :
 	m_hooksSetup(false)
 {
 	m_entsHooked.Init();
+
+	g_HookCalcIsAttackCriticalHelper.AddContext(this, &CritManager::Hook_CalcIsAttackCriticalHelper, nullptr);
+	g_HookCalcIsAttackCriticalHelperNoCrits.AddContext(this, &CritManager::Hook_CalcIsAttackCriticalHelperNoCrits, nullptr);
 }
 
 bool CritManager::TryEnable()
@@ -60,7 +62,7 @@ bool CritManager::TryEnable()
 			return false;
 		}
 
-		SH_MANUALHOOK_RECONFIGURE(CalcIsAttackCriticalHelper, offset, 0, 0);
+		g_HookCalcIsAttackCriticalHelper.Configure(offset);
 
 		if (!g_pGameConf->GetOffset("CalcIsAttackCriticalHelperNoCrits", &offset))
 		{
@@ -68,7 +70,7 @@ bool CritManager::TryEnable()
 			return false;
 		}
 
-		SH_MANUALHOOK_RECONFIGURE(CalcIsAttackCriticalHelperNoCrits, offset, 0, 0);
+		g_HookCalcIsAttackCriticalHelperNoCrits.Configure(offset);
 
 		m_hooksSetup = true;
 	}
@@ -92,8 +94,8 @@ bool CritManager::TryEnable()
 			continue;
 		}
 
-		SH_ADD_MANUALHOOK(CalcIsAttackCriticalHelper, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelper), false);
-		SH_ADD_MANUALHOOK(CalcIsAttackCriticalHelperNoCrits, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelperNoCrits), false);
+		g_HookCalcIsAttackCriticalHelper.Add(pEntity);
+		g_HookCalcIsAttackCriticalHelperNoCrits.Add(pEntity);
 
 		m_entsHooked.Set(i);
 	}
@@ -109,9 +111,8 @@ void CritManager::Disable()
 	for (i; i != -1; i = m_entsHooked.FindNextSetBit(i))
 	{
 		CBaseEntity *pEntity = gamehelpers->ReferenceToEntity(i);
-		SH_REMOVE_MANUALHOOK(CalcIsAttackCriticalHelper, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelper), false);
-		SH_REMOVE_MANUALHOOK(CalcIsAttackCriticalHelperNoCrits, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelperNoCrits), false);
-
+		g_HookCalcIsAttackCriticalHelper.Remove(pEntity);
+		g_HookCalcIsAttackCriticalHelperNoCrits.Remove(pEntity);
 		m_entsHooked.Set(i, false);
 	}
 
@@ -136,9 +137,9 @@ void CritManager::OnEntityCreated(CBaseEntity *pEntity, const char *classname)
 		return;
 	}
 
-	SH_ADD_MANUALHOOK(CalcIsAttackCriticalHelper, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelper), false);
-	SH_ADD_MANUALHOOK(CalcIsAttackCriticalHelperNoCrits, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelperNoCrits), false);
-
+	g_HookCalcIsAttackCriticalHelper.Add(pEntity);
+	g_HookCalcIsAttackCriticalHelperNoCrits.Add(pEntity);
+	
 	m_entsHooked.Set(gamehelpers->EntityToBCompatRef(pEntity));
 }
 
@@ -154,49 +155,47 @@ void CritManager::OnEntityDestroyed(CBaseEntity *pEntity)
 	if (!m_entsHooked.IsBitSet(index))
 		return;
 
-	SH_REMOVE_MANUALHOOK(CalcIsAttackCriticalHelper, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelper), false);
-	SH_REMOVE_MANUALHOOK(CalcIsAttackCriticalHelperNoCrits, pEntity, SH_MEMBER(&g_CritManager, &CritManager::Hook_CalcIsAttackCriticalHelperNoCrits), false);
+	g_HookCalcIsAttackCriticalHelper.Remove(pEntity);
+	g_HookCalcIsAttackCriticalHelperNoCrits.Remove(pEntity);
 
 	m_entsHooked.Set(index, false);
 }
 
-bool CritManager::Hook_CalcIsAttackCriticalHelper()
+KHook::Return<bool> CritManager::Hook_CalcIsAttackCriticalHelper(CBaseEntity* ent)
 {
-	return Hook_CalcIsAttackCriticalHelpers(false);
+	return Hook_CalcIsAttackCriticalHelpers(ent, false);
 }
 
-bool CritManager::Hook_CalcIsAttackCriticalHelperNoCrits()
+KHook::Return<bool> CritManager::Hook_CalcIsAttackCriticalHelperNoCrits(CBaseEntity* ent)
 {
-	return Hook_CalcIsAttackCriticalHelpers(true);
+	return Hook_CalcIsAttackCriticalHelpers(ent, true);
 }
 
-bool CritManager::Hook_CalcIsAttackCriticalHelpers(bool noCrits)
+KHook::Return<bool> CritManager::Hook_CalcIsAttackCriticalHelpers(CBaseEntity* pWeapon, bool noCrits)
 {
-	CBaseEntity *pWeapon = META_IFACEPTR(CBaseEntity);
-	
 	// If there's an invalid ent or invalid server class here, we've got issues elsewhere.
 	ServerClass *pServerClass = gamehelpers->FindEntityServerClass(pWeapon);
 	if (pServerClass == nullptr)
 	{
 		g_pSM->LogError(myself, "Invalid server class on weapon.");
-		RETURN_META_VALUE(MRES_IGNORED, false);
+		return { KHook::Action::Ignore };
 	}
 
 	sm_sendprop_info_t info;
 	if (!gamehelpers->FindSendPropInfo(pServerClass->GetName(), "m_hOwnerEntity", &info))
 	{
 		g_pSM->LogError(myself, "Could not find m_hOwnerEntity on %s", pServerClass->GetName());
-		RETURN_META_VALUE(MRES_IGNORED, false);
+		return { KHook::Action::Ignore };
 	}
 
 	int returnValue;
 	if (noCrits)
 	{
-		returnValue = SH_MCALL(pWeapon, CalcIsAttackCriticalHelperNoCrits)() ? 1 : 0;
+		returnValue = g_HookCalcIsAttackCriticalHelperNoCrits.CallOriginal(pWeapon) ? 1 : 0;
 	}
 	else
 	{
-		returnValue = SH_MCALL(pWeapon, CalcIsAttackCriticalHelper)() ? 1 : 0;
+		returnValue = g_HookCalcIsAttackCriticalHelper.CallOriginal(pWeapon) ? 1 : 0;
 	}
 
 	int origReturnValue = returnValue;
@@ -220,8 +219,8 @@ bool CritManager::Hook_CalcIsAttackCriticalHelpers(bool noCrits)
 
 	if (result > Pl_Continue)
 	{
-		RETURN_META_VALUE(MRES_SUPERCEDE, returnValue);
+		return { KHook::Action::Supersede, returnValue };
 	}
 	
-	RETURN_META_VALUE(MRES_SUPERCEDE, origReturnValue);
+	return { KHook::Action::Supersede, origReturnValue };
 }
