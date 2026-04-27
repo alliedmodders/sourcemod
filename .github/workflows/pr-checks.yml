@@ -20,7 +20,7 @@ jobs:
           - platform: linux
             os: ubuntu-latest
             os_short: linux
-            container_image: ghcr.io/alliedmodders/build-containers/debian11:latest
+            container_image: ghcr.io/alliedmodders/build-containers/debian11-clang22:latest
       fail-fast: false
     runs-on: ${{ matrix.os }}
     container:

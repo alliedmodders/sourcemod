@@ -47,7 +47,7 @@ extern sp_nativeinfo_t g_VariantTNatives[];
 
 inline void _init_variant_t()
 {
-	memset(&g_Variant_t, 0, sizeof(g_Variant_t));
+	memset((void *)&g_Variant_t, 0, sizeof(g_Variant_t));
 }
 
 #endif //_INCLUDE_SOURCEMOD_EXTENSION_VARIANT_T_H_
