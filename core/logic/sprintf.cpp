@@ -1308,49 +1308,58 @@ reswitch:
 				arg++;
 				break;
 			}
-		case 'l': {
+		case 'l':
+			{
 				CHECK_ARGS(0);
 				ch = *fmt++;
 
-				switch (ch) {
-				case 'b':{
-					cell_t *value;
-					pCtx->LocalToPhysAddr(params[arg], &value);
-					AddBinary(&buf_p, llen, *reinterpret_cast<uint64_t*>(value), width, flags);
-					++arg;
-					break;
-				}
+				switch (ch)
+				{
+				case 'b':
+					{
+						cell_t *value;
+						pCtx->LocalToPhysAddr(params[arg], &value);
+						AddBinary(&buf_p, llen, *reinterpret_cast<uint64_t*>(value), width, flags);
+						++arg;
+						break;
+					}
 				case 'd':
-				case 'i':{
-					cell_t *value;
-					pCtx->LocalToPhysAddr(params[arg], &value);
-					AddInt(&buf_p, llen, *reinterpret_cast<int64_t*>(value), width, flags);
-					++arg;
-					break;
-				}
-				case 'u':{
-					cell_t *value;
-					pCtx->LocalToPhysAddr(params[arg], &value);
-					AddUInt(&buf_p, llen, *reinterpret_cast<uint64_t*>(value), width, flags);
-					++arg;
-					break;
-				}
-				case 'X':{
-					cell_t *value;
-					pCtx->LocalToPhysAddr(params[arg], &value);
-					AddHex(&buf_p, llen, *reinterpret_cast<uint64_t*>(value), width, flags | UPPERDIGITS);
-					++arg;
-					break;
-				}
-				case 'x':{
-					cell_t *value;
-					pCtx->LocalToPhysAddr(params[arg], &value);
-					AddHex(&buf_p, llen, *reinterpret_cast<uint64_t*>(value), width, flags);
-					++arg;
-					break;
-				}
+				case 'i':
+					{
+						cell_t *value;
+						pCtx->LocalToPhysAddr(params[arg], &value);
+						AddInt(&buf_p, llen, *reinterpret_cast<int64_t*>(value), width, flags);
+						++arg;
+						break;
+					}
+				case 'u':
+					{
+						cell_t *value;
+						pCtx->LocalToPhysAddr(params[arg], &value);
+						AddUInt(&buf_p, llen, *reinterpret_cast<uint64_t*>(value), width, flags);
+						++arg;
+						break;
+					}
+				case 'X':
+					{
+						cell_t *value;
+						pCtx->LocalToPhysAddr(params[arg], &value);
+						AddHex(&buf_p, llen, *reinterpret_cast<uint64_t*>(value), width, flags | UPPERDIGITS);
+						++arg;
+						break;
+					}
+				case 'x':
+					{
+						cell_t *value;
+						pCtx->LocalToPhysAddr(params[arg], &value);
+						AddHex(&buf_p, llen, *reinterpret_cast<uint64_t*>(value), width, flags);
+						++arg;
+						break;
+					}
 				default:
-					return pCtx->ThrowNativeError("%s", "Invalid formatter. Only %lb, %ld, %li, %lu, %lX, %lx are allowed.");
+					{
+						return pCtx->ThrowNativeError("%s", "Invalid formatter. Only %lb, %ld, %li, %lu, %lX, %lx are allowed.");
+					}
 				}
 				break;
 			}
