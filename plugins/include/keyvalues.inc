@@ -339,6 +339,7 @@ methodmap KeyValues < Handle
 	// position of this one.
 	//
 	// @param other         KeyValues Handle to merge from.
+	// @error               Invalid Handle or unsupported engine version.
 	public native void Merge(KeyValues other);
 };
 

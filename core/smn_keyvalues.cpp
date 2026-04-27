@@ -1115,6 +1115,9 @@ static cell_t smn_KvGetSectionSymbol(IPluginContext *pCtx, const cell_t *params)
 
 static cell_t KeyValues_Merge(IPluginContext *pContext, const cell_t *params)
 {
+#if SOURCE_ENGINE == SE_EPISODEONE
+	return pContext->ThrowNativeError("KeyValues.Merge is not supported on this engine version");
+#else
 	Handle_t hndl_this = static_cast<Handle_t>(params[1]);
 	Handle_t hndl_other = static_cast<Handle_t>(params[2]);
 	HandleError herr;
@@ -1138,7 +1141,7 @@ static cell_t KeyValues_Merge(IPluginContext *pContext, const cell_t *params)
 	pStk_this->pCurRoot.front()->RecursiveMergeKeyValues(pStk_other->pCurRoot.front());
 
 	return 1;
-
+#endif
 }
 
 static cell_t KeyValues_Import(IPluginContext *pContext, const cell_t *params)
