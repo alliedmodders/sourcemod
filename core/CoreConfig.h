@@ -75,7 +75,8 @@ struct StringPolicy
 {
 	static inline uint32_t hash(const std::string &key)
 	{
-		return ke::FastHashCharSequence(key.c_str(), key.length());
+		std::string lower = ke::Lowercase(key.c_str());
+		return ke::FastHashCharSequence(lower.c_str(), lower.length());
 	}
 	static inline bool matches(const char *find, const std::string &key)
 	{

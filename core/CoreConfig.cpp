@@ -413,7 +413,7 @@ bool SM_CvarExistsInPlugin(List<const ConVar *> &convars, const char *cvar_name)
 			continue;
 		}
 
-		if (strcmp(cvar_name, cvar->GetName()) == 0)
+		if (strcasecmp(cvar_name, cvar->GetName()) == 0)
 		{
 			return true;
 		}
@@ -437,9 +437,7 @@ bool SM_ConfigCheckRegeneration(
 	SM_ParseConfig(fp, existing_cvars);
 	fclose(fp);
 
-	/* #1. Check if the plugin's cvar list has a cvar that doesn't exist in the config file
-	 * If not, then let sourcemod remove the existing config file and generate a new one
-	 */
+	/* #1. Check if the plugin's cvar list has a cvar that doesn't exist in the config file. */
 	for (List<const ConVar *>::iterator iter = convars.begin(); iter != convars.end(); iter++)
 	{
 		const ConVar *cvar = (*iter);
@@ -458,9 +456,7 @@ bool SM_ConfigCheckRegeneration(
 		}
 	}
 
-	/* #2. Check if the config file has a cvar that doesn't exist in the plugin's cvar list
-	 * If not, then let sourcemod remove the existing config file and generate a new one
-	 */
+	/* #2. Check if the config file has a cvar that doesn't exist in the plugin's cvar list. */
 	for (auto it = existing_cvars.iter(); !it.empty(); it.next())
 	{
 		if (!SM_CvarExistsInPlugin(convars, it->key.c_str()))
@@ -712,10 +708,7 @@ bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 		return can_create;
 	}
 
-	/* 
-	 * Now if the file exists, read the content of it to see if we need to regenerate it or not
-	 * We need to remove the file before regenerating it.
-	 */
+	/* Now if the file exists, read the content of it to see if we need to regenerate it or not. */
 	ke::HashMap<std::string, std::string, StringPolicy> existing_cvars;
 	existing_cvars.init();
 	if (!SM_ConfigCheckRegeneration(file, existing_cvars, *convars))
