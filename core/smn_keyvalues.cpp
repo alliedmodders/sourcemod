@@ -1115,7 +1115,7 @@ static cell_t smn_KvGetSectionSymbol(IPluginContext *pCtx, const cell_t *params)
 
 static cell_t KeyValues_Merge(IPluginContext *pContext, const cell_t *params)
 {
-#if SOURCE_ENGINE == SE_EPISODEONE
+#if SOURCE_ENGINE < SE_ORANGEBOX
 	return pContext->ThrowNativeError("KeyValues.Merge is not supported on this engine version");
 #else
 	Handle_t hndl_this = static_cast<Handle_t>(params[1]);
