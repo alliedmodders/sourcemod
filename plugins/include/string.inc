@@ -213,6 +213,16 @@ native int StringToIntEx(const char[] str, int &result, int nBase=10);
 native int StringToInt64(const char[] str, int result[2], int nBase=10);
 
 /**
+ * Converts a string to an int64 value.
+ *
+ * @param str           String to convert.
+ * @param bytes         Number of characters consumed.
+ * @param nBase         Numerical base to use.  10 is default.
+ * @return              int64 conversion of string, or 0 on failure.
+ */
+native int64 StringToInt64Ex(const char[] str, int &bytes=0, int nBase=10);
+
+/**
  * Converts an integer to a string.
  *
  * @param num           Integer to convert.
