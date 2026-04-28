@@ -384,9 +384,9 @@ void AddFloat(char **buf_p, size_t &maxlen, double fval, int width, int prec, in
 	*buf_p = buf;
 }
 
-void AddBinary(char **buf_p, size_t &maxlen, unsigned int val, int width, int flags)
+void AddBinary(char **buf_p, size_t &maxlen, uint64_t val, int width, int flags)
 {
-	char text[32];
+	char text[64];
 	int digits;
 	char *buf;
 
@@ -550,7 +550,7 @@ void AddInt(char **buf_p, size_t &maxlen, int64_t val, int width, int flags)
 	*buf_p = buf;
 }
 
-void AddHex(char **buf_p, size_t &maxlen, unsigned int val, int width, int flags)
+void AddHex(char **buf_p, size_t &maxlen, uint64_t val, int width, int flags)
 {
 	char text[32];
 	int digits;
@@ -1117,31 +1117,6 @@ reswitch:
 				flags |= ZEROPAD;
 				goto rflag;
 			}
-		case 'l':
-			{
-				CHECK_ARGS(0);
-				ch = *fmt++;
-
-				if (ch != 'd' && ch != 'i' && ch != 'u')
-				{
-					return pCtx->ThrowNativeError("Invalid formatter. Only %%ld, %%li, %%lu are allowed.");
-				}
-
-				cell_t *addr;
-				pCtx->LocalToPhysAddr(params[arg], &addr);
-
-				if (ch == 'u')
-				{
-					AddUInt(&buf_p, llen, *reinterpret_cast<uint64_t *>(addr), width, flags);
-				}
-				else
-				{
-					AddInt(&buf_p, llen, *reinterpret_cast<int64_t *>(addr), width, flags);
-				}
-
-				arg++;
-				break;
-			}
 		case '1':
 		case '2':
 		case '3':
@@ -1180,7 +1155,7 @@ reswitch:
 				CHECK_ARGS(0);
 				cell_t *value;
 				pCtx->LocalToPhysAddr(params[arg], &value);
-				AddBinary(&buf_p, llen, *value, width, flags);
+				AddBinary(&buf_p, llen, static_cast<unsigned int>(*value), width, flags);
 				arg++;
 				break;
 			}
@@ -1331,6 +1306,61 @@ reswitch:
 				pCtx->LocalToPhysAddr(params[arg], &value);
 				AddHex(&buf_p, llen, static_cast<unsigned int>(*value), width, flags);
 				arg++;
+				break;
+			}
+		case 'l':
+			{
+				CHECK_ARGS(0);
+				ch = *fmt++;
+
+				switch (ch)
+				{
+				case 'b':
+					{
+						cell_t *value;
+						pCtx->LocalToPhysAddr(params[arg], &value);
+						AddBinary(&buf_p, llen, *reinterpret_cast<uint64_t*>(value), width, flags);
+						++arg;
+						break;
+					}
+				case 'd':
+				case 'i':
+					{
+						cell_t *value;
+						pCtx->LocalToPhysAddr(params[arg], &value);
+						AddInt(&buf_p, llen, *reinterpret_cast<int64_t*>(value), width, flags);
+						++arg;
+						break;
+					}
+				case 'u':
+					{
+						cell_t *value;
+						pCtx->LocalToPhysAddr(params[arg], &value);
+						AddUInt(&buf_p, llen, *reinterpret_cast<uint64_t*>(value), width, flags);
+						++arg;
+						break;
+					}
+				case 'X':
+					{
+						cell_t *value;
+						pCtx->LocalToPhysAddr(params[arg], &value);
+						AddHex(&buf_p, llen, *reinterpret_cast<uint64_t*>(value), width, flags | UPPERDIGITS);
+						++arg;
+						break;
+					}
+				case 'x':
+					{
+						cell_t *value;
+						pCtx->LocalToPhysAddr(params[arg], &value);
+						AddHex(&buf_p, llen, *reinterpret_cast<uint64_t*>(value), width, flags);
+						++arg;
+						break;
+					}
+				default:
+					{
+						return pCtx->ThrowNativeError("%s", "Invalid formatter. Only %lb, %ld, %li, %lu, %lX, %lx are allowed.");
+					}
+				}
 				break;
 			}
 		case '%':
