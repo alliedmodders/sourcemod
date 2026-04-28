@@ -1286,6 +1286,24 @@ bool CExtensionManager::LibraryExists(const char *library)
 	return false;
 }
 
+void CExtensionManager::ForEachLibrary(ke::Function<void(const char *)> callback)
+{
+	for (List<CExtension *>::iterator iter = m_Libs.begin();
+		 iter != m_Libs.end();
+		 iter++)
+	{
+		CExtension *pExt = (*iter);
+		if (!pExt->IsLoaded())
+			continue;
+		for (List<String>::iterator s_iter = pExt->m_Libraries.begin();
+			 s_iter != pExt->m_Libraries.end();
+			 s_iter++)
+		{
+			callback((*s_iter).c_str());
+		}
+	}
+}
+
 IExtension *CExtensionManager::LoadExternal(IExtensionInterface *pInterface,
 											const char *filepath,
 											const char *filename,
