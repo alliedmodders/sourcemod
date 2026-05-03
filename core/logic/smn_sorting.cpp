@@ -283,13 +283,17 @@ int sort_strings_asc(const void *blk1, const void *blk2)
 	cell_t str_addr1 = *(cell_t *)blk1;
 	cell_t str_addr2 = *(cell_t *)blk2;
 
-	char *str1;
-	char *str2;
-	if (sSortContext->LocalToString(str_addr1, &str1) != SP_ERROR_NONE ||
-		sSortContext->LocalToString(str_addr2, &str2) != SP_ERROR_NONE)
+	ARRAY_PTR h1, h2;
+	if (sSortContext->LocalToArrayPtr(str_addr1, &h1) != SP_ERROR_NONE ||
+		sSortContext->LocalToArrayPtr(str_addr2, &h2) != SP_ERROR_NONE)
 	{
 		return 0;
 	}
+	char *str1 = (char *)sSortContext->GetArrayData(h1);
+	char *str2 = (char *)sSortContext->GetArrayData(h2);
+
+	if (!str1 || !str2)
+		return 0;
 
 	return strcmp(str1, str2);
 }
@@ -299,13 +303,17 @@ int sort_strings_desc(const void *blk1, const void *blk2)
 	cell_t str_addr1 = *(cell_t *)blk1;
 	cell_t str_addr2 = *(cell_t *)blk2;
 
-	char *str1;
-	char *str2;
-	if (sSortContext->LocalToString(str_addr1, &str1) != SP_ERROR_NONE ||
-		sSortContext->LocalToString(str_addr2, &str2) != SP_ERROR_NONE)
+	ARRAY_PTR h1, h2;
+	if (sSortContext->LocalToArrayPtr(str_addr1, &h1) != SP_ERROR_NONE ||
+		sSortContext->LocalToArrayPtr(str_addr2, &h2) != SP_ERROR_NONE)
 	{
 		return 0;
 	}
+	char *str1 = (char *)sSortContext->GetArrayData(h1);
+	char *str2 = (char *)sSortContext->GetArrayData(h2);
+
+	if (!str1 || !str2)
+		return 0;
 
 	return strcmp(str2, str1);
 }
@@ -316,11 +324,13 @@ static cell_t sm_SortStrings(IPluginContext *pContext, const cell_t *params)
 	if (!rt->UsesDirectArrays())
 		return sm_SortStrings_Legacy(pContext, params);
 
-	cell_t *array;
+	ARRAY_PTR handle;
+	if (pContext->LocalToArrayPtr(params[1], &handle) != SP_ERROR_NONE)
+		return 0;
+
+	cell_t *array = (cell_t *)pContext->GetArrayData(handle);
 	cell_t array_size = params[2];
 	cell_t type = params[3];
-
-	pContext->LocalToPhysAddr(params[1], &array);
 
 	ke::SaveAndSet<IPluginContext*> set_context(&sSortContext, pContext);
 
@@ -507,11 +517,13 @@ static cell_t sm_SortCustom2D(IPluginContext *pContext, const cell_t *params)
 	if (!rt->UsesDirectArrays())
 		return sm_SortCustom2D_Legacy(pContext, params);
 
-	cell_t *array;
+	ARRAY_PTR handle;
+	if (pContext->LocalToArrayPtr(params[1], &handle) != SP_ERROR_NONE)
+		return 0;
+
+	cell_t *array = (cell_t *)pContext->GetArrayData(handle);
 	cell_t array_size = params[2];
 	IPluginFunction *pFunction;
-
-	pContext->LocalToPhysAddr(params[1], &array);
 
 	if ((pFunction=pContext->GetFunctionById(params[3])) == NULL)
 	{
