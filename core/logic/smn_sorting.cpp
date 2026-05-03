@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <memory>
 #include "common_logic.h"
 #include "CellArray.h"
 #include <IHandleSys.h>
@@ -227,16 +228,10 @@ static cell_t sm_SortStrings_Legacy(IPluginContext *pContext, const cell_t *para
 	pContext->LocalToPhysAddr(params[1], &array);
 
 	/** HACKHACK - back up the old indices, replace the indices with something easier */
-	cell_t amx_addr, *phys_addr;
-	int err;
-	if ((err=pContext->HeapAlloc(array_size, &amx_addr, &phys_addr)) != SP_ERROR_NONE)
-	{
-		pContext->ThrowNativeErrorEx(err, "Ran out of memory to sort");
-		return 0;
-	}
+	auto phys_addr = std::make_unique<cell_t[]>(array_size);
 
 	g_CurStringArray = array;
-	g_CurRebaseMap = phys_addr;
+	g_CurRebaseMap = phys_addr.get();
 
 	for (int i=0; i<array_size; i++)
 	{
@@ -267,8 +262,6 @@ static cell_t sm_SortStrings_Legacy(IPluginContext *pContext, const cell_t *para
 		 */
 		array[i] = ((char *)&array[array[i]] + phys_addr[array[i]]) - (char *)&array[i];
 	}
-
-	pContext->HeapPop(amx_addr);
 
 	g_CurStringArray = NULL;
 	g_CurRebaseMap = NULL;
@@ -449,13 +442,7 @@ static cell_t sm_SortCustom2D_Legacy(IPluginContext *pContext, const cell_t *par
 	}
 
 	/** back up the old indices, replace the indices with something easier */
-	cell_t amx_addr, *phys_addr;
-	int err;
-	if ((err=pContext->HeapAlloc(array_size, &amx_addr, &phys_addr)) != SP_ERROR_NONE)
-	{
-		pContext->ThrowNativeErrorEx(err, "Ran out of memory to sort");
-		return 0;
-	}
+	auto phys_addr = std::make_unique<cell_t[]>(array_size);
 
 	sort_info oldinfo = g_SortInfo;
 
@@ -467,7 +454,7 @@ static cell_t sm_SortCustom2D_Legacy(IPluginContext *pContext, const cell_t *par
 	
 	/** Same process as in strings, back up the old indices for later fixup */
 	g_SortInfo.array_base = array;
-	g_SortInfo.array_remap = phys_addr;
+	g_SortInfo.array_remap = phys_addr.get();
 	
 	for (int i=0; i<array_size; i++)
 	{
@@ -485,8 +472,6 @@ static cell_t sm_SortCustom2D_Legacy(IPluginContext *pContext, const cell_t *par
 		 */
 		array[i] = ((char *)&array[array[i]] + phys_addr[array[i]]) - (char *)&array[i];
 	}
-
-	pContext->HeapPop(amx_addr);
 
 	g_SortInfo = oldinfo;
 	
