@@ -1084,6 +1084,58 @@ void CPluginManager::LoadAll_SecondPass()
 	m_AllPluginsLoaded = true;
 }
 
+std::vector<CPlugin *> CPluginManager::LoadPluginBatch(
+	const std::vector<std::pair<std::string, PluginType>> &plugins)
+{
+	std::vector<CPlugin *> results(plugins.size(), nullptr);
+
+	// First pass: compile and prepare all plugins.
+	for (size_t i = 0; i < plugins.size(); i++) {
+		auto &[filename, type] = plugins[i];
+		CPlugin *pl;
+		LoadRes res = LoadPlugin(&pl, filename.c_str(), true, type);
+		if (res == LoadRes_Failure) {
+			g_Logger.LogError("[SM] Failed to load plugin \"%s\": %s",
+			                  filename.c_str(), pl->GetErrorMsg());
+			delete pl;
+			continue;
+		}
+		if (res == LoadRes_AlreadyLoaded) {
+			results[i] = pl;
+			continue;
+		}
+		if (res == LoadRes_NeverLoad) {
+			continue;
+		}
+		AddPlugin(pl);
+		results[i] = pl;
+	}
+
+	// Second pass: resolve dependencies and call OnPluginStart for all
+	// newly loaded plugins. This matches the LoadAll_SecondPass pattern
+	// where all plugins are present in m_plugins before any RunSecondPass.
+	for (size_t i = 0; i < results.size(); i++) {
+		CPlugin *pl = results[i];
+		if (!pl || pl->GetStatus() != Plugin_Loaded)
+			continue;
+		if (!RunSecondPass(pl)) {
+			g_Logger.LogError("[SM] Unable to load plugin \"%s\": %s",
+			                  pl->GetFilename(), pl->GetErrorMsg());
+			Purge(pl);
+			pl->FinishEviction();
+			results[i] = nullptr;
+		}
+	}
+
+	// Final pass: OnAllPluginsLoaded.
+	for (auto *pl : results) {
+		if (pl && pl->GetStatus() <= Plugin_Paused)
+			pl->Call_OnAllPluginsLoaded();
+	}
+
+	return results;
+}
+
 bool CPluginManager::FindOrRequirePluginDeps(CPlugin *pPlugin)
 {
 	struct _pl
