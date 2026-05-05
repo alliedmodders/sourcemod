@@ -1394,6 +1394,11 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin)
 		});
 	}
 
+	// Go through all loaded extension libraries and tell this plugin they're loaded.
+	g_Extensions.ForEachLibrary([pPlugin] (const char *lib) -> void {
+		pPlugin->Call_OnLibraryAdded(lib);
+	});
+
 	return true;
 }
 
