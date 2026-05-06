@@ -41,10 +41,9 @@ MyDriver::MyDriver()
 	m_MyHandle = BAD_HANDLE;
 }
 
-void CloseDBList(List<MyDatabase *> &l)
+void CloseDBList(std::list<MyDatabase *> &l)
 {
-	List<MyDatabase *>::iterator iter;
-	for (iter=l.begin(); iter!=l.end(); iter++)
+	for (auto iter=l.begin(); iter!=l.end(); iter++)
 	{
 		MyDatabase *db = (*iter);
 		while (!db->Close())
@@ -57,7 +56,6 @@ void CloseDBList(List<MyDatabase *> &l)
 
 void MyDriver::Shutdown()
 {
-	List<MyDatabase *>::iterator iter;
 	CloseDBList(m_PermDbs);
 
 	if (m_MyHandle != BAD_HANDLE)
@@ -165,8 +163,7 @@ IDatabase *MyDriver::Connect(const DatabaseInfo *info, bool persistent, char *er
 	if (persistent)
 	{
 		/* Try to find a matching persistent connection */
-		List<MyDatabase *>::iterator iter;
-		for (iter=m_PermDbs.begin();
+		for (auto iter=m_PermDbs.begin();
 			 iter!=m_PermDbs.end();
 			 iter++)
 		{

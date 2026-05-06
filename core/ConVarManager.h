@@ -34,7 +34,7 @@
 
 #include "sm_globals.h"
 #include "sourcemm_api.h"
-#include <sh_list.h>
+#include <list>
 #include <IPluginSys.h>
 #include <IForwardSys.h>
 #include <IHandleSys.h>
@@ -44,8 +44,6 @@
 #include "concmd_cleaner.h"
 #include "PlayerManager.h"
 #include <sm_hashmap.h>
-
-using namespace SourceHook;
 
 class IConVarChangeListener
 {
@@ -63,7 +61,7 @@ struct ConVarInfo
 	IChangeableForward *pChangeForward;	/**< Forward associated with convar */
 	ConVar *pVar;						/**< The actual convar */
 	IPlugin *pPlugin; 					/**< Originally owning plugin */
-	List<IConVarChangeListener *> changeListeners;
+	std::list<IConVarChangeListener *> changeListeners;
 
 	struct ConVarPolicy
 	{
@@ -175,8 +173,8 @@ private:
 	static void AddConVarToPluginList(IPlugin *plugin, const ConVar *pConVar);
 private:
 	HandleType_t m_ConVarType;
-	List<ConVarInfo *> m_ConVars;
-	List<ConVarQuery> m_ConVarQueries;
+	std::list<ConVarInfo *> m_ConVars;
+	std::list<ConVarQuery> m_ConVarQueries;
 };
 
 extern ConVarManager g_ConVarManager;

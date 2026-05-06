@@ -131,6 +131,7 @@ checkout ()
     fi
     git checkout $branch
     git pull origin $branch
+    git submodule update --recursive
     if [ -n "$origin" ]; then
       git remote set-url origin $origin
     fi
@@ -138,8 +139,8 @@ checkout ()
   fi
 }
 
-name=mmsource-1.12
-branch=1.12-dev
+name=mmsource-2.0
+branch=k/sourcehook_alternative
 repo="https://github.com/alliedmodders/metamod-source"
 origin=
 checkout

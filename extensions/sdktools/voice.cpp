@@ -56,30 +56,22 @@ size_t g_VoiceHookCount = 0;
 ListenOverride g_VoiceMap[SM_MAXPLAYERS+1][SM_MAXPLAYERS+1];
 bool g_ClientMutes[SM_MAXPLAYERS+1][SM_MAXPLAYERS+1];
 
-SH_DECL_HOOK3(IVoiceServer, SetClientListening, SH_NOATTRIB, 0, bool, int, int, bool);
-
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *, const CCommand &);
-#else
-SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *);
-#endif
-
-bool DecHookCount()
+bool SDKTools::DecListeningHookCount()
 {
 	if (--g_VoiceHookCount == 0)
 	{
-		SH_REMOVE_HOOK(IVoiceServer, SetClientListening, voiceserver, SH_MEMBER(&g_SdkTools, &SDKTools::OnSetClientListening), false);
+		m_HookSetClientListening.Remove(voiceserver);
 		return true;
 	}
 
 	return false;
 }
 
-void IncHookCount()
+void SDKTools::IncListeningHookCount()
 {
 	if (!g_VoiceHookCount++)
 	{
-		SH_ADD_HOOK(IVoiceServer, SetClientListening, voiceserver, SH_MEMBER(&g_SdkTools, &SDKTools::OnSetClientListening), false);
+		m_HookSetClientListening.Add(voiceserver);
 	}
 }
 
@@ -88,7 +80,7 @@ void SDKTools::VoiceInit()
 	memset(g_VoiceMap, 0, sizeof(g_VoiceMap));
 	memset(g_ClientMutes, 0, sizeof(g_ClientMutes));
 
-	SH_ADD_HOOK(IServerGameClients, ClientCommand, serverClients, SH_MEMBER(this, &SDKTools::OnClientCommand), true);
+	m_HookClientCommand.Add(serverClients);
 }
 
 void SDKTools::VoiceShutdown()
@@ -96,17 +88,17 @@ void SDKTools::VoiceShutdown()
 	if (g_VoiceHookCount > 0)
 	{
 		g_VoiceHookCount = 1;
-		DecHookCount();
+		g_SdkTools.DecListeningHookCount();
 	}
-	SH_REMOVE_HOOK(IServerGameClients, ClientCommand, serverClients, SH_MEMBER(this, &SDKTools::OnClientCommand), true);
+	m_HookClientCommand.Remove(serverClients);
 }
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-void SDKTools::OnClientCommand(edict_t *pEntity, const CCommand &args)
+KHook::Return<void> SDKTools::OnClientCommand(IServerGameClients*, edict_t *pEntity, const CCommand &args)
 {
 	int client = IndexOfEdict(pEntity);
 #else
-void SDKTools::OnClientCommand(edict_t *pEntity)
+KHook::Return<void> SDKTools::OnClientCommand(IServerGameClients*, edict_t *pEntity)
 {
 	CCommand args;
 	int client = IndexOfEdict(pEntity);
@@ -126,33 +118,33 @@ void SDKTools::OnClientCommand(edict_t *pEntity)
 		}
 	}
 
-	RETURN_META(MRES_IGNORED);
+	return { KHook::Action::Ignore };
 }
 
-bool SDKTools::OnSetClientListening(int iReceiver, int iSender, bool bListen)
+KHook::Return<bool> SDKTools::OnSetClientListening(IVoiceServer* server, int iReceiver, int iSender, bool bListen)
 {
 	if (g_ClientMutes[iReceiver][iSender])
 	{
-		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, false));
+		return KHook::Recall(&IVoiceServer::SetClientListening, KHook::Return<bool>{ KHook::Action::Ignore, bListen }, server, iReceiver, iSender, false);
 	}
 
 	if (g_VoiceFlags[iSender] & SPEAK_MUTED)
 	{
-		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, false));
+		return KHook::Recall(&IVoiceServer::SetClientListening, KHook::Return<bool>{ KHook::Action::Ignore, bListen }, server, iReceiver, iSender, false);
 	}
 
 	if (g_VoiceMap[iReceiver][iSender] == Listen_No)
 	{
-		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, false));
+		return KHook::Recall(&IVoiceServer::SetClientListening, KHook::Return<bool>{ KHook::Action::Ignore, bListen }, server, iReceiver, iSender, false);
 	}
 	else if (g_VoiceMap[iReceiver][iSender] == Listen_Yes)
 	{
-		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, true));
+		return KHook::Recall(&IVoiceServer::SetClientListening, KHook::Return<bool>{ KHook::Action::Ignore, bListen }, server, iReceiver, iSender, true);
 	}
 
 	if ((g_VoiceFlags[iSender] & SPEAK_ALL) || (g_VoiceFlags[iReceiver] & SPEAK_LISTENALL))
 	{
-		RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, true));
+		return KHook::Recall(&IVoiceServer::SetClientListening, KHook::Return<bool>{ KHook::Action::Ignore, bListen }, server, iReceiver, iSender, true);
 	}
 
 	if ((g_VoiceFlags[iSender] & SPEAK_TEAM) || (g_VoiceFlags[iReceiver] & SPEAK_LISTENTEAM))
@@ -167,12 +159,12 @@ bool SDKTools::OnSetClientListening(int iReceiver, int iSender, bool bListen)
 
 			if (pRInfo && pSInfo && pRInfo->GetTeamIndex() == pSInfo->GetTeamIndex())
 			{
-				RETURN_META_VALUE_NEWPARAMS(MRES_IGNORED, bListen, &IVoiceServer::SetClientListening, (iReceiver, iSender, true));
+				return KHook::Recall(&IVoiceServer::SetClientListening, KHook::Return<bool>{ KHook::Action::Ignore, bListen }, server, iReceiver, iSender, true);
 			}
 		}
 	}
 
-	RETURN_META_VALUE(MRES_IGNORED, bListen);
+	return { KHook::Action::Ignore, bListen };
 }
 
 void SDKTools::OnClientDisconnecting(int client)
@@ -207,7 +199,7 @@ void SDKTools::OnClientDisconnecting(int client)
 		if (g_VoiceMap[i][client] != Listen_Default)
 		{
 			g_VoiceMap[i][client] = Listen_Default;
-			if (DecHookCount())
+			if (g_SdkTools.DecListeningHookCount())
 			{
 				break;
 			}
@@ -215,7 +207,7 @@ void SDKTools::OnClientDisconnecting(int client)
 		if (g_VoiceMap[client][i] != Listen_Default)
 		{
 			g_VoiceMap[client][i] = Listen_Default;
-			if (DecHookCount())
+			if (g_SdkTools.DecListeningHookCount())
 			{
 				break;
 			}
@@ -225,7 +217,7 @@ void SDKTools::OnClientDisconnecting(int client)
 	if (g_VoiceFlags[client])
 	{
 		g_VoiceFlags[client] = SPEAK_NORMAL;
-		DecHookCount();
+		g_SdkTools.DecListeningHookCount();
 	}
 }
 
@@ -243,11 +235,11 @@ static cell_t SetClientListeningFlags(IPluginContext *pContext, const cell_t *pa
 
 	if (!params[2] && g_VoiceFlags[params[1]])
 	{
-		DecHookCount();
+		g_SdkTools.DecListeningHookCount();
 	}
 	else if (!g_VoiceFlags[params[1]] && params[2])
 	{
-		IncHookCount();
+		g_SdkTools.IncListeningHookCount();
 	}
 
 	g_VoiceFlags[params[1]] = params[2];
@@ -301,12 +293,12 @@ static cell_t SetClientListening(IPluginContext *pContext, const cell_t *params)
 	if (g_VoiceMap[r][s] == Listen_Default && params[3] != Listen_Default)
 	{
 		g_VoiceMap[r][s] = (ListenOverride) params[3];
-		IncHookCount();
+		g_SdkTools.IncListeningHookCount();
 	}
 	else if (g_VoiceMap[r][s] != Listen_Default && params[3] == Listen_Default)
 	{
 		g_VoiceMap[r][s] = (ListenOverride) params[3];
-		DecHookCount();
+		g_SdkTools.DecListeningHookCount();
 	}
 	else
 	{

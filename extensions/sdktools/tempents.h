@@ -34,8 +34,8 @@
 
 #include "extension.h"
 #include <irecipientfilter.h>
-#include <sh_list.h>
-#include <sh_string.h>
+#include <list>
+#include <string>
 #include <stdio.h>
 
 class TempEntityInfo
@@ -61,7 +61,7 @@ private:
 private:
 	void *m_Me;
 	ServerClass *m_Sc;
-	SourceHook::String m_Name;
+	std::string m_Name;
 };
 
 class TempEntityManager
@@ -79,7 +79,7 @@ public:
 	void DumpList();
 	void DumpProps(FILE *fp);
 private:
-	SourceHook::List<TempEntityInfo *> m_TEList;
+	std::list<TempEntityInfo *> m_TEList;
 	IBasicTrie *m_TempEntInfo;
 	void *m_ListHead;
 	int m_NameOffs;
@@ -91,7 +91,7 @@ private:
 struct TEHookInfo
 {
 	TempEntityInfo *te;
-	SourceHook::List<IPluginFunction *> lst;
+	std::list<IPluginFunction *> lst;
 };
 
 class TempEntHooks : public IPluginsListener
@@ -99,18 +99,20 @@ class TempEntHooks : public IPluginsListener
 public: //IPluginsListener
 	void OnPluginUnloaded(IPlugin *plugin);
 public:
+	TempEntHooks();
 	void Initialize();
 	void Shutdown();
 	bool AddHook(const char *name, IPluginFunction *pFunc);
 	bool RemoveHook(const char *name, IPluginFunction *pFunc);
-	void OnPlaybackTempEntity(IRecipientFilter &filter, float delay, const void *pSender, const SendTable *pST, int classID);
+	KHook::Return<void> OnPlaybackTempEntity(IVEngineServer*, IRecipientFilter &filter, float delay, const void *pSender, const SendTable *pST, int classID);
+	KHook::Virtual<IVEngineServer, void, IRecipientFilter&, float, const void*, const SendTable*, int> m_HookPlaybackTempEntity;
 private:
 	void _IncRefCounter();
 	void _DecRefCounter();
 	size_t _FillInPlayers(int *pl_array, IRecipientFilter *pFilter);
 private:
 	IBasicTrie *m_TEHooks;
-	SourceHook::List<TEHookInfo *> m_HookInfo;
+	std::list<TEHookInfo *> m_HookInfo;
 	size_t m_HookCount;
 };
 

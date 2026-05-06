@@ -31,8 +31,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sstream>
-#include <sh_list.h>
-#include <sh_string.h>
+#include <list>
+#include <string>
 #include "GameConfigs.h"
 #include "stringutil.h"
 #include <IGameHelpers.h>
@@ -52,8 +52,6 @@
 #if defined PLATFORM_POSIX
 #include <dlfcn.h>
 #endif
-
-using namespace SourceHook;
 
 GameConfigManager g_GameConfigs;
 IGameConfig *g_pGameConf = NULL;
@@ -791,7 +789,11 @@ public:
 				(!had_game && matched_engine) ||
 				(matched_engine && matched_game))
 			{
-				if (fileList->find(cur_file) == fileList->end())
+				auto iterS = fileList->begin();
+				while (iterS != fileList->end() && (*iterS) != cur_file) {
+					iterS++;
+				}
+				if (iterS == fileList->end())
 				{
 					fileList->push_back(cur_file);
 				}
@@ -806,7 +808,7 @@ public:
 		return SMCResult_Continue;
 	}
 public:
-	List<String> *fileList;
+	std::list<std::string> *fileList;
 	unsigned int state;
 	unsigned int ignoreLevel;
 	char cur_file[PLATFORM_MAX_PATH];
@@ -857,7 +859,7 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 	/* Otherwise, it's time to parse the master. */
 	SMCError err;
 	SMCStates state = {0, 0};
-	List<String> fileList;
+	std::list<std::string> fileList;
 	master_reader.fileList = &fileList;
 	const char *pEngine[2] = { m_pBaseEngine, m_pEngine  };
 
@@ -885,8 +887,7 @@ bool CGameConfig::Reparse(char *error, size_t maxlength)
 	}
 
 	/* Go through each file we found and parse it. */
-	List<String>::iterator iter;
-	for (iter = fileList.begin(); iter != fileList.end(); iter++)
+	for (auto iter = fileList.begin(); iter != fileList.end(); iter++)
 	{
 		ke::SafeSprintf(path, sizeof(path), "%s/%s", m_File, (*iter).c_str());
 		if (!EnterFile(path, error, maxlength))

@@ -38,6 +38,8 @@
 #include "IHandleSys.h"
 #include "smsdk_ext.h"
 
+#include <list>
+
 int CheckBaseHandle(CBaseHandle &hndl);
 
 class StructManager : public IStructAbstracter
@@ -48,7 +50,7 @@ public:
 	void AddStruct(const char *name, StructInfo *str);
 private:
 	KTrie<StructInfo *> structs;
-	SourceHook::List<StructInfo *> structsList;
+	std::list<StructInfo *> structsList;
 };
 
 extern StructManager g_StructManager;

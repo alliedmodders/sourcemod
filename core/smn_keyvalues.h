@@ -33,7 +33,7 @@
 #define _INCLUDE_SOURCEMOD_KVWRAPPER_H_
 
 #include <IHandleSys.h>
-#include <sh_stack.h>
+#include <deque>
 
 using namespace SourceMod;
 
@@ -42,7 +42,7 @@ class KeyValues;
 struct KeyValueStack
 {
 	KeyValues *pBase;
-	SourceHook::CStack<KeyValues *> pCurRoot;
+	std::deque<KeyValues *> pCurRoot;
 	bool m_bDeleteOnDestroy = true;
 };
 
