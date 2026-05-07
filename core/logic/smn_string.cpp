@@ -155,7 +155,7 @@ static cell_t StringToInt64(IPluginContext *pCtx, const cell_t *params)
 	return dummy - str;
 }
 
-static cell_t StringToInt64Ex(IPluginContext *pCtx, const cell_t *params)
+static cell_t StringToI64(IPluginContext *pCtx, const cell_t *params)
 {
 	cell_t* out;
 	if (int err = pCtx->LocalToPhysAddr(params[1], &out); err != SP_ERROR_NONE)
@@ -165,12 +165,12 @@ static cell_t StringToInt64Ex(IPluginContext *pCtx, const cell_t *params)
 	if (int err = pCtx->LocalToString(params[2], &str); err != SP_ERROR_NONE)
 		return pCtx->ThrowNativeErrorEx(err, "Invalid str (error %d)", err);
 
-	cell_t *bytes;
-	if (int err = pCtx->LocalToPhysAddr(params[3], &bytes); err != SP_ERROR_NONE)
-		return pCtx->ThrowNativeErrorEx(err, "Invalid bytes (error %d)", err);
+	cell_t *consumed;
+	if (int err = pCtx->LocalToPhysAddr(params[4], &consumed); err != SP_ERROR_NONE)
+		return pCtx->ThrowNativeErrorEx(err, "Invalid nConsumed (error %d)", err);
 
-	*reinterpret_cast<int64_t*>(out) = strtoll(str, &dummy, params[4]);
-	*bytes = dummy - str;
+	*reinterpret_cast<int64_t*>(out) = strtoll(str, &dummy, params[3]);
+	*consumed = dummy - str;
 	return 0;
 }
 
@@ -655,7 +655,7 @@ REGISTER_NATIVES(basicStrings)
 	{"StringToInt",			sm_strconvint},
 	{"StringToIntEx",		StringToIntEx},
 	{"StringToInt64",		StringToInt64},
-	{"StringToInt64Ex",		StringToInt64Ex},
+	{"StringToI64",			StringToI64},
 	{"StringToFloat",		sm_strtofloat},
 	{"StringToFloatEx",		StringToFloatEx},
 	{"StripQuotes",			StripQuotes},
