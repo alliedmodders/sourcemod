@@ -55,36 +55,35 @@ bool GeoIP_Extension::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		return true;
 	}
 
-	char m_GeoipDir[PLATFORM_MAX_PATH];
+	char m_GeoipDir[PLATFORM_MAX_PATH], m_GeoipDb[PLATFORM_MAX_PATH] = {0};
 	g_pSM->BuildPath(Path_SM, m_GeoipDir, sizeof(m_GeoipDir), "configs/geoip");
 
-	bool hasEntry = false;
-
+	time_t modTime = 0;
 	IDirectory *dir = libsys->OpenDirectory(m_GeoipDir);
+
 	if (dir) 
 	{
+		const char *name;
+		size_t len;
+		char database[PLATFORM_MAX_PATH];
+		time_t mtime;
+
 		while (dir->MoreFiles())
 		{
 			if (dir->IsEntryFile())
 			{
-				const char *name = dir->GetEntryName();
-				size_t len = strlen(name);
+				name = dir->GetEntryName();
+				len = strlen(name);
+
 				if (len >= 5 && strcmp(&name[len-5], ".mmdb") == 0)
 				{
-					char database[PLATFORM_MAX_PATH];
 					libsys->PathFormat(database, sizeof(database), "%s/%s", m_GeoipDir, name);
 
-					int status = MMDB_open(database, MMDB_MODE_MMAP, &mmdb);
-
-					if (status != MMDB_SUCCESS)
+					if (libsys->FileTime(database, FileTime_LastChange, &mtime) && mtime > modTime)
 					{
-						ke::SafeSprintf(error, maxlength, "Failed to open GeoIP2 database %s: %s", database, MMDB_strerror(status));
-						libsys->CloseDirectory(dir);
-						return false;
+						modTime = mtime;
+						ke::SafeStrcpy(m_GeoipDb, sizeof(m_GeoipDb), database);
 					}
-
-					hasEntry = true;
-					break;
 				}
 			}
 			dir->NextEntry();
@@ -92,7 +91,17 @@ bool GeoIP_Extension::SDK_OnLoad(char *error, size_t maxlength, bool late)
 		libsys->CloseDirectory(dir);
 	}
 
-	if (!hasEntry)
+	if (m_GeoipDb[0] != '\0')
+	{
+		int status = MMDB_open(m_GeoipDb, MMDB_MODE_MMAP, &mmdb);
+
+		if (status != MMDB_SUCCESS)
+		{
+			ke::SafeSprintf(error, maxlength, "Failed to open GeoIP2 database %s: %s", m_GeoipDb, MMDB_strerror(status));
+			return false;
+		}
+	}
+	else
 	{
 		ke::SafeStrcpy(error, maxlength, "Could not find GeoIP2 database.");
 		return false;

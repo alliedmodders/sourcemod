@@ -50,7 +50,7 @@
 			/* Offset into "LevelShutdown" */
 			"gEntList"
 			{
-				"windows"	"26"
+				"windows"	"25"
 			}
 
 			"EntInfo"

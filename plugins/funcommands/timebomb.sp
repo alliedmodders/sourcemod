@@ -47,6 +47,11 @@ void CreateTimeBomb(int client)
 
 void KillTimeBomb(int client)
 {
+	if (g_TimeBombSerial[client] == 0)
+	{
+		return;
+	}
+
 	g_TimeBombSerial[client] = 0;
 
 	if (IsClientInGame(client))
@@ -73,7 +78,6 @@ void PerformTimeBomb(int client, int target)
 	else
 	{
 		KillTimeBomb(target);
-		SetEntityRenderColor(client, 255, 255, 255, 255);
 		LogAction(client, target, "\"%L\" removed a TimeBomb on \"%L\"", client, target);
 	}
 }
@@ -149,7 +153,6 @@ public Action Timer_TimeBomb(Handle timer, any value)
 
 		ForcePlayerSuicide(client);
 		KillTimeBomb(client);
-		SetEntityRenderColor(client, 255, 255, 255, 255);
 		
 		if (g_Cvar_TimeBombMode.IntValue > 0)
 		{

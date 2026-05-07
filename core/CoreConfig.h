@@ -71,6 +71,19 @@ private:
 	StringHashMap<std::string> m_KeyValues;
 };
 
+struct StringPolicy
+{
+	static inline uint32_t hash(const std::string &key)
+	{
+		std::string lower = ke::Lowercase(key.c_str());
+		return ke::FastHashCharSequence(lower.c_str(), lower.length());
+	}
+	static inline bool matches(const char *find, const std::string &key)
+	{
+		return strcasecmp(find, key.c_str()) == 0;
+	}
+};
+
 extern bool SM_AreConfigsExecuted();
 extern void SM_ExecuteAllConfigs();
 extern void SM_ExecuteForPlugin(IPluginContext *ctx);
