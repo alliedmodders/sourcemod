@@ -105,4 +105,40 @@ void Test_StringToI64()
         StringToI64("1_234_567", .nConsumed=nConsumed),
         1);
     AssertEq("nConsumed 1_234_567", nConsumed, 1);
+
+    AssertInt64Eq(
+        "result 9223372036854775807",
+        StringToI64("9223372036854775807", .nConsumed=nConsumed),
+        9223372036854775807);
+    AssertEq("nConsumed 9223372036854775807", nConsumed, 19);
+
+    AssertInt64Eq(
+        "result 9223372036854775808",
+        StringToI64("9223372036854775807", .nConsumed=nConsumed),
+        9223372036854775807);
+    AssertEq("nConsumed 9223372036854775808", nConsumed, 19);
+
+    AssertInt64Eq(
+        "result 92233720368547758070",
+        StringToI64("9223372036854775807", .nConsumed=nConsumed),
+        9223372036854775807);
+    AssertEq("nConsumed 92233720368547758070", nConsumed, 19);
+
+    AssertInt64Eq(
+        "result -9223372036854775808",
+        StringToI64("-9223372036854775808", .nConsumed=nConsumed),
+        -9223372036854775807-1);
+    AssertEq("nConsumed -9223372036854775808", nConsumed, 20);
+
+    AssertInt64Eq(
+        "result -9223372036854775809",
+        StringToI64("-9223372036854775808", .nConsumed=nConsumed),
+        -9223372036854775807-1);
+    AssertEq("nConsumed -9223372036854775809", nConsumed, 20);
+
+    AssertInt64Eq(
+        "result -92233720368547758080",
+        StringToI64("-9223372036854775808", .nConsumed=nConsumed),
+        -9223372036854775807-1);
+    AssertEq("nConsumed -92233720368547758080", nConsumed, 20);
 }

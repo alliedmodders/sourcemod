@@ -204,6 +204,10 @@ native int StringToIntEx(const char[] str, int &result, int nBase=10);
 /**
  * Converts a string to a 64-bit integer.
  *
+ * @note If the value is outside the range of representable values,
+ *       If the value is positive, this function will return INT64_MAX.
+ *       If the value is negative, this function will return INT64_MIN.
+ *
  * @param str           String to convert.
  * @param result        Array to store the upper and lower
  *                      32-bits of the 64-bit integer.
@@ -214,6 +218,10 @@ native int StringToInt64(const char[] str, int result[2], int nBase=10);
 
 /**
  * Converts a string to an int64 type value.
+ *
+ * @note If the value is outside the range of representable values,
+ *       If the value is positive, this function will return INT64_MAX.
+ *       If the value is negative, this function will return INT64_MIN.
  *
  * @param str           String to convert.
  * @param nBase         Numerical base to use.  10 is default.
