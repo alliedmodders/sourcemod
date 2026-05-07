@@ -7,102 +7,102 @@
 
 public void OnPluginStart()
 {
-    Test_StringToInt64Ex();
+    Test_StringToI64();
 }
 
 
-void Test_StringToInt64Ex()
+void Test_StringToI64()
 {
-    SetTestContext("Test StringToInt64Ex");
+    SetTestContext("Test StringToI64");
 
-    AssertInt64Eq("DEC 0",                    StringToInt64Ex("0"),                     0);
-    AssertInt64Eq("DEC 1234567",              StringToInt64Ex("1234567"),               1234567);
-    AssertInt64Eq("DEC 1234567654321",        StringToInt64Ex("1234567654321"),         1234567654321);
-    AssertInt64Eq("DEC 9223372036854775807",  StringToInt64Ex("9223372036854775807"),   9223372036854775807);
-    AssertInt64Eq("DEC -1234567",             StringToInt64Ex("-1234567"),              -1234567);
-    AssertInt64Eq("DEC -1234567654321",       StringToInt64Ex("-1234567654321"),        -1234567654321);
-    AssertInt64Eq("DEC -9223372036854775807", StringToInt64Ex("-9223372036854775807"),  -9223372036854775807);
+    AssertInt64Eq("DEC 0",                    StringToI64("0"),                     0);
+    AssertInt64Eq("DEC 1234567",              StringToI64("1234567"),               1234567);
+    AssertInt64Eq("DEC 1234567654321",        StringToI64("1234567654321"),         1234567654321);
+    AssertInt64Eq("DEC 9223372036854775807",  StringToI64("9223372036854775807"),   9223372036854775807);
+    AssertInt64Eq("DEC -1234567",             StringToI64("-1234567"),              -1234567);
+    AssertInt64Eq("DEC -1234567654321",       StringToI64("-1234567654321"),        -1234567654321);
+    AssertInt64Eq("DEC -9223372036854775807", StringToI64("-9223372036854775807"),  -9223372036854775807);
 
-    int bytes;
+    int nConsumed;
 
-    // bytes
+    // nConsumed
     AssertInt64Eq(
-        "result 0", 
-        StringToInt64Ex("0", bytes), 
+        "result 0",
+        StringToI64("0", .nConsumed=nConsumed),
         0);
-    AssertEq("bytes  0", bytes, 1);
+    AssertEq("nConsumed 0", nConsumed, 1);
 
     AssertInt64Eq(
-        "result 1234567", 
-        StringToInt64Ex("1234567", bytes), 
+        "result 1234567",
+        StringToI64("1234567", .nConsumed=nConsumed),
         1234567);
-    AssertEq("bytes  1234567", bytes, 7);
+    AssertEq("nConsumed 1234567", nConsumed, 7);
 
     AssertInt64Eq(
-        "result 1234567654321", 
-        StringToInt64Ex("1234567654321", bytes), 
+        "result 1234567654321",
+        StringToI64("1234567654321", .nConsumed=nConsumed),
         1234567654321);
-    AssertEq("bytes  1234567654321", bytes, 13);
+    AssertEq("nConsumed 1234567654321", nConsumed, 13);
 
     AssertInt64Eq(
-        "result 9223372036854775807", 
-        StringToInt64Ex("9223372036854775807", bytes), 
+        "result 9223372036854775807",
+        StringToI64("9223372036854775807", .nConsumed=nConsumed),
         9223372036854775807);
-    AssertEq("bytes  9223372036854775807", bytes, 19);
+    AssertEq("nConsumed 9223372036854775807", nConsumed, 19);
 
     AssertInt64Eq(
-        "result -1234567", 
-        StringToInt64Ex("-1234567", bytes), 
+        "result -1234567",
+        StringToI64("-1234567", .nConsumed=nConsumed),
         -1234567);
-    AssertEq("bytes  -1234567", bytes, 8);
+    AssertEq("nConsumed -1234567", nConsumed, 8);
 
     AssertInt64Eq(
-        "result -1234567654321", 
-        StringToInt64Ex("-1234567654321", bytes), 
+        "result -1234567654321",
+        StringToI64("-1234567654321", .nConsumed=nConsumed),
         -1234567654321);
-    AssertEq("bytes  -1234567654321", bytes, 14);
+    AssertEq("nConsumed -1234567654321", nConsumed, 14);
 
     AssertInt64Eq(
-        "result -9223372036854775807", 
-        StringToInt64Ex("-9223372036854775807", bytes), 
+        "result -9223372036854775807",
+        StringToI64("-9223372036854775807", .nConsumed=nConsumed),
         -9223372036854775807);
-    AssertEq("bytes  -9223372036854775807", bytes, 20);
+    AssertEq("nConsumed -9223372036854775807", nConsumed, 20);
 
     // Special nBase
     AssertInt64Eq(
-        "result 10001111101110001111101110110101110110001", 
-        StringToInt64Ex("10001111101110001111101110110101110110001", bytes, 2),
+        "result 10001111101110001111101110110101110110001",
+        StringToI64("10001111101110001111101110110101110110001", 2, nConsumed),
         1234567654321);
-    AssertEq("bytes  10001111101110001111101110110101110110001", bytes, 41);
+    AssertEq("nConsumed 10001111101110001111101110110101110110001", nConsumed, 41);
 
     AssertInt64Eq(
-        "result 21756175665661", 
-        StringToInt64Ex("21756175665661", bytes, 8),
+        "result 21756175665661",
+        StringToI64("21756175665661", 8, nConsumed),
         1234567654321);
-    AssertEq("bytes  11F71F76BB1", bytes, 14);
+    AssertEq("nConsumed 21756175665661", nConsumed, 14);
 
     AssertInt64Eq(
-        "result 11F71F76BB1", 
-        StringToInt64Ex("11F71F76BB1", bytes, 16),
+        "result 11F71F76BB1",
+        StringToI64("11F71F76BB1", 16, nConsumed),
         1234567654321);
-    AssertEq("bytes  11F71F76BB1", bytes, 11);
+    AssertEq("nConsumed 11F71F76BB1", nConsumed, 11);
 
-    // Orther
+    // Other
     AssertInt64Eq(
-        "result a1b2c3d4e5f6g7", 
-        StringToInt64Ex("a1b2c3d4e5f6g7", bytes), 
+        "result a1b2c3d4e5f6g7",
+        StringToI64("a1b2c3d4e5f6g7", .nConsumed=nConsumed),
         0);
-    AssertEq("bytes  a1b2c3d4e5f6g7", bytes, 0);
+    AssertEq("nConsumed a1b2c3d4e5f6g7", nConsumed, 0);
 
     AssertInt64Eq(
-        "result 0b10101", 
-        StringToInt64Ex("0b10101", bytes), 
+        "result 0b10101",
+        StringToI64("0b10101", .nConsumed=nConsumed),
         0);
-    AssertEq("bytes  0b10101", bytes, 1);
+    AssertEq("nConsumed 0b10101", nConsumed, 1);
 
     AssertInt64Eq(
-        "result 1_234_567", 
-        StringToInt64Ex("1_234_567", bytes), 
+        "result 1_234_567",
+        StringToI64("1_234_567", .nConsumed=nConsumed),
         1);
-    AssertEq("bytes  1_234_567", bytes, 1);
+    AssertEq("nConsumed 1_234_567", nConsumed, 1);
 }
