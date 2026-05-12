@@ -41,21 +41,19 @@ typedef ReentrantList<IPluginFunction *>::iterator FuncIter;
 
 class CForward : public IChangeableForward
 {
-public: //ICallable
-	virtual int PushCell(cell_t cell);
-	virtual int PushCellByRef(cell_t *cell, int flags);
-	virtual int PushFloat(float number);
-	virtual int PushFloatByRef(float *number, int flags);
-	virtual int PushArray(cell_t *inarray, unsigned int cells, int flags);
-	virtual int PushString(const char *string);
-	virtual int PushStringEx(char *buffer, size_t length, int sz_flags, int cp_flags);
-	virtual int PushInt64(int64_t value);
-	virtual void Cancel();
 public: //IForward
-	virtual const char *GetForwardName();
-	virtual unsigned int GetFunctionCount();
-	virtual ExecType GetExecType();
-	virtual int Execute(cell_t *result, IForwardFilter *filter);
+	virtual int PushCell(cell_t cell) override;
+	virtual int PushCellByRef(cell_t *cell, int flags) override;
+	virtual int PushFloat(float number) override;
+	virtual int PushFloatByRef(float *number, int flags) override;
+	virtual int PushArray(cell_t *inarray, unsigned int cells, int flags) override;
+	virtual int PushString(const char *string) override;
+	virtual int PushStringEx(char *buffer, size_t length, int sz_flags, int cp_flags) override;
+	virtual void Cancel() override;
+	virtual const char *GetForwardName() override;
+	virtual unsigned int GetFunctionCount() override;
+	virtual ExecType GetExecType() override;
+	virtual int Execute(cell_t *result, IForwardFilter *filter) override;
 public: //IChangeableForward
 	virtual bool RemoveFunction(IPluginFunction *func);
 	virtual unsigned int RemoveFunctionsOfPlugin(IPlugin *plugin);

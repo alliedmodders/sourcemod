@@ -50,7 +50,7 @@
 using namespace SourcePawn;
 
 #define SMINTERFACE_FORWARDMANAGER_NAME		"IForwardManager"
-#define SMINTERFACE_FORWARDMANAGER_VERSION	4
+#define SMINTERFACE_FORWARDMANAGER_VERSION	5
 
 /*
  * There is some very important documentation at the bottom of this file.
@@ -136,34 +136,120 @@ namespace SourceMod
 	 * Some functions are repeated in here because their documentation differs from their IPluginFunction equivalents.
 	 * Missing are the Push functions, whose only doc change is that they throw SP_ERROR_PARAM on type mismatches.
 	 */
-	class IForward : public ICallable
+	class IForward
 	{
 	public:
 		/** Virtual Destructor */
 		virtual ~IForward()
 		{
 		}
-	public:
+
+	    /**
+		* @brief Pushes a cell onto the forward.
+		*
+		* @param cell    Parameter value to push.
+		* @return      Error code, if any.
+		*/
+		virtual int PushCell(cell_t cell) = 0;
+
+		/**
+		* @brief Pushes a cell by reference onto the forward.
+		* NOTE: On Execute, the pointer passed will be modified if copyback is enabled.
+		* NOTE: By reference parameters are cached and thus are not read until execution.
+		*     This means you cannot push a pointer, change it, and push it again and expect
+		*       two different values to come out.
+		*
+		* @param cell    Address containing parameter value to push.
+		* @param flags    Copy-back flags.
+		* @return      Error code, if any.
+		*/
+		virtual int PushCellByRef(cell_t* cell, int flags = SM_PARAM_COPYBACK) = 0;
+
+		/**
+		* @brief Pushes a float onto the forward.
+		*
+		* @param number  Parameter value to push.
+		* @return      Error code, if any.
+		*/
+		virtual int PushFloat(float number) = 0;
+
+		/**
+		* @brief Pushes a float onto the forward by reference.
+		* NOTE: On Execute, the pointer passed will be modified if copyback is enabled.
+		* NOTE: By reference parameters are cached and thus are not read until execution.
+		*     This means you cannot push a pointer, change it, and push it again and expect
+		*       two different values to come out.
+		*
+		* @param number  Parameter value to push.
+		* @param flags    Copy-back flags.
+		* @return      Error code, if any.
+		*/
+		virtual int PushFloatByRef(float* number, int flags = SM_PARAM_COPYBACK) = 0;
+
+		/**
+		* @brief Pushes an array of cells onto the forward.
+		*
+		* On Execute, the pointer passed will be modified if non-NULL and copy-back
+		* is enabled.
+		*
+		* By reference parameters are cached and thus are not read until execution.
+		* This means you cannot push a pointer, change it, and push it again and expect
+		* two different values to come out.
+		*
+		* @param inarray  Array to copy, NULL if no initial array should be copied.
+		* @param cells    Number of cells to allocate and optionally read from the input array.
+		* @param flags    Whether or not changes should be copied back to the input array.
+		* @return      Error code, if any.
+		*/
+		virtual int PushArray(cell_t* inarray, unsigned int cells, int flags = 0) = 0;
+
+		/**
+		* @brief Pushes a string onto the forward.
+		*
+		* @param string  String to push.
+		* @return      Error code, if any.
+		*/
+		virtual int PushString(const char* string) = 0;
+
+		/**
+		* @brief Pushes a string or string buffer.
+		*
+		* NOTE: On Execute, the pointer passed will be modified if copy-back is enabled.
+		*
+		* @param buffer  Pointer to string buffer.
+		* @param length  Length of buffer.
+		* @param sz_flags  String flags.  In copy mode, the string will be copied
+		*          according to the handling (ascii, utf-8, binary, etc).
+		* @param cp_flags  Copy-back flags.
+		* @return      Error code, if any.
+		*/
+		virtual int PushStringEx(char* buffer, size_t length, int sz_flags, int cp_flags) = 0;
+
+		/**
+		* @brief Cancels a forward call that is being pushed but not yet executed.
+		*/
+		virtual void Cancel() = 0;
+
 		/**
 		 * @brief Returns the name of the forward.
 		 *
 		 * @return			Forward name.
 		 */
-		virtual const char *GetForwardName() =0;
+		virtual const char *GetForwardName() = 0;
 
 		/**
 		 * @brief Returns the number of functions in this forward.
 		 *
 		 * @return			Number of functions in forward.
 		 */
-		virtual unsigned int GetFunctionCount() =0;
+		virtual unsigned int GetFunctionCount() = 0;
 
 		/**
 		 * @brief Returns the method of multi-calling this forward has.
 		 *
 		 * @return			ExecType of the forward.
 		 */
-		virtual ExecType GetExecType() =0;
+		virtual ExecType GetExecType() = 0;
 
 		/**
 		 * @brief Executes the forward.
@@ -172,27 +258,7 @@ namespace SourceMod
 		 * @param filter		Do not use.
 		 * @return				Error code, if any.
 		 */
-		virtual int Execute(cell_t *result=NULL, IForwardFilter *filter=NULL) =0;
-
-		/**
-		 * @brief Pushes an array of cells onto the current call.  Different rules than ICallable.
-		 * NOTE: On Execute, the pointer passed will be modified according to the copyback rule.
-		 *
-		 * @param inarray	Array to copy.  If NULL and cells is 3 pushes a reference to the NULL_VECTOR pubvar to each callee.
-		 *                  Pushing other number of cells is not allowed, unlike ICallable's version.
-		 * @param cells		Number of cells to allocate and optionally read from the input array.
-		 * @param flags		Whether or not changes should be copied back to the input array.
-		 * @return			Error code, if any.
-		 */
-		virtual int PushArray(cell_t *inarray, unsigned int cells, int flags=0) =0;
-
-		/**
-		* @brief Pushes a string onto the current call.
-		*
-		* @param string  String to push.  If NULL pushes a reference to the NULL_STRING pubvar to each callee.
-		* @return      Error code, if any.
-		*/
-		virtual int PushString(const char *string) = 0;
+		virtual int Execute(cell_t *result=NULL, IForwardFilter *filter=NULL) = 0;
 	};
 
 	/**
