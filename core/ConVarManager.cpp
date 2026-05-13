@@ -654,7 +654,7 @@ void ConVarManager::OnConVarChanged(ConVar *pConVar, const char *oldValue, float
 		 * ChangeStringValue calls that may delete[] + reallocate m_pszString
 		 * while the forward is still iterating plugin callbacks. */
 		char newValue[512];
-		strncpy(newValue, pConVar->GetString(), sizeof(newValue));
+		ke::SafeStrcpy(newValue, sizeof(newValue), pConVar->GetString());
 
 		/* Now call forwards in plugins that have hooked this */
 		pForward->PushCell(pInfo->handle);
