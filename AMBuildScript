@@ -42,7 +42,6 @@ class SMConfig(object):
     self.sdks = {}
     self.sdk_targets = []
     self.binaries = []
-    self.spvm = []
     self.extensions = []
     self.generated_headers = None
     self.mms_root = None
@@ -647,12 +646,6 @@ for spcomp in SP.spcomp:
 if SM.spcomp.target.arch == 'universal':
     SM.spcomp_bins = [SM.spcomp]
 
-if not getattr(builder.options, 'scripting_only', False):
-  for cxx in SM.all_targets:
-    SM.spvm += [
-      SP.libsourcepawn[cxx.target.arch]
-    ]
-
 if getattr(builder.options, 'scripting_only', False):
   BuildScripts = [
     'tools/buildbot/PackageHelpers',
@@ -687,7 +680,7 @@ else:
       'tools/buildbot/PackageScript',
     ]
 
-builder.Build(BuildScripts, { 'SM': SM })
+builder.Build(BuildScripts, { 'SM': SM, 'SP': SP })
 
 if builder.options.breakpad_dump:
   builder.Build('tools/buildbot/BreakpadSymbols', { 'SM': SM })

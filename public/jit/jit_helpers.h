@@ -148,7 +148,6 @@ public:
 	cell_t *inbase;		/* input base */
 	jitcode_t outbase;	/* output pointer */
 	jitcode_t outptr;	/* output base */
-	SourcePawn::ICompilation *data;	/* compiler live info */
 };
 
 #endif //_INCLUDE_SOURCEPAWN_JIT_HELPERS_H_
