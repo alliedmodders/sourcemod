@@ -424,6 +424,7 @@ CoreProviderImpl::CoreProviderImpl()
 	this->menus = &g_Menus;
 	this->spe1 = &g_pSourcePawn;
 	this->spe2 = &g_pSourcePawn2;
+	this->spe_env = &g_pPawnEnv;
 	this->GetCoreConfigValue = get_core_config_value;
 	this->DoGlobalPluginLoads = do_global_plugin_loads;
 	this->AreConfigsExecuted = SM_AreConfigsExecuted;
@@ -796,6 +797,9 @@ void CoreProviderImpl::ShutdownHooks()
 
 void CoreProviderImpl::ShutdownBridge()
 {
+	if (logicore.Shutdown) {
+		logicore.Shutdown();
+	}
 	logic_ = nullptr;
 }
 

@@ -74,6 +74,7 @@ struct sm_logic_t
 	void			(*SetEntityLumpWritable)(bool writable);
 	bool			(*ParseEntityLumpString)(const char *entityString, int &status, size_t &position);
 	const char *	(*GetEntityLumpString)();
+	void            (*Shutdown)();
 	IScriptManager	*scripts;
 	IShareSys		*sharesys;
 	IExtensionSys	*extsys;

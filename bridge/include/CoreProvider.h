@@ -83,6 +83,7 @@ public:
 	IMenuManager	*menus;
 	SourcePawn::ISourcePawnEngine **spe1;
 	SourcePawn::ISourcePawnEngine2 **spe2;
+	SourcePawn::ISourcePawnEnvironment **spe_env;
 	const char		*gamesuffix;
 	/* Data */
 	ServerGlobals   *serverGlobals;

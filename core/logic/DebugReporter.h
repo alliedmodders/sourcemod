@@ -51,7 +51,6 @@ public:
 	// good enough, and only wants the supplemental logging provided here.
 	void GenerateError(IPluginContext *ctx, cell_t func_idx, int err, const char *message, ...);
 	void GenerateErrorVA(IPluginContext *ctx, cell_t func_idx, int err, const char *message, va_list ap); 
-	void GenerateCodeError(IPluginContext *ctx, uint32_t code_addr, int err, const char *message, ...);
 	std::vector<std::string> GetStackTrace(IFrameIterator *iter);
 private:
 	int _GetPluginIndex(IPluginContext *ctx);

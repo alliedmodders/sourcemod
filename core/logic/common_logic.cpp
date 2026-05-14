@@ -57,6 +57,7 @@
 #include "RootConsoleMenu.h"
 #include "CellArray.h"
 #include "smn_entitylump.h"
+#include "sourcepawn/vm/environment.h"
 #include <bridge/include/BridgeAPI.h>
 #include <bridge/include/IProviderCallbacks.h>
 
@@ -160,6 +161,18 @@ public:
 	}
 } sProviderCallbackListener;
 
+static sp::Environment *g_pEnv = nullptr;
+
+static void logic_shutdown()
+{
+	if (g_pEnv)
+	{
+		g_pEnv->Shutdown();
+		delete g_pEnv;
+		g_pEnv = nullptr;
+	}
+}
+
 static sm_logic_t logic =
 {
 	NULL,
@@ -182,6 +195,7 @@ static sm_logic_t logic =
 	SetEntityLumpWritable,
 	ParseEntityLumpString,
 	GetEntityLumpString,
+	logic_shutdown,
 	&g_PluginSys,
 	&g_ShareSys,
 	&g_Extensions,
@@ -209,8 +223,15 @@ static void logic_init(CoreProvider* core, sm_logic_t* _logic)
 	playerhelpers = core->playerhelpers;
 	gamehelpers = core->gamehelpers;
 	menus = core->menus;
-	g_pSourcePawn = *core->spe1;
-	g_pSourcePawn2 = *core->spe2;
+
+	g_pEnv = sp::Environment::New();
+	g_pSourcePawn = g_pEnv->APIv1();
+	g_pSourcePawn2 = g_pEnv->APIv2();
+
+	*core->spe1 = g_pSourcePawn;
+	*core->spe2 = g_pSourcePawn2;
+	*core->spe_env = g_pEnv;
+
 	SMGlobalClass::head = core->listeners;
 
 	g_ShareSys.Initialize();

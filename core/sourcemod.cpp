@@ -58,7 +58,6 @@ SH_DECL_HOOK0(IVEngineServer, GetMapEntitiesString, SH_NOATTRIB, 0, const char *
 
 SourceModBase g_SourceMod;
 
-ke::RefPtr<ke::SharedLib> g_JIT;
 SourceHook::String g_BaseDir;
 ISourcePawnEngine *g_pSourcePawn = NULL;
 ISourcePawnEngine2 *g_pSourcePawn2 = NULL;
@@ -78,20 +77,6 @@ ConVar sm_basepath("sm_basepath", "addons\\sourcemod", 0, "SourceMod base path (
 #elif defined PLATFORM_LINUX || defined PLATFORM_APPLE
 ConVar sm_basepath("sm_basepath", "addons/sourcemod", 0, "SourceMod base path (set via command line)");
 #endif
-
-void ShutdownJIT()
-{
-	if (g_pPawnEnv) {
-		g_pPawnEnv->Shutdown();
-		delete g_pPawnEnv;
-
-		g_pPawnEnv = NULL;
-		g_pSourcePawn2 = NULL;
-		g_pSourcePawn = NULL;
-	}
-
-	g_JIT = nullptr;
-}
 
 SourceModBase::SourceModBase()
 {
@@ -210,63 +195,10 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 		return false;
 	}
 
+	sCoreProviderImpl.InitializeBridge();
+
 	/* There will always be a path by this point, since it was force-set above. */
 	m_GotBasePath = true;
-
-#if defined KE_ARCH_X86
-# define SOURCEPAWN_DLL "sourcepawn.jit.x86"
-#else
-# define SOURCEPAWN_DLL "sourcepawn.vm"
-#endif
-
-	/* Attempt to load the JIT! */
-	char file[PLATFORM_MAX_PATH];
-	char myerror[255];
-	g_SMAPI->PathFormat(file, sizeof(file), "%s/bin/" PLATFORM_ARCH_FOLDER SOURCEPAWN_DLL ".%s",
-		GetSourceModPath(),
-		PLATFORM_LIB_EXT
-		);
-
-	g_JIT = ke::SharedLib::Open(file, myerror, sizeof(myerror));
-	if (!g_JIT)
-	{
-		if (error && maxlength)
-		{
-			ke::SafeSprintf(error, maxlength, "%s (failed to load bin/" PLATFORM_ARCH_FOLDER SOURCEPAWN_DLL ".%s)", 
-				myerror,
-				PLATFORM_LIB_EXT);
-		}
-		return false;
-	}
-
-	GetSourcePawnFactoryFn factoryFn =
-	  g_JIT->get<decltype(factoryFn)>("GetSourcePawnFactory");
-
-	if (!factoryFn) {
-		if (error && maxlength)
-			ke::SafeStrcpy(error, maxlength, "SourcePawn library is out of date");
-		ShutdownJIT();
-		return false;
-	}
-
-	ISourcePawnFactory *factory = factoryFn(SOURCEPAWN_API_VERSION);
-	if (!factory) {
-		if (error && maxlength)
-			ke::SafeStrcpy(error, maxlength, "SourcePawn library is out of date");
-		ShutdownJIT();
-		return false;
-	}
-
-	g_pPawnEnv = factory->NewEnvironment();
-	if (!g_pPawnEnv) {
-		if (error && maxlength)
-			ke::SafeStrcpy(error, maxlength, "Could not create a SourcePawn environment!");
-		ShutdownJIT();
-		return false;
-	}
-
-	g_pSourcePawn = g_pPawnEnv->APIv1();
-	g_pSourcePawn2 = g_pPawnEnv->APIv2();
 
 	g_pSourcePawn2->SetDebugListener(logicore.debugger);
 
@@ -297,8 +229,6 @@ void SourceModBase::StartSourceMod(bool late)
 
 	enginePatch = SH_GET_CALLCLASS(engine);
 	gamedllPatch = SH_GET_CALLCLASS(gamedll);
-
-	sCoreProviderImpl.InitializeBridge();
 
 	/* Initialize CoreConfig to get the SourceMod base path properly - this parses core.cfg */
 	g_CoreConfig.Initialize();
@@ -575,7 +505,10 @@ void SourceModBase::CloseSourceMod()
 
 	/* Rest In Peace */
 	sCoreProviderImpl.ShutdownBridge();
-	ShutdownJIT();
+
+	g_pPawnEnv = NULL;
+	g_pSourcePawn2 = NULL;
+	g_pSourcePawn = NULL;
 }
 
 void SourceModBase::ShutdownServices()

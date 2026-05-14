@@ -18,13 +18,20 @@ for cxx in builder.targets:
   ]
   
   if binary.compiler.target.platform == 'linux':
-    binary.compiler.postlink += ['-lpthread', '-lrt']
+    binary.compiler.postlink += ['-lpthread', '-lrt', '-lm']
   elif binary.compiler.target.platform == 'mac':
     binary.compiler.cflags += ['-Wno-deprecated-declarations']
-    binary.compiler.postlink += ['-framework', 'CoreServices']
+    binary.compiler.postlink += ['-framework', 'CoreServices', '-lm']
+
+  arch = binary.compiler.target.arch
+  binary.compiler.linkflags += [
+    SP.static_libsp[arch],
+    SP.libamtl[arch],
+    SP.zlib[arch],
+  ]
 
   if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
-    binary.compiler.cxxflags += ['-fno-rtti']
+    binary.compiler.cxxflags += ['-fno-rtti', '-Wno-invalid-offsetof']
   elif binary.compiler.family == 'msvc':
     binary.compiler.cxxflags += ['/GR-']
 
