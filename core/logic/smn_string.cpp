@@ -37,6 +37,7 @@
 #include "stringutil.h"
 #include "sprintf.h"
 #include <am-string.h>
+#include <sourcepawn/vm/base-runtime.h>
 
 inline const char *_strstr(const char *str, const char *substr)
 {
@@ -232,7 +233,7 @@ static cell_t sm_vformat(IPluginContext *pContext, const cell_t *params)
 	int vargPos = static_cast<int>(params[4]);
 
 	/* Get the parent parameter array */
-	cell_t *local_params = pContext->GetLocalParams();
+	cell_t *local_params = pContext->GetBaseRuntime()->GetLocalParams();
 
 	cell_t max = local_params[0];
 	if (vargPos > (int)max + 1)

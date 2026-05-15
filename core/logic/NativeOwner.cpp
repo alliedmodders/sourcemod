@@ -31,6 +31,7 @@
 #include "NativeOwner.h"
 #include "ShareSys.h"
 #include "PluginSys.h"
+#include <sourcepawn/vm/plugin-runtime.h>
 
 CNativeOwner::CNativeOwner() : m_nMarkSerial(0)
 {
@@ -67,10 +68,8 @@ void CNativeOwner::AddNatives(const sp_nativeinfo_t *natives)
 
 void CNativeOwner::UnbindWeakRef(const WeakNative &ref)
 {
-	IPluginContext *pContext;
-
-	pContext = ref.pl->GetBaseContext();
-	pContext->GetRuntime()->UpdateNativeBinding(
+	auto pContext = ref.pl->runtime();
+	pContext->UpdateNativeBinding(
 	  ref.idx,
 	  nullptr,
 	  SP_NTVFLAG_OPTIONAL,

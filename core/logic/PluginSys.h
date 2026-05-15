@@ -118,7 +118,8 @@ public:
 	bool SetProperty(const char *prop, void *ptr);
 	bool GetProperty(const char *prop, void **ptr, bool remove=false);
 	void DropEverything();
-	SourcePawn::IPluginRuntime *GetRuntime();
+	IPluginRuntime *GetRuntime();
+	sp::BaseRuntime *runtime() const { return m_pRuntime.get(); }
 	CNativeOwner *ToNativeOwner() {
 		return this;
 	}
@@ -268,7 +269,7 @@ private:
 	char m_errormsg[256];
 
 	// Internal properties that must by reset if the runtime is evicted.
-	std::unique_ptr<IPluginRuntime> m_pRuntime;
+	std::unique_ptr<sp::BaseRuntime> m_pRuntime;
 	std::unique_ptr<CPhraseCollection> m_pPhrases;
 	IPluginContext *m_pContext;
 	sp_pubvar_t *m_MaxClientsVar;

@@ -34,6 +34,7 @@
 #include <stdarg.h>
 #include "DebugReporter.h"
 #include "Logger.h"
+#include "sourcepawn/vm/base-runtime.h"
 #include "sourcepawn/vm/environment.h"
 
 DebugReport g_DbgReporter;
@@ -87,7 +88,7 @@ void DebugReport::GenerateErrorVA(IPluginContext *ctx, cell_t func_idx, int err,
 		{
 			func_idx >>= 1;
 			sp_public_t *function;
-			if (ctx->GetRuntime()->GetPublicByIndex(func_idx, &function) == SP_ERROR_NONE)
+			if (ctx->GetBaseRuntime()->GetPublicByIndex(func_idx, &function) == SP_ERROR_NONE)
 			{
 				g_Logger.LogError("[SM] Unable to call function \"%s\" due to above error(s).", function->name);
 			}
