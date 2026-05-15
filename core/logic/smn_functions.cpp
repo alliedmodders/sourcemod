@@ -36,6 +36,7 @@
 #include <IHandleSys.h>
 #include <IForwardSys.h>
 #include <ISourceMod.h>
+#include <sourcepawn/vm/base-runtime.h>
 
 HandleType_t g_GlobalFwdType = 0;
 HandleType_t g_PrivateFwdType = 0;
@@ -128,7 +129,7 @@ static cell_t sm_GetFunctionByName(IPluginContext *pContext, const cell_t *param
 	pContext->LocalToString(params[2], &name);
 
 	/* Get public function index */
-	if (pPlugin->GetBaseContext()->FindPublicByName(name, &idx) == SP_ERROR_NOT_FOUND)
+	if (pContext->GetBaseRuntime()->FindPublicByName(name, &idx) == SP_ERROR_NOT_FOUND)
 	{
 		/* Return INVALID_FUNCTION if not found */
 		return pContext->GetNullFunctionValue();

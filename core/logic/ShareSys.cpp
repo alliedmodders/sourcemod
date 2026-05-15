@@ -39,6 +39,7 @@
 #include "common_logic.h"
 #include "PluginSys.h"
 #include "HandleSys.h"
+#include <sourcepawn/vm/plugin-runtime.h>
 
 using namespace ke;
 
@@ -277,14 +278,14 @@ void ShareSystem::BeginBindingFor(CPlugin *pPlugin)
 
 void ShareSystem::BindNativesToPlugin(CPlugin *pPlugin, bool bCoreOnly)
 {
-	IPluginContext *pContext = pPlugin->GetBaseContext();
+	sp::BaseRuntime *pContext = pPlugin->GetBaseContext()->GetBaseRuntime();
 
 	BeginBindingFor(pPlugin);
 
 	uint32_t native_count = pContext->GetNativesNum();
 	for (uint32_t i = 0; i < native_count; i++)
 	{
-		const sp_native_t *native = pContext->GetRuntime()->GetNative(i);
+		const sp_native_t *native = pContext->GetNative(i);
 		if (!native)
 			continue;
 
@@ -309,13 +310,13 @@ void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin, const RefPtr<Native> &ent
 	if (!entry->owner)
 		return;
 
-	IPluginContext *pContext = pPlugin->GetBaseContext();
+	sp::BaseRuntime *pContext = pPlugin->GetBaseContext()->GetBaseRuntime();
 
 	uint32_t i;
 	if (pContext->FindNativeByName(entry->name(), &i) != SP_ERROR_NONE)
 		return;
 
-	const sp_native_t *native = pContext->GetRuntime()->GetNative(i);
+	const sp_native_t *native = pContext->GetNative(i);
 	if (!native)
 		return;
 
@@ -364,7 +365,7 @@ void ShareSystem::BindNativeToPlugin(CPlugin *pPlugin, const sp_native_t *native
 		}
 	}
 
-	auto rt = pPlugin->GetRuntime();
+	auto rt = pPlugin->runtime();
 	if (pEntry->fake)
 		rt->UpdateNativeBindingObject(index, pEntry->fake->wrapper, flags, nullptr);
 	else
@@ -485,10 +486,11 @@ FeatureStatus ShareSystem::TestFeature(IPluginRuntime *pRuntime, FeatureType fea
 FeatureStatus ShareSystem::TestNative(IPluginRuntime *pRuntime, const char *name)
 {
 	uint32_t index;
+	sp::BaseRuntime *pBase = pRuntime->GetBaseRuntime();
 
-	if (pRuntime->FindNativeByName(name, &index) == SP_ERROR_NONE)
+	if (pBase->FindNativeByName(name, &index) == SP_ERROR_NONE)
 	{
-		if (const sp_native_t *native = pRuntime->GetNative(index)) {
+		if (const sp_native_t *native = pBase->GetNative(index)) {
 			if (native->status == SP_NATIVE_BOUND)
 				return FeatureStatus_Available;
 			else
@@ -511,3 +513,4 @@ FeatureStatus ShareSystem::TestCap(const char *name)
 
 	return r->value.provider->GetFeatureStatus(FeatureType_Capability, name);
 }
+

@@ -99,8 +99,8 @@ void CPlugin::InitIdentity()
 
 	m_ident = g_ShareSys.CreateIdentity(g_PluginIdent, this);
 	m_handle = handlesys->CreateHandle(g_PluginType, this, g_PluginSys.GetIdentity(), g_PluginSys.GetIdentity(), NULL);
-	m_pRuntime->GetDefaultContext()->SetKey(1, m_ident);
-	m_pRuntime->GetDefaultContext()->SetKey(2, (IPlugin *)this);
+	m_pRuntime->SetKey(1, m_ident);
+	m_pRuntime->SetKey(2, (IPlugin *)this);
 }
 
 void CPlugin::DestroyIdentity()
@@ -1283,7 +1283,7 @@ CPlugin *CPluginManager::CompileAndPrep(const char *path)
 
 bool CPluginManager::MalwareCheckPass(CPlugin *pPlugin)
 {
-	unsigned char *pCodeHash = pPlugin->GetRuntime()->GetCodeHash();
+	unsigned char *pCodeHash = pPlugin->runtime()->GetCodeHash();
 
 	char codeHashBuf[40];
 	ke::SafeStrcpy(codeHashBuf, sizeof(codeHashBuf), "plugin_");
@@ -1323,11 +1323,10 @@ bool CPluginManager::RunSecondPass(CPlugin *pPlugin)
 	g_ShareSys.BindNativesToPlugin(pPlugin, false);
 
 	// Find any unbound natives. Right now, these are not allowed.
-	IPluginContext *pContext = pPlugin->GetBaseContext();
-	uint32_t num = pContext->GetNativesNum();
+	uint32_t num = pPlugin->runtime()->GetNativesNum();
 	for (unsigned int i=0; i<num; i++)
 	{
-		const sp_native_t *native = pContext->GetRuntime()->GetNative(i);
+		const sp_native_t *native = pPlugin->runtime()->GetNative(i);
 		if (!native)
 			break;
 		if (native->status == SP_NATIVE_UNBOUND &&
@@ -1416,11 +1415,10 @@ void CPluginManager::TryRefreshDependencies(CPlugin *pPlugin)
 	/* Find any unbound natives
 	 * Right now, these are not allowed
 	 */
-	IPluginContext *pContext = pPlugin->GetBaseContext();
-	uint32_t num = pContext->GetNativesNum();
+	uint32_t num = pPlugin->runtime()->GetNativesNum();
 	for (unsigned int i=0; i<num; i++)
 	{
-		const sp_native_t *native = pContext->GetRuntime()->GetNative(i);
+		const sp_native_t *native = pPlugin->runtime()->GetNative(i);
 		if (!native)
 			break;
 		if (native->status == SP_NATIVE_UNBOUND &&
@@ -1969,7 +1967,7 @@ void CPluginManager::OnRootConsoleCommand(const char *cmdname, const ICommandArg
 					rootmenu->ConsolePrint("  Timestamp: %s", pl->GetDateTime());
 				}
 
-				if (IPluginRuntime *runtime = pl->GetRuntime()) {
+				if (auto runtime = pl->runtime()) {
 				  unsigned char *pCodeHash = runtime->GetCodeHash();
 				  unsigned char *pDataHash = runtime->GetDataHash();
 
@@ -2345,7 +2343,7 @@ public:
 
 	IPlugin *FindPluginByContext(IPluginContext *ctx) override
 	{
-		return g_PluginSys.FindPluginByContext(ctx);
+		return g_PluginSys.FindPluginByContext(ctx->GetBaseRuntime());
 	}
 
 	unsigned int GetPluginCount() override
@@ -2406,3 +2404,4 @@ IPluginManager *CPluginManager::GetOldAPI()
 {
 	return &sOldPluginAPI;
 }
+

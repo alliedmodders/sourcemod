@@ -45,6 +45,7 @@
 
 #include <sourcehook.h>
 #include <sh_memory.h>
+#include <sourcepawn/vm/plugin-runtime.h>
 
 #if defined PLATFORM_WINDOWS
 #include <windows.h>
@@ -638,15 +639,16 @@ static cell_t MarkNativeAsOptional(IPluginContext *pContext, const cell_t *param
 {
 	char *name;
 	uint32_t idx;
+	sp::BaseRuntime *pBase = pContext->GetBaseRuntime();
 
 	pContext->LocalToString(params[1], &name);
-	if (pContext->FindNativeByName(name, &idx) != SP_ERROR_NONE)
+	if (pBase->FindNativeByName(name, &idx) != SP_ERROR_NONE)
 	{
 		/* Oops! This HAS to silently fail! */
 		return 0;
 	}
 
-	pContext->GetRuntime()->UpdateNativeBinding(idx, nullptr, SP_NTVFLAG_OPTIONAL, nullptr);
+	pBase->UpdateNativeBinding(idx, nullptr, SP_NTVFLAG_OPTIONAL, nullptr);
 	return 1;
 }
 
