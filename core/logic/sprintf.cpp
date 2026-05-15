@@ -75,7 +75,7 @@ size_t Translate(char *buffer,
 	unsigned int langid;
 	*error = false;
 	Translation pTrans;
-	IPlugin *pl = scripts->FindPluginByContext(pCtx->GetContext());
+	IPlugin *pl = scripts->FindPluginByContext(pCtx);
 	unsigned int max_params = 0;
 	IPhraseCollection *pPhrases;
 

@@ -945,7 +945,7 @@ static cell_t sm_LogMessage(IPluginContext *pContext, const cell_t *params)
 			return 0;
 	}
 
-	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
+	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext);
 	g_Logger.LogMessage("[%s] %s", pPlugin->GetFilename(), buffer);
 
 	return 1;
@@ -963,7 +963,7 @@ static cell_t sm_LogError(IPluginContext *pContext, const cell_t *params)
 			return 0;
 	}
 
-	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
+	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext);
 	g_Logger.LogError("[%s] %s", pPlugin->GetFilename(), buffer);
 
 	return 1;
@@ -1010,7 +1010,7 @@ static cell_t sm_LogToOpenFile(IPluginContext *pContext, const cell_t *params)
 			return 0;
 	}
 
-	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
+	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext);
 	g_Logger.LogToOpenFile(sysfile->fp(), "[%s] %s", pPlugin->GetFilename(), buffer);
 
 	return 1;

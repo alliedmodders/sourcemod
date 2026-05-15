@@ -82,7 +82,7 @@ void ConCmdManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *na
 		CmdHook *hook = *iter;
 
 		IPluginContext *pContext = hook->pf->GetParentContext();
-		IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
+		IPlugin *pPlugin = scripts->FindPluginByContext(pContext);
 
 		// The list is guaranteed to exist.
 		PluginHookList *list;

@@ -38,6 +38,7 @@
 #include <IHandleSys.h>
 #include <IForwardSys.h>
 #include <IPlayerHelpers.h>
+#include <sourcepawn/vm/environment.h>
 #include "ExtensionSys.h"
 #include "GameConfigs.h"
 #include "common_logic.h"
@@ -479,11 +480,6 @@ void CPlugin::Call_OnLibraryAdded(const char *lib)
 	pFunction->Execute(&result);
 }
 
-void *CPlugin::GetPluginStructure()
-{
-	return NULL;
-}
-
 // Only called during plugin construction.
 bool CPlugin::TryCompile()
 {
@@ -491,7 +487,7 @@ bool CPlugin::TryCompile()
 	g_pSM->BuildPath(Path_SM, fullpath, sizeof(fullpath), "plugins/%s", m_filename);
 
 	char loadmsg[255];
-	m_pRuntime.reset(g_pSourcePawn2->LoadBinaryFromFile(fullpath, loadmsg, sizeof(loadmsg)));
+	m_pRuntime.reset(g_pPawnEnv->LoadBinaryFromFile(fullpath, loadmsg, sizeof(loadmsg)));
 	if (!m_pRuntime) {
 		EvictWithError(Plugin_BadLoad, "Unable to load plugin (%s)", loadmsg);
 		return false;
@@ -513,11 +509,6 @@ IPluginContext *CPlugin::GetBaseContext()
 	}
 
 	return m_pRuntime->GetDefaultContext();
-}
-
-sp_context_t *CPlugin::GetContext()
-{
-	return NULL;
 }
 
 const char *CPlugin::GetFilename()
@@ -1535,12 +1526,9 @@ void CPluginManager::UnloadPluginImpl(CPlugin *pPlugin)
 	delete pPlugin;
 }
 
-IPlugin *CPluginManager::FindPluginByContext(const sp_context_t *ctx)
+SMPlugin *CPluginManager::FindPluginByContext(IPluginContext *pContext)
 {
-	IPlugin *pPlugin;
-	IPluginContext *pContext;
-
-	pContext = reinterpret_cast<IPluginContext *>(const_cast<sp_context_t *>(ctx));
+	SMPlugin *pPlugin;
 
 	if (pContext->GetKey(2, (void **)&pPlugin))
 	{
@@ -1550,7 +1538,7 @@ IPlugin *CPluginManager::FindPluginByContext(const sp_context_t *ctx)
 	return NULL;
 }
 
-CPlugin *CPluginManager::GetPluginByCtx(const sp_context_t *ctx)
+CPlugin *CPluginManager::GetPluginByCtx(IPluginContext *ctx)
 {
 	return (CPlugin *)FindPluginByContext(ctx);
 }
@@ -2355,7 +2343,7 @@ public:
 		return g_PluginSys.UnloadPlugin(plugin);
 	}
 
-	IPlugin *FindPluginByContext(const sp_context_t *ctx) override
+	IPlugin *FindPluginByContext(IPluginContext *ctx) override
 	{
 		return g_PluginSys.FindPluginByContext(ctx);
 	}

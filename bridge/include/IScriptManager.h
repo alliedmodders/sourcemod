@@ -78,7 +78,6 @@ public:
 	virtual SMPlugin *FindPluginByOrder(unsigned num) = 0;
 	virtual SMPlugin *FindPluginByIdentity(IdentityToken_t *ident) = 0;
 	virtual SMPlugin *FindPluginByContext(IPluginContext *ctx) = 0;
-	virtual SMPlugin *FindPluginByContext(sp_context_t *ctx) = 0;
 	virtual SMPlugin *FindPluginByConsoleArg(const char *text) = 0;
 	virtual SMPlugin *FindPluginByHandle(Handle_t hndl, HandleError *errp) = 0;
 	virtual bool UnloadPlugin(IPlugin *plugin) = 0;

@@ -190,7 +190,7 @@ class TQueryOp : public IDBThreadOperation
 public:
 	TQueryOp(IDatabase *db, IPluginFunction *pf, const char *query, cell_t data) : 
 	  m_pDatabase(db), m_pFunction(pf), m_Query(query), m_Data(data),
-	  me(scripts->FindPluginByContext(pf->GetParentContext()->GetContext())),
+	  me(scripts->FindPluginByContext(pf->GetParentContext())),
 	  m_pQuery(NULL)
 	{
 		/* We always increase the reference count because this is potentially
@@ -315,7 +315,7 @@ public:
 		m_Data = data;
 		error[0] = '\0';
 		strncopy(dbname, _dbname, sizeof(dbname));
-		me = scripts->FindPluginByContext(m_pFunction->GetParentContext()->GetContext());
+		me = scripts->FindPluginByContext(m_pFunction->GetParentContext());
 		
 		m_pInfo = g_DBMan.GetDatabaseConf(dbname);
 		if (!m_pInfo)
@@ -424,7 +424,7 @@ static cell_t SQL_Connect(IPluginContext *pContext, const cell_t *params)
 	IExtension *pExt = g_Extensions.GetExtensionFromIdent(driver->GetIdentity());
 	if (pExt)
 	{
-		g_Extensions.BindChildPlugin(pExt, scripts->FindPluginByContext(pContext->GetContext()));
+		g_Extensions.BindChildPlugin(pExt, scripts->FindPluginByContext(pContext));
 	}
 
 	return hndl;
@@ -483,12 +483,12 @@ static cell_t ConnectToDbAsync(IPluginContext *pContext, const cell_t *params, A
 	IExtension *pExt = g_Extensions.GetExtensionFromIdent(driver->GetIdentity());
 	if (pExt)
 	{
-		g_Extensions.BindChildPlugin(pExt, scripts->FindPluginByContext(pContext->GetContext()));
+		g_Extensions.BindChildPlugin(pExt, scripts->FindPluginByContext(pContext));
 	}
 
 	/* Finally, add to the thread if we can */
 	TConnectOp *op = new TConnectOp(pf, driver, conf, acm, params[3]);
-	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
+	IPlugin *pPlugin = scripts->FindPluginByContext(pContext);
 	if (pPlugin->GetProperty("DisallowDBThreads", NULL)
 		|| !g_DBMan.AddToThreadQueue(op, PrioQueue_High))
 	{
@@ -564,7 +564,7 @@ static cell_t SQL_ConnectEx(IPluginContext *pContext, const cell_t *params)
 		IExtension *pExt = g_Extensions.GetExtensionFromIdent(driver->GetIdentity());
 		if (pExt)
 		{
-			g_Extensions.BindChildPlugin(pExt, scripts->FindPluginByContext(pContext->GetContext()));
+			g_Extensions.BindChildPlugin(pExt, scripts->FindPluginByContext(pContext));
 		}
 
 		return hndl;
@@ -865,7 +865,7 @@ static cell_t SQL_TQuery(IPluginContext *pContext, const cell_t *params)
 		level = PrioQueue_Low;
 	}
 
-	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
+	IPlugin *pPlugin = scripts->FindPluginByContext(pContext);
 
 	TQueryOp *op = new TQueryOp(db, pf, query, data);
 	if (pPlugin->GetProperty("DisallowDBThreads", NULL)
@@ -1488,7 +1488,7 @@ static cell_t SQL_ConnectCustom(IPluginContext *pContext, const cell_t *params)
 	IExtension *pExt = g_Extensions.GetExtensionFromIdent(driver->GetIdentity());
 	if (pExt)
 	{
-		g_Extensions.BindChildPlugin(pExt, scripts->FindPluginByContext(pContext->GetContext()));
+		g_Extensions.BindChildPlugin(pExt, scripts->FindPluginByContext(pContext));
 	}
 
 	return hndl;
@@ -1808,7 +1808,7 @@ static cell_t SQL_ExecuteTransaction(IPluginContext *pContext, const cell_t *par
 	// close the plugin's handle here.
 	handlesys->FreeHandle(params[2], &sec);
 
-	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
+	IPlugin *pPlugin = scripts->FindPluginByContext(pContext);
 	if (pPlugin->GetProperty("DisallowDBThreads", NULL) || !g_DBMan.AddToThreadQueue(op, priority))
 	{
 		// Do everything right now.

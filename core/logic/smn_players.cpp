@@ -240,7 +240,7 @@ AddMultiTargetFilter(IPluginContext *ctx, const cell_t *params)
 	ctx->LocalToString(params[3], &phrase);
 
 	bool phraseIsML = !!params[4];
-	IPlugin *plugin = pluginsys->FindPluginByContext(ctx->GetContext());
+	IPlugin *plugin = pluginsys->FindPluginByContext(ctx);
 
 	s_PlayerLogicHelpers.AddMultiTargetFilter(plugin, pattern, fun, phrase, phraseIsML);
 

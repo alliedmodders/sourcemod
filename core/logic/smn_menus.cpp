@@ -245,7 +245,7 @@ public:
 			m_FreePanelHandlers.pop();
 		}
 		handler->m_pFunc = pFunction;
-		handler->m_pPlugin = scripts->FindPluginByContext(pFunction->GetParentContext()->GetContext());
+		handler->m_pPlugin = scripts->FindPluginByContext(pFunction->GetParentContext());
 		return handler;
 	}
 

@@ -184,7 +184,7 @@ EventHookError EventManager::HookEvent(const char *name, IPluginFunction *pFunct
 	if (!m_EventHooks.retrieve(name, &pHook))
 	{
 		EventHookList *pHookList;
-		IPlugin *plugin = scripts->FindPluginByContext(pFunction->GetParentContext()->GetContext());
+		IPlugin *plugin = scripts->FindPluginByContext(pFunction->GetParentContext());
 
 		/* Check plugin for an existing EventHook list */
 		if (!plugin->GetProperty("EventHooks", (void **)&pHookList))
@@ -297,7 +297,7 @@ EventHookError EventManager::UnhookEvent(const char *name, IPluginFunction *pFun
 		/* If reference count is now 0, free hook structure */
 
 		EventHookList *pHookList;
-		IPlugin *plugin = scripts->FindPluginByContext(pFunction->GetParentContext()->GetContext());
+		IPlugin *plugin = scripts->FindPluginByContext(pFunction->GetParentContext());
 
 		/* Get plugin's event hook list */
 		if (!plugin->GetProperty("EventHooks", (void**)&pHookList))

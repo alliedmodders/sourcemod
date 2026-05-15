@@ -750,7 +750,7 @@ static cell_t sm_RegServerCmd(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid function id (%X)", params[2]);
 	}
 
-	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
+	IPlugin *pPlugin = scripts->FindPluginByContext(pContext);
 	if (!g_ConCmds.AddServerCommand(pFunction, name, help, params[4], pPlugin))
 	{
 		return pContext->ThrowNativeError("Command \"%s\" could not be created. A convar with the same name already exists.", name);
@@ -779,7 +779,7 @@ static cell_t sm_RegConsoleCmd(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid function id (%X)", params[2]);
 	}
 
-	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
+	IPlugin *pPlugin = scripts->FindPluginByContext(pContext);
 	const char *group = pPlugin->GetFilename();
 	if (!g_ConCmds.AddAdminCommand(pFunction, name, group, 0, help, params[4], pPlugin))
 	{
@@ -808,7 +808,7 @@ static cell_t sm_RegAdminCmd(IPluginContext *pContext, const cell_t *params)
 	pContext->LocalToString(params[5], (char **)&group);
 	pFunction = pContext->GetFunctionById(params[2]);
 
-	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
+	IPlugin *pPlugin = scripts->FindPluginByContext(pContext);
 	if (group[0] == '\0')
 	{
 		group = pPlugin->GetFilename();

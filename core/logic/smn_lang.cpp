@@ -38,7 +38,7 @@
 
 static cell_t sm_TranslationPhraseExists(IPluginContext *pCtx, const cell_t *params)
 {
-	IPlugin *pl = pluginsys->FindPluginByContext(pCtx->GetContext());
+	IPlugin *pl = pluginsys->FindPluginByContext(pCtx);
 	IPhraseCollection *collection = pl->GetPhrases();
 	
 	char *phrase;
@@ -49,7 +49,7 @@ static cell_t sm_TranslationPhraseExists(IPluginContext *pCtx, const cell_t *par
 
 static cell_t sm_IsTranslatedForLanguage(IPluginContext *pCtx, const cell_t *params)
 {
-	IPlugin *pl = pluginsys->FindPluginByContext(pCtx->GetContext());
+	IPlugin *pl = pluginsys->FindPluginByContext(pCtx);
 	IPhraseCollection *collection = pl->GetPhrases();
 	
 	char *phrase;
@@ -65,7 +65,7 @@ static cell_t sm_LoadTranslations(IPluginContext *pCtx, const cell_t *params)
 {
 	char *filename, *ext;
 	char buffer[PLATFORM_MAX_PATH];
-	IPlugin *pl = pluginsys->FindPluginByContext(pCtx->GetContext());
+	IPlugin *pl = pluginsys->FindPluginByContext(pCtx);
 
 	pCtx->LocalToString(params[1], &filename);
 	ke::SafeStrcpy(buffer, sizeof(buffer), filename);

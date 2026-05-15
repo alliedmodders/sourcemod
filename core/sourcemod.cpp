@@ -59,8 +59,6 @@ SH_DECL_HOOK0(IVEngineServer, GetMapEntitiesString, SH_NOATTRIB, 0, const char *
 SourceModBase g_SourceMod;
 
 SourceHook::String g_BaseDir;
-ISourcePawnEngine *g_pSourcePawn = NULL;
-ISourcePawnEngine2 *g_pSourcePawn2 = NULL;
 ISourcePawnEnvironment *g_pPawnEnv = NULL;
 IdentityToken_t *g_pCoreIdent = NULL;
 IForward *g_pOnMapInit = nullptr;
@@ -119,9 +117,7 @@ ConfigResult SourceModBase::OnSourceModConfigChanged(const char *key,
 	{
 		sm_disable_jit = (strcasecmp(value, "yes") == 0) ? true : false;
 
-		if (g_pSourcePawn2) {
-			g_pSourcePawn2->SetJitEnabled(!sm_disable_jit);
-		}
+		logicore.SetJitEnabled(!sm_disable_jit);
 
 		return ConfigResult_Accept;
 	}
@@ -145,9 +141,7 @@ ConfigResult SourceModBase::OnSourceModConfigChanged(const char *key,
 			return ConfigResult_Reject;
 		}
 
-		if (g_pPawnEnv) {
-			g_pPawnEnv->SetDebugMetadataFlags(jit_metadata_flags);
-		}
+		logicore.SetDebugMetadataFlags(jit_metadata_flags);
 
 		return ConfigResult_Accept;
 	}
@@ -199,13 +193,6 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 
 	/* There will always be a path by this point, since it was force-set above. */
 	m_GotBasePath = true;
-
-	g_pSourcePawn2->SetDebugListener(logicore.debugger);
-
-	if (sm_disable_jit)
-		g_pSourcePawn2->SetJitEnabled(!sm_disable_jit);
-
-	g_pPawnEnv->SetDebugMetadataFlags(jit_metadata_flags);
 
 	sSourceModInitialized = true;
 
@@ -283,22 +270,6 @@ void SourceModBase::StartSourceMod(bool late)
 	if (disabled == NULL || strcasecmp(disabled, "yes") != 0)
 	{
 		extsys->LoadAutoExtension("updater.ext." PLATFORM_LIB_EXT);
-	}
-
-	const char *timeout = GetCoreConfigValue("SlowScriptTimeout");
-	if (timeout == NULL)
-	{
-		timeout = "8";
-	}
-	if (atoi(timeout) != 0)
-	{
-		g_pSourcePawn2->InstallWatchdogTimer(atoi(timeout) * 1000);
-	}
-
-	const char *linedebugger = GetCoreConfigValue("EnableLineDebugging");
-	if (linedebugger != NULL && strcasecmp(linedebugger, "yes") == 0)
-	{
-		g_pPawnEnv->EnableDebugBreak();
 	}
 
 	SH_ADD_HOOK(IServerGameDLL, Think, gamedll, SH_MEMBER(logicore.callbacks, &IProviderCallbacks::OnThink), false);
@@ -507,8 +478,6 @@ void SourceModBase::CloseSourceMod()
 	sCoreProviderImpl.ShutdownBridge();
 
 	g_pPawnEnv = NULL;
-	g_pSourcePawn2 = NULL;
-	g_pSourcePawn = NULL;
 }
 
 void SourceModBase::ShutdownServices()
@@ -659,7 +628,7 @@ const char *SourceModBase::GetGameFolderName() const
 
 ISourcePawnEngine *SourceModBase::GetScriptingEngine()
 {
-	return g_pSourcePawn;
+	return g_pPawnEnv;
 }
 
 IVirtualMachine *SourceModBase::GetScriptingVM()

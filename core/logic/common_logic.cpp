@@ -81,8 +81,7 @@ IPluginManager *pluginsys = g_PluginSys.GetOldAPI();
 IForwardManager *forwardsys = &g_Forwards;
 ServerGlobals serverGlobals;
 IAdminSystem *adminsys = &g_Admins;
-ISourcePawnEngine *g_pSourcePawn;
-ISourcePawnEngine2 *g_pSourcePawn2;
+sp::Environment *g_pPawnEnv;
 IScriptManager *scripts = &g_PluginSys;
 IExtensionSys *extsys = &g_Extensions;
 ILogger *logger = &g_Logger;
@@ -161,16 +160,24 @@ public:
 	}
 } sProviderCallbackListener;
 
-static sp::Environment *g_pEnv = nullptr;
-
 static void logic_shutdown()
 {
-	if (g_pEnv)
+	if (g_pPawnEnv)
 	{
-		g_pEnv->Shutdown();
-		delete g_pEnv;
-		g_pEnv = nullptr;
+		g_pPawnEnv->Shutdown();
+		delete g_pPawnEnv;
+		g_pPawnEnv = nullptr;
 	}
+}
+
+static void logic_SetJitEnabled(bool enabled)
+{
+	g_pPawnEnv->SetJitEnabled(enabled);
+}
+
+static void logic_SetDebugMetadataFlags(int flags)
+{
+	g_pPawnEnv->SetDebugMetadataFlags(flags);
 }
 
 static sm_logic_t logic =
@@ -196,6 +203,8 @@ static sm_logic_t logic =
 	ParseEntityLumpString,
 	GetEntityLumpString,
 	logic_shutdown,
+	logic_SetJitEnabled,
+	logic_SetDebugMetadataFlags,
 	&g_PluginSys,
 	&g_ShareSys,
 	&g_Extensions,
@@ -224,13 +233,30 @@ static void logic_init(CoreProvider* core, sm_logic_t* _logic)
 	gamehelpers = core->gamehelpers;
 	menus = core->menus;
 
-	g_pEnv = sp::Environment::New();
-	g_pSourcePawn = g_pEnv->APIv1();
-	g_pSourcePawn2 = g_pEnv->APIv2();
+	g_pPawnEnv = sp::Environment::New();
+	ISourcePawnEngine *spe1 = g_pPawnEnv->APIv1();
 
-	*core->spe1 = g_pSourcePawn;
-	*core->spe2 = g_pSourcePawn2;
-	*core->spe_env = g_pEnv;
+	*core->spe1 = spe1;
+	*core->spe2 = g_pPawnEnv->APIv2();
+	*core->spe_env = g_pPawnEnv;
+
+	g_pPawnEnv->SetDebugListener(&g_DbgReporter);
+
+	const char *timeout = core->GetCoreConfigValue("SlowScriptTimeout");
+	if (timeout == NULL)
+	{
+		timeout = "8";
+	}
+	if (atoi(timeout) != 0)
+	{
+		g_pPawnEnv->InstallWatchdogTimer(atoi(timeout) * 1000);
+	}
+
+	const char *linedebugger = core->GetCoreConfigValue("EnableLineDebugging");
+	if (linedebugger != NULL && strcasecmp(linedebugger, "yes") == 0)
+	{
+		g_pPawnEnv->EnableDebugBreak();
+	}
 
 	SMGlobalClass::head = core->listeners;
 

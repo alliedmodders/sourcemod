@@ -59,7 +59,7 @@ cell_t FakeNativeRouter(IPluginContext *pContext, const cell_t *params, void *pD
 		return pContext->ThrowNativeError("Plugin owning this native is currently paused.");
 	}
 
-	CPlugin *pCaller = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+	CPlugin *pCaller = g_PluginSys.GetPluginByCtx(pContext);
 
 	/* Save any old data on the stack */
 	FakeNative *pSaveNative = s_curnative;
@@ -116,7 +116,7 @@ static cell_t CreateNative(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Failed to create native \"%s\", function %x is not a valid function", name, params[2]);
 	}
 
-	pPlugin = g_PluginSys.GetPluginByCtx(pContext->GetContext());
+	pPlugin = g_PluginSys.GetPluginByCtx(pContext);
 
 	if (!pPlugin->AddFakeNative(pFunction, name, FakeNativeRouter))
 	{

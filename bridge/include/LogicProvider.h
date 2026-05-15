@@ -75,6 +75,8 @@ struct sm_logic_t
 	bool			(*ParseEntityLumpString)(const char *entityString, int &status, size_t &position);
 	const char *	(*GetEntityLumpString)();
 	void            (*Shutdown)();
+	void            (*SetJitEnabled)(bool enabled);
+	void            (*SetDebugMetadataFlags)(int flags);
 	IScriptManager	*scripts;
 	IShareSys		*sharesys;
 	IExtensionSys	*extsys;
