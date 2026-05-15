@@ -28,6 +28,7 @@
 #include "ProfileTools.h"
 #include <stdarg.h>
 #include <am-string.h>
+#include <sourcepawn/vm/environment.h>
 
 ProfileToolManager g_ProfileToolManager;
 
@@ -87,8 +88,8 @@ ProfileToolManager::StartFromConsole(IProfilingTool *tool)
 		return;
 	}
 
-	g_pSourcePawn2->SetProfilingTool(active_);
-	g_pSourcePawn2->EnableProfiling();
+	g_pPawnEnv->SetProfilingTool(active_);
+	g_pPawnEnv->EnableProfiling();
 	rootmenu->ConsolePrint("Started profiling with %s.", active_->Name());
 
 	default_ = active_;
@@ -117,8 +118,8 @@ ProfileToolManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs
 				rootmenu->ConsolePrint("No profiler is active.");
 				return;
 			}
-			g_pSourcePawn2->DisableProfiling();
-			g_pSourcePawn2->SetProfilingTool(nullptr);
+			g_pPawnEnv->DisableProfiling();
+			g_pPawnEnv->SetProfilingTool(nullptr);
 			active_->Stop(render_help);
 			active_ = nullptr;
 			return;

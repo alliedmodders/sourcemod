@@ -143,20 +143,6 @@ namespace SourceMod
 		virtual SourcePawn::IPluginContext *GetBaseContext() =0;
 
 		/**
-		 * @brief Deprecated, returns NULL.
-		 *
-		 * @return	NULL.
-		 */
-		virtual sp_context_t *GetContext() =0;
-
-		/**
-		 * @brief Deprecated, returns NULL.
-		 *
-		 * @return	NULL.
-		 */
-		virtual void *GetPluginStructure() =0;
-
-		/**
 		 * @brief Returns information about the plugin by reference.
 		 *
 		 * @return			Pointer to a sm_plugininfo_t object, NULL if plugin is not loaded.
@@ -388,10 +374,10 @@ namespace SourceMod
 		 * @brief Finds a plugin by its context.
 		 * Note: This function should be considered O(1).
 		 *
-		 * @param ctx		Pointer to an sp_context_t.
+		 * @param ctx		Pointer to an IPluginContext.
 		 * @return			Pointer to a matching IPlugin, or NULL if none found.
 		 */
-		virtual IPlugin *FindPluginByContext(const sp_context_t *ctx) =0;
+		virtual IPlugin *FindPluginByContext(SourcePawn::IPluginContext *ctx) =0;
 
 		/**
 		 * @brief Returns the number of plugins (both failed and loaded).

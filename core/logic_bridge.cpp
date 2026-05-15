@@ -422,8 +422,8 @@ CoreProviderImpl::CoreProviderImpl()
 	this->playerhelpers = &g_Players;
 	this->gamehelpers = &g_HL2;
 	this->menus = &g_Menus;
-	this->spe1 = &g_pSourcePawn;
-	this->spe2 = &g_pSourcePawn2;
+	this->spe1 = &g_pPawnEnv;
+	this->spe2 = &g_pPawnEnv;
 	this->spe_env = &g_pPawnEnv;
 	this->GetCoreConfigValue = get_core_config_value;
 	this->DoGlobalPluginLoads = do_global_plugin_loads;

@@ -764,7 +764,7 @@ void SM_ConfigsExecuted_Plugin(unsigned int serial)
 
 void SM_ExecuteForPlugin(IPluginContext *ctx)
 {
-	SMPlugin *plugin = scripts->FindPluginByContext(ctx->GetContext());
+	SMPlugin *plugin = scripts->FindPluginByContext(ctx);
 
 	unsigned int num = plugin->GetConfigCount();
 	if (!num)

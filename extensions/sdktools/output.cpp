@@ -255,7 +255,7 @@ void EntityOutputManager::CleanUpHook(omg_hooks *hook)
 
 	OnHookRemoved();
 
-	IPlugin *pPlugin = plsys->FindPluginByContext(hook->pf->GetParentContext()->GetContext());
+	IPlugin *pPlugin = plsys->FindPluginByContext(hook->pf->GetParentContext());
 	SourceHook::List<omg_hooks *> *pList = NULL;
 
 	if (!pPlugin->GetProperty("OutputHookList", (void **)&pList, false) || !pList)

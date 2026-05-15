@@ -115,7 +115,7 @@ static cell_t sm_GetFunctionByName(IPluginContext *pContext, const cell_t *param
 
 	if (hndl == 0)
 	{
-		pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
+		pPlugin = pluginsys->FindPluginByContext(pContext);
 	} else {
 		pPlugin = pluginsys->PluginFromHandle(hndl, &err);
 
@@ -218,7 +218,7 @@ static cell_t sm_AddToForward(IPluginContext *pContext, const cell_t *params)
 
 	if (plHandle == 0)
 	{
-		pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
+		pPlugin = pluginsys->FindPluginByContext(pContext);
 	} else {
 		pPlugin = pluginsys->PluginFromHandle(plHandle, &err);
 
@@ -259,7 +259,7 @@ static cell_t sm_RemoveFromForward(IPluginContext *pContext, const cell_t *param
 
 	if (plHandle == 0)
 	{
-		pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
+		pPlugin = pluginsys->FindPluginByContext(pContext);
 	} else {
 		pPlugin = pluginsys->PluginFromHandle(plHandle, &err);
 
@@ -300,7 +300,7 @@ static cell_t sm_RemoveAllFromForward(IPluginContext *pContext, const cell_t *pa
 
 	if (plHandle == 0)
 	{
-		pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
+		pPlugin = pluginsys->FindPluginByContext(pContext);
 	} else {
 		pPlugin = pluginsys->PluginFromHandle(plHandle, &err);
 
@@ -325,7 +325,7 @@ static cell_t sm_CallStartFunction(IPluginContext *pContext, const cell_t *param
 
 	if (hndl == 0)
 	{
-		pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
+		pPlugin = pluginsys->FindPluginByContext(pContext);
 	} else {
 		pPlugin = pluginsys->PluginFromHandle(hndl, &err);
 
@@ -721,7 +721,7 @@ static void PawnFrameAction(void *pData)
 
 static cell_t sm_AddFrameAction(IPluginContext *pContext, const cell_t *params)
 {
-	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
+	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext);
 	IPluginFunction *pFunction = pPlugin->GetBaseContext()->GetFunctionById(params[1]);
 	if (!pFunction)
 	{

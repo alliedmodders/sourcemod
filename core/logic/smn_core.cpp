@@ -438,7 +438,7 @@ IPlugin *GetPluginFromHandle(IPluginContext *pContext, Handle_t hndl)
 {
 	if (hndl == BAD_HANDLE)
 	{
-		return scripts->FindPluginByContext(pContext->GetContext());
+		return scripts->FindPluginByContext(pContext);
 	} else {
 		HandleError err;
 		IPlugin *pPlugin = scripts->FindPluginByHandle(hndl, &err);
@@ -557,7 +557,7 @@ static cell_t SetFailState(IPluginContext *pContext, const cell_t *params)
 	SMPlugin *pPlugin;
 
 	pContext->LocalToString(params[1], &str);
-	pPlugin = scripts->FindPluginByContext(pContext->GetContext());
+	pPlugin = scripts->FindPluginByContext(pContext);
 
 	if (params[0] == 1)
 	{
@@ -606,7 +606,7 @@ static cell_t GetSysTickCount(IPluginContext *pContext, const cell_t *params)
 
 static cell_t AutoExecConfig(IPluginContext *pContext, const cell_t *params)
 {
-	SMPlugin *plugin = scripts->FindPluginByContext(pContext->GetContext());
+	SMPlugin *plugin = scripts->FindPluginByContext(pContext);
 
 	char *cfg, *folder;
 	pContext->LocalToString(params[2], &cfg);
@@ -653,7 +653,7 @@ static cell_t MarkNativeAsOptional(IPluginContext *pContext, const cell_t *param
 static cell_t RegPluginLibrary(IPluginContext *pContext, const cell_t *params)
 {
 	char *name;
-	SMPlugin *pl = scripts->FindPluginByContext(pContext->GetContext());
+	SMPlugin *pl = scripts->FindPluginByContext(pContext);
 
 	pContext->LocalToString(params[1], &name);
 
@@ -695,7 +695,7 @@ static cell_t sm_LogAction(IPluginContext *pContext, const cell_t *params)
 			return 0;
 	}
 
-	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
+	IPlugin *pPlugin = scripts->FindPluginByContext(pContext);
 
 	LogAction(pPlugin->GetMyHandle(), 2, params[1], params[2], buffer);
 
@@ -727,7 +727,7 @@ static cell_t LogToFile(IPluginContext *pContext, const cell_t *params)
 		}
 	}
 
-	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
+	IPlugin *pPlugin = scripts->FindPluginByContext(pContext);
 
 	g_Logger.LogToOpenFile(fp, "[%s] %s", pPlugin->GetFilename(), buffer);
 
@@ -834,7 +834,7 @@ static cell_t RequireFeature(IPluginContext *pContext, const cell_t *params)
 		char buffer[255];
 		char *msg = buffer;
 		char default_message[255];
-		SMPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
+		SMPlugin *pPlugin = scripts->FindPluginByContext(pContext);
 
 		DetectExceptions eh(pContext);
 		g_pSM->FormatString(buffer, sizeof(buffer), pContext, params, 3);
@@ -1206,7 +1206,7 @@ static cell_t LogStackTrace(IPluginContext *pContext, const cell_t *params)
 	std::vector<std::string> arr = g_DbgReporter.GetStackTrace(it);
 	pContext->DestroyFrameIterator(it);
 
-	IPlugin *pPlugin = scripts->FindPluginByContext(pContext->GetContext());
+	IPlugin *pPlugin = scripts->FindPluginByContext(pContext);
 
 	g_Logger.LogError("[SM] Stack trace requested: %s", buffer);
 	g_Logger.LogError("[SM] Called from: %s", pPlugin->GetFilename());

@@ -321,7 +321,7 @@ public:
 	
 	MTRand *RandObjForPlugin(IPluginContext *ctx)
 	{
-		IPlugin *plugin = pluginsys->FindPluginByContext(ctx->GetContext());
+		IPlugin *plugin = pluginsys->FindPluginByContext(ctx);
 		MTRand *mtrand;	
 		if (!plugin->GetProperty("core.logic.mtrand", (void**)&mtrand))
 		{

@@ -433,7 +433,7 @@ AlreadyRefed<Native> ShareSystem::AddFakeNative(IPluginFunction *pFunc, const ch
 	std::unique_ptr<FakeNative> fake(new FakeNative(name, pFunc));
 	fake->wrapper = new DynamicNative(func, fake.get());
 
-	CNativeOwner *owner = g_PluginSys.GetPluginByCtx(fake->ctx->GetContext());
+	CNativeOwner *owner = g_PluginSys.GetPluginByCtx(fake->ctx);
 
 	entry = new Native(owner, std::move(fake));
 	m_NtvCache.insert(name, entry);

@@ -34,12 +34,13 @@
 #include <stdarg.h>
 #include "DebugReporter.h"
 #include "Logger.h"
+#include "sourcepawn/vm/environment.h"
 
 DebugReport g_DbgReporter;
 
 void DebugReport::OnSourceModAllInitialized()
 {
-	g_pSourcePawn->SetDebugListener(this);
+	g_pPawnEnv->SetDebugListener(this);
 }
 
 void DebugReport::OnDebugSpew(const char *msg, ...)
@@ -68,10 +69,10 @@ void DebugReport::GenerateErrorVA(IPluginContext *ctx, cell_t func_idx, int err,
 	char buffer[512];
 	ke::SafeVsprintf(buffer, sizeof(buffer), message, ap);
 
-	const char *plname = pluginsys->FindPluginByContext(ctx->GetContext())->GetFilename();
+	const char *plname = pluginsys->FindPluginByContext(ctx)->GetFilename();
 
 	if (err >= 0) {
-		const char *error = g_pSourcePawn2->GetErrorString(err);
+		const char *error = g_pPawnEnv->GetErrorString(err);
 		if (error)
 			g_Logger.LogError("[SM] Plugin \"%s\" encountered error %d: %s", plname, err, error);
 		else
@@ -134,7 +135,7 @@ void DebugReport::ReportError(const IErrorReport &report, IFrameIterator &iter)
 		{
 			if (iter.IsScriptedFrame()) 
 			{
-				IPlugin *plugin = pluginsys->FindPluginByContext(iter.Context()->GetContext());
+				IPlugin *plugin = pluginsys->FindPluginByContext(iter.Context());
 				if (plugin)
 				{
 					blame = plugin->GetFilename();

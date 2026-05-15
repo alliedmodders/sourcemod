@@ -30,6 +30,7 @@
  */
 
 #include "common_logic.h"
+#include <bridge/include/IScriptManager.h>
 #include <IHandleSys.h>
 #include <IPluginSys.h>
 
@@ -108,7 +109,7 @@ static cell_t sm_CloneHandle(IPluginContext *pContext, const cell_t *params)
 
 static cell_t sm_GetMyHandle(IPluginContext *pContext, const cell_t *params)
 {
-	IPlugin *pPlugin = pluginsys->FindPluginByContext(pContext->GetContext());
+	IPlugin *pPlugin = scripts->FindPluginByContext(pContext);
 
 	return pPlugin->GetMyHandle();
 }

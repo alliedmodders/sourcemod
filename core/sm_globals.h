@@ -195,9 +195,11 @@ public:
 	static SMGlobalClass *head;
 };
 
-extern SourcePawn::ISourcePawnEngine *g_pSourcePawn;
-extern SourcePawn::ISourcePawnEngine2 *g_pSourcePawn2;
+#if defined SM_LOGIC
+extern sp::Environment *g_pPawnEnv;
+#else
 extern SourcePawn::ISourcePawnEnvironment *g_pPawnEnv;
+#endif
 extern IdentityToken_t *g_pCoreIdent;
 
 namespace SourceMod

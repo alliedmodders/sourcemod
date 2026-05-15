@@ -169,7 +169,7 @@ MsgListenerWrapper *UsrMessageNatives::CreateListener(IPluginContext *pCtx)
 {
 	MsgWrapperList *pList;
 	MsgListenerWrapper *pListener;
-	IPlugin *pl = scripts->FindPluginByContext(pCtx->GetContext());
+	IPlugin *pl = scripts->FindPluginByContext(pCtx);
 
 	if (m_FreeListeners.empty())
 	{
@@ -195,7 +195,7 @@ bool UsrMessageNatives::FindListener(int msgid, IPluginContext *pCtx, IPluginFun
 	MsgWrapperList *pList;
 	MsgWrapperIter _iter;
 	MsgListenerWrapper *pListener;
-	IPlugin *pl = scripts->FindPluginByContext(pCtx->GetContext());
+	IPlugin *pl = scripts->FindPluginByContext(pCtx);
 
 	if (!pl->GetProperty("MsgListeners", reinterpret_cast<void **>(&pList)))
 	{
@@ -221,7 +221,7 @@ bool UsrMessageNatives::DeleteListener(IPluginContext *pCtx, MsgWrapperIter iter
 {
 	MsgWrapperList *pList;
 	MsgListenerWrapper *pListener;
-	IPlugin *pl = scripts->FindPluginByContext(pCtx->GetContext());
+	IPlugin *pl = scripts->FindPluginByContext(pCtx);
 
 	if (!pl->GetProperty("MsgListeners", reinterpret_cast<void **>(&pList)))
 	{

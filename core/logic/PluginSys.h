@@ -105,8 +105,6 @@ public:
 public:
 	PluginType GetType();
 	SourcePawn::IPluginContext *GetBaseContext();
-	sp_context_t *GetContext();
-	void *GetPluginStructure();
 	const char *GetFilename();
 	bool IsDebugging();
 	PluginStatus GetStatus();
@@ -332,7 +330,7 @@ public: //IScriptManager
 								size_t maxlength,
 								bool *wasloaded);
 	bool UnloadPlugin(IPlugin *plugin);
-	IPlugin *FindPluginByContext(const sp_context_t *ctx);
+	SMPlugin *FindPluginByContext(IPluginContext *ctx);
 	unsigned int GetPluginCount();
 	IPluginIterator *GetPluginIterator();
 	void AddPluginsListener(IPluginsListener *listener);
@@ -344,12 +342,6 @@ public: //IScriptManager
 	}
 	SMPlugin *FindPluginByIdentity(IdentityToken_t *ident) {
 		return GetPluginFromIdentity(ident);
-	}
-	SMPlugin *FindPluginByContext(IPluginContext *ctx) {
-		return GetPluginByCtx(ctx->GetContext());
-	}
-	SMPlugin *FindPluginByContext(sp_context_t *ctx) {
-		return GetPluginByCtx(ctx);
 	}
 	SMPlugin *FindPluginByConsoleArg(const char *text);
 	SMPlugin *FindPluginByHandle(Handle_t hndl, HandleError *errp) {
@@ -399,7 +391,7 @@ public:
 	/** 
 	 * Internal version of FindPluginByContext()
 	 */
-	CPlugin *GetPluginByCtx(const sp_context_t *ctx);
+	CPlugin *GetPluginByCtx(IPluginContext *ctx);
 
 	/**
 	 * Gets status text for a status code 

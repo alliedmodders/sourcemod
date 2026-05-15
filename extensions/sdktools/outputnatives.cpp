@@ -94,7 +94,7 @@ cell_t HookSingleEntityOutput(IPluginContext *pContext, const cell_t *params)
 
 	g_OutputManager.OnHookAdded();
 
-	IPlugin *pPlugin = plsys->FindPluginByContext(pContext->GetContext());
+	IPlugin *pPlugin = plsys->FindPluginByContext(pContext);
 	SourceHook::List<omg_hooks *> *pList = NULL;
 
 	if (!pPlugin->GetProperty("OutputHookList", (void **)&pList, false) || !pList)
@@ -157,7 +157,7 @@ cell_t HookEntityOutput(IPluginContext *pContext, const cell_t *params)
 
 	g_OutputManager.OnHookAdded();
 
-	IPlugin *pPlugin = plsys->FindPluginByContext(pContext->GetContext());
+	IPlugin *pPlugin = plsys->FindPluginByContext(pContext);
 	SourceHook::List<omg_hooks *> *pList = NULL;
 
 	if (!pPlugin->GetProperty("OutputHookList", (void **)&pList, false) || !pList)

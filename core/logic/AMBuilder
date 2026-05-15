@@ -16,6 +16,7 @@ for cxx in builder.targets:
     'SM_DEFAULT_THREADER',
     'SM_LOGIC'
   ]
+  SP.AddVmFlags(binary)
   
   if binary.compiler.target.platform == 'linux':
     binary.compiler.postlink += ['-lpthread', '-lrt', '-lm']

@@ -356,7 +356,7 @@ Handle_t ConVarManager::CreateConVar(IPluginContext *pContext, const char *name,
 	ConVarInfo *pInfo = NULL;
 	Handle_t hndl = 0;
 
-	IPlugin *plugin = scripts->FindPluginByContext(pContext->GetContext());
+	IPlugin *plugin = scripts->FindPluginByContext(pContext);
 
 	/* Find out if the convar exists already */
 	pConVar = icvar->FindVar(name);
