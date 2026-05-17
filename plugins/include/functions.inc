@@ -47,7 +47,6 @@ enum ParamType
 	Param_Float         = (2<<1),                       /**< Only floats can be pushed */
 	Param_String        = (3<<1)|SP_PARAMFLAG_BYREF,    /**< Only strings can be pushed */
 	Param_Array         = (4<<1)|SP_PARAMFLAG_BYREF,    /**< Only arrays can be pushed */
-	Param_VarArgs       = (5<<1),                       /**< Same as "..." in plugins, anything can be pushed, but it will always be byref */
 	Param_CellByRef     = (1<<1)|SP_PARAMFLAG_BYREF,    /**< Only a cell by reference can be pushed */
 	Param_FloatByRef    = (2<<1)|SP_PARAMFLAG_BYREF     /**< Only a float by reference can be pushed */
 };

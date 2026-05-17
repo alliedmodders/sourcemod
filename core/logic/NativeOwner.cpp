@@ -31,7 +31,7 @@
 #include "NativeOwner.h"
 #include "ShareSys.h"
 #include "PluginSys.h"
-#include <sourcepawn/vm/plugin-runtime.h>
+#include <sourcepawn/vm/base-runtime.h>
 
 CNativeOwner::CNativeOwner() : m_nMarkSerial(0)
 {

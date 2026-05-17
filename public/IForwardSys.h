@@ -53,8 +53,13 @@ using namespace SourcePawn;
 #define SMINTERFACE_FORWARDMANAGER_VERSION	4
 
 /*
- * There is some very important documentation at the bottom of this file.
- * Readers interested in knowing more about the forward system, scrolling down is a must!
+ * A Forward is just a collection of IPluginFunctions.  Thus, the same API can
+ * be easily wrapped around a simple list, and it will look transparent to the
+ * user.
+ *
+ * Forwards are function based, rather than plugin based, and are thus far more flexible at runtime..
+ * Individual functions can be paused and more than one function from the same plugin can be hooked.
+ * Parameter pushing is type-checked and allows for variable arguments.
  */
 
 namespace SourceMod
@@ -88,7 +93,6 @@ namespace SourceMod
 	#define SP_PARAMTYPE_FLOAT	(2<<1)
 	#define SP_PARAMTYPE_STRING	(3<<1)|SP_PARAMFLAG_BYREF
 	#define SP_PARAMTYPE_ARRAY	(4<<1)|SP_PARAMFLAG_BYREF
-	#define SP_PARAMTYPE_VARARG	(5<<1)
 
 	/**
 	 * @brief Describes the various ways to pass parameters to plugins.
@@ -100,7 +104,6 @@ namespace SourceMod
 		Param_Float = SP_PARAMTYPE_FLOAT,			/**< Only floats can be pushed */
 		Param_String = SP_PARAMTYPE_STRING,			/**< Only strings can be pushed */
 		Param_Array = SP_PARAMTYPE_ARRAY,			/**< Only arrays can be pushed */
-		Param_VarArgs = SP_PARAMTYPE_VARARG,		/**< Same as "..." in plugins, anything can be pushed, but it will always be byref */
 		Param_CellByRef = SP_PARAMTYPE_CELL|SP_PARAMFLAG_BYREF,		/**< Only a cell by reference can be pushed */
 		Param_FloatByRef = SP_PARAMTYPE_FLOAT|SP_PARAMFLAG_BYREF,	/**< Only a float by reference can be pushed */
 	};
@@ -124,7 +127,7 @@ namespace SourceMod
 	class IForwardFilter
 	{
 	public:
-		virtual void Preprocess(IPluginFunction *fun, FwdParamInfo *params)
+		virtual void Preprocess(IPluginFunction *fun, sp::CallArgs& args)
 		{
 		}
 	};
@@ -136,7 +139,7 @@ namespace SourceMod
 	 * Some functions are repeated in here because their documentation differs from their IPluginFunction equivalents.
 	 * Missing are the Push functions, whose only doc change is that they throw SP_ERROR_PARAM on type mismatches.
 	 */
-	class IForward : public ICallable
+	class IForward
 	{
 	public:
 		/** Virtual Destructor */
@@ -193,6 +196,88 @@ namespace SourceMod
 		* @return      Error code, if any.
 		*/
 		virtual int PushString(const char *string) = 0;
+
+		/**
+		 * @brief Pushes a cell onto the current call.
+		 *
+		 * @param cell	Parameter value to push.
+		 * @return	  Error code, if any.
+		 */
+		virtual int PushCell(cell_t cell) = 0;
+	
+		/**
+		 * @brief Pushes a cell by reference onto the current call.
+		 * NOTE: On Execute, the pointer passed will be modified if copyback is enabled.
+		 * NOTE: By reference parameters are cached and thus are not read until execution.
+		 *	 This means you cannot push a pointer, change it, and push it again and expect
+		 *	   two different values to come out.
+		 *
+		 * @param cell	Address containing parameter value to push.
+		 * @param flags	Copy-back flags.
+		 * @return	  Error code, if any.
+		 */
+		virtual int PushCellByRef(cell_t* cell, int flags = SM_PARAM_COPYBACK) = 0;
+	
+		/**
+		 * @brief Pushes a float onto the current call.
+		 *
+		 * @param number  Parameter value to push.
+		 * @return	  Error code, if any.
+		 */
+		virtual int PushFloat(float number) = 0;
+	
+		/**
+		 * @brief Pushes a float onto the current call by reference.
+		 * NOTE: On Execute, the pointer passed will be modified if copyback is enabled.
+		 * NOTE: By reference parameters are cached and thus are not read until execution.
+		 *	 This means you cannot push a pointer, change it, and push it again and expect
+		 *	   two different values to come out.
+		 *
+		 * @param number  Parameter value to push.
+		 * @param flags	Copy-back flags.
+		 * @return	  Error code, if any.
+		 */
+		virtual int PushFloatByRef(float* number, int flags = SM_PARAM_COPYBACK) = 0;
+	
+		/**
+		 * @brief Pushes a string or string buffer.
+		 *
+		 * NOTE: On Execute, the pointer passed will be modified if copy-back is enabled.
+		 *
+		 * @param buffer  Pointer to string buffer.
+		 * @param length  Length of buffer.
+		 * @param sz_flags  String flags.  In copy mode, the string will be copied
+		 *		  according to the handling (ascii, utf-8, binary, etc).
+		 * @param cp_flags  Copy-back flags.
+		 * @return	  Error code, if any.
+		 */
+		virtual int PushStringEx(char* buffer, size_t length, int sz_flags, int cp_flags) = 0;
+	
+		/**
+		 * @brief Cancels a function call that is being pushed but not yet executed.
+		 * This can be used be reset for CallFunction() use.
+		 */
+		virtual void Cancel() = 0;
+	
+		/**
+		 * @brief Pushes an int64 value onto the current call.
+		 *
+		 * @param number	Parameter to push.
+		 * @return		  Error code, if any.
+		 */
+		virtual int PushInt64(int64_t value) = 0;
+
+		/**
+		 * @brief Alternate version of Execute() that uses CallArgs rather than
+		 * individual Push methods.
+		 *
+		 * Each Push() method on CallArgs supports the same behavior as the
+		 * Push methods on IForward.
+		 *
+		 * Unlike IPluginFunction::Invoke, this does not automatically propagate
+		 * an exception.
+		 */
+		virtual int Execute(const sp::CallArgs& args, cell_t *result = nullptr, IForwardFilter *filter = nullptr) = 0;
 	};
 
 	/**
@@ -201,7 +286,7 @@ namespace SourceMod
 	class IChangeableForward : public IForward
 	{
 	public:
-		/** 
+		/**
 		 * @brief Removes a function from the call list.
 		 * NOTE: Only removes one instance.
 		 *
@@ -210,7 +295,7 @@ namespace SourceMod
 		 */
 		virtual bool RemoveFunction(IPluginFunction *func) =0;
 
-		/** 
+		/**
 		 * @brief Removes all instances of a plugin from the call list.
 		 *
 		 * @param plugin	Plugin to remove instances of.
@@ -240,7 +325,7 @@ namespace SourceMod
 		 */
 		virtual bool AddFunction(IPluginContext *ctx, funcid_t index) =0;
 
-		/** 
+		/**
 		 * @brief Removes a function from the call list.
 		 * NOTE: Only removes one instance.
 		 *
@@ -289,10 +374,10 @@ namespace SourceMod
 		 * @param ...			If types is NULL, num_params ParamTypes should be pushed.
 		 * @return				A new IForward on success, NULL if type combination is impossible.
 		 */
-		virtual IForward *CreateForward(const char *name, 
-										ExecType et, 
-										unsigned int num_params, 
-										const ParamType *types, 
+		virtual IForward *CreateForward(const char *name,
+										ExecType et,
+										unsigned int num_params,
+										const ParamType *types,
 										...) =0;
 
 		/**
@@ -309,10 +394,10 @@ namespace SourceMod
 		 * @param ...			If types is NULL, num_params ParamTypes should be pushed.
 		 * @return				A new IChangeableForward on success, NULL if type combination is impossible.
 		 */
-		virtual IChangeableForward *CreateForwardEx(const char *name, 
-													ExecType et, 
-													int num_params, 
-													const ParamType *types, 
+		virtual IChangeableForward *CreateForwardEx(const char *name,
+													ExecType et,
+													int num_params,
+													const ParamType *types,
 													...) =0;
 
 		/**
@@ -333,67 +418,5 @@ namespace SourceMod
 		virtual void ReleaseForward(IForward *forward) =0;
 	};
 }
-
-/*
- *  In the AMX Mod X model of forwarding, each forward contained a list of pairs, each pair containing
- * a function ID and an AMX structure.  The forward structure itself did very little but hold parameter types.
- * An execution call worked like this:
- *  - executeForward() took in a function id and a list of parameters
- *  - for each contained plugin:
- *   - the list of parameters was preprocessed and pushed
- *   - the call was made
- *   - the list was freed and copybacks were made
- *  - return
- * 
- *  The advantages to this is that the system is very easy to implement, and it's fast. The disadvantage is 
- * varargs tend to be very unforgiving and inflexible, and thus weird problems arose with casting.  You also 
- * lose flexibility, type checking, and the ability to reasonably use variable arguments lists in the VM.
- *
- *  SourceMod replaces this forward system with a far more advanced, but a bit bulkier one. The idea is that 
- * each plugin has a table of functions, and each function is an ICallable object.  As well as being an ICallable, 
- * each function is an IPluginFunction.  An ICallable simply describes the process of adding parameters to a 
- * function call.  An IPluginFunction describes the process of actually calling a function and performing allocation, 
- * copybacks, and deallocations.
- *
- * A very powerful forward system emerges: a Forward is just a collection of IPluginFunctions.  Thus, the same 
- * API can be easily wrapped around a simple list, and it will look transparent to the user.
- * Advantages:
- * 1) "SP Forwards" from AMX Mod X are simply IPluginFunctions without a collection.
- * 2) Forwards are function based, rather than plugin based, and are thus far more flexible at runtime..
- * 3) [2] Individual functions can be paused and more than one function from the same plugin can be hooked.
- * 4) [2] One hook type that used to map to many SP Forwards can now be centralized as one Forward.
- *    This helps alleviate messes like Fakemeta.
- * 5) Parameter pushing is type-checked and allows for variable arguments.
- *
- *  Note that while #2,3,4 could be added to AMX Mod X, the real binding property is #1, which makes the system
- * object oriented, rather than AMX Mod X, which hides the objects behind static functions.  It is entirely a design
- * issue, rather than a usability one.  The interesting part is when it gets to implementation, which has to cache
- * parameter pushing until execution.  Without this, multiple function calls can be started across one plugin, which
- * will result in heap corruption given SourcePawn's implementation.
- *
- * Observe the new calling process:
- * - Each parameter is pushed into a local cache using the ICallable interface.
- * - For each function in the collection:
- *  - Each parameter is decoded and -pushed into the function.
- *  - The call is made.
- * - Return
- *
- *  Astute readers will note the (minor) problems:
- * 1) More memory is used.  Specifically, rather than N params of memory, you now have N params * M plugins.
- *    This is because, again, parameters are cached both per-function and per-forward.
- * 2) There are slightly more calls going around: one extra call for each parameter, since each push is manual.
- *
- * HISTORICAL NOTES:
- *  There used to be a # about copy backs.  
- *  Note that originally, the Forward implementation was a thin wrapper around IForwards.  It did not cache pushes,
- * and instead immediately fired them to each internal plugin.  This was to allow users to know that pointers would 
- * be immediately resolved.  Unfortunately, this became extremely burdensome on the API and exposed many problems,
- * the major (and breaking) one was that two separate Function objects cannot be in a calling process on the same 
- * plugin at once. (:TODO: perhaps prevent that in the IPlugin object?) This is because heap functions lose their order
- * and become impossible to re-arrange without some global heap tracking mechanism.  It also made iterative copy backs 
- * for arrays/references overwhelmingly complex, since each plugin had to have its memory back-patched for each copy.
- *  Therefore, this was scrapped for cached parameters (current implementation), which is the implementation AMX Mod X 
- * uses.  It is both faster and works better.
- */
 
 #endif //_INCLUDE_SOURCEMOD_FORWARDINTERFACE_H_

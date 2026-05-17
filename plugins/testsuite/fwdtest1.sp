@@ -53,7 +53,7 @@ public Action:Command_CreatePrivateForward(args)
 		delete g_PrivateFwd;
 	}
 	
-	g_PrivateFwd = CreateForward(ET_Hook, Param_Cell, Param_String, Param_VarArgs);
+	g_PrivateFwd = CreateForward(ET_Hook, Param_Cell, Param_String);
 	
 	if (g_PrivateFwd == null)
 	{
@@ -134,13 +134,7 @@ public Action:Command_ExecPrivateForward(args)
 	
 	Call_StartForward(g_PrivateFwd);
 	Call_PushCell(24);
-	Call_PushString("I am a format string: %d %d %d %d %d %d");
-	Call_PushCell(0);
-	Call_PushCell(1);
-	Call_PushCell(2);
-	Call_PushCell(3);
-	Call_PushCell(4);
-	Call_PushCell(5);
+	Call_PushString("I am a string");
 	err = Call_Finish(ret);
 	
 	PrintToServer("Call to private forward completed");

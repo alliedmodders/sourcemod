@@ -41,7 +41,7 @@ typedef ReentrantList<IPluginFunction *>::iterator FuncIter;
 
 class CForward : public IChangeableForward
 {
-public: //ICallable
+public: //IForward
 	virtual int PushCell(cell_t cell);
 	virtual int PushCellByRef(cell_t *cell, int flags);
 	virtual int PushFloat(float number);
@@ -51,11 +51,11 @@ public: //ICallable
 	virtual int PushStringEx(char *buffer, size_t length, int sz_flags, int cp_flags);
 	virtual int PushInt64(int64_t value);
 	virtual void Cancel();
-public: //IForward
 	virtual const char *GetForwardName();
 	virtual unsigned int GetFunctionCount();
 	virtual ExecType GetExecType();
 	virtual int Execute(cell_t *result, IForwardFilter *filter);
+	virtual int Execute(const sp::CallArgs& args, cell_t *result = nullptr, IForwardFilter *filter = nullptr);
 public: //IChangeableForward
 	virtual bool RemoveFunction(IPluginFunction *func);
 	virtual unsigned int RemoveFunctionsOfPlugin(IPlugin *plugin);
@@ -75,28 +75,25 @@ private:
 
 	int PushNullString();
 	int PushNullVector();
-	int _ExecutePushRef(IPluginFunction *func, ParamType type, FwdParamInfo *param);
-	void _Int_PushArray(cell_t *inarray, unsigned int cells, int flags);
-	void _Int_PushString(cell_t *inarray, unsigned int cells, int sz_flags, int cp_flags);
 	inline int SetError(int err)
 	{
 		m_errstate = err;
 		return err;
 	}
+	bool ProcessArguments(const sp::CallArgs& args);
+
 protected:
 	mutable ReentrantList<IPluginFunction *> m_functions;
 	mutable ReentrantList<IPluginFunction *> m_paused;
 
 	/* Type and name information */
-	FwdParamInfo m_params[SP_MAX_EXEC_PARAMS];
+	sp::CallArgs default_args_;
 	ParamType m_types[SP_MAX_EXEC_PARAMS];
 	char m_name[FORWARDS_NAME_MAX+1];
 	unsigned int m_numparams;
-	unsigned int m_varargs;
 	ExecType m_ExecType;
 
 	/* State information */
-	unsigned int m_curparam;
 	int m_errstate;
 };
 
