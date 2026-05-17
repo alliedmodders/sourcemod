@@ -39,7 +39,7 @@
 #include "common_logic.h"
 #include "PluginSys.h"
 #include "HandleSys.h"
-#include <sourcepawn/vm/plugin-runtime.h>
+#include <sourcepawn/vm/base-runtime.h>
 
 using namespace ke;
 

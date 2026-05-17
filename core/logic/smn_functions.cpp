@@ -42,7 +42,7 @@ HandleType_t g_GlobalFwdType = 0;
 HandleType_t g_PrivateFwdType = 0;
 
 static bool s_CallStarted = false;
-static ICallable *s_pCallable = NULL;
+static sp::CallArgs sArgs;
 static IPluginFunction *s_pFunction = NULL;
 static IForward *s_pForward = NULL;
 
@@ -103,7 +103,7 @@ inline void ResetCall()
 	s_CallStarted = false;
 	s_pFunction = NULL;
 	s_pForward = NULL;
-	s_pCallable = NULL;
+	sArgs.Reset();
 }
 
 static cell_t sm_GetFunctionByName(IPluginContext *pContext, const cell_t *params)
@@ -347,8 +347,6 @@ static cell_t sm_CallStartFunction(IPluginContext *pContext, const cell_t *param
 		return pContext->ThrowNativeError("Invalid function id (%X)", funcid);
 	}
 
-	s_pCallable = static_cast<ICallable *>(s_pFunction);
-
 	s_CallStarted = true;
 
 	return 1;
@@ -373,8 +371,6 @@ static cell_t sm_CallStartForward(IPluginContext *pContext, const cell_t *params
 
 	s_pForward = pForward;
 
-	s_pCallable = static_cast<ICallable *>(pForward);
-
 	s_CallStarted = true;
 
 	return 1;
@@ -389,14 +385,27 @@ static cell_t sm_CallPushCell(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Cannot push parameters when there is no call in progress");
 	}
 
-	err = s_pCallable->PushCell(params[1]);
+	sArgs.PushCell(params[1]);
 
-	if (err)
+	if (sArgs.error)
+		return pContext->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX, nullptr);
+
+	return 1;
+}
+
+static cell_t sm_CallPushFloat(IPluginContext *pContext, const cell_t *params)
+{
+	int err;
+
+	if (!s_CallStarted)
 	{
-		s_pCallable->Cancel();
-		ResetCall();
-		return pContext->ThrowNativeErrorEx(err, NULL);
+		return pContext->ThrowNativeError("Cannot push parameters when there is no call in progress");
 	}
+
+	sArgs.PushFloat(sp_ctof(params[1]));
+
+	if (sArgs.error)
+		return pContext->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX, nullptr);
 
 	return 1;
 }
@@ -411,37 +420,13 @@ static cell_t sm_CallPushCellRef(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Cannot push parameters when there is no call in progress");
 	}
 
-	pContext->LocalToPhysAddr(params[1], &addr);
+	if (int err = pContext->LocalToPhysAddr(params[1], &addr); err != SP_ERROR_NONE)
+		return pContext->ThrowNativeErrorEx(err, nullptr);
 
-	err = s_pCallable->PushCellByRef(addr);
+	sArgs.PushCellByRef(addr);
 
-	if (err)
-	{
-		s_pCallable->Cancel();
-		ResetCall();
-		return pContext->ThrowNativeErrorEx(err, NULL);
-	}
-
-	return 1;
-}
-
-static cell_t sm_CallPushFloat(IPluginContext *pContext, const cell_t *params)
-{
-	int err;
-
-	if (!s_CallStarted)
-	{
-		return pContext->ThrowNativeError("Cannot push parameters when there is no call in progress");
-	}
-
-	err = s_pCallable->PushFloat(sp_ctof(params[1]));
-
-	if (err)
-	{
-		s_pCallable->Cancel();
-		ResetCall();
-		return pContext->ThrowNativeErrorEx(err, NULL);
-	}
+	if (sArgs.error)
+		return pContext->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX, nullptr);
 
 	return 1;
 }
@@ -456,23 +441,19 @@ static cell_t sm_CallPushFloatRef(IPluginContext *pContext, const cell_t *params
 		return pContext->ThrowNativeError("Cannot push parameters when there is no call in progress");
 	}
 
-	pContext->LocalToPhysAddr(params[1], &addr);
+	if (int err = pContext->LocalToPhysAddr(params[1], &addr); err != SP_ERROR_NONE)
+		return pContext->ThrowNativeErrorEx(err, nullptr);
 
-	err = s_pCallable->PushFloatByRef(reinterpret_cast<float *>(addr));
+	sArgs.PushFloatByRef(reinterpret_cast<float*>(addr));
 
-	if (err)
-	{
-		s_pCallable->Cancel();
-		ResetCall();
-		return pContext->ThrowNativeErrorEx(err, NULL);
-	}
+	if (sArgs.error)
+		return pContext->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX, nullptr);
 
 	return 1;
 }
 
 static cell_t sm_CallPushArray(IPluginContext *pContext, const cell_t *params)
 {
-	int err;
 	cell_t *addr;
 
 	if (!s_CallStarted)
@@ -480,23 +461,19 @@ static cell_t sm_CallPushArray(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Cannot push parameters when there is no call in progress");
 	}
 
-	pContext->LocalToPhysAddr(params[1], &addr);
+	if (int err = pContext->LocalToPhysAddr(params[1], &addr); err != SP_ERROR_NONE)
+		return pContext->ThrowNativeErrorEx(err, nullptr);
 
-	err = s_pCallable->PushArray(addr, params[2]);
+	sArgs.PushArray(addr, params[2]);
 
-	if (err)
-	{
-		s_pCallable->Cancel();
-		ResetCall();
-		return pContext->ThrowNativeErrorEx(err, NULL);
-	}
+	if (sArgs.error)
+		return pContext->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX, nullptr);
 
 	return 1;
 }
 
 static cell_t sm_CallPushArrayEx(IPluginContext *pContext, const cell_t *params)
 {
-	int err;
 	cell_t *addr;
 
 	if (!s_CallStarted)
@@ -504,23 +481,19 @@ static cell_t sm_CallPushArrayEx(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Cannot push parameters when there is no call in progress");
 	}
 
-	pContext->LocalToPhysAddr(params[1], &addr);
+	if (int err = pContext->LocalToPhysAddr(params[1], &addr); err != SP_ERROR_NONE)
+		return pContext->ThrowNativeErrorEx(err, nullptr);
 
-	err = s_pCallable->PushArray(addr, params[2], params[3]);
+	sArgs.PushArray(addr, params[2], params[3]);
 
-	if (err)
-	{
-		s_pCallable->Cancel();
-		ResetCall();
-		return pContext->ThrowNativeErrorEx(err, NULL);
-	}
+	if (sArgs.error)
+		return pContext->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX, nullptr);
 
 	return 1;
 }
 
 static cell_t sm_CallPushString(IPluginContext *pContext, const cell_t *params)
 {
-	int err;
 	char *value;
 
 	if (!s_CallStarted)
@@ -528,23 +501,19 @@ static cell_t sm_CallPushString(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Cannot push parameters when there is no call in progress");
 	}
 
-	pContext->LocalToString(params[1], &value);
+	if (int err = pContext->LocalToString(params[1], &value); err != SP_ERROR_NONE)
+		return pContext->ThrowNativeErrorEx(err, nullptr);
 
-	err = s_pCallable->PushString(value);
+	sArgs.PushString(value);
 
-	if (err)
-	{
-		s_pCallable->Cancel();
-		ResetCall();
-		return pContext->ThrowNativeErrorEx(err, NULL);
-	}
+	if (sArgs.error)
+		return pContext->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX, nullptr);
 
 	return 1;
 }
 
 static cell_t sm_CallPushStringEx(IPluginContext *pContext, const cell_t *params)
 {
-	int err;
 	char *value;
 
 	if (!s_CallStarted)
@@ -552,105 +521,49 @@ static cell_t sm_CallPushStringEx(IPluginContext *pContext, const cell_t *params
 		return pContext->ThrowNativeError("Cannot push parameters when there is no call in progress");
 	}
 
-	pContext->LocalToString(params[1], &value);
+	if (int err = pContext->LocalToString(params[1], &value); err != SP_ERROR_NONE)
+		return pContext->ThrowNativeErrorEx(err, nullptr);
 
-	err = s_pCallable->PushStringEx(value, params[2], params[3], params[4]);
+	sArgs.PushString(value, params[2], params[3] | params[4]);
 
-	if (err)
-	{
-		s_pCallable->Cancel();
-		ResetCall();
-		return pContext->ThrowNativeErrorEx(err, NULL);
-	}
+	if (sArgs.error)
+		return pContext->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX, nullptr);
 
 	return 1;
 }
 
 static cell_t sm_CallPushNullVector(IPluginContext *pContext, const cell_t *params)
 {
-	int err = SP_ERROR_NOT_FOUND;
-
 	if (!s_CallStarted)
 	{
 		return pContext->ThrowNativeError("Cannot push parameters when there is no call in progress");
 	}
 
-	if (s_pFunction)
-	{
-		// Find the NULL_VECTOR pubvar in the target plugin and push the local address.
-		IPluginRuntime *runtime = s_pFunction->GetParentRuntime();
-		uint32_t null_vector_idx;
-		err = runtime->FindPubvarByName("NULL_VECTOR", &null_vector_idx);
-		if (err)
-		{
-			return pContext->ThrowNativeErrorEx(err, "Target plugin has no NULL_VECTOR.");
-		}
+	sArgs.PushNullVector();
 
-		cell_t null_vector;
-		err = runtime->GetPubvarAddrs(null_vector_idx, &null_vector, nullptr);
-
-		if (!err)
-			err = s_pCallable->PushCell(null_vector);
-	}
-	else if (s_pForward)
-	{
-		err = s_pForward->PushArray(NULL, 3);
-	}
-
-	if (err)
-	{
-		s_pCallable->Cancel();
-		ResetCall();
-		return pContext->ThrowNativeErrorEx(err, NULL);
-	}
+	if (sArgs.error)
+		return pContext->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX, nullptr);
 
 	return 1;
 }
 
 static cell_t sm_CallPushNullString(IPluginContext *pContext, const cell_t *params)
 {
-	int err = SP_ERROR_NOT_FOUND;
-
 	if (!s_CallStarted)
 	{
 		return pContext->ThrowNativeError("Cannot push parameters when there is no call in progress");
 	}
 
-	if (s_pFunction)
-	{
-		// Find the NULL_STRING pubvar in the target plugin and push the local address.
-		IPluginRuntime *runtime = s_pFunction->GetParentRuntime();
-		uint32_t null_string_idx;
-		err = runtime->FindPubvarByName("NULL_STRING", &null_string_idx);
-		if (err)
-		{
-			return pContext->ThrowNativeErrorEx(err, "Target plugin has no NULL_STRING.");
-		}
+	sArgs.PushNullString();
 
-		cell_t null_string;
-		err = runtime->GetPubvarAddrs(null_string_idx, &null_string, nullptr);
-
-		if (!err)
-			err = s_pCallable->PushCell(null_string);
-	}
-	else if (s_pForward)
-	{
-		err = s_pForward->PushString(NULL);
-	}
-
-	if (err)
-	{
-		s_pCallable->Cancel();
-		ResetCall();
-		return pContext->ThrowNativeErrorEx(err, NULL);
-	}
+	if (sArgs.error)
+		return pContext->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX, nullptr);
 
 	return 1;
 }
 
 static cell_t sm_CallFinish(IPluginContext *pContext, const cell_t *params)
 {
-	int err = SP_ERROR_NOT_RUNNABLE;
 	cell_t *result;
 
 	if (!s_CallStarted)
@@ -658,21 +571,26 @@ static cell_t sm_CallFinish(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Cannot finish call when there is no call in progress");
 	}
 
-	pContext->LocalToPhysAddr(params[1], &result);
+	if (int err = pContext->LocalToPhysAddr(params[1], &result); err != SP_ERROR_NONE)
+		return pContext->ThrowNativeErrorEx(err, nullptr);
+
+	auto local_args = sArgs;
 
 	// Note: Execute() swallows exceptions, so this is okay.
 	if (s_pFunction)
 	{
 		IPluginFunction *pFunction = s_pFunction;
 		ResetCall();
-		err = pFunction->Execute(result);
-	} else if (s_pForward) {
+		if (!pFunction->Invoke(local_args, result))
+			return 0;
+	} else {
 		IForward *pForward = s_pForward;
 		ResetCall();
-		err = pForward->Execute(result, NULL);
+		if (int err = pForward->Execute(local_args, result); err != SP_ERROR_NONE)
+			return pContext->ThrowNativeErrorEx(err, nullptr);
 	}
 
-	return err;
+	return 1;
 }
 
 static cell_t sm_CallCancel(IPluginContext *pContext, const cell_t *params)
@@ -682,7 +600,6 @@ static cell_t sm_CallCancel(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Cannot cancel call when there is no call in progress");
 	}
 
-	s_pCallable->Cancel();
 	ResetCall();
 
 	return 1;

@@ -9,7 +9,7 @@ public Plugin:myinfo =
 	url = "http://www.sourcemod.net/"
 };
 
-public Action:OnPrivateForward(num, const String:format[], ...)
+public Action:OnPrivateForward(num, const String:format[])
 {
 	decl String:buffer[128];
 	
@@ -17,8 +17,7 @@ public Action:OnPrivateForward(num, const String:format[], ...)
 	
 	PrintToServer("num = %d (expected: %d)", num, 24);
 	
-	VFormat(buffer, sizeof(buffer), format, 3);
-	PrintToServer("buffer = \"%s\" (expected: \"%s\")", buffer, "I am a format string: 0 1 2 3 4 5");
+	PrintToServer("buffer = \"%s\" (expected: \"%s\")", buffer, "I am a string");
 	
 	PrintToServer("End private forward #2");
 	

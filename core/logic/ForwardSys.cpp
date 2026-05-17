@@ -36,6 +36,7 @@
 #include <ReentrantList.h>
 
 using namespace ke;
+using sp::CallArgs;
 
 CForwardManager g_Forwards;
 
@@ -165,9 +166,7 @@ void CForwardManager::OnPluginPauseChange(IPlugin *plugin, bool paused)
 
 CForward::CForward(ExecType et, const char *name, const ParamType *types, unsigned num_params)
 	: m_numparams(0),
-	  m_varargs(0),
 	  m_ExecType(et),
-	  m_curparam(0),
 	  m_errstate(SP_ERROR_NONE)
 {
 	ke::SafeStrcpy(m_name, sizeof(m_name), name ? name : "");
@@ -175,13 +174,7 @@ CForward::CForward(ExecType et, const char *name, const ParamType *types, unsign
 	for (unsigned i = 0; i < num_params; i++)
 		m_types[i] = types[i];
 
-	if (num_params && types[num_params - 1] == Param_VarArgs) {
-		m_varargs = num_params;
-		m_numparams = num_params - 1;
-	} else {
-		m_varargs = 0;
-		m_numparams = num_params;
-	}
+	m_numparams = num_params;
 }
 
 CForward *CForward::CreateForward(const char *name, ExecType et, unsigned int num_params, const ParamType *types, va_list ap)
@@ -196,497 +189,241 @@ CForward *CForward::CreateForward(const char *name, ExecType et, unsigned int nu
 	if (types == NULL && num_params)
 	{
 		for (unsigned int i=0; i<num_params; i++)
-		{
 			_types[i] = (ParamType)va_arg(ap, int);
-			if (_types[i] == Param_VarArgs && (i != num_params - 1))
-			{
-				return NULL;
-			}
-		}
 		types = _types;
 	} else {
 		for (unsigned int i=0; i<num_params; i++)
-		{
 			_types[i] = types[i];
-			if (types[i] == Param_VarArgs && (i != num_params - 1))
-			{
-				return NULL;
-			}
-		}
-	}
-
-	/* First parameter can never be varargs */
-	if (num_params && _types[0] == Param_VarArgs)
-	{
-		return NULL;
 	}
 
 	return new CForward(et, name, _types, num_params);
 }
 
+bool CForward::ProcessArguments(const CallArgs& args) {
+	if (args.error)
+		return !!SetError(SP_ERROR_PARAMS_MAX);
+
+	for (uint32_t i = 0; i < args.argc; i++) {
+		if (i >= m_numparams)
+			return !!SetError(SP_ERROR_PARAM);
+
+		ParamType pt = m_types[i];
+		if (pt == Param_Any)
+			continue;
+
+		auto& arg = args.argv[i];
+		switch (arg.type) {
+			case CallArgs::ARG_CELL:
+				if (arg.flags & CallArgs::FLAG_CELL_TYPE_FLOAT) {
+					if (pt != Param_Float)
+						return !!SetError(SP_ERROR_PARAM);
+				} else {
+					if (pt != Param_Cell)
+						return !!SetError(SP_ERROR_PARAM);
+				}
+				break;
+			case CallArgs::ARG_CELL_BY_REF:
+				if (arg.flags & CallArgs::FLAG_CELL_TYPE_FLOAT) {
+					if (pt != Param_FloatByRef)
+						return !!SetError(SP_ERROR_PARAM);
+				} else {
+					if (pt != Param_CellByRef)
+						return !!SetError(SP_ERROR_PARAM);
+				}
+				break;
+			case CallArgs::ARG_ARRAY:
+			case CallArgs::ARG_NULL_VECTOR:
+				if (pt != Param_Array)
+					return !!SetError(SP_ERROR_PARAM);
+				break;
+			case CallArgs::ARG_CHAR_ARRAY:
+			case CallArgs::ARG_NULL_STRING:
+				if (pt != Param_String)
+					return !!SetError(SP_ERROR_PARAM);
+				break;
+		}
+	}
+
+	return true;
+}
+
 int CForward::Execute(cell_t *result, IForwardFilter *filter)
 {
-	if (m_errstate)
-	{
+	int rv = Execute(default_args_, result, filter);
+	default_args_.Reset();
+	return rv;
+}
+
+int CForward::Execute(const sp::CallArgs& in_args, cell_t *result, IForwardFilter *filter)
+{
+	if (m_errstate) {
 		int err = m_errstate;
 		Cancel();
 		return err;
 	}
 
-	cell_t cur_result = 0;
+	auto args = in_args;
+	unsigned int success = 0;
 	cell_t high_result = 0;
 	cell_t low_result = 0;
-	int err;
-	unsigned int success=0;
-	unsigned int num_params = m_curparam;
-	FwdParamInfo temp_info[SP_MAX_EXEC_PARAMS];
+	cell_t cur_result = 0;
 
-	/* Save local, reset */
-	memcpy(temp_info, m_params, sizeof(m_params));
-	m_curparam = 0;
+	if (!ProcessArguments(args)) {
+		int err = m_errstate;
+		Cancel();
+		return err;
+	}
 
 	for (FuncIter iter(m_functions); !iter.done(); iter.next())
 	{
 		IPluginFunction *func = (*iter);
 
 		if (filter)
-			filter->Preprocess(func, temp_info);
+			filter->Preprocess(func, args);
 
 		if (func->GetParentRuntime()->IsPaused())
 			continue;
 
-		for (unsigned int i=0; i<num_params; i++)
-		{
-			int err = SP_ERROR_PARAM;
-			FwdParamInfo *param = &temp_info[i];
+		ExceptionHandler eh(func->GetParentRuntime());
 
-			ParamType type;
-			if (i >= m_numparams || m_types[i] == Param_Any)
-				type = param->pushedas;
-			else
-				type = m_types[i];
+		if (!func->Invoke(args, &cur_result))
+			continue;
 
-			if ((i >= m_numparams) || (type & SP_PARAMFLAG_BYREF))
-			{
-				/* If we're byref or we're vararg, we always push everything by ref.
-				* Even if they're byval, we must push them byref.
-				*/
-				err = _ExecutePushRef(func, type, param);
-			}
-			else
-			{
-				/* If we're not byref or not vararg, our job is a bit easier. */
-				assert(type == Param_Cell || type == Param_Float);
-				err = func->PushCell(param->val);
-			}
-
-			if (err != SP_ERROR_NONE)
-			{
-				g_DbgReporter.GenerateError(func->GetParentContext(), 
-					func->GetFunctionID(), 
-					err, 
-					"Failed to push parameter while executing forward");
-				continue;
-			}
-		}
-		
-		/* Call the function and deal with the return value. */
-		if ((err=func->Execute(&cur_result)) == SP_ERROR_NONE)
-		{
-			success++;
-			switch (m_ExecType)
-			{
-			case ET_Event:
-				{
-					if (cur_result > high_result)
-					{
-						high_result = cur_result;
-					}
-					break;
-				}
-			case ET_Hook:
-				{
-					if (cur_result > high_result)
-					{
-						high_result = cur_result;
-						if ((ResultType)high_result == Pl_Stop)
-						{
-							goto done;
-						}
-					}
-					break;
-				}
-			case ET_LowEvent:
-				{
-					/* Check if the current result is the lowest so far (or if it's the first result) */
-					if (cur_result < low_result || success == 1)
-					{
-						low_result = cur_result;
-					}
-					break;
-				}
-			default:
-				{
-					break;
-				}
-			}
-		}
-	}
-
-done:
-
-	if (success)
-	{
+		success++;
 		switch (m_ExecType)
 		{
-		case ET_Ignore:
-			{
-				cur_result = 0;
+			case ET_Event:
+				if (cur_result > high_result)
+					high_result = cur_result;
 				break;
-			}
-		case ET_Event:
-		case ET_Hook:
-			{
-				cur_result = high_result;
+			case ET_Hook:
+				if (cur_result > high_result)
+					high_result = cur_result;
 				break;
-			}
-		case ET_LowEvent:
-			{
-				cur_result = low_result;
+			case ET_LowEvent:
+				/* Check if the current result is the lowest so far (or if it's the first result) */
+				if (cur_result < low_result || success == 1)
+					low_result = cur_result;
 				break;
-			}
-		default:
-			{
+			default:
 				break;
-			}
 		}
 
-		if (result)
-		{
-			*result = cur_result;
-		}
+		if ((ResultType)high_result == Pl_Stop)
+			break;
 	}
+
+	switch (m_ExecType)
+	{
+		case ET_Ignore:
+			cur_result = 0;
+			break;
+		case ET_Event:
+		case ET_Hook:
+			cur_result = high_result;
+			break;
+		case ET_LowEvent:
+			cur_result = low_result;
+			break;
+		default:
+			break;
+	}
+
+	if (result)
+		*result = cur_result;
 
 	return SP_ERROR_NONE;
 }
 
-int CForward::_ExecutePushRef(IPluginFunction *func, ParamType type, FwdParamInfo *param)
-{
-	/* If we're byref or we're vararg, we always push everything by ref.
-	* Even if they're byval, we must push them byref.
-	*/
-	int err;
-	IPluginRuntime *runtime = func->GetParentRuntime();
-	switch (type)
-	{
-	case Param_String:
-		// Normal string was pushed.
-		if (!param->isnull)
-			return func->PushStringEx((char *)param->byref.orig_addr, param->byref.cells, param->byref.sz_flags, param->byref.flags);
-
-		// If NULL_STRING was pushed, push the reference to the pubvar of the callee instead.
-		uint32_t null_string_idx;
-		err = runtime->FindPubvarByName("NULL_STRING", &null_string_idx);
-		if (err)
-			return err;
-
-		cell_t null_string;
-		err = runtime->GetPubvarAddrs(null_string_idx, &null_string, nullptr);
-		if (err)
-			return err;
-
-		return func->PushCell(null_string);
-	
-	case Param_Float:
-	case Param_Cell:
-		return func->PushCellByRef(&param->val);
-
-	default:
-		assert(type == Param_Array || type == Param_FloatByRef || type == Param_CellByRef);
-		// No NULL_VECTOR was pushed.
-		if (type != Param_Array || !param->isnull)
-			return func->PushArray(param->byref.orig_addr, param->byref.cells, param->byref.flags);
-
-		// If NULL_VECTOR was pushed, push the reference to the pubvar of the callee instead.
-		uint32_t null_vector_idx;
-		err = runtime->FindPubvarByName("NULL_VECTOR", &null_vector_idx);
-		if (err)
-			return err;
-
-		cell_t null_vector;
-		err = runtime->GetPubvarAddrs(null_vector_idx, &null_vector, nullptr);
-		if (err)
-			return err;
-
-		return func->PushCell(null_vector);
-	}
-}
-
 int CForward::PushCell(cell_t cell)
 {
-	if (m_curparam < m_numparams)
-	{
-		if (m_types[m_curparam] == Param_Any)
-		{
-			m_params[m_curparam].pushedas = Param_Cell;
-		} else if (m_types[m_curparam] != Param_Cell) {
-			return SetError(SP_ERROR_PARAM);
-		}
-	} else {
-		if (!m_varargs || m_numparams > SP_MAX_EXEC_PARAMS)
-		{
-			return SetError(SP_ERROR_PARAMS_MAX);
-		}
-		m_params[m_curparam].pushedas = Param_Cell;
-	}
-
-	m_params[m_curparam].isnull = false;
-	m_params[m_curparam++].val = cell;
-
+	default_args_.PushCell(cell);
+	if (default_args_.error)
+		return SetError(SP_ERROR_PARAMS_MAX);
 	return SP_ERROR_NONE;
 }
 
 int CForward::PushInt64(int64_t value)
 {
-	// Not supported yet
-	return SetError(SP_ERROR_PARAM);
+	default_args_.PushInt64(value);
+	if (default_args_.error)
+		return SetError(SP_ERROR_PARAMS_MAX);
+	return SP_ERROR_NONE;
 }
 
 int CForward::PushFloat(float number)
 {
-	if (m_curparam < m_numparams)
-	{
-		if (m_types[m_curparam] == Param_Any)
-		{
-			m_params[m_curparam].pushedas = Param_Float;
-		} else if (m_types[m_curparam] != Param_Float) {
-			return SetError(SP_ERROR_PARAM);
-		}
-	} else {
-		if (!m_varargs || m_numparams > SP_MAX_EXEC_PARAMS)
-		{
-			return SetError(SP_ERROR_PARAMS_MAX);
-		}
-		m_params[m_curparam].pushedas = Param_Float;
-	}
-
-	m_params[m_curparam].isnull = false;
-	m_params[m_curparam++].val = *(cell_t *)&number;
-
+	default_args_.PushFloat(number);
+	if (default_args_.error)
+		return SetError(SP_ERROR_PARAMS_MAX);
 	return SP_ERROR_NONE;
 }
 
 int CForward::PushCellByRef(cell_t *cell, int flags)
 {
-	if (m_curparam < m_numparams)
-	{
-		if (m_types[m_curparam] == Param_Any)
-		{
-			m_params[m_curparam].pushedas = Param_CellByRef;
-		} else if (m_types[m_curparam] != Param_CellByRef) {
-			return SetError(SP_ERROR_PARAM);
-		}
-	} else {
-		if (!m_varargs || m_numparams > SP_MAX_EXEC_PARAMS)
-		{
-			return SetError(SP_ERROR_PARAMS_MAX);
-		}
-		m_params[m_curparam].pushedas = Param_CellByRef;
-	}
-
-	_Int_PushArray(cell, 1, flags);
-	m_curparam++;
-
+	default_args_.PushCellByRef(cell, flags);
+	if (default_args_.error)
+		return SetError(SP_ERROR_PARAMS_MAX);
 	return SP_ERROR_NONE;
 }
 
 int CForward::PushFloatByRef(float *num, int flags)
 {
-	if (m_curparam < m_numparams)
-	{
-		if (m_types[m_curparam] == Param_Any)
-		{
-			m_params[m_curparam].pushedas = Param_FloatByRef;
-		} else if (m_types[m_curparam] != Param_FloatByRef) {
-			return SetError(SP_ERROR_PARAM);
-		}
-	} else {
-		if (!m_varargs || m_numparams > SP_MAX_EXEC_PARAMS)
-		{
-			return SetError(SP_ERROR_PARAMS_MAX);
-		}
-		m_params[m_curparam].pushedas = Param_FloatByRef;
-	}
-
-	_Int_PushArray((cell_t *)num, 1, flags);
-	m_curparam++;
-
+	default_args_.PushFloatByRef(num, flags);
+	if (default_args_.error)
+		return SetError(SP_ERROR_PARAMS_MAX);
 	return SP_ERROR_NONE;
-}
-
-void CForward::_Int_PushArray(cell_t *inarray, unsigned int cells, int flags)
-{
-	m_params[m_curparam].byref.cells = cells;
-	m_params[m_curparam].byref.flags = flags;
-	m_params[m_curparam].byref.orig_addr = inarray;
-	m_params[m_curparam].isnull = false;
 }
 
 int CForward::PushArray(cell_t *inarray, unsigned int cells, int flags)
 {
-	/* Push a reference to the NULL_VECTOR pubvar if NULL was passed. */
-	if (!inarray)
-	{
-		/* Make sure this was intentional. */
-		if (cells == 3)
-		{
-			return PushNullVector();
-		} else {
-			/* We don't allow this here */
-			return SetError(SP_ERROR_PARAM);
-		}
-	}
-
-	if (m_curparam < m_numparams)
-	{
-		if (m_types[m_curparam] == Param_Any)
-		{
-			m_params[m_curparam].pushedas = Param_Array;
-		} else if (m_types[m_curparam] != Param_Array) {
-			return SetError(SP_ERROR_PARAM);
-		}
+	if (inarray) {
+		default_args_.PushArray(inarray, cells, flags);
 	} else {
-		if (!m_varargs || m_curparam > SP_MAX_EXEC_PARAMS)
-		{
-			return SetError(SP_ERROR_PARAMS_MAX);
-		}
-		m_params[m_curparam].pushedas = Param_Array;
+		if (cells != 3)
+			return SetError(SP_ERROR_PARAM);
+		default_args_.PushNullVector();
 	}
-
-	_Int_PushArray(inarray, cells, flags);
-
-	m_curparam++;
-
+	if (default_args_.error)
+		return SetError(SP_ERROR_PARAMS_MAX);
 	return SP_ERROR_NONE;
-}
-
-void CForward::_Int_PushString(cell_t *inarray, unsigned int cells, int sz_flags, int cp_flags)
-{
-	m_params[m_curparam].byref.cells = cells;	/* Notice this contains the char count not cell count */
-	m_params[m_curparam].byref.flags = cp_flags;
-	m_params[m_curparam].byref.orig_addr = inarray;
-	m_params[m_curparam].byref.sz_flags = sz_flags;
-	m_params[m_curparam].isnull = false;
 }
 
 int CForward::PushString(const char *string)
 {
-	/* Push a reference to the NULL_STRING pubvar if NULL was passed. */
-	if (!string)
-	{
-		return PushNullString();
-	}
-
-	if (m_curparam < m_numparams)
-	{
-		if (m_types[m_curparam] == Param_Any)
-		{
-			m_params[m_curparam].pushedas = Param_String;
-		} else if (m_types[m_curparam] != Param_String) {
-			return SetError(SP_ERROR_PARAM);
-		}
+	if (string) {
+		default_args_.PushString(string);
 	} else {
-		if (!m_varargs || m_curparam > SP_MAX_EXEC_PARAMS)
-		{
-			return SetError(SP_ERROR_PARAMS_MAX);
-		}
-		m_params[m_curparam].pushedas = Param_String;
+		default_args_.PushNullString();
 	}
-
-	_Int_PushString((cell_t *)string, strlen(string)+1, SM_PARAM_STRING_COPY, 0);
-	m_curparam++;
-
+	if (default_args_.error)
+		return SetError(SP_ERROR_PARAMS_MAX);
 	return SP_ERROR_NONE;
 }
 
 int CForward::PushStringEx(char *buffer, size_t length, int sz_flags, int cp_flags)
 {
-	if (m_curparam < m_numparams)
-	{
-		if (m_types[m_curparam] == Param_Any)
-		{
-			m_params[m_curparam].pushedas = Param_String;
-		} else if (m_types[m_curparam] != Param_String) {
-			return SetError(SP_ERROR_PARAM);
-		}
-	} else {
-		if (!m_varargs || m_curparam > SP_MAX_EXEC_PARAMS)
-		{
-			return SetError(SP_ERROR_PARAMS_MAX);
-		}
-		m_params[m_curparam].pushedas = Param_String;
-	}
-
-	_Int_PushString((cell_t *)buffer, length, sz_flags, cp_flags);
-	m_curparam++;
-
+	default_args_.PushString(buffer, length, sz_flags | cp_flags);
+	if (default_args_.error)
+		return SetError(SP_ERROR_PARAMS_MAX);
 	return SP_ERROR_NONE;
 }
 
 int CForward::PushNullString()
 {
-	if (m_curparam < m_numparams)
-	{
-		if (m_types[m_curparam] == Param_Any)
-		{
-			m_params[m_curparam].pushedas = Param_String;
-		} else if (m_types[m_curparam] != Param_String) {
-			return SetError(SP_ERROR_PARAM);
-		}
-	} else {
-		if (!m_varargs || m_numparams > SP_MAX_EXEC_PARAMS)
-		{
-			return SetError(SP_ERROR_PARAMS_MAX);
-		}
-		m_params[m_curparam].pushedas = Param_String;
-	}
-
-	m_params[m_curparam++].isnull = true;
-
+	default_args_.PushNullString();
 	return SP_ERROR_NONE;
 }
 
 int CForward::PushNullVector()
 {
-	if (m_curparam < m_numparams)
-	{
-		if (m_types[m_curparam] == Param_Any)
-		{
-			m_params[m_curparam].pushedas = Param_Array;
-		} else if (m_types[m_curparam] != Param_Array) {
-			return SetError(SP_ERROR_PARAM);
-		}
-	} else {
-		if (!m_varargs || m_numparams > SP_MAX_EXEC_PARAMS)
-		{
-			return SetError(SP_ERROR_PARAMS_MAX);
-		}
-		m_params[m_curparam].pushedas = Param_Array;
-	}
-
-	m_params[m_curparam++].isnull = true;
-
+	default_args_.PushNullVector();
 	return SP_ERROR_NONE;
 }
 
 void CForward::Cancel()
 {
-	if (!m_curparam)
-	{
-		return;
-	}
-
-	m_curparam = 0;
+	default_args_.Reset();
 	m_errstate = SP_ERROR_NONE;
 }
 
@@ -732,8 +469,8 @@ bool CForward::RemoveFunction(IPluginFunction *func)
 	}
 
 	/* Cancel a call, if any */
-	if (found || m_curparam)
-		func->Cancel();
+	if (found || default_args_.argc)
+		default_args_.Reset();
 
 	return found;
 }
@@ -753,7 +490,7 @@ unsigned int CForward::RemoveFunctionsOfPlugin(IPlugin *plugin)
 
 bool CForward::AddFunction(IPluginFunction *func)
 {
-	if (m_curparam)
+	if (default_args_.argc)
 		return false;
 
 	if (func->IsRunnable())

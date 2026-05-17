@@ -45,7 +45,7 @@
 
 #include <sourcehook.h>
 #include <sh_memory.h>
-#include <sourcepawn/vm/plugin-runtime.h>
+#include <sourcepawn/vm/base-runtime.h>
 
 #if defined PLATFORM_WINDOWS
 #include <windows.h>
