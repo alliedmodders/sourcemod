@@ -283,6 +283,11 @@ bool CExtension::PerformAPICheck(char *error, size_t maxlength)
 		ke::SafeStrcpy(error, maxlength, "No IExtensionInterface instance provided");
 		return false;
 	}
+
+	if (m_pAPI->GetExtensionVersion() < SMINTERFACE_EXTENSIONAPI_VERSION_MIN) {
+		ke::SafeSprintf(error, maxlength, "Extension version is too old to load (%d, max is %d)", m_pAPI->GetExtensionVersion(), SMINTERFACE_EXTENSIONAPI_VERSION_MIN);
+		return false;
+	}
 	
 	if (m_pAPI->GetExtensionVersion() > SMINTERFACE_EXTENSIONAPI_VERSION)
 	{

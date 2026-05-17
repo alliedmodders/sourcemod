@@ -137,8 +137,10 @@ namespace SourceMod
 	 * V6 - added TestFeature() to IShareSys.
 	 * V7 - added OnDependenciesDropped() to IExtensionInterface.
 	 * V8 - added OnCoreMapEnd() to IExtensionInterface.
+	 * V9 - SourcePawn API revamp
 	 */
-	#define SMINTERFACE_EXTENSIONAPI_VERSION	8
+	#define SMINTERFACE_EXTENSIONAPI_VERSION_MIN	9
+	#define SMINTERFACE_EXTENSIONAPI_VERSION		9
 
 	/**
 	 * @brief The interface an extension must expose.
