@@ -41,7 +41,6 @@
 using namespace SourceHook;
 using namespace SourceMod;
 
-typedef List<ITimer *> TimerList;
 typedef List<ITimer *>::iterator TimerIter;
 
 class SourceMod::ITimer
@@ -80,12 +79,15 @@ public: //ITimerSystem
 	bool GetMapTimeLeft(float *pTime);
 	IMapTimer *GetMapTimer();
 public:
-	void RunFrame();
+	void RunFrame(bool timerThink);
 	void RemoveMapChangeTimers();
 	void GameFrame(bool simulating);
 private:
-	List<ITimer *> m_SingleTimers;
-	List<ITimer *> m_LoopTimers;
+    void ProcessRepeatTimers(double curtime, List<ITimer*>& timerList, bool isHighSpeed);
+private:
+    List<ITimer*> m_SingleTimers;
+    List<ITimer*> m_LowSpeedLoopTimers;
+    List<ITimer*> m_HighSpeedLoopTimers;
 	CStack<ITimer *> m_FreeTimers;
 	IMapTimer *m_pMapTimer;
 
