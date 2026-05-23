@@ -794,13 +794,13 @@ cell_t Native_SetParam(IPluginContext *pContext, const cell_t *params)
 			break;
 		case HookParamType_CBaseEntity:
 		{
-			if(params[2] == -1)
+			if(params[3] == -1)
 			{
 				*(CBaseEntity **)addr = nullptr;
 			}
 			else
 			{
-				CBaseEntity *pEnt = gamehelpers->ReferenceToEntity(params[2]);
+				CBaseEntity *pEnt = gamehelpers->ReferenceToEntity(params[3]);
 
 				if(!pEnt)
 				{
@@ -813,7 +813,7 @@ cell_t Native_SetParam(IPluginContext *pContext, const cell_t *params)
 		}
 		case HookParamType_Edict:
 		{
-			edict_t *pEdict = gamehelpers->EdictOfIndex(params[2]);
+			edict_t *pEdict = gamehelpers->EdictOfIndex(params[3]);
 
 			if(!pEdict || pEdict->IsFree())
 			{
