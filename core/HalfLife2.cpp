@@ -994,7 +994,11 @@ CBaseEntity *CHalfLife2::ReferenceToEntity(cell_t entRef)
 	{
 		/* Proper ent reference */
 		int hndlValue = entRef & ~(1<<31);
+#if SOURCE_ENGINE == SE_TF2
+		auto hndl = CBaseHandle::UnsafeFromIndex(hndlValue);
+#else
 		CBaseHandle hndl(hndlValue);
+#endif
 
 		pInfo = LookupEntity(hndl.GetEntryIndex());
 		if (!pInfo || pInfo->m_SerialNumber != hndl.GetSerialNumber())
@@ -1098,7 +1102,11 @@ int CHalfLife2::ReferenceToIndex(cell_t entRef)
 	{
 		/* Proper ent reference */
 		int hndlValue = entRef & ~(1<<31);
+#if SOURCE_ENGINE == SE_TF2
+		auto hndl = CBaseHandle::UnsafeFromIndex(hndlValue);
+#else
 		CBaseHandle hndl(hndlValue);
+#endif
 
 		CEntInfo *pInfo = LookupEntity(hndl.GetEntryIndex());
 
@@ -1141,7 +1149,7 @@ cell_t CHalfLife2::EntityToBCompatRef(CBaseEntity *pEntity)
 	IServerUnknown *pUnknown = (IServerUnknown *)pEntity;
 	CBaseHandle hndl = pUnknown->GetRefEHandle();
 
-	if (hndl == INVALID_EHANDLE_INDEX)
+	if (!hndl.IsValid())
 	{
 		return INVALID_EHANDLE_INDEX;
 	}
@@ -1164,7 +1172,11 @@ cell_t CHalfLife2::ReferenceToBCompatRef(cell_t entRef)
 	}
 
 	int hndlValue = entRef & ~(1<<31);
+#if SOURCE_ENGINE == SE_TF2
+	auto hndl = CBaseHandle::UnsafeFromIndex(hndlValue);
+#else
 	CBaseHandle hndl(hndlValue);
+#endif
 
 	if (hndl.GetEntryIndex() < MAX_EDICTS)
 	{

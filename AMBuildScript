@@ -245,6 +245,7 @@ class SMConfig(object):
       '-Wno-array-bounds',
       '-Wno-unknown-pragmas',
       '-Wno-dangling-else',
+      '-Wno-uninitialized-const-pointer',
       '-fvisibility=hidden',
     ]
     if cxx.target.arch in ['x86', 'x86_64']:
