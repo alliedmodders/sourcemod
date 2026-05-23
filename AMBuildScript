@@ -245,7 +245,6 @@ class SMConfig(object):
       '-Wno-array-bounds',
       '-Wno-unknown-pragmas',
       '-Wno-dangling-else',
-      '-Wno-uninitialized-const-pointer',
       '-fvisibility=hidden',
     ]
     if cxx.target.arch in ['x86', 'x86_64']:
@@ -286,6 +285,8 @@ class SMConfig(object):
       else:
         cxx.cxxflags += ['-Wno-deprecated']
       cxx.cflags += ['-Wno-sometimes-uninitialized']
+      if cxx.version >= 'clang-21.0':
+        cxx.cflags += ['-Wno-uninitialized-const-pointer']
 
     if self.enable_asan:
       if not have_clang:
