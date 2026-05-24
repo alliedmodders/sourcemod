@@ -70,7 +70,7 @@ HandleSystem::HandleSystem()
 	memset(m_Handles, 0, sizeof(QHandle) * (HANDLESYS_MAX_HANDLES + 1));
 
 	m_Types = new QHandleType[HANDLESYS_TYPEARRAY_SIZE];
-	memset(m_Types, 0, sizeof(QHandleType) * HANDLESYS_TYPEARRAY_SIZE);
+	memset((void *)m_Types, 0, sizeof(QHandleType) * HANDLESYS_TYPEARRAY_SIZE);
 
 	m_TypeTail = 0;
 }

@@ -12,7 +12,7 @@ jobs:
   mock:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/alliedmodders/build-containers/debian11:latest
+      image: ghcr.io/alliedmodders/build-containers/debian11-clang22:latest
     steps:
       - uses: actions/checkout@v6
         name: Clone sourcemod
