@@ -181,8 +181,7 @@ namespace SourceMod
 		 * @brief Pushes an array of cells onto the current call.  Different rules than ICallable.
 		 * NOTE: On Execute, the pointer passed will be modified according to the copyback rule.
 		 *
-		 * @param inarray	Array to copy.  If NULL and cells is 3 pushes a reference to the NULL_VECTOR pubvar to each callee.
-		 *                  Pushing other number of cells is not allowed, unlike ICallable's version.
+		 * @param inarray	Array to copy. Must not be NULL.
 		 * @param cells		Number of cells to allocate and optionally read from the input array.
 		 * @param flags		Whether or not changes should be copied back to the input array.
 		 * @return			Error code, if any.
@@ -192,7 +191,7 @@ namespace SourceMod
 		/**
 		* @brief Pushes a string onto the current call.
 		*
-		* @param string  String to push.  If NULL pushes a reference to the NULL_STRING pubvar to each callee.
+		* @param string  String to push. Must not be NULL.
 		* @return      Error code, if any.
 		*/
 		virtual int PushString(const char *string) = 0;

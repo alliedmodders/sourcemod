@@ -73,8 +73,6 @@ private:
 	CForward(ExecType et, const char *name,
 	         const ParamType *types, unsigned num_params);
 
-	int PushNullString();
-	int PushNullVector();
 	inline int SetError(int err)
 	{
 		m_errstate = err;

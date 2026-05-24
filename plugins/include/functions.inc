@@ -358,16 +358,6 @@ native void Call_PushArray(const any[] value, int size);
 native void Call_PushArrayEx(any[] value, int size, int cpflags);
 
 /**
- * Pushes the NULL_VECTOR onto the current call.
- * @see IsNullVector
- *
- * @note Cannot be used before a call has been started.
- *
- * @error               Called before a call has been started.
- */
-native void Call_PushNullVector();
-
-/**
  * Pushes a string onto the current call.
  *
  * @note Changes to string are not copied back to caller. Use PushStringEx() to do this.
@@ -394,15 +384,6 @@ native void Call_PushString(const char[] value);
  */
 native void Call_PushStringEx(char[] value, int length, int szflags, int cpflags);
 
-/**
- * Pushes the NULL_STRING onto the current call.
- * @see IsNullString
- *
- * @note Cannot be used before a call has been started.
- *
- * @error               Called before a call has been started.
- */
-native void Call_PushNullString();
 
 /**
  * Completes a call to a function or forward's call list.

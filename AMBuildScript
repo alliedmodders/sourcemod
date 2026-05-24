@@ -246,7 +246,6 @@ class SMConfig(object):
       '-Wno-array-bounds',
       '-Wno-unknown-pragmas',
       '-Wno-dangling-else',
-      '-Wno-uninitialized-const-pointer',
       '-fvisibility=hidden',
     ]
     if cxx.target.arch in ['x86', 'x86_64']:
@@ -303,6 +302,9 @@ class SMConfig(object):
             '-Wno-implicit-int-float-conversion',
             '-Wno-tautological-overlap-compare',
         ]
+
+    if cxx.version >= 'clang-21.0':
+        cxx.cflags += ['-Wno-uninitialized-const-pointer']
 
     if have_gcc:
       cxx.cflags += ['-mfpmath=sse']
