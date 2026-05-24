@@ -39,6 +39,11 @@ PgBasicResults::PgBasicResults(PGresult *res)
 
 PgBasicResults::~PgBasicResults()
 {
+	if (m_pRes != nullptr)
+	{
+		PQclear(m_pRes);
+		m_pRes = nullptr;
+	}
 }
 
 void PgBasicResults::Update()
@@ -340,11 +345,6 @@ bool PgQuery::FetchMoreResults()
 
 void PgQuery::Destroy()
 {
-	if (m_rs.m_pRes != nullptr)
-	{
-		PQclear(m_rs.m_pRes);
-	}
-
 	/* Self destruct */
 	delete this;
 }
