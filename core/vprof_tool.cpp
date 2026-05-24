@@ -30,8 +30,12 @@
 #include "sourcemod.h"
 #include "sourcemm_api.h"
 
+#ifndef VPROF_ENABLED
 #define VPROF_ENABLED
+#endif
+#ifndef RAD_TELEMETRY_DISABLED
 #define RAD_TELEMETRY_DISABLED
+#endif
 #include <tier0/vprof.h>
 
 VProfTool sVProfTool;
