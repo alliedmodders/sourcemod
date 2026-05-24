@@ -29,25 +29,15 @@
  * Version: $Id$
  */
 
+#include <string>
+#include <vector>
 #include "PgStatement.h"
 
-PgStatement::PgStatement(PgDatabase *db, const char* stmtName)
-	: m_pgsql(db->m_pgsql), m_pParent(db), m_insertID(0), m_affectedRows(0), m_rs(NULL), m_Results(false)
+PgStatement::PgStatement(PgDatabase *db, const char* stmtName, unsigned int params)
+	: m_pgsql(db->m_pgsql), m_pParent(db), m_stmtName(stmtName),
+	  m_pushinfo(NULL), m_Params(params), m_insertID(0), m_affectedRows(0),
+	  m_rs(NULL), m_Results(false)
 {
-	m_stmtName = new char[10];
-	strncopy(m_stmtName, stmtName, 10);
-
-	PGresult *desc = PQdescribePrepared(m_pgsql, m_stmtName);
-
-	// TODO: Proper error handling?
-	if (PQresultStatus(desc) != PGRES_COMMAND_OK)
-	{
-		PQclear(desc);
-		return;
-	}
-
-	m_Params = (unsigned int)PQnparams(desc);
-
 	if (m_Params)
 	{
 		m_pushinfo = (ParamBind *)malloc(sizeof(ParamBind) * m_Params);
@@ -64,15 +54,13 @@ PgStatement::~PgStatement()
 	/* Free result set structures */
 	if (m_Results)
 	{
-		if (m_rs->m_pRes != NULL)
-			PQclear(m_rs->m_pRes);
 		delete m_rs;
 	}
 
 	/* Free old blobs */
 	for (unsigned int i=0; i<m_Params; i++)
 	{
-		free(m_pushinfo[i].blob);
+		ReleaseBlob(i);
 	}
 
 	/* Free our allocated arrays */
@@ -93,11 +81,11 @@ void *PgStatement::CopyBlob(unsigned int param, const void *blobptr, size_t leng
 {
 	void *copy_ptr = NULL;
 
-	if (m_pushinfo[param].blob != NULL)
+	if (m_pushinfo[param].owns_blob && m_pushinfo[param].blob != NULL)
 	{
 		if (m_pushinfo[param].length < length)
 		{
-			free(m_pushinfo[param].blob);
+			ReleaseBlob(param);
 		} else {
 			copy_ptr = m_pushinfo[param].blob;
 		}
@@ -108,11 +96,24 @@ void *PgStatement::CopyBlob(unsigned int param, const void *blobptr, size_t leng
 		copy_ptr = malloc(length);
 		m_pushinfo[param].blob = copy_ptr;
 		m_pushinfo[param].length = length;
+		m_pushinfo[param].owns_blob = true;
 	}
 
 	memcpy(copy_ptr, blobptr, length);
 
 	return copy_ptr;
+}
+
+void PgStatement::ReleaseBlob(unsigned int param)
+{
+	if (m_pushinfo[param].owns_blob)
+	{
+		free(m_pushinfo[param].blob);
+	}
+
+	m_pushinfo[param].blob = NULL;
+	m_pushinfo[param].length = 0;
+	m_pushinfo[param].owns_blob = false;
 }
 
 bool PgStatement::BindParamInt(unsigned int param, int num, bool signd)
@@ -157,6 +158,7 @@ bool PgStatement::BindParamString(unsigned int param, const char *text, bool cop
 		final_ptr = CopyBlob(param, text, len+1);
 	} else {
 		len = strlen(text);
+		ReleaseBlob(param);
 		final_ptr = text;
 	}
 
@@ -180,6 +182,7 @@ bool PgStatement::BindParamBlob(unsigned int param, const void *data, size_t len
 	{
 		final_ptr = CopyBlob(param, data, length);
 	} else {
+		ReleaseBlob(param);
 		final_ptr = data;
 	}
 
@@ -217,6 +220,7 @@ bool PgStatement::Execute()
 		const char **paramValues = new const char*[m_Params];
 		int *paramLengths = new int[m_Params];
 		int *paramFormats = new int[m_Params];
+		std::vector<std::string> paramText(m_Params);
 
 		for (unsigned int i=0; i<m_Params; i++)
 		{
@@ -224,18 +228,16 @@ bool PgStatement::Execute()
 			{
 			case DBType_Integer:
 				{
-					char *buf = new char[64]; // 64 chars should be enough?
-					snprintf(buf, 64, "%d", m_pushinfo[i].data.ival);
-					paramValues[i] = buf;
+					paramText[i] = std::to_string(m_pushinfo[i].data.ival);
+					paramValues[i] = paramText[i].c_str();
 					paramLengths[i] = 0;
 					paramFormats[i] = 0;
 					break;
 				}
 			case DBType_Float:
 				{
-					char *buf = new char[64]; // 64 chars should be enough?
-					snprintf(buf, 64, "%f", m_pushinfo[i].data.fval);
-					paramValues[i] = buf;
+					paramText[i] = std::to_string(m_pushinfo[i].data.fval);
+					paramValues[i] = paramText[i].c_str();
 					paramLengths[i] = 0;
 					paramFormats[i] = 0;
 					break;
@@ -265,29 +267,20 @@ bool PgStatement::Execute()
 			}
 		}
 
-		res = PQexecPrepared(m_pgsql, m_stmtName, m_Params, paramValues, paramLengths, paramFormats, 0);
+		res = PQexecPrepared(m_pgsql, m_stmtName.c_str(), m_Params, paramValues, paramLengths, paramFormats, 0);
 		delete [] paramFormats;
 		delete [] paramLengths;
-
-		// .. need to free our char buffers
-		for (unsigned int i=0; i<m_Params; i++)
-		{
-			switch (m_pushinfo[i].type)
-			{
-			case DBType_Integer:
-			case DBType_Float:
-				{
-					delete paramValues[i];
-					break;
-				}
-			}
-		}
 		delete [] paramValues;
 	}
 	// There are no parameters to be bound!
 	else
 	{
-		res = PQexecPrepared(m_pgsql, m_stmtName, 0, NULL, NULL, NULL, 0);
+		res = PQexecPrepared(m_pgsql, m_stmtName.c_str(), 0, NULL, NULL, NULL, 0);
+	}
+
+	if (res == NULL)
+	{
+		return false;
 	}
 
 	ExecStatusType status = PQresultStatus(res);

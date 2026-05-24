@@ -32,6 +32,8 @@
 #ifndef _INCLUDE_SM_PGSQL_STATEMENT_H_
 #define _INCLUDE_SM_PGSQL_STATEMENT_H_
 
+#include <string>
+
 #include "PgDatabase.h"
 #include "PgBasicResults.h"
 
@@ -45,12 +47,13 @@ struct ParamBind
 	void *blob;
 	size_t length;
 	DBType type;
+	bool owns_blob;
 };
 
 class PgStatement : public IPreparedQuery
 {
 public:
-	PgStatement(PgDatabase *db, const char* stmtName);
+	PgStatement(PgDatabase *db, const char* stmtName, unsigned int params);
 	~PgStatement();
 public: //IQuery
 	IResultSet *GetResultSet();
@@ -68,10 +71,11 @@ public: //IPreparedQuery
 	unsigned int GetInsertID();
 private:
 	void *CopyBlob(unsigned int param, const void *blobptr, size_t length);
+	void ReleaseBlob(unsigned int param);
 private:
 	PGconn *m_pgsql;
 	ke::RefPtr<PgDatabase> m_pParent;
-	char *m_stmtName;
+	std::string m_stmtName;
 
 	ParamBind *m_pushinfo;
 	unsigned int m_Params;

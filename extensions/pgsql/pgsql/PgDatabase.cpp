@@ -33,6 +33,7 @@
 #include "smsdk_ext.h"
 #include "PgBasicResults.h"
 #include "PgStatement.h"
+#include <string>
 
 // Some selected defines from postgresql 9.2.4's src/include/catalog/pg_type.h
 // Fast scan to extract the types that shouldn't be read as string.
@@ -246,6 +247,10 @@ bool PgDatabase::DoSimpleQuery(const char *query)
 IQuery *PgDatabase::DoQuery(const char *query)
 {
 	PGresult *res = PQexec(m_pgsql, query);
+	if (res == NULL)
+	{
+		return NULL;
+	}
 	
 	ExecStatusType status = PQresultStatus(res);
 	
@@ -271,9 +276,17 @@ bool PgDatabase::DoSimpleQueryEx(const char *query, size_t len)
 
 IQuery *PgDatabase::DoQueryEx(const char *query, size_t len)
 {
-	// There is no way to send binary data like that in queries.
-	// You'd need to escape the value with PQescapeByteaConn first and use it in the query string as usual.
-	return DoQuery(query);
+	// PQexec only accepts a null-terminated SQL string. It can honor an
+	// explicit shorter length, but it cannot send embedded null bytes.
+	size_t queryLen = strlen(query);
+	if (queryLen < len)
+		return NULL;
+
+	if (len == queryLen)
+		return DoQuery(query);
+
+	std::string limitedQuery(query, len);
+	return DoQuery(limitedQuery.c_str());
 }
 
 unsigned int PgDatabase::GetAffectedRowsForQuery(IQuery *query)
@@ -288,14 +301,30 @@ unsigned int PgDatabase::GetInsertIDForQuery(IQuery *query)
 
 IPreparedQuery *PgDatabase::PrepareQuery(const char *query, char *error, size_t maxlength, int *errCode)
 {
-	char stmtName[10];
-	// Maybe needs some locking around m_preparedStatementID++?
+	std::lock_guard<std::recursive_mutex> lock(m_FullLock);
+
 	unsigned int stmtID = m_preparedStatementID;
-	snprintf(stmtName, 10, "%d", stmtID);
+	std::string stmtName = std::to_string(stmtID);
 	m_preparedStatementID++;
 	
 	// Let postgresql guess the types of the arguments if there are any..
-	PGresult *res = PQprepare(m_pgsql, stmtName, query, 0, NULL);
+	PGresult *res = PQprepare(m_pgsql, stmtName.c_str(), query, 0, NULL);
+	if (res == NULL)
+	{
+		if (error)
+		{
+			strncopy(error, PQerrorMessage(m_pgsql), maxlength);
+		}
+
+		if (errCode)
+		{
+			// PostgreSQL only supports SQLSTATE error codes.
+			// https://www.postgresql.org/docs/9.6/errcodes-appendix.html
+			*errCode = -1;
+		}
+
+		return NULL;
+	}
 
 	if (PQresultStatus(res) != PGRES_COMMAND_OK)
 	{
@@ -317,7 +346,35 @@ IPreparedQuery *PgDatabase::PrepareQuery(const char *query, char *error, size_t 
 
 	// Only the statement name is of importance. free the PGresult here.
 	PQclear(res);
-	return new PgStatement(this, stmtName);
+
+	PGresult *desc = PQdescribePrepared(m_pgsql, stmtName.c_str());
+	if (desc == NULL || PQresultStatus(desc) != PGRES_COMMAND_OK)
+	{
+		if (error)
+		{
+			const char *message = desc != NULL ? PQresultErrorMessage(desc) : PQerrorMessage(m_pgsql);
+			strncopy(error, message, maxlength);
+		}
+
+		if (errCode)
+		{
+			// PostgreSQL only supports SQLSTATE error codes.
+			// https://www.postgresql.org/docs/9.6/errcodes-appendix.html
+			*errCode = -1;
+		}
+
+		if (desc != NULL)
+			PQclear(desc);
+		PGresult *close = PQclosePrepared(m_pgsql, stmtName.c_str());
+		if (close != NULL)
+			PQclear(close);
+		return NULL;
+	}
+
+	unsigned int params = (unsigned int)PQnparams(desc);
+	PQclear(desc);
+
+	return new PgStatement(this, stmtName.c_str(), params);
 }
 
 bool PgDatabase::LockForFullAtomicOperation()

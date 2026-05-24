@@ -13,9 +13,8 @@ for cxx in builder.targets:
   elif compiler.family == 'msvc':
     compiler.cxxflags += ['/GR-']
 
-  if compiler.target.platform == 'linux' or compiler.target.platform == 'mac':
+  if compiler.target.platform == 'linux':
     compiler.postlink += [
-      '-lz',
       '-lpthread',
       '-lm'
     ]
@@ -26,7 +25,8 @@ for cxx in builder.targets:
       path = os.path.join(builder.sourcePath, 'extensions', 'pgsql', 'lib_linux64')
     compiler.postlink += [
       os.path.join(path, 'libpq.a'),
-      '-lrt'
+      os.path.join(path, 'libpgcommon_shlib.a'),
+      os.path.join(path, 'libpgport_shlib.a'),
     ]
   elif compiler.target.platform == 'windows':
     if arch == 'x86':
@@ -35,18 +35,17 @@ for cxx in builder.targets:
       path = os.path.join(builder.sourcePath, 'extensions', 'pgsql', 'lib_win64')
     compiler.postlink += [
       os.path.join(path, 'libpq.lib'),
+      os.path.join(path, 'libpgcommon_shlib.lib'),
+      os.path.join(path, 'libpgport_shlib.lib'),
       'wsock32.lib',
       'ws2_32.lib',
-      'secur32.lib'
+      'secur32.lib',
+      'wldap32.lib',
+      'advapi32.lib',
+      'shell32.lib'
     ]
-  elif compiler.target.platform == 'mac':
-    if arch == 'x86':
-      path = os.path.join(builder.sourcePath, 'extensions', 'pgsql', 'lib_darwin')
-    elif arch == 'x86_64':
-      path = os.path.join(builder.sourcePath, 'extensions', 'pgsql', 'lib_darwin64')
-    compiler.postlink += [
-      os.path.join(path, 'libpq.a')
-    ]
+  elif compiler.target.platform == 'mac': # mac isn't supported
+    continue
 
   compiler.cxxincludes += [path]
 
@@ -59,4 +58,3 @@ for cxx in builder.targets:
     'extension.cpp'
   ]
   SM.extensions += [builder.Add(binary)]
-
