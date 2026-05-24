@@ -532,36 +532,6 @@ static cell_t sm_CallPushStringEx(IPluginContext *pContext, const cell_t *params
 	return 1;
 }
 
-static cell_t sm_CallPushNullVector(IPluginContext *pContext, const cell_t *params)
-{
-	if (!s_CallStarted)
-	{
-		return pContext->ThrowNativeError("Cannot push parameters when there is no call in progress");
-	}
-
-	sArgs.PushNullVector();
-
-	if (sArgs.error)
-		return pContext->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX, nullptr);
-
-	return 1;
-}
-
-static cell_t sm_CallPushNullString(IPluginContext *pContext, const cell_t *params)
-{
-	if (!s_CallStarted)
-	{
-		return pContext->ThrowNativeError("Cannot push parameters when there is no call in progress");
-	}
-
-	sArgs.PushNullString();
-
-	if (sArgs.error)
-		return pContext->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX, nullptr);
-
-	return 1;
-}
-
 static cell_t sm_CallFinish(IPluginContext *pContext, const cell_t *params)
 {
 	cell_t *result;
@@ -681,8 +651,6 @@ REGISTER_NATIVES(functionNatives)
 	{"Call_PushArrayEx",                    sm_CallPushArrayEx},
 	{"Call_PushString",                     sm_CallPushString},
 	{"Call_PushStringEx",                   sm_CallPushStringEx},
-	{"Call_PushNullVector",                 sm_CallPushNullVector},
-	{"Call_PushNullString",                 sm_CallPushNullString},
 	{"Call_Finish",                         sm_CallFinish},
 	{"Call_Cancel",                         sm_CallCancel},
 	{"RequestFrame",                        sm_AddFrameAction},

@@ -232,12 +232,10 @@ bool CForward::ProcessArguments(const CallArgs& args) {
 				}
 				break;
 			case CallArgs::ARG_ARRAY:
-			case CallArgs::ARG_NULL_VECTOR:
 				if (pt != Param_Array)
 					return !!SetError(SP_ERROR_PARAM);
 				break;
 			case CallArgs::ARG_CHAR_ARRAY:
-			case CallArgs::ARG_NULL_STRING:
 				if (pt != Param_String)
 					return !!SetError(SP_ERROR_PARAM);
 				break;
@@ -377,13 +375,10 @@ int CForward::PushFloatByRef(float *num, int flags)
 
 int CForward::PushArray(cell_t *inarray, unsigned int cells, int flags)
 {
-	if (inarray) {
-		default_args_.PushArray(inarray, cells, flags);
-	} else {
-		if (cells != 3)
-			return SetError(SP_ERROR_PARAM);
-		default_args_.PushNullVector();
+	if (!inarray) {
+		return SetError(SP_ERROR_PARAM);
 	}
+	default_args_.PushArray(inarray, cells, flags);
 	if (default_args_.error)
 		return SetError(SP_ERROR_PARAMS_MAX);
 	return SP_ERROR_NONE;
@@ -391,11 +386,10 @@ int CForward::PushArray(cell_t *inarray, unsigned int cells, int flags)
 
 int CForward::PushString(const char *string)
 {
-	if (string) {
-		default_args_.PushString(string);
-	} else {
-		default_args_.PushNullString();
+	if (!string) {
+		return SetError(SP_ERROR_PARAM);
 	}
+	default_args_.PushString(string);
 	if (default_args_.error)
 		return SetError(SP_ERROR_PARAMS_MAX);
 	return SP_ERROR_NONE;
@@ -406,18 +400,6 @@ int CForward::PushStringEx(char *buffer, size_t length, int sz_flags, int cp_fla
 	default_args_.PushString(buffer, length, sz_flags | cp_flags);
 	if (default_args_.error)
 		return SetError(SP_ERROR_PARAMS_MAX);
-	return SP_ERROR_NONE;
-}
-
-int CForward::PushNullString()
-{
-	default_args_.PushNullString();
-	return SP_ERROR_NONE;
-}
-
-int CForward::PushNullVector()
-{
-	default_args_.PushNullVector();
 	return SP_ERROR_NONE;
 }
 
