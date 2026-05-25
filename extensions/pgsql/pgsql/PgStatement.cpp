@@ -51,6 +51,15 @@ PgStatement::PgStatement(PgDatabase *db, const char* stmtName, unsigned int para
 
 PgStatement::~PgStatement()
 {
+	if (!m_stmtName.empty())
+	{
+		PGresult *close = PQclosePrepared(m_pgsql, m_stmtName.c_str());
+		if (close != NULL)
+		{
+			PQclear(close);
+		}
+	}
+
 	/* Free result set structures */
 	if (m_Results)
 	{
