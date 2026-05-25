@@ -199,6 +199,8 @@ forward void OnMapInit(const char[] mapName);
 
 /**
  * Called when the map is loaded.
+ *
+ * @note On late load this will be called again.
  */
 forward void OnMapStart();
 
@@ -212,8 +214,8 @@ forward void OnMapEnd();
  * executed, and all plugin configs are done executing.  This is the best
  * place to initialize plugin functions which are based on cvar data.
  *
- * @note This will always be called once and only once per map.  It will be
- *       called after OnMapStart().
+ * @note This will always be called once and only once per map, after
+ *       OnMapStart(). On late load it will be called again.
  */
 forward void OnConfigsExecuted();
 
