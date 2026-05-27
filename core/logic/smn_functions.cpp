@@ -551,16 +551,15 @@ static cell_t sm_CallFinish(IPluginContext *pContext, const cell_t *params)
 	{
 		IPluginFunction *pFunction = s_pFunction;
 		ResetCall();
-		if (!pFunction->Invoke(local_args, result))
-			return 0;
+		if (pFunction->Invoke(local_args, result))
+			return SP_ERROR_NONE;
 	} else {
 		IForward *pForward = s_pForward;
 		ResetCall();
-		if (int err = pForward->Execute(local_args, result); err != SP_ERROR_NONE)
-			return pContext->ThrowNativeErrorEx(err, nullptr);
+		return pForward->Execute(local_args, result);
 	}
 
-	return 1;
+	return SP_ERROR_NONE + 1;
 }
 
 static cell_t sm_CallCancel(IPluginContext *pContext, const cell_t *params)
