@@ -231,4 +231,8 @@
 	{
 		"game"		"tf2classified"
 	}
+	"game.ship.txt"
+	{
+		"game"		"ship"
+	}
 }
