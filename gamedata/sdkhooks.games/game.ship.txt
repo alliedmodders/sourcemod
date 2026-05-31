@@ -19,6 +19,7 @@
 			/*
 			 * The following offsets aren't available because the function doesn't exist or isn't virtual:
 			 * CanBeAutobalanced, GetMaxHealth
+			 * GroundEntChanged causes crashes.
 			*/
 			"EndTouch"
 			{
@@ -29,11 +30,6 @@
 			{
 				"windows"	"103"
 				"linux"		"104"
-			}
-			"GroundEntChanged"
-			{
-				"windows"	"156"
-				"linux"		"157"
 			}
 			"OnTakeDamage"
 			{
