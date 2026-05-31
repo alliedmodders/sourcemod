@@ -39,5 +39,9 @@ objdir
 # Not standardized, but common name for build directories
 /build*/
 
+# Python bytecode (AMBuild scripts)
+__pycache__/
+*.py[cod]
+
 .vs/*
 .vscode/*

@@ -1,0 +1,130 @@
+# vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
+import os
+import shutil
+
+# The networking core is a Rust staticlib (crate-type = ["staticlib"]) built by
+# cargo and linked into the C++ extension shim. This mirrors extensions/curl,
+# which builds libcurl from vendored source and links the resulting archive.
+#
+# cargo is invoked through builder.AddCommand (the same primitive plugins use to
+# run spcomp), so it only re-runs when the Rust sources / Cargo manifests change,
+# and cargo's own fingerprinting makes an up-to-date rebuild a fast no-op.
+
+rust_dir = os.path.join(builder.sourcePath, 'extensions', 'webclient', 'rust')
+
+def rust_triple(platform, arch):
+  if platform == 'linux':
+    return 'i686-unknown-linux-gnu' if arch == 'x86' else 'x86_64-unknown-linux-gnu'
+  if platform == 'windows':
+    return 'i686-pc-windows-msvc' if arch == 'x86' else 'x86_64-pc-windows-msvc'
+  return None
+
+# Rust sources that should retrigger cargo when edited. Walk the whole src tree
+# (so nested modules count) and pick up an optional build.rs.
+rust_inputs = [
+  os.path.join(rust_dir, 'Cargo.toml'),
+  os.path.join(rust_dir, 'Cargo.lock'),
+]
+build_rs = os.path.join(rust_dir, 'build.rs')
+if os.path.exists(build_rs):
+  rust_inputs.append(build_rs)
+for root, _dirs, files in os.walk(os.path.join(rust_dir, 'src')):
+  for f in sorted(files):
+    if f.endswith('.rs'):
+      rust_inputs.append(os.path.join(root, f))
+
+# The Rust core requires a cargo toolchain. Rather than break the entire build
+# for contributors/CI without Rust provisioned, skip the extension with a notice.
+have_cargo = shutil.which('cargo') is not None
+if not have_cargo:
+  print('WebClient: cargo not found on PATH; skipping the WebClient extension. '
+        'Install Rust (>= 1.85) and `rustup target add` the build targets to enable it.')
+
+for cxx in builder.targets:
+  if not have_cargo:
+    break
+
+  arch = cxx.target.arch
+  platform = cxx.target.platform
+  if platform == 'mac':
+    # macOS is no longer a supported SourceMod target; skip rather than aborting
+    # the whole build on a host that still configures a mac target.
+    print('WebClient: skipping on macOS (unsupported platform).')
+    continue
+  triple = rust_triple(platform, arch)
+  if triple is None:
+    # Fail loudly instead of silently dropping the extension, so a newly added
+    # build target gets a matching Rust triple here.
+    raise Exception('WebClient: no Rust target triple for platform={0} arch={1}'.format(platform, arch))
+
+  profile = 'debug' if builder.options.debug == '1' else 'release'
+  lib_name = 'webclient_rs.lib' if platform == 'windows' else 'libwebclient_rs.a'
+
+  # The AddCommand runs with cwd = this context's build folder, so cargo's
+  # --target-dir is relative to it. cargo writes the archive to
+  #   <build folder>/rust/<triple>/<profile>/<lib_name>
+  # Register that output folder (mkdir -p) so AMBuild can track the archive.
+  out_dir = os.path.join('rust', triple, profile)
+  builder.AddFolder(out_dir)
+  out_lib = os.path.join(out_dir, lib_name)
+
+  # The old-glibc floor for shipped/release builds comes from the link toolchain
+  # (e.g. building inside a manylinux2014 container), not from a build-time shim
+  # here, so this is just a plain cargo build.
+  cargo_argv = [
+    'cargo', 'build', '--locked',
+    '--manifest-path', os.path.join(rust_dir, 'Cargo.toml'),
+    '--target', triple,
+    '--target-dir', 'rust',
+  ]
+  if profile == 'release':
+    cargo_argv.append('--release')
+
+  # SourceMod links Windows extensions against the static CRT (/MT). Rust's MSVC
+  # targets default to the dynamic CRT, which drags MSVCRT.lib into the final link
+  # and leaves __except_handler4_common unresolved at SourceMod's /MT link step.
+  # Build the Rust staticlib with the static CRT so the archive matches. RUSTFLAGS
+  # is set on the cargo process itself (env_data) rather than via config so it wins
+  # regardless of cargo's RUSTFLAGS-vs-config precedence, in CI and local builds.
+  cargo_env = None
+  if platform == 'windows':
+    cargo_env = (
+      ('env_cmds', (('replace', 'RUSTFLAGS', '-C target-feature=+crt-static'),)),
+    )
+
+  # A plain Command node (no dep_type): cargo emits no /showIncludes-style dep
+  # info, so rebuilds are driven by `inputs`; cargo's own fingerprinting covers
+  # the rest and no-ops when nothing changed.
+  (rust_lib,) = builder.AddCommand(
+    inputs = rust_inputs,
+    argv = cargo_argv,
+    outputs = [out_lib],
+    env_data = cargo_env,
+  )
+
+  binary = SM.ExtLibrary(builder, cxx, 'webclient.ext')
+  if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
+    binary.compiler.cxxflags += ['-fno-rtti']
+  elif binary.compiler.family == 'msvc':
+    binary.compiler.cxxflags += ['/GR-']
+
+  # Link the Rust staticlib (the AddCommand output entry, like curl's AMBuilder
+  # feeds libcurl[arch].binary into postlink) plus the system libs the Rust std,
+  # ring, and reqwest need at final link.
+  binary.compiler.postlink += [rust_lib]
+  if platform == 'linux':
+    binary.compiler.postlink += ['-ldl', '-lpthread', '-lrt', '-lm']
+  elif platform == 'windows':
+    binary.compiler.postlink += [
+      'ws2_32.lib', 'userenv.lib', 'bcrypt.lib', 'ntdll.lib',
+      'advapi32.lib', 'crypt32.lib', 'secur32.lib', 'kernel32.lib',
+    ]
+
+  binary.sources += [
+    'extension.cpp',
+    'natives.cpp',
+    'handles.cpp',
+    '../../public/smsdk_ext.cpp',
+  ]
+
+  SM.extensions += [builder.Add(binary)]
