@@ -1,0 +1,76 @@
+[package]
+name = "webclient"
+version = "1.0.0"
+# edition 2024 (requires Rust 1.85+). We build with current stable; the old-GLIBC
+# floor comes from the link toolchain (e.g. a manylinux build), not an old
+# rustc. The dependency graph (icu 2.x, zerocopy 0.8, ...) already requires
+# ~1.81+, so a lower edition/MSRV would buy no real compatibility.
+edition = "2024"
+rust-version = "1.85"
+license = "GPL-3.0-or-later"
+description = "Rust networking core for the SourceMod WebClient extension (HTTP + WebSocket over rustls)"
+publish = false
+
+[lib]
+name = "webclient_rs"
+# A self-contained C-ABI archive: bundles the Rust std + all deps so the C++
+# extension can link it directly. No cdylib (we ship a single .ext .so/.dll).
+crate-type = ["staticlib"]
+
+[dependencies]
+# Async runtime: curated feature set (NOT "full"). One small runtime multiplexes
+# all HTTP requests and all WebSocket connections over a bounded worker pool.
+tokio = { version = "1", default-features = false, features = [
+    "rt-multi-thread",
+    "net",
+    "time",
+    "sync",
+    "io-util",
+    "fs",
+    "macros",
+] }
+
+# HTTP client over rustls (no OpenSSL). default-features disabled to drop the
+# native-tls/default backend; gzip/deflate give transparent decompression.
+reqwest = { version = "0.12", default-features = false, features = [
+    "rustls-tls",
+    "gzip",
+    "deflate",
+    "http2",
+] }
+
+# WebSocket client sharing the same rustls stack, with bundled Mozilla roots.
+tokio-tungstenite = { version = "0.24", default-features = false, features = [
+    "connect",
+    "rustls-tls-webpki-roots",
+] }
+
+# Direct dependency only so we can install the process-default crypto provider
+# (ring) that tokio-tungstenite's default connector needs. We pin "ring" and
+# disable defaults to keep aws-lc-rs out of the tree; the whole stack is ring.
+rustls = { version = "0.23", default-features = false, features = ["ring", "tls12", "logging"] }
+
+# Stream/Sink adapters for driving the WebSocket read/write halves.
+futures-util = { version = "0.3", default-features = false, features = ["std", "sink"] }
+
+# Generational-key registry: a stale id resolves to "gone" instead of aliasing a
+# freshly reused slot, which is what makes the cross-FFI id handoff memory-safe.
+slotmap = "1"
+
+# Locks without poisoning (a panic mid-lock won't taint the registry).
+parking_lot = "0.12"
+once_cell = "1"
+
+# URL percent-encoding helpers and Basic-auth base64, exposed to plugins. Both
+# are already in the tree via reqwest; naming them here just makes them direct.
+percent-encoding = "2"
+base64 = "0.22"
+
+[profile.release]
+# NOTE: we deliberately do NOT set panic = "abort". Every FFI entry point is
+# wrapped in catch_unwind so a panic becomes a logged error and the game server
+# survives; panic = "abort" would defeat that and take srcds down on any bug.
+opt-level = "s"
+lto = "thin"
+codegen-units = 1
+strip = "debuginfo"
