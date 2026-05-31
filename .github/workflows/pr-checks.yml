@@ -66,6 +66,24 @@ jobs:
           mkdir -p sourcemod
           ../sourcemod/tools/checkout-deps.sh -s ${{ join(fromJSON(env.SDKS), ',') }}
 
+      - name: Setup Rust (Linux)
+        if: ${{ matrix.platform == 'linux' }}
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          target: i686-unknown-linux-gnu,x86_64-unknown-linux-gnu
+          cache-workspaces: sourcemod/extensions/webclient/rust
+          cache-shared-key: webclient-rust
+          rustflags: ""
+
+      - name: Setup Rust (Windows)
+        if: ${{ matrix.platform == 'windows' }}
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          target: i686-pc-windows-msvc,x86_64-pc-windows-msvc
+          cache-workspaces: sourcemod/extensions/webclient/rust
+          cache-shared-key: webclient-rust
+          rustflags: ""
+
       - name: Build
         working-directory: sourcemod
         shell: bash
