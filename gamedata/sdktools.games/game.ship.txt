@@ -16,6 +16,12 @@
 	{
 		"Offsets"
 		{
+			/* CBaseEntity::SetOwnerEntity */
+			"SetOwnerEntity"
+			{
+				"windows"	"23"
+				"linux"		"24"
+			}
 			/* CBasePlayer */
 			"GiveNamedItem"
 			{
@@ -97,6 +103,21 @@
 				"windows"	"37"
 				"linux"		"38"
 			}
+			"PlayerRunCmd"
+			{
+				"windows"	"334"
+				"linux"		"335"
+			}
+			"GiveAmmo"
+			{
+				"windows"	"207"
+				"linux"		"208"
+			}
+			"GetAttachment"
+			{
+				"windows"	"176"
+				"linux"		"177"
+			}
 			
 			/* Temp Entities */
 			"TE_GetServerClass"
@@ -112,13 +133,31 @@
 			{
 				"library"	"server"
 				"linux"		"@_Z13DispatchSpawnP11CBaseEntity"
-				"windows"	"\x53\x56\x8B\x74\x24\x0C\x85\xF6\x57\x0F\x84\x2A\x2A\x2A\x2A\x8B\x1D\x2A\x2A\x2A\x2A\x8B\x03\x8B\xCB\xFF\x50\x60\x8B\0x16"
+				"windows"	"\x53\x56\x8B\x74\x24\x2A\x85\xF6\x57\x0F\x84"
 			}
 			"CreateEntityByName"
 			{
 				"library"	"server"
 				"linux"		"@_Z18CreateEntityByNamePKci"
 				"windows"	"\x56\x8B\x74\x24\x0C\x83\xFE\xFF\x57\x8B\x7C\x24\x0C\x74\x25\x8B\x0D\x2A\x2A\x2A\x2A\x8B\x01\x56\xFF\x50\x54\x85\xC0"
+			}
+			"FireOutput"
+			{
+				/* CBaseEntityOutput::FireOutput */
+				/* String: "(%0.2f) output: (%s,%s) -> (%s,%s,%.1f)" */
+				"library"	"server"
+				"windows"	"\x83\xEC\x1C\x53\x55\x56\x8B\x71"
+				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
+			}
+			"LookupAttachment"
+			{
+				/* CBaseAnimating::LookupAttachment */
+				/* Search for "zipline" string, CBaseAnimating::LookupAttachment is called with the "zipline" string passed as a parameter.
+				 * "cable/cable.vmt" should be on another function call right below it.
+				*/
+				"library"	"server"
+				"windows"	"\xE8\x2A\x2A\x2A\x2A\x85\xC0\x75\x2A\xC2\x04\x00\x8B\x4C\x24"
+				"linux"		"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
 			}
 		}
 	}

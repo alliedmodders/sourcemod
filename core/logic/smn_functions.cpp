@@ -512,6 +512,8 @@ static cell_t sm_CallPushString(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static_assert(SM_PARAM_COPYBACK == (1 << 0), "SM_PARAM_COPYBACK should match functions.inc");
+
 static cell_t sm_CallPushStringEx(IPluginContext *pContext, const cell_t *params)
 {
 	char *value;
@@ -524,7 +526,17 @@ static cell_t sm_CallPushStringEx(IPluginContext *pContext, const cell_t *params
 	if (int err = pContext->LocalToString(params[1], &value); err != SP_ERROR_NONE)
 		return pContext->ThrowNativeErrorEx(err, nullptr);
 
-	sArgs.PushString(value, params[2], params[3] | params[4]);
+	int sz_flags = params[3];
+	int cp_flags = params[4];
+	int translated_flags = cp_flags;
+	if (sz_flags & (1 << 0))
+		translated_flags |= SM_PARAM_STRING_UTF8;
+	if (sz_flags & (1 << 1))
+		translated_flags |= SM_PARAM_STRING_COPY;
+	if (sz_flags & (1 << 2))
+		translated_flags |= SM_PARAM_STRING_BINARY;
+
+	sArgs.PushString(value, params[2], translated_flags);
 
 	if (sArgs.error)
 		return pContext->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX, nullptr);
@@ -551,15 +563,16 @@ static cell_t sm_CallFinish(IPluginContext *pContext, const cell_t *params)
 	{
 		IPluginFunction *pFunction = s_pFunction;
 		ResetCall();
-		if (pFunction->Invoke(local_args, result))
-			return SP_ERROR_NONE;
+		DetectExceptions eh(pContext);
+		if (!pFunction->Invoke(local_args, result))
+			return eh.Code();
 	} else {
 		IForward *pForward = s_pForward;
 		ResetCall();
 		return pForward->Execute(local_args, result);
 	}
 
-	return SP_ERROR_NONE + 1;
+	return SP_ERROR_NONE;
 }
 
 static cell_t sm_CallCancel(IPluginContext *pContext, const cell_t *params)
