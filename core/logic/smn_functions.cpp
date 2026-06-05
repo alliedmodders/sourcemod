@@ -569,8 +569,7 @@ static cell_t sm_CallFinish(IPluginContext *pContext, const cell_t *params)
 	} else {
 		IForward *pForward = s_pForward;
 		ResetCall();
-		if (int err = pForward->Execute(local_args, result); err != SP_ERROR_NONE)
-			return pContext->ThrowNativeErrorEx(err, nullptr);
+		return pForward->Execute(local_args, result);
 	}
 
 	return SP_ERROR_NONE;
