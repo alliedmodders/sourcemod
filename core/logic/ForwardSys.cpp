@@ -247,9 +247,10 @@ bool CForward::ProcessArguments(const CallArgs& args) {
 
 int CForward::Execute(cell_t *result, IForwardFilter *filter)
 {
-	int rv = Execute(default_args_, result, filter);
+	auto args = std::move(default_args_);
 	default_args_.Reset();
-	return rv;
+
+	return Execute(args, result, filter);
 }
 
 int CForward::Execute(const sp::CallArgs& in_args, cell_t *result, IForwardFilter *filter)
