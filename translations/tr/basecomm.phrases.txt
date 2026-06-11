@@ -17,7 +17,7 @@
 
 	"Ungagged target"
 	{
-		"tr"		"{1} adlı oyuncunun sesli sohbette sesi açıldı."
+		"tr"		"{1} adlı oyuncunun sesli sohbetteki susturması kaldırıldı."
 	}
 
 	"Muted target"
@@ -27,7 +27,7 @@
 
 	"Unmuted target"
 	{
-		"tr"		"{1} adlı oyuncunun yazılı sohbette sesi açıldı."
+		"tr"		"{1} adlı oyuncunun yazılı sohbetteki susturması kaldırıldı."
 	}
 
 	"Silenced target"
@@ -37,7 +37,7 @@
 
 	"Unsilenced target"
 	{
-		"tr"		"{1} adlı oyuncunun sesli ve yazılı sohbette sesi açıldı."
+		"tr"		"{1} adlı oyuncunun sesli ve yazılı sohbetteki susturması kaldırıldı."
 	}
 
 	"Mute Player"
@@ -47,7 +47,7 @@
 
 	"UnMute Player"
 	{
-		"tr"		"Oyuncunun yazılı sohbette sesini aç"
+		"tr"		"Oyuncunun yazılı sohbetteki susturmasını kaldır"
 	}
 
 	"Gag Player"
@@ -57,7 +57,7 @@
 
 	"UnGag Player"
 	{
-		"tr"		"Oyuncunun sesli sohbette sesini aç"
+		"tr"		"Oyuncunun sesli sohbetteki susturmasını kaldır"
 	}
 
 	"Silence Player"
@@ -67,7 +67,7 @@
 
 	"UnSilence Player"
 	{
-		"tr"		"Oyuncunun sesli ve yazılı sohbette sesini aç"
+		"tr"		"Oyuncunun sesli ve yazılı sohbetteki susturmasını kaldır"
 	}
 
 }
