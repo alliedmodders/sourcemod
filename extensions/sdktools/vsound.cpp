@@ -31,6 +31,7 @@
 
 #include "vsound.h"
 #include <IForwardSys.h>
+#include "am-string.h"
 
 SH_DECL_HOOK8_void(IVEngineServer, EmitAmbientSound, SH_NOATTRIB, 0, int, const Vector &, const char *, float, soundlevel_t, int, int, float);
 
@@ -228,7 +229,7 @@ void SoundHooks::OnEmitAmbientSound(int entindex, const Vector &pos, const char 
 	cell_t vec[3] = {sp_ftoc(pos.x), sp_ftoc(pos.y), sp_ftoc(pos.z)};
 	cell_t res = static_cast<ResultType>(Pl_Continue);
 	char buffer[PLATFORM_MAX_PATH];
-	strcpy(buffer, samp);
+	ke::SafeStrcpy(buffer, sizeof(buffer), samp);
 
 	for (iter=m_AmbientFuncs.begin(); iter!=m_AmbientFuncs.end(); iter++)
 	{
@@ -343,7 +344,7 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 	IPluginFunction *pFunc;
 	cell_t res = static_cast<ResultType>(Pl_Continue);
 	char buffer[PLATFORM_MAX_PATH];
-	strcpy(buffer, pSample);
+	ke::SafeStrcpy(buffer, sizeof(buffer), pSample);
 
 	char soundEntry[PLATFORM_MAX_PATH] = "";
 #if SOURCE_ENGINE >= SE_PORTAL2
@@ -507,7 +508,7 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 	cell_t res = static_cast<ResultType>(Pl_Continue);
 	cell_t sndlevel = static_cast<cell_t>(ATTN_TO_SNDLVL(flAttenuation));
 	char buffer[PLATFORM_MAX_PATH];
-	strcpy(buffer, pSample);
+	ke::SafeStrcpy(buffer, sizeof(buffer), pSample);
 
 	char soundEntry[PLATFORM_MAX_PATH] = "";
 #if SOURCE_ENGINE >= SE_PORTAL2

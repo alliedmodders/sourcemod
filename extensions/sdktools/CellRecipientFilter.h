@@ -106,6 +106,14 @@ inline void CellRecipientFilter::SetToReliable(bool isreliable)
 
 inline void CellRecipientFilter::Initialize(cell_t *ptr, size_t count)
 {
+	/* Never copy more entries than m_Players can hold. Callers derive count
+	 * from plugin-supplied data, which may contain duplicate client indices
+	 * that pass validation while exceeding the array bounds.
+	 */
+	if (count > (sizeof(m_Players) / sizeof(m_Players[0])))
+	{
+		count = sizeof(m_Players) / sizeof(m_Players[0]);
+	}
 	memcpy(m_Players, ptr, count * sizeof(cell_t));
 	m_Size = count;
 }
