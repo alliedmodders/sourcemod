@@ -2,7 +2,7 @@
 {
 	"Played sound to target"
 	{
-		"tr"		"{1} adlı oyuncuya ses çalındı"
+		"tr"		"{1}'a ses çalındı"
 	}
 
 }

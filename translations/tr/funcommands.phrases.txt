@@ -27,7 +27,7 @@
 
 	"Beacon player"
 	{
-		"tr"		"Oyuncuyu işaret yap"
+		"tr"		"Oyuncuyu işaretle"
 	}
 
 	"NoClip player"
@@ -77,37 +77,37 @@
 
 	"Gravity Very High"
 	{
-		"tr"		"Yerçekimi Çok Yüksek"
+		"tr"		"Yerçekimi çok yüksek"
 	}
 
 	"Gravity High"
 	{
-		"tr"		"Yerçekimi Yüksek"
+		"tr"		"Yerçekimi yüksek"
 	}
 
 	"Gravity Normal"
 	{
-		"tr"		"Yerçekimi Normal"
+		"tr"		"Yerçekimi normal"
 	}
 
 	"Gravity Low"
 	{
-		"tr"		"Yerçekimi Düşük"
+		"tr"		"Yerçekimi düşük"
 	}
 
 	"Gravity Very Low"
 	{
-		"tr"		"Yerçekimi Çok Az"
+		"tr"		"Yerçekimi çok az"
 	}
 
 	"Set target on fire"
 	{
-		"tr"		"{1} adlı oyuncuyu ateşe ver."
+		"tr"		"{1} ateşe verildi."
 	}
 
 	"Toggled FireBomb on target"
 	{
-		"tr"		"{1} adlı oyuncunun ateş bombası yapılması değiştirildi."
+		"tr"		"{1}'ın ateş bombası yapılması değiştirildi."
 	}
 
 	"Froze target"
@@ -117,42 +117,42 @@
 
 	"Toggled FreezeBomb on target"
 	{
-		"tr"		"{1} adlı oyuncunun donma bombası yapılması değiştirildi."
+		"tr"		"{1}'ın donma bombası yapılması değiştirildi."
 	}
 
 	"Toggled beacon on target"
 	{
-		"tr"		"{1} adlı oyuncunun işaretlenmesi değiştirildi."
+		"tr"		"{1}'ın işaretlenmesi değiştirildi."
 	}
 
 	"Toggled TimeBomb on target"
 	{
-		"tr"		"{1} adlı oyuncunun zaman bombası yapılması değiştirildi."
+		"tr"		"{1}'ın zaman bombası yapılması değiştirildi."
 	}
 
 	"Toggled noclip on target"
 	{
-		"tr"		"{1} adlı oyuncunun hayaletliği değiştirildi."
+		"tr"		"{1}'ın hayaletliği değiştirildi."
 	}
 
 	"Toggled drug on target"
 	{
-		"tr"		"{1} adlı oyuncunun ilaçlanması değiştirildi."
+		"tr"		"{1}'ın ilaçlanması değiştirildi."
 	}
 
 	"Set blind on target"
 	{
-		"tr"		"{1} üzerinde kör etme kullan."
+		"tr"		"{1} kör edildi."
 	}
 
 	"Set gravity on target"
 	{
-		"tr"		"{1} adlı oyuncunun yerçekimini değiştir."
+		"tr"		"{1}'ın yerçekimi değiştirildi."
 	}
 
 	"Till Explodes"
 	{
-		"tr"		"{1} adlı oyuncunun patlamasına {2} saniye kaldı."
+		"tr"		"{1}'ın patlamasına {2} saniye kaldı."
 	}
 
 	"Unfrozen"

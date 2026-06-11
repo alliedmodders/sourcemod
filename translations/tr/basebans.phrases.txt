@@ -12,12 +12,12 @@
 
 	"Permabanned player"
 	{
-		"tr"		"\"{1}\" adlı kullanıcı kalıcı olarak yasaklandı."
+		"tr"		"\"{1}\" adlı oyuncu kalıcı olarak yasaklandı."
 	}
 
 	"Permabanned player reason"
 	{
-		"tr"		"\"{1}\" adlı kullanıcı kalıcı olarak yasaklandı (neden: {2})."
+		"tr"		"\"{1}\" adlı oyuncu kalıcı olarak yasaklandı (neden: {2})."
 	}
 
 	"Banned player"
@@ -27,7 +27,7 @@
 
 	"Banned player reason"
 	{
-		"tr"		"\"{1}\" adlı kullanıcı {2} dakikalığına yasaklandı (neden: {3})."
+		"tr"		"\"{1}\" adlı oyuncu {2} dakikalığına yasaklandı (neden: {3})."
 	}
 
 	"Removed bans matching"
@@ -42,7 +42,7 @@
 
 	"Cannot ban that IP"
 	{
-		"tr"		"O IP adresini yasaklayamazsınız."
+		"tr"		"Bu IP adresi yasaklanamıyor."
 	}
 
 	"Custom ban reason explanation"
