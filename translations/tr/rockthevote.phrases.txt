@@ -52,7 +52,7 @@
 
 	"No Votes"
 	{
-		"tr"		"'Rock the Vote' için oy alınmadı, mevcut haritaya devam ediliyor."
+		"tr"		"'Rock the Vote' için oy alınmadı, mevcut harita sürdürülüyor."
 	}
 
 	"Current Map Stays"
