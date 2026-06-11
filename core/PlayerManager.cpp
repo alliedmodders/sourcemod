@@ -1650,6 +1650,14 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 
 				strcpy(new_pattern, "STEAM_");
 				len = strlen(&info->pattern[7]);
+				/* Bound the copy so the "STEAM_" prefix, the copied bytes and the
+				 * null terminator all fit within new_pattern. An over-long pattern
+				 * is simply truncated; it will not match a real client's id.
+				 */
+				if (len > sizeof(new_pattern) - 7)
+				{
+					len = sizeof(new_pattern) - 7;
+				}
 				for (p = 0; p < len; p++)
 				{
 					new_pattern[6 + p] = info->pattern[7 + p];
@@ -1664,12 +1672,13 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 			{
 				size_t p = 0;
 				char c;
-				while ((c = info->pattern[p + 1]) != '\0')
+				/* Leave room for the null terminator; truncate over-long patterns. */
+				while ((c = info->pattern[p + 1]) != '\0' && p < sizeof(new_pattern) - 1)
 				{
-					new_pattern[p] = (c == '_') ? ':' : c;					
+					new_pattern[p] = (c == '_') ? ':' : c;
 					++p;
 				}
-				
+
 				new_pattern[p] = '\0';
 			}
 
