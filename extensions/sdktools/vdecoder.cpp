@@ -617,12 +617,6 @@ DataStatus DecodeValveParam(IPluginContext *pContext,
 		}
 	case Valve_SMAddress:
 	    {
-			if (data->decflags & VDECODE_FLAG_BYREF)
-			{
-				cell_t *addr;
-				pContext->LocalToPhysAddr(param, &addr);
-				param = *addr;
-			}
 			if (data->flags & PASSFLAG_ASPOINTER)
 			{
 				*(void **)buffer = (unsigned char *)_buffer + pCall->stackEnd + data->obj_offset;
