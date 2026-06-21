@@ -65,8 +65,6 @@ const std::unique_ptr<Capsule>& Capsule::FindOrCreate(const handle::HookSetup* s
 class EmptyClass {
 public:
 	bool AllowedToHealTarget_MakeReturn( CBaseEntity* pTarget ) {
-		printf("MAKE RETURN\n");
-
 		bool ret = *(bool*)::KHook::GetCurrentValuePtr(true);
 		::KHook::DestroyReturnValue();
 		return ret;
@@ -75,7 +73,7 @@ public:
 	bool AllowedToHealTarget_CallOriginal( CBaseEntity* pTarget ) {
 		printf("CALLED ORIGINAL 0x%lX\n", (uintptr_t)this);
 
-		auto ptr = KHook::BuildMFP<EmptyClass, bool, CBaseEntity*>(::KHook::GetOriginalFunction());
+		auto ptr = KHook::BuildMFP<bool (EmptyClass::*)(CBaseEntity*)>(::KHook::GetOriginalFunction());
 		bool ret = (((EmptyClass*)this)->*ptr)(pTarget);
 		::KHook::__internal__savereturnvalue(KHook::Return<bool>{ KHook::Action::Ignore, ret }, true);
 		return ret;
@@ -310,11 +308,12 @@ Capsule::Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::C
 		KHook::SetupHook(
 			address,
 			this,
-			KHook::ExtractMFP(&Capsule::_KHook_RemovedHook),
+			reinterpret_cast<void*>(&Capsule::_KHook_RemovedHook),
 			reinterpret_cast<void*>(_jit_start + offset_to_pre_callback),
 			reinterpret_cast<void*>(_jit_start + offset_to_post_callback),
 			reinterpret_cast<void*>(_jit_start + offset_to_make_return), // KHook::ExtractMFP(&EmptyClass::AllowedToHealTarget_MakeReturn), //reinterpret_cast<void*>(_jit_start + offset_to_make_return),
 			reinterpret_cast<void*>(_jit_start + offset_to_call_original), // KHook::ExtractMFP(&EmptyClass::AllowedToHealTarget_CallOriginal), //reinterpret_cast<void*>(_jit_start + offset_to_call_original),
+			_stack_size,
 			true
 		)
 	:
@@ -322,11 +321,12 @@ Capsule::Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::C
 			vtable,
 			vtable_index,
 			this,
-			KHook::ExtractMFP(&Capsule::_KHook_RemovedHook),
+			reinterpret_cast<void*>(&Capsule::_KHook_RemovedHook),
 			reinterpret_cast<void*>(_jit_start + offset_to_pre_callback),
 			reinterpret_cast<void*>(_jit_start + offset_to_post_callback),
 			reinterpret_cast<void*>(_jit_start + offset_to_make_return),
 			reinterpret_cast<void*>(_jit_start + offset_to_call_original),
+			_stack_size,
 			true
 		);
 
