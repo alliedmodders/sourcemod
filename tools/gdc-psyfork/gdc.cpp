@@ -4,7 +4,9 @@
 #include <fcntl.h>
 #include <math.h>
 #include <iostream>
+#include <vector>
 #include <link.h>
+#include <cxxabi.h>
 #include "gdc.h"
 #include "GameConfigs.h"
 #include "MemoryUtils.h"
@@ -20,8 +22,50 @@ char *wengine_binary = NULL;
 char *symbols_file = NULL;
 
 bool use_symtab = true;
+bool use_color = false;
 CGameConfig symbols;
-CGameConfig gc;
+CGameConfig *gc_ptr = NULL;
+
+#define CR   (use_color ? "\033[0m"  : "")
+#define CGRN (use_color ? "\033[32m" : "")
+#define CRED (use_color ? "\033[31m" : "")
+#define CYLW (use_color ? "\033[33m" : "")
+#define CBLD (use_color ? "\033[1m"  : "")
+
+enum OffsetStatus { OFF_GOOD, OFF_CHANGED, OFF_NOSYM, OFF_NOVTABLE };
+
+struct OffsetResult
+{
+	const char *name;
+	char vtable[128];
+	OffsetStatus status;
+	int lin, win, newLin, newWin;
+};
+
+struct SigResult
+{
+	const char *name;
+	bool isServer;
+	char winStatus[16];
+	char linStatus[16];
+	const char *winSym;
+	const char *linSym;
+	bool bWinGood, bLinGood;
+	bool showWinExtra, showLinExtra;
+};
+
+// Returns a human-readable name for a mangled symbol, or the symbol itself if
+// it can't be demangled. The result is leaked, but gdc is a one-shot CLI.
+static const char *Demangle(const char *sym)
+{
+	if (!sym || !sym[0])
+		return sym;
+
+	const char *s = (sym[0] == '@') ? sym + 1 : sym;
+	int status;
+	char *d = abi::__cxa_demangle(s, NULL, NULL, &status);
+	return (status == 0 && d) ? d : sym;
+}
 
 inline bool IsDigit( char c )
 {
@@ -30,16 +74,337 @@ inline bool IsDigit( char c )
 
 void PrintUsage()
 {
-	printf("Usage: ./gdc -g <game> -e <engine name> -f <gamedata file> -b <game binary> -x <engine binary> -w <win game binary> -y <win engine binary> [-s <symbols.txt file>]\n");
+	printf("Usage: ./gdc -g <game> -e <engine name> -f <gamedata file> [-f <gamedata file> ...] -b <game binary> -x <engine binary> -w <win game binary> -y <win engine binary> [-s <symbols.txt file>]\n");
 	printf("Other options:\n");
 	printf(" -d\tAdd debug output\n");
 	printf(" -n\tDon't use symbol table for lookups (falls back to dlsym)\n");
 }
 
+static void ProcessFile(const char *gamedata, bool debug,
+	void *ghandle, void *ehandle, int wgfile, int wefile,
+	int &out_off_good, int &out_off_changed, int &out_off_skipped,
+	int &out_sig_good, int &out_sig_issues)
+{
+	CGameConfig gc_local;
+	gc_ptr = &gc_local;
+
+	char err[512];
+	if (!gc_ptr->EnterFile(gamedata, err, sizeof(err)))
+	{
+		printf("Error loading %s: %s\n", gamedata, err);
+		out_off_good = out_off_changed = out_off_skipped = 0;
+		out_sig_good = out_sig_issues = 0;
+		return;
+	}
+
+	// Collect offset results
+	std::vector<OffsetResult> offsets;
+	for (list<Offset>::iterator it = gc_ptr->m_Offsets.begin(); it != gc_ptr->m_Offsets.end(); it++)
+	{
+		if (debug)
+			printf("DEBUG %s - l: %d w: %d\n", it->name, it->lin, it->win);
+
+		OffsetResult r;
+		r.name = it->name;
+		r.vtable[0] = 0;
+		r.lin = it->lin;
+		r.win = it->win;
+		r.newLin = it->lin;
+		r.newWin = it->win;
+
+		const char *symbol = symbols.GetKeyValue(it->name);
+		if (!symbol)
+		{
+			r.status = OFF_NOSYM;
+			offsets.push_back(r);
+			continue;
+		}
+
+		char symvt[128] = "_ZTV";
+		bool bGotFirstNumbers = false;
+		bool bLastNumberDigit = false;
+		unsigned int symlen = strlen(symbol);
+		unsigned int pos = strlen(symvt);
+
+		for ( unsigned int i = 0; i < symlen && pos < (sizeof(symvt)-1); ++i )
+		{
+			bool isDigit = IsDigit( symbol[i] );
+			if( !isDigit && bLastNumberDigit )
+				bGotFirstNumbers = true;
+			if( !bGotFirstNumbers && !isDigit )
+				continue;
+			if( bGotFirstNumbers && isDigit )
+			{
+				symvt[pos] = 0;
+				break;
+			}
+			symvt[pos++] = symbol[i];
+			if( isDigit )
+				bLastNumberDigit = isDigit;
+		}
+		symvt[pos] = 0;
+
+		if (!symvt[0])
+		{
+			r.status = OFF_NOSYM;
+			offsets.push_back(r);
+			continue;
+		}
+
+		void **newvt = NULL;
+		if( use_symtab )
+			newvt = (void**)mu.ResolveSymbol(ghandle, symvt);
+		else
+			newvt = (void **)dlsym(ghandle, symvt);
+
+		if (!newvt)
+		{
+			r.status = OFF_NOVTABLE;
+			strncopy(r.vtable, symvt, sizeof(r.vtable));
+			offsets.push_back(r);
+			continue;
+		}
+
+		int newOffset = findVFunc(ghandle, newvt, symbol);
+		if (newOffset == it->lin)
+		{
+			r.status = OFF_GOOD;
+		}
+		else
+		{
+			r.status = OFF_CHANGED;
+			r.newLin = newOffset;
+			r.newWin = newOffset - (it->lin - it->win);
+		}
+		offsets.push_back(r);
+	}
+
+	// Collect sig results
+	std::vector<SigResult> sigs;
+	for (list<Sig>::iterator it = gc_ptr->m_Sigs.begin(); it != gc_ptr->m_Sigs.end(); it++)
+	{
+		if (debug)
+			printf("DEBUG %s - %s - l: %s\n", it->name, it->lib == Server ? "server" : "engine", it->lin);
+
+		const char *linSymbol = it->lin;
+		const char *winSymbol = it->win;
+		bool hasLinux   = (linSymbol && linSymbol[0]);
+		bool hasWindows = (winSymbol && winSymbol[0]);
+
+		if (!hasLinux && !hasWindows)
+			continue;
+
+		if (it->lib != Server && it->lib != Engine)
+			continue;
+
+		int  winFile    = (it->lib == Server) ? wgfile : wefile;
+		void *linHandle = (it->lib == Server) ? ghandle : ehandle;
+
+		int linuxMatches = 0, windowsMatches = 0;
+		if( hasLinux )   linuxMatches   = checkSigStringL(linHandle, linSymbol);
+		if( hasWindows ) windowsMatches = checkSigStringW(winFile, winSymbol);
+
+		SigResult r;
+		r.name     = it->name;
+		r.isServer = (it->lib == Server);
+		r.winSym   = winSymbol;
+		r.linSym   = linSymbol;
+
+		const char *options = symbols.GetOptionValue(it->name);
+		bool allowMulti   = ( options && strstr(options, "allowmultiple") != NULL );
+		bool allowMidfunc = ( options && strstr(options, "allowmidfunc")  != NULL );
+
+		r.bWinGood = false;
+		if( !hasWindows )
+			snprintf( r.winStatus, sizeof(r.winStatus), "UNKNOWN" );
+		else if( windowsMatches == -1 && !allowMidfunc )
+			snprintf( r.winStatus, sizeof(r.winStatus), "MIDFUNC" );
+		else if( windowsMatches == 0 )
+			snprintf( r.winStatus, sizeof(r.winStatus), "NOTFOUND" );
+		else if( windowsMatches > 1 && !allowMulti )
+			snprintf( r.winStatus, sizeof(r.winStatus), "MULTIPLE" );
+		else
+		{
+			r.bWinGood = true;
+			snprintf( r.winStatus, sizeof(r.winStatus), "GOOD" );
+		}
+
+		r.bLinGood = false;
+		if( !hasLinux )
+			snprintf( r.linStatus, sizeof(r.linStatus), "UNKNOWN" );
+		else if( linuxMatches == 0 )
+			snprintf( r.linStatus, sizeof(r.linStatus), "NOTFOUND" );
+		else if( linuxMatches == 1 )
+		{
+			r.bLinGood = true;
+			snprintf( r.linStatus, sizeof(r.linStatus), "GOOD" );
+		}
+		else
+			snprintf( r.linStatus, sizeof(r.linStatus), "CHECK" );
+
+		r.showWinExtra = (hasWindows && !r.bWinGood);
+		r.showLinExtra = ( (hasLinux && !r.bLinGood) || r.showWinExtra );
+
+		sigs.push_back(r);
+	}
+
+	// Count
+	int off_good = 0, off_changed = 0, off_skipped = 0;
+	for (unsigned int i = 0; i < offsets.size(); i++)
+	{
+		if      (offsets[i].status == OFF_GOOD)    off_good++;
+		else if (offsets[i].status == OFF_CHANGED) off_changed++;
+		else                                       off_skipped++;
+	}
+	int sig_good = 0, sig_issues = 0;
+	for (unsigned int i = 0; i < sigs.size(); i++)
+	{
+		if (sigs[i].bWinGood && sigs[i].bLinGood)
+			sig_good++;
+		else
+			sig_issues++;
+	}
+
+	out_off_good    = off_good;
+	out_off_changed = off_changed;
+	out_off_skipped = off_skipped;
+	out_sig_good    = sig_good;
+	out_sig_issues  = sig_issues;
+
+	// Header + summary
+	printf("Gamedata: %s\n", gamedata);
+	printf("Offsets: %s%d good%s  %s%d changed%s  %d skipped  |  Sigs: %s%d good%s  %s%d issues%s\n",
+		off_good    ? CGRN : "", off_good,    off_good    ? CR : "",
+		off_changed ? CRED : "", off_changed, off_changed ? CR : "",
+		off_skipped,
+		sig_good   ? CGRN : "", sig_good,   sig_good   ? CR : "",
+		sig_issues ? CRED : "", sig_issues, sig_issues ? CR : "");
+
+	// If every changed offset shifted by the same amount, it's likely a single
+	// vtable insertion/removal rather than many independent changes.
+	if (off_changed >= 2)
+	{
+		int first_delta = 0;
+		bool uniform = true, first = true;
+		for (unsigned int i = 0; i < offsets.size(); i++)
+		{
+			if (offsets[i].status != OFF_CHANGED)
+				continue;
+
+			int delta = offsets[i].newLin - offsets[i].lin;
+			if (first)
+			{
+				first_delta = delta;
+				first = false;
+			}
+			else if (delta != first_delta)
+			{
+				uniform = false;
+				break;
+			}
+		}
+		if (uniform)
+			printf("  %s(all %d changed offsets shifted by %+d, likely a vtable %s)%s\n",
+				CYLW, off_changed, first_delta,
+				first_delta > 0 ? "insertion" : "removal", CR);
+	}
+
+	// Problems first, so they stand out before the full listing.
+	for (unsigned int i = 0; i < offsets.size(); i++)
+	{
+		if (offsets[i].status == OFF_CHANGED)
+			printf("%s! O: %-26s CHANGED%s  old [ w:%3d  l:%3d ]  new [ w:%3d  l:%3d ]\n",
+				CRED, offsets[i].name, CR,
+				offsets[i].win, offsets[i].lin,
+				offsets[i].newWin, offsets[i].newLin);
+	}
+	for (unsigned int i = 0; i < sigs.size(); i++)
+	{
+		if (sigs[i].bWinGood && sigs[i].bLinGood)
+			continue;
+
+		const char *wcolor = sigs[i].bWinGood ? CGRN : CRED;
+		const char *lcolor = sigs[i].bLinGood ? CGRN : CRED;
+		printf("%s! S: %-26s%s (%s)  w: %s%-8s%s  l: %s%-8s%s\n",
+			CRED, sigs[i].name, CR,
+			sigs[i].isServer ? "server" : "engine",
+			wcolor, sigs[i].winStatus, CR,
+			lcolor, sigs[i].linStatus, CR);
+		if (!sigs[i].bLinGood && sigs[i].linSym && sigs[i].linSym[0] == '@')
+			printf("     -> %s\n", Demangle(sigs[i].linSym));
+		else if (!sigs[i].bWinGood && sigs[i].winSym && sigs[i].winSym[0] == '@')
+			printf("     -> %s\n", Demangle(sigs[i].winSym));
+	}
+
+	// Full listing
+	printf("%s=== Offsets ===%s\n", CBLD, CR);
+	for (unsigned int i = 0; i < offsets.size(); i++)
+	{
+		const OffsetResult &r = offsets[i];
+		switch (r.status)
+		{
+			case OFF_GOOD:
+				printf("  O: %-26s %sGOOD%s    [ w:%3d  l:%3d ]\n",
+					r.name, CGRN, CR, r.win, r.lin);
+				break;
+			case OFF_CHANGED:
+				printf("%s! O: %-26s CHANGED%s  old [ w:%3d  l:%3d ]  new [ w:%3d  l:%3d ]\n",
+					CRED, r.name, CR, r.win, r.lin, r.newWin, r.newLin);
+				break;
+			case OFF_NOSYM:
+				printf("  O: %-26s no Linux symbol\n", r.name);
+				break;
+			case OFF_NOVTABLE:
+				printf("%s? O: %-26s%s %s not found\n", CYLW, r.name, CR, Demangle(r.vtable));
+				break;
+		}
+	}
+
+	printf("%s=== Signatures ===%s\n", CBLD, CR);
+	printf("  (Windows offsets are estimates; sig-internal offsets are guesses)\n");
+	for (unsigned int i = 0; i < sigs.size(); i++)
+	{
+		const SigResult &r = sigs[i];
+		const char *lib = r.isServer ? "server" : "engine";
+		if (r.bWinGood && r.bLinGood)
+		{
+			printf("  S: %-26s (%s)  w: %sGOOD%s      l: %sGOOD%s\n",
+				r.name, lib, CGRN, CR, CGRN, CR);
+
+			// Check whether the signature has a matching offset
+			CheckWindowsSigOffset((char*)r.name, r.winSym, r.isServer ? wgfile : wefile);
+			CheckLinuxSigOffset((char*)r.name, r.linSym, r.isServer ? ghandle : ehandle);
+		}
+		else
+		{
+			const char *wcolor = r.bWinGood ? CGRN : CRED;
+			const char *lcolor = r.bLinGood ? CGRN : CRED;
+			printf("%s! S: %-26s%s (%s)  w: %s%-8s%s  l: %s%-8s%s\n",
+				CRED, r.name, CR, lib,
+				wcolor, r.winStatus, CR,
+				lcolor, r.linStatus, CR);
+			if (r.showWinExtra)
+			{
+				printf("     w: \"%s\"\n", r.winSym ? r.winSym : "");
+				if (r.winSym && r.winSym[0] == '@')
+					printf("     -> %s\n", Demangle(r.winSym));
+			}
+			if (r.showLinExtra)
+			{
+				printf("     l: \"%s\"\n", r.linSym ? r.linSym : "");
+				if (r.linSym && r.linSym[0] == '@')
+					printf("     -> %s\n", Demangle(r.linSym));
+			}
+		}
+	}
+}
+
 int main(int argc, char **argv)
 {
-	char *gamedata = NULL;
+	std::vector<const char *> gamedata_files;
 	bool debug = false;
+
+	use_color = isatty(STDOUT_FILENO);
 
 	opterr = 0;
 	int opt;
@@ -64,7 +429,7 @@ int main(int argc, char **argv)
 				break;
 
 			case 'f':
-				gamedata = optarg;
+				gamedata_files.push_back(optarg);
 				break;
 
 			case 'b':
@@ -97,34 +462,23 @@ int main(int argc, char **argv)
 		}
 	}
 
-	if (!game || !engine || !gamedata || !game_binary || !engine_binary || !wgame_binary || !wengine_binary)
+	if (!game || !engine || gamedata_files.empty() || !game_binary || !engine_binary || !wgame_binary || !wengine_binary)
 	{
 		PrintUsage();
 		return 0;
 	}
 
-	printf("Game: %s\n", game);
-	if (debug)
-	{
-		printf("Engine: %s\nGame binary: %s\nEngine binary: %s\nWin game binary: %s\nWin engine binary: %s\n",
-			engine, game_binary, engine_binary, wgame_binary, wengine_binary
-			);
-	}
-	printf("Gamedata: %s\n\n", gamedata);
-
-	void *ghandle;
-	ghandle = dlopen(game_binary, RTLD_LAZY);
+	void *ghandle = dlopen(game_binary, RTLD_LAZY);
 	if (!ghandle)
 	{
 		printf("Couldn't open %s (%s)\n", game_binary, dlerror());
-			return 0;
+		return 0;
 	}
-	void *ehandle;
-	ehandle = dlopen(engine_binary, RTLD_LAZY);
+	void *ehandle = dlopen(engine_binary, RTLD_LAZY);
 	if (!ehandle)
 	{
 		printf("Couldn't open %s (%s)\n", engine_binary, dlerror());
-			return 0;
+		return 0;
 	}
 
 	int wgfile = open(wgame_binary, O_RDONLY);
@@ -142,233 +496,46 @@ int main(int argc, char **argv)
 	}
 
 	char err[512];
-	if (!gc.EnterFile(gamedata, err, sizeof(err)))
-	{
-		printf("%s: %s\n", gamedata, err);
-		return 0;
-	}
-
 	if (!symbols.EnterFile(symbols_file ? symbols_file : "symbols.txt", err, sizeof(err)))
 	{
 		printf("symbols.txt: %s\n", err);
 		return 0;
 	}
 
-	for (list<Offset>::iterator it = gc.m_Offsets.begin(); it != gc.m_Offsets.end(); it++)
+	printf("Game: %s\n", game);
+	if (debug)
+		printf("Engine: %s  Game binary: %s  Engine binary: %s\n", engine, game_binary, engine_binary);
+
+	int total_off_good = 0, total_off_changed = 0, total_off_skipped = 0;
+	int total_sig_good = 0, total_sig_issues = 0;
+
+	for (unsigned int fi = 0; fi < gamedata_files.size(); fi++)
 	{
-		if (debug)
-		{
-			printf("DEBUG %s - l: %d w: %d\n", it->name, it->lin, it->win);
-		}
+		if (fi > 0)
+			printf("---\n");
 
-		const char *symbol = symbols.GetKeyValue(it->name);
-		if (symbol)
-		{
-			char symvt[128] = "_ZTV";
-			bool bGotFirstNumbers = false;
-			bool bLastNumberDigit = false;
-			unsigned int symlen = strlen(symbol);
-			unsigned int pos = strlen(symvt);
-			
-			for ( unsigned int i = 0; i < symlen && pos < (sizeof(symvt)-1); ++i )
-			{
-				bool isDigit = IsDigit( symbol[i] );
-				if( !isDigit && bLastNumberDigit )
-				{
-					bGotFirstNumbers = true;
-				}
-				
-				// we're before the class len
-				if( !bGotFirstNumbers && !isDigit )
-					continue;
-				
-				// we're at the function name len
-				if( bGotFirstNumbers && isDigit )
-				{
-					symvt[pos] = 0;
-					break;
-				}
-				
-				// we're at the class len or class name. we want these
-				symvt[pos++] = symbol[i];
-				if( isDigit )
-				{
-					bLastNumberDigit = isDigit;
-				}
-			}
-			symvt[pos] = 0;
-			
-			int newOffset;
-			if (symvt[0])
-			{
-                void **newvt = NULL;
-				if( use_symtab )
-				{
-					newvt = (void**)mu.ResolveSymbol(ghandle, symvt);
-				}
-				else
-				{
-					newvt = (void **)dlsym(ghandle, symvt);
-				}
-				
-			    if (!newvt)
-				{
-					printf("? O: %-22s - can't find, skipping\n", symvt);
-					continue;
-				}
+		int og, oc, osk, sg, si;
+		ProcessFile(gamedata_files[fi], debug,
+			ghandle, ehandle, wgfile, wefile,
+			og, oc, osk, sg, si);
 
-				newOffset = findVFunc(ghandle, newvt, symbol);
-			}
-
-			if (newOffset == it->lin)
-			{
-				printf("  O: %-22s - GOOD.    current [ w: %3d, l: %3d ].\n", it->name, it->win, it->lin);
-			}
-			else
-			{
-				printf("! O: %-22s - CHANGED. old [ w: %3d, l: %3d ]. new [ w: %3d, l: %3d ].\n",
-					it->name,
-					it->win, it->lin,
-					newOffset - (it->lin - it->win), newOffset
-					);
-			}
-		}
-		else // !symbol
-		{
-			printf("  O: %-22s - no Linux symbol, skipping\n", it->name);
-		}
+		total_off_good    += og;
+		total_off_changed += oc;
+		total_off_skipped += osk;
+		total_sig_good    += sg;
+		total_sig_issues  += si;
 	}
 
-	printf("\nWindows offsets are (semi-)wild guesses!\n\nSignature offsets are wild guesses!\n\n");
-
-	for (list<Sig>::iterator it = gc.m_Sigs.begin(); it != gc.m_Sigs.end(); it++)
+	if (gamedata_files.size() > 1)
 	{
-		if (debug)
-		{
-			printf("DEBUG %s - %s - l: %s\n", it->name, it->lib == Server ? "server" : "engine", it->lin);
-		}
-
-		const char *linSymbol = it->lin;
-		const char *winSymbol = it->win;
-		bool hasLinux   = (linSymbol && linSymbol[0]);
-		bool hasWindows = (winSymbol && winSymbol[0]);
-		if (!hasLinux && !hasWindows)
-		{
-			printf("  S: %-22s - hasn't linux nor windows data, skipping\n", it->name);
-			continue;
-		}
-		
-		int  winFile;
-		void *linHandle;
-		if (it->lib == Server)
-		{
-			winFile   = wgfile;
-			linHandle = ghandle;
-		}
-		else if (it->lib == Engine)
-		{
-			winFile   = wefile;
-			linHandle = ehandle;
-		}
-		else
-		{
-			printf("  S: %-22s - isn't from server nor engine, skipping\n", it->name);
-			continue;
-		}
-		
-		int linuxMatches = 0, windowsMatches = 0;
-		if( hasLinux )
-			linuxMatches = checkSigStringL(linHandle, linSymbol);
-		if( hasWindows )
-			windowsMatches = checkSigStringW(winFile,   winSymbol);
-			
-		if (linuxMatches == 1 && windowsMatches == 1)
-		{
-			// too much clutter to print current data if it matches anyway, unlike with offsets
-			/*
-			printf("%-22s (%s) - GOOD. current:\n\t[w:%s]\n\t[l:%s]\n",
-				it->name,
-				(it->lib == Server) ? "server" : "engine",
-				winSymbol ? winSymbol : "",
-				linSymbol ? linSymbol : ""
-				);
-			*/
-			printf("  S: %-22s (%s) - w: GOOD     - l: GOOD    \n",
-				it->name,
-				(it->lib == Server) ? "server" : "engine"
-				);
-
-			//Check if they signature has a matching offset
-			CheckWindowsSigOffset(it->name, winSymbol, winFile);
-			CheckLinuxSigOffset(it->name, linSymbol, linHandle);
-
-		}
-		else
-		{
-			char winStatus[16];
-			// right now the only option is to ignore
-			const char *options = symbols.GetOptionValue(it->name);
-			bool allowMulti = ( options && strstr(options, "allowmultiple") != NULL );
-			bool allowMidfunc = ( options && strstr(options, "allowmidfunc") != NULL );
-			
-			bool bWinGood = false;
-			if( !hasWindows ) {
-				snprintf( winStatus, sizeof(winStatus), "UNKNOWN" );
-			}
-			else if( windowsMatches == -1 && !allowMidfunc) {
-				snprintf( winStatus, sizeof(winStatus), "MIDFUNC" );
-			}
-			else if( windowsMatches == 0 ) {
-				snprintf( winStatus, sizeof(winStatus), "NOTFOUND" );
-			}
-			else if( windowsMatches > 1 && !allowMulti) {
-				snprintf( winStatus, sizeof(winStatus), "MULTIPLE" );
-			}
-			else {
-				bWinGood = true;
-				snprintf( winStatus, sizeof(winStatus), "GOOD" );
-			}
-			
-			char linStatus[16];
-			bool bLinGood = false;
-			if( !hasLinux ) {
-				snprintf( linStatus, sizeof(linStatus), "UNKNOWN" );
-			}
-			else if( linuxMatches == 0 ) {
-				snprintf( linStatus, sizeof(linStatus), "NOTFOUND" );
-			}
-			else if( linuxMatches == 1 ) {
-				bLinGood = true;
-				snprintf( linStatus, sizeof(linStatus), "GOOD" );
-			}
-			else {
-				snprintf( linStatus, sizeof(linStatus), "CHECK" );
-			}
-			
-			bool showWinExtra = (hasWindows && !bWinGood);
-			bool showLinExtra = ( ( hasLinux && !bLinGood ) || showWinExtra );
-			
-			printf("%s S: %-22s (%s)", (showWinExtra || showLinExtra) ? "!" : " ", it->name, (it->lib == Server) ? "server" : "engine" );
-				printf(" - w: %-8s - l: %-8s\n", winStatus, linStatus );
-			
-			if( showWinExtra || showLinExtra )
-				printf( "!    current:\n" );
-			
-			if( showWinExtra )
-			{
-				printf("!    w: \"%s\"\n",
-					winSymbol ? winSymbol : ""
-					);
-			}
-			
-			if( showLinExtra )
-			{
-				// extra \n at end is intentional to add buffer after possibly long sigs
-				printf("!    l: \"%s\"\n\n",
-					linSymbol ? linSymbol : ""
-					);
-			}			
-		}
+		printf("---\n");
+		printf("Total (%d files)  Offsets: %s%d good%s  %s%d changed%s  %d skipped  |  Sigs: %s%d good%s  %s%d issues%s\n",
+			(int)gamedata_files.size(),
+			total_off_good    ? CGRN : "", total_off_good,    total_off_good    ? CR : "",
+			total_off_changed ? CRED : "", total_off_changed, total_off_changed ? CR : "",
+			total_off_skipped,
+			total_sig_good   ? CGRN : "", total_sig_good,   total_sig_good   ? CR : "",
+			total_sig_issues ? CRED : "", total_sig_issues, total_sig_issues ? CR : "");
 	}
 
 	return 0;
@@ -415,11 +582,11 @@ void CheckWindowsSigOffset(char* name, const char* symbol, int file)
 
 				if(iByte == iCompare)
 				{
-					printf("     w: %s -> %s (%4d) \\x%02X == \\x%02X GOOD\n", name, sigOffsetKey, sigOffset, iCompare, iByte);
+					printf("     w: %s -> %s (%4d) \\x%02X == \\x%02X %sGOOD%s\n", name, sigOffsetKey, sigOffset, iCompare, iByte, CGRN, CR);
 				}
 				else
 				{
-					printf("!    w: %s -> %s (%4d) \\x%02X != \\x%02X BAD\n", name, sigOffsetKey, sigOffset, iCompare, iByte);
+					printf("%s!    w: %s -> %s (%4d) \\x%02X != \\x%02X BAD%s\n", CRED, name, sigOffsetKey, sigOffset, iCompare, iByte, CR);
 				}
 			}
 		}
@@ -436,11 +603,11 @@ void CheckWindowsSigOffset(char* name, const char* symbol, int file)
 
 			if(iByte == iCompare)
 			{
-				printf("     w: %s -> %s (%4d) \\x%02X == \\x%02X GOOD\n", name, sigOffsetKey, sigOffset, iCompare, iByte);
+				printf("     w: %s -> %s (%4d) \\x%02X == \\x%02X %sGOOD%s\n", name, sigOffsetKey, sigOffset, iCompare, iByte, CGRN, CR);
 			}
 			else
 			{
-				printf("!    w: %s -> %s (%4d) \\x%02X != \\x%02X BAD\n", name, sigOffsetKey, sigOffset, iCompare, iByte);
+				printf("%s!    w: %s -> %s (%4d) \\x%02X != \\x%02X BAD%s\n", CRED, name, sigOffsetKey, sigOffset, iCompare, iByte, CR);
 			}
 		}
 	}
@@ -488,11 +655,11 @@ void CheckLinuxSigOffset(char* name, const char* symbol, void * handle)
 
 				if(iByte == iCompare)
 				{
-					printf("     l: %s -> %s (%4d) \\x%02X == \\x%02X GOOD\n", name, sigOffsetKey, sigOffset, iCompare, iByte);
+					printf("     l: %s -> %s (%4d) \\x%02X == \\x%02X %sGOOD%s\n", name, sigOffsetKey, sigOffset, iCompare, iByte, CGRN, CR);
 				}
 				else
 				{
-					printf("!    l: %s -> %s (%4d) \\x%02X != \\x%02X BAD\n", name, sigOffsetKey, sigOffset, iCompare, iByte);
+					printf("%s!    l: %s -> %s (%4d) \\x%02X != \\x%02X BAD%s\n", CRED, name, sigOffsetKey, sigOffset, iCompare, iByte, CR);
 				}
 			}
 		}
@@ -509,18 +676,18 @@ void CheckLinuxSigOffset(char* name, const char* symbol, void * handle)
 
 			if(iByte == iCompare)
 			{
-				printf("     l: %s -> %s (%4d) \\x%02X == \\x%02X GOOD\n", name, sigOffsetKey, sigOffset, iCompare, iByte);
+				printf("     l: %s -> %s (%4d) \\x%02X == \\x%02X %sGOOD%s\n", name, sigOffsetKey, sigOffset, iCompare, iByte, CGRN, CR);
 			}
 			else
 			{
-				printf("!    l: %s -> %s (%4d) \\x%02X != \\x%02X BAD\n", name, sigOffsetKey, sigOffset, iCompare, iByte);
+				printf("%s!    l: %s -> %s (%4d) \\x%02X != \\x%02X BAD%s\n", CRED, name, sigOffsetKey, sigOffset, iCompare, iByte, CR);
 			}
 		}
 	}
 }
 int GetOffset(const char* key, bool windows)
 {
-	for (list<Offset>::iterator it = gc.m_Offsets.begin(); it != gc.m_Offsets.end(); it++)
+	for (list<Offset>::iterator it = gc_ptr->m_Offsets.begin(); it != gc_ptr->m_Offsets.end(); it++)
 	{
 		if (strcmp(it->name, key) == 0)
 		{

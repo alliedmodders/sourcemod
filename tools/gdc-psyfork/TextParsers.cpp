@@ -43,12 +43,12 @@
 TextParsers g_TextParser;
 ITextParsers *textparsers = &g_TextParser;
 
-static int g_ini_chartable1[255] = {0};
-static int g_ws_chartable[255] = {0};
+static int g_ini_chartable1[256] = {0};
+static int g_ws_chartable[256] = {0};
 
 bool TextParsers::IsWhitespace(const char *stream)
 {
-	return g_ws_chartable[(unsigned)*stream] == 1;
+	return g_ws_chartable[(unsigned char)*stream] == 1;
 }
 
 TextParsers::TextParsers()
@@ -503,7 +503,7 @@ SMCError TextParsers::ParseStream_SMC(void *stream,
 			else 
 			{
 				/* Check if we're whitespace or not */
-				if (!g_ws_chartable[(unsigned)c])
+				if (!g_ws_chartable[(unsigned char)c])
 				{
 					bool restage = false;
 					/* Check various special tokens:
@@ -818,7 +818,7 @@ bool TextParsers::ParseFile_INI(const char *file, ITextListener_INI *ini_listene
 		 ***************************************************/
 
 		/* First strip beginning whitespace */
-		while (*ptr != '\0' && g_ws_chartable[(unsigned)*ptr] != 0)
+		while (*ptr != '\0' && g_ws_chartable[(unsigned char)*ptr] != 0)
 		{
 			ptr++;
 		}
@@ -871,7 +871,7 @@ bool TextParsers::ParseFile_INI(const char *file, ITextListener_INI *ini_listene
 		/* Lastly, strip ending whitespace off */
 		for (size_t i=len-1; i>=0 && i<len; i--)
 		{
-			if (g_ws_chartable[(unsigned)ptr[i]])
+			if (g_ws_chartable[(unsigned char)ptr[i]])
 			{
 				ptr[i] = '\0';
 				len--;
@@ -912,7 +912,7 @@ bool TextParsers::ParseFile_INI(const char *file, ITextListener_INI *ini_listene
 						i += _GetUTF8CharBytes(&ptr[i]) - 1;
 					}
 				} else {
-					alnum = (isalnum(c) != 0) || (g_ini_chartable1[(unsigned)c] != 0);
+					alnum = (isalnum(c) != 0) || (g_ini_chartable1[(unsigned char)c] != 0);
 				}
 				if (!alnum)
 				{
@@ -965,12 +965,12 @@ bool TextParsers::ParseFile_INI(const char *file, ITextListener_INI *ini_listene
 						i += _GetUTF8CharBytes(&ptr[i]) - 1;
 					}
 				} else {
-					alnum = (isalnum(c) != 0) || (g_ini_chartable1[(unsigned)c] != 0);
+					alnum = (isalnum(c) != 0) || (g_ini_chartable1[(unsigned char)c] != 0);
 				}
 
 				if (!alnum)
 				{
-					if (g_ws_chartable[(unsigned)c])
+					if (g_ws_chartable[(unsigned char)c])
 					{
 						/* if it's a space, keep track of the first occurring space */
 						if (!first_space)
@@ -1009,7 +1009,7 @@ bool TextParsers::ParseFile_INI(const char *file, ITextListener_INI *ini_listene
 			if (val_ptr)
 			{
 				/* eat up spaces! there shouldn't be any h*/
-				while ((*val_ptr != '\0') && g_ws_chartable[(unsigned)*val_ptr] != 0)
+				while ((*val_ptr != '\0') && g_ws_chartable[(unsigned char)*val_ptr] != 0)
 				{
 					val_ptr++;
 				}

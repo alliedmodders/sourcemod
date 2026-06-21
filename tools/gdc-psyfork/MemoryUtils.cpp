@@ -247,11 +247,19 @@ void *MemoryUtils::ResolveSymbol(void *handle, const char *symbol)
 
 	/* If symbol isn't in our table, then we have open the actual library */
 	dlfile = open(dlmap->l_name, O_RDONLY);
-	if (dlfile == -1 || fstat(dlfile, &dlstat) == -1)
+	if (dlfile == -1)
+	{
+		return NULL;
+	}
+	/* fstat is broken for 32-bit processes on WSL2/DrvFS; use lseek instead */
+	off_t lib_size = lseek(dlfile, 0, SEEK_END);
+	lseek(dlfile, 0, SEEK_SET);
+	if (lib_size <= 0)
 	{
 		close(dlfile);
 		return NULL;
 	}
+	dlstat.st_size = lib_size;
 
 	/* Map library file into memory */
 	file_hdr = (Elf32_Ehdr *)mmap(NULL, dlstat.st_size, PROT_READ, MAP_PRIVATE, dlfile, 0);
