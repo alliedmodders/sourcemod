@@ -32,6 +32,11 @@
 #include <stdlib.h>
 
 #include <memory>
+#include <algorithm>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 #include "ExtensionSys.h"
 #include <ILibrarySys.h>
@@ -250,15 +255,166 @@ bool CRemoteExtension::Reload(char *error, size_t maxlength)
 	return false;
 }
 
+namespace {
+struct ReloadPluginInfo {
+	std::string filename;
+	PluginType type;
+	size_t order;
+	bool was_paused;
+};
+
+struct PendingExtensionReload {
+	CLocalExtension *ext;
+	std::vector<ReloadPluginInfo> to_reload;
+};
+} // anonymous namespace
+
+void CExtensionManager::ProcessReloadFrame(void *data)
+{
+	PendingExtensionReload *pending = static_cast<PendingExtensionReload *>(data);
+
+	// Bail if it was unloaded in the gap between frames.
+	if (g_Extensions.m_Libs.find(pending->ext) == g_Extensions.m_Libs.end())
+	{
+		delete pending;
+		return;
+	}
+
+	// Reopen now that the deferred dlclose has run, so static initializers re-run.
+	char error[256];
+	if (!pending->ext->Load(error, sizeof(error)))
+	{
+		rootmenu->ConsolePrint("[SM] Failed to reload extension \"%s\": %s",
+		                       pending->ext->GetFilename(), error);
+		delete pending;
+		return;
+	}
+
+	// Reload dependent plugins in original load order.
+	std::vector<std::pair<std::string, PluginType>> batch;
+	for (auto &info : pending->to_reload)
+		batch.push_back({info.filename, info.type});
+
+	std::vector<CPlugin *> results = g_PluginSys.LoadPluginBatch(batch);
+
+	for (size_t i = 0; i < pending->to_reload.size(); i++) {
+		if (!results[i]) {
+			rootmenu->ConsolePrint("[SM] Failed to reload plugin \"%s\"",
+			                       pending->to_reload[i].filename.c_str());
+		} else {
+			rootmenu->ConsolePrint("[SM] Reloaded plugin \"%s\"",
+			                       pending->to_reload[i].filename.c_str());
+			if (pending->to_reload[i].was_paused)
+				results[i]->SetPauseState(true);
+		}
+	}
+
+	rootmenu->ConsolePrint("[SM] Extension \"%s\" reloaded.", pending->ext->GetFilename());
+	delete pending;
+}
+
 bool CLocalExtension::Reload(char *error, size_t maxlength)
 {
 	if (m_pLib == NULL) // FIXME: just load it instead?
 		return false;
-	
+
+	// Step 1: Build a load-order map and identify direct dependents.
+	// We must save this before any cleanup since unloading plugins removes them from
+	// m_Dependents via DropRefsTo.
+	std::unordered_map<std::string, size_t> load_order;
+	std::unordered_set<std::string> was_running;
+	std::vector<ReloadPluginInfo> to_reload;
+
+	{
+		AutoPluginList list(scripts);
+		for (size_t i = 0; i < list->size(); i++) {
+			SMPlugin *plugin = list->at(i);
+			std::string filename(plugin->GetFilename());
+			load_order[filename] = i;
+
+			PluginStatus status = plugin->GetStatus();
+			if (status == Plugin_Running || status == Plugin_Paused)
+				was_running.insert(filename);
+
+			CPlugin *cp = static_cast<CPlugin *>(plugin);
+			if (m_Dependents.find(cp) != m_Dependents.end() &&
+				(status == Plugin_Running || status == Plugin_Paused))
+			{
+				to_reload.push_back({filename, plugin->GetType(), i, status == Plugin_Paused});
+			}
+		}
+	}
+
+	// Step 2: Clear native cache entries and unbind weak refs.
+	DropEverything();
+
+	// Step 3: Unload direct dependent plugins. They hold JIT-baked stale function
+	// pointers that will crash if called after dlclose.
+	// Copy and clear m_Dependents first — UnloadPlugin triggers OnPluginDestroyed
+	// which calls DropRefsTo, removing entries from m_Dependents during iteration.
+	// (UnloadExtension avoids this by removing itself from m_Libs first, but we
+	// can't do that since we need to stay in m_Libs for reload.)
+	List<CPlugin *> dependents_copy = m_Dependents;
+	m_Dependents.clear();
+	for (List<CPlugin *>::iterator p_iter = dependents_copy.begin();
+		 p_iter != dependents_copy.end();
+		 p_iter++)
+	{
+		scripts->UnloadPlugin((*p_iter));
+	}
+
+	// Step 3b: Collect and unload cascaded victims — plugins that entered Plugin_Error
+	// because they depended on a plugin we just unloaded (not on this extension directly).
+	bool found;
+	do {
+		found = false;
+		AutoPluginList list(scripts);
+		for (size_t i = 0; i < list->size(); i++) {
+			SMPlugin *plugin = list->at(i);
+			std::string filename(plugin->GetFilename());
+			if (plugin->GetStatus() == Plugin_Error && was_running.count(filename)) {
+				auto it = load_order.find(filename);
+				size_t order = (it != load_order.end()) ? it->second : SIZE_MAX;
+				to_reload.push_back({filename, plugin->GetType(), order, false});
+				was_running.erase(filename);
+				scripts->UnloadPlugin(plugin);
+				found = true;
+				break; // List was modified, restart scan.
+			}
+		}
+	} while (found);
+
+	// Sort by original load order so inter-plugin dependencies resolve correctly.
+	std::sort(to_reload.begin(), to_reload.end(),
+		[](const ReloadPluginInfo &a, const ReloadPluginInfo &b) {
+			return a.order < b.order;
+		});
+
+	// Step 4: Clean up extension state to prevent duplicates on reload.
+	g_ShareSys.RemoveInterfaces(this);
+	for (List<String>::iterator s_iter = m_Libraries.begin();
+		 s_iter != m_Libraries.end();
+		 s_iter++)
+	{
+		scripts->OnLibraryAction((*s_iter).c_str(), LibraryAction_Removed);
+	}
+	m_Libraries.clear();
+	m_Interfaces.clear();
+
+	// Step 5: Unload the extension (request dlclose).
 	m_pAPI->OnExtensionUnload();
 	Unload();
-	
-	return Load(error, maxlength);
+
+	// Step 6: Defer the reopen. Metamod doesn't actually dlclose until the current
+	// command's hook stack unwinds, so reopening here would re-dlopen the still
+	// mapped image and skip static re-init. Reopen on the next frame instead.
+	PendingExtensionReload *pending = new PendingExtensionReload();
+	pending->ext = this;
+	pending->to_reload = std::move(to_reload);
+
+	g_pSM->AddFrameAction(&CExtensionManager::ProcessReloadFrame, pending);
+
+	return true;
 }
 
 bool CRemoteExtension::IsExternal()
@@ -1188,18 +1344,39 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 		{
 			if (argcount < 4)
 			{
-				rootmenu->ConsolePrint("[SM] Usage: sm exts reload <#>");
+				rootmenu->ConsolePrint("[SM] Usage: sm exts reload <# or file>");
 				return;
 			}
-			
+
 			const char *arg = command->Arg(3);
 			unsigned int num = atoi(arg);
-			CExtension *pExt = FindByOrder(num);
+			CExtension *pExt;
 
-			if (!pExt)
+			if (num != 0)
 			{
-				rootmenu->ConsolePrint("[SM] Extension number %d was not found.", num);
-				return;
+				pExt = FindByOrder(num);
+				if (!pExt)
+				{
+					rootmenu->ConsolePrint("[SM] Extension number %d was not found.", num);
+					return;
+				}
+			}
+			else
+			{
+				char path[PLATFORM_MAX_PATH];
+				ke::SafeSprintf(path, sizeof(path), "%s%s", arg, !strstr(arg, ".ext") ? ".ext" : "");
+
+				/* Strip platform extension if present, m_File doesn't include it. */
+				const char *ext = libsys->GetFileExtension(path);
+				if (ext && strcmp(ext, PLATFORM_LIB_EXT) == 0)
+					path[strlen(path) - strlen(PLATFORM_LIB_EXT) - 1] = '\0';
+
+				pExt = (CExtension *)FindExtensionByFile(path);
+				if (!pExt)
+				{
+					rootmenu->ConsolePrint("[SM] Extension %s is not loaded.", path);
+					return;
+				}
 			}
 			
 			if (pExt->IsLoaded())
@@ -1211,7 +1388,8 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 				
 				if (pExt->Reload(error, sizeof(error)))
 				{
-					rootmenu->ConsolePrint("[SM] Extension %s is now reloaded.", filename);
+					// Reopen is deferred a frame; ProcessReloadFrame prints completion.
+					rootmenu->ConsolePrint("[SM] Reloading extension %s...", filename);
 				}
 				else
 				{
@@ -1234,7 +1412,7 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 	rootmenu->DrawGenericOption("info", "Extra extension information");
 	rootmenu->DrawGenericOption("list", "List extensions");
 	rootmenu->DrawGenericOption("load", "Load an extension");
-	rootmenu->DrawGenericOption("reload", "Reload an extension");
+	rootmenu->DrawGenericOption("reload", "Reload an extension by # or file");
 	rootmenu->DrawGenericOption("unload", "Unload an extension");
 }
 
