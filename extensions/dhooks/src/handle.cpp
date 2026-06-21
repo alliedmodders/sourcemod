@@ -124,7 +124,7 @@ public:
 		return;
 	}
 	void KHook_Make_CallOriginal(DTOR_PARAMS) {
-		void (CGenericClass::*ptr)(DTOR_PARAMS) = ::KHook::BuildMFP<CGenericClass, void DTOR_PARAMS_NONAME>(::KHook::GetOriginalFunction());
+		void (CGenericClass::*ptr)(DTOR_PARAMS) = ::KHook::BuildMFP<void (CGenericClass::*)(DTOR_PARAMS_NONAME)>(::KHook::GetOriginalFunction());
 		(this->*ptr)(DTOR_PARAMS_ARGS);
 		::KHook::SaveReturnValue(KHook::Action::Ignore, nullptr, 0, nullptr, nullptr, true);
 		return;
@@ -209,6 +209,7 @@ std::uint32_t DynamicHook::AddHook(SourcePawn::IPluginFunction* callback, Source
 					nullptr,
 					KHook::ExtractMFP(&CGenericClass::KHook_Make_Return),
 					KHook::ExtractMFP(&CGenericClass::KHook_Make_CallOriginal),
+					40,
 					true
 				);
 				locals::class_vtables.insert(vtable);
