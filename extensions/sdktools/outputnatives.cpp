@@ -156,13 +156,8 @@ cell_t HookEntityOutput(IPluginContext *pContext, const cell_t *params)
 
 	g_OutputManager.OnHookAdded();
 
-<<<<<<< HEAD
 	IPlugin *pPlugin = plsys->FindPluginByContext(pContext);
-	SourceHook::List<omg_hooks *> *pList = NULL;
-=======
-	IPlugin *pPlugin = plsys->FindPluginByContext(pContext->GetContext());
 	std::list<omg_hooks *> *pList = NULL;
->>>>>>> d3e1c5363 (Strip sourcehook from SDKTools Part 1)
 
 	if (!pPlugin->GetProperty("OutputHookList", (void **)&pList, false) || !pList)
 	{

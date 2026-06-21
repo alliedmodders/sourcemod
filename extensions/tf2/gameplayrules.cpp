@@ -73,7 +73,7 @@ bool InitialiseRulesDetours()
 		g_pSM->LogError(myself, "Failed to retrieve SetInWaitingForPlayers.");
 		return false;
 	}
-	g_HookSetInWaitingForPlayers.Configure(KHook::BuildMFP<CTeamplayRoundBasedRules, void, bool>(addr));
+	g_HookSetInWaitingForPlayers.Configure(KHook::BuildMFP<void (CTeamplayRoundBasedRules::*)(bool)>(addr));
 	return true;
 }
 
