@@ -814,6 +814,8 @@ bool findFuncPos(const char *sym, int &func, int &params)
 	if (!sym)
 		return false;
 
+	int len = (int)strlen(sym);
+
 	// Stop at the terminator so a digitless symbol doesn't run off the end.
 	int i = 0;
 	while (sym[i] && ((sym[i] < '0') || (sym[i] > '9')))
@@ -825,11 +827,15 @@ bool findFuncPos(const char *sym, int &func, int &params)
 	if (classLen <= 0)
 		return false;
 	func = i + (int)ceil(log10(classLen)) + classLen;
+	if (func < 0 || func >= len)
+		return false;
 
 	int funcLen = atoi(sym + func);
 	if (funcLen <= 0)
 		return false;
 	params = func + (int)ceil(log10(funcLen)) + funcLen;
+	if (params < 0 || params > len)
+		return false;
 	return true;
 }
 

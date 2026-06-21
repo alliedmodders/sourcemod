@@ -678,7 +678,7 @@ const char* MemoryUtils::ResolveAddr(void *handle, void* addr)
 	dlmap = (struct link_map *)handle;
 
 	LibSymbolTable *libtable;
-	AddrTable *table2;
+	AddrTable *table2 = NULL;
 
 	for (size_t i = 0; i < m_SymTables.size(); i++)
 	{
