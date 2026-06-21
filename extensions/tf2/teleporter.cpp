@@ -66,7 +66,7 @@ public:
 	}
 
 	bool MakeCallOriginal(CTFPlayer * pPlayer) {
-		auto CanPlayerBeTeleported_Actual = KHook::BuildMFP<CanPlayerBeTeleportedClass, bool, CTFPlayer*>(::KHook::GetOriginalFunction());
+		auto CanPlayerBeTeleported_Actual = KHook::BuildMFP<bool (CanPlayerBeTeleportedClass::*)(CTFPlayer*)>(::KHook::GetOriginalFunction());
 
 		return ::KHook::ManualReturn<bool>({ KHook::Action::Ignore, (this->*CanPlayerBeTeleported_Actual)(pPlayer) }, true);
 	}
@@ -126,6 +126,7 @@ bool InitialiseTeleporterDetour()
 		KHook::ExtractMFP(&CanPlayerBeTeleportedClass::CanPlayerBeTeleported),
 		KHook::ExtractMFP(&CanPlayerBeTeleportedClass::MakeReturn),
 		KHook::ExtractMFP(&CanPlayerBeTeleportedClass::MakeCallOriginal),
+		100,
 		true
 	);
 
