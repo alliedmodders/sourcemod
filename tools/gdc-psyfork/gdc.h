@@ -9,7 +9,7 @@
 using namespace SourceMod;
 #endif 
 
-int findFuncPos(const char* sym);
+bool findFuncPos(const char* sym, int &func, int &params);
 int findVFunc(void *handle, void **vt, const char *symbol);
 
 int checkSigStringW(int file, const char* symbol);

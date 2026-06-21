@@ -406,6 +406,9 @@ int main(int argc, char **argv)
 
 	use_color = isatty(STDOUT_FILENO);
 
+	// Disable buffering, we may not exit cleanly.
+	setvbuf(stdout, NULL, _IONBF, 0);
+
 	opterr = 0;
 	int opt;
 	while ((opt = getopt(argc, argv, "b:nde:f:g:x:w:y:s:")) != -1)
@@ -805,14 +808,29 @@ int checkSigStringL(void *handle, const char* symbol)
    _ZN9CTFPlayer12ForceRespawnEv
                 ^13            ^28
 */
-void findFuncPos(const char *sym, int &func, int &params)
+bool findFuncPos(const char *sym, int &func, int &params)
 {
+	func = params = 0;
+	if (!sym)
+		return false;
+
+	// Stop at the terminator so a digitless symbol doesn't run off the end.
 	int i = 0;
-	while ((sym[i] < '0') || (sym[i] > '9')) i++;
+	while (sym[i] && ((sym[i] < '0') || (sym[i] > '9')))
+		i++;
+	if (!sym[i])
+		return false;
+
 	int classLen = atoi(sym + i);
+	if (classLen <= 0)
+		return false;
 	func = i + (int)ceil(log10(classLen)) + classLen;
+
 	int funcLen = atoi(sym + func);
+	if (funcLen <= 0)
+		return false;
 	params = func + (int)ceil(log10(funcLen)) + funcLen;
+	return true;
 }
 
 int findVFunc(void *handle, void **vt, const char *symbol)
@@ -833,14 +851,15 @@ int findVFunc(void *handle, void **vt, const char *symbol)
 	}
 	
 	int funcPos, paramPos;
-	findFuncPos(symbol, funcPos, paramPos);
+	if (!findFuncPos(symbol, funcPos, paramPos))
+		return -1;
 
 	for (int i = 0; i < 1000; i++)
 	{
 		void *pFunc = vt[i];
 		if( !pFunc )
 			continue;
-		
+
 		const char *s;
 
 		if (!(s = mu.ResolveAddr(handle, pFunc)))
@@ -851,7 +870,8 @@ int findVFunc(void *handle, void **vt, const char *symbol)
 
 
 		int tempFuncPos, tempParamPos;
-		findFuncPos(s, tempFuncPos, tempParamPos);
+		if (!findFuncPos(s, tempFuncPos, tempParamPos))
+			continue;
 
 		if (strcmp(s + tempFuncPos, symbol + funcPos) == 0)
 		{
