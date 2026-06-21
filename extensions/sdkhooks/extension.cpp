@@ -1017,7 +1017,7 @@ KHook::Return<bool> SDKHooks::Hook_CanBeAutobalanced(CBaseEntity* this_ptr)
 
 		int entity = gamehelpers->EntityToBCompatRef(pPlayer);
 
-		auto mfp = KHook::BuildMFP<CBaseEntity, bool>(KHook::FindOriginalVirtual(*(void***)this_ptr, g_HookTypes[SDKHook_CanBeAutobalanced].offset));
+		auto mfp = KHook::BuildMFP<bool (CBaseEntity::*)()>(KHook::FindOriginalVirtual(*(void***)this_ptr, g_HookTypes[SDKHook_CanBeAutobalanced].offset));
 		bool origRet = (this_ptr->*mfp)();
 		bool newRet = origRet;
 
@@ -1107,7 +1107,7 @@ KHook::Return<void> SDKHooks::Hook_FireBulletsPost(CBaseEntity* this_ptr, const 
 KHook::Return<int> SDKHooks::Hook_GetMaxHealth(CBaseEntity* this_ptr)
 {
 	CBaseEntity *pEntity = this_ptr;
-	auto mfp = KHook::BuildMFP<CBaseEntity, int>(KHook::FindOriginalVirtual(*(void***)pEntity, g_HookTypes[SDKHook_GetMaxHealth].offset));
+	auto mfp = KHook::BuildMFP<int (CBaseEntity::*)()>(KHook::FindOriginalVirtual(*(void***)pEntity, g_HookTypes[SDKHook_GetMaxHealth].offset));
 	int original_max = (pEntity->*mfp)();
 
 	void** vtable = *(void***)this_ptr;
