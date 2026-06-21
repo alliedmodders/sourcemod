@@ -412,8 +412,7 @@ void TempEntityManager::Shutdown()
 		return;
 	}
 
-	SourceHook::List<TempEntityInfo *>::iterator iter;
-	for (iter=m_TEList.begin(); iter!=m_TEList.end(); iter++)
+	for (auto iter=m_TEList.begin(); iter!=m_TEList.end(); iter++)
 	{
 		delete (*iter);
 	}

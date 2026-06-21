@@ -35,6 +35,7 @@
 #include <amtl/am-refcounting.h>
 #include <amtl/am-vector.h>
 #include <amtl/am-function.h>
+#include <khook.hpp>
 
 class ConVar;
 class CCommand;
@@ -68,12 +69,19 @@ public:
 public:
 	CommandHook(ConCommand *cmd, const Callback &callback, bool post);
 	~CommandHook();
-	void Dispatch(DISPATCH_ARGS);
-	void Zap();
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+	KHook::Return<void> Dispatch(ConCommand*, const CCommand&);
+#else
+	KHook::Return<void> Dispatch(ConCommand*);
+#endif
 
 private:
-	int hook_id_;
 	Callback callback_;
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+	KHook::Virtual<ConCommand, void, const CCommand&> m_DispatchHook;
+#else
+	KHook::Virtual<ConCommand, void> m_DispatchHook;
+#endif
 };
 
 class GameHooks
@@ -97,21 +105,29 @@ public:
 		return last_command_client_;
 	}
 
-private:
+public:
 	// Static callback that Valve's ConVar object executes when the convar's value changes.
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-	static void OnConVarChanged(ConVar *pConVar, const char *oldValue, float flOldValue);
+	static KHook::Return<void> OnConVarChanged(ICvar*, ConVar *pConVar, const char *oldValue, float flOldValue);
 #else
-	static void OnConVarChanged(ConVar *pConVar, const char *oldValue);
+	static KHook::Return<void> OnConVarChanged(ICvar*, ConVar *pConVar, const char *oldValue);
 #endif
+private:
 
 	// Callback for when StartQueryCvarValue() has finished.
 #if SOURCE_ENGINE != SE_DARKMESSIAH
 	void OnQueryCvarValueFinished(QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result,
 	                              const char *cvarName, const char *cvarValue);
+	KHook::Return<void> GameDLLOnQueryCvarValueFinished(IServerGameDLL*, QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result,
+	                              const char *cvarName, const char *cvarValue);
+	KHook::Virtual<IServerGameDLL, void, QueryCvarCookie_t, edict_t *, EQueryCvarValueStatus, const char *, const char *> m_GameDLLOnQueryCvarValueFinishedHook;
+	KHook::Return<void> VSPOnQueryCvarValueFinished(IServerPluginCallbacks*, QueryCvarCookie_t cookie, edict_t *pPlayer, EQueryCvarValueStatus result,
+	                              const char *cvarName, const char *cvarValue);
+	KHook::Virtual<IServerPluginCallbacks, void, QueryCvarCookie_t, edict_t *, EQueryCvarValueStatus, const char *, const char *> m_VSPOnQueryCvarValueFinishedHook;
 #endif
 
-	void SetCommandClient(int client);
+	KHook::Return<void> SetCommandClient(IServerGameClients*, int client);
+	KHook::Virtual<IServerGameClients, void, int> m_SetCommandClient;
 
 private:
 	class HookList : public std::vector<int>

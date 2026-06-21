@@ -328,7 +328,7 @@ void TopMenu::RemoveFromMenu(unsigned int object_id)
 				}
 				
 				/* Remove the category from the list, then delete it. */
-				m_Categories.erase(m_Categories.iterAt(i));
+				m_Categories.erase(m_Categories.begin() + i);
 				delete cat;
 				break;
 			}
@@ -358,7 +358,7 @@ void TopMenu::RemoveFromMenu(unsigned int object_id)
 			{
 				if (parent_cat->obj_list[i] == obj)
 				{
-					parent_cat->obj_list.erase(parent_cat->obj_list.iterAt(i));
+					parent_cat->obj_list.erase(parent_cat->obj_list.begin() + i);
 
 					/* If this category now has no items, mark root as changed 
 					 * so clients won't get the category drawn anymore.
@@ -936,7 +936,7 @@ void TopMenu::SortCategoryIfNeeded(unsigned int category)
 		return;
 	}
 
-	CVector<unsigned int> to_sort;
+	std::vector<unsigned int> to_sort;
 	for (size_t i = 0; i < cat->obj_list.size(); i++)
 	{
 		to_sort.push_back(i);
@@ -966,7 +966,7 @@ void TopMenu::SortCategoryIfNeeded(unsigned int category)
 				{
 					/* Place in the final list, then remove from the temporary list */
 					cat->sorted.push_back(cat->obj_list[to_sort[j]]);
-					to_sort.erase(to_sort.iterAt(j));
+					to_sort.erase(to_sort.begin() + j);
 					break;
 				}
 			}
@@ -999,7 +999,7 @@ void TopMenu::SortCategoriesIfNeeded()
 		return;
 	}
 
-	CVector<unsigned int> to_sort;
+	std::vector<unsigned int> to_sort;
 	for (unsigned int i = 0; i < (unsigned int)m_Categories.size(); i++)
 	{
 		to_sort.push_back(i);
@@ -1016,7 +1016,7 @@ void TopMenu::SortCategoriesIfNeeded()
 			{
 				/* Add to the real list and remove from the temporary */
 				m_SortedCats.push_back(to_sort[j]);
-				to_sort.erase(to_sort.iterAt(j));
+				to_sort.erase(to_sort.begin() + j);
 				break;
 			}
 		}
@@ -1089,7 +1089,7 @@ bool TopMenu::LoadConfiguration(const char *file, char *error, size_t maxlength)
 bool TopMenu::OnIdentityRemoval(IdentityToken_t *owner)
 {
 	/* First sweep the categories owned by us */
-	CVector<unsigned int> obj_list;
+	std::vector<unsigned int> obj_list;
 	for (size_t i = 0; i < m_Categories.size(); i++)
 	{
 		if (m_Categories[i]->obj->owner == owner)

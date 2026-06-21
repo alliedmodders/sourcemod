@@ -39,16 +39,14 @@
 #include <IPlayerHelpers.h>
 #include <IAdminSystem.h>
 #include <ITranslator.h>
-#include <sh_string.h>
-#include <sh_list.h>
-#include <sh_vector.h>
+#include <string>
+#include <list>
+#include <vector>
 #include <am-string.h>
 #include <am-deque.h>
 #include "ConVarManager.h"
 
 #include <steam/steamclientpublic.h>
-
-using namespace SourceHook;
 
 class IClient;
 
@@ -131,9 +129,9 @@ private:
 	bool m_IsInGame = false;
 	bool m_IsAuthorized = false;
 	bool m_bIsInKickQueue = false;
-	String m_Name;
-	String m_Ip;
-	String m_IpNoPort;
+	std::string m_Name;
+	std::string m_Ip;
+	std::string m_IpNoPort;
 	std::string m_AuthID;
 	std::string m_Steam2Id;
 	std::string m_Steam3Id;
@@ -142,7 +140,7 @@ private:
 	edict_t *m_pEdict = nullptr;
 	IPlayerInfo *m_Info = nullptr;
 	IClient *m_pIClient = nullptr;
-	String m_LastPassword;
+	std::string m_LastPassword;
 	bool m_bAdminCheckSignalled = false;
 	int m_iIndex;
 	unsigned int m_LangId = SOURCEMOD_LANGUAGE_ENGLISH;
@@ -178,25 +176,40 @@ public:
 	CPlayer *GetPlayerByIndex(int client) const;
 	void RunAuthChecks();
 public:
-	bool OnClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
-	bool OnClientConnect_Post(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
-	void OnClientPutInServer(edict_t *pEntity, char const *playername);
-	void OnClientDisconnect(edict_t *pEntity);
-	void OnClientDisconnect_Post(edict_t *pEntity);
+	KHook::Virtual<IServerGameClients, bool, edict_t*, const char*, const char*, char*, int> m_HookClientConnect;
+	KHook::Return<bool> OnClientConnect(IServerGameClients*, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
+	KHook::Return<bool> OnClientConnect_Post(IServerGameClients*, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
+	KHook::Virtual<IServerGameClients, void, edict_t*, const char*> m_HookClientPutInServer;
+	KHook::Return<void> OnClientPutInServer(IServerGameClients*, edict_t *pEntity, char const *playername);
+	KHook::Virtual<IServerGameClients, void, edict_t*> m_HookClientDisconnect;
+	KHook::Return<void> OnClientDisconnect(IServerGameClients*, edict_t *pEntity);
+	KHook::Return<void> OnClientDisconnect_Post(IServerGameClients*, edict_t *pEntity);
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-	void OnClientCommand(edict_t *pEntity, const CCommand &args);
+	KHook::Virtual<IServerGameClients, void, edict_t*, const CCommand&> m_HookClientCommand;
+	KHook::Return<void> OnClientCommand(IServerGameClients*, edict_t *pEntity, const CCommand &args);
 #if SOURCE_ENGINE >= SE_EYE
-	void OnClientCommandKeyValues(edict_t *pEntity, KeyValues *pCommand);
-	void OnClientCommandKeyValues_Post(edict_t *pEntity, KeyValues *pCommand);
+	KHook::Virtual<IServerGameClients, void, edict_t*, KeyValues*> m_HookClientCommandKeyValues;
+	KHook::Return<void> OnClientCommandKeyValues(IServerGameClients*, edict_t *pEntity, KeyValues *pCommand);
+	KHook::Return<void> OnClientCommandKeyValues_Post(IServerGameClients*, edict_t *pEntity, KeyValues *pCommand);
 #endif
 #else
-	void OnClientCommand(edict_t *pEntity);
+	KHook::Virtual<IServerGameClients, void, edict_t*> m_HookClientCommand;
+	KHook::Return<void> OnClientCommand(IServerGameClients*, edict_t *pEntity);
 #endif
-	void OnClientSettingsChanged(edict_t *pEntity);
+	KHook::Virtual<IServerGameClients, void, edict_t*> m_HookClientSettingsChanged;
+	KHook::Return<void> OnClientSettingsChanged(IServerGameClients*, edict_t *pEntity);
 	//void OnClientSettingsChanged_Pre(edict_t *pEntity);
 	void OnClientLanguageChanged(int client, unsigned int language);
-	void OnServerHibernationUpdate(bool bHibernating);
-	void OnClientPrintf(edict_t *pEdict, const char *szMsg);
+	KHook::Virtual<IServerGameDLL, void, edict_t*, int, int> m_HookServerActivate;
+	KHook::Return<void> OnServerActivate(IServerGameDLL*, edict_t *pEdictList, int edictCount, int clientMax);
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
+	KHook::Virtual<IServerGameDLL, void, bool> m_HookOnServerHibernationUpdate;
+#elif SOURCE_ENGINE > SE_EYE
+	KHook::Virtual<IServerGameDLL, void, bool> m_HookSetServerHibernation;
+#endif
+	KHook::Return<void> OnServerHibernationUpdate(IServerGameDLL*, bool bHibernating);
+	KHook::Virtual<IVEngineServer, void, edict_t*, const char*> m_HookClientPrintf;
+	KHook::Return<void> OnClientPrintf(IVEngineServer*, edict_t *pEdict, const char *szMsg);
 	void OnPrintfFrameAction(unsigned int serial);
 public: //IPlayerManager
 	void AddClientListener(IClientListener *listener);
@@ -242,10 +255,9 @@ public:
 	bool HandleConVarQuery(QueryCvarCookie_t cookie, int client, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue);
 #endif
 private:
-	void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
 	void InvalidatePlayer(CPlayer *pPlayer);
 private:
-	List<IClientListener *> m_hooks;
+	std::list<IClientListener *> m_hooks;
 	IForward *m_clconnect;
 	IForward *m_clconnect_post;
 	IForward *m_cldisconnect;
@@ -266,7 +278,7 @@ private:
 	int m_PlayersSinceActive;
 	bool m_bServerActivated;
 	unsigned int *m_AuthQueue;
-	String m_PassInfoVar;
+	std::string m_PassInfoVar;
 	bool m_QueryLang;
 	bool m_bAuthstringValidation; // are we validating admins with steam before authorizing?
 	bool m_bIsListenServer;
@@ -282,9 +294,9 @@ private:
 };
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-void CmdMaxplayersCallback(const CCommand &command);
+KHook::Return<void> CmdMaxplayersCallback(ConCommand*, const CCommand &command);
 #else
-void CmdMaxplayersCallback();
+KHook::Return<void> CmdMaxplayersCallback(ConCommand*);
 #endif
 
 extern void ClientConsolePrint(edict_t *e, const char *fmt, ...);

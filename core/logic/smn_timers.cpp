@@ -34,11 +34,9 @@
 #include <IHandleSys.h>
 #include <ITimerSystem.h>
 #include <IPluginSys.h>
-#include <sh_stack.h>
+#include <stack>
 #include "DebugReporter.h"
 #include <bridge/include/CoreProvider.h>
-
-using namespace SourceHook;
 
 #define TIMER_DATA_HNDL_CLOSE	(1<<9)
 #define TIMER_HNDL_CLOSE		(1<<9)
@@ -74,17 +72,16 @@ public:
 	TimerInfo *CreateTimerInfo();
 	void DeleteTimerInfo(TimerInfo *pInfo);
 private:
-	CStack<TimerInfo *> m_FreeTimers;
+	std::stack<TimerInfo *> m_FreeTimers;
 };
 
 TimerNatives::~TimerNatives()
 {
-	CStack<TimerInfo *>::iterator iter;
-	for (iter=m_FreeTimers.begin(); iter!=m_FreeTimers.end(); iter++)
+	while (!m_FreeTimers.empty())
 	{
-		delete (*iter);
+		delete m_FreeTimers.top();
+		m_FreeTimers.pop();
 	}
-	m_FreeTimers.popall();
 }
 
 void TimerNatives::OnSourceModAllInitialized()
@@ -118,7 +115,7 @@ TimerInfo *TimerNatives::CreateTimerInfo()
 	{
 		pInfo = new TimerInfo;
 	} else {
-		pInfo = m_FreeTimers.front();
+		pInfo = m_FreeTimers.top();
 		m_FreeTimers.pop();
 	}
 

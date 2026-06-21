@@ -10,7 +10,7 @@ for cxx in builder.targets:
     os.path.join(builder.sourcePath, 'sourcepawn', 'include'),
     os.path.join(builder.sourcePath, 'public', 'amtl', 'amtl'),
     os.path.join(builder.sourcePath, 'public', 'amtl'),
-    os.path.join(SM.mms_root, 'core', 'sourcehook')
+    os.path.join(SM.mms_root, 'third_party', 'khook', 'include')
   ]
   binary.compiler.defines += [
     'SM_DEFAULT_THREADER',

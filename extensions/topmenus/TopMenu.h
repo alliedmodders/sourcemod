@@ -32,14 +32,14 @@
 #ifndef _INCLUDE_SOURCEMOD_TOP_MENU_H_
 #define _INCLUDE_SOURCEMOD_TOP_MENU_H_
 
-#include <sh_list.h>
-#include <sh_vector.h>
 #include <ITopMenus.h>
 #include "smsdk_ext.h"
 #include "sm_memtable.h"
 #include <sm_namehashset.h>
 
-using namespace SourceHook;
+#include <list>
+#include <vector>
+
 using namespace SourceMod;
 
 #define TOPMENU_DISPLAY_BUFFER_SIZE 128
@@ -47,7 +47,7 @@ using namespace SourceMod;
 struct config_category_t
 {
 	int name;
-	CVector<int> commands;
+	std::vector<int> commands;
 };
 
 struct config_root_t
@@ -56,7 +56,7 @@ struct config_root_t
 	{
 	}
 	BaseStringTable strings;
-	CVector<config_category_t *> cats;
+	std::vector<config_category_t *> cats;
 };
 
 struct topmenu_object_t
@@ -85,9 +85,9 @@ struct topmenu_object_t
 
 struct topmenu_category_t
 {
-	CVector<topmenu_object_t *> obj_list;	/** Full object list */
-	CVector<topmenu_object_t *> sorted;		/** Sorted items */
-	CVector<topmenu_object_t *> unsorted;	/** Unsorted items */
+	std::vector<topmenu_object_t *> obj_list;	/** Full object list */
+	std::vector<topmenu_object_t *> sorted;		/** Sorted items */
+	std::vector<topmenu_object_t *> unsorted;	/** Unsorted items */
 	topmenu_object_t *obj;					/** Bound object */
 	unsigned int serial;					/** Serial number */
 	bool reorder;							/** Whether ordering needs updating */
@@ -181,10 +181,10 @@ private:
 private:
 	config_root_t m_Config;					/* Configuration from file */
 	topmenu_player_t *m_clients;			/* Client array */
-	CVector<unsigned int> m_SortedCats;		/* Sorted categories */
-	CVector<unsigned int> m_UnsortedCats;	/* Un-sorted categories */
-	CVector<topmenu_category_t *> m_Categories; /* Category array */
-	CVector<topmenu_object_t *> m_Objects;	/* Object array */
+	std::vector<unsigned int> m_SortedCats;		/* Sorted categories */
+	std::vector<unsigned int> m_UnsortedCats;	/* Un-sorted categories */
+	std::vector<topmenu_category_t *> m_Categories; /* Category array */
+	std::vector<topmenu_object_t *> m_Objects;	/* Object array */
 	NameHashSet<topmenu_object_t *> m_ObjLookup; /* Object lookup trie */
 	unsigned int m_SerialNo;				/* Serial number for updating */
 	ITopMenuObjectCallbacks *m_pTitle;		/* Title callbacks */
