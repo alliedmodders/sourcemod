@@ -62,24 +62,6 @@ const std::unique_ptr<Capsule>& Capsule::FindOrCreate(const handle::HookSetup* s
 	return locals::nullptr_capsule;
 }
 
-class EmptyClass {
-public:
-	bool AllowedToHealTarget_MakeReturn( CBaseEntity* pTarget ) {
-		bool ret = *(bool*)::KHook::GetCurrentValuePtr(true);
-		::KHook::DestroyReturnValue();
-		return ret;
-	}
-
-	bool AllowedToHealTarget_CallOriginal( CBaseEntity* pTarget ) {
-		printf("CALLED ORIGINAL 0x%lX\n", (uintptr_t)this);
-
-		auto ptr = KHook::BuildMFP<bool (EmptyClass::*)(CBaseEntity*)>(::KHook::GetOriginalFunction());
-		bool ret = (((EmptyClass*)this)->*ptr)(pTarget);
-		::KHook::__internal__savereturnvalue(KHook::Return<bool>{ KHook::Action::Ignore, ret }, true);
-		return ret;
-	}
-};
-
 std::uint32_t Capsule::AddCallback(SourcePawn::IPluginFunction* callback, SourcePawn::IPluginFunction* remove_callback, sp::HookMode mode, sp::ThisPointerType this_ptr, void* associated_this) {
 	auto id = ++locals::last_hook_id;
 	
@@ -313,8 +295,8 @@ Capsule::Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::C
 			reinterpret_cast<void*>(&Capsule::_KHook_RemovedHook),
 			reinterpret_cast<void*>(_jit_start + offset_to_pre_callback),
 			reinterpret_cast<void*>(_jit_start + offset_to_post_callback),
-			reinterpret_cast<void*>(_jit_start + offset_to_make_return), // KHook::ExtractMFP(&EmptyClass::AllowedToHealTarget_MakeReturn), //reinterpret_cast<void*>(_jit_start + offset_to_make_return),
-			reinterpret_cast<void*>(_jit_start + offset_to_call_original), // KHook::ExtractMFP(&EmptyClass::AllowedToHealTarget_CallOriginal), //reinterpret_cast<void*>(_jit_start + offset_to_call_original),
+			reinterpret_cast<void*>(_jit_start + offset_to_make_return),
+			reinterpret_cast<void*>(_jit_start + offset_to_call_original),
 			_stack_size,
 			true
 		)
