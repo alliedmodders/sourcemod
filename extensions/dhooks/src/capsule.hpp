@@ -91,14 +91,12 @@ protected:
 template<typename RETURN>
 void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post) const {
 	RETURN* return_ptr = nullptr;
-	RETURN* temp_ptr = nullptr;
 	void* init_op = nullptr;
 	void* delete_op = nullptr;
 	size_t return_size = 0;
 
     if constexpr(!std::is_same<RETURN, void>::value) {	
 		return_ptr = new RETURN;
-        temp_ptr = new RETURN;
 		init_op = reinterpret_cast<void*>(::KHook::init_operator<RETURN>);
 		delete_op = reinterpret_cast<void*>(::KHook::deinit_operator<RETURN>);
 		return_size = sizeof(RETURN);
@@ -181,6 +179,10 @@ void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post) const {
         }
 	}
 	KHook::SaveReturnValue(final_action, return_ptr, return_size, init_op, delete_op, false);
+
+	if constexpr(!std::is_same<RETURN, void>::value) {
+		delete return_ptr;
+	}
 }
 
 }
