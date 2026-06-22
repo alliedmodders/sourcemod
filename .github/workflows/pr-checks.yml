@@ -32,7 +32,7 @@ jobs:
       MYSQL_VERSION: '5.7'
       MMSOURCE_VERSION: '1.12'
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
           path: sourcemod
