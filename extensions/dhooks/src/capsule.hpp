@@ -165,10 +165,14 @@ void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post) const {
                 cell_t result = (cell_t)sp::MRES_Ignored;
                 hook.callback->Execute(&result);
 
+                KHook::Action this_action = KHook::Action::Ignore;
                 if (result == (cell_t)sp::MRES_Supercede) {
-                    final_action = KHook::Action::Supersede;
+                    this_action = KHook::Action::Supersede;
                 } else if (result != (cell_t)sp::MRES_Ignored) {
-                    final_action = KHook::Action::Override;
+                    this_action = KHook::Action::Override;
+                }
+                if (this_action > final_action) {
+                    final_action = this_action;
                 }
                 // Params change, perform recall
                 if (result == (cell_t)sp::MRES_ChangedHandled || result == (cell_t)sp::MRES_ChangedOverride) {
