@@ -224,7 +224,7 @@ void JIT_CallMemberFunction(AsmJit& jit, bool save_general_register[MAX_GENERAL_
 		}
 	}
 
-	for (size_t i = 1; i < MAX_FLOAT_REGISTERS; i++) {
+	for (size_t i = 0; i < MAX_FLOAT_REGISTERS; i++) {
 		auto reg = AsmFloatReg((AsmFloatRegCode)i);
 		if (!save_float_register[i]) {
 			continue;
@@ -360,7 +360,7 @@ void JIT_Recall(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], 
 	jit.mov(rsp(0x8), rdi);
 
 	// Restore the registers
-	for (size_t i = 1; i < MAX_FLOAT_REGISTERS; i++) {
+	for (size_t i = 0; i < MAX_FLOAT_REGISTERS; i++) {
 		auto reg = AsmFloatReg((AsmFloatRegCode)i);
 		if (!save_float_register[i]) {
 			continue;
