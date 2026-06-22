@@ -295,8 +295,16 @@ bool SDKHooks::QueryInterfaceDrop(SMInterface* pInterface)
 
 void SDKHooks::SDK_OnUnload()
 {
+	m_bUnloading = true;
+
 	// Remove left over hooks
 	Unhook(reinterpret_cast<SourcePawn::IPluginContext *>(NULL));
+
+	for (CVTableList *list : m_PendingDeletes)
+	{
+		delete list;
+	}
+	m_PendingDeletes.clear();
 
 	m_HookLevelInit.Remove(gamedll);
 
@@ -855,6 +863,35 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 	return HookRet_Successful;
 }
 
+void SDKHooks::DeleteVtableHookListLater(void *data)
+{
+	CVTableList *list = reinterpret_cast<CVTableList *>(data);
+
+	auto &pending = g_Interface.m_PendingDeletes;
+	for (size_t i = 0; i < pending.size(); i++)
+	{
+		if (pending[i] == list)
+		{
+			pending.erase(pending.begin() + i);
+			break;
+		}
+	}
+
+	delete list;
+}
+
+void SDKHooks::DeleteVtableHookList(CVTableList *list)
+{
+	if (m_bUnloading)
+	{
+		delete list;
+		return;
+	}
+
+	m_PendingDeletes.push_back(list);
+	g_pSM->AddFrameAction(DeleteVtableHookListLater, list);
+}
+
 void SDKHooks::Unhook(CBaseEntity *pEntity)
 {
 	if (pEntity == NULL)
@@ -882,7 +919,7 @@ void SDKHooks::Unhook(CBaseEntity *pEntity)
 
 			if (pawnhooks.size() == 0)
 			{
-				delete vtablehooklist[listentry];
+				DeleteVtableHookList(vtablehooklist[listentry]);
 				vtablehooklist.erase(vtablehooklist.begin() + listentry);
 				listentry--;
 			}
@@ -911,7 +948,7 @@ void SDKHooks::Unhook(IPluginContext *pContext)
 
 			if (pawnhooks.size() == 0)
 			{
-				delete vtablehooklist[listentry];
+				DeleteVtableHookList(vtablehooklist[listentry]);
 				vtablehooklist.erase(vtablehooklist.begin() + listentry);
 				listentry--;
 			}
@@ -953,7 +990,7 @@ void SDKHooks::Unhook(int entity, SDKHookType type, IPluginFunction *pCallback)
 
 		if (pawnhooks.size() == 0)
 		{
-			delete vtablehooklist[listentry];
+			DeleteVtableHookList(vtablehooklist[listentry]);
 			vtablehooklist.erase(vtablehooklist.begin() + listentry);
 			listentry--;
 		}
