@@ -67,9 +67,9 @@ protected:
 #endif
 
     // Registers we should save upon function entry
-    bool _save_general_register[MAX_GENERAL_REGISTERS];
+    bool _save_general_register[MAX_GENERAL_REGISTERS] = {};
     // Registers we should save upon function entry
-    bool _save_float_register[MAX_FLOAT_REGISTERS];
+    bool _save_float_register[MAX_FLOAT_REGISTERS] = {};
 
     // First is general registers, second is float registers
     std::stack<std::pair<std::unique_ptr<std::uint8_t[]>, std::unique_ptr<std::uint8_t[]>>> _saved_registers;
