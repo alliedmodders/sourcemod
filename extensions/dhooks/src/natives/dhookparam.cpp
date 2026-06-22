@@ -41,6 +41,33 @@ inline cell_t GetParam(SourcePawn::IPluginContext* context, handle::ParamReturn*
 	return index;
 }
 
+inline std::uint8_t* GetObjectBase(SourcePawn::IPluginContext* context, handle::ParamReturn* obj, const cell_t* params) {
+	if (params[2] == 0) {
+		if (obj->GetCapsule()->GetCallConv() != sp::CallConv_THISCALL) {
+			context->ThrowNativeError("Param number 0 (this) is only valid for member function hooks");
+			return nullptr;
+		}
+		return *obj->Get<std::uint8_t*>(0);
+	}
+
+	int index = GetParam(context, obj, params[2]);
+	if (index == -1) {
+		return nullptr;
+	}
+
+	const auto& var = obj->GetCapsule()->GetParameters()[index];
+	if (var.dhook_type != sp::HookParamType_ObjectPtr && var.dhook_type != sp::HookParamType_Object) {
+		context->ThrowNativeError("Invalid object value type %i", var.dhook_type);
+		return nullptr;
+	}
+
+	std::uint8_t* object = obj->Get<std::uint8_t>(index);
+	if (var.dhook_type == sp::HookParamType_ObjectPtr) {
+		object = *(std::uint8_t**)object;
+	}
+	return object;
+}
+
 cell_t DHookParam_GetParam(SourcePawn::IPluginContext* context, const cell_t* params) {
 	auto obj = Get(context, params[1]);
 	if (obj == nullptr) {
@@ -48,7 +75,7 @@ cell_t DHookParam_GetParam(SourcePawn::IPluginContext* context, const cell_t* pa
 	}
 
 	if (params[2] == 0) {
-		return obj->GetCapsule()->GetParameters().size();
+		return obj->GetCapsule()->GetParameters().size() - ((obj->GetCapsule()->GetCallConv() == sp::CallConv_THISCALL) ? 1 : 0);
 	}
 
 	int index = GetParam(context, obj, params[2]);
@@ -260,19 +287,9 @@ cell_t DHookParam_GetParamObjectPtrVar(SourcePawn::IPluginContext* context, cons
 		return 0;
 	}
 
-	int index = GetParam(context, obj, params[2]);
-	if (index == -1) {
+	std::uint8_t* object = GetObjectBase(context, obj, params);
+	if (object == nullptr) {
 		return 0;
-	}
-
-	const auto& var = obj->GetCapsule()->GetParameters()[index];
-	if (var.dhook_type != sp::HookParamType_ObjectPtr && var.dhook_type != sp::HookParamType_Object) {
-		return context->ThrowNativeError("Invalid object value type %i", var.dhook_type);
-	}
-
-	std::uint8_t* object = obj->Get<std::uint8_t>(index);
-	if (var.dhook_type == sp::HookParamType_ObjectPtr) {
-		object = *(std::uint8_t**)object;
 	}
 
 	switch((sp::ObjectValueType)params[4]) {
@@ -317,19 +334,9 @@ cell_t DHookParam_SetParamObjectPtrVar(SourcePawn::IPluginContext* context, cons
 		return 0;
 	}
 
-	int index = GetParam(context, obj, params[2]);
-	if (index == -1) {
+	std::uint8_t* object = GetObjectBase(context, obj, params);
+	if (object == nullptr) {
 		return 0;
-	}
-
-	const auto& var = obj->GetCapsule()->GetParameters()[index];
-	if (var.dhook_type != sp::HookParamType_ObjectPtr && var.dhook_type != sp::HookParamType_Object) {
-		return context->ThrowNativeError("Invalid object value type %i", var.dhook_type);
-	}
-
-	std::uint8_t* object = obj->Get<std::uint8_t>(index);
-	if (var.dhook_type == sp::HookParamType_ObjectPtr) {
-		object = *(std::uint8_t**)object;
 	}
 
 	switch((sp::ObjectValueType)params[4]) {
@@ -381,19 +388,9 @@ cell_t DHookParam_GetParamObjectPtrVarVector(SourcePawn::IPluginContext* context
 		return 0;
 	}
 
-	int index = GetParam(context, obj, params[2]);
-	if (index == -1) {
+	std::uint8_t* object = GetObjectBase(context, obj, params);
+	if (object == nullptr) {
 		return 0;
-	}
-
-	const auto& var = obj->GetCapsule()->GetParameters()[index];
-	if (var.dhook_type != sp::HookParamType_ObjectPtr && var.dhook_type != sp::HookParamType_Object) {
-		return context->ThrowNativeError("Invalid object value type %i", var.dhook_type);
-	}
-
-	std::uint8_t* object = obj->Get<std::uint8_t>(index);
-	if (var.dhook_type == sp::HookParamType_ObjectPtr) {
-		object = *(std::uint8_t**)object;
 	}
 
 	cell_t *buffer;
@@ -424,19 +421,9 @@ cell_t DHookParam_SetParamObjectPtrVarVector(SourcePawn::IPluginContext* context
 		return 0;
 	}
 
-	int index = GetParam(context, obj, params[2]);
-	if (index == -1) {
+	std::uint8_t* object = GetObjectBase(context, obj, params);
+	if (object == nullptr) {
 		return 0;
-	}
-
-	const auto& var = obj->GetCapsule()->GetParameters()[index];
-	if (var.dhook_type != sp::HookParamType_ObjectPtr && var.dhook_type != sp::HookParamType_Object) {
-		return context->ThrowNativeError("Invalid object value type %i", var.dhook_type);
-	}
-
-	std::uint8_t* object = obj->Get<std::uint8_t>(index);
-	if (var.dhook_type == sp::HookParamType_ObjectPtr) {
-		object = *(std::uint8_t**)object;
 	}
 
 	cell_t *buffer;
@@ -466,19 +453,9 @@ cell_t DHookParam_GetParamObjectPtrString(SourcePawn::IPluginContext* context, c
 		return 0;
 	}
 
-	int index = GetParam(context, obj, params[2]);
-	if (index == -1) {
+	std::uint8_t* object = GetObjectBase(context, obj, params);
+	if (object == nullptr) {
 		return 0;
-	}
-
-	const auto& var = obj->GetCapsule()->GetParameters()[index];
-	if (var.dhook_type != sp::HookParamType_ObjectPtr && var.dhook_type != sp::HookParamType_Object) {
-		return context->ThrowNativeError("Invalid object value type %i", var.dhook_type);
-	}
-
-	std::uint8_t* object = obj->Get<std::uint8_t>(index);
-	if (var.dhook_type == sp::HookParamType_ObjectPtr) {
-		object = *(std::uint8_t**)object;
 	}
 
 
