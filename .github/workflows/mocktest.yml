@@ -14,20 +14,20 @@ jobs:
     container:
       image: ghcr.io/alliedmodders/build-containers/debian11-clang22:latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         name: Clone sourcemod
         with:
           submodules: recursive
           path: sourcemod
       
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         name: Clone metamod-source
         with:
           repository: alliedmodders/metamod-source
           submodules: recursive
           path: metamod-source
       
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         name: Clone hl2sdk-mock
         with:
           repository: alliedmodders/hl2sdk-mock

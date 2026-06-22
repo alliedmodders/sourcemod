@@ -32,7 +32,7 @@ jobs:
       image: ${{ matrix.container_image }}
     steps:
       - name: Checkout SourceMod
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           path: sourcemod
           fetch-depth: 0
