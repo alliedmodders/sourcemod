@@ -462,7 +462,11 @@ void CHookManager::NetChannelHook(int client)
 		if (iter == m_netChannelHooks.size())
 		{
 			m_netChannelHooks.push_back(new CVTableHook(*(void***)pNetChannel,
+#if (SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2)
+			new KHook::Member<INetChannel, bool, const char*, unsigned int, bool>(
+#else
 			new KHook::Member<INetChannel, bool, const char*, unsigned int>(
+#endif
 				KHook::GetVtableFunction(pNetChannel, &INetChannel::SendFile),
 				this, &CHookManager::SendFile, nullptr
 			)));
