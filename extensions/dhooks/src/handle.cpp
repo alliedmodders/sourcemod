@@ -116,6 +116,7 @@ public:
 				} else {
 					Capsule::RemoveCallbackById(id);
 				}
+				locals::associated_handle.erase(id);
 			}
 			locals::class_dynamichooks.erase(it);
 		}
@@ -151,6 +152,9 @@ bool DynamicDetour::Enable(SourcePawn::IPluginFunction* callback, sp::HookMode m
 	}
 
 	auto id = capsule->AddCallback(callback, nullptr, mode, this->_this_pointer, nullptr);
+	if (id == 0) {
+		return false;
+	}
 	if (detours.try_emplace(callback, id).second == false) {
 		Capsule::RemoveCallbackById(id);
 		return false;
@@ -183,6 +187,9 @@ std::uint32_t DynamicHook::AddHook(SourcePawn::IPluginFunction* callback, Source
 	}
 
 	auto id = capsule->AddCallback(callback, rm_callback, mode, this->_this_pointer, obj);
+	if (id == 0) {
+		return 0;
+	}
 	if (_associated_hook.insert(id).second == false || locals::associated_handle.try_emplace(id, this->GetHandle()).second == false) {
 		Capsule::RemoveCallbackById(id);
 		globals::sourcemod->LogError(globals::myself, "Failed to insert callback");
@@ -226,6 +233,7 @@ bool DynamicHook::RemoveHook(std::uint32_t id) {
 	}
 	Capsule::RemoveCallbackById(id);
 	_associated_hook.erase(id);
+	locals::associated_handle.erase(id);
 	return true;
 }
 
@@ -305,6 +313,7 @@ DynamicHook::DynamicHook(
 	const ReturnInfo& ret,
     SourcePawn::IPluginFunction* default_callbakc) :
 	HookSetup(thisptr_type, sp::CallingConvention::CallConv_THISCALL, params, ret),
+	_owner(plugin_ident),
 	_offset(offset),
 	_hook_type(type),
 	_default_callback(default_callbakc) {
