@@ -364,7 +364,7 @@ cell_t DHookParam_SetParamObjectPtrVar(SourcePawn::IPluginContext* context, cons
 			**(int **)(object + params[3]) = params[5];
 			break;
 		case sp::ObjectValueType_BoolPtr:
-			**(int **)(object + params[3]) = params[5] != 0;
+			**(bool **)(object + params[3]) = params[5] != 0;
 			break;
 		case sp::ObjectValueType_FloatPtr:
 			**(float **)(object + params[3]) = sp_ctof(params[5]);
