@@ -353,7 +353,7 @@ private:
 	void Unhook(CBaseEntity *pEntity);
 	void Unhook(IPluginContext *pContext);
 	void DeleteVtableHookList(CVTableList *list);
-	static void DeleteVtableHookListLater(void *data);
+	static void DrainPendingDeletes(bool simulating);
 
 private:
 	KHook::Return<int> HandleOnTakeDamageHook(CBaseEntity*, CTakeDamageInfoHack &info, SDKHookType hookType);

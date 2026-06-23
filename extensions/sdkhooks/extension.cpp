@@ -221,6 +221,8 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	SetupHooks();
 
+	g_pSM->AddGameFrameHook(&SDKHooks::DrainPendingDeletes);
+
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	int index;
 	CBaseHandle hndl;
@@ -296,6 +298,8 @@ bool SDKHooks::QueryInterfaceDrop(SMInterface* pInterface)
 void SDKHooks::SDK_OnUnload()
 {
 	m_bUnloading = true;
+
+	g_pSM->RemoveGameFrameHook(&SDKHooks::DrainPendingDeletes);
 
 	// Remove left over hooks
 	Unhook(reinterpret_cast<SourcePawn::IPluginContext *>(NULL));
@@ -863,21 +867,19 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 	return HookRet_Successful;
 }
 
-void SDKHooks::DeleteVtableHookListLater(void *data)
+void SDKHooks::DrainPendingDeletes(bool simulating)
 {
-	CVTableList *list = reinterpret_cast<CVTableList *>(data);
-
 	auto &pending = g_Interface.m_PendingDeletes;
-	for (size_t i = 0; i < pending.size(); i++)
-	{
-		if (pending[i] == list)
-		{
-			pending.erase(pending.begin() + i);
-			break;
-		}
-	}
+	if (pending.empty())
+		return;
 
-	delete list;
+	std::vector<CVTableList *> batch;
+	batch.swap(pending);
+
+	for (CVTableList *list : batch)
+	{
+		delete list;
+	}
 }
 
 void SDKHooks::DeleteVtableHookList(CVTableList *list)
@@ -889,7 +891,6 @@ void SDKHooks::DeleteVtableHookList(CVTableList *list)
 	}
 
 	m_PendingDeletes.push_back(list);
-	g_pSM->AddFrameAction(DeleteVtableHookListLater, list);
 }
 
 void SDKHooks::Unhook(CBaseEntity *pEntity)
