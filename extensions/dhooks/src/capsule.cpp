@@ -285,7 +285,6 @@ Capsule::Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::C
 	auto offset_to_recall = _jit.get_outputpos();
 	abi::JIT_Recall(_jit, _save_general_register, _save_float_register, _stack_size, &_jit_start);
 
-	_jit.SetRE();
 	_jit_start = reinterpret_cast<std::uintptr_t>(_jit.GetData());
 
 	_linked_hook = (address != nullptr) ?
