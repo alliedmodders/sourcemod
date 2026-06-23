@@ -183,7 +183,6 @@ bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnV
 					} else {
 						param.float_reg_index = available_float_registers[float_register_available++];
 						param.reg_offset = {};
-						float_register_available++;
 					}
 				break;
 				default:
@@ -193,7 +192,7 @@ bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnV
 		} else {
 			param.reg_index = Translate_DHookRegister(param.dhook_custom_register);
 			param.float_reg_index = Translate_DHookRegister_Float(param.dhook_custom_register);
-			ret.reg_offset = {};
+			param.reg_offset = {};
 		}
 	}}
 	/* Stack size here only means the size the parameters occupy, so remove the space occupied by return address */
