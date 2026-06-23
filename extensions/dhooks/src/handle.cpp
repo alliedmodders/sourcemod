@@ -199,11 +199,7 @@ std::uint32_t DynamicHook::AddHook(SourcePawn::IPluginFunction* callback, Source
 	if (dtor_cleanup) {
 		auto it = locals::class_dynamichooks.find((CGenericClass*)obj);
 		if (it == locals::class_dynamichooks.end()) {
-			auto insert = locals::class_dynamichooks.emplace((CGenericClass*)obj, std::vector<std::uint32_t>());
-			if (insert.second == false) {
-				return id;
-			}
-			it = insert.first;
+			it = locals::class_dynamichooks.emplace((CGenericClass*)obj, std::vector<std::uint32_t>()).first;
 
 			if (locals::class_vtables.find(vtable) == locals::class_vtables.end()) {
 				// Hook the virtual destructor, and perform hook cleaning actions under there
@@ -324,6 +320,13 @@ DynamicHook::DynamicHook(
 		globals::myself->GetIdentity(),
 		nullptr
 	);
+}
+
+DynamicHook::~DynamicHook() {
+	for (auto id : _associated_hook) {
+		Capsule::RemoveCallbackById(id);
+		locals::associated_handle.erase(id);
+	}
 }
 
 class HookSetupDispatch : public SourceMod::IHandleTypeDispatch {

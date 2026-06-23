@@ -92,6 +92,8 @@ public:
 	);
 	static SourceMod::HandleType_t HANDLE_TYPE;
 
+	virtual ~DynamicHook();
+
 	void SetOffset(int offset) {
 		if (offset < 0) {
 			return;
