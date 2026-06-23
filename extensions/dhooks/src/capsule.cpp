@@ -167,7 +167,10 @@ void Capsule::RemoveCallbackByPlugin(SourcePawn::IPluginContext* default_context
 	if (locals::plugin_hook_ids.end() == plugin_hooks_it) {
 		return;
 	}
-	for (auto id : plugin_hooks_it->second) {
+	std::vector<std::uint32_t> ids(plugin_hooks_it->second.begin(), plugin_hooks_it->second.end());
+	locals::plugin_hook_ids.erase(plugin_hooks_it);
+
+	for (auto id : ids) {
 		auto it = locals::hook_callbacks.find(id);
 		if (locals::hook_callbacks.end() == it) {
 			continue;
@@ -187,7 +190,6 @@ void Capsule::RemoveCallbackByPlugin(SourcePawn::IPluginContext* default_context
 			rm_callback->Execute(&result);
 		}
 	}
-	locals::plugin_hook_ids.erase(default_context);
 }
 
 Capsule::Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::CallingConvention conv, const std::vector<Variable>& params, const ReturnVariable& ret) :
