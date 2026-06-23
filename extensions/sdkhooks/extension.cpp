@@ -1304,7 +1304,7 @@ KHook::Return<int> SDKHooks::HandleOnTakeDamageHook(CBaseEntity* this_ptr, CTake
 			return { KHook::Action::Supersede, 1 };
 
 		if (ret == Pl_Changed)
-			return { KHook::Action::Override, 1 };
+			return { KHook::Action::Ignore, 1 };
 
 		break;
 	}
