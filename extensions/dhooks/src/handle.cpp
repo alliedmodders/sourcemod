@@ -161,7 +161,7 @@ bool DynamicDetour::Enable(SourcePawn::IPluginFunction* callback, sp::HookMode m
 bool DynamicDetour::Disable(SourcePawn::IPluginFunction* callback, sp::HookMode mode) {
 	auto& detours = (mode == sp::HookMode::Hook_Post) ? _post_detours : _pre_detours;
 	auto it = detours.find(callback);
-	if (it != detours.end()) {
+	if (it == detours.end()) {
 		return false;
 	}
 
