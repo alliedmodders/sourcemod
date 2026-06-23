@@ -1113,7 +1113,7 @@ KHook::Return<void> SDKHooks::Hook_EndTouch(CBaseEntity* this_ptr, CBaseEntity *
 	if(result >= Pl_Handled)
 		return { KHook::Action::Supersede };
 
-	return { KHook::Action::Supersede };
+	return { KHook::Action::Ignore };
 }
 
 KHook::Return<void> SDKHooks::Hook_EndTouchPost(CBaseEntity* this_ptr, CBaseEntity *pOther)
