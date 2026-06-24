@@ -323,7 +323,8 @@ DynamicHook::DynamicHook(
 }
 
 DynamicHook::~DynamicHook() {
-	for (auto id : _associated_hook) {
+	std::vector<std::uint32_t> ids(_associated_hook.begin(), _associated_hook.end());
+	for (auto id : ids) {
 		Capsule::RemoveCallbackById(id);
 		locals::associated_handle.erase(id);
 	}
