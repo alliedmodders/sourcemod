@@ -116,6 +116,7 @@ public:
 				} else {
 					Capsule::RemoveCallbackById(id);
 				}
+				locals::associated_handle.erase(id);
 			}
 			locals::class_dynamichooks.erase(it);
 		}
@@ -151,6 +152,9 @@ bool DynamicDetour::Enable(SourcePawn::IPluginFunction* callback, sp::HookMode m
 	}
 
 	auto id = capsule->AddCallback(callback, nullptr, mode, this->_this_pointer, nullptr);
+	if (id == 0) {
+		return false;
+	}
 	if (detours.try_emplace(callback, id).second == false) {
 		Capsule::RemoveCallbackById(id);
 		return false;
@@ -161,7 +165,7 @@ bool DynamicDetour::Enable(SourcePawn::IPluginFunction* callback, sp::HookMode m
 bool DynamicDetour::Disable(SourcePawn::IPluginFunction* callback, sp::HookMode mode) {
 	auto& detours = (mode == sp::HookMode::Hook_Post) ? _post_detours : _pre_detours;
 	auto it = detours.find(callback);
-	if (it != detours.end()) {
+	if (it == detours.end()) {
 		return false;
 	}
 
@@ -183,6 +187,9 @@ std::uint32_t DynamicHook::AddHook(SourcePawn::IPluginFunction* callback, Source
 	}
 
 	auto id = capsule->AddCallback(callback, rm_callback, mode, this->_this_pointer, obj);
+	if (id == 0) {
+		return 0;
+	}
 	if (_associated_hook.insert(id).second == false || locals::associated_handle.try_emplace(id, this->GetHandle()).second == false) {
 		Capsule::RemoveCallbackById(id);
 		globals::sourcemod->LogError(globals::myself, "Failed to insert callback");
@@ -192,11 +199,7 @@ std::uint32_t DynamicHook::AddHook(SourcePawn::IPluginFunction* callback, Source
 	if (dtor_cleanup) {
 		auto it = locals::class_dynamichooks.find((CGenericClass*)obj);
 		if (it == locals::class_dynamichooks.end()) {
-			auto insert = locals::class_dynamichooks.emplace((CGenericClass*)obj, std::vector<std::uint32_t>());
-			if (insert.second == false) {
-				return id;
-			}
-			it = insert.first;
+			it = locals::class_dynamichooks.emplace((CGenericClass*)obj, std::vector<std::uint32_t>()).first;
 
 			if (locals::class_vtables.find(vtable) == locals::class_vtables.end()) {
 				// Hook the virtual destructor, and perform hook cleaning actions under there
@@ -226,6 +229,7 @@ bool DynamicHook::RemoveHook(std::uint32_t id) {
 	}
 	Capsule::RemoveCallbackById(id);
 	_associated_hook.erase(id);
+	locals::associated_handle.erase(id);
 	return true;
 }
 
@@ -305,6 +309,7 @@ DynamicHook::DynamicHook(
 	const ReturnInfo& ret,
     SourcePawn::IPluginFunction* default_callbakc) :
 	HookSetup(thisptr_type, sp::CallingConvention::CallConv_THISCALL, params, ret),
+	_owner(plugin_ident),
 	_offset(offset),
 	_hook_type(type),
 	_default_callback(default_callbakc) {
@@ -315,6 +320,14 @@ DynamicHook::DynamicHook(
 		globals::myself->GetIdentity(),
 		nullptr
 	);
+}
+
+DynamicHook::~DynamicHook() {
+	std::vector<std::uint32_t> ids(_associated_hook.begin(), _associated_hook.end());
+	for (auto id : ids) {
+		Capsule::RemoveCallbackById(id);
+		locals::associated_handle.erase(id);
+	}
 }
 
 class HookSetupDispatch : public SourceMod::IHandleTypeDispatch {

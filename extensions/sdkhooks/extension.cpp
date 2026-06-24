@@ -221,6 +221,8 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 	SetupHooks();
 
+	g_pSM->AddGameFrameHook(&SDKHooks::DrainPendingDeletes);
+
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	int index;
 	CBaseHandle hndl;
@@ -295,8 +297,18 @@ bool SDKHooks::QueryInterfaceDrop(SMInterface* pInterface)
 
 void SDKHooks::SDK_OnUnload()
 {
+	m_bUnloading = true;
+
+	g_pSM->RemoveGameFrameHook(&SDKHooks::DrainPendingDeletes);
+
 	// Remove left over hooks
 	Unhook(reinterpret_cast<SourcePawn::IPluginContext *>(NULL));
+
+	for (CVTableList *list : m_PendingDeletes)
+	{
+		delete list;
+	}
+	m_PendingDeletes.clear();
 
 	m_HookLevelInit.Remove(gamedll);
 
@@ -565,267 +577,277 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 		switch(type)
 		{
 			case SDKHook_EndTouch: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_EndTouch, nullptr);
+				auto local = new KHook::Virtual<CBaseEntity, void, CBaseEntity*>(g_HookTypes[type].offset, this, &SDKHooks::Hook_EndTouch, nullptr);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_EndTouchPost: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_EndTouchPost);
+				auto local = new KHook::Virtual<CBaseEntity, void, CBaseEntity*>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_EndTouchPost);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_FireBulletsPost: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_FireBulletsPost);
+				auto local = new KHook::Virtual<CBaseEntity, void, const FireBulletsInfo_t&>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_FireBulletsPost);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 #ifdef GETMAXHEALTH_IS_VIRTUAL
 			case SDKHook_GetMaxHealth: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_GetMaxHealth, nullptr);
+				auto local = new KHook::Virtual<CBaseEntity, int>(g_HookTypes[type].offset, this, &SDKHooks::Hook_GetMaxHealth, nullptr);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 #endif
 			case SDKHook_GroundEntChangedPost: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_GroundEntChangedPost);
+				auto local = new KHook::Virtual<CBaseEntity, void, void*>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_GroundEntChangedPost);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_OnTakeDamage: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_OnTakeDamage, nullptr);
+				auto local = new KHook::Virtual<CBaseEntity, int, CTakeDamageInfoHack&>(g_HookTypes[type].offset, this, &SDKHooks::Hook_OnTakeDamage, nullptr);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_OnTakeDamagePost: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_OnTakeDamagePost);
+				auto local = new KHook::Virtual<CBaseEntity, int, CTakeDamageInfoHack&>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_OnTakeDamagePost);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_OnTakeDamage_Alive: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_OnTakeDamage_Alive, nullptr);
+				auto local = new KHook::Virtual<CBaseEntity, int, CTakeDamageInfoHack&>(g_HookTypes[type].offset, this, &SDKHooks::Hook_OnTakeDamage_Alive, nullptr);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_OnTakeDamage_AlivePost: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_OnTakeDamage_AlivePost);
+				auto local = new KHook::Virtual<CBaseEntity, int, CTakeDamageInfoHack&>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_OnTakeDamage_AlivePost);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_PreThink: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_PreThink, nullptr);
+				auto local = new KHook::Virtual<CBaseEntity, void>(g_HookTypes[type].offset, this, &SDKHooks::Hook_PreThink, nullptr);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_PreThinkPost: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_PreThinkPost);
+				auto local = new KHook::Virtual<CBaseEntity, void>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_PreThinkPost);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_PostThink: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_PostThink, nullptr);
+				auto local = new KHook::Virtual<CBaseEntity, void>(g_HookTypes[type].offset, this, &SDKHooks::Hook_PostThink, nullptr);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_PostThinkPost: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_PostThinkPost);
+				auto local = new KHook::Virtual<CBaseEntity, void>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_PostThinkPost);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_Reload: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_Reload, nullptr);
+				auto local = new KHook::Virtual<CBaseEntity, bool>(g_HookTypes[type].offset, this, &SDKHooks::Hook_Reload, nullptr);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_ReloadPost: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_ReloadPost);
+				auto local = new KHook::Virtual<CBaseEntity, bool>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_ReloadPost);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_SetTransmit: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_SetTransmit, nullptr);
+				auto local = new KHook::Virtual<CBaseEntity, void, CCheckTransmitInfo*, bool>(g_HookTypes[type].offset, this, &SDKHooks::Hook_SetTransmit, nullptr);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_Spawn: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_Spawn, nullptr);
+				auto local = new KHook::Virtual<CBaseEntity, void>(g_HookTypes[type].offset, this, &SDKHooks::Hook_Spawn, nullptr);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_SpawnPost: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_SpawnPost);
+				auto local = new KHook::Virtual<CBaseEntity, void>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_SpawnPost);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_StartTouch: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_StartTouch, nullptr);
+				auto local = new KHook::Virtual<CBaseEntity, void, CBaseEntity*>(g_HookTypes[type].offset, this, &SDKHooks::Hook_StartTouch, nullptr);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_StartTouchPost: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_StartTouchPost);
+				auto local = new KHook::Virtual<CBaseEntity, void, CBaseEntity*>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_StartTouchPost);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_Think: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_Think, nullptr);
+				auto local = new KHook::Virtual<CBaseEntity, void>(g_HookTypes[type].offset, this, &SDKHooks::Hook_Think, nullptr);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_ThinkPost: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_ThinkPost);
+				auto local = new KHook::Virtual<CBaseEntity, void>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_ThinkPost);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_Touch: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_Touch, nullptr);
+				auto local = new KHook::Virtual<CBaseEntity, void, CBaseEntity*>(g_HookTypes[type].offset, this, &SDKHooks::Hook_Touch, nullptr);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_TouchPost: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_TouchPost);
+				auto local = new KHook::Virtual<CBaseEntity, void, CBaseEntity*>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_TouchPost);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_TraceAttack: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_TraceAttack, nullptr);
+#if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_PVKII
+				auto local = new KHook::Virtual<CBaseEntity, void, CTakeDamageInfoHack&, const Vector&, trace_t*, CDmgAccumulator*>(g_HookTypes[type].offset, this, &SDKHooks::Hook_TraceAttack, nullptr);
+#else
+				auto local = new KHook::Virtual<CBaseEntity, void, CTakeDamageInfoHack&, const Vector&, trace_t*>(g_HookTypes[type].offset, this, &SDKHooks::Hook_TraceAttack, nullptr);
+#endif
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_TraceAttackPost: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_TraceAttackPost);
+#if SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_TF2 \
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_SDK2013 || SOURCE_ENGINE == SE_PVKII
+				auto local = new KHook::Virtual<CBaseEntity, void, CTakeDamageInfoHack&, const Vector&, trace_t*, CDmgAccumulator*>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_TraceAttackPost);
+#else
+				auto local = new KHook::Virtual<CBaseEntity, void, CTakeDamageInfoHack&, const Vector&, trace_t*>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_TraceAttackPost);
+#endif
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_Use: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_Use, nullptr);
+				auto local = new KHook::Virtual<CBaseEntity, void, CBaseEntity*, CBaseEntity*, USE_TYPE, float>(g_HookTypes[type].offset, this, &SDKHooks::Hook_Use, nullptr);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_UsePost: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_UsePost);
+				auto local = new KHook::Virtual<CBaseEntity, void, CBaseEntity*, CBaseEntity*, USE_TYPE, float>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_UsePost);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_VPhysicsUpdate: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_VPhysicsUpdate, nullptr);
+				auto local = new KHook::Virtual<CBaseEntity, void, IPhysicsObject*>(g_HookTypes[type].offset, this, &SDKHooks::Hook_VPhysicsUpdate, nullptr);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_VPhysicsUpdatePost: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_VPhysicsUpdatePost);
+				auto local = new KHook::Virtual<CBaseEntity, void, IPhysicsObject*>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_VPhysicsUpdatePost);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_WeaponCanSwitchTo: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_WeaponCanSwitchTo, nullptr);
+				auto local = new KHook::Virtual<CBaseEntity, bool, CBaseCombatWeapon*>(g_HookTypes[type].offset, this, &SDKHooks::Hook_WeaponCanSwitchTo, nullptr);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_WeaponCanSwitchToPost: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_WeaponCanSwitchToPost);
+				auto local = new KHook::Virtual<CBaseEntity, bool, CBaseCombatWeapon*>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_WeaponCanSwitchToPost);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_WeaponCanUse: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_WeaponCanUse, nullptr);
+				auto local = new KHook::Virtual<CBaseEntity, bool, CBaseCombatWeapon*>(g_HookTypes[type].offset, this, &SDKHooks::Hook_WeaponCanUse, nullptr);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_WeaponCanUsePost: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_WeaponCanUsePost);
+				auto local = new KHook::Virtual<CBaseEntity, bool, CBaseCombatWeapon*>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_WeaponCanUsePost);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_WeaponDrop: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_WeaponDrop, nullptr);
+				auto local = new KHook::Virtual<CBaseEntity, void, CBaseCombatWeapon*, const Vector*, const Vector*>(g_HookTypes[type].offset, this, &SDKHooks::Hook_WeaponDrop, nullptr);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_WeaponDropPost: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_WeaponDropPost);
+				auto local = new KHook::Virtual<CBaseEntity, void, CBaseCombatWeapon*, const Vector*, const Vector*>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_WeaponDropPost);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_WeaponEquip: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_WeaponEquip, nullptr);
+				auto local = new KHook::Virtual<CBaseEntity, void, CBaseCombatWeapon*>(g_HookTypes[type].offset, this, &SDKHooks::Hook_WeaponEquip, nullptr);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_WeaponEquipPost: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_WeaponEquipPost);
+				auto local = new KHook::Virtual<CBaseEntity, void, CBaseCombatWeapon*>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_WeaponEquipPost);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_WeaponSwitch: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_WeaponSwitch, nullptr);
+				auto local = new KHook::Virtual<CBaseEntity, bool, CBaseCombatWeapon*, int>(g_HookTypes[type].offset, this, &SDKHooks::Hook_WeaponSwitch, nullptr);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_WeaponSwitchPost: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_WeaponSwitchPost);
+				auto local = new KHook::Virtual<CBaseEntity, bool, CBaseCombatWeapon*, int>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_WeaponSwitchPost);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_ShouldCollide: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_ShouldCollide);
+				auto local = new KHook::Virtual<CBaseEntity, bool, int, int>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_ShouldCollide);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_Blocked: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_Blocked, nullptr);
+				auto local = new KHook::Virtual<CBaseEntity, void, CBaseEntity*>(g_HookTypes[type].offset, this, &SDKHooks::Hook_Blocked, nullptr);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_BlockedPost: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_BlockedPost);
+				auto local = new KHook::Virtual<CBaseEntity, void, CBaseEntity*>(g_HookTypes[type].offset, this, nullptr, &SDKHooks::Hook_BlockedPost);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
 			}
 			case SDKHook_CanBeAutobalanced: {
-				auto local = new KHook::Virtual(g_HookTypes[type].offset, this, &SDKHooks::Hook_CanBeAutobalanced, nullptr);
+				auto local = new KHook::Virtual<CBaseEntity, bool>(g_HookTypes[type].offset, this, &SDKHooks::Hook_CanBeAutobalanced, nullptr);
 				local->AddGlobal(pEnt);
 				khook = local;
 				break;
@@ -843,6 +865,32 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 	hook.callback = callback;
 	vtablehooklist[entry]->hooks.push_back(hook);
 	return HookRet_Successful;
+}
+
+void SDKHooks::DrainPendingDeletes(bool simulating)
+{
+	auto &pending = g_Interface.m_PendingDeletes;
+	if (pending.empty())
+		return;
+
+	std::vector<CVTableList *> batch;
+	batch.swap(pending);
+
+	for (CVTableList *list : batch)
+	{
+		delete list;
+	}
+}
+
+void SDKHooks::DeleteVtableHookList(CVTableList *list)
+{
+	if (m_bUnloading)
+	{
+		delete list;
+		return;
+	}
+
+	m_PendingDeletes.push_back(list);
 }
 
 void SDKHooks::Unhook(CBaseEntity *pEntity)
@@ -869,6 +917,13 @@ void SDKHooks::Unhook(CBaseEntity *pEntity)
 				pawnhooks.erase(pawnhooks.begin() + entry);
 				entry--;
 			}
+
+			if (pawnhooks.size() == 0)
+			{
+				DeleteVtableHookList(vtablehooklist[listentry]);
+				vtablehooklist.erase(vtablehooklist.begin() + listentry);
+				listentry--;
+			}
 		}
 	}
 }
@@ -890,6 +945,13 @@ void SDKHooks::Unhook(IPluginContext *pContext)
 
 				pawnhooks.erase(pawnhooks.begin() + entry);
 				entry--;
+			}
+
+			if (pawnhooks.size() == 0)
+			{
+				DeleteVtableHookList(vtablehooklist[listentry]);
+				vtablehooklist.erase(vtablehooklist.begin() + listentry);
+				listentry--;
 			}
 		}
 	}
@@ -927,14 +989,12 @@ void SDKHooks::Unhook(int entity, SDKHookType type, IPluginFunction *pCallback)
 			entry--;
 		}
 
-#if !defined PLATFORM_LINUX
 		if (pawnhooks.size() == 0)
 		{
-			delete vtablehooklist[listentry];
+			DeleteVtableHookList(vtablehooklist[listentry]);
 			vtablehooklist.erase(vtablehooklist.begin() + listentry);
 			listentry--;
 		}
-#endif
 
 		break;
 	}
@@ -1053,7 +1113,7 @@ KHook::Return<void> SDKHooks::Hook_EndTouch(CBaseEntity* this_ptr, CBaseEntity *
 	if(result >= Pl_Handled)
 		return { KHook::Action::Supersede };
 
-	return { KHook::Action::Supersede };
+	return { KHook::Action::Ignore };
 }
 
 KHook::Return<void> SDKHooks::Hook_EndTouchPost(CBaseEntity* this_ptr, CBaseEntity *pOther)
@@ -1244,7 +1304,7 @@ KHook::Return<int> SDKHooks::HandleOnTakeDamageHook(CBaseEntity* this_ptr, CTake
 			return { KHook::Action::Supersede, 1 };
 
 		if (ret == Pl_Changed)
-			return { KHook::Action::Override, 1 };
+			return { KHook::Action::Ignore, 1 };
 
 		break;
 	}

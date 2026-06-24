@@ -53,6 +53,7 @@
 
 SourceModBase g_SourceMod;
 std::string g_BaseDir;
+SourcePawn::ISourcePawnEnvironment *g_pPawnEnv = NULL;
 IdentityToken_t *g_pCoreIdent = NULL;
 IForward *g_pOnMapInit = nullptr;
 IForward *g_pOnMapEnd = nullptr;
