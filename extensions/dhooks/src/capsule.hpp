@@ -67,9 +67,9 @@ protected:
 #endif
 
     // Registers we should save upon function entry
-    bool _save_general_register[MAX_GENERAL_REGISTERS];
+    bool _save_general_register[MAX_GENERAL_REGISTERS] = {};
     // Registers we should save upon function entry
-    bool _save_float_register[MAX_FLOAT_REGISTERS];
+    bool _save_float_register[MAX_FLOAT_REGISTERS] = {};
 
     // First is general registers, second is float registers
     std::stack<std::pair<std::unique_ptr<std::uint8_t[]>, std::unique_ptr<std::uint8_t[]>>> _saved_registers;
@@ -91,14 +91,12 @@ protected:
 template<typename RETURN>
 void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post) const {
 	RETURN* return_ptr = nullptr;
-	RETURN* temp_ptr = nullptr;
 	void* init_op = nullptr;
 	void* delete_op = nullptr;
 	size_t return_size = 0;
 
     if constexpr(!std::is_same<RETURN, void>::value) {	
 		return_ptr = new RETURN;
-        temp_ptr = new RETURN;
 		init_op = reinterpret_cast<void*>(::KHook::init_operator<RETURN>);
 		delete_op = reinterpret_cast<void*>(::KHook::deinit_operator<RETURN>);
 		return_size = sizeof(RETURN);
@@ -167,10 +165,14 @@ void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post) const {
                 cell_t result = (cell_t)sp::MRES_Ignored;
                 hook.callback->Execute(&result);
 
+                KHook::Action this_action = KHook::Action::Ignore;
                 if (result == (cell_t)sp::MRES_Supercede) {
-                    final_action = KHook::Action::Supersede;
+                    this_action = KHook::Action::Supersede;
                 } else if (result != (cell_t)sp::MRES_Ignored) {
-                    final_action = KHook::Action::Override;
+                    this_action = KHook::Action::Override;
+                }
+                if (this_action > final_action) {
+                    final_action = this_action;
                 }
                 // Params change, perform recall
                 if (result == (cell_t)sp::MRES_ChangedHandled || result == (cell_t)sp::MRES_ChangedOverride) {
@@ -181,6 +183,10 @@ void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post) const {
         }
 	}
 	KHook::SaveReturnValue(final_action, return_ptr, return_size, init_op, delete_op, false);
+
+	if constexpr(!std::is_same<RETURN, void>::value) {
+		delete return_ptr;
+	}
 }
 
 }

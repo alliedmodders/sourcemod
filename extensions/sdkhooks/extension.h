@@ -352,6 +352,8 @@ private:
 	void HandleEntityDeleted(CBaseEntity *pEntity);
 	void Unhook(CBaseEntity *pEntity);
 	void Unhook(IPluginContext *pContext);
+	void DeleteVtableHookList(CVTableList *list);
+	static void DrainPendingDeletes(bool simulating);
 
 private:
 	KHook::Return<int> HandleOnTakeDamageHook(CBaseEntity*, CTakeDamageInfoHack &info, SDKHookType hookType);
@@ -360,6 +362,8 @@ private:
 private:
 	inline bool IsEntityIndexInRange(int i) { return i >= 0 && i < NUM_ENT_ENTRIES; }
 	cell_t m_EntityCache[NUM_ENT_ENTRIES];
+	bool m_bUnloading = false;
+	std::vector<CVTableList *> m_PendingDeletes;
 };
 
 extern CGlobalVars *gpGlobals;

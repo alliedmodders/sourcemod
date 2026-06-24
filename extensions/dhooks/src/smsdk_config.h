@@ -47,7 +47,7 @@
 #define SMEXT_CONF_LICENSE		"GPL"
 #define SMEXT_CONF_DATESTRING	SOURCEMOD_BUILD_TIME
 
-/** 
+/**
  * @brief Exposes plugin's main interface.
  */
 #define SMEXT_LINK(name) SDKExtension *g_pExtensionIface = name;
@@ -58,3 +58,4 @@
  */
 #define SMEXT_CONF_METAMOD
 #define META_NO_HL2SDK
+#define SMEXT_ENABLE_PLUGINSYS
