@@ -219,8 +219,8 @@ KHook::Return<bool> CritManager::Hook_CalcIsAttackCriticalHelpers(CBaseEntity* p
 
 	if (result > Pl_Continue)
 	{
-		return { KHook::Action::Supersede, returnValue };
+		return { KHook::Action::Supersede, returnValue != 0 };
 	}
 	
-	return { KHook::Action::Supersede, origReturnValue };
+	return { KHook::Action::Supersede, origReturnValue != 0 };
 }

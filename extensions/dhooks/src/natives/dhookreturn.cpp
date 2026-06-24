@@ -67,7 +67,7 @@ cell_t DHookReturn_SetReturn(SourcePawn::IPluginContext* context, const cell_t* 
 			break;
 		case sp::ReturnType_CBaseEntity: {
 			CBaseEntity* entity = globals::gamehelpers->ReferenceToEntity(params[2]);
-			if (entity == nullptr) {
+			if (params[2] != -1 && entity == nullptr) {
 				return context->ThrowNativeError("Invalid entity index passed for return value");
 			}
 			*obj->GetReturn<CBaseEntity*>() = entity;
@@ -155,7 +155,7 @@ cell_t DHookReturn_GetReturnString(SourcePawn::IPluginContext* context, const ce
 			context->StringToLocal(params[2], params[3], obj->GetReturn<sdk::string_t>()->ToCStr());
 			return 1;
 		case sp::ReturnType_StringPtr:
-			context->StringToLocal(params[2], params[3], (obj->GetReturn<sdk::string_t*>() != nullptr) ? (*obj->GetReturn<sdk::string_t*>())->ToCStr() : "");
+			context->StringToLocal(params[2], params[3], (*obj->GetReturn<sdk::string_t*>() != nullptr) ? (*obj->GetReturn<sdk::string_t*>())->ToCStr() : "");
 			return 1;
 		case sp::ReturnType_CharPtr:
 			context->StringToLocal(params[2], params[3], (*(obj->GetReturn<const char*>()) == nullptr) ? "" : *(obj->GetReturn<const char*>()));

@@ -255,6 +255,9 @@ cell_t DynamicHook_RemoveHook(SourcePawn::IPluginContext* context, const cell_t*
 	if (dynhook == nullptr) {
 		return 0;
 	}
+	if (dynhook->GetOwner() != context->GetIdentity()) {
+		return 0;
+	}
 	return (dynhook->RemoveHook(params[1])) ? 1 : 0;
 }
 

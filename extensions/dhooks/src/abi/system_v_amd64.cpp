@@ -183,7 +183,6 @@ bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnV
 					} else {
 						param.float_reg_index = available_float_registers[float_register_available++];
 						param.reg_offset = {};
-						float_register_available++;
 					}
 				break;
 				default:
@@ -193,7 +192,7 @@ bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnV
 		} else {
 			param.reg_index = Translate_DHookRegister(param.dhook_custom_register);
 			param.float_reg_index = Translate_DHookRegister_Float(param.dhook_custom_register);
-			ret.reg_offset = {};
+			param.reg_offset = {};
 		}
 	}}
 	/* Stack size here only means the size the parameters occupy, so remove the space occupied by return address */
@@ -225,7 +224,7 @@ void JIT_CallMemberFunction(AsmJit& jit, bool save_general_register[MAX_GENERAL_
 		}
 	}
 
-	for (size_t i = 1; i < MAX_FLOAT_REGISTERS; i++) {
+	for (size_t i = 0; i < MAX_FLOAT_REGISTERS; i++) {
 		auto reg = AsmFloatReg((AsmFloatRegCode)i);
 		if (!save_float_register[i]) {
 			continue;
@@ -361,7 +360,7 @@ void JIT_Recall(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], 
 	jit.mov(rsp(0x8), rdi);
 
 	// Restore the registers
-	for (size_t i = 1; i < MAX_FLOAT_REGISTERS; i++) {
+	for (size_t i = 0; i < MAX_FLOAT_REGISTERS; i++) {
 		auto reg = AsmFloatReg((AsmFloatRegCode)i);
 		if (!save_float_register[i]) {
 			continue;

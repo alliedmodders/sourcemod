@@ -222,7 +222,7 @@ void CHookManager::OnClientConnected(int client)
 	auto func = KHook::GetVtableFunction(msghndl, &IClientMessageHandler::ProcessVoiceData);
 
 	netProcessVoiceData.push_back(new CVTableHook(vtable,
-	new KHook::Member(
+	new KHook::Member<IClientMessageHandler, bool, CLC_VoiceData*>(
 		func,
 		this, nullptr, &CHookManager::ProcessVoiceData
 	)));
@@ -270,7 +270,7 @@ void CHookManager::PlayerRunCmdHook(int client, bool post)
 	auto func = KHook::GetVtableFunction<CBaseEntity, void, CUserCmd*, IMoveHelper*>(pEntity, g_iPlayerRunCmdHook);
 
 	runUserCmdHookVec.push_back(new CVTableHook(vtable,
-	new KHook::Member(
+	new KHook::Member<CBaseEntity, void, CUserCmd*, IMoveHelper*>(
 		func,
 		this, (post) ? nullptr : &CHookManager::PlayerRunCmd, (post) ? &CHookManager::PlayerRunCmdPost : nullptr
 	)));
@@ -445,7 +445,7 @@ void CHookManager::NetChannelHook(int client)
 		if (!m_netChannelHooks.size())
 		{
 			m_netChannelHooks.push_back(new CVTableHook(*(void***)basefilesystem,
-			new KHook::Member(
+			new KHook::Member<IBaseFileSystem, bool, const char*, const char*>(
 				KHook::GetVtableFunction(basefilesystem, &IBaseFileSystem::FileExists),
 				this, &CHookManager::FileExists, nullptr
 			)));
@@ -462,13 +462,17 @@ void CHookManager::NetChannelHook(int client)
 		if (iter == m_netChannelHooks.size())
 		{
 			m_netChannelHooks.push_back(new CVTableHook(*(void***)pNetChannel,
-			new KHook::Member(
+#if (SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2)
+			new KHook::Member<INetChannel, bool, const char*, unsigned int, bool>(
+#else
+			new KHook::Member<INetChannel, bool, const char*, unsigned int>(
+#endif
 				KHook::GetVtableFunction(pNetChannel, &INetChannel::SendFile),
 				this, &CHookManager::SendFile, nullptr
 			)));
 
 			m_netChannelHooks.push_back(new CVTableHook(*(void***)pNetChannel,
-			new KHook::Member(
+			new KHook::Member<INetChannel, void, struct netpacket_s*, bool>(
 				KHook::GetVtableFunction(pNetChannel, &INetChannel::ProcessPacket),
 				this, &CHookManager::ProcessPacket, &CHookManager::ProcessPacket_Post
 			)));
