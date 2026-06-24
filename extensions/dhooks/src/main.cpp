@@ -2,12 +2,14 @@
 #include "natives.hpp"
 #include "signatures.hpp"
 #include "handle.hpp"
+#include "capsule.hpp"
 
 #include <smsdk_ext.h>
+#include <IPluginSys.h>
 
 std::vector<sp_nativeinfo_t> gNatives;
 
-class ExtensionBridge : public SDKExtension {
+class ExtensionBridge : public SDKExtension, public SourceMod::IPluginsListener {
 	virtual bool SDK_OnLoad(char *error, size_t maxlength, bool late) override {
 		if (dhooks::globals::init(g_SMAPI, myself, g_pShareSys, error, maxlength, late) == false) {
 			return false;
@@ -21,7 +23,16 @@ class ExtensionBridge : public SDKExtension {
 		sharesys->AddDependency(myself, "sdktools.ext", true, true);
 
 		dhooks::globals::gameconfs->AddUserConfigHook("Functions", &dhooks::globals::dhooks_config);
+		plsys->AddPluginsListener(this);
 		return true;
+	}
+
+	virtual void SDK_OnUnload() override {
+		plsys->RemovePluginsListener(this);
+	}
+
+	virtual void OnPluginUnloaded(SourceMod::IPlugin* plugin) override {
+		dhooks::Capsule::RemoveCallbackByPlugin(plugin->GetBaseContext());
 	}
 
 	virtual void SDK_OnAllLoaded() override {

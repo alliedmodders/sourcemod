@@ -62,24 +62,6 @@ const std::unique_ptr<Capsule>& Capsule::FindOrCreate(const handle::HookSetup* s
 	return locals::nullptr_capsule;
 }
 
-class EmptyClass {
-public:
-	bool AllowedToHealTarget_MakeReturn( CBaseEntity* pTarget ) {
-		bool ret = *(bool*)::KHook::GetCurrentValuePtr(true);
-		::KHook::DestroyReturnValue();
-		return ret;
-	}
-
-	bool AllowedToHealTarget_CallOriginal( CBaseEntity* pTarget ) {
-		printf("CALLED ORIGINAL 0x%lX\n", (uintptr_t)this);
-
-		auto ptr = KHook::BuildMFP<bool (EmptyClass::*)(CBaseEntity*)>(::KHook::GetOriginalFunction());
-		bool ret = (((EmptyClass*)this)->*ptr)(pTarget);
-		::KHook::__internal__savereturnvalue(KHook::Return<bool>{ KHook::Action::Ignore, ret }, true);
-		return ret;
-	}
-};
-
 std::uint32_t Capsule::AddCallback(SourcePawn::IPluginFunction* callback, SourcePawn::IPluginFunction* remove_callback, sp::HookMode mode, sp::ThisPointerType this_ptr, void* associated_this) {
 	auto id = ++locals::last_hook_id;
 	
@@ -167,7 +149,10 @@ void Capsule::RemoveCallbackByPlugin(SourcePawn::IPluginContext* default_context
 	if (locals::plugin_hook_ids.end() == plugin_hooks_it) {
 		return;
 	}
-	for (auto id : plugin_hooks_it->second) {
+	std::vector<std::uint32_t> ids(plugin_hooks_it->second.begin(), plugin_hooks_it->second.end());
+	locals::plugin_hook_ids.erase(plugin_hooks_it);
+
+	for (auto id : ids) {
 		auto it = locals::hook_callbacks.find(id);
 		if (locals::hook_callbacks.end() == it) {
 			continue;
@@ -187,7 +172,6 @@ void Capsule::RemoveCallbackByPlugin(SourcePawn::IPluginContext* default_context
 			rm_callback->Execute(&result);
 		}
 	}
-	locals::plugin_hook_ids.erase(default_context);
 }
 
 Capsule::Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::CallingConvention conv, const std::vector<Variable>& params, const ReturnVariable& ret) :
@@ -301,7 +285,6 @@ Capsule::Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::C
 	auto offset_to_recall = _jit.get_outputpos();
 	abi::JIT_Recall(_jit, _save_general_register, _save_float_register, _stack_size, &_jit_start);
 
-	_jit.SetRE();
 	_jit_start = reinterpret_cast<std::uintptr_t>(_jit.GetData());
 
 	_linked_hook = (address != nullptr) ?
@@ -311,8 +294,8 @@ Capsule::Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::C
 			reinterpret_cast<void*>(&Capsule::_KHook_RemovedHook),
 			reinterpret_cast<void*>(_jit_start + offset_to_pre_callback),
 			reinterpret_cast<void*>(_jit_start + offset_to_post_callback),
-			reinterpret_cast<void*>(_jit_start + offset_to_make_return), // KHook::ExtractMFP(&EmptyClass::AllowedToHealTarget_MakeReturn), //reinterpret_cast<void*>(_jit_start + offset_to_make_return),
-			reinterpret_cast<void*>(_jit_start + offset_to_call_original), // KHook::ExtractMFP(&EmptyClass::AllowedToHealTarget_CallOriginal), //reinterpret_cast<void*>(_jit_start + offset_to_call_original),
+			reinterpret_cast<void*>(_jit_start + offset_to_make_return),
+			reinterpret_cast<void*>(_jit_start + offset_to_call_original),
 			_stack_size,
 			true
 		)
