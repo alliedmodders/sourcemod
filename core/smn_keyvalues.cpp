@@ -31,6 +31,8 @@
 
 #include "smn_keyvalues.h"
 
+#include <wchar.h>
+
 #include "sourcemod.h"
 #include "sourcemm_api.h"
 #include "sm_stringutil.h"
@@ -65,15 +67,51 @@ public:
 
 		delete pStk;
 	}
-	int CalcKVSizeR(KeyValues *pv)
+	unsigned int CalcKVSizeR(KeyValues *pValues)
 	{
-		CUtlBuffer buf;
-		int size;
+		unsigned int size = sizeof(KeyValues);
 
-		pv->RecursiveSaveToFile(buf, 0);
-		size = buf.TellMaxPut();
+		if (const char *pName = pValues->GetName())
+		{
+			size += strlen(pName) + 1;
+		}
 
-		buf.Purge();
+		switch (pValues->GetDataType())
+		{
+			case KeyValues::TYPE_STRING:
+			{
+				if (const char *pValue = pValues->GetString())
+				{
+					size += strlen(pValue) + 1;
+				}
+				break;
+			}
+			case KeyValues::TYPE_WSTRING:
+			{
+				if (const wchar_t *pValue = pValues->GetWString())
+				{
+					size += (wcslen(pValue) + 1) * sizeof(wchar_t);
+				}
+				break;
+			}
+			case KeyValues::TYPE_UINT64:
+			{
+				/* Stored in a separately-allocated 8-byte buffer, not the inline union. */
+				size += sizeof(uint64);
+				break;
+			}
+			default:
+			{
+				break;
+			}
+		}
+
+		/* Recurse into child keys/values. Siblings are handled by the loop, so
+		 * recursion depth stays bounded by the tree depth rather than its width. */
+		for (KeyValues *pSub = pValues->GetFirstSubKey(); pSub != NULL; pSub = pSub->GetNextKey())
+		{
+			size += CalcKVSizeR(pSub);
+		}
 
 		return size;
 	}
