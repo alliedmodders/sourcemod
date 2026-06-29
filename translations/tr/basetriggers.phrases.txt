@@ -2,12 +2,12 @@
 {
 	"Timeleft"
 	{
-		"tr"		"Harita için kalan zaman:"
+		"tr"		"Harita için geriye kalan süre:"
 	}
 
 	"Thetime"
 	{
-		"tr"		"Geçerli sunucu saati {1}"
+		"tr"		"Şu anki sunucu süresi: {1}"
 	}
 
 	"Friendly Fire On"
@@ -17,17 +17,22 @@
 
 	"Friendly Fire Off"
 	{
-		"tr"		"Dost ateşi etkisiz."
+		"tr"		"Dost ateşi devre dışı."
+	}
+
+	"Friendly Fire Percent"
+	{
+		"tr"		"Dost ateşi %{1}."
 	}
 
 	"Current Map"
 	{
-		"tr"		"Geçerli harita {1}."
+		"tr"		"Mevcut harita: {1}."
 	}
 
 	"LastRound"
 	{
-		"tr"		"Bu son tur!!"
+		"tr"		"Bu son raunt!"
 	}
 
 	"NoTimelimit"
@@ -37,72 +42,72 @@
 
 	"Next Map"
 	{
-		"tr"		"Sıradaki Harita: {1}"
+		"tr"		"Sıradaki harita: {1}"
 	}
 
 	"Pending Vote"
 	{
-		"tr"		"Oylama Bekleniyor"
+		"tr"		"Oylama bekleniyor"
 	}
 
 	"WinLimitAppend"
 	{
-		"tr"		" ya da harita bir takım bir tur kazandığında değişecek"
+		"tr"		", ya da harita bir takım bir raunt kazandığında değişecek"
 	}
 
 	"WinLimit"
 	{
-		"tr"		"Harita bir takım bir tur kazandığında değişecek"
+		"tr"		"Harita bir takım bir raunt kazandığında değişecek"
 	}
 
 	"MaxRoundsAppend"
 	{
-		"tr"		" ya da harita bir tur sonra değişecek"
+		"tr"		", ya da harita bir raunt daha sonra değişecek"
 	}
 
 	"MaxRounds"
 	{
-		"tr"		"Harita bir tur sonra değişecek"
+		"tr"		"Harita bir raunt daha sonra değişecek"
 	}
 
 	"FragLimitAppend"
 	{
-		"tr"		" ya da harita bir oyuncu bir öldürme sayısına ulaştığında değişecek"
+		"tr"		", ya da harita bir oyuncu birisini öldürdüğünde değişecek"
 	}
 
 	"FragLimit"
 	{
-		"tr"		"Harita bir oyuncu bir öldürme sayısına ulaştığında değişecek"
+		"tr"		"Harita bir oyuncu birisini öldürdüğünde değişecek"
 	}
 
 	"WinLimitAppendPlural"
 	{
-		"tr"		" ya da harita {1} takım bir tur kazandığında değişecek"
+		"tr"		", ya da harita bir takım {1} raunt kazandığında değişecek"
 	}
 
 	"WinLimitPlural"
 	{
-		"tr"		"Harita bir takım {1} tur kazandığında değişecek"
+		"tr"		"Harita bir takım {1} raunt kazandığında değişecek"
 	}
 
 	"MaxRoundsAppendPlural"
 	{
-		"tr"		" ya da harita {1} tur sonra değişecek"
+		"tr"		", ya da harita {1} raunt sonra değişecek"
 	}
 
 	"MaxRoundsPlural"
 	{
-		"tr"		"Harita {1} tur sonra değişecek"
+		"tr"		"Harita {1} raunt sonra değişecek"
 	}
 
 	"FragLimitAppendPlural"
 	{
-		"tr"		" ya da harita bir oyuncu {1} öldürme sayısına ulaştığında değişecek"
+		"tr"		", ya da harita bir oyuncu {1} kişiyi öldürdüğünde değişecek"
 	}
 
 	"FragLimitPlural"
 	{
-		"tr"		"Harita bir oyuncu {1} öldürme sayısına ulaştığında değişecek"
+		"tr"		"Harita bir oyuncu {1} kişiyi öldürdüğünde değişecek"
 	}
 
 }
