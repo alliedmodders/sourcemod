@@ -559,7 +559,7 @@ KHook::Return<bool> PlayerManager::OnClientConnect(IServerGameClients* clients, 
 KHook::Return<bool> PlayerManager::OnClientConnect_Post(IServerGameClients*, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
 {
 	int client = IndexOfEdict(pEntity);
-	bool orig_value = *(bool*)KHook::GetOriginalValuePtr();
+	bool orig_value = *(bool*)KHook::GetCurrentValuePtr();
 	CPlayer *pPlayer = &m_Players[client];
 
 	if (orig_value)

@@ -1450,7 +1450,7 @@ KHook::Return<bool> SDKHooks::Hook_ReloadPost(CBaseEntity* this_ptr)
 		}
 
 		int entity = gamehelpers->EntityToBCompatRef(pEntity);
-		cell_t origreturn = (*(bool*)::KHook::GetOriginalValuePtr()) ? 1 : 0;
+		cell_t origreturn = (*(bool*)::KHook::GetCurrentValuePtr()) ? 1 : 0;
 
 		std::vector<IPluginFunction *> callbackList;
 		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
