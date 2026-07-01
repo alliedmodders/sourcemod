@@ -614,7 +614,7 @@ KHook::Return<bf_write*> UserMessages::OnStartMessage_Post(IVEngineServer*, IRec
 	else
 		m_OrigBuffer = m_FakeEngineBuffer;
 #else
-	m_OrigBuffer = *(bf_write**)KHook::GetOriginalValuePtr();
+	m_OrigBuffer = *(bf_write**)KHook::GetCurrentValuePtr();
 #endif
 
 	UM_RETURN_META_VALUE(KHook::Action::Ignore, NULL)
