@@ -171,6 +171,12 @@ void VoteMenuHandler::OnClientDisconnected(int client)
 			assert((unsigned)item < m_Items);
 			assert(m_Votes[item] > 0);
 			m_Votes[item]--;
+
+			if (sm_vote_hintbox.GetBool())
+			{
+				BuildVoteLeaders();
+				DrawHintProgress();
+			}
 		}
 		m_ClientVotes[client] = VOTE_NOT_VOTING;
 	}
@@ -273,6 +279,12 @@ bool VoteMenuHandler::RedrawToClient(int client, bool revotes)
 		m_ClientVotes[client] = VOTE_PENDING;
 		m_Revoting[client] = true;
 		m_NumVotes--;
+
+		if (sm_vote_hintbox.GetBool())
+		{
+			BuildVoteLeaders();
+			DrawHintProgress();
+		}
 	}
 
 	if (m_nMenuTime == MENU_TIME_FOREVER)
@@ -650,6 +662,7 @@ void VoteMenuHandler::BuildVoteLeaders()
 {
 	if (m_NumVotes == 0 || !sm_vote_hintbox.GetBool())
 	{
+		m_leaderList[0] = '\0';
 		return;
 	}
 
