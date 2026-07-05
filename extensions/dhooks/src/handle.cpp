@@ -23,6 +23,36 @@ std::unordered_set<void**> class_vtables;
 SourceMod::HandleSecurity* security = nullptr;
 }
 
+void class_dynamichooks_remove(void* obj) {
+	auto it = locals::class_dynamichooks.find((void*)obj);
+	if (it != locals::class_dynamichooks.end()) {
+		const auto& ids = it->second;
+		for (auto id : ids) {
+			auto hndl = DynamicHook::FindByHookID(id);
+			if (hndl != BAD_HANDLE) {
+				SourceMod::HandleSecurity security;
+				security.pOwner = globals::myself->GetIdentity();
+				security.pIdentity = globals::myself->GetIdentity();
+				handle::DynamicHook* obj = nullptr;
+				SourceMod::HandleError chnderr = globals::handlesys->ReadHandle(hndl, DynamicHook::HANDLE_TYPE, &security, (void **)&obj);
+				if (chnderr != SourceMod::HandleError_None) {
+					obj = nullptr;
+				}
+
+				if (obj) {
+					obj->RemoveHook(id);
+				} else {
+					Capsule::RemoveCallbackById(id);
+				}
+			} else {
+				Capsule::RemoveCallbackById(id);
+			}
+			locals::associated_handle.erase(id);
+		}
+		locals::class_dynamichooks.erase(it);
+	}
+}
+
 ParamReturn::ParamReturn(const Capsule* capsule, GeneralRegister* generalregs, FloatRegister* floatregs, void* return_ptr) :
 	_handle(globals::handlesys->CreateHandle(handle::ParamReturn::HANDLE_TYPE, this, globals::myself->GetIdentity(), globals::myself->GetIdentity(), nullptr)),
 	_capsule(capsule),
@@ -82,33 +112,13 @@ public:
 	using Self = CGenericClass<ARGS...>;
 
 	void KHook_Detour_PRE(ARGS...) {
-		auto it = locals::class_dynamichooks.find((void*)this);
-		if (it != locals::class_dynamichooks.end()) {
-			const auto& ids = it->second;
-			for (auto id : ids) {
-				auto hndl = DynamicHook::FindByHookID(id);
-				if (hndl != BAD_HANDLE) {
-					SourceMod::HandleSecurity security;
-					security.pOwner = globals::myself->GetIdentity();
-					security.pIdentity = globals::myself->GetIdentity();
-					handle::DynamicHook* obj = nullptr;
-					SourceMod::HandleError chnderr = globals::handlesys->ReadHandle(hndl, DynamicHook::HANDLE_TYPE, &security, (void **)&obj);
-					if (chnderr != SourceMod::HandleError_None) {
-						obj = nullptr;
-					}
+		class_dynamichooks_remove(this);
 
-					if (obj) {
-						obj->RemoveHook(id);
-					} else {
-						Capsule::RemoveCallbackById(id);
-					}
-				} else {
-					Capsule::RemoveCallbackById(id);
-				}
-				locals::associated_handle.erase(id);
-			}
-			locals::class_dynamichooks.erase(it);
-		}
+		::KHook::SaveReturnValue(KHook::Action::Ignore, nullptr, 0, nullptr, nullptr, false);
+		return;
+	}
+	void KHook_Detour_PRE_GameRules(ARGS...) {
+		class_dynamichooks_remove(globals::sdktools->GetGameRules());
 
 		::KHook::SaveReturnValue(KHook::Action::Ignore, nullptr, 0, nullptr, nullptr, false);
 		return;
@@ -134,8 +144,6 @@ using CGenericDtor = CGenericClass<unsigned int>;
 #else
 static_assert(false, "You forgort to provide a platform define!");
 #endif
-
-using CGameRulesShutdown = CGenericClass<>;
 
 bool DynamicDetour::Enable(SourcePawn::IPluginFunction* callback, sp::HookMode mode) {
 	if (!this->IsImmutable()) {
@@ -204,12 +212,13 @@ std::uint32_t DynamicHook::AddHook(SourcePawn::IPluginFunction* callback, Source
 		if (it == locals::class_dynamichooks.end()) {
 			it = locals::class_dynamichooks.emplace(obj, std::vector<std::uint32_t>()).first;
 
-			if (locals::class_vtables.find(vtable) == locals::class_vtables.end()) {
+			auto key = vtable + dtor_index;
+			if (locals::class_vtables.find(key) == locals::class_vtables.end()) {
 				// Hook the virtual destructor, and perform hook cleaning actions under there
 				KHook::SetupVirtualHook(
 					vtable,
 					dtor_index,
-					nullptr,
+					obj,
 					nullptr,
 					KHook::ExtractMFP(&CGenericDtor::KHook_Detour_PRE),
 					nullptr,
@@ -218,34 +227,33 @@ std::uint32_t DynamicHook::AddHook(SourcePawn::IPluginFunction* callback, Source
 					40,
 					true
 				);
-				locals::class_vtables.insert(vtable);
+				locals::class_vtables.insert(key);
 			}
 		}
 		it->second.push_back(id);
 	} else if (dtor_cleanup == HookCleanUp::CGameRules) {
-		auto shutdown_index = 
-		(globals::mms_load_info.source_engine == SOURCE_ENGINE_ORIGINAL) ? KHook::GetVtableIndex(&sdk::IGameSystem_TheShip::Shutdown)
-		: KHook::GetVtableIndex(&sdk::IGameSystem::Shutdown);
-
 		auto it = locals::class_dynamichooks.find(obj);
 		if (it == locals::class_dynamichooks.end()) {
 			it = locals::class_dynamichooks.emplace(obj, std::vector<std::uint32_t>()).first;
 
-			if (locals::class_vtables.find(vtable) == locals::class_vtables.end()) {
+			// Hopefully the world is always at index 0
+			vtable = *((void***)globals::gamehelpers->ReferenceToEntity(0));
+
+			if (locals::class_vtables.find(nullptr) == locals::class_vtables.end()) {
 				// Hook the gamerules shutdown, and perform hook cleaning actions under there
 				KHook::SetupVirtualHook(
 					vtable,
-					shutdown_index,
+					DTOR_CBASEENTITY_VTABLE_INDEX,
 					nullptr,
 					nullptr,
-					KHook::ExtractMFP(&CGameRulesShutdown::KHook_Detour_PRE),
+					KHook::ExtractMFP(&CGenericDtor::KHook_Detour_PRE_GameRules),
 					nullptr,
-					KHook::ExtractMFP(&CGameRulesShutdown::KHook_Make_Return),
-					KHook::ExtractMFP(&CGameRulesShutdown::KHook_Make_CallOriginal),
+					KHook::ExtractMFP(&CGenericDtor::KHook_Make_Return),
+					KHook::ExtractMFP(&CGenericDtor::KHook_Make_CallOriginal),
 					40,
 					true
 				);
-				locals::class_vtables.insert(vtable);
+				locals::class_vtables.insert(nullptr);
 			}
 		}
 		it->second.push_back(id);
