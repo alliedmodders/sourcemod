@@ -538,18 +538,19 @@ methodmap DynamicHook < DHookSetup
 	// Hook a raw this-pointer.
 	// If you need to read the return value of the function, choose a post hook.
 	//
-	// @param mode          The desired hook mode - pre or post.
-	//                      A pre hook calls your callback BEFORE the original function is called.
-	//                        You can access the parameters, set the return value, and skip the original function.
-	//                      A post hook calls your callback AFTER the original function executed.
-	//                        You can access the parameters and get/set the return value.
-	// @param addr          This pointer address.
-	// @param callback      Callback function.
-	// @param dtorcleanup   If object has a virtual dtor, pass true for automatic hook cleanup.
+	// @param mode                The desired hook mode - pre or post.
+	//                            A pre hook calls your callback BEFORE the original function is called.
+	//                              You can access the parameters, set the return value, and skip the original function.
+	//                            A post hook calls your callback AFTER the original function executed.
+	//                              You can access the parameters and get/set the return value.
+	// @param addr                This pointer address.
+	// @param callback            Callback function.
+	// @param dtor_vtable_index   (Optional) Vtable index for for the destructor function, if provided
+	//                            DHooks will detour the destructor, and clean up this hook when the object is destroyed.
 	//
 	// @return              A hookid on success, INVALID_HOOK_ID otherwise.
 	// @error               Invalid setup handle, invalid address, invalid hook type or invalid callback.
-	public native int HookRaw(HookMode mode, Address addr, DHookCallback callback, bool dtorcleanup = false);
+	public native int HookRaw(HookMode mode, Address addr, DHookCallback callback, int dtor_vtable_index = -1);
 
 	// Remove hook by hook id.
 	//
