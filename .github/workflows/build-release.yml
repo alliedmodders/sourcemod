@@ -226,11 +226,15 @@ jobs:
               $fullPdbPathInfo = (Get-Item -Path (Join-Path -Path $buildDir -ChildPath $_))
               $baseName = $fullPdbPathInfo.BaseName
               $dir = $fullPdbPathInfo.DirectoryName
-              
+
+              $relDir = [System.IO.Path]::GetRelativePath($buildDir, $dir)
+              $destDir = Join-Path $outDir $relDir
+              New-Item -ItemType Directory -Force -Path $destDir | Out-Null
+
               '.pdb', '.exe', '.dll' | ForEach-Object -Process {
                   $binPath = Join-Path $dir ($baseName + $_)
                   if (Test-Path $binPath) {
-                    Copy-Item -Path $binPath -Destination $outDir
+                    Copy-Item -Path $binPath -Destination $destDir
                   }
               }
           }
