@@ -215,7 +215,7 @@ cell_t DynamicHook_HookRaw(SourcePawn::IPluginContext* context, const cell_t* pa
 
 	dynhook->SetImmutable();
 
-	bool cleanup_dtor = (params[0] >= 5 && params[5] != 0);
+	bool cleanup_dtor = (params[0] >= 5 && params[5] != -1);
 	return dynhook->AddHook(callback, nullptr, mode, addr, (cleanup_dtor) ? dhooks::handle::DynamicHook::HookCleanUp::Custom : dhooks::handle::DynamicHook::HookCleanUp::None, (cleanup_dtor) ? params[5] : 0);
 }
 
