@@ -4,6 +4,42 @@
 
 namespace sdk {
 
+// Verified IGameSystem::Shutdown to be the same on :
+// - Counter-Strike : Source
+// - Day of Defeat
+// - Half-Life 2 Deathmatch
+// - Team Fortess 2
+// - Left 4 Dead
+// - Left 4 Dead 2
+// - Insurgency
+// - Black Mesa
+// - Day of Infamy
+// - Dystopia
+// - Empires
+// - GMod
+// - Half-Life Deathmatch : Source
+// - IOSoccer
+// - JB Mod
+// - Nuclear Dawn
+// - No More Room In Hell
+// - Team Fortress 2 Classic
+// - Zombie Panic! : Source
+class IGameSystem
+{
+public:
+	virtual char const *Name() = 0;
+	virtual bool Init() = 0;
+	virtual void PostInit() = 0;
+	virtual void Shutdown() = 0;
+};
+// Except The Ship. Because of course it had to be special
+class IGameSystem_TheShip
+{
+public:
+	virtual bool Init() = 0;
+	virtual void Shutdown() = 0;
+};
+
 class CBaseEntity;
 
 static constexpr std::size_t FL_EDICT_FREE = (1<<1);
