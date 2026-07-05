@@ -10,11 +10,6 @@
 std::vector<sp_nativeinfo_t> gNatives;
 
 class ExtensionBridge : public SDKExtension, public SourceMod::IPluginsListener {
-	virtual METAMOD_PLUGIN *SDK_OnMetamodCreateInterface(const MetamodVersionInfo *mvi, const MetamodLoaderInfo *mli) override {
-		dhooks::globals::mms_load_info = *mvi;
-		return SDKExtension::SDK_OnMetamodCreateInterface(mvi, mli);
-	}
-
 	virtual bool SDK_OnLoad(char *error, size_t maxlength, bool late) override {
 		if (dhooks::globals::init(g_SMAPI, myself, g_pShareSys, error, maxlength, late) == false) {
 			return false;

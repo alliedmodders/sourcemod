@@ -22,7 +22,6 @@ class SignatureGameConfig;
 
 namespace dhooks::globals {
 
-extern MetamodVersionInfo mms_load_info;
 extern std::thread::id main_thread;
 extern SourceMod::IHandleSys* handlesys;
 extern SourceMod::IGameHelpers* gamehelpers;
