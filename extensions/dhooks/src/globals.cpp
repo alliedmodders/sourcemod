@@ -3,6 +3,7 @@
 
 namespace dhooks::globals {
 
+MetamodVersionInfo mms_load_info;
 std::thread::id main_thread;
 SourceMod::IExtension* myself;
 SourceMod::IShareSys* sharedsys;

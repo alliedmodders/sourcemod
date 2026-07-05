@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <sdk_types.hpp>
 
 namespace dhooks::handle {
 
@@ -15,10 +16,9 @@ SourceMod::HandleType_t HookSetup::HANDLE_TYPE = 0;
 SourceMod::HandleType_t DynamicHook::HANDLE_TYPE = 0;
 SourceMod::HandleType_t DynamicDetour::HANDLE_TYPE = 0;
 
-class CGenericClass;
 namespace locals {
 std::unordered_map<std::uint32_t, cell_t> associated_handle;
-std::unordered_map<CGenericClass*, std::vector<std::uint32_t>> class_dynamichooks;
+std::unordered_map<void*, std::vector<std::uint32_t>> class_dynamichooks;
 std::unordered_set<void**> class_vtables;
 SourceMod::HandleSecurity* security = nullptr;
 }
@@ -76,24 +76,13 @@ void* ParamReturn::_Get(size_t index) const {
 	}
 }
 
-#if defined(_LINUX)
-#define DTOR_PARAMS void
-#define DTOR_PARAMS_NONAME
-#define DTOR_PARAMS_ARGS
-#define DTOR_VTABLE_INDEX 1
-#elif defined(_WIN32)
-#define DTOR_PARAMS unsigned int arg
-#define DTOR_PARAMS_NONAME , unsigned int
-#define DTOR_PARAMS_ARGS arg
-#define DTOR_VTABLE_INDEX 0
-#else
-static_assert(false, "You forgort to provide a platform define!");
-#endif
-
+template<typename... ARGS>
 class CGenericClass {
 public:
-	void KHook_Detour_PRE(DTOR_PARAMS) {
-		auto it = locals::class_dynamichooks.find(this);
+	using Self = CGenericClass<ARGS...>;
+
+	void KHook_Detour_PRE(ARGS...) {
+		auto it = locals::class_dynamichooks.find((void*)this);
 		if (it != locals::class_dynamichooks.end()) {
 			const auto& ids = it->second;
 			for (auto id : ids) {
@@ -124,17 +113,29 @@ public:
 		::KHook::SaveReturnValue(KHook::Action::Ignore, nullptr, 0, nullptr, nullptr, false);
 		return;
 	}
-	void KHook_Make_CallOriginal(DTOR_PARAMS) {
-		void (CGenericClass::*ptr)(DTOR_PARAMS) = ::KHook::BuildMFP<void (CGenericClass::*)(DTOR_PARAMS_NONAME)>(::KHook::GetOriginalFunction());
-		(this->*ptr)(DTOR_PARAMS_ARGS);
+	void KHook_Make_CallOriginal(ARGS... args) {
+		void (Self::*ptr)(ARGS...) = ::KHook::BuildMFP<decltype(ptr)>(::KHook::GetOriginalFunction());
+		(this->*ptr)(args...);
 		::KHook::SaveReturnValue(KHook::Action::Ignore, nullptr, 0, nullptr, nullptr, true);
 		return;
 	}
-	void KHook_Make_Return(DTOR_PARAMS) {
+	void KHook_Make_Return(ARGS...) {
 		::KHook::DestroyReturnValue();
 		return;
 	}
 };
+
+#if defined(_LINUX)
+constexpr std::uint32_t DTOR_CBASEENTITY_VTABLE_INDEX = 1;
+using CGenericDtor = CGenericClass<>;
+#elif defined(_WIN32)
+constexpr std::uint32_t DTOR_CBASEENTITY_VTABLE_INDEX = 0;
+using CGenericDtor = CGenericClass<unsigned int>;
+#else
+static_assert(false, "You forgort to provide a platform define!");
+#endif
+
+using CGameRulesShutdown = CGenericClass<>;
 
 bool DynamicDetour::Enable(SourcePawn::IPluginFunction* callback, sp::HookMode mode) {
 	if (!this->IsImmutable()) {
@@ -174,7 +175,7 @@ bool DynamicDetour::Disable(SourcePawn::IPluginFunction* callback, sp::HookMode 
 	return true;
 }
 
-std::uint32_t DynamicHook::AddHook(SourcePawn::IPluginFunction* callback, SourcePawn::IPluginFunction* rm_callback, sp::HookMode mode, void* obj, bool dtor_cleanup) {
+std::uint32_t DynamicHook::AddHook(SourcePawn::IPluginFunction* callback, SourcePawn::IPluginFunction* rm_callback, sp::HookMode mode, void* obj, HookCleanUp dtor_cleanup, std::uint32_t dtor_index) {
 	if (!this->IsImmutable()) {
 		return 0;
 	}
@@ -196,22 +197,51 @@ std::uint32_t DynamicHook::AddHook(SourcePawn::IPluginFunction* callback, Source
 		return 0;
 	}
 
-	if (dtor_cleanup) {
-		auto it = locals::class_dynamichooks.find((CGenericClass*)obj);
+	if (dtor_cleanup == HookCleanUp::CBaseEntity || dtor_cleanup == HookCleanUp::Custom) {
+		dtor_index = (dtor_cleanup == HookCleanUp::CBaseEntity) ? DTOR_CBASEENTITY_VTABLE_INDEX : dtor_index;
+
+		auto it = locals::class_dynamichooks.find(obj);
 		if (it == locals::class_dynamichooks.end()) {
-			it = locals::class_dynamichooks.emplace((CGenericClass*)obj, std::vector<std::uint32_t>()).first;
+			it = locals::class_dynamichooks.emplace(obj, std::vector<std::uint32_t>()).first;
 
 			if (locals::class_vtables.find(vtable) == locals::class_vtables.end()) {
 				// Hook the virtual destructor, and perform hook cleaning actions under there
 				KHook::SetupVirtualHook(
 					vtable,
-					DTOR_VTABLE_INDEX,
+					dtor_index,
 					nullptr,
 					nullptr,
-					KHook::ExtractMFP(&CGenericClass::KHook_Detour_PRE),
+					KHook::ExtractMFP(&CGenericDtor::KHook_Detour_PRE),
 					nullptr,
-					KHook::ExtractMFP(&CGenericClass::KHook_Make_Return),
-					KHook::ExtractMFP(&CGenericClass::KHook_Make_CallOriginal),
+					KHook::ExtractMFP(&CGenericDtor::KHook_Make_Return),
+					KHook::ExtractMFP(&CGenericDtor::KHook_Make_CallOriginal),
+					40,
+					true
+				);
+				locals::class_vtables.insert(vtable);
+			}
+		}
+		it->second.push_back(id);
+	} else if (dtor_cleanup == HookCleanUp::CGameRules) {
+		auto shutdown_index = 
+		(globals::mms_load_info.source_engine == SOURCE_ENGINE_ORIGINAL) ? KHook::GetVtableIndex(&sdk::IGameSystem_TheShip::Shutdown)
+		: KHook::GetVtableIndex(&sdk::IGameSystem::Shutdown);
+
+		auto it = locals::class_dynamichooks.find(obj);
+		if (it == locals::class_dynamichooks.end()) {
+			it = locals::class_dynamichooks.emplace(obj, std::vector<std::uint32_t>()).first;
+
+			if (locals::class_vtables.find(vtable) == locals::class_vtables.end()) {
+				// Hook the gamerules shutdown, and perform hook cleaning actions under there
+				KHook::SetupVirtualHook(
+					vtable,
+					shutdown_index,
+					nullptr,
+					nullptr,
+					KHook::ExtractMFP(&CGameRulesShutdown::KHook_Detour_PRE),
+					nullptr,
+					KHook::ExtractMFP(&CGameRulesShutdown::KHook_Make_Return),
+					KHook::ExtractMFP(&CGameRulesShutdown::KHook_Make_CallOriginal),
 					40,
 					true
 				);

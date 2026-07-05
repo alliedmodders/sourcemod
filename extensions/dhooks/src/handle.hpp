@@ -117,7 +117,14 @@ public:
 		return _owner;
 	}
 
-	std::uint32_t AddHook(SourcePawn::IPluginFunction* callback, SourcePawn::IPluginFunction* rm_callback, sp::HookMode, void* obj, bool dtor_cleanup);
+	enum class HookCleanUp {
+		None,
+		CBaseEntity,
+		CGameRules,
+		Custom
+	};
+
+	std::uint32_t AddHook(SourcePawn::IPluginFunction* callback, SourcePawn::IPluginFunction* rm_callback, sp::HookMode, void* obj, HookCleanUp dtor_cleanup, std::uint32_t dtor_index);
 	bool RemoveHook(std::uint32_t id);
 	static cell_t FindByHookID(std::uint32_t id);
 protected:
