@@ -218,7 +218,7 @@ std::uint32_t DynamicHook::AddHook(SourcePawn::IPluginFunction* callback, Source
 				KHook::SetupVirtualHook(
 					vtable,
 					dtor_index,
-					obj,
+					nullptr,
 					nullptr,
 					KHook::ExtractMFP(&CGenericDtor::KHook_Detour_PRE),
 					nullptr,
