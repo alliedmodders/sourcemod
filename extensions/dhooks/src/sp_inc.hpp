@@ -5,6 +5,12 @@
 
 namespace dhooks::sp {
 
+enum ListenType
+{
+	ListenType_Created,
+	ListenType_Deleted
+};
+
 enum HookMode
 {
 	Hook_Pre,

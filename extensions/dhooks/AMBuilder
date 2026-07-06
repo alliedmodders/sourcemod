@@ -10,6 +10,7 @@ sources = [
   'src/signatures.cpp',
   'src/sp_inc.cpp',
   'src/natives.cpp',
+  'src/natives/dhookentitylistener.cpp',
   'src/natives/dhookparam.cpp',
   'src/natives/dhookreturn.cpp',
   'src/natives/dhooksetup.cpp',

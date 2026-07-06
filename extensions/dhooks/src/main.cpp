@@ -1,5 +1,6 @@
 #include "globals.hpp"
 #include "natives.hpp"
+#include "natives/dhookentitylistener.hpp"
 #include "signatures.hpp"
 #include "handle.hpp"
 #include "capsule.hpp"
@@ -29,19 +30,31 @@ class ExtensionBridge : public SDKExtension, public SourceMod::IPluginsListener 
 
 	virtual void SDK_OnUnload() override {
 		plsys->RemovePluginsListener(this);
+
+		if (dhooks::globals::sdkhooks) {
+			dhooks::natives::dhookentitylistener::remove_listener(dhooks::globals::sdkhooks);
+		}
 	}
 
 	virtual void OnPluginUnloaded(SourceMod::IPlugin* plugin) override {
 		dhooks::Capsule::RemoveCallbackByPlugin(plugin->GetBaseContext());
+		dhooks::natives::dhookentitylistener::remove_plugin(plugin->GetBaseContext());
 	}
 
 	virtual void SDK_OnAllLoaded() override {
 		SM_GET_LATE_IFACE(SDKTOOLS, dhooks::globals::sdktools);
+		SM_GET_LATE_IFACE(SDKHOOKS, dhooks::globals::sdkhooks);
+
+		dhooks::natives::dhookentitylistener::add_listener(dhooks::globals::sdkhooks);
 	}
 
 	virtual bool QueryInterfaceDrop(SourceMod::SMInterface* interface) override {
 		if (interface == dhooks::globals::sdktools) {
 			dhooks::globals::sdktools = nullptr;
+			return false;
+		}
+		if (interface == dhooks::globals::sdkhooks) {
+			dhooks::globals::sdkhooks = nullptr;
 			return false;
 		}
 
