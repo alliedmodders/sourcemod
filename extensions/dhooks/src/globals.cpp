@@ -11,6 +11,7 @@ SourceMod::IGameHelpers* gamehelpers;
 SourceMod::ISourceMod* sourcemod;
 SourceMod::IGameConfigManager* gameconfs;
 SourceMod::ISDKTools* sdktools;
+SourceMod::ISDKHooks* sdkhooks;
 dhooks::SignatureGameConfig dhooks_config;
 
 template<typename Interface>
