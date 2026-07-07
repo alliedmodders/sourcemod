@@ -18,27 +18,33 @@
 		{
 			"engine"	"mcv"
 		}
-		
+
 		"Offsets"
 		{
 			/* Offset into LevelShutdown */
 			"gEntList"
 			{
-				"windows"	"33"
+				"windows64"	"43"
 			}
 
 			"EntInfo"
 			{
-				"windows"	"4"	
+				"windows64"	"8"
+				"linux64"	"8"
 			}
 		}
-		
+
 		"Signatures"
 		{
 			"LevelShutdown"
 			{
 				"library"	"server"
-				"windows"	"\x56\x8B\x35\x2A\x2A\x2A\x2A\x8B\xCE\x8B\x06\xFF\x90\x84\x00\x00\x00\xE8\x2A\x2A\x2A\x2A\xE8"
+				"windows64"	"\x40\x53\x48\x83\xEC\x20\x48\x8B\x1D\x2A\x2A\x2A\x2A\x48\x8B\xCB\x48\x8B\x03\xFF\x90\x08\x01\x00\x00\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x48\x8D\x0D\x2A\x2A\x2A\x2A"
+			}
+			"gEntList"
+			{
+				"library"	"server"
+				"linux64"	"@gEntList"
 			}
 		}
 	}

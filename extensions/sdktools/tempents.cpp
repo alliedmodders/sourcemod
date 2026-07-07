@@ -364,7 +364,14 @@ void TempEntityManager::Initialize()
 			m_ListHead = **(void ***) ((unsigned char *) addr + offset);
 #else
 			int32_t varOffset = *(int32_t *) ((unsigned char *) addr + offset);
-			m_ListHead = **(void ***) ((unsigned char *) addr + offset + sizeof(int32_t) + varOffset);
+			void *ripTarget = (unsigned char *) addr + offset + sizeof(int32_t) + varOffset;
+#if defined PLATFORM_WINDOWS
+			/* On Windows the RIP-relative operand points directly at s_pTempEntities. */
+			m_ListHead = *(void **)ripTarget;
+#else
+			/* On Linux/Mac the operand points at a GOT slot holding &s_pTempEntities. */
+			m_ListHead = **(void ***)ripTarget;
+#endif
 #endif
 		}
 		else

@@ -73,9 +73,14 @@ for sdk_target in SM.sdk_targets:
 
   if needs_protobuf:
     compiler.cxxincludes += [
-      os.path.join(sdk['path'], 'common', 'protobuf-2.5.0', 'src'),
       os.path.join(sdk['path'], 'public', 'engine', 'protobuf'),
       os.path.join(sdk['path'], 'public', 'game', 'shared', pb_gamedir_map[sdk['name']], 'protobuf')
+    ]
+    protobuf_version = "2.5.0"
+    if sdk['name'] == 'mcv':
+      protobuf_version = "3.2.0"
+    compiler.cxxincludes += [
+      os.path.join(sdk['path'], 'common', 'protobuf-' + protobuf_version, 'src')
     ]
   
   if compiler.like('msvc'):

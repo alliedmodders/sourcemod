@@ -25,7 +25,7 @@
 			"SlapSound6"		"physics/flesh/vietnam_flesh_impact_bullet6.wav"
 		}
 	}
-	
+
 	/* General Temp Entities */
 	"#default"
 	{
@@ -34,19 +34,22 @@
 			/* Offset into CBaseTempEntity signature address */
 			"s_pTempEntities"
 			{
-				"windows"	"16"
+				"windows64"	"17"
 			}
 			"GetTEName"
 			{
-				"windows"	"4"
+				"windows64"	"8"
+				"linux64"	"8"
 			}
 			"GetTENext"
 			{
-				"windows"	"8"
+				"windows64"	"16"
+				"linux64"	"16"
 			}
 			"TE_GetServerClass"
 			{
-				"windows"	"0"
+				"windows64"	"0"
+				"linux64"	"0"
 			}
 		}
 
@@ -55,7 +58,12 @@
 			"CBaseTempEntity"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\x45\x08\x89\x41\x04\xC7\x01"
+				"windows64"	"\x48\x8D\x05\x2A\x2A\x2A\x2A\x48\x89\x51\x2A\x48\x89\x01\x48\x8B\x05"
+			}
+			"s_pTempEntities"
+			{
+				"library"	"server"
+				"linux64"	"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
 			}
 		}
 	}
@@ -69,7 +77,8 @@
 			"FindEntityByClassname"
 			{
 				"library"	"server"
-				"windows"	"\x55\x89\xE5\x57\x56\x53\x83\xEC\x1C\x8B\x45\x0C\x8B\x5D\x08\x8B\x7D\x10\x85\xC0\x0F\x84\x2A\x2A\x2A\x2A\x8B\x10\x89\x04\x24\xFF\x52\x0C\x8B\x10\xB8\xFF\x1F\x00\x00\x0F\xB7\xCA\x83\xFA\xFF\x0F\x45\xC1\x8D\x04\x40\x8B\x5C\xC3\x10\xEB\x2A\x90\x2A\x2A\x2A\x2A\x89"
+				"windows64"	"@?FindEntityByClassname@CGlobalEntityList@@QEAAPEAVCBaseEntity@@PEAV2@PEBD@Z"
+				"linux64"	"@_ZN17CGlobalEntityList21FindEntityByClassnameEP11CBaseEntityPKc"
 			}
 		}
 	}
@@ -97,20 +106,22 @@
 			 * the expected code. A pointer to sv (IServer interface) is used
 			 * here.
 			 */
-			"CreateFakeClient_Windows"	"\x55\x8B\xEC\x56\xFF\x75\x08\xB9"
+			"CreateFakeClient_Windows64"	"\x40\x53\x48\x83\xEC\x20\x48\x8D\x0D\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x48\x8B"
+			"CreateFakeClient_Linux64"		"\x55\x48\x89\xE5\x41\x54\x48\x83\xEC\x08\x48\x8B\x3D\x2A\x2A\x2A\x2A\xE8"
 		}
-		
+
 		"Offsets"
 		{
 			/* Offset into IVEngineServer::CreateFakeClient */
 			"sv"
 			{
-				"windows"	"8"
+				"windows64"	"9"
+				"linux64"	"13"
 			}
 		}
-		
+
 	}
-	
+
 	/* EntityFactoryDictionary function */
 	"#default"
 	{
@@ -119,7 +130,8 @@
 			"EntityFactory"
 			{
 				"library"	"server"
-				"windows"	"\xA1\x2A\x2A\x2A\x2A\xA8\x01\x0F\x85\x2A\x2A\x2A\x2A\x83\xC8\x01"
+				"windows64"	"\x48\x83\xEC\x2A\x8B\x05\x2A\x2A\x2A\x2A\xA8\x2A\x0F\x85\x2A\x2A\x2A\x2A\x83\xC8\x2A\x48\xC7\x05"
+				"linux64"	"@_Z23EntityFactoryDictionaryv"
 			}
 		}
 	}
@@ -132,11 +144,12 @@
 			"FireOutput"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x81\xEC\x44\x01\x00\x00\x8B\xC1"
+				"windows64"	"\x4C\x8B\xDC\x57\x41\x54"
+				"linux64"	"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
 	}
-	
+
  	/* CBaseAnimating::LookupAttachment */
 	"#default"
 	{
@@ -145,11 +158,12 @@
 			"LookupAttachment"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x83\xBE\xF4\x04\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x86\xF4\x04\x00\x00\x5E\x85\xC0\x74\x2A\x83\x38\x00\x74\x2A\xFF\x75\x08\x50\xE8\x2A\x2A\x2A\x2A\x83\xC4\x08\x40"
+				"windows64"	"\x48\x89\x5C\x24\x2A\x57\x48\x83\xEC\x2A\x48\x83\xB9\x2A\x2A\x2A\x2A\x2A\x48\x8B\xFA\x48\x8B\xD9\x75\x2A\xE8\x2A\x2A\x2A\x2A\x48\x85\xC0\x74\x2A\x48\x8B\xCB\xE8\x2A\x2A\x2A\x2A\x48\x8B\x8B\x2A\x2A\x2A\x2A\x48\x85\xC9\x74\x2A\x48\x83\x39\x2A\x74\x2A\x48\x8B\xD7\xE8"
+				"linux64"	"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
 			}
 		}
 	}
-	
+
 	/* SetUserInfo data */
 	"#default"
 	{
@@ -157,39 +171,31 @@
 		{
 			/**
 			 * CBaseClient::SetUserCVar(char  const*,char  const*);
-			 * Linux offset straight from VTable dump.
-			 * Windows offset is crazy. Found the windows SetName function using string "(%d)%-.*s" (aD_S in IDA)
-			 * Cross referenced back to the vtable and counted manually (SetUserCvar is 1 higher, offsets start from 1)
 			 */
 			"SetUserCvar"
 			{
-				/* Not 100% sure on this, why would windows change and not linux - TEST ME */
-				"windows"	"31"
+				"windows64"	"31"
+				"linux64"	"69"
 			}
 			/**
 			 * CBaseClient::SetName(char  const*);
-			 * Linux offset straight from VTable dump.
-			 * Has string "(%d)%-0.*s"
 			 */
 			"SetClientName"
 			{
-				"windows"	"30"
+				"windows64"	"30"
+				"linux64"	"68"
 			}
 			/**
 			 * Offset into CBaseClient - Used by CBaseServer::UpdateUserSettings to determine when changes have been made.
-			 * Find CBaseClient::UpdateUserSettings (strings "net_maxroutable", "cl_updaterate" etc) and the offset is set to 0 near the end.
-			 * Linux: 	mov     byte ptr [esi+0B0h], 0
-			 * Win:		mov     byte ptr [esi+0B0h], 0
-			 *
-			 * L4D2: This has been moved into CBaseClient::UpdateUserSettings(), rest of the details are still relevant.
 			 */
 			"InfoChanged"
 			{
-				"windows"	"488"
+				"windows64"	"632"
+				"linux64"	"624"
 			}
 		}
 	}
-	
+
  	"#default"
 	{
 		"Keys"
@@ -201,83 +207,100 @@
 		{
 			"SetOwnerEntity"
 			{
-				"windows"	"19"
+				"windows64"	"19"
+				"linux64"	"20"
 			}
 			"GiveNamedItem"
 			{
-				"windows"	"461"
+				"windows64"	"465"
+				"linux64"	"466"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"304"
+				"windows64"	"308"
+				"linux64"	"309"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"299"
+				"windows64"	"304"
+				"linux64"	"305"
 			}
 			"Ignite"
 			{
-				"windows"	"229"
+				"windows64"	"229"
+				"linux64"	"230"
 			}
 			"Extinguish"
 			{
-				"windows"	"232"
+				"windows64"	"232"
+				"linux64"	"233"
 			}
 			"Teleport"
 			{
-				"windows"	"114"
+				"windows64"	"114"
+				"linux64"	"115"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"511"
+				"windows64"	"515"
+				"linux64"	"515"
 			}
 			"GetVelocity"
 			{
-				"windows"	"140"
+				"windows64"	"140"
+				"linux64"	"141"
 			}
 			"EyeAngles"
 			{
-				"windows"	"131"
+				"windows64"	"131"
+				"linux64"	"132"
 			}
 			"AcceptInput"
 			{
-				"windows"	"41"
+				"windows64"	"41"
+				"linux64"	"42"
 			}
 			"SetEntityModel"
 			{
-				"windows"	"27"
+				"windows64"	"27"
+				"linux64"	"28"
 			}
 			"WeaponEquip"
 			{
-				"windows"	"292"
+				"windows64"	"296"
+				"linux64"	"297"
 			}
 			"Activate"
 			{
-				"windows"	"38"
+				"windows64"	"38"
+				"linux64"	"39"
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"481"
+				"windows64"	"485"
+				"linux64"	"486"
 			}
 			"GiveAmmo"
 			{
-				"windows"	"285"
+				"windows64"	"289"
+				"linux64"	"290"
 			}
 			"GetAttachment"
 			{
-				"windows"	"223"
+				"windows64"	"223"
+				"linux64"	"224"
 			}
 		}
 		"Signatures"
 		{
 			/**
 			 *	CNetworkStringTableContainer::WriteBaselines
-			 *	"Index error writing string table baseline %s\n"
 			 */
 			"WriteBaselines"
 			{
 				"library"	"engine"
-				"windows"	"\x55\x8B\xEC\x83\xEC\x58\x53\x56\x8B\xF1"
+				"windows64"	"\x4C\x8B\xDC\x48\x81\xEC\x2A\x2A\x2A\x2A\x48\x8B\x05\x2A\x2A\x2A\x2A\x48\x33\xC4\x48\x89\x84\x24\x2A\x2A\x2A\x2A\x49\x89\x5B\x2A\x48\x8B\xDA"
+				"linux64"	"@_ZN28CNetworkStringTableContainer14WriteBaselinesEPKcR8bf_writei"
 			}
 		}
 	}
