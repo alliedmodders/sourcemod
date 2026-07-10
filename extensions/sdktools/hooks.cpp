@@ -218,14 +218,10 @@ void CHookManager::OnClientConnected(int client)
 		}
 	}
 	
-	auto msghndl = (IClientMessageHandler *)((intptr_t)(pClient) + sizeof(void *));
-	auto func = KHook::GetVtableFunction(msghndl, &IClientMessageHandler::ProcessVoiceData);
-
-	netProcessVoiceData.push_back(new CVTableHook(vtable,
-	new KHook::Member<IClientMessageHandler, bool, CLC_VoiceData*>(
-		func,
-		this, nullptr, &CHookManager::ProcessVoiceData
-	)));
+	//(void** vtable, std::int32_t index, CONTEXT* ctx, CLASSNAME* ptr, RETURN (CONTEXT::*pre)(CLASSNAME*, ARGS...), RETURN (CONTEXT::*post)(CLASSNAME*, ARGS...))
+	netProcessVoiceData.push_back(new CVTableHookDetails<CHookManager, IClientMessageHandler, bool, CLC_VoiceData*>(
+		vtable, KHook::GetVtableIndex(&IClientMessageHandler::ProcessVoiceData), this, nullptr, &CHookManager::ProcessVoiceData
+	));
 }
 #endif
 
@@ -269,11 +265,8 @@ void CHookManager::PlayerRunCmdHook(int client, bool post)
 
 	auto func = KHook::GetVtableFunction<CBaseEntity, void, CUserCmd*, IMoveHelper*>(pEntity, g_iPlayerRunCmdHook);
 
-	runUserCmdHookVec.push_back(new CVTableHook(vtable,
-	new KHook::Member<CBaseEntity, void, CUserCmd*, IMoveHelper*>(
-		func,
-		this, (post) ? nullptr : &CHookManager::PlayerRunCmd, (post) ? &CHookManager::PlayerRunCmdPost : nullptr
-	)));
+	runUserCmdHookVec.push_back(new CVTableHookDetails<CHookManager, CBaseEntity, void, CUserCmd*, IMoveHelper*>(vtable, g_iPlayerRunCmdHook, this, (post) ? nullptr : &CHookManager::PlayerRunCmd, (post) ? &CHookManager::PlayerRunCmdPost : nullptr
+	));
 }
 
 KHook::Return<void> CHookManager::PlayerRunCmd(CBaseEntity* this_ptr, CUserCmd *ucmd, IMoveHelper *moveHelper)
@@ -444,11 +437,12 @@ void CHookManager::NetChannelHook(int client)
 #endif
 		if (!m_netChannelHooks.size())
 		{
-			m_netChannelHooks.push_back(new CVTableHook(*(void***)basefilesystem,
-			new KHook::Member<IBaseFileSystem, bool, const char*, const char*>(
-				KHook::GetVtableFunction(basefilesystem, &IBaseFileSystem::FileExists),
+			m_netChannelHooks.push_back(
+			new CVTableHookDetails<CHookManager, IBaseFileSystem, bool, const char*, const char*>(
+				*(void***)basefilesystem,
+				KHook::GetVtableIndex(&IBaseFileSystem::FileExists),
 				this, &CHookManager::FileExists, nullptr
-			)));
+			));
 		}
 
 		for (iter = 0; iter < m_netChannelHooks.size(); ++iter)
@@ -461,21 +455,23 @@ void CHookManager::NetChannelHook(int client)
 
 		if (iter == m_netChannelHooks.size())
 		{
-			m_netChannelHooks.push_back(new CVTableHook(*(void***)pNetChannel,
+			m_netChannelHooks.push_back(
 #if (SOURCE_ENGINE >= SE_ALIENSWARM || SOURCE_ENGINE == SE_LEFT4DEAD || SOURCE_ENGINE == SE_LEFT4DEAD2)
-			new KHook::Member<INetChannel, bool, const char*, unsigned int, bool>(
+			new CVTableHookDetails<CHookManager, INetChannel, bool, const char*, unsigned int, bool>(
 #else
-			new KHook::Member<INetChannel, bool, const char*, unsigned int>(
+			new CVTableHookDetails<CHookManager, INetChannel, bool, const char*, unsigned int>(
 #endif
-				KHook::GetVtableFunction(pNetChannel, &INetChannel::SendFile),
+				*(void***)pNetChannel,
+				KHook::GetVtableIndex(&INetChannel::SendFile),
 				this, &CHookManager::SendFile, nullptr
-			)));
+			));
 
-			m_netChannelHooks.push_back(new CVTableHook(*(void***)pNetChannel,
-			new KHook::Member<INetChannel, void, struct netpacket_s*, bool>(
-				KHook::GetVtableFunction(pNetChannel, &INetChannel::ProcessPacket),
+			m_netChannelHooks.push_back(
+			new CVTableHookDetails<CHookManager, INetChannel, void, struct netpacket_s*, bool>(
+				*(void***)pNetChannel,
+				KHook::GetVtableIndex(&INetChannel::ProcessPacket),
 				this, &CHookManager::ProcessPacket, &CHookManager::ProcessPacket_Post
-			)));
+			));
 		}
 	}
 }
