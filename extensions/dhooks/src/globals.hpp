@@ -55,10 +55,17 @@ inline const char *HandleErrorToString(SourceMod::HandleError err) {
 }
 
 inline void* cell_to_ptr(SourcePawn::IPluginContext* ctx, const cell_t addr) {
-	if (ctx->GetRuntime()->FindPubvarByName("__Virtual_Address__", nullptr) != SP_ERROR_NONE) {
-		return sourcemod->FromPseudoAddress(addr);
+	void* ptr = reinterpret_cast<void*>(addr);
+	if (ctx->GetRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE) {
+		cell_t* sp_addr;
+		if (int err = ctx->LocalToPhysAddr(addr, &sp_addr); err != SP_ERROR_NONE) {
+			ctx->ThrowNativeErrorEx(err, "Could not read argument");
+			return nullptr;
+		}
+		auto value = *reinterpret_cast<int64_t*>(sp_addr);
+		ptr = (void*)value;
 	}
-	return reinterpret_cast<void*>(addr);
+	return ptr;
 }
 
 }
