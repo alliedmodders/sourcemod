@@ -467,7 +467,7 @@ cell_t DHookParam_GetParamObjectPtrString(SourcePawn::IPluginContext* context, c
 		}
 		case sp::ObjectValueType_String: {
 			auto str = *(sdk::string_t *)(object + params[3]);
-			context->StringToLocal(params[5], params[6], str.ToCStr());
+			context->StringToLocal(params[5], params[6], (str.ToCStr() == nullptr) ? "" : str.ToCStr());
 			break;
 		}
 		default:
