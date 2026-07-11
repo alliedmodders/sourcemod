@@ -71,47 +71,6 @@
 		}
 	}
 
-	/* IServer interface pointer */
-	"#default"
-	{
-		"Keys"
-		{
-			/* Signature for the beginning of IVEngineServer::CreateFakeClient.
-			 *
-			 * The engine binary is not actually scanned in order to look for
-			 * this. SourceHook is used to used to determine the address of the
-			 * function and this signature is used to verify that it contains
-			 * the expected code. A pointer to sv (IServer interface) is used
-			 * here.
-			 */
-			"CreateFakeClient_Windows"		"\x55\x8B\xEC\xFF\x75\x08\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x75"
-			"CreateFakeClient_Windows64"	"\x48\x83\xEC\x28\x48\x8D\x0D\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\x48\x85\xC0\x75"
-		}
-
-		"Offsets"
-		{
-			/* Offset into IVEngineServer::CreateFakeClient
-			 * (windows: imm32 of "mov ecx, sv"; windows64: disp32 of "lea rcx, [rip+sv]") */
-			"sv"
-			{
-				"windows"	"7"
-				"windows64"	"7"
-			}
-		}
-
-		"Signatures"
-		{
-			/* CBaseServer object for IServer interface */
-			"sv"
-			{
-				"library"	"engine"
-				"linux"		"@sv"
-				"linux64"	"@sv"
-				"mac"		"@sv"
-			}
-		}
-	}
-
 	/* SetUserInfo data */
 	"#default"
 	{
