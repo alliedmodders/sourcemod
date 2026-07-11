@@ -26,7 +26,6 @@
 				"windows64"	"8"
 				"linux"		"4"
 				"linux64"	"8"
-				"mac"		"4"
 			}
 		}
 	}
