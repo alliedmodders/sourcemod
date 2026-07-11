@@ -11,41 +11,6 @@
 
 "Games"
 {
-	/* CGlobalEntityList */
-	"#default"
-	{
-		"Offsets"
-		{
-			/* Offset into LevelShutdown (windows) / into the gEntList-reference
-			 * signature below (windows64: position of the lea disp32) */
-			"gEntList"
-			{
-				"windows"	"11"
-				"windows64"	"25"
-				"linux"		"13"
-			}
-		}
-
-		"Signatures"
-		{
-			"LevelShutdown"
-			{
-				"library"	"server"
-				"windows"	"\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xB9\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8"
-				/* Not the literal LevelShutdown; a unique function that references
-				 * gEntList via "lea rcx, [rip+gEntList]" (disp32 at offset 25). */
-				"windows64"	"\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x33\xFF\x48\x8D\x51\x10\x48\x85\xC9\x48\x8B\xD9\x48\x8D\x0D\x2A\x2A\x2A\x2A"
-				"linux"		"\xE8\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xC7\x2A\x2A\x2A\x2A\x2A\x2A\xE8\x2A\x2A\x2A\x2A\xE8"
-			}
-			"gEntList"
-			{
-				"library"	"server"
-				"linux64"	"@gEntList"
-				"mac"		"@gEntList"
-			}
-		}
-	}
-
 	"#default"
 	{
 		"Keys"
