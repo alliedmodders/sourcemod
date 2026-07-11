@@ -30,7 +30,6 @@
 				"windows64"	"8"
 				"linux"		"4"
 				"linux64"	"8"
-				"mac"		"4"
 			}
 			"GetTENext"
 			{
@@ -38,7 +37,6 @@
 				"windows64"	"16"
 				"linux"		"8"
 				"linux64"	"16"
-				"mac"		"8"
 			}
 			"TE_GetServerClass"
 			{
@@ -46,14 +44,13 @@
 				"windows64"	"0"
 				"linux"		"0"
 				"linux64"	"0"
-				"mac"		"0"
 			}
 		}
 
 		"Signatures"
 		{
 			/* CBaseTempEntity constructor (links each TE into the s_pTempEntities list).
-			 * windows/windows64 only; linux/mac resolve s_pTempEntities via symbol below. */
+			 * windows/windows64 only; linux/linux64 resolve s_pTempEntities via symbol below. */
 			"CBaseTempEntity"
 			{
 				"library"	"server"
@@ -66,7 +63,6 @@
 				"library"	"server"
 				"linux"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
 				"linux64"	"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
-				"mac"		"@_ZN15CBaseTempEntity15s_pTempEntitiesE"
 			}
 		}
 	}
@@ -87,7 +83,6 @@
 				"windows64"	"18"
 				"linux"		"58"
 				"linux64"	"58"
-				"mac"		"58"
 			}
 			/**
 			 * CBaseClient::SetName(char  const*);  (name-sanitize fn, string "(%d)%-.*s")
@@ -98,7 +93,6 @@
 				"windows64"	"17"
 				"linux"		"57"
 				"linux64"	"57"
-				"mac"		"57"
 			}
 			/**
 			 * Offset into CBaseClient (m_bConVarsChanged) - set to 1 near the end of
@@ -111,7 +105,6 @@
 				"windows64"	"160"
 				"linux"		"140"
 				"linux64"	"160"
-				"mac"		"140"
 			}
 		}
 	}

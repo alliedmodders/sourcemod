@@ -27,7 +27,6 @@
 				"windows64"	"\x48\x8B\xC4\x48\x89\x50\x10\x48\x89\x48\x08\x55\x53\x56"
 				"linux"		"\x55\x57\x56\x53\xE8\x2A\x2A\x2A\x2A\x81\xC3\x2A\x2A\x2A\x2A\x81\xEC\x2A\x2A\x2A\x2A\x8B\x84\x24\x2A\x2A\x2A\x2A\x8B\xAC\x24\x2A\x2A\x2A\x2A\x66\x0F\x6E\x84\x24"
 				"linux64"	"\x41\x57\x66\x48\x0F\x6E\xCF"
-				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
 	}
@@ -43,7 +42,6 @@
 				"windows64"	"405"
 				"linux"		"406"
 				"linux64"	"406"
-				"mac"		"406"
 			}
 			"RemovePlayerItem"
 			{
@@ -51,7 +49,6 @@
 				"windows64"	"274"
 				"linux"		"275"
 				"linux64"	"275"
-				"mac"		"275"
 			}
 			"Weapon_GetSlot"
 			{
@@ -59,7 +56,6 @@
 				"windows64"	"272"
 				"linux"		"273"
 				"linux64"	"273"
-				"mac"		"273"
 			}
 			"Ignite"
 			{
@@ -67,7 +63,6 @@
 				"windows64"	"213"
 				"linux"		"214"
 				"linux64"	"214"
-				"mac"		"214"
 			}
 			"Extinguish"
 			{
@@ -75,7 +70,6 @@
 				"windows64"	"217"
 				"linux"		"218"
 				"linux64"	"218"
-				"mac"		"218"
 			}
 			"Teleport"
 			{
@@ -83,7 +77,6 @@
 				"windows64"	"110"
 				"linux"		"111"
 				"linux64"	"111"
-				"mac"		"111"
 			}
 			"CommitSuicide"
 			{
@@ -91,7 +84,6 @@
 				"windows64"	"444"
 				"linux"		"444"
 				"linux64"	"444"
-				"mac"		"444"
 			}
 			"GetVelocity"
 			{
@@ -99,7 +91,6 @@
 				"windows64"	"142"
 				"linux"		"143"
 				"linux64"	"143"
-				"mac"		"143"
 			}
 			"EyeAngles"
 			{
@@ -107,7 +98,6 @@
 				"windows64"	"133"
 				"linux"		"134"
 				"linux64"	"134"
-				"mac"		"134"
 			}
 			"AcceptInput"
 			{
@@ -115,7 +105,6 @@
 				"windows64"	"38"
 				"linux"		"39"
 				"linux64"	"39"
-				"mac"		"39"
 			}
 			"SetEntityModel"
 			{
@@ -123,7 +112,6 @@
 				"windows64"	"26"
 				"linux"		"27"
 				"linux64"	"27"
-				"mac"		"27"
 			}
 			"WeaponEquip"
 			{
@@ -131,7 +119,6 @@
 				"windows64"	"265"
 				"linux"		"266"
 				"linux64"	"266"
-				"mac"		"266"
 			}
 			"Activate"
 			{
@@ -139,7 +126,6 @@
 				"windows64"	"35"
 				"linux"		"36"
 				"linux64"	"36"
-				"mac"		"36"
 			}
 			"PlayerRunCmd"
 			{
@@ -147,7 +133,6 @@
 				"windows64"	"423"
 				"linux"		"424"
 				"linux64"	"424"
-				"mac"		"424"
 			}
 			"GiveAmmo"
 			{
@@ -155,7 +140,6 @@
 				"windows64"	"256"
 				"linux"		"257"
 				"linux64"	"257"
-				"mac"		"257"
 			}
 		}
 
