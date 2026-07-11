@@ -12,9 +12,9 @@
 "Games"
 {
 	/* Pirates, Vikings and Knights II */
-	
 
-	
+
+
 	/* CBaseEntityOutput::FireOutput */
 	"pvkii"
 	{
@@ -23,13 +23,15 @@
 			"FireOutput"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x81\xEC\x04\x04\x00\x00\x53\x8B\xD9"
-				"linux"		"\xE8\xA2\xAE\xC7\xFF\x05\x9B\xB8\x5E\x00\x55\x89\xE5\x57\x56\x53"
+				"windows"	"\x55\x8B\xEC\x6A\x2A\x68\x2A\x2A\x2A\x2A\x64\xA1\x2A\x2A\x2A\x2A\x50\x64\x89\x25\x2A\x2A\x2A\x2A\x81\xEC\x2A\x2A\x2A\x2A\x8B\xC1\xC7\x45"
+				"windows64"	"\x48\x8B\xC4\x48\x89\x50\x10\x48\x89\x48\x08\x55\x53\x56"
+				"linux"		"\x55\x57\x56\x53\xE8\x2A\x2A\x2A\x2A\x81\xC3\x2A\x2A\x2A\x2A\x81\xEC\x2A\x2A\x2A\x2A\x8B\x84\x24\x2A\x2A\x2A\x2A\x8B\xAC\x24\x2A\x2A\x2A\x2A\x66\x0F\x6E\x84\x24"
+				"linux64"	"\x41\x57\x66\x48\x0F\x6E\xCF"
 				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
 		}
 	}
-	
+
 	"pvkii"
 	{
 		"Offsets"
@@ -38,95 +40,125 @@
 			"GiveNamedItem"
 			{
 				"windows"	"405"
+				"windows64"	"405"
 				"linux"		"406"
+				"linux64"	"406"
 				"mac"		"406"
 			}
 			"RemovePlayerItem"
 			{
 				"windows"	"274"
+				"windows64"	"274"
 				"linux"		"275"
+				"linux64"	"275"
 				"mac"		"275"
 			}
 			"Weapon_GetSlot"
 			{
 				"windows"	"272"
+				"windows64"	"272"
 				"linux"		"273"
+				"linux64"	"273"
 				"mac"		"273"
 			}
 			"Ignite"
 			{
 				"windows"	"213"
+				"windows64"	"213"
 				"linux"		"214"
+				"linux64"	"214"
 				"mac"		"214"
 			}
 			"Extinguish"
 			{
 				"windows"	"217"
+				"windows64"	"217"
 				"linux"		"218"
+				"linux64"	"218"
 				"mac"		"218"
 			}
 			"Teleport"
 			{
 				"windows"	"110"
+				"windows64"	"110"
 				"linux"		"111"
+				"linux64"	"111"
 				"mac"		"111"
 			}
 			"CommitSuicide"
 			{
 				"windows"	"444"
+				"windows64"	"444"
 				"linux"		"444"
+				"linux64"	"444"
 				"mac"		"444"
 			}
 			"GetVelocity"
 			{
 				"windows"	"142"
+				"windows64"	"142"
 				"linux"		"143"
+				"linux64"	"143"
 				"mac"		"143"
 			}
 			"EyeAngles"
 			{
 				"windows"	"133"
+				"windows64"	"133"
 				"linux"		"134"
+				"linux64"	"134"
 				"mac"		"134"
 			}
 			"AcceptInput"
 			{
 				"windows"	"38"
+				"windows64"	"38"
 				"linux"		"39"
+				"linux64"	"39"
 				"mac"		"39"
 			}
 			"SetEntityModel"
 			{
 				"windows"	"26"
+				"windows64"	"26"
 				"linux"		"27"
+				"linux64"	"27"
 				"mac"		"27"
 			}
 			"WeaponEquip"
 			{
 				"windows"	"265"
+				"windows64"	"265"
 				"linux"		"266"
+				"linux64"	"266"
 				"mac"		"266"
 			}
 			"Activate"
 			{
 				"windows"	"35"
+				"windows64"	"35"
 				"linux"		"36"
+				"linux64"	"36"
 				"mac"		"36"
 			}
 			"PlayerRunCmd"
 			{
 				"windows"	"423"
+				"windows64"	"423"
 				"linux"		"424"
+				"linux64"	"424"
 				"mac"		"424"
 			}
 			"GiveAmmo"
 			{
 				"windows"	"256"
+				"windows64"	"256"
 				"linux"		"257"
+				"linux64"	"257"
 				"mac"		"257"
 			}
 		}
-		
+
 		"Keys"
 		{
 			"GameRulesProxy"		"CPVK2GameRulesProxy"
