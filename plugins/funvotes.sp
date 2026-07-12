@@ -220,7 +220,7 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 		limit = g_Cvar_Limits[g_voteType].FloatValue;
 		
 		// A multi-argument vote is "always successful", but have to check if its a Yes/No vote.
-		if ((strcmp(item, VOTE_YES) == 0 && FloatCompare(percent,limit) < 0 && param1 == 0) || (strcmp(item, VOTE_NO) == 0 && param1 == 1))
+		if ((strcmp(item, VOTE_YES) == 0 && percent < limit && param1 == 0) || (strcmp(item, VOTE_NO) == 0 && param1 == 1))
 		{
 			/* :TODO: g_voteTarget should be used here and set to -1 if not applicable.
 			 */
