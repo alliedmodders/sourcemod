@@ -39,7 +39,7 @@
 
 #include <am-platform.h>
 
-#if defined WIN32 || defined WIN64
+#if defined _WIN32 || defined _WIN64
 #ifndef PLATFORM_WINDOWS
 #define PLATFORM_WINDOWS		1
 #endif
