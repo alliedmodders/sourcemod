@@ -11,6 +11,8 @@ RUN mkdir build && cd build && \
 # Runtime stage
 FROM debian:bullseye-slim
 
-COPY --from=builder /build/sourcepawn/build/spcomp /usr/local/bin/
+# AMBuild names the per-target output folder <platform>-<arch>; since this stage
+# always builds linux/x86_64, that's deterministically "linux-x86_64".
+COPY --from=builder --chmod=0755 /build/sourcepawn/build/spcomp/linux-x86_64/spcomp /usr/local/bin/spcomp
 
 ENTRYPOINT ["/usr/local/bin/spcomp"]
