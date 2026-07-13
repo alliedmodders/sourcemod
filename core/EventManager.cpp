@@ -302,7 +302,7 @@ EventHookError EventManager::UnhookEvent(const char *name, IPluginFunction *pFun
 
 		/* Make sure the event was actually being hooked */
 		auto iter = pHookList->begin();
-		while (iter != pHookList->end() && *iter == pHook) {
+		while (iter != pHookList->end() && *iter != pHook) {
 			iter++;
 		}
 		if (iter == pHookList->end())
