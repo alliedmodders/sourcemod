@@ -115,9 +115,6 @@ SDKTools::SDKTools() :
 #endif
 	m_HookSetClientListening(&IVoiceServer::SetClientListening, this, &SDKTools::OnSetClientListening, nullptr),
 	m_HookClientCommand(&IServerGameClients::ClientCommand, this, nullptr, &SDKTools::OnClientCommand),
-#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
-	m_HookOnSendClientCommand(KHook::GetVtableIndex(&IVEngineServer::ClientCommand), this, &SDKTools::OnSendClientCommand, nullptr),
-#endif
 	m_HookLevelInit(&IServerGameDLL::LevelInit, this, nullptr, &SDKTools::LevelInit),
 	m_HookLevelShutdown(&IServerGameDLL::LevelShutdown, this, nullptr, &SDKTools::LevelShutdown)
 {}
@@ -311,9 +308,6 @@ bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 #endif
 	GET_V_IFACE_ANY(GetEngineFactory, soundemitterbase, ISoundEmitterSystemBase, SOUNDEMITTERSYSTEM_INTERFACE_VERSION);
 
-#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
-	m_HookOnSendClientCommand.Add(engine);
-#endif
 #if defined CLIENTVOICE_HOOK_SUPPORT
 	m_HookClientVoice.Add(serverClients);
 #endif
@@ -324,9 +318,6 @@ bool SDKTools::SDK_OnMetamodLoad(ISmmAPI *ismm, char *error, size_t maxlen, bool
 
 bool SDKTools::SDK_OnMetamodUnload(char *error, size_t maxlen)
 {
-#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
-	m_HookOnSendClientCommand.Remove(engine);
-#endif
 #if defined CLIENTVOICE_HOOK_SUPPORT
 	m_HookClientVoice.Remove(serverClients);
 #endif
@@ -532,22 +523,6 @@ bool SDKTools::InterceptClientConnect(int client, char *error, size_t maxlength)
 void SDKTools::OnClientConnected(int client)
 {
 	g_Hooks.OnClientConnected(client);
-}
-#endif
-
-#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
-KHook::Return<void> SDKTools::OnSendClientCommand(IVEngineServer*, edict_t *pPlayer, const char *szFormat)
-{
-	// Due to legacy code, CS:S and CS:GO still sends "name \"newname\"" to the
-	// client after aname change. The engine has a change hook on name causing
-	// it to reset to the player's Steam name. This quashes that to make
-	// SetClientName work properly.
-	if (!strncmp(szFormat, "name ", 5))
-	{
-		return { KHook::Action::Supersede };
-	}
-
-	return { KHook::Action::Ignore };
 }
 #endif
 
