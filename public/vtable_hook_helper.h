@@ -97,7 +97,12 @@ public:
 			}
 		}
 
-		auto ret = (pre) ? (_ctx->*_pre)(original_this, args...) : (_ctx->*_post)(original_this, args...);
+		KHook::Return<RETURN> ret { KHook::Action::Ignore };
+		if (pre && _pre) {
+			ret = (_ctx->*_pre)(original_this, args...);
+		} else if (!pre && _post) {
+			ret = (_ctx->*_post)(original_this, args...);
+		}
 
 		RETURN* return_ptr = nullptr;
 		void* init_op = nullptr;
