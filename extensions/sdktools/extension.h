@@ -129,10 +129,6 @@ public: // IVoiceServer
 	KHook::Return<void> OnClientCommand(class IServerGameClients*, edict_t *pEntity);
 	KHook::Virtual<class IServerGameClients, void, edict_t*> m_HookClientCommand;
 #endif
-#if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
-	KHook::Virtual<class IVEngineServer, void, edict_t*, const char*> m_HookOnSendClientCommand;
-	KHook::Return<void> OnSendClientCommand(IVEngineServer*, edict_t *pPlayer, const char *szFormat);
-#endif
 public: //ITimedEvent
 	ResultType OnTimer(ITimer *pTimer, void *pData);
 	void OnTimerEnd(ITimer *pTimer, void *pData);
