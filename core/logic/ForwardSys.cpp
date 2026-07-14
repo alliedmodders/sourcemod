@@ -308,7 +308,7 @@ int CForward::Execute(const sp::CallArgs& in_args, cell_t *result, IForwardFilte
 				break;
 		}
 
-		if ((ResultType)high_result == Pl_Stop)
+		if (m_ExecType == ET_Hook && (ResultType)high_result == Pl_Stop)
 			break;
 	}
 
