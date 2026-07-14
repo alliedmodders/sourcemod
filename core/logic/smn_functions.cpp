@@ -129,7 +129,7 @@ static cell_t sm_GetFunctionByName(IPluginContext *pContext, const cell_t *param
 	pContext->LocalToString(params[2], &name);
 
 	/* Get public function index */
-	if (pContext->GetBaseRuntime()->FindPublicByName(name, &idx) == SP_ERROR_NOT_FOUND)
+	if (pPlugin->GetBaseContext()->GetBaseRuntime()->FindPublicByName(name, &idx) == SP_ERROR_NOT_FOUND)
 	{
 		/* Return INVALID_FUNCTION if not found */
 		return pContext->GetNullFunctionValue();
