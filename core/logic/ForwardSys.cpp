@@ -312,24 +312,27 @@ int CForward::Execute(const sp::CallArgs& in_args, cell_t *result, IForwardFilte
 			break;
 	}
 
-	switch (m_ExecType)
+	if (success)
 	{
-		case ET_Ignore:
-			cur_result = 0;
-			break;
-		case ET_Event:
-		case ET_Hook:
-			cur_result = high_result;
-			break;
-		case ET_LowEvent:
-			cur_result = low_result;
-			break;
-		default:
-			break;
-	}
+		switch (m_ExecType)
+		{
+			case ET_Ignore:
+				cur_result = 0;
+				break;
+			case ET_Event:
+			case ET_Hook:
+				cur_result = high_result;
+				break;
+			case ET_LowEvent:
+				cur_result = low_result;
+				break;
+			default:
+				break;
+		}
 
-	if (result)
-		*result = cur_result;
+		if (result)
+			*result = cur_result;
+	}
 
 	return SP_ERROR_NONE;
 }
