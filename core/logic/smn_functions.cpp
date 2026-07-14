@@ -563,7 +563,7 @@ static cell_t sm_CallFinish(IPluginContext *pContext, const cell_t *params)
 	{
 		IPluginFunction *pFunction = s_pFunction;
 		ResetCall();
-		DetectExceptions eh(pContext);
+		ExceptionHandler eh(pContext);
 		if (!pFunction->Invoke(local_args, result))
 			return eh.Code();
 	} else {
