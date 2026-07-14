@@ -558,7 +558,7 @@ static cell_t sm_CallFinish(IPluginContext *pContext, const cell_t *params)
 
 	auto local_args = sArgs;
 
-	// Note: Execute() swallows exceptions, so this is okay.
+	// Note: ExceptionHandler and Execute() swallow exceptions, so this is okay.
 	if (s_pFunction)
 	{
 		IPluginFunction *pFunction = s_pFunction;
