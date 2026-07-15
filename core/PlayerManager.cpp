@@ -1632,7 +1632,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 
 		/* Do we need to look for a steam id? */
 		int steamIdType = 0;
-		if (strncmp(&info->pattern[1], "STEAM_1", 6) == 0 || strncmp(&info->pattern[1], "STEAM_0", 6) == 0)
+		if (strncmp(&info->pattern[1], "STEAM_1", 7) == 0 || strncmp(&info->pattern[1], "STEAM_0", 7) == 0)
 		{
 			steamIdType = 2;
 		}
@@ -1648,6 +1648,10 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 			{
 				size_t p, len;
 
+				/* This forces the input steam id to be STEAM_1 as the game's network string starts with STEAM_1
+				 * i.e: STEAM_0:1:123456 and STEAM_1:1:123456 will refer to same user
+				 * while STEAM_3:1:123456, STEAM_4:1:123456... etc will continue to fail.
+				 */
 				strcpy(new_pattern, "STEAM_1");
 				len = strlen(&info->pattern[8]);
 				/* Bound the copy so the "STEAM_X" prefix, the copied bytes and the
