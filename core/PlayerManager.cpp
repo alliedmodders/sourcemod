@@ -1632,7 +1632,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 
 		/* Do we need to look for a steam id? */
 		int steamIdType = 0;
-		if (strncmp(&info->pattern[1], "STEAM_", 6) == 0)
+		if (strncmp(&info->pattern[1], "STEAM_1", 6) == 0 || strncmp(&info->pattern[1], "STEAM_0", 6) == 0)
 		{
 			steamIdType = 2;
 		}
@@ -1648,25 +1648,25 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 			{
 				size_t p, len;
 
-				strcpy(new_pattern, "STEAM_");
-				len = strlen(&info->pattern[7]);
-				/* Bound the copy so the "STEAM_" prefix, the copied bytes and the
+				strcpy(new_pattern, "STEAM_1");
+				len = strlen(&info->pattern[8]);
+				/* Bound the copy so the "STEAM_X" prefix, the copied bytes and the
 				 * null terminator all fit within new_pattern. An over-long pattern
 				 * is simply truncated; it will not match a real client's id.
 				 */
-				if (len > sizeof(new_pattern) - 7)
+				if (len > sizeof(new_pattern) - 8)
 				{
-					len = sizeof(new_pattern) - 7;
+					len = sizeof(new_pattern) - 8;
 				}
 				for (p = 0; p < len; p++)
 				{
-					new_pattern[6 + p] = info->pattern[7 + p];
-					if (new_pattern[6 + p] == '_')
+					new_pattern[7 + p] = info->pattern[8 + p];
+					if (new_pattern[7 + p] == '_')
 					{
-						new_pattern[6 + p] = ':';
+						new_pattern[7 + p] = ':';
 					}
 				}
-				new_pattern[6 + p] = '\0';
+				new_pattern[7 + p] = '\0';
 			}
 			else
 			{
