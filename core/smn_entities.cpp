@@ -1239,8 +1239,10 @@ static const char *GetSendPropTypeName(int type)
 		return "float";
 	case DPT_Vector:
 		return "vector";
+#if SOURCE_ENGINE >= SE_EYE
 	case DPT_VectorXY:
 		return "vectorxy";
+#endif
 	case DPT_String:
 		return "string";
 	case DPT_Array:

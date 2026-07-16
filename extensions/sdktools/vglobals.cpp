@@ -360,10 +360,12 @@ const char *GetDTTypeName(int type)
 		{
 			return "vector";
 		}
+#if SOURCE_ENGINE >= SE_EYE
 	case DPT_VectorXY:
 		{
 			return "vectorxy";
 		}
+#endif
 	case DPT_String:
 		{
 			return "string";
