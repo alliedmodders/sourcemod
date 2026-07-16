@@ -22,7 +22,7 @@
 
 	"More than one client matches"
 	{
-		"tr"		"Biçim düzeniyle birden fazla alıcı eşleşiyor \"{1}\""
+		"tr"		"Bu biçim düzeniyle birden fazla alıcı eşleşiyor: \"{1}\""
 	}
 
 	"More than one client matched"
@@ -32,7 +32,7 @@
 
 	"Player no longer available"
 	{
-		"tr"		"Seçtiğiniz uyuncu artık mevcut değil."
+		"tr"		"Seçtiğiniz oyuncu artık mevcut değil."
 	}
 
 	"Kick player"
@@ -82,22 +82,22 @@
 
 	"Unable to find cvar"
 	{
-		"tr"		"Aranan cvar bulunamadı: {1}"
+		"tr"		"Aranan konsol değişkeni bulunamadı: {1}"
 	}
 
 	"No access to cvar"
 	{
-		"tr"		"Bu cvar'a erişiminiz yok."
+		"tr"		"Bu konsol değişkenine erişiminiz yok."
 	}
 
 	"Value of cvar"
 	{
-		"tr"		"\"{1}\" adlı cvar'ın değeri: {2}"
+		"tr"		"\"{1}\" adlı konsol değişkeninin değeri: {2}"
 	}
 
 	"Cvar changed"
 	{
-		"tr"		"\"{1}\" adlı cvar \"{2}\" olarak değiştirildi."
+		"tr"		"\"{1}\" adlı konsol değişkeni \"{2}\" olarak değiştirildi."
 	}
 
 	"Config not found"
@@ -192,7 +192,7 @@
 
 	"Command is in-game only"
 	{
-		"tr"		"Bu komut sadece oyun içine kullanılabilir."
+		"tr"		"Bu komut sadece oyun içinde kullanılabilir."
 	}
 
 	"Target must be dead"
@@ -207,7 +207,7 @@
 
 	"Target is not in game"
 	{
-		"tr"		"Verilen oyuncu tamamen oyunda değil."
+		"tr"		"Verilen oyuncu henüz tamamen oyunda değil."
 	}
 
 	"Cannot participate in vote"
@@ -230,4 +230,23 @@
 		"tr"		"Kapalı"
 	}
 
+	"Say all"
+	{
+		"tr"		"(HERKESE) {1}"
+	}
+	
+	"Chat admins"
+	{
+		"tr"		"(YÖNETİCİLER) {1}"
+	}
+	
+	"Chat to admins"
+	{
+		"tr"		"(YÖNETİCİLERE) {1}"
+	}
+	
+	"Private say to"
+	{
+		"tr"		"(Özelden {1}'e) {2}"
+	}
 }

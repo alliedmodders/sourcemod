@@ -2,22 +2,22 @@
 {
 	"Unable to find cvar"
 	{
-		"tr"		"Aranan cvar bulunamadı: {1}"
+		"tr"		"Aranan konsol değişkeni bulunamadı: {1}"
 	}
 
 	"No access to cvar"
 	{
-		"tr"		"Bu cvar'a erişiminiz yok."
+		"tr"		"Bu konsol değişkenine erişiminiz yok."
 	}
 
 	"Value of cvar"
 	{
-		"tr"		"\"{1}\" adlı cvar'ın değeri: \"{2}\""
+		"tr"		"\"{1}\" adlı konsol değişkeninin değeri: \"{2}\""
 	}
 
 	"Cvar changed"
 	{
-		"tr"		"\"{1}\" adlı cvar \"{2}\" olarak değiştirildi."
+		"tr"		"\"{1}\" adlı konsol değişkeni \"{2}\" olarak değiştirildi."
 	}
 
 	"Config not found"
@@ -117,7 +117,7 @@
 
 	"Cvar is now protected"
 	{
-		"tr"		"{1} adlı cvar artık korunuyor."
+		"tr"		"{1} adlı konsol değişkeni artık korunuyor."
 	}
 
 	"Kicked target reason"
@@ -130,4 +130,8 @@
 		"tr"		"Lütfen bir harita seçin"
 	}
 
+	"Choose Config"
+	{
+		"tr"		"Ayar Seç"
+	}
 }
