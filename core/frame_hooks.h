@@ -46,6 +46,7 @@ struct FrameAction
 };
 
 extern bool g_PendingInternalPush;
+extern bool g_PendingAuthCheck;
 
 void AddFrameAction(const FrameAction & action);
 void RunFrameHooks(bool simulating);

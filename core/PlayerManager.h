@@ -194,6 +194,13 @@ public:
 #endif
 	void OnClientSettingsChanged(edict_t *pEntity);
 	//void OnClientSettingsChanged_Pre(edict_t *pEntity);
+#if SOURCE_ENGINE >= SE_ORANGEBOX && SOURCE_ENGINE != SE_MOCK
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+	void OnNetworkIDValidated(const char *pszUserName, const char *pszNetworkID, CSteamID steamID);
+#else
+	void OnNetworkIDValidated(const char *pszUserName, const char *pszNetworkID);
+#endif
+#endif
 	void OnClientLanguageChanged(int client, unsigned int language);
 	void OnServerHibernationUpdate(bool bHibernating);
 	void OnClientPrintf(edict_t *pEdict, const char *szMsg);

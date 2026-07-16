@@ -46,6 +46,7 @@
 #include <iserver.h>
 #include <IGameConfigs.h>
 #include "ConsoleDetours.h"
+#include "frame_hooks.h"
 #include "logic_bridge.h"
 #include <sourcemod_version.h>
 #include "smn_keyvalues.h"
@@ -77,6 +78,16 @@ SH_DECL_HOOK2_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *,
 SH_DECL_HOOK1_void(IServerGameClients, ClientCommand, SH_NOATTRIB, 0, edict_t *);
 #endif
 SH_DECL_HOOK1_void(IServerGameClients, ClientSettingsChanged, SH_NOATTRIB, 0, edict_t *);
+
+// mock lacks NetworkIDValidated; episode1/darkm (< SE_ORANGEBOX) predate it.
+#if SOURCE_ENGINE >= SE_ORANGEBOX && SOURCE_ENGINE != SE_MOCK
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+SH_DECL_HOOK3_void(IServerGameClients, NetworkIDValidated, SH_NOATTRIB, 0, const char *, const char *, CSteamID);
+#else
+SH_DECL_HOOK2_void(IServerGameClients, NetworkIDValidated, SH_NOATTRIB, 0, const char *, const char *);
+#endif
+#define SM_HAS_NETWORKID_VALIDATED 1
+#endif
 
 #if SOURCE_ENGINE >= SE_EYE
 SH_DECL_HOOK2_void(IServerGameClients, ClientCommandKeyValues, SH_NOATTRIB, 0, edict_t *, KeyValues *);
@@ -175,6 +186,9 @@ void PlayerManager::OnSourceModAllInitialized()
 	SH_ADD_HOOK(IServerGameClients, ClientCommandKeyValues, serverClients, SH_MEMBER(this, &PlayerManager::OnClientCommandKeyValues_Post), true);
 #endif
 	SH_ADD_HOOK(IServerGameClients, ClientSettingsChanged, serverClients, SH_MEMBER(this, &PlayerManager::OnClientSettingsChanged), true);
+#if defined SM_HAS_NETWORKID_VALIDATED
+	SH_ADD_HOOK(IServerGameClients, NetworkIDValidated, serverClients, SH_MEMBER(this, &PlayerManager::OnNetworkIDValidated), true);
+#endif
 	SH_ADD_HOOK(IServerGameDLL, ServerActivate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerActivate), true);
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
 	SH_ADD_HOOK(IServerGameDLL, ServerHibernationUpdate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
@@ -232,6 +246,9 @@ void PlayerManager::OnSourceModShutdown()
 	SH_REMOVE_HOOK(IServerGameClients, ClientCommandKeyValues, serverClients, SH_MEMBER(this, &PlayerManager::OnClientCommandKeyValues_Post), true);
 #endif
 	SH_REMOVE_HOOK(IServerGameClients, ClientSettingsChanged, serverClients, SH_MEMBER(this, &PlayerManager::OnClientSettingsChanged), true);
+#if defined SM_HAS_NETWORKID_VALIDATED
+	SH_REMOVE_HOOK(IServerGameClients, NetworkIDValidated, serverClients, SH_MEMBER(this, &PlayerManager::OnNetworkIDValidated), true);
+#endif
 	SH_REMOVE_HOOK(IServerGameDLL, ServerActivate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerActivate), true);
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
 	SH_REMOVE_HOOK(IServerGameDLL, ServerHibernationUpdate, gamedll, SH_MEMBER(this, &PlayerManager::OnServerHibernationUpdate), true);
@@ -491,6 +508,17 @@ void PlayerManager::RunAuthChecks()
 		}
 	}
 }
+
+#if defined SM_HAS_NETWORKID_VALIDATED
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+void PlayerManager::OnNetworkIDValidated(const char *pszUserName, const char *pszNetworkID, CSteamID steamID)
+#else
+void PlayerManager::OnNetworkIDValidated(const char *pszUserName, const char *pszNetworkID)
+#endif
+{
+	g_PendingAuthCheck = true;
+}
+#endif
 
 bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen)
 {

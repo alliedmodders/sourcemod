@@ -45,6 +45,7 @@ static Queue<FrameAction> *frame_actions;
 static float g_LastMenuTime = 0.0f;
 static float g_LastAuthCheck = 0.0f;
 bool g_PendingInternalPush = false;
+bool g_PendingAuthCheck = false;
 
 class FrameActionInit : public SMGlobalClass
 {
@@ -114,9 +115,16 @@ void RunFrameHooks(bool simulating)
 		g_LastMenuTime = curtime;
 	}
 
-	if (*g_NumPlayersToAuth && curtime - g_LastAuthCheck >= 0.7f)
+	/* g_PendingAuthCheck is set by the NetworkIDValidated hook so that a client
+	 * whose Steam ticket was just validated is authorized on the next frame rather
+	 * than waiting up to 0.7s for the periodic check. It's deferred to the next frame
+	 * (instead of authorizing inline in the hook) because the engine doesn't flag the
+	 * client as fully authenticated until after the NetworkIDValidated callback returns.
+	 */
+	if (*g_NumPlayersToAuth && (g_PendingAuthCheck || curtime - g_LastAuthCheck >= 0.7f))
 	{
 		g_Players.RunAuthChecks();
 		g_LastAuthCheck = curtime;
+		g_PendingAuthCheck = false;
 	}
 }
