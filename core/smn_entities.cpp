@@ -1229,6 +1229,33 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 	return len;
 }
 
+static const char *GetSendPropTypeName(int type)
+{
+	switch (type)
+	{
+	case DPT_Int:
+		return "integer";
+	case DPT_Float:
+		return "float";
+	case DPT_Vector:
+		return "vector";
+	case DPT_VectorXY:
+		return "vectorxy";
+	case DPT_String:
+		return "string";
+	case DPT_Array:
+		return "array";
+	case DPT_DataTable:
+		return "datatable";
+#if SOURCE_ENGINE >= SE_ALIENSWARM
+	case DPT_Int64:
+		return "int64";
+#endif
+	default:
+		return "unknown";
+	}
+}
+
 #define FIND_PROP_DATA(td) \
 	datamap_t *pMap; \
 	if ((pMap = CBaseEntity_GetDataDescMap(pEntity)) == NULL) \
@@ -1329,11 +1356,11 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 			\
 			if (pProp->GetType() != type) \
 			{ \
-				return pContext->ThrowNativeError("SendProp %s type is not " type_name " ([%d,%d] != %d)", \
+				return pContext->ThrowNativeError("SendProp %s type is not " type_name " ([%s,%d] != %s)", \
 					prop, \
-					pProp->GetType(), \
+					GetSendPropTypeName(pProp->GetType()), \
 					pProp->m_nBits, \
-					type); \
+					GetSendPropTypeName(type)); \
 			} \
 			\
 			offset += pProp->GetOffset() + (elementStride * element); \
@@ -1350,10 +1377,10 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 		} \
 	default: \
 		{ \
-			return pContext->ThrowNativeError("SendProp %s type is not " type_name " (%d != %d)", \
+			return pContext->ThrowNativeError("SendProp %s type is not " type_name " (%s != %s)", \
 				prop, \
-				pProp->GetType(), \
-				type); \
+				GetSendPropTypeName(pProp->GetType()), \
+				GetSendPropTypeName(type)); \
 		} \
 	} \
 
@@ -1377,11 +1404,11 @@ static cell_t SetEntDataString(IPluginContext *pContext, const cell_t *params)
 	pProp = pTable->GetProp(element); \
 	if (pProp->GetType() != type) \
 	{ \
-		return pContext->ThrowNativeError("SendProp %s type is not " type_name " ([%d,%d] != %d)", \
+		return pContext->ThrowNativeError("SendProp %s type is not " type_name " ([%s,%d] != %s)", \
 			prop, \
-			pProp->GetType(), \
+			GetSendPropTypeName(pProp->GetType()), \
 			pProp->m_nBits, \
-			type); \
+			GetSendPropTypeName(type)); \
 	}
 
 

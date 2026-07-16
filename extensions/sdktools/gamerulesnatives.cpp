@@ -142,11 +142,11 @@ enum PropFieldType
 			\
 			if (pProp->GetType() != type) \
 			{ \
-				return pContext->ThrowNativeError("SendProp %s type is not " type_name " ([%d,%d] != %d)", \
+				return pContext->ThrowNativeError("SendProp %s type is not " type_name " ([%s,%d] != %s)", \
 					prop, \
-					pProp->GetType(), \
+					GetDTTypeName(pProp->GetType()), \
 					pProp->m_nBits, \
-					type); \
+					GetDTTypeName(type)); \
 			} \
 			\
 			offset += pProp->GetOffset() + (elementStride * element); \
@@ -163,10 +163,10 @@ enum PropFieldType
 		} \
 	default: \
 		{ \
-			return pContext->ThrowNativeError("SendProp %s type is not " type_name " (%d != %d)", \
+			return pContext->ThrowNativeError("SendProp %s type is not " type_name " (%s != %s)", \
 				prop, \
-				pProp->GetType(), \
-				type); \
+				GetDTTypeName(pProp->GetType()), \
+				GetDTTypeName(type)); \
 		} \
 	} \
 
@@ -190,11 +190,11 @@ enum PropFieldType
 	pProp = pTable->GetProp(element); \
 	if (pProp->GetType() != type) \
 	{ \
-		return pContext->ThrowNativeError("SendProp %s type is not " type_name " ([%d,%d] != %d)", \
+		return pContext->ThrowNativeError("SendProp %s type is not " type_name " ([%s,%d] != %s)", \
 			prop, \
-			pProp->GetType(), \
+			GetDTTypeName(pProp->GetType()), \
 			pProp->m_nBits, \
-			type); \
+			GetDTTypeName(type)); \
 	}
 
 static cell_t GameRules_GetProp(IPluginContext *pContext, const cell_t *params)

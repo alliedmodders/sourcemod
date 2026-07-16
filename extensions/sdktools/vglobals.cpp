@@ -360,6 +360,10 @@ const char *GetDTTypeName(int type)
 		{
 			return "vector";
 		}
+	case DPT_VectorXY:
+		{
+			return "vectorxy";
+		}
 	case DPT_String:
 		{
 			return "string";
