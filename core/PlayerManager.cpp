@@ -1632,7 +1632,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 
 		/* Do we need to look for a steam id? */
 		int steamIdType = 0;
-		if (strncmp(&info->pattern[1], "STEAM_1", 7) == 0 || strncmp(&info->pattern[1], "STEAM_0", 7) == 0)
+		if (strncmp(&info->pattern[1], "STEAM_", 6) == 0)
 		{
 			steamIdType = 2;
 		}
@@ -1648,29 +1648,25 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 			{
 				size_t p, len;
 
-				/* This forces the input steam id to be STEAM_1 as the game's network string starts with STEAM_1
-				 * i.e: STEAM_0:1:123456 and STEAM_1:1:123456 will refer to same user
-				 * while STEAM_3:1:123456, STEAM_4:1:123456... etc will continue to fail.
-				 */
-				strcpy(new_pattern, "STEAM_1");
-				len = strlen(&info->pattern[8]);
-				/* Bound the copy so the "STEAM_X" prefix, the copied bytes and the
+				strcpy(new_pattern, "STEAM_");
+				len = strlen(&info->pattern[7]);
+				/* Bound the copy so the "STEAM_" prefix, the copied bytes and the
 				 * null terminator all fit within new_pattern. An over-long pattern
 				 * is simply truncated; it will not match a real client's id.
 				 */
-				if (len > sizeof(new_pattern) - 8)
+				if (len > sizeof(new_pattern) - 7)
 				{
-					len = sizeof(new_pattern) - 8;
+					len = sizeof(new_pattern) - 7;
 				}
 				for (p = 0; p < len; p++)
 				{
-					new_pattern[7 + p] = info->pattern[8 + p];
-					if (new_pattern[7 + p] == '_')
+					new_pattern[6 + p] = info->pattern[7 + p];
+					if (new_pattern[6 + p] == '_')
 					{
-						new_pattern[7 + p] = ':';
+						new_pattern[6 + p] = ':';
 					}
 				}
-				new_pattern[7 + p] = '\0';
+				new_pattern[6 + p] = '\0';
 			}
 			else
 			{
