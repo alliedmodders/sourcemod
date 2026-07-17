@@ -1695,21 +1695,34 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 				
 				// We want to make it easy for people to be kicked/banned, so don't require validation for command targets.
 				const char *steamId = steamIdType == 2 ? pTarget->GetSteam2Id(false) : pTarget->GetSteam3Id(false);
-				if (steamId && strcmp(steamId, new_pattern) == 0)
+				if (steamId)
 				{
-					if ((info->reason = FilterCommandTarget(pAdmin, pTarget, info->flags))
-						== COMMAND_TARGET_VALID)
+					// If id is STEAM2 and the universe is Public/Individual, allow either to match
+					if (
+						steamIdType == 2 && strlen(steamId) >= 7
+						&& (new_pattern[6] == '1' || new_pattern[6] == '0')
+						&& (steamId[6] == '1' || steamId[6] == '0')
+					)
 					{
-						info->targets[0] = i;
-						info->num_targets = 1;
-						ke::SafeStrcpy(info->target_name, info->target_name_maxlength, pTarget->GetName());
-						info->target_name_style = COMMAND_TARGETNAME_RAW;
+						new_pattern[6] = steamId[6];
 					}
-					else
+
+					if (strcmp(steamId, new_pattern) == 0)
 					{
-						info->num_targets = 0;
+						if ((info->reason = FilterCommandTarget(pAdmin, pTarget, info->flags))
+							== COMMAND_TARGET_VALID)
+						{
+							info->targets[0] = i;
+							info->num_targets = 1;
+							ke::SafeStrcpy(info->target_name, info->target_name_maxlength, pTarget->GetName());
+							info->target_name_style = COMMAND_TARGETNAME_RAW;
+						}
+						else
+						{
+							info->num_targets = 0;
+						}
+						return;
 					}
-					return;
 				}
 			}
 		}
