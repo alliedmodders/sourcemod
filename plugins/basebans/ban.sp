@@ -31,59 +31,71 @@
  * Version: $Id$
  */
 
-void PrepareBan(int client, int target, int time, const char[] reason)
+void PrepareBan(int adminClient, int time, const char[] reason)
 {
-	int originalTarget = GetClientOfUserId(playerinfo[client].banTargetUserId);
-
-	if (originalTarget != target)
-	{
-		if (client == 0)
-		{
-			PrintToServer("[SM] %t", "Player no longer available");
-		}
-		else
-		{
-			PrintToChat(client, "[SM] %t", "Player no longer available");
-		}
-
-		return;
-	}
-
-	char name[MAX_NAME_LENGTH];
-	GetClientName(target, name, sizeof(name));
+	char name[MAX_TARGET_LENGTH];
+	GetTargetName(playerinfo[adminClient].banTargetUserId, playerinfo[adminClient].banTargetAuthId, name, sizeof(name));
 
 	if (!time)
 	{
 		if (reason[0] == '\0')
 		{
-			ShowActivity(client, "%t", "Permabanned player", name);
+			ShowActivity(adminClient, "%t", "Permabanned player", name);
 		}
 		else
 		{
-			ShowActivity(client, "%t", "Permabanned player reason", name, reason);
+			ShowActivity(adminClient, "%t", "Permabanned player reason", name, reason);
 		}
 	}
 	else
 	{
 		if (reason[0] == '\0')
 		{
-			ShowActivity(client, "%t", "Banned player", name, time);
+			ShowActivity(adminClient, "%t", "Banned player", name, time);
 		}
 		else
 		{
-			ShowActivity(client, "%t", "Banned player reason", name, time, reason);
+			ShowActivity(adminClient, "%t", "Banned player reason", name, time, reason);
 		}
 	}
 
-	LogAction(client, target, "\"%L\" banned \"%L\" (minutes \"%d\") (reason \"%s\")", client, target, time, reason);
+	int target = (playerinfo[adminClient].banTargetUserId == 0)
+					? 0 : GetClientOfUserId(playerinfo[adminClient].banTargetUserId);
 
-	if (reason[0] == '\0')
+	if (target == 0)
 	{
-		BanClient(target, time, BANFLAG_AUTO, "Banned", "Banned", "sm_ban", client);
+		target = GetClientOfAuthId(playerinfo[adminClient].banTargetAuthId);
+	}
+
+	// Ban & kick if target is connected, else record the ban with authid
+	if (target != 0)
+	{
+		LogAction(adminClient,
+				target,
+				"\"%L\" banned \"%L\" (minutes \"%d\") (reason \"%s\")",
+				adminClient,
+				target,
+				time,
+				reason);
+
+		BanClient(target, time, BANFLAG_AUTO,
+				(reason[0] == '\0') ? "Banned" : reason,
+				(reason[0] == '\0') ? "Banned" : reason,
+				"sm_ban", adminClient);
 	}
 	else
 	{
-		BanClient(target, time, BANFLAG_AUTO, reason, reason, "sm_ban", client);
+		LogAction(adminClient,
+			  target,
+			  "\"%L\" added ban (minutes \"%d\") (id \"%s\") (reason \"%s\")",
+			  adminClient,
+			  time,
+			  playerinfo[adminClient].banTargetAuthId,
+			  reason);
+
+		BanIdentity(playerinfo[adminClient].banTargetAuthId, time, BANFLAG_AUTHID,
+				(reason[0] == '\0') ? "Banned" : reason,
+				"sm_addban", adminClient);
 	}
 }
 
@@ -96,17 +108,20 @@ void DisplayBanTargetMenu(int client)
 	menu.SetTitle(title);
 	menu.ExitBackButton = CheckCommandAccess(client, "sm_admin", ADMFLAG_GENERIC, false);
 
-	AddTargetsToMenu2(menu, client, COMMAND_FILTER_NO_BOTS|COMMAND_FILTER_CONNECTED);
+	AddTargetsToMenuByAuthId(menu, client, COMMAND_FILTER_NO_BOTS|COMMAND_FILTER_CONNECTED, AuthId_Steam2);
 
 	menu.Display(client, MENU_TIME_FOREVER);
 }
 
 void DisplayBanTimeMenu(int client)
 {
+	char targetName[MAX_TARGET_LENGTH];
+	GetTargetName(playerinfo[client].banTargetUserId, playerinfo[client].banTargetAuthId, targetName, sizeof(targetName));
+
 	Menu menu = new Menu(MenuHandler_BanTimeList);
 
 	char title[100];
-	Format(title, sizeof(title), "%T: %N", "Ban player", client, playerinfo[client].banTarget);
+	Format(title, sizeof(title), "%T: %s", "Ban player", client, targetName);
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
 
@@ -123,10 +138,13 @@ void DisplayBanTimeMenu(int client)
 
 void DisplayBanReasonMenu(int client)
 {
+	char name[MAX_TARGET_LENGTH];
+	GetTargetName(playerinfo[client].banTargetUserId, playerinfo[client].banTargetAuthId, name, sizeof(name));
+
 	Menu menu = new Menu(MenuHandler_BanReasonList);
 
 	char title[100];
-	Format(title, sizeof(title), "%T: %N", "Ban reason", client, playerinfo[client].banTarget);
+	Format(title, sizeof(title), "%T: %s", "Ban reason", client, name);
 	menu.SetTitle(title);
 	menu.ExitBackButton = true;
 	
@@ -199,10 +217,10 @@ public int MenuHandler_BanReasonList(Menu menu, MenuAction action, int param1, i
 		else
 		{
 			char info[64];
-			
+
 			menu.GetItem(param2, info, sizeof(info));
-			
-			PrepareBan(param1, playerinfo[param1].banTarget, playerinfo[param1].banTime, info);
+
+			PrepareBan(param1, playerinfo[param1].banTime, info);
 		}
 	}
 
@@ -224,26 +242,13 @@ public int MenuHandler_BanPlayerList(Menu menu, MenuAction action, int param1, i
 	}
 	else if (action == MenuAction_Select)
 	{
-		char info[32], name[32];
-		int userid, target;
+		char name[32];
+		menu.GetItem(param2, playerinfo[param1].banTargetAuthId, sizeof(PlayerInfo::banTargetAuthId), _, name, sizeof(name));
 
-		menu.GetItem(param2, info, sizeof(info), _, name, sizeof(name));
-		userid = StringToInt(info);
+		int target = GetClientOfAuthId(playerinfo[param1].banTargetAuthId);
+		playerinfo[param1].banTargetUserId = (target == 0) ? 0 : GetClientUserId(target);
 
-		if ((target = GetClientOfUserId(userid)) == 0)
-		{
-			PrintToChat(param1, "[SM] %t", "Player no longer available");
-		}
-		else if (!CanUserTarget(param1, target))
-		{
-			PrintToChat(param1, "[SM] %t", "Unable to target");
-		}
-		else
-		{
-			playerinfo[param1].banTarget = target;
-			playerinfo[param1].banTargetUserId = userid;
-			DisplayBanTimeMenu(param1);
-		}
+		DisplayBanTimeMenu(param1);
 	}
 
 	return 0;
@@ -325,9 +330,117 @@ public Action Command_Ban(int client, int args)
 	}
 
 	playerinfo[client].banTargetUserId = GetClientUserId(target);
+	GetClientAuthId(target, AuthId_Steam2, playerinfo[client].banTargetAuthId, sizeof(PlayerInfo::banTargetAuthId));
 
 	int time = StringToInt(s_time);
-	PrepareBan(client, target, time, Arguments[len]);
+	PrepareBan(client, time, Arguments[len]);
 
 	return Plugin_Handled;
+}
+
+int GetClientOfAuthId(const char[] authid, AuthIdType authIdType=AuthId_Steam2)
+{
+	char compareId[MAX_AUTHID_LENGTH];
+	for (int client = 1; client <= MaxClients; client++)
+	{
+		if (!IsClientConnected(client) || IsClientInKickQueue(client) || !IsClientAuthorized(client))
+		{
+			continue;
+		}
+		if (!GetClientAuthId(client, authIdType, compareId, sizeof(compareId)))
+		{
+			continue;
+		}
+		if (StrEqual(compareId, authid))
+		{
+			return client;
+		}
+	}
+
+	return 0;
+}
+
+void GetTargetName(int userid, const char[] authid, char[] out, int maxlen)
+{
+	int client = GetClientOfUserId(userid);
+	if (client)
+	{
+		Format(out, maxlen, "%N", client);
+	}
+	else
+	{
+		// if client was not in game, use their authid as the name instead
+		strcopy(out, maxlen, authid);
+	}
+}
+
+/**
+ * Adds targets to an admin menu.
+ *
+ * Each client is displayed as: name (authid)
+ * Each item contains the authid as a string for its info.
+ *
+ * @param menu          Menu Handle.
+ * @param source_client Source client, or 0 to ignore immunity.
+ * @param flags         COMMAND_FILTER flags from commandfilters.inc.
+ * @return              Number of clients added.
+ */
+int AddTargetsToMenuByAuthId(Menu menu, int source_client, int flags, AuthIdType authIdType)
+{
+	char authid[MAX_AUTHID_LENGTH];
+	char name[MAX_NAME_LENGTH];
+	char display[sizeof(name) + sizeof(authid) + 3];
+
+	int num_clients;
+
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (!IsClientConnected(i) || IsClientInKickQueue(i))
+		{
+			continue;
+		}
+
+		if (!IsClientAuthorized(i))
+		{
+			continue;
+		}
+
+		if (((flags & COMMAND_FILTER_NO_BOTS) == COMMAND_FILTER_NO_BOTS)
+			&& IsFakeClient(i))
+		{
+			continue;
+		}
+
+		if (((flags & COMMAND_FILTER_CONNECTED) != COMMAND_FILTER_CONNECTED)
+			&& !IsClientInGame(i))
+		{
+			continue;
+		}
+
+		if (((flags & COMMAND_FILTER_ALIVE) == COMMAND_FILTER_ALIVE)
+			&& !IsPlayerAlive(i))
+		{
+			continue;
+		}
+
+		if (((flags & COMMAND_FILTER_DEAD) == COMMAND_FILTER_DEAD)
+			&& IsPlayerAlive(i))
+		{
+			continue;
+		}
+
+		if ((source_client && ((flags & COMMAND_FILTER_NO_IMMUNITY) != COMMAND_FILTER_NO_IMMUNITY))
+			&& !CanUserTarget(source_client, i))
+		{
+			continue;
+		}
+
+		GetClientAuthId(i, authIdType, authid, sizeof(authid));
+		GetClientName(i, name, sizeof(name));
+		Format(display, sizeof(display), "%s (%s)", name, authid);
+		menu.AddItem(authid, display);
+		num_clients++;
+	}
+
+	return num_clients;
 }
