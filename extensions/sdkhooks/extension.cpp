@@ -441,16 +441,9 @@ cell_t SDKHooks::Call(int entity, SDKHookType type, int other)
 	return Call(gamehelpers->ReferenceToEntity(entity), type, gamehelpers->ReferenceToEntity(other));
 }
 
-cell_t SDKHooks::Call(CBaseEntity *pEnt, SDKHookType type, int other)
+static bool GetHookCallbacks(SDKHookType type, CBaseEntity *pEntity, int &entity, std::vector<IPluginFunction *> &callbackList)
 {
-	return Call(pEnt, type, gamehelpers->ReferenceToEntity(other));
-}
-
-cell_t SDKHooks::Call(CBaseEntity *pEnt, SDKHookType type, CBaseEntity *pOther)
-{
-	cell_t ret = Pl_Continue;
-
-	void** vtable = *(void***)pEnt;
+	void** vtable = *(void***)pEntity;
 	std::vector<CVTableList *> &vtablehooklist = g_HookList[type];
 	for (size_t entry = 0; entry < vtablehooklist.size(); ++entry)
 	{
@@ -464,26 +457,44 @@ cell_t SDKHooks::Call(CBaseEntity *pEnt, SDKHookType type, CBaseEntity *pOther)
 			break;
 		}
 
-		int entity = gamehelpers->EntityToBCompatRef(pEnt);
-		int other = gamehelpers->EntityToBCompatRef(pOther);
-
-		std::vector<IPluginFunction *> callbackList;
+		entity = gamehelpers->EntityToBCompatRef(pEntity);
 		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
-		for (entry = 0; entry < callbackList.size(); ++entry)
-		{
-			IPluginFunction *callback = callbackList[entry];
-			callback->PushCell(entity);
-			callback->PushCell(other);
-
-			cell_t res;
-			callback->Execute(&res);
-			if(res > ret)
-			{
-				ret = res;
-			}
-		}
-
 		break;
+	}
+
+	return !callbackList.empty();
+}
+
+cell_t SDKHooks::Call(CBaseEntity *pEnt, SDKHookType type, int other)
+{
+	return Call(pEnt, type, gamehelpers->ReferenceToEntity(other));
+}
+
+cell_t SDKHooks::Call(CBaseEntity *pEnt, SDKHookType type, CBaseEntity *pOther)
+{
+	cell_t ret = Pl_Continue;
+
+	int entity;
+	std::vector<IPluginFunction *> callbackList;
+	if (!GetHookCallbacks(type, pEnt, entity, callbackList))
+	{
+		return ret;
+	}
+
+	int other = gamehelpers->EntityToBCompatRef(pOther);
+
+	for (size_t entry = 0; entry < callbackList.size(); ++entry)
+	{
+		IPluginFunction *callback = callbackList[entry];
+		callback->PushCell(entity);
+		callback->PushCell(other);
+
+		cell_t res;
+		callback->Execute(&res);
+		if(res > ret)
+		{
+			ret = res;
+		}
 	}
 
 	return ret;
@@ -927,50 +938,34 @@ KHook::Return<bool> SDKHooks::Hook_LevelInit(IServerGameDLL*, char const *pMapNa
  */
 KHook::Return<bool> SDKHooks::Hook_CanBeAutobalanced(CBaseEntity* this_ptr)
 {
-	CBaseEntity *pPlayer = this_ptr;
-
-	void** vtable = *(void***)pPlayer;
-	std::vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_CanBeAutobalanced];
-	for (size_t entry = 0; entry < vtablehooklist.size(); ++entry)
+	int entity;
+	std::vector<IPluginFunction *> callbackList;
+	if (!GetHookCallbacks(SDKHook_CanBeAutobalanced, this_ptr, entity, callbackList))
 	{
-		if (vtable != vtablehooklist[entry]->vtablehook->GetVTablePtr())
-		{
-			continue;
-		}
-
-		int entity = gamehelpers->EntityToBCompatRef(pPlayer);
-
-		std::vector<IPluginFunction *> callbackList;
-		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
-		if (callbackList.empty())
-		{
-			break;
-		}
-
-		auto mfp = KHook::BuildMFP<bool (CBaseEntity::*)()>(KHook::FindOriginalVirtual(*(void***)this_ptr, g_HookTypes[SDKHook_CanBeAutobalanced].offset));
-		bool origRet = (this_ptr->*mfp)();
-		bool newRet = origRet;
-
-		for (entry = 0; entry < callbackList.size(); ++entry)
-		{
-			cell_t res = origRet;
-			IPluginFunction *callback = callbackList[entry];
-			callback->PushCell(entity);
-			callback->PushCell(origRet);
-			callback->Execute(&res);
-
-			// Only update our new ret if different from original
-			// (so if multiple plugins returning different answers,
-			//  the one(s) that changed it win)
-			if ((bool)res != origRet)
-				newRet = !origRet;
-		}
-
-		if (newRet != origRet)
-			return { KHook::Action::Supersede, newRet };
-
-		break;
+		return { KHook::Action::Ignore, false };
 	}
+
+	auto mfp = KHook::BuildMFP<bool (CBaseEntity::*)()>(KHook::FindOriginalVirtual(*(void***)this_ptr, g_HookTypes[SDKHook_CanBeAutobalanced].offset));
+	bool origRet = (this_ptr->*mfp)();
+	bool newRet = origRet;
+
+	for (size_t entry = 0; entry < callbackList.size(); ++entry)
+	{
+		cell_t res = origRet;
+		IPluginFunction *callback = callbackList[entry];
+		callback->PushCell(entity);
+		callback->PushCell(origRet);
+		callback->Execute(&res);
+
+		// Only update our new ret if different from original
+		// (so if multiple plugins returning different answers,
+		//  the one(s) that changed it win)
+		if ((bool)res != origRet)
+			newRet = !origRet;
+	}
+
+	if (newRet != origRet)
+		return { KHook::Action::Supersede, newRet };
 
 	return { KHook::Action::Ignore, false };
 }
@@ -992,8 +987,12 @@ KHook::Return<void> SDKHooks::Hook_EndTouchPost(CBaseEntity* this_ptr, CBaseEnti
 
 KHook::Return<void> SDKHooks::Hook_FireBulletsPost(CBaseEntity* this_ptr, const FireBulletsInfo_t &info)
 {
-	CBaseEntity *pEntity = this_ptr;
-	int entity = gamehelpers->EntityToBCompatRef(pEntity);
+	int entity;
+	std::vector<IPluginFunction *> callbackList;
+	if (!GetHookCallbacks(SDKHook_FireBulletsPost, this_ptr, entity, callbackList))
+	{
+		return { KHook::Action::Ignore };
+	}
 
 	IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(entity);
 	if(!pPlayer)
@@ -1003,34 +1002,15 @@ KHook::Return<void> SDKHooks::Hook_FireBulletsPost(CBaseEntity* this_ptr, const 
 	if(!pInfo)
 		return { KHook::Action::Ignore };
 
-	void** vtable = *(void***)pEntity;
-	std::vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_FireBulletsPost];
-	for (size_t entry = 0; entry < vtablehooklist.size(); ++entry)
+	const char *weapon = pInfo->GetWeaponName();
+
+	for (size_t entry = 0; entry < callbackList.size(); ++entry)
 	{
-		if (vtable != vtablehooklist[entry]->vtablehook->GetVTablePtr())
-		{
-			continue;
-		}
-
-		if (vtablehooklist[entry]->hooks.empty())
-		{
-			break;
-		}
-
-		const char *weapon = pInfo->GetWeaponName();
-
-		std::vector<IPluginFunction *> callbackList;
-		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
-		for (entry = 0; entry < callbackList.size(); ++entry)
-		{
-			IPluginFunction *callback = callbackList[entry];
-			callback->PushCell(entity);
-			callback->PushCell(info.m_iShots);
-			callback->PushString(weapon?weapon:"");
-			callback->Execute(NULL);
-		}
-
-		break;
+		IPluginFunction *callback = callbackList[entry];
+		callback->PushCell(entity);
+		callback->PushCell(info.m_iShots);
+		callback->PushString(weapon?weapon:"");
+		callback->Execute(NULL);
 	}
 
 	return { KHook::Action::Ignore };
@@ -1039,56 +1019,40 @@ KHook::Return<void> SDKHooks::Hook_FireBulletsPost(CBaseEntity* this_ptr, const 
 #ifdef GETMAXHEALTH_IS_VIRTUAL
 KHook::Return<int> SDKHooks::Hook_GetMaxHealth(CBaseEntity* this_ptr)
 {
-	CBaseEntity *pEntity = this_ptr;
-
-	void** vtable = *(void***)this_ptr;
-	std::vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_GetMaxHealth];
-	for (size_t entry = 0; entry < vtablehooklist.size(); ++entry)
+	int entity;
+	std::vector<IPluginFunction *> callbackList;
+	if (!GetHookCallbacks(SDKHook_GetMaxHealth, this_ptr, entity, callbackList))
 	{
-		if (vtable != vtablehooklist[entry]->vtablehook->GetVTablePtr())
-		{
-			continue;
-		}
-
-		int entity = gamehelpers->EntityToBCompatRef(pEntity);
-
-		std::vector<IPluginFunction *> callbackList;
-		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
-		if (callbackList.empty())
-		{
-			break;
-		}
-
-		auto mfp = KHook::BuildMFP<int (CBaseEntity::*)()>(KHook::FindOriginalVirtual(*(void***)pEntity, g_HookTypes[SDKHook_GetMaxHealth].offset));
-		int original_max = (pEntity->*mfp)();
-
-		int new_max = original_max;
-
-		cell_t ret = Pl_Continue;
-
-		for (entry = 0; entry < callbackList.size(); ++entry)
-		{
-			IPluginFunction *callback = callbackList[entry];
-			callback->PushCell(entity);
-			callback->PushCellByRef(&new_max);
-
-			cell_t res;
-			callback->Execute(&res);
-
-			if (res > ret)
-			{
-				ret = res;
-			}
-		}
-
-		if (ret >= Pl_Handled)
-			return { KHook::Action::Supersede, original_max };
-
-		if (ret >= Pl_Changed)
-			return { KHook::Action::Supersede, new_max };
-
-		break;
+		return { KHook::Action::Ignore, 0 };
 	}
+
+	auto mfp = KHook::BuildMFP<int (CBaseEntity::*)()>(KHook::FindOriginalVirtual(*(void***)this_ptr, g_HookTypes[SDKHook_GetMaxHealth].offset));
+	int original_max = (this_ptr->*mfp)();
+
+	int new_max = original_max;
+
+	cell_t ret = Pl_Continue;
+
+	for (size_t entry = 0; entry < callbackList.size(); ++entry)
+	{
+		IPluginFunction *callback = callbackList[entry];
+		callback->PushCell(entity);
+		callback->PushCellByRef(&new_max);
+
+		cell_t res;
+		callback->Execute(&res);
+
+		if (res > ret)
+		{
+			ret = res;
+		}
+	}
+
+	if (ret >= Pl_Handled)
+		return { KHook::Action::Supersede, original_max };
+
+	if (ret >= Pl_Changed)
+		return { KHook::Action::Supersede, new_max };
 
 	return { KHook::Action::Ignore, 0 };
 }
@@ -1102,146 +1066,115 @@ KHook::Return<void> SDKHooks::Hook_GroundEntChangedPost(CBaseEntity* this_ptr, v
 
 KHook::Return<int> SDKHooks::HandleOnTakeDamageHook(CBaseEntity* this_ptr, CTakeDamageInfoHack &info, SDKHookType hookType)
 {
-	CBaseEntity *pEntity = this_ptr;
-
-	void** vtable = *(void***)pEntity;
-	std::vector<CVTableList *> &vtablehooklist = g_HookList[hookType];
-	for (size_t entry = 0; entry < vtablehooklist.size(); ++entry)
+	int entity;
+	std::vector<IPluginFunction *> callbackList;
+	if (!GetHookCallbacks(hookType, this_ptr, entity, callbackList))
 	{
-		if (vtable != vtablehooklist[entry]->vtablehook->GetVTablePtr())
+		return { KHook::Action::Ignore, 0 };
+	}
+
+	int attacker = info.GetAttacker();
+	int inflictor = info.GetInflictor();
+	float damage = info.GetDamage();
+	int damagetype = info.GetDamageType();
+	int weapon = info.GetWeapon();
+
+	Vector force = info.GetDamageForce();
+	cell_t damageForce[3] = { sp_ftoc(force.x), sp_ftoc(force.y), sp_ftoc(force.z) };
+
+	Vector pos = info.GetDamagePosition();
+	cell_t damagePosition[3] = { sp_ftoc(pos.x), sp_ftoc(pos.y), sp_ftoc(pos.z) };
+
+	cell_t res, ret = Pl_Continue;
+
+	for (size_t entry = 0; entry < callbackList.size(); ++entry)
+	{
+		IPluginFunction *callback = callbackList[entry];
+		callback->PushCell(entity);
+		callback->PushCellByRef(&attacker);
+		callback->PushCellByRef(&inflictor);
+		callback->PushFloatByRef(&damage);
+		callback->PushCellByRef(&damagetype);
+		callback->PushCellByRef(&weapon);
+		callback->PushArray(damageForce, 3, SM_PARAM_COPYBACK);
+		callback->PushArray(damagePosition, 3, SM_PARAM_COPYBACK);
+		callback->PushCell(info.GetDamageCustom());
+		callback->Execute(&res);
+
+		if (res >= ret)
 		{
-			continue;
-		}
-
-		if (vtablehooklist[entry]->hooks.empty())
-		{
-			break;
-		}
-
-		int entity = gamehelpers->EntityToBCompatRef(pEntity);
-		int attacker = info.GetAttacker();
-		int inflictor = info.GetInflictor();
-		float damage = info.GetDamage();
-		int damagetype = info.GetDamageType();
-		int weapon = info.GetWeapon();
-
-		Vector force = info.GetDamageForce();
-		cell_t damageForce[3] = { sp_ftoc(force.x), sp_ftoc(force.y), sp_ftoc(force.z) };
-
-		Vector pos = info.GetDamagePosition();
-		cell_t damagePosition[3] = { sp_ftoc(pos.x), sp_ftoc(pos.y), sp_ftoc(pos.z) };
-
-		cell_t res, ret = Pl_Continue;
-
-		std::vector<IPluginFunction *> callbackList;
-		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
-		for (entry = 0; entry < callbackList.size(); ++entry)
-		{
-			IPluginFunction *callback = callbackList[entry];
-			callback->PushCell(entity);
-			callback->PushCellByRef(&attacker);
-			callback->PushCellByRef(&inflictor);
-			callback->PushFloatByRef(&damage);
-			callback->PushCellByRef(&damagetype);
-			callback->PushCellByRef(&weapon);
-			callback->PushArray(damageForce, 3, SM_PARAM_COPYBACK);
-			callback->PushArray(damagePosition, 3, SM_PARAM_COPYBACK);
-			callback->PushCell(info.GetDamageCustom());
-			callback->Execute(&res);
-
-			if (res >= ret)
+			ret = res;
+			if (ret == Pl_Changed)
 			{
-				ret = res;
-				if (ret == Pl_Changed)
+				CBaseEntity *pEntAttacker = gamehelpers->ReferenceToEntity(attacker);
+				if (!pEntAttacker && attacker != -1)
 				{
-					CBaseEntity *pEntAttacker = gamehelpers->ReferenceToEntity(attacker);
-					if (!pEntAttacker && attacker != -1)
-					{
-						callback->GetParentContext()->BlamePluginError(callback, "Callback-provided entity %d for attacker is invalid", attacker);
-						return { KHook::Action::Ignore, 0 };
-					}
-					CBaseEntity *pEntInflictor = gamehelpers->ReferenceToEntity(inflictor);
-					if (!pEntInflictor && inflictor != -1)
-					{
-						callback->GetParentContext()->BlamePluginError(callback, "Callback-provided entity %d for inflictor is invalid", inflictor);
-						return { KHook::Action::Ignore, 0 };
-					}
-
-					info.SetAttacker(pEntAttacker);
-					info.SetInflictor(pEntInflictor);
-					info.SetDamage(damage);
-					info.SetDamageType(damagetype);
-					info.SetWeapon(gamehelpers->ReferenceToEntity(weapon));
-					info.SetDamageForce(
-						sp_ctof(damageForce[0]),
-						sp_ctof(damageForce[1]),
-						sp_ctof(damageForce[2]));
-					info.SetDamagePosition(
-						sp_ctof(damagePosition[0]),
-						sp_ctof(damagePosition[1]),
-						sp_ctof(damagePosition[2]));
+					callback->GetParentContext()->BlamePluginError(callback, "Callback-provided entity %d for attacker is invalid", attacker);
+					return { KHook::Action::Ignore, 0 };
 				}
+				CBaseEntity *pEntInflictor = gamehelpers->ReferenceToEntity(inflictor);
+				if (!pEntInflictor && inflictor != -1)
+				{
+					callback->GetParentContext()->BlamePluginError(callback, "Callback-provided entity %d for inflictor is invalid", inflictor);
+					return { KHook::Action::Ignore, 0 };
+				}
+
+				info.SetAttacker(pEntAttacker);
+				info.SetInflictor(pEntInflictor);
+				info.SetDamage(damage);
+				info.SetDamageType(damagetype);
+				info.SetWeapon(gamehelpers->ReferenceToEntity(weapon));
+				info.SetDamageForce(
+					sp_ctof(damageForce[0]),
+					sp_ctof(damageForce[1]),
+					sp_ctof(damageForce[2]));
+				info.SetDamagePosition(
+					sp_ctof(damagePosition[0]),
+					sp_ctof(damagePosition[1]),
+					sp_ctof(damagePosition[2]));
 			}
 		}
-
-		if (ret >= Pl_Handled)
-			return { KHook::Action::Supersede, 1 };
-
-		if (ret == Pl_Changed)
-			return { KHook::Action::Ignore, 1 };
-
-		break;
 	}
+
+	if (ret >= Pl_Handled)
+		return { KHook::Action::Supersede, 1 };
+
+	if (ret == Pl_Changed)
+		return { KHook::Action::Ignore, 1 };
 
 	return { KHook::Action::Ignore, 0 };
 }
 
 KHook::Return<int> SDKHooks::HandleOnTakeDamageHookPost(CBaseEntity* this_ptr, CTakeDamageInfoHack &info, SDKHookType hookType)
 {
-	CBaseEntity *pEntity = this_ptr;
-
-	void** vtable = *(void***)pEntity;
-	std::vector<CVTableList *> &vtablehooklist = g_HookList[hookType];
-	for (size_t entry = 0; entry < vtablehooklist.size(); ++entry)
+	int entity;
+	std::vector<IPluginFunction *> callbackList;
+	if (!GetHookCallbacks(hookType, this_ptr, entity, callbackList))
 	{
-		if (vtable != vtablehooklist[entry]->vtablehook->GetVTablePtr())
-		{
-			continue;
-		}
+		return { KHook::Action::Ignore, 0 };
+	}
 
-		if (vtablehooklist[entry]->hooks.empty())
-		{
-			break;
-		}
+	for (size_t entry = 0; entry < callbackList.size(); ++entry)
+	{
+		IPluginFunction *callback = callbackList[entry];
+		callback->PushCell(entity);
+		callback->PushCell(info.GetAttacker());
+		callback->PushCell(info.GetInflictor());
+		callback->PushFloat(info.GetDamage());
+		callback->PushCell(info.GetDamageType());
+		callback->PushCell(info.GetWeapon());
 
-		int entity = gamehelpers->EntityToBCompatRef(pEntity);
+		Vector force = info.GetDamageForce();
+		cell_t damageForce[3] = { sp_ftoc(force.x), sp_ftoc(force.y), sp_ftoc(force.z) };
+		callback->PushArray(damageForce, 3);
 
-		std::vector<IPluginFunction *> callbackList;
-		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
-		for (entry = 0; entry < callbackList.size(); ++entry)
-		{
-			IPluginFunction *callback = callbackList[entry];
-			callback->PushCell(entity);
-			callback->PushCell(info.GetAttacker());
-			callback->PushCell(info.GetInflictor());
-			callback->PushFloat(info.GetDamage());
-			callback->PushCell(info.GetDamageType());
-			callback->PushCell(info.GetWeapon());
+		Vector pos = info.GetDamagePosition();
+		cell_t damagePosition[3] = { sp_ftoc(pos.x), sp_ftoc(pos.y), sp_ftoc(pos.z) };
+		callback->PushArray(damagePosition, 3);
 
-			Vector force = info.GetDamageForce();
-			cell_t damageForce[3] = { sp_ftoc(force.x), sp_ftoc(force.y), sp_ftoc(force.z) };
-			callback->PushArray(damageForce, 3);
+		callback->PushCell(info.GetDamageCustom());
 
-			Vector pos = info.GetDamagePosition();
-			cell_t damagePosition[3] = { sp_ftoc(pos.x), sp_ftoc(pos.y), sp_ftoc(pos.z) };
-			callback->PushArray(damagePosition, 3);
-
-			callback->PushCell(info.GetDamageCustom());
-
-			callback->Execute(NULL);
-		}
-
-		break;
+		callback->Execute(NULL);
 	}
 
 	return { KHook::Action::Ignore, 0 };
@@ -1293,75 +1226,45 @@ KHook::Return<void> SDKHooks::Hook_PostThinkPost(CBaseEntity* this_ptr)
 
 KHook::Return<bool> SDKHooks::Hook_Reload(CBaseEntity* this_ptr)
 {
-	CBaseEntity *pEntity = this_ptr;
-
-	void** vtable = *(void***)pEntity;
-	std::vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_Reload];
-	for (size_t entry = 0; entry < vtablehooklist.size(); ++entry)
+	int entity;
+	std::vector<IPluginFunction *> callbackList;
+	if (!GetHookCallbacks(SDKHook_Reload, this_ptr, entity, callbackList))
 	{
-		if (vtable != vtablehooklist[entry]->vtablehook->GetVTablePtr())
-		{
-			continue;
-		}
-
-		if (vtablehooklist[entry]->hooks.empty())
-		{
-			break;
-		}
-
-		int entity = gamehelpers->EntityToBCompatRef(pEntity);
-		cell_t res = Pl_Continue;
-
-		std::vector<IPluginFunction *> callbackList;
-		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
-		for (entry = 0; entry < callbackList.size(); ++entry)
-		{
-			IPluginFunction *callback = callbackList[entry];
-			callback->PushCell(entity);
-			callback->Execute(&res);
-		}
-
-		if (res >= Pl_Handled)
-			return { KHook::Action::Supersede, false };
-
-		break;
+		return { KHook::Action::Ignore, true };
 	}
+
+	cell_t res = Pl_Continue;
+
+	for (size_t entry = 0; entry < callbackList.size(); ++entry)
+	{
+		IPluginFunction *callback = callbackList[entry];
+		callback->PushCell(entity);
+		callback->Execute(&res);
+	}
+
+	if (res >= Pl_Handled)
+		return { KHook::Action::Supersede, false };
 
 	return { KHook::Action::Ignore, true };
 }
 
 KHook::Return<bool> SDKHooks::Hook_ReloadPost(CBaseEntity* this_ptr)
 {
-	CBaseEntity *pEntity = this_ptr;
-
-	void** vtable = *(void***)pEntity;
-	std::vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_ReloadPost];
-	for (size_t entry = 0; entry < vtablehooklist.size(); ++entry)
+	int entity;
+	std::vector<IPluginFunction *> callbackList;
+	if (!GetHookCallbacks(SDKHook_ReloadPost, this_ptr, entity, callbackList))
 	{
-		if (vtable != vtablehooklist[entry]->vtablehook->GetVTablePtr())
-		{
-			continue;
-		}
+		return { KHook::Action::Ignore, true };
+	}
 
-		if (vtablehooklist[entry]->hooks.empty())
-		{
-			break;
-		}
+	cell_t origreturn = (*(bool*)::KHook::GetCurrentValuePtr()) ? 1 : 0;
 
-		int entity = gamehelpers->EntityToBCompatRef(pEntity);
-		cell_t origreturn = (*(bool*)::KHook::GetCurrentValuePtr()) ? 1 : 0;
-
-		std::vector<IPluginFunction *> callbackList;
-		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
-		for (entry = 0; entry < callbackList.size(); ++entry)
-		{
-			IPluginFunction *callback = callbackList[entry];
-			callback->PushCell(entity);
-			callback->PushCell(origreturn);
-			callback->Execute(NULL);
-		}
-
-		break;
+	for (size_t entry = 0; entry < callbackList.size(); ++entry)
+	{
+		IPluginFunction *callback = callbackList[entry];
+		callback->PushCell(entity);
+		callback->PushCell(origreturn);
+		callback->Execute(NULL);
 	}
 
 	return { KHook::Action::Ignore, true };
@@ -1379,93 +1282,62 @@ KHook::Return<void> SDKHooks::Hook_SetTransmit(CBaseEntity* this_ptr, CCheckTran
 
 KHook::Return<bool> SDKHooks::Hook_ShouldCollide(CBaseEntity* this_ptr, int collisionGroup, int contentsMask)
 {
-	CBaseEntity *pEntity = this_ptr;
-
-	void** vtable = *(void***)pEntity;
-	std::vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_ShouldCollide];
-	for (size_t entry = 0; entry < vtablehooklist.size(); ++entry)
+	int entity;
+	std::vector<IPluginFunction *> callbackList;
+	if (!GetHookCallbacks(SDKHook_ShouldCollide, this_ptr, entity, callbackList))
 	{
-		if (vtable != vtablehooklist[entry]->vtablehook->GetVTablePtr())
-		{
-			continue;
-		}
-
-		int entity = gamehelpers->EntityToBCompatRef(pEntity);
-
-		std::vector<IPluginFunction *> callbackList;
-		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
-		if (callbackList.empty())
-		{
-			break;
-		}
-
-		cell_t origRet = (*(bool*)KHook::GetCurrentValuePtr()) ? 1 : 0;
-		cell_t res = 0;
-
-		for (entry = 0; entry < callbackList.size(); ++entry)
-		{
-			IPluginFunction *callback = callbackList[entry];
-			callback->PushCell(entity);
-			callback->PushCell(collisionGroup);
-			callback->PushCell(contentsMask);
-			callback->PushCell(origRet);
-			callback->Execute(&res);
-		}
-
-		bool ret = false;
-		if (res != 0)
-		{
-			ret = true;
-		}
-
-		return { KHook::Action::Supersede, ret };
+		return { KHook::Action::Ignore, true };
 	}
 
-	return { KHook::Action::Ignore, true };
+	cell_t origRet = (*(bool*)KHook::GetCurrentValuePtr()) ? 1 : 0;
+	cell_t res = 0;
+
+	for (size_t entry = 0; entry < callbackList.size(); ++entry)
+	{
+		IPluginFunction *callback = callbackList[entry];
+		callback->PushCell(entity);
+		callback->PushCell(collisionGroup);
+		callback->PushCell(contentsMask);
+		callback->PushCell(origRet);
+		callback->Execute(&res);
+	}
+
+	bool ret = false;
+	if (res != 0)
+	{
+		ret = true;
+	}
+
+	return { KHook::Action::Supersede, ret };
 }
 
 KHook::Return<void> SDKHooks::Hook_Spawn(CBaseEntity* this_ptr)
 {
-	CBaseEntity *pEntity = this_ptr;
-
-	void** vtable = *(void***)pEntity;
-	std::vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_Spawn];
-	for (size_t entry = 0; entry < vtablehooklist.size(); ++entry)
+	int entity;
+	std::vector<IPluginFunction *> callbackList;
+	if (!GetHookCallbacks(SDKHook_Spawn, this_ptr, entity, callbackList))
 	{
-		if (vtable != vtablehooklist[entry]->vtablehook->GetVTablePtr())
-		{
-			continue;
-		}
-
-		if (vtablehooklist[entry]->hooks.empty())
-		{
-			break;
-		}
-
-		int entity = gamehelpers->EntityToBCompatRef(pEntity);
-		cell_t ret = Pl_Continue;
-
-		std::vector<IPluginFunction *> callbackList;
-		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
-		for (entry = 0; entry < callbackList.size(); ++entry)
-		{
-			IPluginFunction *callback = callbackList[entry];
-			callback->PushCell(entity);
-
-			cell_t res;
-			callback->Execute(&res);
-
-			if (res > ret)
-			{
-				ret = res;
-			}
-		}
-
-		if (ret >= Pl_Handled)
-			return { KHook::Action::Supersede };
-
-		break;
+		return { KHook::Action::Ignore };
 	}
+
+	cell_t ret = Pl_Continue;
+
+	for (size_t entry = 0; entry < callbackList.size(); ++entry)
+	{
+		IPluginFunction *callback = callbackList[entry];
+		callback->PushCell(entity);
+
+		cell_t res;
+		callback->Execute(&res);
+
+		if (res > ret)
+		{
+			ret = res;
+		}
+	}
+
+	if (ret >= Pl_Handled)
+		return { KHook::Action::Supersede };
 
 	return { KHook::Action::Ignore };
 }
@@ -1530,81 +1402,66 @@ KHook::Return<void> SDKHooks::Hook_TraceAttack(CBaseEntity* this_ptr, CTakeDamag
 KHook::Return<void> SDKHooks::Hook_TraceAttack(CBaseEntity* this_ptr, CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr)
 #endif
 {
-	CBaseEntity *pEntity = this_ptr;
-
-	void** vtable = *(void***)pEntity;
-	std::vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_TraceAttack];
-	for (size_t entry = 0; entry < vtablehooklist.size(); ++entry)
+	int entity;
+	std::vector<IPluginFunction *> callbackList;
+	if (!GetHookCallbacks(SDKHook_TraceAttack, this_ptr, entity, callbackList))
 	{
-		if (vtable != vtablehooklist[entry]->vtablehook->GetVTablePtr())
+		return { KHook::Action::Ignore };
+	}
+
+	int attacker = info.GetAttacker();
+	int inflictor = info.GetInflictor();
+	float damage = info.GetDamage();
+	int damagetype = info.GetDamageType();
+	int ammotype = info.GetAmmoType();
+	cell_t res, ret = Pl_Continue;
+
+	for (size_t entry = 0; entry < callbackList.size(); ++entry)
+	{
+		IPluginFunction *callback = callbackList[entry];
+		callback->PushCell(entity);
+		callback->PushCellByRef(&attacker);
+		callback->PushCellByRef(&inflictor);
+		callback->PushFloatByRef(&damage);
+		callback->PushCellByRef(&damagetype);
+		callback->PushCellByRef(&ammotype);
+		callback->PushCell(ptr->hitbox);
+		callback->PushCell(ptr->hitgroup);
+		callback->Execute(&res);
+
+		if(res > ret)
 		{
-			continue;
-		}
+			ret = res;
 
-		if (vtablehooklist[entry]->hooks.empty())
-		{
-			break;
-		}
-
-		int entity = gamehelpers->EntityToBCompatRef(pEntity);
-		int attacker = info.GetAttacker();
-		int inflictor = info.GetInflictor();
-		float damage = info.GetDamage();
-		int damagetype = info.GetDamageType();
-		int ammotype = info.GetAmmoType();
-		cell_t res, ret = Pl_Continue;
-
-		std::vector<IPluginFunction *> callbackList;
-		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
-		for (entry = 0; entry < callbackList.size(); ++entry)
-		{
-			IPluginFunction *callback = callbackList[entry];
-			callback->PushCell(entity);
-			callback->PushCellByRef(&attacker);
-			callback->PushCellByRef(&inflictor);
-			callback->PushFloatByRef(&damage);
-			callback->PushCellByRef(&damagetype);
-			callback->PushCellByRef(&ammotype);
-			callback->PushCell(ptr->hitbox);
-			callback->PushCell(ptr->hitgroup);
-			callback->Execute(&res);
-
-			if(res > ret)
+			if(ret == Pl_Changed)
 			{
-				ret = res;
-
-				if(ret == Pl_Changed)
+				CBaseEntity *pEntAttacker = gamehelpers->ReferenceToEntity(attacker);
+				if(!pEntAttacker)
 				{
-					CBaseEntity *pEntAttacker = gamehelpers->ReferenceToEntity(attacker);
-					if(!pEntAttacker)
-					{
-						callback->GetParentContext()->BlamePluginError(callback, "Callback-provided entity %d for attacker is invalid", attacker);
-						return { KHook::Action::Ignore };
-					}
-					CBaseEntity *pEntInflictor = gamehelpers->ReferenceToEntity(inflictor);
-					if(!pEntInflictor)
-					{
-						callback->GetParentContext()->BlamePluginError(callback, "Callback-provided entity %d for inflictor is invalid", inflictor);
-						return { KHook::Action::Ignore };
-					}
-					
-					info.SetAttacker(pEntAttacker);
-					info.SetInflictor(pEntInflictor);
-					info.SetDamage(damage);
-					info.SetDamageType(damagetype);
-					info.SetAmmoType(ammotype);
+					callback->GetParentContext()->BlamePluginError(callback, "Callback-provided entity %d for attacker is invalid", attacker);
+					return { KHook::Action::Ignore };
 				}
+				CBaseEntity *pEntInflictor = gamehelpers->ReferenceToEntity(inflictor);
+				if(!pEntInflictor)
+				{
+					callback->GetParentContext()->BlamePluginError(callback, "Callback-provided entity %d for inflictor is invalid", inflictor);
+					return { KHook::Action::Ignore };
+				}
+
+				info.SetAttacker(pEntAttacker);
+				info.SetInflictor(pEntInflictor);
+				info.SetDamage(damage);
+				info.SetDamageType(damagetype);
+				info.SetAmmoType(ammotype);
 			}
 		}
-
-		if(ret >= Pl_Handled)
-			return { KHook::Action::Supersede };
-
-		if(ret == Pl_Changed)
-			return { KHook::Action::Ignore };
-
-		break;
 	}
+
+	if(ret >= Pl_Handled)
+		return { KHook::Action::Supersede };
+
+	if(ret == Pl_Changed)
+		return { KHook::Action::Ignore };
 
 	return { KHook::Action::Ignore };
 }
@@ -1616,41 +1473,25 @@ KHook::Return<void> SDKHooks::Hook_TraceAttackPost(CBaseEntity* this_ptr, CTakeD
 KHook::Return<void> SDKHooks::Hook_TraceAttackPost(CBaseEntity* this_ptr, CTakeDamageInfoHack &info, const Vector &vecDir, trace_t *ptr)
 #endif
 {
-	CBaseEntity *pEntity = this_ptr;
-
-	void** vtable = *(void***)pEntity;
-	std::vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_TraceAttackPost];
-	for (size_t entry = 0; entry < vtablehooklist.size(); ++entry)
+	int entity;
+	std::vector<IPluginFunction *> callbackList;
+	if (!GetHookCallbacks(SDKHook_TraceAttackPost, this_ptr, entity, callbackList))
 	{
-		if (vtable != vtablehooklist[entry]->vtablehook->GetVTablePtr())
-		{
-			continue;
-		}
+		return { KHook::Action::Ignore };
+	}
 
-		if (vtablehooklist[entry]->hooks.empty())
-		{
-			break;
-		}
-
-		int entity = gamehelpers->EntityToBCompatRef(pEntity);
-
-		std::vector<IPluginFunction *> callbackList;
-		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
-		for (entry = 0; entry < callbackList.size(); ++entry)
-		{
-			IPluginFunction *callback = callbackList[entry];
-			callback->PushCell(entity);
-			callback->PushCell(info.GetAttacker());
-			callback->PushCell(info.GetInflictor());
-			callback->PushFloat(info.GetDamage());
-			callback->PushCell(info.GetDamageType());
-			callback->PushCell(info.GetAmmoType());
-			callback->PushCell(ptr->hitbox);
-			callback->PushCell(ptr->hitgroup);
-			callback->Execute(NULL);
-		}
-
-		break;
+	for (size_t entry = 0; entry < callbackList.size(); ++entry)
+	{
+		IPluginFunction *callback = callbackList[entry];
+		callback->PushCell(entity);
+		callback->PushCell(info.GetAttacker());
+		callback->PushCell(info.GetInflictor());
+		callback->PushFloat(info.GetDamage());
+		callback->PushCell(info.GetDamageType());
+		callback->PushCell(info.GetAmmoType());
+		callback->PushCell(ptr->hitbox);
+		callback->PushCell(ptr->hitgroup);
+		callback->Execute(NULL);
 	}
 
 	return { KHook::Action::Ignore };
@@ -1658,92 +1499,62 @@ KHook::Return<void> SDKHooks::Hook_TraceAttackPost(CBaseEntity* this_ptr, CTakeD
 
 KHook::Return<void> SDKHooks::Hook_Use(CBaseEntity* this_ptr, CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
 {
-	CBaseEntity *pEntity = this_ptr;
-
-	void** vtable = *(void***)pEntity;
-	std::vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_Use];
-	for (size_t entry = 0; entry < vtablehooklist.size(); ++entry)
+	int entity;
+	std::vector<IPluginFunction *> callbackList;
+	if (!GetHookCallbacks(SDKHook_Use, this_ptr, entity, callbackList))
 	{
-		if (vtable != vtablehooklist[entry]->vtablehook->GetVTablePtr())
-		{
-			continue;
-		}
-
-		if (vtablehooklist[entry]->hooks.empty())
-		{
-			break;
-		}
-
-		int entity = gamehelpers->EntityToBCompatRef(pEntity);
-		int activator = gamehelpers->EntityToBCompatRef(pActivator);
-		int caller = gamehelpers->EntityToBCompatRef(pCaller);
-		cell_t ret = Pl_Continue;
-
-		std::vector<IPluginFunction *> callbackList;
-		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
-		for (entry = 0; entry < callbackList.size(); ++entry)
-		{
-			IPluginFunction *callback = callbackList[entry];
-			callback->PushCell(entity);
-			callback->PushCell(activator);
-			callback->PushCell(caller);
-			callback->PushCell(useType);
-			callback->PushFloat(value);
-
-			cell_t res;
-			callback->Execute(&res);
-
-			if (res > ret)
-			{
-				ret = res;
-			}
-		}
-
-		if (ret >= Pl_Handled)
-			return { KHook::Action::Supersede };
-
-		break;
+		return { KHook::Action::Ignore };
 	}
+
+	int activator = gamehelpers->EntityToBCompatRef(pActivator);
+	int caller = gamehelpers->EntityToBCompatRef(pCaller);
+	cell_t ret = Pl_Continue;
+
+	for (size_t entry = 0; entry < callbackList.size(); ++entry)
+	{
+		IPluginFunction *callback = callbackList[entry];
+		callback->PushCell(entity);
+		callback->PushCell(activator);
+		callback->PushCell(caller);
+		callback->PushCell(useType);
+		callback->PushFloat(value);
+
+		cell_t res;
+		callback->Execute(&res);
+
+		if (res > ret)
+		{
+			ret = res;
+		}
+	}
+
+	if (ret >= Pl_Handled)
+		return { KHook::Action::Supersede };
 
 	return { KHook::Action::Ignore };
 }
 
 KHook::Return<void> SDKHooks::Hook_UsePost(CBaseEntity* this_ptr, CBaseEntity *pActivator, CBaseEntity *pCaller, USE_TYPE useType, float value)
 {
-	CBaseEntity *pEntity = this_ptr;
-
-	void** vtable = *(void***)pEntity;
-	std::vector<CVTableList *> &vtablehooklist = g_HookList[SDKHook_UsePost];
-	for (size_t entry = 0; entry < vtablehooklist.size(); ++entry)
+	int entity;
+	std::vector<IPluginFunction *> callbackList;
+	if (!GetHookCallbacks(SDKHook_UsePost, this_ptr, entity, callbackList))
 	{
-		if (vtable != vtablehooklist[entry]->vtablehook->GetVTablePtr())
-		{
-			continue;
-		}
+		return { KHook::Action::Ignore };
+	}
 
-		if (vtablehooklist[entry]->hooks.empty())
-		{
-			break;
-		}
+	int activator = gamehelpers->EntityToBCompatRef(pActivator);
+	int caller = gamehelpers->EntityToBCompatRef(pCaller);
 
-		int entity = gamehelpers->EntityToBCompatRef(pEntity);
-		int activator = gamehelpers->EntityToBCompatRef(pActivator);
-		int caller = gamehelpers->EntityToBCompatRef(pCaller);
-
-		std::vector<IPluginFunction *> callbackList;
-		PopulateCallbackList(vtablehooklist[entry]->hooks, callbackList, entity);
-		for (entry = 0; entry < callbackList.size(); ++entry)
-		{
-			IPluginFunction *callback = callbackList[entry];
-			callback->PushCell(entity);
-			callback->PushCell(activator);
-			callback->PushCell(caller);
-			callback->PushCell(useType);
-			callback->PushFloat(value);
-			callback->Execute(NULL);
-		}
-
-		break;
+	for (size_t entry = 0; entry < callbackList.size(); ++entry)
+	{
+		IPluginFunction *callback = callbackList[entry];
+		callback->PushCell(entity);
+		callback->PushCell(activator);
+		callback->PushCell(caller);
+		callback->PushCell(useType);
+		callback->PushFloat(value);
+		callback->Execute(NULL);
 	}
 
 	return { KHook::Action::Ignore };
