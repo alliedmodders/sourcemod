@@ -83,7 +83,9 @@ public:
 
 	virtual ~CVTableHookDetails() {
 		if (_id != KHook::INVALID_HOOK) {
-			KHook::RemoveHook(_id, true);
+			KHook::HookID_t id = _id;
+			_id = KHook::INVALID_HOOK;
+			KHook::RemoveHook(id, false);
 		}
 	}
 

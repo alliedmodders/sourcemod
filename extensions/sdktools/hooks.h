@@ -68,7 +68,6 @@ public: /* NetChannel/Related Hooks */
 	KHook::Return<void> ProcessPacket_Post(INetChannel*, struct netpacket_s *packet, bool bHasHeader);
 public: //IPluginsListener
 	void OnPluginLoaded(IPlugin *plugin);
-	void OnPluginUnloaded(IPlugin *plugin);
 public: //IFeatureProvider
 	virtual FeatureStatus GetFeatureStatus(FeatureType type, const char *name);
 

@@ -127,7 +127,6 @@ void CHookManager::Initialize()
 
 void CHookManager::Shutdown()
 {
-
 	if (PRCH_used)
 	{
 		for (size_t i = 0; i < m_runUserCmdHooks.size(); ++i)
@@ -435,14 +434,25 @@ void CHookManager::NetChannelHook(int client)
 		}
 		else
 #endif
-		if (!m_netChannelHooks.size())
 		{
-			m_netChannelHooks.push_back(
-			new CVTableHookDetails<CHookManager, IBaseFileSystem, bool, const char*, const char*>(
-				*(void***)basefilesystem,
-				KHook::GetVtableIndex(&IBaseFileSystem::FileExists),
-				this, &CHookManager::FileExists, nullptr
-			));
+			void** fsvtable = *(void***)basefilesystem;
+			for (iter = 0; iter < m_netChannelHooks.size(); ++iter)
+			{
+				if (fsvtable == m_netChannelHooks[iter]->GetVTablePtr())
+				{
+					break;
+				}
+			}
+
+			if (iter == m_netChannelHooks.size())
+			{
+				m_netChannelHooks.push_back(
+				new CVTableHookDetails<CHookManager, IBaseFileSystem, bool, const char*, const char*>(
+					fsvtable,
+					KHook::GetVtableIndex(&IBaseFileSystem::FileExists),
+					this, &CHookManager::FileExists, nullptr
+				));
+			}
 		}
 
 		for (iter = 0; iter < m_netChannelHooks.size(); ++iter)
@@ -572,6 +582,11 @@ KHook::Return<bool> CHookManager::SendFile(INetChannel* this_ptr, const char *fi
 #if !defined CLIENTVOICE_HOOK_SUPPORT
 KHook::Return<bool> CHookManager::ProcessVoiceData(IClientMessageHandler* this_ptr, CLC_VoiceData *msg)
 {
+	if (!m_OnClientSpeaking->GetFunctionCount() && !m_OnClientSpeakingEnd->GetFunctionCount())
+	{
+		return { KHook::Action::Ignore, true };
+	}
+
 	IClient *pClient = (IClient *)((intptr_t)(this_ptr) - sizeof(void *));
 	if (pClient == NULL)
 	{
@@ -651,55 +666,6 @@ void CHookManager::OnPluginLoaded(IPlugin *plugin)
 				OnClientConnected(i);
 			}
 		}
-	}
-#endif
-}
-
-void CHookManager::OnPluginUnloaded(IPlugin *plugin)
-{
-	if (PRCH_used && (!m_usercmdsFwd->GetFunctionCount() && !m_usercmdsPreFwd->GetFunctionCount()))
-	{
-		for (size_t i = 0; i < m_runUserCmdHooks.size(); ++i)
-		{
-			delete m_runUserCmdHooks[i];
-		}
-
-		m_runUserCmdHooks.clear();
-		PRCH_used = false;
-	}
-
-	if (PRCHPost_used && !m_usercmdsPostFwd->GetFunctionCount())
-	{
-		for (size_t i = 0; i < m_runUserCmdPostHooks.size(); ++i)
-		{
-			delete m_runUserCmdPostHooks[i];
-		}
-
-		m_runUserCmdPostHooks.clear();
-		PRCHPost_used = false;
-	}
-
-	if (FILE_used && !m_netFileSendFwd->GetFunctionCount() && !m_netFileReceiveFwd->GetFunctionCount())
-	{
-		for (size_t i = 0; i < m_netChannelHooks.size(); ++i)
-		{
-			delete m_netChannelHooks[i];
-		}
-
-		m_netChannelHooks.clear();
-		FILE_used = false;
-	}
-	
-#if !defined CLIENTVOICE_HOOK_SUPPORT
-	if (PVD_used && !m_OnClientSpeaking->GetFunctionCount() && !m_OnClientSpeakingEnd->GetFunctionCount())
-	{
-		for (size_t i = 0; i < m_netProcessVoiceData.size(); ++i)
-		{
-			delete m_netProcessVoiceData[i];
-		}
-
-		m_netProcessVoiceData.clear();
-		PVD_used = false;
 	}
 #endif
 }
