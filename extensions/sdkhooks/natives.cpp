@@ -170,7 +170,7 @@ cell_t Native_TakeDamage(IPluginContext *pContext, const cell_t *params)
 	}
 	else
 	{
-		 vecDamagePosition = vec3_origin;
+		 vecDamagePosition.Init();
 	}
 
 	CTakeDamageInfoHack info(pInflictor, pAttacker, flDamage, iDamageType, pWeapon, vecDamageForce, vecDamagePosition);

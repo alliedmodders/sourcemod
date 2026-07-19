@@ -60,7 +60,7 @@ CTakeDamageInfoHack::CTakeDamageInfoHack( CBaseEntity *pInflictor, CBaseEntity *
 	m_flMaxDamage = flDamage;
 	m_vecDamageForce = vecDamageForce;
 	m_vecDamagePosition = vecDamagePosition;
-	m_vecReportedPosition = vec3_origin;
+	m_vecReportedPosition.Init();
 	m_iAmmoType = -1;
 
 #if SOURCE_ENGINE < SE_ORANGEBOX
@@ -85,7 +85,7 @@ CTakeDamageInfoHack::CTakeDamageInfoHack( CBaseEntity *pInflictor, CBaseEntity *
 	m_eCritType = CRIT_NONE;
 #endif
 
-#if SOURCE_ENGINE >= SE_ALIENSWARM
+#if SOURCE_ENGINE >= SE_LEFT4DEAD2
 	m_flRadius = 0.0f;
 #endif
 
@@ -94,6 +94,12 @@ CTakeDamageInfoHack::CTakeDamageInfoHack( CBaseEntity *pInflictor, CBaseEntity *
 	m_iObjectsPenetrated = 0;
 	m_uiBulletID = 0;
 	m_uiRecoilIndex = 0;
+#endif
+
+#if SOURCE_ENGINE == SE_LEFT4DEAD2
+	m_vecDamageDirection.Init();
+	m_iDamageStats = 0;
+	m_iDamageVictimIndex = 0;
 #endif
 }
 
