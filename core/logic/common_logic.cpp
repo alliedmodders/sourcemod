@@ -180,6 +180,31 @@ static void logic_SetDebugMetadataFlags(int flags)
 	g_pPawnEnv->SetDebugMetadataFlags(flags);
 }
 
+class PawnEnvConfig : public SMGlobalClass
+{
+public:
+	void OnSourceModStartup(bool late) override
+	{
+		const char *timeout = bridge->GetCoreConfigValue("SlowScriptTimeout");
+		if (timeout == NULL)
+		{
+			timeout = "8";
+		}
+
+		int seconds = atoi(timeout);
+		if (seconds != 0)
+		{
+			g_pPawnEnv->InstallWatchdogTimer(seconds * 1000);
+		}
+
+		const char *linedebugger = bridge->GetCoreConfigValue("EnableLineDebugging");
+		if (linedebugger != NULL && strcasecmp(linedebugger, "yes") == 0)
+		{
+			g_pPawnEnv->EnableDebugBreak();
+		}
+	}
+} s_PawnEnvConfig;
+
 static sm_logic_t logic =
 {
 	NULL,
@@ -241,22 +266,6 @@ static void logic_init(CoreProvider* core, sm_logic_t* _logic)
 	*core->spe_env = g_pPawnEnv;
 
 	g_pPawnEnv->SetDebugListener(&g_DbgReporter);
-
-	const char *timeout = core->GetCoreConfigValue("SlowScriptTimeout");
-	if (timeout == NULL)
-	{
-		timeout = "8";
-	}
-	if (atoi(timeout) != 0)
-	{
-		g_pPawnEnv->InstallWatchdogTimer(atoi(timeout) * 1000);
-	}
-
-	const char *linedebugger = core->GetCoreConfigValue("EnableLineDebugging");
-	if (linedebugger != NULL && strcasecmp(linedebugger, "yes") == 0)
-	{
-		g_pPawnEnv->EnableDebugBreak();
-	}
 
 	SMGlobalClass::head = core->listeners;
 
