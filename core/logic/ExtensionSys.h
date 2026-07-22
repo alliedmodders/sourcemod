@@ -183,6 +183,10 @@ public:
 public:
 	CExtension *GetExtensionFromIdent(IdentityToken_t *ptr);
 	void Shutdown();
+
+	/* Frame action that completes a deferred reload: reopens the extension and
+	 * reloads its dependents. See CLocalExtension::Reload. */
+	static void ProcessReloadFrame(void *data);
 	CNativeOwner *GetNativeOwner(IExtension *pExt)
 	{
 		CExtension *p = (CExtension *)pExt;
