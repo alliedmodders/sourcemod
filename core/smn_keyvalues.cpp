@@ -542,6 +542,36 @@ static cell_t smn_CreateKeyValues(IPluginContext *pCtx, const cell_t *params)
 	return handlesys->CreateHandle(g_KeyValueType, pStk, pCtx->GetIdentity(), g_pCoreIdent, NULL);
 }
 
+static cell_t smn_KeyValuesFromAddress(IPluginContext *pCtx, const cell_t *params)
+{
+	void *addr = reinterpret_cast<void *>(params[1]);
+	if (pCtx->GetRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE)
+	{
+		cell_t *sp_addr;
+		if (int err = pCtx->LocalToPhysAddr(params[1], &sp_addr); err != SP_ERROR_NONE)
+		{
+			return pCtx->ThrowNativeErrorEx(err, "Could not read argument");
+		}
+		addr = reinterpret_cast<void *>(*reinterpret_cast<int64_t *>(sp_addr));
+	}
+
+	if (addr == NULL)
+	{
+		return pCtx->ThrowNativeError("Address cannot be null");
+	}
+
+	/* The handle does not own the underlying KeyValues; it belongs to whoever
+	 * gave us the pointer (typically the game engine), so don't delete it when
+	 * the handle is closed.
+	 */
+	KeyValueStack *pStk = new KeyValueStack;
+	pStk->pBase = reinterpret_cast<KeyValues *>(addr);
+	pStk->pCurRoot.push(pStk->pBase);
+	pStk->m_bDeleteOnDestroy = false;
+
+	return handlesys->CreateHandle(g_KeyValueType, pStk, pCtx->GetIdentity(), g_pCoreIdent, NULL);
+}
+
 static cell_t smn_KvJumpToKey(IPluginContext *pCtx, const cell_t *params)
 {
 	Handle_t hndl = static_cast<Handle_t>(params[1]);
@@ -1291,6 +1321,7 @@ REGISTER_NATIVES(keyvaluenatives)
 
 	// Transitional syntax support.
 	{"KeyValues.KeyValues",				smn_CreateKeyValues},
+	{"KeyValues.FromAddress",			smn_KeyValuesFromAddress},
 	{"KeyValues.SetString",				smn_KvSetString},
 	{"KeyValues.SetNum",				smn_KvSetNum},
 	{"KeyValues.SetUInt64",				smn_KvSetUInt64},
