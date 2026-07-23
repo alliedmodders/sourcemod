@@ -626,6 +626,14 @@ static cell_t SetClientViewEntity(IPluginContext *pContext, const cell_t *params
 		return pContext->ThrowNativeError("Entity %d is not valid", params[2]);
 	}
 
+	CBaseEntity *pClientEntity = player->GetEdict()->GetUnknown()->GetBaseEntity();
+	sm_datatable_info_t info;
+	if (gamehelpers->FindDataMapInfo(gamehelpers->GetDataMap(pClientEntity), "m_hViewEntity", &info))
+	{
+		CBaseHandle &hViewEntity = *(CBaseHandle *)((char *)pClientEntity + info.actual_offset);
+		gamehelpers->SetHandleEntity(hViewEntity, pEdict);
+	}
+
 	engine->SetView(player->GetEdict(), pEdict);
 
 	return 1;
