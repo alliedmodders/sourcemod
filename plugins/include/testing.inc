@@ -141,3 +141,17 @@ stock void AssertStrArrayEq(const char[] text, const char[][] value, const char[
 	}
 	PrintToServer("[%d] %s: '%s' arrays are equal OK", TestNumber, TestContext, text);
 }
+
+stock void AssertInt64Eq(const char[] text, int64 value, int64 expected)
+{
+	TestNumber++;
+	if (value == expected)
+	{
+		PrintToServer("[%d] %s: %s == %ld OK", TestNumber, TestContext, text, expected);
+	}
+	else
+	{
+		PrintToServer("[%d] %s FAIL: %s should be %ld, got %ld", TestNumber, TestContext, text, expected, value);
+		ThrowError("test %d (%s in %s) failed", TestNumber, text, TestContext);
+	}
+}
