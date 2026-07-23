@@ -627,11 +627,22 @@ static cell_t SetClientViewEntity(IPluginContext *pContext, const cell_t *params
 	}
 
 	CBaseEntity *pClientEntity = player->GetEdict()->GetUnknown()->GetBaseEntity();
-	sm_datatable_info_t info;
-	if (gamehelpers->FindDataMapInfo(gamehelpers->GetDataMap(pClientEntity), "m_hViewEntity", &info))
+	sm_sendprop_info_t info;
+	ServerClass *pServerClass = gamehelpers->FindEntityServerClass(pClientEntity);
+	if (pServerClass && gamehelpers->FindSendPropInfo(pServerClass->GetName(), "m_hViewEntity", &info))
 	{
 		CBaseHandle &hViewEntity = *(CBaseHandle *)((char *)pClientEntity + info.actual_offset);
 		gamehelpers->SetHandleEntity(hViewEntity, pEdict);
+		gamehelpers->SetEdictStateChanged(player->GetEdict(), info.actual_offset);
+	}
+	else
+	{
+		sm_datatable_info_t info;
+		if (gamehelpers->FindDataMapInfo(gamehelpers->GetDataMap(pClientEntity), "m_hViewEntity", &info))
+		{
+			CBaseHandle &hViewEntity = *(CBaseHandle *)((char *)pClientEntity + info.actual_offset);
+			gamehelpers->SetHandleEntity(hViewEntity, pEdict);
+		}
 	}
 
 	engine->SetView(player->GetEdict(), pEdict);
