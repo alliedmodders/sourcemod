@@ -399,7 +399,70 @@ bool UTIL_FindDataMapInfo(datamap_t *pMap, const char *name, sm_datatable_info_t
 		pMap = pMap->baseMap;
 	}
 
-	return false; 
+	return false;
+}
+
+template <typename Table, typename Info>
+static bool UTIL_FindInTablePath(Table *pTable, const char *name, Info *info,
+								 bool (*search)(Table *, const char *, Info *),
+								 Table *(*descend)(const Info &))
+{
+	unsigned int baseOffset = 0;
+	const char *component = name;
+
+	while (true)
+	{
+		const char *dot = strchr(component, '.');
+		size_t len = dot ? (size_t)(dot - component) : strlen(component);
+
+		char buffer[256];
+		if (len == 0 || len >= sizeof(buffer))
+		{
+			return false;
+		}
+
+		memcpy(buffer, component, len);
+		buffer[len] = '\0';
+
+		// Search the table for the prop
+		Info local;
+		if (!search(pTable, buffer, &local))
+		{
+			return false;
+		}
+
+		if (!dot)
+		{
+			info->prop = local.prop;
+			info->actual_offset = baseOffset + local.actual_offset;
+			return true;
+		}
+
+		// Handle nested properties
+		Table *pNext = descend(local);
+		if (!pNext)
+		{
+			return false;
+		}
+
+		baseOffset += local.actual_offset;
+		pTable = pNext;
+		component = dot + 1;
+	}
+}
+
+static bool UTIL_FindInSendTablePath(SendTable *pTable, const char *name, sm_sendprop_info_t *info)
+{
+	return UTIL_FindInTablePath<SendTable, sm_sendprop_info_t>(pTable, name, info,
+		[](SendTable *t, const char *n, sm_sendprop_info_t *o) { return UTIL_FindInSendTable(t, n, o, 0); },
+		[](const sm_sendprop_info_t &i) -> SendTable * { return i.prop->GetDataTable(); });
+}
+
+static bool UTIL_FindDataMapInfoPath(datamap_t *pMap, const char *name, sm_datatable_info_t *info)
+{
+	return UTIL_FindInTablePath<datamap_t, sm_datatable_info_t>(pMap, name, info,
+		[](datamap_t *m, const char *n, sm_datatable_info_t *o) { return UTIL_FindDataMapInfo(m, n, o); },
+		[](const sm_datatable_info_t &i) -> datamap_t * { return i.prop->td; });
 }
 
 ServerClass *CHalfLife2::FindServerClass(const char *classname)
@@ -459,7 +522,7 @@ bool CHalfLife2::FindSendPropInfo(const char *classname, const char *offset, sm_
 
 	if (!pInfo->lookup.retrieve(offset, &temp))
 	{
-		bool found = UTIL_FindInSendTable(pInfo->sc->m_pTable, offset, &temp.info, 0);
+		bool found = strchr(offset, '.') ? UTIL_FindInSendTablePath(pInfo->sc->m_pTable, offset, &temp.info) : UTIL_FindInSendTable(pInfo->sc->m_pTable, offset, &temp.info, 0);
 		temp.name = offset;
 
 		pInfo->lookup.insert(offset, temp);
@@ -511,7 +574,7 @@ bool CHalfLife2::FindDataMapInfo(datamap_t *pMap, const char *offset, sm_datatab
 
 	if (!cache->retrieve(offset, &temp))
 	{
-		bool found = UTIL_FindDataMapInfo(pMap, offset, &temp.info);
+		bool found = strchr(offset, '.') ? UTIL_FindDataMapInfoPath(pMap, offset, &temp.info) : UTIL_FindDataMapInfo(pMap, offset, &temp.info);
 		temp.name = offset;
 
 		cache->insert(offset, temp);
