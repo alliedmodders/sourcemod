@@ -522,7 +522,11 @@ bool CHalfLife2::FindSendPropInfo(const char *classname, const char *offset, sm_
 
 	if (!pInfo->lookup.retrieve(offset, &temp))
 	{
-		bool found = strchr(offset, '.') ? UTIL_FindInSendTablePath(pInfo->sc->m_pTable, offset, &temp.info) : UTIL_FindInSendTable(pInfo->sc->m_pTable, offset, &temp.info, 0);
+		bool found = UTIL_FindInSendTable(pInfo->sc->m_pTable, offset, &temp.info, 0);
+		if (!found && strchr(offset, '.'))
+		{
+			found = UTIL_FindInSendTablePath(pInfo->sc->m_pTable, offset, &temp.info);
+		}
 		temp.name = offset;
 
 		pInfo->lookup.insert(offset, temp);
@@ -574,7 +578,11 @@ bool CHalfLife2::FindDataMapInfo(datamap_t *pMap, const char *offset, sm_datatab
 
 	if (!cache->retrieve(offset, &temp))
 	{
-		bool found = strchr(offset, '.') ? UTIL_FindDataMapInfoPath(pMap, offset, &temp.info) : UTIL_FindDataMapInfo(pMap, offset, &temp.info);
+		bool found = UTIL_FindDataMapInfo(pMap, offset, &temp.info);
+		if (!found && strchr(offset, '.'))
+		{
+			found = UTIL_FindDataMapInfoPath(pMap, offset, &temp.info);
+		}
 		temp.name = offset;
 
 		cache->insert(offset, temp);
