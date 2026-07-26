@@ -32,6 +32,7 @@
 #include <assert.h>
 #include <sys/stat.h>
 #include <string.h>
+#include <filesystem>
 #include <IHandleSys.h>
 #include <ILibrarySys.h>
 #include <IPluginSys.h>
@@ -669,6 +670,66 @@ static cell_t sm_RenameFile(IPluginContext *pContext, const cell_t *params)
 #endif
 }
 
+// Streams the contents of one open file into another. Used for the Valve file
+// system copy path, which has no native copy function.
+static bool StreamCopyFile(FileObject *src, FileObject *dst)
+{
+	char buffer[8192];
+	while (!src->EndOfFile())
+	{
+		size_t bytes = src->Read(buffer, sizeof(buffer));
+		if (src->HasError())
+			return false;
+		if (bytes == 0)
+			break;
+		if (dst->Write(buffer, static_cast<int>(bytes)) != bytes)
+			return false;
+	}
+
+	return !dst->HasError();
+}
+
+static cell_t sm_CopyFile(IPluginContext *pContext, const cell_t *params)
+{
+	char *newpath, *oldpath;
+	pContext->LocalToString(params[1], &newpath);
+	pContext->LocalToString(params[2], &oldpath);
+
+	if (params[3] == 1)
+	{
+		char *sourcePathID;
+		pContext->LocalToStringNULL(params[4], &sourcePathID);
+		char *destPathID;
+		pContext->LocalToStringNULL(params[5], &destPathID);
+
+		ValveFile *src = ValveFile::Open(oldpath, "rb", sourcePathID);
+		if (!src)
+			return 0;
+
+		ValveFile *dst = ValveFile::Open(newpath, "wb", destPathID);
+		if (!dst)
+		{
+			delete src;
+			return 0;
+		}
+
+		bool success = StreamCopyFile(src, dst);
+		delete dst;
+		delete src;
+		return success ? 1 : 0;
+	}
+
+	char new_realpath[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, new_realpath, sizeof(new_realpath), "%s", newpath);
+	char old_realpath[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, old_realpath, sizeof(old_realpath), "%s", oldpath);
+
+	std::error_code ec;
+	std::filesystem::copy_file(old_realpath, new_realpath,
+		std::filesystem::copy_options::overwrite_existing, ec);
+	return ec ? 0 : 1;
+}
+
 static cell_t sm_DirExists(IPluginContext *pContext, const cell_t *params)
 {
 	char *name;
@@ -1261,6 +1322,7 @@ REGISTER_NATIVES(filesystem)
 	{"FilePosition",			sm_FilePosition},
 	{"FileExists",				sm_FileExists},
 	{"RenameFile",				sm_RenameFile},
+	{"CopyFile",				sm_CopyFile},
 	{"DirExists",				sm_DirExists},
 	{"FileSize",				sm_FileSize},
 	{"RemoveDir",				sm_RemoveDir},
