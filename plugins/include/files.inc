@@ -524,6 +524,23 @@ native bool FileExists(const char[] path, bool use_valve_fs=false, const char[] 
 native bool RenameFile(const char[] newpath, const char[] oldpath, bool use_valve_fs=false, const char[] valve_path_id="DEFAULT_WRITE_PATH");
 
 /**
+ * Copies a file. If the destination file already exists, it is overwritten.
+ *
+ * @param newpath       Path to the destination file.
+ * @param oldpath       Path to the existing source file.
+ * @param use_valve_fs  If true, the Valve file system will be used instead.
+ *                      This can be used to copy files in the game's
+ *                      Valve search paths, rather than directly in the gamedir.
+ * @param source_path_id If use_valve_fs, the gameinfo search path used to locate
+ *                       the source file, or NULL_STRING for all search paths.
+ * @param dest_path_id   If use_valve_fs, the gameinfo search path used to write
+ *                       the destination file, or NULL_STRING for the default
+ *                       write path.
+ * @return              True on success, false otherwise.
+ */
+native bool CopyFile(const char[] newpath, const char[] oldpath, bool use_valve_fs=false, const char[] source_path_id="GAME", const char[] dest_path_id="DEFAULT_WRITE_PATH");
+
+/**
  * Checks if a directory exists.
  *
  * @param path          Path to the directory.
