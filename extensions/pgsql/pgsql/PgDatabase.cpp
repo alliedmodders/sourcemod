@@ -137,11 +137,13 @@ PgDatabase::PgDatabase(PGconn *pgsql, const DatabaseInfo *info, bool persistent)
 	m_Database.assign(info->database);
 	m_User.assign(info->user);
 	m_Pass.assign(info->pass);
+	m_Schema.assign(info->dbiVersion >= 10 && info->schemaName ? info->schemaName : "");
 
 	m_Info.database = m_Database.c_str();
 	m_Info.host = m_Host.c_str();
 	m_Info.user = m_User.c_str();
 	m_Info.pass = m_Pass.c_str();
+	m_Info.schemaName = m_Schema.c_str();
 	m_Info.driver = NULL;
 	m_Info.maxTimeout = info->maxTimeout;
 	m_Info.port = info->port;

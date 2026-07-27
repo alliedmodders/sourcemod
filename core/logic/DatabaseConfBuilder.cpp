@@ -127,6 +127,8 @@ SMCResult DatabaseConfBuilder::ReadSMC_KeyValue(const SMCStates *states, const c
 			}
 		} else if (strcmp(key, "database") == 0) {
 			m_ParseCurrent->database = value;
+		} else if (strcmp(key, "schema") == 0) {
+			m_ParseCurrent->schemaName = value;
 		} else if (strcmp(key, "host") == 0) {
 			m_ParseCurrent->host = value;
 		} else if (strcmp(key, "user") == 0) {
@@ -158,6 +160,7 @@ SMCResult DatabaseConfBuilder::ReadSMC_LeavingSection(const SMCStates *states)
 		m_ParseCurrent->info.host = m_ParseCurrent->host.c_str();
 		m_ParseCurrent->info.user = m_ParseCurrent->user.c_str();
 		m_ParseCurrent->info.pass = m_ParseCurrent->pass.c_str();
+		m_ParseCurrent->info.schemaName = m_ParseCurrent->schemaName.c_str();
 		
 		/* Save it.. */
 		m_ParseCurrent->AddRef();

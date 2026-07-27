@@ -42,7 +42,7 @@
  */
 
 #define SMINTERFACE_DBI_NAME		"IDBI"
-#define SMINTERFACE_DBI_VERSION		9
+#define SMINTERFACE_DBI_VERSION		10
 
 namespace SourceMod
 {
@@ -634,6 +634,7 @@ namespace SourceMod
 		{
 			dbiVersion = SMINTERFACE_DBI_VERSION;
 			port = 0;
+			schemaName = "";
 			maxTimeout = 0;
 		}
 		unsigned int dbiVersion;		/**< DBI Version for backwards compatibility */
@@ -644,6 +645,7 @@ namespace SourceMod
 		const char *driver;				/**< Driver to use */
 		unsigned int port;				/**< Port to use, 0=default */
 		unsigned int maxTimeout;		/**< Maximum timeout, 0=default */
+		const char *schemaName;				/**< Schema/search_path, "" or NULL = driver default */
 	};
 
 	/**

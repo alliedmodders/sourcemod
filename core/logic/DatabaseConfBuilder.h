@@ -53,6 +53,7 @@ public:
 	std::string user;
 	std::string pass;
 	std::string database;
+	std::string schemaName;
 	IDBDriver *realDriver;
 	DatabaseInfo info;
 };
