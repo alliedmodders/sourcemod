@@ -85,6 +85,7 @@ private:
 	String m_Database;
 	String m_User;
 	String m_Pass;
+	String m_Schema;
 	bool m_bPersistent;
 };
 
