@@ -34,6 +34,7 @@
 #include <IMemoryUtils.h>
 #include <am-hashmap.h>
 #include <memory>
+#include <vector>
 #if defined PLATFORM_LINUX || defined PLATFORM_APPLE
 #include <sh_vector.h>
 #include "sm_symtable.h"
@@ -49,9 +50,18 @@ using namespace SourceMod;
 
 struct DynLibInfo
 {
-	void *baseAddress;
-	size_t memorySize;
+	void *baseAddress = nullptr;
+	size_t memorySize = 0;
 	std::unique_ptr<char[]> originalCopy;
+#ifdef PLATFORM_LINUX
+	struct Segment
+	{
+		size_t memoryOffset = 0;
+		size_t memorySize = 0;
+		std::unique_ptr<char[]> originalCopy;
+	};
+	std::vector<Segment> segments;
+#endif
 };
 
 #if defined PLATFORM_LINUX || defined PLATFORM_APPLE

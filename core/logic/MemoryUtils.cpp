@@ -85,6 +85,35 @@ void *MemoryUtils::FindPattern(const void *libPtr, const char *pattern, size_t l
 		return NULL;
 	}
 
+#ifdef PLATFORM_LINUX
+	for (const auto &segment : lib->segments)
+	{
+		if (len > segment.memorySize)
+			continue;
+
+		// Search each readable segment independently. This prevents patterns from
+		// crossing unmapped gaps between ELF load segments.
+		char *start = segment.originalCopy.get();
+		char *end = start + segment.memorySize - len + 1;
+		for (char *ptr = start; ptr < end; ptr++)
+		{
+			bool found = true;
+			for (register size_t i = 0; i < len; i++)
+			{
+				if (pattern[i] != '\x2A' && pattern[i] != ptr[i])
+				{
+					found = false;
+					break;
+				}
+			}
+
+			if (found)
+			{
+				return reinterpret_cast<char *>(lib->baseAddress) + segment.memoryOffset + (ptr - start);
+			}
+		}
+	}
+#else
 	// Search in the original unaltered state of the binary.
 	char *start = lib->originalCopy.get();
 	char *ptr = start;
@@ -109,6 +138,7 @@ void *MemoryUtils::FindPattern(const void *libPtr, const char *pattern, size_t l
 
 		ptr++;
 	}
+#endif
 
 	return NULL;
 }
@@ -569,18 +599,13 @@ const DynLibInfo *MemoryUtils::GetLibraryInfo(const void *libPtr)
 	{
 		ElfPHeader &hdr = phdr[i];
 
-		/* We only really care about the segment with executable code */
-		if (hdr.p_type == PT_LOAD && hdr.p_flags == (PF_X|PF_R))
+		/* Only readable segments are safe and useful to scan. */
+		if (hdr.p_type == PT_LOAD && (hdr.p_flags & PF_R) && hdr.p_filesz)
 		{
-			/* From glibc, elf/dl-load.c:
-			 * c->mapend = ((ph->p_vaddr + ph->p_filesz + GLRO(dl_pagesize) - 1) 
-			 *             & ~(GLRO(dl_pagesize) - 1));
-			 *
-			 * In glibc, the segment file size is aligned up to the nearest page size and
-			 * added to the virtual address of the segment. We just want the size here.
-			 */
-			lib.memorySize = PAGE_ALIGN_UP(hdr.p_filesz);
-			break;
+			DynLibInfo::Segment segment;
+			segment.memoryOffset = hdr.p_vaddr;
+			segment.memorySize = hdr.p_filesz;
+			lib.segments.push_back(std::move(segment));
 		}
 	}
 
@@ -665,8 +690,17 @@ const DynLibInfo *MemoryUtils::GetLibraryInfo(const void *libPtr)
 	}
 	
 	// Keep a copy of the binary in its initial unpatched state for lookup.
+#ifdef PLATFORM_LINUX
+	for (auto &segment : lib.segments)
+	{
+		segment.originalCopy = std::make_unique<char[]>(segment.memorySize);
+		memcpy(segment.originalCopy.get(), reinterpret_cast<char *>(lib.baseAddress) + segment.memoryOffset,
+		       segment.memorySize);
+	}
+#else
 	lib.originalCopy = std::make_unique<char[]>(lib.memorySize);
 	memcpy(lib.originalCopy.get(), lib.baseAddress, lib.memorySize);
+#endif
 	m_InfoMap.add(i, lib.baseAddress, std::move(lib));
 
 	return &i->value;
