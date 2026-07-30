@@ -1674,7 +1674,7 @@ static cell_t sm_OpenDirectoryAsync(IPluginContext *pContext, const cell_t *para
 		FileAsync_DirectoryCallback, callback, pContext->GetIdentity(), path, realpath, params[3]));
 }
 
-static cell_t sm_RemoveDirAsync(IPluginContext *pContext, const cell_t *params)
+static cell_t sm_RemoveDirectoryAsync(IPluginContext *pContext, const cell_t *params)
 {
 	IPluginFunction *callback = GetFileAsyncCallback(pContext, params[2]);
 	if (!callback)
@@ -2460,7 +2460,7 @@ REGISTER_NATIVES(filesystem)
 	{"FileSize",				sm_FileSize},
 	{"FileSizeAsync",			sm_FileSizeAsync},
 	{"RemoveDir",				sm_RemoveDir},
-	{"RemoveDirAsync",			sm_RemoveDirAsync},
+	{"RemoveDirectoryAsync",	sm_RemoveDirectoryAsync},
 	{"WriteFileLine",			sm_WriteFileLine},
 	{"BuildPath",				sm_BuildPath},
 	{"LogToGame",				sm_LogToGame},

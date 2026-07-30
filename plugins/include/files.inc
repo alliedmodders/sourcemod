@@ -835,7 +835,7 @@ native void CreateDirectoryAsync(const char[] path, int mode,
  * @param data          User data passed to the callback.
  * @error               The callback is invalid or the async worker is shutting down.
  */
-native void RemoveDirAsync(const char[] path, FileOpCallback callback, any data=0);
+native void RemoveDirectoryAsync(const char[] path, FileOpCallback callback, any data=0);
 
 /**
  * Changes a file or directories permissions.
