@@ -48,6 +48,9 @@
 #include "sm_convar.h"
 #include <amtl/os/am-shared-library.h>
 #include <amtl/os/am-path.h>
+#include <memory>
+#include <unordered_map>
+#include <vector>
 #include <bridge/include/IVEngineServerBridge.h>
 #include <bridge/include/IPlayerInfoBridge.h>
 #include <bridge/include/IFileSystemBridge.h>
@@ -213,6 +216,109 @@ public:
 		return "";
 #endif // defined( KE_ARCH_X64 ) && SOURCE_ENGINE >= SE_BLADE
 	}
+	bool SupportsAsync() override
+	{
+#if SOURCE_ENGINE == SE_MOCK
+		return false;
+#else
+		return true;
+#endif
+	}
+	int AsyncRead(const char *filename, const char *pathID, SourceMod::AsyncControl_t *control) override
+	{
+#if SOURCE_ENGINE == SE_MOCK
+		return SourceMod::AsyncStatus_FileOpenError;
+#else
+		auto request = std::make_unique<AsyncReadRequest>();
+		request->request.pszFilename = filename;
+		request->request.pszPathID = pathID;
+		request->request.pfnCallback = AsyncReadCallback;
+		request->request.pContext = request.get();
+		FSAsyncControl_t native_control = nullptr;
+		int status = filesystem->AsyncReadMultiple(&request->request, 1, &native_control);
+		if (status >= SourceMod::AsyncStatus_Ok && native_control)
+			async_requests_.emplace(native_control, std::move(request));
+		*control = native_control;
+		return status;
+#endif
+	}
+	int AsyncWrite(const char *filename, const void *data, int size, bool append,
+		SourceMod::AsyncControl_t *control) override
+	{
+#if SOURCE_ENGINE == SE_MOCK || SOURCE_ENGINE == SE_DARKMESSIAH
+		return SourceMod::AsyncStatus_FileOpenError;
+#else
+		return filesystem->AsyncWrite(filename, data, size, false, append,
+			reinterpret_cast<FSAsyncControl_t *>(control));
+#endif
+	}
+	int AsyncStatus(SourceMod::AsyncControl_t control) override
+	{
+#if SOURCE_ENGINE == SE_MOCK
+		return SourceMod::AsyncStatus_FileOpenError;
+#else
+		return filesystem->AsyncStatus(reinterpret_cast<FSAsyncControl_t>(control));
+#endif
+	}
+	int AsyncGetResult(SourceMod::AsyncControl_t control, void **data, int *size) override
+	{
+#if SOURCE_ENGINE == SE_MOCK
+		return SourceMod::AsyncStatus_FileOpenError;
+#else
+		FSAsyncControl_t native_control = reinterpret_cast<FSAsyncControl_t>(control);
+		void *engine_data;
+		int engine_size;
+		int status = filesystem->AsyncGetResult(native_control, &engine_data, &engine_size);
+		if (status != SourceMod::AsyncStatus_Ok)
+			return status;
+
+		auto iter = async_requests_.find(native_control);
+		if (iter == async_requests_.end())
+			return SourceMod::AsyncStatus_FileOpenError;
+
+		if (data)
+			*data = iter->second->contents.empty() ? nullptr : iter->second->contents.data();
+		if (size)
+			*size = static_cast<int>(iter->second->contents.size());
+		return status;
+#endif
+	}
+	void AsyncAbort(SourceMod::AsyncControl_t control) override
+	{
+#if SOURCE_ENGINE != SE_MOCK
+		filesystem->AsyncAbort(reinterpret_cast<FSAsyncControl_t>(control));
+#endif
+	}
+	void AsyncRelease(SourceMod::AsyncControl_t control) override
+	{
+#if SOURCE_ENGINE != SE_MOCK
+		FSAsyncControl_t native_control = reinterpret_cast<FSAsyncControl_t>(control);
+		filesystem->AsyncRelease(native_control);
+		async_requests_.erase(native_control);
+#endif
+	}
+
+private:
+#if SOURCE_ENGINE != SE_MOCK
+	struct AsyncReadRequest
+	{
+		FileAsyncRequest_t request;
+		std::vector<uint8_t> contents;
+	};
+
+	static void AsyncReadCallback(const FileAsyncRequest_t &request, int bytes, FSAsyncStatus_t status)
+	{
+		auto *async_request = static_cast<AsyncReadRequest *>(request.pContext);
+		if (status != FSASYNC_OK || bytes < 0 || (bytes && !request.pData))
+			return;
+
+		async_request->contents.resize(bytes);
+		if (bytes)
+			memcpy(async_request->contents.data(), request.pData, bytes);
+	}
+
+	std::unordered_map<FSAsyncControl_t, std::unique_ptr<AsyncReadRequest>> async_requests_;
+#endif
 } fs_wrapper;
 
 class VPlayerInfo_Logic : public IPlayerInfoBridge

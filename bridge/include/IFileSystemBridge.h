@@ -32,6 +32,18 @@ typedef int FileFindHandle_t;
 
 namespace SourceMod {
 
+typedef void *AsyncControl_t;
+
+enum AsyncStatus
+{
+	AsyncStatus_FileOpenError = -1,
+	AsyncStatus_Ok = 0,
+	AsyncStatus_Pending,
+	AsyncStatus_InProgress,
+	AsyncStatus_Aborted,
+	AsyncStatus_Unserviced,
+};
+
 class IFileSystemBridge
 {
 public:
@@ -59,6 +71,14 @@ public:
 	virtual void CreateDirHierarchy(const char *path, const char *pathID = 0) = 0;
 	virtual int GetSearchPath(const char* pathID, bool bGetPackFiles, char* pPath, int nMaxLen) = 0;
 	virtual const char * GetGameBinArchSubdirectory() = 0;
+	virtual bool SupportsAsync() = 0;
+	virtual int AsyncRead(const char *filename, const char *pathID, AsyncControl_t *control) = 0;
+	virtual int AsyncWrite(const char *filename, const void *data, int size, bool append,
+		AsyncControl_t *control) = 0;
+	virtual int AsyncStatus(AsyncControl_t control) = 0;
+	virtual int AsyncGetResult(AsyncControl_t control, void **data, int *size) = 0;
+	virtual void AsyncAbort(AsyncControl_t control) = 0;
+	virtual void AsyncRelease(AsyncControl_t control) = 0;
 };
 
 } // namespace SourceMod

@@ -611,6 +611,233 @@ native bool RemoveDir(const char[] path);
 native bool CreateDirectory(const char[] path, int mode=FPERM_O_READ|FPERM_O_EXEC|FPERM_G_READ|FPERM_G_EXEC|FPERM_U_READ|FPERM_U_WRITE|FPERM_U_EXEC, bool use_valve_fs=false, const char[] valve_path_id="DEFAULT_WRITE_PATH");
 
 /**
+ * Results reported by asynchronous filesystem operations.
+ */
+enum FileOpResult
+{
+	FileOp_Success = 0,
+	FileOp_NotFound,
+	FileOp_Error,
+};
+
+/**
+ * Called when an asynchronous filesystem operation completes.
+ *
+ * @param result        Operation result.
+ * @param path          Path supplied to the operation.
+ * @param data          User data supplied to the operation.
+ */
+typedef FileOpCallback = function void(FileOpResult result, const char[] path, any data);
+
+/**
+ * Called when an asynchronous existence check completes.
+ *
+ * @param exists        Whether the requested entry exists and has the requested type.
+ * @param path          Path supplied to the operation.
+ * @param data          User data supplied to the operation.
+ */
+typedef FileExistsCallback = function void(bool exists, const char[] path, any data);
+
+/**
+ * Called when an asynchronous file-size query completes.
+ *
+ * @param result        Operation result.
+ * @param path          Path supplied to the operation.
+ * @param size          File size in bytes, or -1 on failure.
+ * @param data          User data supplied to the operation.
+ */
+typedef FileSizeCallback = function void(FileOpResult result, const char[] path, int size, any data);
+
+/**
+ * Called when an asynchronous whole-file read completes.
+ *
+ * contents contains the raw file bytes. It is binary-safe, including embedded
+ * NUL bytes, and its length is given by size. Do not use string-focused natives
+ * on it unless the data is known to be a string.
+ *
+ * @param result        Operation result.
+ * @param path          Path supplied to the operation.
+ * @param contents      Raw-byte buffer.
+ * @param size          Number of file bytes in contents.
+ * @param data          User data supplied to the operation.
+ */
+typedef FileReadCallback = function void(FileOpResult result, const char[] path, const char[] contents, int size, any data);
+
+/**
+ * Called when an asynchronous directory snapshot has been materialized.
+ *
+ * On success, listing contains a fully-materialized DirectoryListing and must
+ * be closed by the callback. It is independent of later filesystem changes.
+ * On failure, listing is null.
+ *
+ * @param result        Operation result.
+ * @param path          Path supplied to the operation.
+ * @param listing       Materialized directory listing, or null on failure.
+ * @param data          User data supplied to the operation.
+ */
+typedef FileDirectoryCallback = function void(FileOpResult result, const char[] path, DirectoryListing listing, any data);
+
+/**
+ * Deletes a file without blocking the game thread.
+ *
+ * @param path          Path to the file.
+ * @param callback      Callback invoked on completion.
+ * @param data          User data passed to the callback.
+ * @param use_valve_fs  If true, use the Valve filesystem.
+ * @param valve_path_id Valve filesystem search path when use_valve_fs is true.
+ * @error               The callback is invalid, the async worker is shutting down, or Valve async operations are unavailable.
+ */
+native void DeleteFileAsync(const char[] path, FileOpCallback callback, any data=0,
+                            bool use_valve_fs=false,
+                            const char[] valve_path_id="DEFAULT_WRITE_PATH");
+
+/**
+ * Renames a file without blocking the game thread.
+ *
+ * @param newpath       New path to the file.
+ * @param oldpath       Path to the existing file.
+ * @param callback      Callback invoked on completion.
+ * @param data          User data passed to the callback.
+ * @param use_valve_fs  If true, use the Valve filesystem.
+ * @param valve_path_id Valve filesystem search path when use_valve_fs is true.
+ * @error               The callback is invalid, the async worker is shutting down, or Valve async operations are unavailable.
+ */
+native void RenameFileAsync(const char[] newpath, const char[] oldpath,
+                            FileOpCallback callback, any data=0,
+                            bool use_valve_fs=false,
+                            const char[] valve_path_id="DEFAULT_WRITE_PATH");
+
+/**
+ * Copies a file without blocking the game thread. Existing destinations are
+ * overwritten.
+ *
+ * @param newpath        Path to the destination file.
+ * @param oldpath        Path to the existing source file.
+ * @param callback       Callback invoked on completion.
+ * @param data           User data passed to the callback.
+ * @param use_valve_fs   If true, use the Valve filesystem.
+ * @param source_path_id Valve filesystem search path for the source.
+ * @param dest_path_id   Valve filesystem search path for the destination.
+ * @error                The callback is invalid, the async worker is shutting down, or Valve async operations are unavailable.
+ */
+native void CopyFileAsync(const char[] newpath, const char[] oldpath,
+                          FileOpCallback callback, any data=0,
+                          bool use_valve_fs=false,
+                          const char[] source_path_id="GAME",
+                          const char[] dest_path_id="DEFAULT_WRITE_PATH");
+
+/**
+ * Checks for a regular file without blocking the game thread.
+ *
+ * @param path          Path to the file.
+ * @param callback      Callback invoked on completion.
+ * @param data          User data passed to the callback.
+ * @param use_valve_fs  If true, use the Valve filesystem.
+ * @param valve_path_id Valve filesystem search path when use_valve_fs is true.
+ * @error               The callback is invalid, the async worker is shutting down, or Valve async operations are unavailable.
+ */
+native void FileExistsAsync(const char[] path, FileExistsCallback callback, any data=0,
+                            bool use_valve_fs=false,
+                            const char[] valve_path_id="GAME");
+
+/**
+ * Checks for a directory without blocking the game thread.
+ *
+ * @param path          Path to the directory. Use "." for the game directory.
+ * @param callback      Callback invoked on completion.
+ * @param data          User data passed to the callback.
+ * @param use_valve_fs  If true, use the Valve filesystem.
+ * @param valve_path_id Valve filesystem search path when use_valve_fs is true.
+ * @error               The path is empty, the callback is invalid, the async worker is shutting down, or Valve async operations are unavailable.
+ */
+native void DirExistsAsync(const char[] path, FileExistsCallback callback, any data=0,
+                           bool use_valve_fs=false,
+                           const char[] valve_path_id="GAME");
+
+/**
+ * Gets a file's size without blocking the game thread.
+ *
+ * @param path          Path to the file.
+ * @param callback      Callback invoked on completion.
+ * @param data          User data passed to the callback.
+ * @param use_valve_fs  If true, use the Valve filesystem.
+ * @param valve_path_id Valve filesystem search path when use_valve_fs is true.
+ * @error               The callback is invalid, the async worker is shutting down, or Valve async operations are unavailable.
+ */
+native void FileSizeAsync(const char[] path, FileSizeCallback callback, any data=0,
+                          bool use_valve_fs=false,
+                          const char[] valve_path_id="GAME");
+
+/**
+ * Reads a whole file without blocking the game thread.
+ *
+ * @param path          Path to the file.
+ * @param callback      Callback invoked on completion.
+ * @param data          User data passed to the callback.
+ * @param use_valve_fs  If true, use the Valve filesystem.
+ * @param valve_path_id Valve filesystem search path when use_valve_fs is true.
+ * @error               The callback is invalid, the async worker is shutting down, or Valve async operations are unavailable.
+ */
+native void ReadFileAsync(const char[] path, FileReadCallback callback, any data=0,
+                          bool use_valve_fs=false,
+                          const char[] valve_path_id="GAME");
+
+/**
+ * Enumerates an OS filesystem directory without blocking the game thread.
+ * The callback receives a fully-materialized DirectoryListing snapshot.
+ *
+ * @param path          Path to the directory. Use "." for the game directory.
+ * @param callback      Callback invoked on completion.
+ * @param data          User data passed to the callback.
+ * @error               The path is empty, the callback is invalid, or the async worker is shutting down.
+ */
+native void OpenDirectoryAsync(const char[] path, FileDirectoryCallback callback, any data=0);
+
+/**
+ * Writes size raw bytes from contents without blocking the game thread.
+ *
+ * @param path          Path to the file.
+ * @param contents      Raw-byte buffer to write.
+ * @param size          Number of bytes to write from contents.
+ * @param callback      Callback invoked on completion.
+ * @param data          User data passed to the callback.
+ * @param append        If true, append rather than overwrite.
+ * @param use_valve_fs  If true, use the Valve filesystem.
+ * @param valve_path_id Valve filesystem path; must be DEFAULT_WRITE_PATH.
+ * @error               The size is negative, the callback is invalid, the async worker is shutting down, Valve async operations are unavailable, or valve_path_id is unsupported.
+ */
+native void WriteFileAsync(const char[] path, const char[] contents, int size,
+                           FileOpCallback callback, any data=0, bool append=false,
+                           bool use_valve_fs=false,
+                           const char[] valve_path_id="DEFAULT_WRITE_PATH");
+
+/**
+ * Creates a directory without blocking the game thread.
+ *
+ * @param path          Path to create.
+ * @param mode          Permissions for an OS filesystem directory. Ignored by the Valve filesystem.
+ * @param callback      Callback invoked on completion.
+ * @param data          User data passed to the callback.
+ * @param use_valve_fs  If true, use the Valve filesystem.
+ * @param valve_path_id Valve filesystem search path when use_valve_fs is true.
+ * @error               The callback is invalid, the async worker is shutting down, or Valve async operations are unavailable.
+ */
+native void CreateDirectoryAsync(const char[] path, int mode,
+                                 FileOpCallback callback, any data=0,
+                                 bool use_valve_fs=false,
+                                 const char[] valve_path_id="DEFAULT_WRITE_PATH");
+
+/**
+ * Removes an empty OS filesystem directory without blocking the game thread.
+ *
+ * @param path          Path to the directory.
+ * @param callback      Callback invoked on completion.
+ * @param data          User data passed to the callback.
+ * @error               The callback is invalid or the async worker is shutting down.
+ */
+native void RemoveDirAsync(const char[] path, FileOpCallback callback, any data=0);
+
+/**
  * Changes a file or directories permissions.
  *
  * @param path          Path to the file.
