@@ -30,9 +30,20 @@
  */
 
 #include <assert.h>
+#include <atomic>
+#include <condition_variable>
+#include <deque>
+#include <errno.h>
 #include <sys/stat.h>
 #include <string.h>
 #include <filesystem>
+#include <limits>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 #include <IHandleSys.h>
 #include <ILibrarySys.h>
 #include <IPluginSys.h>
@@ -42,6 +53,7 @@
 #include "common_logic.h"
 #include "Logger.h"
 #include "sprintf.h"
+#include <amtl/am-thread.h>
 #include <am-utility.h>
 #include "handle_helpers.h"
 #include <bridge/include/IFileSystemBridge.h>
@@ -266,6 +278,798 @@ private:
 	FILE *fp_;
 };
 
+enum FileAsyncResult
+{
+	FileAsync_Success = 0,
+	FileAsync_NotFound,
+	FileAsync_Error,
+};
+
+enum FileAsyncOperation
+{
+	FileAsync_Delete,
+	FileAsync_Rename,
+	FileAsync_Copy,
+	FileAsync_FileExists,
+	FileAsync_DirExists,
+	FileAsync_FileSize,
+	FileAsync_CreateDirectory,
+	FileAsync_RemoveDirectory,
+	FileAsync_Read,
+	FileAsync_Write,
+	FileAsync_OpenDirectory,
+};
+
+enum FileAsyncCallback
+{
+	FileAsync_ResultCallback,
+	FileAsync_ExistsCallback,
+	FileAsync_SizeCallback,
+	FileAsync_ReadCallback,
+	FileAsync_DirectoryCallback,
+};
+
+struct FileAsyncDirectoryEntry
+{
+	std::string name;
+	cell_t type;
+};
+
+class SnapshotDirectory final : public IDirectory
+{
+public:
+	explicit SnapshotDirectory(std::vector<FileAsyncDirectoryEntry> entries)
+	 : entries_(std::move(entries)), index_(0)
+	{
+	}
+
+	bool MoreFiles() override
+	{
+		return index_ < entries_.size();
+	}
+
+	void NextEntry() override
+	{
+		if (MoreFiles())
+			index_++;
+	}
+
+	const char *GetEntryName() override
+	{
+		return MoreFiles() ? entries_[index_].name.c_str() : "";
+	}
+
+	bool IsEntryDirectory() override
+	{
+		return MoreFiles() && entries_[index_].type == 1;
+	}
+
+	bool IsEntryFile() override
+	{
+		return MoreFiles() && entries_[index_].type == 2;
+	}
+
+	bool IsEntryValid() override
+	{
+		return MoreFiles();
+	}
+
+private:
+	std::vector<FileAsyncDirectoryEntry> entries_;
+	size_t index_;
+};
+
+class FileAsyncTask
+{
+public:
+	FileAsyncTask(FileAsyncOperation operation, FileAsyncCallback callback,
+		IPluginFunction *function, IdentityToken_t *owner, const char *path,
+		const char *realpath, cell_t data, const char *other_realpath = nullptr,
+		cell_t mode = 0, std::vector<uint8_t> contents = {}, bool append = false,
+		bool valve = false, const char *pathID = nullptr, const char *other_pathID = nullptr)
+	 : operation_(operation), callback_(callback), function_(function), owner_(owner),
+	   path_(path), realpath_(realpath), other_realpath_(other_realpath ? other_realpath : ""),
+	   data_(data), mode_(mode), result_(FileAsync_Error), exists_(false), size_(-1),
+	   contents_(std::move(contents)), append_(append), cancelled_(false), valve_(valve),
+	   pathID_(pathID ? pathID : ""), other_pathID_(other_pathID ? other_pathID : "")
+	{
+	}
+
+	void Run()
+	{
+		try
+		{
+			if (valve_)
+			{
+				RunValve();
+				return;
+			}
+
+			switch (operation_)
+			{
+				case FileAsync_Delete:
+					result_ = SystemFile::Delete(realpath_.c_str()) ? FileAsync_Success : ResultFromErrno();
+					break;
+				case FileAsync_Rename:
+					result_ = Rename() ? FileAsync_Success : ResultFromErrno();
+					break;
+				case FileAsync_Copy:
+					Copy();
+					break;
+				case FileAsync_FileExists:
+					exists_ = IsRegularFile(realpath_.c_str());
+					result_ = FileAsync_Success;
+					break;
+				case FileAsync_DirExists:
+					exists_ = IsDirectory(realpath_.c_str());
+					result_ = FileAsync_Success;
+					break;
+				case FileAsync_FileSize:
+					FileSize();
+					break;
+				case FileAsync_CreateDirectory:
+					result_ = CreateDirectory() ? FileAsync_Success : ResultFromErrno();
+					break;
+				case FileAsync_RemoveDirectory:
+					result_ = rmdir(realpath_.c_str()) == 0 ? FileAsync_Success : ResultFromErrno();
+					break;
+				case FileAsync_Read:
+					Read();
+					break;
+				case FileAsync_Write:
+					Write();
+					break;
+				case FileAsync_OpenDirectory:
+					OpenDirectory();
+					break;
+			}
+		}
+		catch (...)
+		{
+			contents_.clear();
+			result_ = FileAsync_Error;
+		}
+	}
+
+	void Deliver()
+	{
+		if (cancelled_ || !function_->IsRunnable())
+			return;
+
+		switch (callback_)
+		{
+			case FileAsync_ResultCallback:
+				function_->PushCell(result_);
+				function_->PushString(path_.c_str());
+				function_->PushCell(data_);
+				break;
+			case FileAsync_ExistsCallback:
+				function_->PushCell(exists_ ? 1 : 0);
+				function_->PushString(path_.c_str());
+				function_->PushCell(data_);
+				break;
+			case FileAsync_SizeCallback:
+				function_->PushCell(result_);
+				function_->PushString(path_.c_str());
+				function_->PushCell(size_);
+				function_->PushCell(data_);
+				break;
+			case FileAsync_ReadCallback:
+				DeliverRead();
+				break;
+			case FileAsync_DirectoryCallback:
+				DeliverDirectory();
+				break;
+		}
+		function_->Execute(nullptr);
+	}
+
+	IdentityToken_t *owner() const
+	{
+		return owner_;
+	}
+
+	void Cancel()
+	{
+		cancelled_ = true;
+	}
+
+private:
+	static FileAsyncResult ResultFromErrno()
+	{
+		return errno == ENOENT ? FileAsync_NotFound : FileAsync_Error;
+	}
+
+	static bool IsRegularFile(const char *path)
+	{
+#ifdef PLATFORM_WINDOWS
+		struct _stat s;
+		return _stat(path, &s) == 0 && (s.st_mode & S_IFREG);
+#else
+		struct stat s;
+		return stat(path, &s) == 0 && S_ISREG(s.st_mode);
+#endif
+	}
+
+	static bool IsDirectory(const char *path)
+	{
+#ifdef PLATFORM_WINDOWS
+		struct _stat s;
+		return _stat(path, &s) == 0 && (s.st_mode & S_IFDIR);
+#else
+		struct stat s;
+		return stat(path, &s) == 0 && S_ISDIR(s.st_mode);
+#endif
+	}
+
+	bool Rename()
+	{
+#ifdef PLATFORM_WINDOWS
+		return MoveFileExA(other_realpath_.c_str(), realpath_.c_str(),
+			MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING) != 0;
+#else
+		return rename(other_realpath_.c_str(), realpath_.c_str()) == 0;
+#endif
+	}
+
+	void Copy()
+	{
+		std::error_code ec;
+		std::filesystem::copy_file(other_realpath_, realpath_,
+			std::filesystem::copy_options::overwrite_existing, ec);
+		if (!ec)
+		{
+			result_ = FileAsync_Success;
+			return;
+		}
+		result_ = ec == std::errc::no_such_file_or_directory
+			? FileAsync_NotFound
+			: FileAsync_Error;
+	}
+
+	void FileSize()
+	{
+#ifdef PLATFORM_WINDOWS
+		struct _stat s;
+		if (_stat(realpath_.c_str(), &s) != 0)
+#else
+		struct stat s;
+		if (stat(realpath_.c_str(), &s) != 0)
+#endif
+		{
+			result_ = ResultFromErrno();
+			return;
+		}
+
+#ifdef PLATFORM_WINDOWS
+		if (s.st_mode & S_IFREG)
+#else
+		if (S_ISREG(s.st_mode))
+#endif
+		{
+			size_ = static_cast<cell_t>(s.st_size);
+			result_ = FileAsync_Success;
+			return;
+		}
+		result_ = FileAsync_Error;
+	}
+
+	void RunValve()
+	{
+		switch (operation_)
+		{
+			case FileAsync_Delete:
+				if (!bridge->filesystem->FileExists(realpath_.c_str(), pathID_.c_str()))
+					result_ = FileAsync_NotFound;
+				else
+				{
+					bridge->filesystem->RemoveFile(realpath_.c_str(), pathID_.c_str());
+					result_ = bridge->filesystem->FileExists(realpath_.c_str(), pathID_.c_str())
+						? FileAsync_Error : FileAsync_Success;
+				}
+				break;
+			case FileAsync_Rename:
+				if (!bridge->filesystem->FileExists(other_realpath_.c_str(), pathID_.c_str()))
+				{
+					result_ = FileAsync_NotFound;
+					break;
+				}
+				bridge->filesystem->RenameFile(other_realpath_.c_str(), realpath_.c_str(), pathID_.c_str());
+				result_ = !bridge->filesystem->FileExists(other_realpath_.c_str(), pathID_.c_str())
+					&& bridge->filesystem->FileExists(realpath_.c_str(), pathID_.c_str())
+					? FileAsync_Success : FileAsync_Error;
+				break;
+			case FileAsync_Copy:
+				CopyValve();
+				break;
+			case FileAsync_FileExists:
+				exists_ = bridge->filesystem->FileExists(realpath_.c_str(), pathID_.c_str());
+				result_ = FileAsync_Success;
+				break;
+			case FileAsync_DirExists:
+				exists_ = bridge->filesystem->IsDirectory(realpath_.c_str(), pathID_.c_str());
+				result_ = FileAsync_Success;
+				break;
+			case FileAsync_FileSize:
+				if (!bridge->filesystem->FileExists(realpath_.c_str(), pathID_.c_str()))
+					result_ = FileAsync_NotFound;
+				else
+				{
+					size_ = static_cast<cell_t>(bridge->filesystem->Size(realpath_.c_str(), pathID_.c_str()));
+					result_ = FileAsync_Success;
+				}
+				break;
+			case FileAsync_CreateDirectory:
+				if (bridge->filesystem->IsDirectory(realpath_.c_str(), pathID_.c_str()))
+					result_ = FileAsync_Error;
+				else
+				{
+					bridge->filesystem->CreateDirHierarchy(realpath_.c_str(), pathID_.c_str());
+					result_ = bridge->filesystem->IsDirectory(realpath_.c_str(), pathID_.c_str())
+						? FileAsync_Success : FileAsync_Error;
+				}
+				break;
+			default:
+				result_ = FileAsync_Error;
+				break;
+		}
+	}
+
+	void CopyValve()
+	{
+		if (!bridge->filesystem->FileExists(other_realpath_.c_str(), other_pathID_.c_str()))
+		{
+			result_ = FileAsync_NotFound;
+			return;
+		}
+
+		FileHandle_t source = bridge->filesystem->Open(other_realpath_.c_str(), "rb", other_pathID_.c_str());
+		if (!source)
+		{
+			result_ = FileAsync_Error;
+			return;
+		}
+		FileHandle_t destination = bridge->filesystem->Open(realpath_.c_str(), "wb", pathID_.c_str());
+		if (!destination)
+		{
+			bridge->filesystem->Close(source);
+			result_ = FileAsync_Error;
+			return;
+		}
+
+		char buffer[8192];
+		bool success = true;
+		while (!bridge->filesystem->EndOfFile(source))
+		{
+			int read = bridge->filesystem->Read(buffer, sizeof(buffer), source);
+			if (read < 0 || (read == 0 && !bridge->filesystem->EndOfFile(source)) ||
+				(read && bridge->filesystem->Write(buffer, read, destination) != read))
+			{
+				success = false;
+				break;
+			}
+		}
+		success = success && bridge->filesystem->IsOk(source) && bridge->filesystem->IsOk(destination);
+		bridge->filesystem->Close(destination);
+		bridge->filesystem->Close(source);
+		result_ = success ? FileAsync_Success : FileAsync_Error;
+	}
+
+	bool CreateDirectory()
+	{
+#ifdef PLATFORM_WINDOWS
+		return mkdir(realpath_.c_str()) == 0;
+#else
+		return mkdir(realpath_.c_str(), mode_) == 0;
+#endif
+	}
+
+	void Read()
+	{
+		std::error_code ec;
+		auto size = std::filesystem::file_size(realpath_, ec);
+		if (ec)
+		{
+			result_ = ec == std::errc::no_such_file_or_directory
+				? FileAsync_NotFound
+				: FileAsync_Error;
+			return;
+		}
+		if (size > static_cast<uintmax_t>((std::numeric_limits<cell_t>::max)()))
+		{
+			result_ = FileAsync_Error;
+			return;
+		}
+
+		contents_.resize(static_cast<size_t>(size));
+		FILE *file = fopen(realpath_.c_str(), "rb");
+		if (!file)
+		{
+			contents_.clear();
+			result_ = ResultFromErrno();
+			return;
+		}
+
+		size_t read = contents_.empty() ? 0 : fread(contents_.data(), 1, contents_.size(), file);
+		bool success = read == contents_.size() && !ferror(file);
+		if (fclose(file) != 0)
+			success = false;
+		if (!success)
+		{
+			contents_.clear();
+			result_ = FileAsync_Error;
+			return;
+		}
+		result_ = FileAsync_Success;
+	}
+
+	void Write()
+	{
+		FILE *file = fopen(realpath_.c_str(), append_ ? "ab" : "wb");
+		if (!file)
+		{
+			result_ = ResultFromErrno();
+			return;
+		}
+
+		size_t written = contents_.empty() ? 0 : fwrite(contents_.data(), 1, contents_.size(), file);
+		bool success = written == contents_.size() && !ferror(file);
+		if (fclose(file) != 0)
+			success = false;
+		result_ = success ? FileAsync_Success : FileAsync_Error;
+	}
+
+	void OpenDirectory()
+	{
+		IDirectory *directory = libsys->OpenDirectory(realpath_.c_str());
+		if (!directory)
+		{
+			result_ = IsDirectory(realpath_.c_str()) ? FileAsync_Error : FileAsync_NotFound;
+			return;
+		}
+
+		while (directory->MoreFiles())
+		{
+			FileAsyncDirectoryEntry entry;
+			entry.name = directory->GetEntryName();
+			entry.type = directory->IsEntryDirectory() ? 1 : (directory->IsEntryFile() ? 2 : 0);
+			entries_.push_back(std::move(entry));
+			directory->NextEntry();
+		}
+		libsys->CloseDirectory(directory);
+		result_ = FileAsync_Success;
+	}
+
+	void DeliverRead()
+	{
+		char empty = '\0';
+		size_t buffer_size = contents_.empty() ? 1 : contents_.size();
+		function_->PushCell(result_);
+		function_->PushString(path_.c_str());
+		function_->PushStringEx(contents_.empty() ? &empty : reinterpret_cast<char *>(contents_.data()),
+			buffer_size, SM_PARAM_STRING_BINARY | SM_PARAM_STRING_COPY, 0);
+		function_->PushCell(result_ == FileAsync_Success ? static_cast<cell_t>(contents_.size()) : 0);
+		function_->PushCell(data_);
+	}
+
+	void DeliverDirectory()
+	{
+		Handle_t handle = 0;
+		if (result_ == FileAsync_Success)
+		{
+			SnapshotDirectory *directory = new SnapshotDirectory(std::move(entries_));
+			handle = handlesys->CreateHandle(g_DirType, directory, owner_, g_pCoreIdent, nullptr);
+			if (!handle)
+			{
+				delete directory;
+				result_ = FileAsync_Error;
+			}
+		}
+		function_->PushCell(result_);
+		function_->PushString(path_.c_str());
+		function_->PushCell(handle);
+		function_->PushCell(data_);
+	}
+
+private:
+	FileAsyncOperation operation_;
+	FileAsyncCallback callback_;
+	IPluginFunction *function_;
+	IdentityToken_t *owner_;
+	std::string path_;
+	std::string realpath_;
+	std::string other_realpath_;
+	cell_t data_;
+	cell_t mode_;
+	FileAsyncResult result_;
+	bool exists_;
+	cell_t size_;
+	std::vector<uint8_t> contents_;
+	std::vector<FileAsyncDirectoryEntry> entries_;
+	bool append_;
+	bool cancelled_;
+	bool valve_;
+	std::string pathID_;
+	std::string other_pathID_;
+};
+
+class FileAsyncWorker
+{
+public:
+	void Start()
+	{
+		thread_ = ke::NewThread("SM File Async", [this] { ThreadMain(); });
+	}
+
+	void Shutdown()
+	{
+		{
+			std::lock_guard<std::mutex> lock(mutex_);
+			stopping_ = true;
+			for (FileAsyncTask *task : tasks_)
+				task->Cancel();
+		}
+		condition_.notify_one();
+		if (thread_)
+		{
+			thread_->join();
+			thread_.reset();
+		}
+
+		std::lock_guard<std::mutex> lock(mutex_);
+		for (FileAsyncTask *task : tasks_)
+			delete task;
+		tasks_.clear();
+		pending_.clear();
+		completed_.clear();
+	}
+
+	bool Enqueue(FileAsyncTask *task)
+	{
+		std::lock_guard<std::mutex> lock(mutex_);
+		if (stopping_)
+			return false;
+		tasks_.insert(task);
+		pending_.push_back(task);
+		condition_.notify_one();
+		return true;
+	}
+
+	void ProcessCompleted()
+	{
+		std::deque<FileAsyncTask *> completed;
+		{
+			std::lock_guard<std::mutex> lock(mutex_);
+			completed.swap(completed_);
+			for (FileAsyncTask *task : completed)
+				tasks_.erase(task);
+		}
+
+		for (FileAsyncTask *task : completed)
+		{
+			task->Deliver();
+			delete task;
+		}
+	}
+
+	void CancelPlugin(IdentityToken_t *owner)
+	{
+		std::lock_guard<std::mutex> lock(mutex_);
+		for (FileAsyncTask *task : tasks_)
+		{
+			if (task->owner() == owner)
+				task->Cancel();
+		}
+	}
+
+private:
+	void ThreadMain()
+	{
+		for (;;)
+		{
+			FileAsyncTask *task;
+			{
+				std::unique_lock<std::mutex> lock(mutex_);
+				condition_.wait(lock, [this] { return stopping_ || !pending_.empty(); });
+				if (stopping_)
+					return;
+				task = pending_.front();
+				pending_.pop_front();
+			}
+
+			task->Run();
+
+			std::lock_guard<std::mutex> lock(mutex_);
+			completed_.push_back(task);
+		}
+	}
+
+private:
+	std::mutex mutex_;
+	std::condition_variable condition_;
+	std::unique_ptr<std::thread> thread_;
+	std::deque<FileAsyncTask *> pending_;
+	std::deque<FileAsyncTask *> completed_;
+	std::unordered_set<FileAsyncTask *> tasks_;
+	bool stopping_ = false;
+};
+
+class ValveFileAsyncTask
+{
+public:
+	ValveFileAsyncTask(FileAsyncOperation operation, IPluginFunction *function,
+		IdentityToken_t *owner, const char *path, cell_t data, std::vector<uint8_t> contents = {})
+	 : operation_(operation), function_(function), owner_(owner), path_(path), data_(data),
+	   result_(FileAsync_Error), contents_(std::move(contents)), control_(nullptr)
+	{
+	}
+
+	bool Start(const char *pathID, bool append = false)
+	{
+		int status;
+		if (operation_ == FileAsync_Read)
+			status = bridge->filesystem->AsyncRead(path_.c_str(), pathID, &control_);
+		else
+			status = bridge->filesystem->AsyncWrite(path_.c_str(), contents_.data(),
+				static_cast<int>(contents_.size()), append, &control_);
+
+		return status >= SourceMod::AsyncStatus_Ok && control_ != nullptr;
+	}
+
+	bool Process()
+	{
+		int status = bridge->filesystem->AsyncStatus(control_);
+		if (status > SourceMod::AsyncStatus_Ok)
+			return false;
+
+		if (status == SourceMod::AsyncStatus_Ok && operation_ == FileAsync_Read)
+		{
+			void *data = nullptr;
+			int size = 0;
+			status = bridge->filesystem->AsyncGetResult(control_, &data, &size);
+			if (status == SourceMod::AsyncStatus_Ok && size >= 0 && (size == 0 || data != nullptr))
+			{
+				contents_.resize(size);
+				if (size)
+					memcpy(contents_.data(), data, size);
+			}
+		}
+
+		if (status == SourceMod::AsyncStatus_Ok)
+			result_ = FileAsync_Success;
+		else if (status == SourceMod::AsyncStatus_FileOpenError)
+			result_ = FileAsync_NotFound;
+		else
+			result_ = FileAsync_Error;
+
+		bridge->filesystem->AsyncRelease(control_);
+		control_ = nullptr;
+		Deliver();
+		return true;
+	}
+
+	void Cancel()
+	{
+		if (control_)
+		{
+			bridge->filesystem->AsyncAbort(control_);
+			bridge->filesystem->AsyncRelease(control_);
+			control_ = nullptr;
+		}
+	}
+
+	IdentityToken_t *owner() const
+	{
+		return owner_;
+	}
+
+private:
+	void Deliver()
+	{
+		if (!function_->IsRunnable())
+			return;
+
+		if (operation_ == FileAsync_Read)
+		{
+			char empty = '\0';
+			size_t buffer_size = contents_.empty() ? 1 : contents_.size();
+			function_->PushCell(result_);
+			function_->PushString(path_.c_str());
+			function_->PushStringEx(contents_.empty() ? &empty : reinterpret_cast<char *>(contents_.data()),
+				buffer_size, SM_PARAM_STRING_BINARY | SM_PARAM_STRING_COPY, 0);
+			function_->PushCell(result_ == FileAsync_Success ? static_cast<cell_t>(contents_.size()) : 0);
+			function_->PushCell(data_);
+		}
+		else
+		{
+			function_->PushCell(result_);
+			function_->PushString(path_.c_str());
+			function_->PushCell(data_);
+		}
+		function_->Execute(nullptr);
+	}
+
+private:
+	FileAsyncOperation operation_;
+	IPluginFunction *function_;
+	IdentityToken_t *owner_;
+	std::string path_;
+	cell_t data_;
+	FileAsyncResult result_;
+	std::vector<uint8_t> contents_;
+	SourceMod::AsyncControl_t control_;
+};
+
+class ValveFileAsyncQueue
+{
+public:
+	~ValveFileAsyncQueue()
+	{
+		Shutdown();
+	}
+
+	bool Enqueue(ValveFileAsyncTask *task, const char *pathID, bool append = false)
+	{
+		if (!bridge->filesystem->SupportsAsync() || !task->Start(pathID, append))
+			return false;
+		tasks_.push_back(task);
+		return true;
+	}
+
+	void Process()
+	{
+		for (auto iter = tasks_.begin(); iter != tasks_.end();)
+		{
+			ValveFileAsyncTask *task = *iter;
+			if (!task->Process())
+			{
+				++iter;
+				continue;
+			}
+			delete task;
+			iter = tasks_.erase(iter);
+		}
+	}
+
+	void CancelPlugin(IdentityToken_t *owner)
+	{
+		for (auto iter = tasks_.begin(); iter != tasks_.end();)
+		{
+			ValveFileAsyncTask *task = *iter;
+			if (task->owner() != owner)
+			{
+				++iter;
+				continue;
+			}
+			task->Cancel();
+			delete task;
+			iter = tasks_.erase(iter);
+		}
+	}
+
+	void Shutdown()
+	{
+		for (ValveFileAsyncTask *task : tasks_)
+		{
+			task->Cancel();
+			delete task;
+		}
+		tasks_.clear();
+	}
+
+private:
+	std::vector<ValveFileAsyncTask *> tasks_;
+};
+
+static FileAsyncWorker *g_FileAsyncWorker = nullptr;
+static ValveFileAsyncQueue *g_ValveFileAsyncQueue = nullptr;
+
+static void FileAsyncFrame(bool)
+{
+	g_FileAsyncWorker->ProcessCompleted();
+	g_ValveFileAsyncQueue->Process();
+}
+
 struct ValveDirectory
 {
 	FileFindHandle_t hndl = -1;
@@ -289,9 +1093,18 @@ public:
 		g_ValveDirType = handlesys->CreateType("ValveDirectory", this, 0, NULL, NULL, g_pCoreIdent, NULL);
 		g_pLogHook = forwardsys->CreateForwardEx(NULL, ET_Hook, 1, NULL, Param_String);
 		pluginsys->AddPluginsListener(this);
+		g_FileAsyncWorker = &m_AsyncWorker;
+		g_ValveFileAsyncQueue = &m_ValveAsyncQueue;
+		m_AsyncWorker.Start();
+		g_pSM->AddGameFrameHook(&FileAsyncFrame);
 	}
 	virtual void OnSourceModShutdown()
 	{
+		g_pSM->RemoveGameFrameHook(&FileAsyncFrame);
+		m_ValveAsyncQueue.Shutdown();
+		m_AsyncWorker.Shutdown();
+		g_FileAsyncWorker = nullptr;
+		g_ValveFileAsyncQueue = nullptr;
 		pluginsys->RemovePluginsListener(this);
 		forwardsys->ReleaseForward(g_pLogHook);
 		handlesys->RemoveType(g_DirType, g_pCoreIdent);
@@ -339,6 +1152,23 @@ public:
 		g_pLogHook->Execute(&result);
 		return result >= Pl_Handled;
 	}
+	virtual void OnPluginWillUnload(IPlugin *plugin)
+	{
+		m_AsyncWorker.CancelPlugin(plugin->GetIdentity());
+		m_ValveAsyncQueue.CancelPlugin(plugin->GetIdentity());
+	}
+	bool EnqueueAsyncTask(FileAsyncTask *task)
+	{
+		return m_AsyncWorker.Enqueue(task);
+	}
+	bool EnqueueValveAsyncTask(ValveFileAsyncTask *task, const char *pathID, bool append = false)
+	{
+		return m_ValveAsyncQueue.Enqueue(task, pathID, append);
+	}
+
+private:
+	FileAsyncWorker m_AsyncWorker;
+	ValveFileAsyncQueue m_ValveAsyncQueue;
 } s_FileNatives;
 
 bool OnLogPrint(const char *msg)
@@ -560,6 +1390,302 @@ static cell_t sm_DeleteFile(IPluginContext *pContext, const cell_t *params)
 		pContext->LocalToStringNULL(params[3], &pathID);
 		return ValveFile::Delete(name, pathID);
 	}
+}
+
+static cell_t QueueFileAsyncTask(IPluginContext *pContext, FileAsyncTask *task)
+{
+	if (s_FileNatives.EnqueueAsyncTask(task))
+		return 0;
+
+	delete task;
+	return pContext->ThrowNativeError("Async file worker is shutting down");
+}
+
+static cell_t QueueValveWorkerFileAsyncTask(IPluginContext *pContext, FileAsyncTask *task)
+{
+	if (!bridge->filesystem->SupportsAsync())
+	{
+		delete task;
+		return pContext->ThrowNativeError("Valve filesystem async operations are unavailable on this engine");
+	}
+	return QueueFileAsyncTask(pContext, task);
+}
+
+static cell_t QueueValveFileAsyncTask(IPluginContext *pContext, ValveFileAsyncTask *task,
+	const char *pathID, bool append = false)
+{
+	if (s_FileNatives.EnqueueValveAsyncTask(task, pathID, append))
+		return 0;
+
+	delete task;
+	return pContext->ThrowNativeError("Valve filesystem async operations are unavailable on this engine");
+}
+
+static IPluginFunction *GetFileAsyncCallback(IPluginContext *pContext, cell_t function)
+{
+	IPluginFunction *callback = pContext->GetFunctionById(function);
+	if (!callback)
+		pContext->ThrowNativeError("Invalid function id (%X)", function);
+	return callback;
+}
+
+static cell_t sm_DeleteFileAsync(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *callback = GetFileAsyncCallback(pContext, params[2]);
+	if (!callback)
+		return 0;
+
+	char *path;
+	pContext->LocalToString(params[1], &path);
+	if (params[0] >= 4 && params[4])
+	{
+		char *pathID;
+		pContext->LocalToString(params[5], &pathID);
+		return QueueValveWorkerFileAsyncTask(pContext, new FileAsyncTask(FileAsync_Delete,
+			FileAsync_ResultCallback, callback, pContext->GetIdentity(), path, path, params[3],
+			nullptr, 0, {}, false, true, pathID));
+	}
+
+	char realpath[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", path);
+	return QueueFileAsyncTask(pContext, new FileAsyncTask(FileAsync_Delete,
+		FileAsync_ResultCallback, callback, pContext->GetIdentity(), path, realpath, params[3]));
+}
+
+static cell_t sm_RenameFileAsync(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *callback = GetFileAsyncCallback(pContext, params[3]);
+	if (!callback)
+		return 0;
+
+	char *newpath, *oldpath;
+	pContext->LocalToString(params[1], &newpath);
+	pContext->LocalToString(params[2], &oldpath);
+	if (params[0] >= 5 && params[5])
+	{
+		char *pathID;
+		pContext->LocalToString(params[6], &pathID);
+		return QueueValveWorkerFileAsyncTask(pContext, new FileAsyncTask(FileAsync_Rename,
+			FileAsync_ResultCallback, callback, pContext->GetIdentity(), newpath, newpath, params[4],
+			oldpath, 0, {}, false, true, pathID));
+	}
+
+	char new_realpath[PLATFORM_MAX_PATH], old_realpath[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, new_realpath, sizeof(new_realpath), "%s", newpath);
+	g_pSM->BuildPath(Path_Game, old_realpath, sizeof(old_realpath), "%s", oldpath);
+	return QueueFileAsyncTask(pContext, new FileAsyncTask(FileAsync_Rename,
+		FileAsync_ResultCallback, callback, pContext->GetIdentity(), newpath, new_realpath,
+		params[4], old_realpath));
+}
+
+static cell_t sm_CopyFileAsync(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *callback = GetFileAsyncCallback(pContext, params[3]);
+	if (!callback)
+		return 0;
+
+	char *newpath, *oldpath;
+	pContext->LocalToString(params[1], &newpath);
+	pContext->LocalToString(params[2], &oldpath);
+	if (params[0] >= 5 && params[5])
+	{
+		char *sourcePathID, *destinationPathID;
+		pContext->LocalToString(params[6], &sourcePathID);
+		pContext->LocalToString(params[7], &destinationPathID);
+		return QueueValveWorkerFileAsyncTask(pContext, new FileAsyncTask(FileAsync_Copy,
+			FileAsync_ResultCallback, callback, pContext->GetIdentity(), newpath, newpath, params[4],
+			oldpath, 0, {}, false, true, destinationPathID, sourcePathID));
+	}
+
+	char new_realpath[PLATFORM_MAX_PATH], old_realpath[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, new_realpath, sizeof(new_realpath), "%s", newpath);
+	g_pSM->BuildPath(Path_Game, old_realpath, sizeof(old_realpath), "%s", oldpath);
+	return QueueFileAsyncTask(pContext, new FileAsyncTask(FileAsync_Copy,
+		FileAsync_ResultCallback, callback, pContext->GetIdentity(), newpath, new_realpath,
+		params[4], old_realpath));
+}
+
+static cell_t sm_FileExistsAsync(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *callback = GetFileAsyncCallback(pContext, params[2]);
+	if (!callback)
+		return 0;
+
+	char *path;
+	pContext->LocalToString(params[1], &path);
+	if (params[0] >= 4 && params[4])
+	{
+		char *pathID;
+		pContext->LocalToString(params[5], &pathID);
+		return QueueValveWorkerFileAsyncTask(pContext, new FileAsyncTask(FileAsync_FileExists,
+			FileAsync_ExistsCallback, callback, pContext->GetIdentity(), path, path, params[3],
+			nullptr, 0, {}, false, true, pathID));
+	}
+
+	char realpath[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", path);
+	return QueueFileAsyncTask(pContext, new FileAsyncTask(FileAsync_FileExists,
+		FileAsync_ExistsCallback, callback, pContext->GetIdentity(), path, realpath, params[3]));
+}
+
+static cell_t sm_DirExistsAsync(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *callback = GetFileAsyncCallback(pContext, params[2]);
+	if (!callback)
+		return 0;
+
+	char *path;
+	pContext->LocalToString(params[1], &path);
+	if (!path[0])
+		return pContext->ThrowNativeError("Invalid path. An empty path string is not valid, use \".\" to refer to the current working directory.");
+	if (params[0] >= 4 && params[4])
+	{
+		char *pathID;
+		pContext->LocalToString(params[5], &pathID);
+		return QueueValveWorkerFileAsyncTask(pContext, new FileAsyncTask(FileAsync_DirExists,
+			FileAsync_ExistsCallback, callback, pContext->GetIdentity(), path, path, params[3],
+			nullptr, 0, {}, false, true, pathID));
+	}
+
+	char realpath[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", path);
+	return QueueFileAsyncTask(pContext, new FileAsyncTask(FileAsync_DirExists,
+		FileAsync_ExistsCallback, callback, pContext->GetIdentity(), path, realpath, params[3]));
+}
+
+static cell_t sm_FileSizeAsync(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *callback = GetFileAsyncCallback(pContext, params[2]);
+	if (!callback)
+		return 0;
+
+	char *path;
+	pContext->LocalToString(params[1], &path);
+	if (params[0] >= 4 && params[4])
+	{
+		char *pathID;
+		pContext->LocalToString(params[5], &pathID);
+		return QueueValveWorkerFileAsyncTask(pContext, new FileAsyncTask(FileAsync_FileSize,
+			FileAsync_SizeCallback, callback, pContext->GetIdentity(), path, path, params[3],
+			nullptr, 0, {}, false, true, pathID));
+	}
+
+	char realpath[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", path);
+	return QueueFileAsyncTask(pContext, new FileAsyncTask(FileAsync_FileSize,
+		FileAsync_SizeCallback, callback, pContext->GetIdentity(), path, realpath, params[3]));
+}
+
+static cell_t sm_ReadFileAsync(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *callback = GetFileAsyncCallback(pContext, params[2]);
+	if (!callback)
+		return 0;
+
+	char *path;
+	pContext->LocalToString(params[1], &path);
+	if (params[0] >= 4 && params[4])
+	{
+		char *pathID;
+		pContext->LocalToString(params[5], &pathID);
+		return QueueValveFileAsyncTask(pContext, new ValveFileAsyncTask(FileAsync_Read,
+			callback, pContext->GetIdentity(), path, params[3]), pathID);
+	}
+
+	char realpath[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", path);
+	return QueueFileAsyncTask(pContext, new FileAsyncTask(FileAsync_Read,
+		FileAsync_ReadCallback, callback, pContext->GetIdentity(), path, realpath, params[3]));
+}
+
+static cell_t sm_WriteFileAsync(IPluginContext *pContext, const cell_t *params)
+{
+	if (params[3] < 0)
+		return pContext->ThrowNativeError("Invalid size %d", params[3]);
+
+	IPluginFunction *callback = GetFileAsyncCallback(pContext, params[4]);
+	if (!callback)
+		return 0;
+
+	cell_t *buffer;
+	pContext->LocalToPhysAddr(params[2], &buffer);
+	std::vector<uint8_t> contents(params[3]);
+	if (!contents.empty())
+		memcpy(contents.data(), buffer, contents.size());
+
+	char *path;
+	pContext->LocalToString(params[1], &path);
+	if (params[0] >= 7 && params[7])
+	{
+		char *pathID;
+		pContext->LocalToString(params[8], &pathID);
+		if (strcmp(pathID, "DEFAULT_WRITE_PATH") != 0)
+			return pContext->ThrowNativeError("Valve async writes only support DEFAULT_WRITE_PATH");
+		return QueueValveFileAsyncTask(pContext, new ValveFileAsyncTask(FileAsync_Write,
+			callback, pContext->GetIdentity(), path, params[5], std::move(contents)), pathID,
+			params[6] != 0);
+	}
+
+	char realpath[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", path);
+	return QueueFileAsyncTask(pContext, new FileAsyncTask(FileAsync_Write,
+		FileAsync_ResultCallback, callback, pContext->GetIdentity(), path, realpath,
+		params[5], nullptr, 0, std::move(contents), params[6] != 0));
+}
+
+static cell_t sm_CreateDirectoryAsync(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *callback = GetFileAsyncCallback(pContext, params[3]);
+	if (!callback)
+		return 0;
+
+	char *path;
+	pContext->LocalToString(params[1], &path);
+	if (params[0] >= 5 && params[5])
+	{
+		char *pathID;
+		pContext->LocalToString(params[6], &pathID);
+		return QueueValveWorkerFileAsyncTask(pContext, new FileAsyncTask(FileAsync_CreateDirectory,
+			FileAsync_ResultCallback, callback, pContext->GetIdentity(), path, path, params[4],
+			nullptr, params[2], {}, false, true, pathID));
+	}
+
+	char realpath[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", path);
+	return QueueFileAsyncTask(pContext, new FileAsyncTask(FileAsync_CreateDirectory,
+		FileAsync_ResultCallback, callback, pContext->GetIdentity(), path, realpath,
+		params[4], nullptr, params[2]));
+}
+
+static cell_t sm_OpenDirectoryAsync(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *callback = GetFileAsyncCallback(pContext, params[2]);
+	if (!callback)
+		return 0;
+
+	char *path;
+	pContext->LocalToString(params[1], &path);
+	if (!path[0])
+		return pContext->ThrowNativeError("Invalid path. An empty path string is not valid, use \".\" to refer to the current working directory.");
+
+	char realpath[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", path);
+	return QueueFileAsyncTask(pContext, new FileAsyncTask(FileAsync_OpenDirectory,
+		FileAsync_DirectoryCallback, callback, pContext->GetIdentity(), path, realpath, params[3]));
+}
+
+static cell_t sm_RemoveDirectoryAsync(IPluginContext *pContext, const cell_t *params)
+{
+	IPluginFunction *callback = GetFileAsyncCallback(pContext, params[2]);
+	if (!callback)
+		return 0;
+
+	char *path;
+	pContext->LocalToString(params[1], &path);
+	char realpath[PLATFORM_MAX_PATH];
+	g_pSM->BuildPath(Path_Game, realpath, sizeof(realpath), "%s", path);
+	return QueueFileAsyncTask(pContext, new FileAsyncTask(FileAsync_RemoveDirectory,
+		FileAsync_ResultCallback, callback, pContext->GetIdentity(), path, realpath, params[3]));
 }
 
 static cell_t sm_ReadFileLine(IPluginContext *pContext, const cell_t *params)
@@ -1313,19 +2439,28 @@ static cell_t File_WriteTyped(IPluginContext *pContext, const cell_t *params)
 REGISTER_NATIVES(filesystem)
 {
 	{"OpenDirectory",			sm_OpenDirectory},
+	{"OpenDirectoryAsync",		sm_OpenDirectoryAsync},
 	{"ReadDirEntry",			sm_ReadDirEntry},
 	{"OpenFile",				sm_OpenFile},
 	{"DeleteFile",				sm_DeleteFile},
+	{"DeleteFileAsync",			sm_DeleteFileAsync},
+	{"ReadFileAsync",			sm_ReadFileAsync},
+	{"WriteFileAsync",			sm_WriteFileAsync},
 	{"ReadFileLine",			sm_ReadFileLine},
 	{"IsEndOfFile",				sm_IsEndOfFile},
 	{"FileSeek",				sm_FileSeek},
 	{"FilePosition",			sm_FilePosition},
 	{"FileExists",				sm_FileExists},
 	{"RenameFile",				sm_RenameFile},
+	{"RenameFileAsync",			sm_RenameFileAsync},
 	{"CopyFile",				sm_CopyFile},
+	{"CopyFileAsync",			sm_CopyFileAsync},
 	{"DirExists",				sm_DirExists},
+	{"DirExistsAsync",			sm_DirExistsAsync},
 	{"FileSize",				sm_FileSize},
+	{"FileSizeAsync",			sm_FileSizeAsync},
 	{"RemoveDir",				sm_RemoveDir},
+	{"RemoveDirectoryAsync",	sm_RemoveDirectoryAsync},
 	{"WriteFileLine",			sm_WriteFileLine},
 	{"BuildPath",				sm_BuildPath},
 	{"LogToGame",				sm_LogToGame},
@@ -1342,6 +2477,8 @@ REGISTER_NATIVES(filesystem)
 	{"AddGameLogHook",			sm_AddGameLogHook},
 	{"RemoveGameLogHook",		sm_RemoveGameLogHook},
 	{"CreateDirectory",			sm_CreateDirectory},
+	{"CreateDirectoryAsync",		sm_CreateDirectoryAsync},
+	{"FileExistsAsync",			sm_FileExistsAsync},
 	{"SetFilePermissions",		sm_SetFilePermissions},
 	{"GetFilePermissions",		sm_GetFilePermissions},
 
