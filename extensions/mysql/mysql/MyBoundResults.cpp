@@ -60,6 +60,8 @@ enum_field_types GetTheirType(DBType type)
 		{
 			return MYSQL_TYPE_BLOB;
 		}
+	case DBType_NULL:
+	case DBTypes_TOTAL:
 	case DBType_Unknown:
 		{
 			return MYSQL_TYPE_STRING;
@@ -316,7 +318,7 @@ DBResult RefetchSize4Field(MYSQL_STMT *stmt,
 						enum_field_types type)
 {
 	MYSQL_BIND bind;
-	my_bool is_null;
+	bool is_null;
 
 	/* Initialize bind info  */
 	memset(&bind, 0, sizeof(MYSQL_BIND));
@@ -339,7 +341,7 @@ bool RefetchUserField(MYSQL_STMT *stmt,
 					  void *userbuf,
 					  size_t userlen,
 					  enum_field_types type,
-					  my_bool &is_null,
+					  bool &is_null,
 					  size_t *written)
 {
 	MYSQL_BIND bind;
@@ -478,7 +480,7 @@ DBResult MyBoundResults::CopyString(unsigned int id, char *buffer, size_t maxlen
 		}
 
 		/* Re-fetch this for the user.  This call will guarantee NULL termination. */
-		my_bool is_null;
+		bool is_null;
 		if (!RefetchUserField(m_stmt, id, buffer, maxlength, MYSQL_TYPE_STRING, is_null, written))
 		{
 			return DBVal_TypeMismatch;
@@ -498,7 +500,7 @@ DBResult MyBoundResults::CopyString(unsigned int id, char *buffer, size_t maxlen
 		/* If the user supplied a bigger buffer, just refetch for them. */
 		if (maxlength > orig_length)
 		{
-			my_bool is_null;
+			bool is_null;
 			RefetchUserField(m_stmt, id, buffer, maxlength, MYSQL_TYPE_STRING, is_null, written);
 			STR_NULL_CHECK_1(is_null);
 			return DBVal_Data;
@@ -647,7 +649,7 @@ DBResult MyBoundResults::CopyBlob(unsigned int id, void *buffer, size_t maxlengt
 	if (pull_size > push_size
 		&& maxlength > push_size)
 	{
-		my_bool is_null;
+		bool is_null;
 		if (!RefetchUserField(m_stmt, id, buffer, maxlength, MYSQL_TYPE_BLOB, is_null, written))
 		{
 			return DBVal_TypeMismatch;

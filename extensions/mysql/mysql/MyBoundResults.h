@@ -38,7 +38,7 @@ class MyStatement;
 
 struct ResultBind
 {
-	my_bool my_null;
+	bool my_null;
 	unsigned long my_length;
 	union
 	{

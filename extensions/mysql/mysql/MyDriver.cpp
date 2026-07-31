@@ -109,9 +109,26 @@ MYSQL *Connect(const DatabaseInfo *info, char *error, size_t maxlength)
 
 	/* Have MySQL automatically reconnect if it times out or loses connection.
 	 * This will prevent "MySQL server has gone away" errors after a while.
+	 *
+	 * Note: MYSQL_OPT_RECONNECT was deprecated in MySQL 8.0 and removed in
+	 * MySQL 8.1+. We check by version to maintain forward compatibility.
 	 */
-	my_bool my_true = true;
+#if defined(MYSQL_VERSION_ID) && MYSQL_VERSION_ID < 80100
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#elif defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4996)
+#endif
+	bool my_true = true;
 	mysql_options(mysql, MYSQL_OPT_RECONNECT, (const char *)&my_true);
+#if defined(__GNUC__) || defined(__clang__)
+#pragma GCC diagnostic pop
+#elif defined(_MSC_VER)
+#pragma warning(pop)
+#endif
+#endif
 
 	if (info->host[0] == '/')
 	{

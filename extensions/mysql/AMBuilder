@@ -19,6 +19,7 @@ if SM.mysql_root:
         binary.compiler.cflags += ['/MD']
 
     if binary.compiler.target.platform == 'linux' or binary.compiler.target.platform == 'mac':
+      # MySQL 5.x and 8.0 both use libmysqlclient.a on Linux/mac.
       binary.compiler.postlink += [
         os.path.join(SM.mysql_root[arch], 'lib', 'libmysqlclient.a'),
         '-lz',
@@ -28,15 +29,24 @@ if SM.mysql_root:
     if binary.compiler.target.platform == 'linux':
       binary.compiler.postlink += ['-lrt']
     elif binary.compiler.target.platform == 'windows':
+      # MySQL 5.x uses mysqlclient.lib, MySQL 8.0 uses libmysql.lib.
+      mysql_lib_dir = os.path.join(SM.mysql_root[arch], 'lib')
+      mysql_lib_debug = os.path.join(mysql_lib_dir, 'debug')
+      if os.path.exists(os.path.join(mysql_lib_dir, 'libmysql.lib')):
+        mysql_lib_name = 'libmysql.lib'
+        mysql_lib_debug_name = 'libmysql.lib'
+      else:
+        mysql_lib_name = 'mysqlclient.lib'
+        mysql_lib_debug_name = 'mysqlclient.lib'
       binary.compiler.defines += ['WIN32_LEAN_AND_MEAN']
       if builder.options.debug == '1':
         binary.compiler.defines += ['_ITERATOR_DEBUG_LEVEL=2']
         binary.compiler.postlink += [
-          os.path.join(SM.mysql_root[arch], 'lib', 'debug', 'mysqlclient.lib'),
+          os.path.join(mysql_lib_dir, 'debug', mysql_lib_debug_name),
         ]
       else:
         binary.compiler.postlink += [
-          os.path.join(SM.mysql_root[arch], 'lib', 'mysqlclient.lib'),
+          os.path.join(mysql_lib_dir, mysql_lib_name),
         ]
       binary.compiler.postlink += [
         'crypt32.lib',

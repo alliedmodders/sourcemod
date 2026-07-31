@@ -42,7 +42,7 @@
  */
 
 #define SMINTERFACE_DBI_NAME		"IDBI"
-#define SMINTERFACE_DBI_VERSION		10
+#define SMINTERFACE_DBI_VERSION		8
 
 namespace SourceMod
 {
