@@ -47,13 +47,13 @@
 			}
 			"PreThink"
 			{
-				"windows64"	"385"
-				"linux64"	"386"
+				"windows64"	"386"
+				"linux64"	"387"
 			}
 			"PostThink"
 			{
-				"windows64"	"386"
-				"linux64"	"387"
+				"windows64"	"387"
+				"linux64"	"388"
 			}
 			"Reload"
 			{
