@@ -814,7 +814,7 @@ void SDKHooks::Unhook(CBaseEntity *pEntity)
 
 				if (pawnhooks.size() == 0)
 				{
-					DeleteVtableHookList(vtablehooklist[listentry]);
+					delete vtablehooklist[listentry];
 					vtablehooklist.erase(vtablehooklist.begin() + listentry);
 					listentry--;
 				}
@@ -843,7 +843,7 @@ void SDKHooks::Unhook(IPluginContext *pContext)
 
 				if (pawnhooks.size() == 0)
 				{
-					DeleteVtableHookList(vtablehooklist[listentry]);
+					delete vtablehooklist[listentry];
 					vtablehooklist.erase(vtablehooklist.begin() + listentry);
 					listentry--;
 				}
@@ -885,7 +885,7 @@ void SDKHooks::Unhook(int entity, SDKHookType type, IPluginFunction *pCallback)
 
 			if (pawnhooks.size() == 0)
 			{
-				DeleteVtableHookList(vtablehooklist[listentry]);
+				delete vtablehooklist[listentry];
 				vtablehooklist.erase(vtablehooklist.begin() + listentry);
 				listentry--;
 			}
