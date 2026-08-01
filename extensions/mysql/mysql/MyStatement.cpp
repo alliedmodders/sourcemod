@@ -35,6 +35,8 @@
 MyStatement::MyStatement(MyDatabase *db, MYSQL_STMT *stmt)
 : m_mysql(db->m_mysql), m_pParent(db), m_stmt(stmt), m_pRes(NULL), m_rs(NULL), m_Results(false)
 {
+	std::lock_guard<std::recursive_mutex> lock(m_pParent->m_FullLock);
+
 	m_Params = (unsigned int)mysql_stmt_param_count(m_stmt);
 
 	if (m_Params)
@@ -53,6 +55,8 @@ MyStatement::MyStatement(MyDatabase *db, MYSQL_STMT *stmt)
 
 MyStatement::~MyStatement()
 {
+	std::lock_guard<std::recursive_mutex> lock(m_pParent->m_FullLock);
+
 	while (FetchMoreResults())
 	{
 		/* Spin until all are gone */
@@ -97,6 +101,8 @@ void MyStatement::ClearResults()
 
 bool MyStatement::FetchMoreResults()
 {
+	std::lock_guard<std::recursive_mutex> lock(m_pParent->m_FullLock);
+
 	if (m_pRes == NULL)
 	{
 		return false;
@@ -274,6 +280,8 @@ bool MyStatement::BindParamNull(unsigned int param)
 
 bool MyStatement::Execute()
 {
+	std::lock_guard<std::recursive_mutex> lock(m_pParent->m_FullLock);
+
 	/* Clear any past result first! */
 	while (FetchMoreResults())
 	{
@@ -336,6 +344,8 @@ bool MyStatement::Execute()
 
 const char *MyStatement::GetError(int *errCode/* =NULL */)
 {
+	std::lock_guard<std::recursive_mutex> lock(m_pParent->m_FullLock);
+
 	if (errCode)
 	{
 		*errCode = mysql_stmt_errno(m_stmt);
@@ -346,11 +356,13 @@ const char *MyStatement::GetError(int *errCode/* =NULL */)
 
 unsigned int MyStatement::GetAffectedRows()
 {
+	std::lock_guard<std::recursive_mutex> lock(m_pParent->m_FullLock);
 	return (unsigned int)mysql_stmt_affected_rows(m_stmt);
 }
 
 unsigned int MyStatement::GetInsertID()
 {
+	std::lock_guard<std::recursive_mutex> lock(m_pParent->m_FullLock);
 	return (unsigned int)mysql_stmt_insert_id(m_stmt);
 }
 
