@@ -2,72 +2,72 @@
 {
 	"Gag/Mute player"
 	{
-		"tr"		"Oyuncunun Ağzını Tıka/Sustur"
+		"tr"		"Oyuncuyu sustur"
 	}
 
 	"Choose Type"
 	{
-		"tr"		"Tür Seç"
+		"tr"		"Tür seç"
 	}
 
 	"Gagged target"
 	{
-		"tr"		"{1}'in ağzı tıkandı"
+		"tr"		"{1} adlı oyuncu sesli sohbette susturuldu."
 	}
 
 	"Ungagged target"
 	{
-		"tr"		"Artık {1}'in ağzı tıkalı değil."
+		"tr"		"{1} adlı oyuncunun sesli sohbetteki susturması kaldırıldı."
 	}
 
 	"Muted target"
 	{
-		"tr"		"{1} Susturuldu."
+		"tr"		"{1} adlı oyuncu yazılı sohbette susturuldu."
 	}
 
 	"Unmuted target"
 	{
-		"tr"		"Artık {1} susturulmuş değil."
+		"tr"		"{1} adlı oyuncunun yazılı sohbetteki susturması kaldırıldı."
 	}
 
 	"Silenced target"
 	{
-		"tr"		"{1} sessizleştirildi."
+		"tr"		"{1} adlı oyuncu sesli ve yazılı sohbette susturuldu."
 	}
 
 	"Unsilenced target"
 	{
-		"tr"		"Artık {1} sessiz değil."
+		"tr"		"{1} adlı oyuncunun sesli ve yazılı sohbetteki susturması kaldırıldı."
 	}
 
 	"Mute Player"
 	{
-		"tr"		"Oyuncuyu Sustur"
+		"tr"		"Oyuncuyu yazılı sohbette sustur"
 	}
 
 	"UnMute Player"
 	{
-		"tr"		"Oyuncuyu Susturma"
+		"tr"		"Oyuncunun yazılı sohbetteki susturmasını kaldır"
 	}
 
 	"Gag Player"
 	{
-		"tr"		"Oyuncunun Ağzını Tıka"
+		"tr"		"Oyuncuyu sesli sohbette sustur"
 	}
 
 	"UnGag Player"
 	{
-		"tr"		"Oyuncunun Ağzını Tıkama"
+		"tr"		"Oyuncunun sesli sohbetteki susturmasını kaldır"
 	}
 
 	"Silence Player"
 	{
-		"tr"		"Oyuncuyu Sessizleştir"
+		"tr"		"Oyuncuyu sesli ve yazılı sohbette sustur"
 	}
 
 	"UnSilence Player"
 	{
-		"tr"		"Oyuncuyu Sessizleştirme"
+		"tr"		"Oyuncunun sesli ve yazılı sohbetteki susturmasını kaldır"
 	}
 
 }

@@ -72,7 +72,7 @@
 
 	"Vote FF"
 	{
-		"tr"		"DA Oyla"
+		"tr"		"Dost ateşi oylaması"
 	}
 
 	"Burn vote"

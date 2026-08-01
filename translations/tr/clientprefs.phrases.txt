@@ -2,32 +2,32 @@
 {
 	"Cookie List"
 	{
-		"tr"		"Sourcemod Kurabiye Listesi"
+		"tr"		"SourceMod Çerez Listesi"
 	}
 
 	"Printing Cookie List"
 	{
-		"tr"		"Kurabiye listesi konsola görüntüleniyor"
+		"tr"		"Çerez listesi konsola yazdırılıyor"
 	}
 
 	"Cookie not Found"
 	{
-		"tr"		"\"{1}\"  adlı kurabiye bulunamadı"
+		"tr"		"\"{1}\" adlı çerez bulunamadı"
 	}
 
 	"Cookie Value"
 	{
-		"tr"		"{1}'in değeri {2}  "
+		"tr"		"{1} adlı çerezin değeri: {2}"
 	}
 
 	"Protected Cookie"
 	{
-		"tr"		"Korumalı kurabiye \"{1}\"in değeri değiştirilemez"
+		"tr"		"\"{1}\" adlı çerez korumalı olduğu için değeri değiştirilemez"
 	}
 
 	"Cookie Changed Value"
 	{
-		"tr"		"\"{1}\" adlı kurabiyenin değeri \"{2}\" olarak değiştirildi"
+		"tr"		"\"{1}\" adlı çerezin değeri \"{2}\" olarak değiştirildi"
 	}
 
 	"No Console"
