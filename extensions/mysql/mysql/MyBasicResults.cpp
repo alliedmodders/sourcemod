@@ -332,6 +332,8 @@ unsigned int MyQuery::GetAffectedRows()
 
 bool MyQuery::FetchMoreResults()
 {
+	std::lock_guard<std::recursive_mutex> lock(m_pParent->m_FullLock);
+
 	if (m_rs.m_pRes == NULL)
 	{
 		return false;
@@ -355,6 +357,8 @@ bool MyQuery::FetchMoreResults()
 
 void MyQuery::Destroy()
 {
+	std::lock_guard<std::recursive_mutex> lock(m_pParent->m_FullLock);
+
 	/* :TODO: All this rot should be moved into the destructor,
 	 * and the Update() function needs to not be so stupid.
 	 */
