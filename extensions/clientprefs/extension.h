@@ -38,7 +38,9 @@
 #include "am-vector.h"
 
 #include <am-refcounting.h>
+#include <chrono>
 #include <mutex>
+#include <string>
 
 char * UTIL_strncpy(char * destination, const char * source, size_t num);
 
@@ -94,6 +96,7 @@ public:
 	virtual void OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax);
 	
 	void DatabaseConnect();
+	bool RefreshDatabaseInfo(char *error, size_t maxlength);
 
 	bool AddQueryToQueue(TQueryOp *query);
 	void ProcessQueryCache();
@@ -154,13 +157,20 @@ public:
 	IDBDriver *Driver;
 	ke::RefPtr<IDatabase> Database;
 	IPhraseCollection *phrases;
-	const DatabaseInfo *DBInfo;
+	DatabaseInfo DBInfo;
 
 	bool databaseLoading;
 
 private:
 	std::vector<TQueryOp *> cachedQueries;
 	std::mutex queryLock;
+	std::chrono::steady_clock::time_point nextReconnectAttempt;
+	std::string dbHost;
+	std::string dbDatabase;
+	std::string dbUser;
+	std::string dbPass;
+	std::string dbDriver;
+	std::string dbSchemaName;
 	IdentityToken_t *identity;
 };
 
