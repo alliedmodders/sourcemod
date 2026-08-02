@@ -1031,7 +1031,8 @@ void CPluginManager::LoadAutoPlugin(const char *plugin)
 	LoadRes res;
 	if ((res=LoadPlugin(&pl, plugin, false, PluginType_MapUpdated)) == LoadRes_Failure)
 	{
-		g_Logger.LogError("[SM] Failed to load plugin \"%s\": %s.", plugin, pl->GetErrorMsg());
+		if (!pl->IsSilentlyFailed())
+			g_Logger.LogError("[SM] Failed to load plugin \"%s\": %s.", plugin, pl->GetErrorMsg());
 	}
 
 	if (res == LoadRes_Successful || res == LoadRes_Failure)
