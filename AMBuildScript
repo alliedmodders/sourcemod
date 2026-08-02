@@ -238,6 +238,19 @@ class SMConfig(object):
       cxx.cflags += ['/Ox', '/Zo']
       cxx.linkflags += ['/OPT:ICF', '/OPT:REF']
 
+  def configure_pre_sdk(self, cxx):
+    self.configure_optimize(cxx)
+
+    if not cxx.like('gcc'):
+      return
+
+    if cxx.target.arch in ['x86', 'x86_64']:
+      cxx.cflags += ['-msse']
+      if cxx.family == 'gcc':
+        cxx.cflags += ['-mfpmath=sse']
+    if cxx.target.platform == 'linux' and cxx.target.arch == 'x86':
+      cxx.cflags += ['-mstackrealign']
+
   def configure_gcc(self, cxx):
     cxx.defines += [
       'stricmp=strcasecmp',
@@ -259,8 +272,6 @@ class SMConfig(object):
       '-Wno-dangling-else',
       '-fvisibility=hidden',
     ]
-    if cxx.target.arch in ['x86', 'x86_64']:
-      cxx.cflags += ['-msse']
 
     cxx.cxxflags += ['-std=c++17']
 
@@ -318,7 +329,6 @@ class SMConfig(object):
         cxx.cflags += ['-Wno-uninitialized-const-pointer']
 
     if have_gcc:
-      cxx.cflags += ['-mfpmath=sse']
       cxx.cflags += ['-Wno-maybe-uninitialized']
 
     # Optimization flags are applied separately, earlier in configure_optimize so that the SDK static libs inherit them.
@@ -576,11 +586,10 @@ if getattr(builder, 'target', None) is not None:
 
 SM = SMConfig()
 SM.detectProductVersion()
-# Apply optimization to the base compilers before detecting SDKs. The tier1 and
-# mathlib SDK static libraries are configured during detectSDKs() by cloning these
-# compilers, so optimization must be applied first for it to propagate to them.
+# Apply settings that SDK static libraries must inherit to the base compilers
+# before detectSDKs() clones them.
 for cxx in SM.all_targets:
-  SM.configure_optimize(cxx)
+  SM.configure_pre_sdk(cxx)
 if not getattr(builder.options, 'scripting_only', False):
   SM.detectSDKs()
 SM.configure()
