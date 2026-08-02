@@ -190,7 +190,6 @@ class TQueryOp : public IDBThreadOperation
 public:
 	TQueryOp(IDatabase *db, IPluginFunction *pf, const char *query, cell_t data) : 
 	  m_pDatabase(db), m_pFunction(pf), m_Query(query), m_Data(data),
-	  me(scripts->FindPluginByContext(pf->GetParentContext())),
 	  m_pQuery(NULL)
 	{
 		/* We always increase the reference count because this is potentially
@@ -198,9 +197,8 @@ public:
 		 * we're still latched onto it.
 		 */
 		m_pDatabase->IncReferenceCount();
-
-		HandleSecurity sec(me->GetIdentity(), g_pCoreIdent);
-		m_MyHandle = CreateLocalHandle(g_DBMan.GetDatabaseType(), m_pDatabase, &sec);
+		IPlugin *plugin = scripts->FindPluginByContext(pf->GetParentContext());
+		m_Identity = plugin->GetIdentity();
 	}
 	~TQueryOp()
 	{
@@ -209,19 +207,11 @@ public:
 			m_pQuery->Destroy();
 		}
 
-		/* Close our Handle if it's valid. */
-		if (m_MyHandle != BAD_HANDLE)
-		{
-			HandleSecurity sec(me->GetIdentity(), g_pCoreIdent);
-			handlesys->FreeHandle(m_MyHandle, &sec);
-		} else {
-			/* Otherwise, there is an open ref to the db */
-			m_pDatabase->Close();
-		}
+		m_pDatabase->Close();
 	}
 	IdentityToken_t *GetOwner()
 	{
-		return me->GetIdentity();
+		return m_Identity;
 	}
 	IDBDriver *GetDriver()
 	{
@@ -250,8 +240,11 @@ public:
 	}
 	void RunThinkPart()
 	{
-		/* Create a Handle for our query */
-		HandleSecurity sec(me->GetIdentity(), g_pCoreIdent);
+		/* Create handles for the callback. */
+		HandleSecurity sec(m_Identity, g_pCoreIdent);
+		Handle_t dbh = CreateLocalHandle(g_DBMan.GetDatabaseType(), m_pDatabase, &sec);
+		if (dbh != BAD_HANDLE)
+			m_pDatabase->AddRef();
 
 		Handle_t qh = BAD_HANDLE;
 		
@@ -271,7 +264,7 @@ public:
 
 		if (m_pFunction->IsRunnable())
 		{
-			m_pFunction->PushCell(m_MyHandle);
+			m_pFunction->PushCell(dbh);
 			m_pFunction->PushCell(qh);
 			m_pFunction->PushString(qh == BAD_HANDLE ? error : "");
 			m_pFunction->PushCell(m_Data);
@@ -282,6 +275,8 @@ public:
 		{
 			handlesys->FreeHandle(qh, &sec);
 		}
+		if (dbh != BAD_HANDLE)
+			handlesys->FreeHandle(dbh, &sec);
 	}
 	void Destroy()
 	{
@@ -292,10 +287,9 @@ private:
 	IPluginFunction *m_pFunction;
 	String m_Query;
 	cell_t m_Data;
-	IPlugin *me;
+	IdentityToken_t *m_Identity;
 	IQuery *m_pQuery;
 	char error[255];
-	Handle_t m_MyHandle;
 };
 
 enum AsyncCallbackMode {
@@ -315,7 +309,8 @@ public:
 		m_Data = data;
 		error[0] = '\0';
 		strncopy(dbname, _dbname, sizeof(dbname));
-		me = scripts->FindPluginByContext(m_pFunction->GetParentContext());
+		IPlugin *plugin = scripts->FindPluginByContext(m_pFunction->GetParentContext());
+		m_Identity = plugin->GetIdentity();
 		
 		m_pInfo = g_DBMan.GetDatabaseConf(dbname);
 		if (!m_pInfo)
@@ -323,9 +318,14 @@ public:
 			g_pSM->Format(error, sizeof(error), "Could not find database config \"%s\"", dbname);
 		}
 	}
+	~TConnectOp()
+	{
+		if (m_pDatabase)
+			m_pDatabase->Close();
+	}
 	IdentityToken_t *GetOwner()
 	{
-		return me->GetIdentity();
+		return m_Identity;
 	}
 	IDBDriver *GetDriver()
 	{
@@ -341,7 +341,10 @@ public:
 	void CancelThinkPart()
 	{
 		if (m_pDatabase)
+		{
 			m_pDatabase->Close();
+			m_pDatabase = NULL;
+		}
 		
 		if (!m_pFunction->IsRunnable())
 			return;
@@ -358,19 +361,18 @@ public:
 		Handle_t hndl = BAD_HANDLE;
 		
 		if (!m_pFunction->IsRunnable())
-		{
-			if (m_pDatabase)
-				m_pDatabase->Close();
 			return;
-		}
 
 		if (m_pDatabase)
 		{
-			if ((hndl = g_DBMan.CreateHandle(DBHandle_Database, m_pDatabase, me->GetIdentity()))
+			if ((hndl = g_DBMan.CreateHandle(DBHandle_Database, m_pDatabase, m_Identity))
 				== BAD_HANDLE)
 			{
-				m_pDatabase->Close();
 				g_pSM->Format(error, sizeof(error), "Unable to allocate Handle");
+			}
+			else
+			{
+				m_pDatabase = NULL;
 			}
 		}
 
@@ -387,7 +389,7 @@ public:
 	}
 private:
 	ke::RefPtr<ConfDbInfo> m_pInfo;
-	IPlugin *me;
+	IdentityToken_t *m_Identity;
 	IPluginFunction *m_pFunction;
 	IDBDriver *m_pDriver;
 	IDatabase *m_pDatabase;
@@ -489,8 +491,20 @@ static cell_t ConnectToDbAsync(IPluginContext *pContext, const cell_t *params, A
 	/* Finally, add to the thread if we can */
 	TConnectOp *op = new TConnectOp(pf, driver, conf, acm, params[3]);
 	IPlugin *pPlugin = scripts->FindPluginByContext(pContext);
-	if (pPlugin->GetProperty("DisallowDBThreads", NULL)
-		|| !g_DBMan.AddToThreadQueue(op, PrioQueue_High))
+	if (pPlugin->GetProperty("DisallowDBThreads", NULL))
+	{
+		if (g_DBMan.ShouldDiscardPluginOperations())
+		{
+			op->Destroy();
+		}
+		else
+		{
+			op->RunThreadPart();
+			op->RunThinkPart();
+			op->Destroy();
+		}
+	}
+	else if (!g_DBMan.AddToThreadQueue(op, PrioQueue_High))
 	{
 		/* Do everything right now */
 		op->RunThreadPart();
@@ -868,8 +882,20 @@ static cell_t SQL_TQuery(IPluginContext *pContext, const cell_t *params)
 	IPlugin *pPlugin = scripts->FindPluginByContext(pContext);
 
 	TQueryOp *op = new TQueryOp(db, pf, query, data);
-	if (pPlugin->GetProperty("DisallowDBThreads", NULL)
-		|| !g_DBMan.AddToThreadQueue(op, level))
+	if (pPlugin->GetProperty("DisallowDBThreads", NULL))
+	{
+		if (g_DBMan.ShouldDiscardPluginOperations())
+		{
+			op->Destroy();
+		}
+		else
+		{
+			op->RunThreadPart();
+			op->RunThinkPart();
+			op->Destroy();
+		}
+	}
+	else if (!g_DBMan.AddToThreadQueue(op, level))
 	{
 		/* Do everything right now */
 		op->RunThreadPart();
@@ -1809,7 +1835,20 @@ static cell_t SQL_ExecuteTransaction(IPluginContext *pContext, const cell_t *par
 	handlesys->FreeHandle(params[2], &sec);
 
 	IPlugin *pPlugin = scripts->FindPluginByContext(pContext);
-	if (pPlugin->GetProperty("DisallowDBThreads", NULL) || !g_DBMan.AddToThreadQueue(op, priority))
+	if (pPlugin->GetProperty("DisallowDBThreads", NULL))
+	{
+		if (g_DBMan.ShouldDiscardPluginOperations())
+		{
+			op->Destroy();
+		}
+		else
+		{
+			op->RunThreadPart();
+			op->RunThinkPart();
+			op->Destroy();
+		}
+	}
+	else if (!g_DBMan.AddToThreadQueue(op, priority))
 	{
 		// Do everything right now.
 		op->RunThreadPart();

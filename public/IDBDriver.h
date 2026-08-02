@@ -757,7 +757,8 @@ namespace SourceMod
 
 		/**
 		 * @brief Called inside the thread; this is where any blocking
-		 * or threaded operations must occur.
+		 * or threaded operations must occur. This is not called if Core is
+		 * configured to discard work when the operation's owner unloads.
 		 */
 		virtual void RunThreadPart() =0;
 
@@ -771,9 +772,10 @@ namespace SourceMod
 
 		/**
 		 * @brief If RunThinkPart() is not called, this will be called
-		 * instead.  Note that RunThreadPart() is ALWAYS called regardless,
-		 * and this is only called when Core requests that the operation
-		 * be scrapped (for example, the database driver might be unloading).
+		 * instead. This is only called when Core requests that a completed
+		 * operation be scrapped (for example, when the database driver unloads).
+		 * Core may also destroy an operation without a callback when configured
+		 * to discard database work during owner unload.
 		 */
 		virtual void CancelThinkPart() =0;
 

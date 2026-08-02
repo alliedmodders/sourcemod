@@ -42,6 +42,8 @@
 #include <memory>
 #include <mutex>
 #include <thread>
+#include <unordered_map>
+#include <unordered_set>
 #include "sm_simple_prioqueue.h"
 #include <am-refcounting.h>
 #include "DatabaseConfBuilder.h"
@@ -89,6 +91,8 @@ public:
 	IDBDriver *GetDefaultDriver();
 	std::string GetDefaultDriverName();
 	bool AddToThreadQueue(IDBThreadOperation *op, PrioQueueLevel prio);
+	bool ShouldDiscardPluginOperations();
+	void DiscardPluginOperations(IPlugin *plugin);
 	void RunFrame();
 	inline HandleType_t GetDatabaseType()
 	{
@@ -97,6 +101,9 @@ public:
 private:
 	void ClearConfigs();
 	void KillWorkerThread();
+	void WaitForPluginOperations(IPlugin *plugin);
+	void CancelPluginOperations(IdentityToken_t *identity);
+	void FinalizeOperation(IDBThreadOperation *op, bool driver_unloading);
 private:
 	CVector<IDBDriver *> m_drivers;
 
@@ -109,6 +116,9 @@ private:
 	std::mutex m_ThinkLock;
 	std::mutex m_Lock;
 	bool m_Terminate;
+	IDBThreadOperation *m_ActiveOperation;
+	std::unordered_map<IDBThreadOperation *, IdentityToken_t *> m_OperationOwners;
+	std::unordered_set<IDBThreadOperation *> m_CancelledOperations;
 
 	DatabaseConfBuilder m_Builder;
 	HandleType_t m_DriverType;
