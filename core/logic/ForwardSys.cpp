@@ -138,6 +138,15 @@ IForward *CForwardManager::FindForward(const char *name, IChangeableForward **if
 void CForwardManager::ReleaseForward(IForward *aForward)
 {
 	CForward *fwd = static_cast<CForward *>(aForward);
+
+	if (fwd->m_ExecDepth > 0)
+	{
+		/* Still executing (possibly nested); defer the real deletion until
+		 * the outermost Execute() call unwinds. */
+		fwd->m_deleted = true;
+		return;
+	}
+
 	m_managed.remove(fwd);
 	m_unmanaged.remove(fwd);
 	delete fwd;
@@ -167,7 +176,9 @@ void CForwardManager::OnPluginPauseChange(IPlugin *plugin, bool paused)
 CForward::CForward(ExecType et, const char *name, const ParamType *types, unsigned num_params)
 	: m_numparams(0),
 	  m_ExecType(et),
-	  m_errstate(SP_ERROR_NONE)
+	  m_errstate(SP_ERROR_NONE),
+	  m_ExecDepth(0),
+	  m_deleted(false)
 {
 	ke::SafeStrcpy(m_name, sizeof(m_name), name ? name : "");
 
@@ -273,6 +284,8 @@ int CForward::Execute(const sp::CallArgs& in_args, cell_t *result, IForwardFilte
 		return err;
 	}
 
+	m_ExecDepth++;
+
 	for (FuncIter iter(m_functions); !iter.done(); iter.next())
 	{
 		IPluginFunction *func = (*iter);
@@ -332,6 +345,16 @@ int CForward::Execute(const sp::CallArgs& in_args, cell_t *result, IForwardFilte
 
 		if (result)
 			*result = cur_result;
+	}
+
+	/* If a callback we just invoked freed this forward's handle (e.g. the
+	 * plugin deletes its own private forward from within one of its own
+	 * callbacks), the actual delete is deferred to here so we don't touch
+	 * freed memory by continuing to use "this" above. */
+	if (--m_ExecDepth == 0 && m_deleted)
+	{
+		g_Forwards.ReleaseForward(this);
+		return SP_ERROR_NONE;
 	}
 
 	return SP_ERROR_NONE;

@@ -41,6 +41,7 @@ typedef ReentrantList<IPluginFunction *>::iterator FuncIter;
 
 class CForward : public IChangeableForward
 {
+	friend class CForwardManager;
 public: //IForward
 	virtual int PushCell(cell_t cell);
 	virtual int PushCellByRef(cell_t *cell, int flags);
@@ -93,6 +94,14 @@ protected:
 
 	/* State information */
 	int m_errstate;
+
+	/* Reentrancy protection: tracks how many nested Execute() calls are in
+	 * progress, and whether the forward was released while still executing
+	 * (e.g. a plugin freeing its own private forward handle from within one
+	 * of its own callbacks). Actual destruction is deferred until the
+	 * outermost Execute() call returns. */
+	unsigned int m_ExecDepth;
+	bool m_deleted;
 };
 
 class CForwardManager : 
