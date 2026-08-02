@@ -36,12 +36,12 @@
 #include "ConVarManager.h"
 #include "logic_bridge.h"
 
-#define TIMER_MIN_ACCURACY		0.1
+#define TIMER_MIN_ACCURACY 0.1
 
 TimerSystem g_Timers;
 double g_fUniversalTime = 0.0f;
-float g_fGameStartTime = 0.0f;	/* Game game start time, non-universal */
-double g_fTimerThink = 0.0f;		/* Timer's next think time */
+float g_fGameStartTime = 0.0f;       /* Game game start time, non-universal */
+double g_fTimerThink = 0.0f;         /* Timer's next think time */
 const double *g_pUniversalTime = &g_fUniversalTime;
 ConVar *mp_timelimit = NULL;
 int g_TimeLeftMode = 0;
@@ -144,9 +144,10 @@ private:
  * that a drastic jump in time will continue acting normally.  Users 
  * may not expect this, but... I think it is the best solution.
  */
-inline double CalcNextThink(double last, float interval)
+inline double CalcNextThink(double last, float interval, bool useTickInterval = false)
 {
-	if (g_fUniversalTime - last - interval <= TIMER_MIN_ACCURACY)
+    const float intervalAccuracy = useTickInterval ? gpGlobals->interval_per_tick : TIMER_MIN_ACCURACY;
+	if (g_fUniversalTime - last - interval <= intervalAccuracy)
 	{
 		return last + interval;
 	}
@@ -234,10 +235,11 @@ void TimerSystem::GameFrame(bool simulating)
 	m_fLastTickedTime = gpGlobals->curtime;
 	m_bHasMapTickedYet = true;
 
-	if (g_fUniversalTime >= g_fTimerThink)
-	{
-		RunFrame();
+    const bool timerThink = g_fUniversalTime >= g_fTimerThink;
+    RunFrame(timerThink);
 
+	if (timerThink)
+	{
 		g_fTimerThink = CalcNextThink(g_fTimerThink, TIMER_MIN_ACCURACY);
 	}
 
@@ -249,12 +251,40 @@ void TimerSystem::GameFrame(bool simulating)
 	}
 }
 
-void TimerSystem::RunFrame()
+void TimerSystem::ProcessRepeatTimers(double curtime, List<ITimer*>& timerList, bool isHighSpeed)
 {
-	ITimer *pTimer;
+    ITimer *pTimer;
 	TimerIter iter;
 
-	double curtime = GetSimulatedTime();
+    ResultType res;
+	for (iter=timerList.begin(); iter!=timerList.end(); )
+	{
+		pTimer = (*iter);
+		if (curtime >= pTimer->m_ToExec)
+		{
+			pTimer->m_InExec = true;
+			res = pTimer->m_Listener->OnTimer(pTimer, pTimer->m_pData);
+			if (pTimer->m_KillMe || (res == Pl_Stop))
+			{
+				pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
+				iter = timerList.erase(iter);
+				m_FreeTimers.push(pTimer);
+				continue;
+			}
+			pTimer->m_InExec = false;
+			pTimer->m_ToExec = CalcNextThink(pTimer->m_ToExec, pTimer->m_Interval, isHighSpeed);
+		}
+		iter++;
+	}
+}
+
+void TimerSystem::RunFrame(bool timerThink)
+{
+	const double curtime = GetSimulatedTime();
+
+    //// One-off timers
+    ITimer *pTimer;
+	TimerIter iter;
 	for (iter=m_SingleTimers.begin(); iter!=m_SingleTimers.end(); )
 	{
 		pTimer = (*iter);
@@ -272,26 +302,15 @@ void TimerSystem::RunFrame()
 		}
 	}
 
-	ResultType res;
-	for (iter=m_LoopTimers.begin(); iter!=m_LoopTimers.end(); )
-	{
-		pTimer = (*iter);
-		if (curtime >= pTimer->m_ToExec)
-		{
-			pTimer->m_InExec = true;
-			res = pTimer->m_Listener->OnTimer(pTimer, pTimer->m_pData);
-			if (pTimer->m_KillMe || (res == Pl_Stop))
-			{
-				pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
-				iter = m_LoopTimers.erase(iter);
-				m_FreeTimers.push(pTimer);
-				continue;
-			}
-			pTimer->m_InExec = false;
-			pTimer->m_ToExec = CalcNextThink(pTimer->m_ToExec, pTimer->m_Interval);
-		}
-		iter++;
-	}
+    //// Repeating timers
+    // Most repeating timers do not need to be updated every frame 
+    if (timerThink)
+    {
+        ProcessRepeatTimers(curtime, m_LowSpeedLoopTimers, false);
+    }
+
+    // High speed repeating timers will always update
+    ProcessRepeatTimers(curtime, m_HighSpeedLoopTimers, true);
 }
 
 ITimer *TimerSystem::CreateTimer(ITimedEvent *pCallbacks, float fInterval, void *pData, int flags)
@@ -312,7 +331,8 @@ ITimer *TimerSystem::CreateTimer(ITimedEvent *pCallbacks, float fInterval, void 
 
 	if (flags & TIMER_FLAG_REPEAT)
 	{
-		m_LoopTimers.push_back(pTimer);
+        List<ITimer*>& timerList = pTimer->m_Flags & TIMER_FLAG_TICK_PRECISE ? m_HighSpeedLoopTimers : m_LowSpeedLoopTimers; 
+        timerList.push_back(pTimer);
 		goto return_timer;
 	}
 
@@ -370,8 +390,10 @@ void TimerSystem::FireTimerOnce(ITimer *pTimer, bool delayExec)
 			pTimer->m_InExec = false;
 			return;
 		}
+
+        List<ITimer*>& timerList = pTimer->m_Flags & TIMER_FLAG_TICK_PRECISE ? m_HighSpeedLoopTimers : m_LowSpeedLoopTimers; 
 		pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
-		m_LoopTimers.remove(pTimer);
+		timerList.remove(pTimer);
 		m_FreeTimers.push(pTimer);
 	}
 }
@@ -389,12 +411,13 @@ void TimerSystem::KillTimer(ITimer *pTimer)
 		return;
 	}
 
-	pTimer->m_InExec = true; /* The timer it's not really executed but this check needs to be done */
+	pTimer->m_InExec = true; /* The timer is not really executed but this check needs to be done */
 	pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
 
 	if (pTimer->m_Flags & TIMER_FLAG_REPEAT)
 	{
-		m_LoopTimers.remove(pTimer);
+        List<ITimer*>& timerList = pTimer->m_Flags & TIMER_FLAG_TICK_PRECISE ? m_HighSpeedLoopTimers : m_LowSpeedLoopTimers; 
+		timerList.remove(pTimer);
 	} else {
 		m_SingleTimers.remove(pTimer);
 	}
@@ -405,26 +428,20 @@ void TimerSystem::KillTimer(ITimer *pTimer)
 CStack<ITimer *> s_tokill;
 void TimerSystem::RemoveMapChangeTimers()
 {
-	ITimer *pTimer;
-	TimerIter iter;
+    const auto KillMapchangeTimers = [](List<ITimer*>& timerList) {
+        for (ITimer* pTimer : timerList)
+        {
+            if (pTimer->m_Flags & TIMER_FLAG_NO_MAPCHANGE)
+            {
+                s_tokill.push(pTimer);
+            }
+        }
+    };
 
-	for (iter=m_SingleTimers.begin(); iter!=m_SingleTimers.end(); iter++)
-	{
-		pTimer = (*iter);
-		if (pTimer->m_Flags & TIMER_FLAG_NO_MAPCHANGE)
-		{
-			s_tokill.push(pTimer);
-		}
-	}
+    KillMapchangeTimers(m_SingleTimers);
 
-	for (iter=m_LoopTimers.begin(); iter!=m_LoopTimers.end(); iter++)
-	{
-		pTimer = (*iter);
-		if (pTimer->m_Flags & TIMER_FLAG_NO_MAPCHANGE)
-		{
-			s_tokill.push(pTimer);
-		}
-	}
+    KillMapchangeTimers(m_LowSpeedLoopTimers);
+    KillMapchangeTimers(m_HighSpeedLoopTimers);
 
 	while (!s_tokill.empty())
 	{
