@@ -57,13 +57,24 @@ enum ConVarQueryResult
 };
 
 /**
- * Called when a console variable's value is changed.
- * 
- * @param convar        Handle to the convar that was changed.
- * @param oldValue      String containing the value of the convar before it was changed.
- * @param newValue      String containing the new value of the convar.
+ * Any of the following prototypes will work as a ConVarChanged callback.
  */
-typedef ConVarChanged = function void (ConVar convar, const char[] oldValue, const char[] newValue);
+typeset ConVarChanged
+{
+	/**
+	 * Called when a console variable's value is changed.
+	 */
+	function void ();
+
+	/**
+	 * Called when a console variable's value is changed.
+	 * 
+	 * @param convar        Handle to the convar that was changed.
+	 * @param oldValue      String containing the value of the convar before it was changed.
+	 * @param newValue      String containing the new value of the convar.
+	 */
+	function void (ConVar convar, const char[] oldValue, const char[] newValue);
+};
 
 /**
  * Creates a new console variable.
