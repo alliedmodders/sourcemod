@@ -142,6 +142,6 @@ bool InitialiseTeleporterDetour()
 
 void RemoveTeleporterDetour()
 {
-	KHook::RemoveHook(g_HookCanPlayerBeTeleportedClass, true);
+	KHook::RemoveHook(g_HookCanPlayerBeTeleportedClass, false);
 	g_HookCanPlayerBeTeleportedClass = KHook::INVALID_HOOK;
 }
