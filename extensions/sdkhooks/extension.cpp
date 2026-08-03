@@ -104,7 +104,7 @@ SMEXT_LINK(&g_Interface);
 unsigned int g_hookOffset[SDKHook_MAXHOOKS];
 
 CGlobalVars *gpGlobals;
-std::vector<CVTableList *> g_HookList[SDKHook_MAXHOOKS];
+std::vector<std::unique_ptr<CVTableList>> g_HookList[SDKHook_MAXHOOKS];
 
 IBinTools *g_pBinTools = NULL;
 static std::thread::id g_MainThreadId;
@@ -295,10 +295,6 @@ void SDKHooks::SDK_OnUnload()
 	// Remove left over hooks
 	for (size_t type = 0; type < SDKHook_MAXHOOKS; ++type)
 	{
-		for (CVTableList *list : g_HookList[type])
-		{
-			delete list;
-		}
 		g_HookList[type].clear();
 	}
 
@@ -448,7 +444,7 @@ cell_t SDKHooks::Call(int entity, SDKHookType type, int other)
 static bool GetHookCallbacks(SDKHookType type, CBaseEntity *pEntity, int &entity, std::vector<IPluginFunction *> &callbackList)
 {
 	void** vtable = *(void***)pEntity;
-	std::vector<CVTableList *> &vtablehooklist = g_HookList[type];
+	auto &vtablehooklist = g_HookList[type];
 	for (size_t entry = 0; entry < vtablehooklist.size(); ++entry)
 	{
 		if (vtable != vtablehooklist[entry]->vtablehook->GetVTablePtr())
@@ -575,7 +571,7 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 	}
 	size_t entry;
 	void** vtable = *(void***)pEnt;
-	std::vector<CVTableList *> &vtablehooklist = g_HookList[type];
+	auto &vtablehooklist = g_HookList[type];
 	for (entry = 0; entry < vtablehooklist.size(); ++entry)
 	{
 		if (vtable == vtablehooklist[entry]->vtablehook->GetVTablePtr())
@@ -779,9 +775,7 @@ HookReturn SDKHooks::Hook(int entity, SDKHookType type, IPluginFunction *callbac
 			}
 		}
 
-		CVTableList *vtablelist = new CVTableList;
-		vtablelist->vtablehook = khook;
-		vtablehooklist.push_back(vtablelist);
+		vtablehooklist.emplace_back(new CVTableList(khook));
 	}
 	
 	// Add hook to hook list
@@ -802,10 +796,10 @@ void SDKHooks::Unhook(CBaseEntity *pEntity)
 	int entity = gamehelpers->EntityToBCompatRef(pEntity);
 	for (size_t type = 0; type < SDKHook_MAXHOOKS; ++type)
 	{
-		std::vector<CVTableList *> &vtablehooklist = g_HookList[type];
+		auto &vtablehooklist = g_HookList[type];
 		for (size_t listentry = 0; listentry < vtablehooklist.size(); ++listentry)
 		{
-			std::vector<HookList> &pawnhooks = vtablehooklist[listentry]->hooks;
+			auto &pawnhooks = vtablehooklist[listentry]->hooks;
 			for (size_t entry = 0; entry < pawnhooks.size(); ++entry)
 			{
 				if (entity != pawnhooks[entry].entity)
@@ -818,7 +812,6 @@ void SDKHooks::Unhook(CBaseEntity *pEntity)
 
 				if (pawnhooks.size() == 0)
 				{
-					delete vtablehooklist[listentry];
 					vtablehooklist.erase(vtablehooklist.begin() + listentry);
 					listentry--;
 				}
@@ -831,7 +824,7 @@ void SDKHooks::Unhook(IPluginContext *pContext)
 {
 	for (size_t type = 0; type < SDKHook_MAXHOOKS; ++type)
 	{
-		std::vector<CVTableList *> &vtablehooklist = g_HookList[type];
+		auto &vtablehooklist = g_HookList[type];
 		for (size_t listentry = 0; listentry < vtablehooklist.size(); ++listentry)
 		{
 			std::vector<HookList> &pawnhooks = vtablehooklist[listentry]->hooks;
@@ -847,7 +840,6 @@ void SDKHooks::Unhook(IPluginContext *pContext)
 
 				if (pawnhooks.size() == 0)
 				{
-					delete vtablehooklist[listentry];
 					vtablehooklist.erase(vtablehooklist.begin() + listentry);
 					listentry--;
 				}
@@ -865,7 +857,7 @@ void SDKHooks::Unhook(int entity, SDKHookType type, IPluginFunction *pCallback)
 	}
 
 	void** vtable = *(void***)pEntity;
-	std::vector<CVTableList *> &vtablehooklist = g_HookList[type];
+	auto &vtablehooklist = g_HookList[type];
 	for (size_t listentry = 0; listentry < vtablehooklist.size(); ++listentry)
 	{
 		if (vtable != vtablehooklist[listentry]->vtablehook->GetVTablePtr())
@@ -889,7 +881,6 @@ void SDKHooks::Unhook(int entity, SDKHookType type, IPluginFunction *pCallback)
 
 			if (pawnhooks.size() == 0)
 			{
-				delete vtablehooklist[listentry];
 				vtablehooklist.erase(vtablehooklist.begin() + listentry);
 				listentry--;
 			}
