@@ -566,7 +566,7 @@ static cell_t smn_KeyValuesFromAddress(IPluginContext *pCtx, const cell_t *param
 	 */
 	KeyValueStack *pStk = new KeyValueStack;
 	pStk->pBase = reinterpret_cast<KeyValues *>(addr);
-	pStk->pCurRoot.push(pStk->pBase);
+	pStk->pCurRoot.push_front(pStk->pBase);
 	pStk->m_bDeleteOnDestroy = false;
 
 	return handlesys->CreateHandle(g_KeyValueType, pStk, pCtx->GetIdentity(), g_pCoreIdent, NULL);
