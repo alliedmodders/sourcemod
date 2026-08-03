@@ -206,10 +206,10 @@ public:
 	//void OnClientSettingsChanged_Pre(edict_t *pEntity);
 #if SM_HAS_NETWORKID_VALIDATED
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
-	void OnNetworkIDValidated(IServerGameClients*, const char *pszUserName, const char *pszNetworkID, CSteamID steamID);
+	KHook::Return<void> OnNetworkIDValidated(IServerGameClients*, const char *pszUserName, const char *pszNetworkID, CSteamID steamID);
 	KHook::Virtual<IServerGameClients, void, const char *, const char *, CSteamID> m_HookOnNetworkIDValidated;
 #else
-	void OnNetworkIDValidated(IServerGameClients*,const char *pszUserName, const char *pszNetworkID);
+	KHook::Return<void> OnNetworkIDValidated(IServerGameClients*, const char *pszUserName, const char *pszNetworkID);
 	KHook::Virtual<IServerGameClients, void, const char *, const char *> m_HookOnNetworkIDValidated;
 #endif
 #endif
