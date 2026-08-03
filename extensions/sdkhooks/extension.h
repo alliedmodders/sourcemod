@@ -125,7 +125,7 @@ public:
 class CVTableList
 {
 public:
-	CVTableList() : vtablehook(NULL)
+	CVTableList(CVTableHook* hook) : vtablehook(hook)
 	{
 	};
 
@@ -363,7 +363,6 @@ private:
 };
 
 extern CGlobalVars *gpGlobals;
-extern std::vector<CVTableList *> g_HookList[SDKHook_MAXHOOKS];
 
 extern ICvar *icvar;
 
