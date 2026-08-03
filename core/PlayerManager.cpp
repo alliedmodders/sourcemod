@@ -109,7 +109,7 @@ PlayerManager::PlayerManager() :
 #endif
 	m_HookClientSettingsChanged(&IServerGameClients::ClientSettingsChanged, this, nullptr, &PlayerManager::OnClientSettingsChanged),
 #if SM_HAS_NETWORKID_VALIDATED
-	m_HookOnNetworkIDValidated(&IServerGameClients::OnNetworkIDValidated, this, nullptr, &PlayerManager::OnNetworkIDValidated),
+	m_HookOnNetworkIDValidated(&IServerGameClients::NetworkIDValidated, this, nullptr, &PlayerManager::OnNetworkIDValidated),
 #endif
 	m_HookServerActivate(&IServerGameDLL::ServerActivate, this, nullptr, &PlayerManager::OnServerActivate),
 #if SOURCE_ENGINE >= SE_LEFT4DEAD
@@ -486,12 +486,14 @@ void PlayerManager::RunAuthChecks()
 
 #if defined SM_HAS_NETWORKID_VALIDATED
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
-void PlayerManager::OnNetworkIDValidated(const char *pszUserName, const char *pszNetworkID, CSteamID steamID)
+KHook::Return<void> PlayerManager::OnNetworkIDValidated(IServerGameClients* clients, const char *pszUserName, const char *pszNetworkID, CSteamID steamID)
 #else
-void PlayerManager::OnNetworkIDValidated(const char *pszUserName, const char *pszNetworkID)
+KHook::Return<void> PlayerManager::OnNetworkIDValidated(IServerGameClients* clients, const char *pszUserName, const char *pszNetworkID)
 #endif
 {
 	g_PendingAuthCheck = true;
+
+	return { KHook::Action::Ignore };
 }
 #endif
 
