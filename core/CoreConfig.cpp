@@ -41,12 +41,10 @@
 #include <sourcemod_version.h>
 #include <amtl/os/am-path.h>
 #include <amtl/os/am-fsutil.h>
-#include <sh_list.h>
+#include <list>
 #include <IForwardSys.h>
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/ILogger.h>
-
-using namespace SourceHook;
 
 #ifdef PLATFORM_WINDOWS
 ConVar sm_corecfgfile("sm_corecfgfile", "addons\\sourcemod\\configs\\core.cfg", 0, "SourceMod core configuration file");
@@ -68,11 +66,9 @@ ConVar *g_ServerCfgFile = NULL;
 void CheckAndFinalizeConfigs();
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-SH_DECL_EXTERN1_void(ConCommand, Dispatch, SH_NOATTRIB, false, const CCommand &);
-void Hook_ExecDispatchPre(const CCommand &cmd)
+KHook::Return<void> Hook_ExecDispatchPre(ConCommand*, const CCommand &cmd)
 #else
-SH_DECL_EXTERN0_void(ConCommand, Dispatch, SH_NOATTRIB, false);
-void Hook_ExecDispatchPre()
+KHook::Return<void> Hook_ExecDispatchPre(ConCommand*)
 #endif
 {
 #if SOURCE_ENGINE <= SE_DARKMESSIAH
@@ -85,12 +81,14 @@ void Hook_ExecDispatchPre()
 	{
 		g_bGotTrigger = true;
 	}
+
+	return { KHook::Action::Ignore };
 }
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-void Hook_ExecDispatchPost(const CCommand &cmd)
+KHook::Return<void> Hook_ExecDispatchPost(ConCommand*, const CCommand &cmd)
 #else
-void Hook_ExecDispatchPost()
+KHook::Return<void> Hook_ExecDispatchPost(ConCommand*)
 #endif
 {
 	if (g_bGotTrigger)
@@ -99,7 +97,11 @@ void Hook_ExecDispatchPost()
 		g_bServerExecd = true;
 		CheckAndFinalizeConfigs();
 	}
+
+	return { KHook::Action::Ignore };
 }
+
+KHook::Virtual gExecCommandHook(&ConCommand::Dispatch, &Hook_ExecDispatchPre, &Hook_ExecDispatchPost);
 
 void CheckAndFinalizeConfigs()
 {
@@ -134,8 +136,7 @@ void CoreConfig::OnSourceModShutdown()
 
 	if (g_pExecPtr != NULL)
 	{
-		SH_REMOVE_HOOK(ConCommand, Dispatch, g_pExecPtr, SH_STATIC(Hook_ExecDispatchPre), false);
-		SH_REMOVE_HOOK(ConCommand, Dispatch, g_pExecPtr, SH_STATIC(Hook_ExecDispatchPost), true);
+		gExecCommandHook.Remove(g_pExecPtr);
 		g_pExecPtr = NULL;
 	}
 }
@@ -160,8 +161,7 @@ void CoreConfig::OnSourceModLevelChange(const char *mapName)
 			g_pExecPtr = FindCommand("exec");
 			if (g_pExecPtr != NULL)
 			{
-				SH_ADD_HOOK(ConCommand, Dispatch, g_pExecPtr, SH_STATIC(Hook_ExecDispatchPre), false);
-				SH_ADD_HOOK(ConCommand, Dispatch, g_pExecPtr, SH_STATIC(Hook_ExecDispatchPost), true);
+				gExecCommandHook.Add(g_pExecPtr);
 			}
 			else
 			{
@@ -399,9 +399,9 @@ inline bool SM_CvarExistsInConfig(ke::HashMap<std::string, std::string, StringPo
 	return cvars.find(cvar_name).found();
 }
 
-bool SM_CvarExistsInPlugin(List<const ConVar *> &convars, const char *cvar_name)
+bool SM_CvarExistsInPlugin(std::list<const ConVar *> &convars, const char *cvar_name)
 {
-	for (List<const ConVar *>::iterator iter = convars.begin(); iter != convars.end(); iter++)
+	for (auto iter = convars.begin(); iter != convars.end(); iter++)
 	{
 		const ConVar *cvar = (*iter);
 #if SOURCE_ENGINE >= SE_ORANGEBOX
@@ -425,7 +425,7 @@ bool SM_CvarExistsInPlugin(List<const ConVar *> &convars, const char *cvar_name)
 bool SM_ConfigCheckRegeneration(
 	const char *file,
 	ke::HashMap<std::string, std::string, StringPolicy> &existing_cvars,
-	List<const ConVar *> &convars)
+	std::list<const ConVar *> &convars)
 {
 	FILE *fp = fopen(file, "rt");
 	if (!fp)
@@ -438,7 +438,7 @@ bool SM_ConfigCheckRegeneration(
 	fclose(fp);
 
 	/* #1. Check if the plugin's cvar list has a cvar that doesn't exist in the config file. */
-	for (List<const ConVar *>::iterator iter = convars.begin(); iter != convars.end(); iter++)
+	for (auto iter = convars.begin(); iter != convars.end(); iter++)
 	{
 		const ConVar *cvar = (*iter);
 #if SOURCE_ENGINE >= SE_ORANGEBOX
@@ -478,7 +478,7 @@ inline void SM_ExecuteConfigFile(const char *file)
 bool SM_GenerateConfigFile(
 	IPlugin *pl,
 	const char *file,
-	List<const ConVar *> &convars,
+	std::list<const ConVar *> &convars,
 	bool needs_regeneration = false,
 	ke::HashMap<std::string, std::string, StringPolicy> *existing_cvars = NULL)
 {
@@ -510,7 +510,7 @@ bool SM_GenerateConfigFile(
 	fprintf(fp, "\n\n");
 
 	float x;
-	for (List<const ConVar *>::iterator iter = convars.begin(); iter != convars.end(); iter++)
+	for (auto iter = convars.begin(); iter != convars.end(); iter++)
 	{
 		const ConVar *cvar = (*iter);
 #if SOURCE_ENGINE >= SE_ORANGEBOX
@@ -683,7 +683,7 @@ bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 		return can_create;
 	}
 
-	List<const ConVar *> *convars = NULL;
+	std::list<const ConVar *> *convars = nullptr;
 	if (!pl->GetProperty("ConVarList", (void **)&convars, false) || !convars)
 	{
 		if (file_exists)

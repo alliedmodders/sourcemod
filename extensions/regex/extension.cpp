@@ -31,11 +31,10 @@
 
 #include <sourcemod_version.h>
 #include "extension.h"
-#include <sh_string.h>
+#include <string>
 #include "pcre.h"
 #include "posix_map.h"
 #include "CRegEx.h"
-using namespace SourceHook;
 
 /**
  * @file extension.cpp

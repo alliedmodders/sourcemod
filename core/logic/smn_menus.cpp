@@ -30,7 +30,6 @@
  */
 
 #include "common_logic.h"
-#include <sh_stack.h>
 #include <IMenuManager.h>
 #include <IPlayerHelpers.h>
 #include "DebugReporter.h"
@@ -40,6 +39,8 @@
 #include <ISourceMod.h>
 #include <stdlib.h>
 #include <bridge/include/IScriptManager.h>
+#include <stack>
+#include <list>
 
 #if defined CreateMenu
 #undef CreateMenu
@@ -175,13 +176,13 @@ public:
 
 		while (!m_FreePanelHandlers.empty())
 		{
-			delete m_FreePanelHandlers.front();
+			delete m_FreePanelHandlers.top();
 			m_FreePanelHandlers.pop();
 		}
 
 		while (!m_FreeMenuHandlers.empty())
 		{
-			delete m_FreeMenuHandlers.front();
+			delete m_FreeMenuHandlers.top();
 			m_FreeMenuHandlers.pop();
 		}
 	}
@@ -213,12 +214,12 @@ public:
 	 */
 	virtual void OnPluginUnloaded(IPlugin *plugin)
 	{
-		for (size_t i = 0; i < m_PanelHandlers.size(); i++)
+		for (auto e : m_PanelHandlers)
 		{
-			if (m_PanelHandlers[i]->m_pPlugin == plugin)
+			if (e->m_pPlugin == plugin)
 			{
-				m_PanelHandlers[i]->m_pPlugin = NULL;
-				m_PanelHandlers[i]->m_pFunc = NULL;
+				e->m_pPlugin = nullptr;
+				e->m_pFunc = nullptr;
 			}
 		}
 	}
@@ -241,7 +242,7 @@ public:
 			handler = new CPanelHandler;
 			m_PanelHandlers.push_back(handler);
 		} else {
-			handler = m_FreePanelHandlers.front();
+			handler = m_FreePanelHandlers.top();
 			m_FreePanelHandlers.pop();
 		}
 		handler->m_pFunc = pFunction;
@@ -263,7 +264,7 @@ public:
 		{
 			handler = new CMenuHandler(pFunction, flags);
 		} else {
-			handler = m_FreeMenuHandlers.front();
+			handler = m_FreeMenuHandlers.top();
 			m_FreeMenuHandlers.pop();
 			handler->m_pBasic = pFunction;
 			handler->m_Flags = flags;
@@ -280,9 +281,9 @@ public:
 private:
 	HandleType_t m_PanelType;
 	HandleType_t m_TempPanelType;
-	CStack<CPanelHandler *> m_FreePanelHandlers;
-	CStack<CMenuHandler *> m_FreeMenuHandlers;
-	CVector<CPanelHandler *> m_PanelHandlers;
+	std::stack<CPanelHandler *> m_FreePanelHandlers;
+	std::stack<CMenuHandler *> m_FreeMenuHandlers;
+	std::list<CPanelHandler *> m_PanelHandlers;
 } g_MenuHelpers;
 
 /**

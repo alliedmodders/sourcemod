@@ -79,7 +79,7 @@ HandleType_t htConCmdIter = 0;
 struct GlobCmdIter
 {
 	bool started;
-	List<ConCmdInfo *>::iterator iter;
+	std::list<ConCmdInfo *>::iterator iter;
 };
 
 class ConsoleHelpers : 
@@ -1056,7 +1056,7 @@ static cell_t ReadCommandIterator(IPluginContext *pContext, const cell_t *params
 		return pContext->ThrowNativeError("Invalid GlobCmdIter Handle %x", params[1]);
 	}
 
-	const List<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
+	std::list<ConCmdInfo *>& cmds = const_cast<decltype(cmds)>(g_ConCmds.GetCommandList());
 
 	if (!iter->started)
 	{
@@ -1356,7 +1356,7 @@ static cell_t FakeClientCommandKeyValues(IPluginContext *pContext, const cell_t 
 
 	if (g_Players.InClientCommandKeyValuesHook())
 	{
-		SH_CALL(serverClients, &IServerGameClients::ClientCommandKeyValues)(pPlayer->GetEdict(), pStk->pBase);
+		KHook::CallOriginal(&IServerGameClients::ClientCommandKeyValues, serverClients, pPlayer->GetEdict(), pStk->pBase);
 	}
 	else
 	{
@@ -1395,7 +1395,7 @@ static cell_t sm_CommandIteratorNext(IPluginContext *pContext, const cell_t *par
 		return pContext->ThrowNativeError("Invalid CommandIterator Handle %x", params[1]);
 	}
 
-	const List<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
+	std::list<ConCmdInfo *>& cmds = const_cast<decltype(cmds)>(g_ConCmds.GetCommandList());
 
 	if (!iter->started)
 	{
@@ -1427,7 +1427,7 @@ static cell_t sm_CommandIteratorAdminFlags(IPluginContext *pContext, const cell_
 	{
 		return pContext->ThrowNativeError("Invalid CommandIterator Handle %x", params[1]);
 	}
-	const List<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
+	const std::list<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
 	if (!iter->started || iter->iter == cmds.end())
 	{
 		return pContext->ThrowNativeError("Invalid CommandIterator position");
@@ -1448,7 +1448,7 @@ static cell_t sm_CommandIteratorConVarFlags(IPluginContext *pContext, const cell
 	{
 		return pContext->ThrowNativeError("Invalid CommandIterator Handle %x", params[1]);
 	}
-	const List<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
+	const std::list<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
 	if (!iter->started || iter->iter == cmds.end())
 	{
 		return pContext->ThrowNativeError("Invalid CommandIterator position");
@@ -1469,7 +1469,7 @@ static cell_t sm_CommandIteratorGetDesc(IPluginContext *pContext, const cell_t *
 	{
 		return pContext->ThrowNativeError("Invalid CommandIterator Handle %x", params[1]);
 	}
-	const List<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
+	const std::list<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
 	if (!iter->started || iter->iter == cmds.end())
 	{
 		return pContext->ThrowNativeError("Invalid CommandIterator position");
@@ -1492,7 +1492,7 @@ static cell_t sm_CommandIteratorGetName(IPluginContext *pContext, const cell_t *
 	{
 		return pContext->ThrowNativeError("Invalid CommandIterator Handle %x", params[1]);
 	}
-	const List<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
+	const std::list<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
 	if (!iter->started || iter->iter == cmds.end())
 	{
 		return pContext->ThrowNativeError("Invalid CommandIterator position");
@@ -1515,7 +1515,7 @@ static cell_t sm_CommandIteratorPlugin(IPluginContext *pContext, const cell_t *p
 	{
 		return pContext->ThrowNativeError("Invalid CommandIterator Handle %x", params[1]);
 	}
-	const List<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
+	const std::list<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
 	if (!iter->started || iter->iter == cmds.end())
 	{
 		return pContext->ThrowNativeError("Invalid CommandIterator position");

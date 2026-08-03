@@ -43,33 +43,36 @@ bool g_in_game_log_hook = false;
 
 static LoggerCore g_LoggerCore;
 
-SH_DECL_HOOK1_void(IVEngineServer, LogPrint, SH_NOATTRIB, false, const char *);
-
-static void HookLogPrint(const char *message)
+static KHook::Return<void> HookLogPrint(IVEngineServer*, const char *message)
 {
 	g_in_game_log_hook = true;
 	bool stopped = logicore.callbacks->OnLogPrint(message);
 	g_in_game_log_hook = false;
 
 	if (stopped)
-		RETURN_META(MRES_SUPERCEDE);
+	{
+		return { KHook::Action::Supersede };
+	}
+	return { KHook::Action::Ignore };
 }
+
+KHook::Virtual LogPrintHook(&IVEngineServer::LogPrint, &HookLogPrint, nullptr);
 
 void LoggerCore::OnSourceModStartup(bool late)
 {
-	SH_ADD_HOOK(IVEngineServer, LogPrint, engine, SH_STATIC(HookLogPrint), false);
+	LogPrintHook.Add(engine);
 }
 
 void LoggerCore::OnSourceModAllShutdown()
 {
-	SH_REMOVE_HOOK(IVEngineServer, LogPrint, engine, SH_STATIC(HookLogPrint), false);
+	LogPrintHook.Remove(engine);
 }
 
 void Engine_LogPrintWrapper(const char *msg)
 {
 	if (g_in_game_log_hook)
 	{
-		ENGINE_CALL(LogPrint)(msg);
+		LogPrintHook.CallOriginal(engine, msg);
 	}
 	else
 	{

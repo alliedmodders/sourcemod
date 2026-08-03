@@ -33,9 +33,9 @@
 #define _INCLUDE_DATABASE_MANAGER_H_
 
 #include "common_logic.h"
-#include <sh_vector.h>
+#include <vector>
 #include <am-string.h>
-#include <sh_list.h>
+#include <list>
 #include <IThreader.h>
 #include <IPluginSys.h>
 #include <condition_variable>
@@ -47,8 +47,6 @@
 #include "sm_simple_prioqueue.h"
 #include <am-refcounting.h>
 #include "DatabaseConfBuilder.h"
-
-using namespace SourceHook;
 
 
 class DBManager : 
@@ -105,12 +103,12 @@ private:
 	void CancelPluginOperations(IdentityToken_t *identity);
 	void FinalizeOperation(IDBThreadOperation *op, bool driver_unloading);
 private:
-	CVector<IDBDriver *> m_drivers;
+	std::vector<IDBDriver *> m_drivers;
 
 	/* Threading stuff */
 	PrioQueue<IDBThreadOperation *> m_OpQueue;
 	Queue<IDBThreadOperation *> m_ThinkQueue;
-	CVector<bool> m_drSafety;			/* which drivers are safe? */
+	std::vector<bool> m_drSafety;			/* which drivers are safe? */
 	std::unique_ptr<std::thread> m_Worker;
 	std::condition_variable m_QueueEvent;
 	std::mutex m_ThinkLock;

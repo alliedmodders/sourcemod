@@ -46,7 +46,7 @@ ValveCall::~ValveCall()
 {
 	while (!stk.empty())
 	{
-		unsigned char *ptr = stk.front();
+		unsigned char *ptr = stk.top();
 		delete [] ptr;
 		stk.pop();
 	}
@@ -65,7 +65,7 @@ unsigned char *ValveCall::stk_get()
 	{
 		ptr = new unsigned char[stackSize];
 	} else {
-		ptr = stk.front();
+		ptr = stk.top();
 		stk.pop();
 	}
 	return ptr;

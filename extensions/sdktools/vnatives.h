@@ -32,9 +32,9 @@
 #ifndef _INCLUDE_SDKTOOLS_VNATIVES_H_
 #define _INCLUDE_SDKTOOLS_VNATIVES_H_
 
-#include <sh_list.h>
+#include <list>
 
-extern SourceHook::List<ValveCall *> g_RegCalls;
+extern std::list<ValveCall *> g_RegCalls;
 extern sp_nativeinfo_t g_Natives[];
 extern sp_nativeinfo_t g_SoundNatives[];
 

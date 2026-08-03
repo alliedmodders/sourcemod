@@ -35,15 +35,13 @@
 #include "sm_globals.h"
 #include "sourcemm_api.h"
 #include <sm_namehashset.h>
-#include <sh_list.h>
-#include <sh_stack.h>
+#include <list>
+#include <stack>
 #include <IHandleSys.h>
 #include <IForwardSys.h>
 #include <IPluginSys.h>
 
 class IClient;
-
-using namespace SourceHook;
 
 struct EventInfo
 {
@@ -135,14 +133,15 @@ public:
 	void FireEventToClient(EventInfo *pInfo, IClient *pClient);
 	void CancelCreatedEvent(EventInfo *pInfo);
 private: // IGameEventManager2 hooks
-	bool OnFireEvent(IGameEvent *pEvent, bool bDontBroadcast);
-	bool OnFireEvent_Post(IGameEvent *pEvent, bool bDontBroadcast);
+	KHook::Return<bool> OnFireEvent(IGameEventManager2*, IGameEvent *pEvent, bool bDontBroadcast);
+	KHook::Return<bool> OnFireEvent_Post(IGameEventManager2*, IGameEvent *pEvent, bool bDontBroadcast);
 private:
 	HandleType_t m_EventType;
 	NameHashSet<EventHook *> m_EventHooks;
-	CStack<EventInfo *> m_FreeEvents;
-	CStack<EventHook *> m_EventStack;
-	CStack<IGameEvent *> m_EventCopies;
+	std::stack<EventInfo *> m_FreeEvents;
+	std::stack<EventHook *> m_EventStack;
+	std::stack<IGameEvent *> m_EventCopies;
+	KHook::Virtual<IGameEventManager2, bool, IGameEvent*, bool> m_FireEvent;
 };
 
 extern EventManager g_EventManager;

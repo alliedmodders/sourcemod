@@ -30,19 +30,23 @@
  * Version: $Id$
  */
 
-#define SET_PRE_true(gamedataname) g_HookTypes[SDKHook_##gamedataname].supported = true;
-#define SET_PRE_false(gamedataname)
-#define SET_POST_true(gamedataname) g_HookTypes[SDKHook_##gamedataname##Post].supported = true;
-#define SET_POST_false(gamedataname)
+#define SET_PRE_true(gamedataname, index) g_HookTypes[SDKHook_##gamedataname].supported = true; \
+	g_HookTypes[SDKHook_##gamedataname].offset = index;
+
+#define SET_PRE_false(gamedataname, index)
+
+#define SET_POST_true(gamedataname, index) g_HookTypes[SDKHook_##gamedataname##Post].supported = true; \
+	g_HookTypes[SDKHook_##gamedataname##Post].offset = index;
+
+#define SET_POST_false(gamedataname, index)
 
 #define CHECKOFFSET(gamedataname, supportsPre, supportsPost) \
 	offset = 0; \
 	g_pGameConf->GetOffset(#gamedataname, &offset); \
 	if (offset > 0) \
 	{ \
-		SH_MANUALHOOK_RECONFIGURE(gamedataname, offset, 0, 0); \
-		SET_PRE_##supportsPre(gamedataname) \
-		SET_POST_##supportsPost(gamedataname) \
+		SET_PRE_##supportsPre(gamedataname, offset) \
+		SET_POST_##supportsPost(gamedataname, offset) \
 	}
 
 #define CHECKOFFSET_W(gamedataname, supportsPre, supportsPost) \
@@ -50,9 +54,8 @@
 	g_pGameConf->GetOffset("Weapon_"#gamedataname, &offset); \
 	if (offset > 0) \
 	{ \
-		SH_MANUALHOOK_RECONFIGURE(Weapon_##gamedataname, offset, 0, 0); \
-		SET_PRE_##supportsPre(Weapon##gamedataname) \
-		SET_POST_##supportsPost(Weapon##gamedataname) \
+		SET_PRE_##supportsPre(Weapon##gamedataname, offset) \
+		SET_POST_##supportsPost(Weapon##gamedataname, offset) \
 	}
 
 #define HOOKLOOP \

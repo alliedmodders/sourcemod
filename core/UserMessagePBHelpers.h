@@ -32,7 +32,7 @@
 #ifndef _INCLUDE_SOURCEMOD_SMPBMESSAGE_H_
 #define _INCLUDE_SOURCEMOD_SMPBMESSAGE_H_
 
-#include <sh_list.h>
+#include <list>
 #include <google/protobuf/descriptor.h>
 #include <amtl/am-string.h>
 
@@ -85,7 +85,7 @@
 		return false;                                         \
 	}
 
-typedef List<Handle_t> PBHandleList;
+typedef std::list<Handle_t> PBHandleList;
 
 class SMProtobufMessage
 {
@@ -97,7 +97,7 @@ public:
 
 	~SMProtobufMessage()
 	{
-		PBHandleList::iterator iter = childHandles.begin();
+		auto iter = childHandles.begin();
 		while (iter != childHandles.end())
 		{
 			Handle_t &hndl = (*iter);

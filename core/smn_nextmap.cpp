@@ -79,8 +79,7 @@ static cell_t sm_GetMapHistory(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Invalid Map History Index");
 	}
 
-	SourceHook::List<MapChangeData *>::iterator iter;
-	iter = g_NextMap.m_mapHistory.end();
+	auto iter = g_NextMap.m_mapHistory.end();
 	iter--;
 
 	for (int i=0; i<params[1]; i++)

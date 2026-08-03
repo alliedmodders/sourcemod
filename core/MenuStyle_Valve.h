@@ -79,7 +79,8 @@ public: //IMenuStyle
 	unsigned int GetApproxMemUsage();
 	bool IsSupported() { return true; }
 private:
-	void HookCreateMessage(edict_t *pEdict, DIALOG_TYPE type, KeyValues *kv, IServerPluginCallbacks *plugin);
+	KHook::Return<void> HookCreateMessage(IServerPluginHelpers*, edict_t *pEdict, DIALOG_TYPE type, KeyValues *kv, IServerPluginCallbacks *plugin);
+	KHook::Virtual<IServerPluginHelpers, void, edict_t*, DIALOG_TYPE, KeyValues*, IServerPluginCallbacks*> m_HookCreateMessage;
 private:
 	CValveMenuPlayer *m_players;
 };
