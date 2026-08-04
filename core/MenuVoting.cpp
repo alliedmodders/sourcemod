@@ -366,6 +366,11 @@ void VoteMenuHandler::StartVoting()
 
 	m_pHandler->OnMenuVoteStart(m_pCurMenu);
 
+	if (!m_bStarted)
+	{
+		return;
+	}
+
 	m_displayTimer = g_Timers.CreateTimer(this, 1.0, NULL, TIMER_FLAG_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 
 	/* By now we know how many clients were set.  
