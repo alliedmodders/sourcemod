@@ -51,6 +51,7 @@ DBManager g_DBMan;
 
 DBManager::DBManager() 
 	: m_Terminate(false),
+	  m_ActiveOperation(NULL),
 	  m_pDefault(NULL)
 {
 }
@@ -243,11 +244,7 @@ void DBManager::RemoveDriver(IDBDriver *pDriver)
 	for (qiter = templist.begin();
 		 qiter != templist.end();
 		 qiter++)
-	{
-		IDBThreadOperation *op = (*qiter);
-		op->CancelThinkPart();
-		op->Destroy();
-	}
+		FinalizeOperation(*qiter, true);
 }
 
 IDBDriver *DBManager::GetDefaultDriver()
@@ -386,11 +383,108 @@ void DBManager::KillWorkerThread()
 	}
 }
 
+void DBManager::FinalizeOperation(IDBThreadOperation *op, bool driver_unloading)
+{
+	bool cancelled = false;
+	{
+		std::lock_guard<std::mutex> lock(m_Lock);
+		m_OperationOwners.erase(op);
+		auto iter = m_CancelledOperations.find(op);
+		if (iter != m_CancelledOperations.end())
+		{
+			cancelled = true;
+			m_CancelledOperations.erase(iter);
+		}
+	}
+
+	if (cancelled)
+	{
+		op->Destroy();
+	}
+	else
+	{
+		if (driver_unloading)
+			op->CancelThinkPart();
+		else
+			op->RunThinkPart();
+		op->Destroy();
+	}
+}
+
+void DBManager::CancelPluginOperations(IdentityToken_t *identity)
+{
+	Queue<IDBThreadOperation *> cancelled;
+	bool active_in_think_queue = false;
+
+	std::unique_lock<std::mutex> lock(m_Lock);
+	auto owns = [this, identity](IDBThreadOperation *op) {
+		auto iter = m_OperationOwners.find(op);
+		return iter != m_OperationOwners.end() && iter->second == identity;
+	};
+	for (PrioQueueLevel priority : {PrioQueue_High, PrioQueue_Normal, PrioQueue_Low})
+	{
+		Queue<IDBThreadOperation *> &queue = m_OpQueue.GetQueue(priority);
+		for (auto iter = queue.begin(); iter != queue.end();)
+		{
+			IDBThreadOperation *op = *iter;
+			if (owns(op))
+			{
+				cancelled.push(op);
+				m_OperationOwners.erase(op);
+				iter = queue.erase(iter);
+			}
+			else
+			{
+				iter++;
+			}
+		}
+	}
+
+	IDBThreadOperation *active = m_ActiveOperation;
+	bool cancelling_active = active && owns(active);
+	{
+		std::lock_guard<std::mutex> think_lock(m_ThinkLock);
+		for (auto iter = m_ThinkQueue.begin(); iter != m_ThinkQueue.end();)
+		{
+			IDBThreadOperation *op = *iter;
+			if (owns(op))
+			{
+				if (op == active)
+					active_in_think_queue = true;
+				cancelled.push(op);
+				m_OperationOwners.erase(op);
+				iter = m_ThinkQueue.erase(iter);
+			}
+			else
+			{
+				iter++;
+			}
+		}
+	}
+
+	if (cancelling_active)
+	{
+		if (active_in_think_queue)
+			m_ActiveOperation = nullptr;
+		else
+			m_CancelledOperations.insert(active);
+	}
+	lock.unlock();
+
+	while (!cancelled.empty())
+	{
+		IDBThreadOperation *op = cancelled.first();
+		cancelled.pop();
+		op->Destroy();
+	}
+}
+
 static IdentityToken_t *s_pAddBlock = NULL;
 
 bool DBManager::AddToThreadQueue(IDBThreadOperation *op, PrioQueueLevel prio)
 {
-	if (s_pAddBlock && op->GetOwner() == s_pAddBlock)
+	IdentityToken_t *owner = op->GetOwner();
+	if (s_pAddBlock && owner == s_pAddBlock)
 	{
 		return false;
 	}
@@ -406,6 +500,7 @@ bool DBManager::AddToThreadQueue(IDBThreadOperation *op, PrioQueueLevel prio)
 	{
 		std::lock_guard<std::mutex> lock(m_Lock);
 		Queue<IDBThreadOperation *> &queue = m_OpQueue.GetQueue(prio);
+		m_OperationOwners.emplace(op, owner);
 		queue.push(op);
 		m_QueueEvent.notify_one();
 	}
@@ -459,6 +554,7 @@ void DBManager::ThreadMain()
 
 		IDBThreadOperation *op = queue->first();
 		queue->pop();
+		m_ActiveOperation = op;
 
 		// Unlock the queue when we run the query, so the main thread can
 		// keep pumping events. We re-acquire the lock to check for more
@@ -476,6 +572,9 @@ void DBManager::ThreadMain()
 			std::lock_guard<std::mutex> think_lock(m_ThinkLock);
 			m_ThinkQueue.push(op);
 		}
+		lock.lock();
+		m_ActiveOperation = nullptr;
+		lock.unlock();
 
 		// Note that we add a 20ms delay after processing a query. This is
 		// questionable but the intent is to avoid starving the game thread.
@@ -488,21 +587,16 @@ void DBManager::ThreadMain()
 
 void DBManager::RunFrame()
 {
-	/* Don't bother if we're empty */
-	if (!m_ThinkQueue.size())
-	{
-		return;
-	}
-
 	/* Dump one thing per-frame so the server stays sane. */
 	IDBThreadOperation *op;
 	{
 		std::lock_guard<std::mutex> lock(m_ThinkLock);
+		if (m_ThinkQueue.empty())
+			return;
 		op = m_ThinkQueue.first();
 		m_ThinkQueue.pop();
 	}
-	op->RunThinkPart();
-	op->Destroy();
+	FinalizeOperation(op, false);
 }
 
 void DBManager::OnSourceModIdentityDropped(IdentityToken_t *pToken)
@@ -521,7 +615,8 @@ void DBManager::OnSourceModIdentityDropped(IdentityToken_t *pToken)
 	while (iter != m_ThinkQueue.end())
 	{
 		IDBThreadOperation *op = (*iter);
-		if (op->GetOwner() == pToken)
+		auto owner = m_OperationOwners.find(op);
+		if (owner != m_OperationOwners.end() && owner->second == pToken)
 		{
 			templist.push(op);
 			iter = m_ThinkQueue.erase(iter);
@@ -533,47 +628,62 @@ void DBManager::OnSourceModIdentityDropped(IdentityToken_t *pToken)
 	for (iter = templist.begin();
 		iter != templist.end();
 		iter++)
-	{
-		IDBThreadOperation *op = (*iter);
-		op->RunThinkPart();
-		op->Destroy();
-	}
+		FinalizeOperation(*iter, false);
 
 	s_pAddBlock = NULL;
 }
 
-void DBManager::OnPluginWillUnload(IPlugin *plugin)
+bool DBManager::ShouldDiscardPluginOperations()
 {
-	/* Kill the thread so we can flush everything into the think queue... */
-	KillWorkerThread();
+	const char *behavior = g_pSM->GetCoreConfigValue("DatabasePluginUnload");
+	return !behavior || strcasecmp(behavior, "wait") != 0;
+}
 
-	/* Mark the plugin as being unloaded so future database calls will ignore threading... */
+void DBManager::WaitForPluginOperations(IPlugin *plugin)
+{
+	KillWorkerThread();
 	plugin->SetProperty("DisallowDBThreads", NULL);
 
-	/* Run all of the think operations.
-	 * Unlike the driver unloading example, we'll let these calls go through, 
-	 * since a plugin unloading is far more normal.
-	 */
-	Queue<IDBThreadOperation *>::iterator iter = m_ThinkQueue.begin();
-	Queue<IDBThreadOperation *> templist;
-	while (iter != m_ThinkQueue.end())
+	Queue<IDBThreadOperation *> operations;
 	{
-		IDBThreadOperation *op = (*iter);
-		if (op->GetOwner() == plugin->GetIdentity())
+		std::lock_guard<std::mutex> lock(m_Lock);
+		std::lock_guard<std::mutex> think_lock(m_ThinkLock);
+		for (auto iter = m_ThinkQueue.begin(); iter != m_ThinkQueue.end();)
 		{
-			templist.push(op);
-			iter = m_ThinkQueue.erase(iter);
-		} else {
-			iter++;
+			IDBThreadOperation *op = *iter;
+			auto owner = m_OperationOwners.find(op);
+			if (owner != m_OperationOwners.end() && owner->second == plugin->GetIdentity())
+			{
+				operations.push(op);
+				iter = m_ThinkQueue.erase(iter);
+			}
+			else
+			{
+				iter++;
+			}
 		}
 	}
 
-	for (iter = templist.begin(); iter != templist.end(); iter++)
+	while (!operations.empty())
 	{
-		IDBThreadOperation *op = (*iter);
-		op->RunThinkPart();
-		op->Destroy();
+		IDBThreadOperation *op = operations.first();
+		operations.pop();
+		FinalizeOperation(op, false);
 	}
+}
+
+void DBManager::DiscardPluginOperations(IPlugin *plugin)
+{
+	plugin->SetProperty("DisallowDBThreads", NULL);
+	CancelPluginOperations(plugin->GetIdentity());
+}
+
+void DBManager::OnPluginWillUnload(IPlugin *plugin)
+{
+	if (ShouldDiscardPluginOperations())
+		DiscardPluginOperations(plugin);
+	else
+		WaitForPluginOperations(plugin);
 }
 
 std::string DBManager::GetDefaultDriverName()

@@ -2,7 +2,7 @@
 {
 	"Slot reserved"
 	{
-		"tr"		"Yer ayırtıldığı için düşürüldünüz"
+		"tr"		"Yer ayırtıldığı için bağlantı kesildi"
 	}
 
 }

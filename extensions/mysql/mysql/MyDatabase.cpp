@@ -108,6 +108,8 @@ MyDatabase::MyDatabase(MYSQL *mysql, const DatabaseInfo *info, bool persistent)
 
 MyDatabase::~MyDatabase()
 {
+	std::lock_guard<std::recursive_mutex> lock(m_FullLock);
+
 	/* Remove us from the search list */
 	if (m_bPersistent)
 		g_MyDriver.RemoveFromList(this, true);
@@ -131,16 +133,20 @@ const DatabaseInfo &MyDatabase::GetInfo()
 
 unsigned int MyDatabase::GetInsertID()
 {
+	std::lock_guard<std::recursive_mutex> lock(m_FullLock);
 	return (unsigned int)mysql_insert_id(m_mysql);
 }
 
 unsigned int MyDatabase::GetAffectedRows()
 {
+	std::lock_guard<std::recursive_mutex> lock(m_FullLock);
 	return (unsigned int)mysql_affected_rows(m_mysql);
 }
 
 const char *MyDatabase::GetError(int *errCode)
 {
+	std::lock_guard<std::recursive_mutex> lock(m_FullLock);
+
 	if (errCode)
 	{
 		*errCode = mysql_errno(m_mysql);
@@ -151,6 +157,8 @@ const char *MyDatabase::GetError(int *errCode)
 
 bool MyDatabase::QuoteString(const char *str, char buffer[], size_t maxlength, size_t *newSize)
 {
+	std::lock_guard<std::recursive_mutex> lock(m_FullLock);
+
 	unsigned long size = static_cast<unsigned long>(strlen(str));
 	unsigned long needed = size * 2 + 1;
 
@@ -185,6 +193,10 @@ bool MyDatabase::DoSimpleQuery(const char *query)
 
 IQuery *MyDatabase::DoQuery(const char *query)
 {
+	// A MYSQL connection may be shared between threads only if the entire
+	// mysql_real_query()/mysql_store_result() sequence is serialized.
+	std::lock_guard<std::recursive_mutex> lock(m_FullLock);
+
 	if (mysql_real_query(m_mysql, query, static_cast<unsigned long>(strlen(query))) != 0)
 	{
 		return NULL;
@@ -216,6 +228,9 @@ bool MyDatabase::DoSimpleQueryEx(const char *query, size_t len)
 
 IQuery *MyDatabase::DoQueryEx(const char *query, size_t len)
 {
+	// See DoQuery().
+	std::lock_guard<std::recursive_mutex> lock(m_FullLock);
+
 	if (mysql_real_query(m_mysql, query, static_cast<unsigned long>(len)) != 0)
 	{
 		return NULL;
@@ -246,6 +261,8 @@ unsigned int MyDatabase::GetInsertIDForQuery(IQuery *query)
 
 IPreparedQuery *MyDatabase::PrepareQuery(const char *query, char *error, size_t maxlength, int *errCode)
 {
+	std::lock_guard<std::recursive_mutex> lock(m_FullLock);
+
 	MYSQL_STMT *stmt = mysql_stmt_init(m_mysql);
 	if (!stmt)
 	{

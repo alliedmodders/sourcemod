@@ -50,36 +50,17 @@ HandleType_t g_CookieIterator = 0;
 CookieIteratorHandler g_CookieIteratorHandler;
 DbDriver g_DriverType;
 
+constexpr auto kReconnectRetryDelay = std::chrono::seconds(30);
+
 bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
-	DBInfo = dbi->FindDatabaseConf("clientprefs");
-
-	if (DBInfo == NULL)
+	if (!this->RefreshDatabaseInfo(error, maxlength))
 	{
-		DBInfo = dbi->FindDatabaseConf("storage-local");
-		if (DBInfo == NULL)
-		{
-			ke::SafeStrcpy(error, maxlength, "Could not find any suitable database configs");
-			return false;
-		}
-	}
-	
-	if (DBInfo->driver && DBInfo->driver[0] != '\0')
-	{
-		Driver = dbi->FindOrLoadDriver(DBInfo->driver);
-	}
-	else
-	{
-		Driver = dbi->GetDefaultDriver();
-	}
-
-	if (Driver == NULL)
-	{
-		ke::SafeSprintf(error, maxlength, "Could not load DB Driver \"%s\"", DBInfo->driver);
 		return false;
 	}
 
 	databaseLoading = true;
+	nextReconnectAttempt = std::chrono::steady_clock::now() + kReconnectRetryDelay;
 	TQueryOp *op = new TQueryOp(Query_Connect, 0);
 	dbi->AddToThreadQueue(op, PrioQueue_High);
 
@@ -120,6 +101,56 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	{
 		this->CatchLateLoadClients();
 	}
+
+	return true;
+}
+
+bool ClientPrefs::RefreshDatabaseInfo(char *error, size_t maxlength)
+{
+	const DatabaseInfo *info = dbi->FindDatabaseConf("clientprefs");
+
+	if (info == nullptr)
+	{
+		info = dbi->FindDatabaseConf("storage-local");
+		if (info == nullptr)
+		{
+			ke::SafeStrcpy(error, maxlength, "Could not find any suitable database configs");
+			return false;
+		}
+	}
+
+	IDBDriver *driver;
+	if (info->driver && info->driver[0] != '\0')
+	{
+		driver = dbi->FindOrLoadDriver(info->driver);
+	}
+	else
+	{
+		driver = dbi->GetDefaultDriver();
+	}
+
+	if (driver == nullptr)
+	{
+		ke::SafeSprintf(error, maxlength, "Could not load DB Driver \"%s\"", info->driver ? info->driver : "");
+		return false;
+	}
+
+	// Database configurations are recreated at every map change. Keep a local
+	// copy so reconnects cannot use a dangling configuration pointer.
+	DBInfo = *info;
+	dbHost = info->host ? info->host : "";
+	dbDatabase = info->database ? info->database : "";
+	dbUser = info->user ? info->user : "";
+	dbPass = info->pass ? info->pass : "";
+	dbDriver = info->driver ? info->driver : "";
+	dbSchemaName = info->schemaName ? info->schemaName : "";
+	DBInfo.host = dbHost.c_str();
+	DBInfo.database = dbDatabase.c_str();
+	DBInfo.user = dbUser.c_str();
+	DBInfo.pass = dbPass.c_str();
+	DBInfo.driver = dbDriver.c_str();
+	DBInfo.schemaName = dbSchemaName.c_str();
+	Driver = driver;
 
 	return true;
 }
@@ -199,8 +230,25 @@ void ClientPrefs::AttemptReconnection()
 	if (Database || databaseLoading)
 		return; /* We're already loading, or have loaded. */
 	
+	auto now = std::chrono::steady_clock::now();
+	if (now < nextReconnectAttempt)
+		return;
+
+	IDBDriver *oldDriver = Driver;
+	char error[256];
+	if (!this->RefreshDatabaseInfo(error, sizeof(error)))
+	{
+		g_pSM->LogError(myself, error);
+		nextReconnectAttempt = now + kReconnectRetryDelay;
+		return;
+	}
+
+	if (Driver != oldDriver)
+		dbi->AddDependency(myself, Driver);
+
 	g_pSM->LogMessage(myself, "Attempting to reconnect to database...");
 	databaseLoading = true;
+	nextReconnectAttempt = now + kReconnectRetryDelay;
 	
 	TQueryOp *op = new TQueryOp(Query_Connect, 0);
 	dbi->AddToThreadQueue(op, PrioQueue_High);
@@ -213,7 +261,7 @@ void ClientPrefs::DatabaseConnect()
 	char error[256];
 	int errCode = 0;
 
-	Database = AdoptRef(Driver->Connect(DBInfo, true, error, sizeof(error)));
+	Database = AdoptRef(Driver->Connect(&DBInfo, true, error, sizeof(error)));
 
 	if (!Database)
 	{
@@ -545,7 +593,6 @@ ClientPrefs::ClientPrefs()
 	Driver = NULL;
 	databaseLoading = false;
 	phrases = NULL;
-	DBInfo = NULL;
 
 	identity = NULL;
 }
