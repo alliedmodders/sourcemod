@@ -52,6 +52,7 @@ const char* TypeToString(TypeClass type) {
 // Chapter 3.2.3 Parameter Passing
 std::optional<TypeClass> Classify_ParamType(sp::HookParamType type) {
 	switch (type) {
+	case sp::HookParamType_String:
 	case sp::HookParamType_StringPtr:
 	case sp::HookParamType_CharPtr:
 	case sp::HookParamType_VectorPtr:
@@ -151,16 +152,14 @@ bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnV
 		auto& param = params[i];
 		if (param.dhook_custom_register == sp::DHookRegister_Default) {
 			auto cls = Classify_ParamType(param.dhook_type);
-			if (!cls.has_value()) {
-				if (param.dhook_pass_flags & sp::DHookPass_ByRef) {
-					// Its a pointer
-					cls = TypeClass::INTEGER;
-				} else {
-					// Otherwise not supported, end
-					// TO-DO: Update and support objects passed on the stack
-					globals::sourcemod->LogError(globals::myself, "ABI could not classify parameter (%d)!", i);
-					return false;
-				}
+			if (param.dhook_pass_flags & sp::DHookPass_ByRef) {
+				// Its a pointer
+				cls = TypeClass::INTEGER;
+			} else if (!cls.has_value()) {
+				// Otherwise not supported, end
+				// TO-DO: Update and support objects passed on the stack
+				globals::sourcemod->LogError(globals::myself, "ABI could not classify parameter (%d)!", i);
+				return false;
 			}
 			switch (cls.value()) {
 				case TypeClass::INTEGER:
