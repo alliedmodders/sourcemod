@@ -404,7 +404,7 @@ void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original
 	jit.sub(rsp, stack_size);
 
 	// Now copy stack over
-	for (int i = 0; i < stack_size; i += sizeof(void*)) {
+	for (size_t i = 0; i < stack_size; i += sizeof(void*)) {
 		// Skip saved RAX, skip return value
 		jit.mov(rax, rsp(stack_size + 0x8 + 0x8 + i));
 		jit.mov(rsp(i), rax);
