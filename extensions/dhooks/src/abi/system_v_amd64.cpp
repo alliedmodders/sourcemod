@@ -146,8 +146,8 @@ bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnV
 		params.insert(params.begin(), this_ptr);
 	}
 
-	/* Skip the return address */
-	size_t stack_offset = sizeof(void*);
+	/* Skip the saved stack pointer and the return address */
+	size_t stack_offset = 2 * sizeof(void*);
 	{auto len = params.size(); for (unsigned int i = 0; i < len; i++) {
 		auto& param = params[i];
 		if (param.dhook_custom_register == sp::DHookRegister_Default) {
@@ -194,8 +194,8 @@ bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnV
 			param.reg_offset = {};
 		}
 	}}
-	/* Stack size here only means the size the parameters occupy, so remove the space occupied by return address */
-	stack_size = stack_offset - sizeof(void*);
+	/* Stack size here only means the size the parameters occupy, so remove the base offset */
+	stack_size = stack_offset - (2 * sizeof(void*));
 	return true;
 }
 
@@ -335,9 +335,9 @@ void JIT_Recall(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], 
 		jit.push(rsi);
 
 		// Skip the two parameters we just saved
-		jit.lea(rdi, rsp(0x8 * 2));
+		jit.lea(rdi, rsp(2 * sizeof(void*)));
 		// Skip return value contained in the stack
-		jit.lea(rsi, rax(0x8));
+		jit.lea(rsi, rax(2 * sizeof(void*)));
 		jit.mov(rdx, stack_size);
 
 		jit.mov(rax, reinterpret_cast<std::uintptr_t>(memcpy));
