@@ -96,7 +96,7 @@ void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post) const {
 	size_t return_size = 0;
 
     if constexpr(!std::is_same<RETURN, void>::value) {
-		return_ptr = new RETURN;
+		return_ptr = new RETURN();
 		init_op = reinterpret_cast<void*>(::KHook::init_operator<RETURN>);
 		delete_op = reinterpret_cast<void*>(::KHook::deinit_operator<RETURN>);
 		return_size = sizeof(RETURN);
