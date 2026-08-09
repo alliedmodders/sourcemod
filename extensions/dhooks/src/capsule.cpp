@@ -18,7 +18,7 @@ static std::unique_ptr<Capsule> nullptr_capsule(nullptr);
 }
 
 const std::unique_ptr<Capsule>& Capsule::FindOrCreate(const handle::HookSetup* setup, void** vtable) {
-	auto dyndetour = dynamic_cast<const handle::DynamicDetour*>(setup);
+	auto dyndetour = setup->IsVirtualHook() ? nullptr : static_cast<const handle::DynamicDetour*>(setup);
 	if (dyndetour) {
 		// Let's see if a hook already exists
 		auto it = locals::address_detours.find(dyndetour->GetAddress());
@@ -38,7 +38,7 @@ const std::unique_ptr<Capsule>& Capsule::FindOrCreate(const handle::HookSetup* s
 		}
 		return it->second;
 	}
-	auto dynhook = dynamic_cast<const handle::DynamicHook*>(setup);
+	auto dynhook = setup->IsVirtualHook() ? static_cast<const handle::DynamicHook*>(setup) : nullptr;
 	if (dynhook) {
 		auto key = reinterpret_cast<void*>(reinterpret_cast<std::uintptr_t>(vtable) + dynhook->GetOffset());
 		// Let's see if a hook already exists
