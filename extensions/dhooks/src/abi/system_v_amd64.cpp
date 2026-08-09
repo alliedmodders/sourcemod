@@ -203,7 +203,7 @@ void JIT_CallMemberFunction(AsmJit& jit, bool save_general_register[MAX_GENERAL_
 	jit.push(rbp);
 	jit.mov(rbp, rsp);
 
-	static constexpr size_t stack_size = (MAX_GENERAL_REGISTERS * 0x8) + (MAX_FLOAT_REGISTERS * 0x10);
+	static constexpr size_t stack_size = (MAX_GENERAL_REGISTERS * sizeof(GeneralRegister)) + (MAX_FLOAT_REGISTERS * sizeof(FloatRegister));
 	static_assert(stack_size % 16 == 0); // System-V requires the stack to be aligned for any call operation
 	jit.sub(rsp, stack_size);
 
@@ -217,9 +217,9 @@ void JIT_CallMemberFunction(AsmJit& jit, bool save_general_register[MAX_GENERAL_
 		if (reg == STACK_REG) {
 			// We modified the stack, so RSP no longer holds the correct value
 			jit.lea(rax, rsp(stack_size));
-			jit.mov(rsp(i * 0x8), rax);
+			jit.mov(rsp(sizeof(GeneralRegister) * i), rax);
 		} else {
-			jit.mov(rsp(i * 0x8), reg);
+			jit.mov(rsp(sizeof(GeneralRegister) * i), reg);
 		}
 	}
 
@@ -228,7 +228,7 @@ void JIT_CallMemberFunction(AsmJit& jit, bool save_general_register[MAX_GENERAL_
 		if (!save_float_register[i]) {
 			continue;
 		}
-		jit.movsd(rsp(i * 0x10 + (MAX_GENERAL_REGISTERS * 0x8)), reg);
+		jit.movsd(rsp(i * sizeof(FloatRegister) + (MAX_GENERAL_REGISTERS * sizeof(GeneralRegister))), reg);
 	}
 	// void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post)
 	jit.mov(rdx, post);
@@ -364,7 +364,7 @@ void JIT_Recall(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], 
 		if (!save_float_register[i]) {
 			continue;
 		}
-		jit.movsd(reg, rsi(i * 0x10 + (MAX_GENERAL_REGISTERS * 0x8)));
+		jit.movsd(reg, rsi(i * sizeof(FloatRegister) + (MAX_GENERAL_REGISTERS * sizeof(GeneralRegister))));
 	}
 
 	for (size_t i = 1; i < MAX_GENERAL_REGISTERS; i++) {
