@@ -1126,6 +1126,19 @@ void PlayerManager::OnClientCommand(edict_t *pEntity)
 	{
 		if (args.ArgC() > 1 && strcmp(args.Arg(1), "plugins") == 0)
 		{
+			/* Treat this as an admin command so its access can be overridden. */
+			if (!adminsys->CheckAccess(client, "sm_plugins", ADMFLAG_GENERIC, true))
+			{
+				char buffer[128];
+				if (!logicore.CoreTranslate(buffer, sizeof(buffer), "%T", 2, NULL, "No Access", &client))
+				{
+					ke::SafeStrcpy(buffer, sizeof(buffer), "You do not have access to this command");
+				}
+
+				ClientConsolePrint(pEntity, "[SM] %s.", buffer);
+				RETURN_META(MRES_SUPERCEDE);
+			}
+
 			ListPluginsToClient(pPlayer, args);
 			RETURN_META(MRES_SUPERCEDE);
 		}
