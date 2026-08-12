@@ -326,7 +326,7 @@ native bool PrecacheSound(const char[] sound, bool preload=false);
  * @return              True if precached, false otherwise.
  * @deprecated          Doesn't work correctly, always returns true.
  */
-#pragma deprecated Doesn't work correctly, always returns true.
+#pragma deprecated Does not work correctly, always returns true.
 native bool IsSoundPrecached(const char[] sound);
 
 /**
