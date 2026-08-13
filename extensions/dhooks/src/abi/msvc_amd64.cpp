@@ -382,6 +382,10 @@ void JIT_Recall(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], 
 			jit.mov(reg, r11(sizeof(GeneralRegister) * i));
 		}
 	}
+	// R11 is restored last
+	if (save_general_register[R11]) {
+		jit.mov(r11, r11(sizeof(GeneralRegister) * R11));
+	}
 
 	// Call the recall
 	jit.retn();
