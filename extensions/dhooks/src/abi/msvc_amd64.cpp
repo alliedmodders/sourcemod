@@ -477,16 +477,16 @@ void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original
 	// 5th and 6th arguments go on the stack
 	jit.mov(rcx, (std::uint8_t)KHook::Action::Ignore); // action
 	if (cls == TypeClass::VOID) {
-		jit.mov(rdx, 0x0); // ptr_to_return
-		jit.mov(r8, 0x0);  // return_size
-		jit.mov(r9, 0x0);  // init_op
+		jit.mov(rdx, 0x0);       // ptr_to_return
+		jit.mov(r8, 0x0);        // return_size
+		jit.mov(r9, 0x0);        // init_op
 		jit.mov(rsp(0x20), 0x0); // deinit_op
 	} else {
-		jit.lea(rdx, rsp(0x30));      // ptr_to_return
-		jit.mov(r8, ret.dhook_size);  // return_size
-		jit.mov(r9, init_op);         // init_op
+		jit.lea(rdx, rsp(0x30));     // ptr_to_return
+		jit.mov(r8, ret.dhook_size); // return_size
+		jit.mov(r9, init_op);        // init_op
 		jit.mov(rax, deinit_op);
-		jit.mov(rsp(0x20), rax);      // deinit_op
+		jit.mov(rsp(0x20), rax);     // deinit_op
 	}
 	jit.mov(rax, 1);
 	jit.mov(rsp(0x28), rax); // original

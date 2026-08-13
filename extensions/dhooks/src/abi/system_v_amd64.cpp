@@ -230,6 +230,7 @@ void JIT_CallMemberFunction(AsmJit& jit, bool save_general_register[MAX_GENERAL_
 		}
 		jit.movsd(rsp(i * sizeof(FloatRegister) + (MAX_GENERAL_REGISTERS * sizeof(GeneralRegister))), reg);
 	}
+
 	// void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post)
 	jit.mov(rdx, post);
 	jit.mov(rsi, rsp);
