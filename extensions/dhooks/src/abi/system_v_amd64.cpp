@@ -438,6 +438,7 @@ void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original
 	// Store the return value in a local variable
 	std::uintptr_t init_op = 0;
 	std::uintptr_t deinit_op = 0;
+	std::size_t return_size = 0;
 	switch (Classify_ReturnType(ret).value()) {
 		case TypeClass::VOID:
 		break;
@@ -447,6 +448,7 @@ void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original
 
 		init_op = reinterpret_cast<std::uintptr_t>(KHook::init_operator<std::uintptr_t>);
 		deinit_op = reinterpret_cast<std::uintptr_t>(KHook::deinit_operator<std::uintptr_t>);
+		return_size = sizeof(std::uintptr_t);
 		break;
 		case TypeClass::SSE:
 			// TO-DO: handle this better...
@@ -456,11 +458,13 @@ void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original
 
 				init_op = reinterpret_cast<std::uintptr_t>(KHook::init_operator<sdk::Vector>);
 				deinit_op = reinterpret_cast<std::uintptr_t>(KHook::deinit_operator<sdk::Vector>);
+				return_size = sizeof(sdk::Vector);
 			} else {
 				jit.movsd(rsp(), xmm0);
 
 				init_op = reinterpret_cast<std::uintptr_t>(KHook::init_operator<float>);
 				deinit_op = reinterpret_cast<std::uintptr_t>(KHook::deinit_operator<float>);
+				return_size = sizeof(float);
 			}
 		break;
 		default:
@@ -476,10 +480,10 @@ void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original
 		jit.mov(rcx, 0x0); // init_op
 		jit.mov(r8,  0x0); // deinit_op
 	} else {
-		jit.mov(rsi, rsp);            // ptr_to_return
-		jit.mov(rdx, ret.dhook_size); // return_size
-		jit.mov(rcx, init_op);        // init_op
-		jit.mov(r8,  deinit_op);      // deinit_op	
+		jit.mov(rsi, rsp);         // ptr_to_return
+		jit.mov(rdx, return_size); // return_size
+		jit.mov(rcx, init_op);     // init_op
+		jit.mov(r8,  deinit_op);   // deinit_op
 	}
 	jit.mov(r9, true); // original
 

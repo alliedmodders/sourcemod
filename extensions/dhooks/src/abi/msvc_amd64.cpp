@@ -442,6 +442,7 @@ void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original
 	// Store the return value in a local variable
 	std::uintptr_t init_op = 0;
 	std::uintptr_t deinit_op = 0;
+	std::size_t return_size = 0;
 	switch (cls) {
 		case TypeClass::VOID:
 		break;
@@ -450,11 +451,13 @@ void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original
 		jit.mov(rsp(0x30), rax);
 		init_op = reinterpret_cast<std::uintptr_t>(KHook::init_operator<std::uintptr_t>);
 		deinit_op = reinterpret_cast<std::uintptr_t>(KHook::deinit_operator<std::uintptr_t>);
+		return_size = sizeof(std::uintptr_t);
 		break;
 		case TypeClass::SSE:
 		jit.movsd(rsp(0x30), xmm0);
 		init_op = reinterpret_cast<std::uintptr_t>(KHook::init_operator<float>);
 		deinit_op = reinterpret_cast<std::uintptr_t>(KHook::deinit_operator<float>);
+		return_size = sizeof(float);
 		break;
 		case TypeClass::MEMORY:
 		// RAX points at the returned object
@@ -467,9 +470,11 @@ void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original
 		if (ret.dhook_type == sp::ReturnType_String) {
 			init_op = reinterpret_cast<std::uintptr_t>(KHook::init_operator<sdk::string_t>);
 			deinit_op = reinterpret_cast<std::uintptr_t>(KHook::deinit_operator<sdk::string_t>);
+			return_size = sizeof(sdk::string_t);
 		} else {
 			init_op = reinterpret_cast<std::uintptr_t>(KHook::init_operator<sdk::Vector>);
 			deinit_op = reinterpret_cast<std::uintptr_t>(KHook::deinit_operator<sdk::Vector>);
+			return_size = sizeof(sdk::Vector);
 		}
 		break;
 		default:
@@ -486,11 +491,11 @@ void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original
 		jit.mov(r9, 0x0);        // init_op
 		jit.mov(rsp(0x20), 0x0); // deinit_op
 	} else {
-		jit.lea(rdx, rsp(0x30));     // ptr_to_return
-		jit.mov(r8, ret.dhook_size); // return_size
-		jit.mov(r9, init_op);        // init_op
+		jit.lea(rdx, rsp(0x30));  // ptr_to_return
+		jit.mov(r8, return_size); // return_size
+		jit.mov(r9, init_op);     // init_op
 		jit.mov(rax, deinit_op);
-		jit.mov(rsp(0x20), rax);     // deinit_op
+		jit.mov(rsp(0x20), rax);  // deinit_op
 	}
 	jit.mov(rax, 1);
 	jit.mov(rsp(0x28), rax); // original
