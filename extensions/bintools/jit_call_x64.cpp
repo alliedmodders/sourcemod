@@ -566,9 +566,9 @@ inline uint8_t MapFloatToIntReg(uint8_t floatReg)
 
 inline void Write_VarArgFloatCopy(JitWriter *jit, const SourceHook::PassInfo *info, uint8_t *floatRegs)
 {
-	if (!floatRegs || floatRegs[0] == STACK_PARAM)
+	if (!floatRegs || MapFloatToIntReg(floatRegs[0]) == INVALID_REG)
 		return;
-		
+
 	uint8_t intReg1 = MapFloatToIntReg(floatRegs[0]);
 
 	switch (info->size)
@@ -585,11 +585,11 @@ inline void Write_VarArgFloatCopy(JitWriter *jit, const SourceHook::PassInfo *in
 			//movq intReg1, floatReg[0]
 			//movq intReg2, floatReg[1]
 			X64_Movq_Reg_Xmm(jit, intReg1, floatRegs[0]);
-			if (floatRegs[1] != STACK_PARAM)
+			if (MapFloatToIntReg(floatRegs[1]) != INVALID_REG)
 			{
 				int intReg2 = MapFloatToIntReg(floatRegs[1]);
 				X64_Movq_Reg_Xmm(jit, intReg2, floatRegs[1]);
-			} 
+			}
 			break;
 	}
 }
