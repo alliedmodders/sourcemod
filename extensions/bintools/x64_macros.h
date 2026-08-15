@@ -170,7 +170,7 @@ inline void X64_Movzx_Reg64_Rm8_Disp32(JitWriter *jit, jit_uint8_t dest, jit_uin
 
 inline void X64_Mov_RmRSP_Reg(JitWriter *jit, jit_uint8_t src)
 {
-	jit->write_ubyte(x64_rex(true, kREG_RSP, 0, src));
+	jit->write_ubyte(x64_rex(true, src, 0, kREG_RSP));
 	jit->write_ubyte(IA32_MOV_RM_REG);
 	jit->write_ubyte(ia32_modrm(MOD_MEM_REG, src & 7, kREG_RSP));
 	jit->write_ubyte(ia32_sib(NOSCALE, kREG_NOIDX, kREG_RSP));
@@ -185,13 +185,13 @@ inline void X64_Mov_RmRSP_Disp8_Reg(JitWriter *jit, jit_uint8_t src, jit_int8_t 
 	jit->write_byte(disp);
 }
 
-inline void X64_Mov_RmRSP_Disp32_Reg(JitWriter *jit, jit_uint8_t src, jit_int8_t disp)
+inline void X64_Mov_RmRSP_Disp32_Reg(JitWriter *jit, jit_uint8_t src, jit_int32_t disp)
 {
 	jit->write_ubyte(x64_rex(true, src, 0, kREG_RSP));
 	jit->write_ubyte(IA32_MOV_RM_REG);
 	jit->write_ubyte(ia32_modrm(MOD_DISP32, src & 7, kREG_RSP));
 	jit->write_ubyte(ia32_sib(NOSCALE, kREG_NOIDX, kREG_RSP));
-	jit->write_byte(disp);
+	jit->write_int32(disp);
 }
 
 inline void X64_Movzx_Reg64_Rm16(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, jit_uint8_t mode)
@@ -312,6 +312,8 @@ inline void X64_Movaps_Rm_Disp8_Reg(JitWriter *jit, jit_uint8_t dest, jit_uint8_
 	jit->write_ubyte(0x0F);
 	jit->write_ubyte(0x29);
 	jit->write_ubyte(ia32_modrm(MOD_DISP8, src & 7, dest & 7));
+	if ((dest & 7) == kREG_RSP)
+		jit->write_ubyte(ia32_sib(NOSCALE, kREG_NOIDX, dest & 7));
 	jit->write_byte(disp);
 }
 
@@ -322,6 +324,8 @@ inline void X64_Movups_Rm_Disp8_Reg(JitWriter *jit, jit_uint8_t dest, jit_uint8_
 	jit->write_ubyte(0x0F);
 	jit->write_ubyte(0x11);
 	jit->write_ubyte(ia32_modrm(MOD_DISP8, src & 7, dest & 7));
+	if ((dest & 7) == kREG_RSP)
+		jit->write_ubyte(ia32_sib(NOSCALE, kREG_NOIDX, dest & 7));
 	jit->write_byte(disp);
 }
 
@@ -332,7 +336,9 @@ inline void X64_Movaps_Rm_Disp32_Reg(JitWriter *jit, jit_uint8_t dest, jit_uint8
 	jit->write_ubyte(0x0F);
 	jit->write_ubyte(0x29);
 	jit->write_ubyte(ia32_modrm(MOD_DISP32, src & 7, dest & 7));
-	jit->write_byte(disp);
+	if ((dest & 7) == kREG_RSP)
+		jit->write_ubyte(ia32_sib(NOSCALE, kREG_NOIDX, dest & 7));
+	jit->write_int32(disp);
 }
 
 inline void X64_Movups_Rm_Disp32_Reg(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, jit_int32_t disp)
@@ -342,7 +348,9 @@ inline void X64_Movups_Rm_Disp32_Reg(JitWriter *jit, jit_uint8_t dest, jit_uint8
 	jit->write_ubyte(0x0F);
 	jit->write_ubyte(0x11);
 	jit->write_ubyte(ia32_modrm(MOD_DISP32, src & 7, dest & 7));
-	jit->write_byte(disp);
+	if ((dest & 7) == kREG_RSP)
+		jit->write_ubyte(ia32_sib(NOSCALE, kREG_NOIDX, dest & 7));
+	jit->write_int32(disp);
 }
 
 inline void X64_Movlps_Rm(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src)
@@ -410,7 +418,7 @@ inline void X64_Movaps_Rm_Disp32(JitWriter *jit, jit_uint8_t dest, jit_uint8_t s
 	jit->write_ubyte(0x0F);
 	jit->write_ubyte(0x28);
 	jit->write_ubyte(ia32_modrm(MOD_DISP32, dest & 7, src & 7));
-	jit->write_byte(disp);
+	jit->write_int32(disp);
 }
 
 inline void X64_Movups_Rm_Disp32(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, jit_int32_t disp)
@@ -420,14 +428,14 @@ inline void X64_Movups_Rm_Disp32(JitWriter *jit, jit_uint8_t dest, jit_uint8_t s
 	jit->write_ubyte(0x0F);
 	jit->write_ubyte(0x10);
 	jit->write_ubyte(ia32_modrm(MOD_DISP32, dest & 7, src & 7));
-	jit->write_byte(disp);
+	jit->write_int32(disp);
 }
 
 inline void X64_Movapd_Rm(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src)
 {
+	jit->write_ubyte(0x66);
 	if (dest >= kREG_XMM8 || src >= kREG_XMM8)
 		jit->write_ubyte(x64_rex(false, dest, 0, src));
-	jit->write_ubyte(0x66);
 	jit->write_ubyte(0x0F);
 	jit->write_ubyte(0x28);
 	jit->write_ubyte(ia32_modrm(MOD_MEM_REG, dest & 7, src & 7));
@@ -435,9 +443,9 @@ inline void X64_Movapd_Rm(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src)
 
 inline void X64_Movupd_Rm(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src)
 {
+	jit->write_ubyte(0x66);
 	if (dest >= kREG_XMM8 || src >= kREG_XMM8)
 		jit->write_ubyte(x64_rex(false, dest, 0, src));
-	jit->write_ubyte(0x66);
 	jit->write_ubyte(0x0F);
 	jit->write_ubyte(0x10);
 	jit->write_ubyte(ia32_modrm(MOD_MEM_REG, dest & 7, src & 7));
@@ -445,9 +453,9 @@ inline void X64_Movupd_Rm(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src)
 
 inline void X64_Movapd_Rm_Disp8(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, jit_int8_t disp)
 {
+	jit->write_ubyte(0x66);
 	if (dest >= kREG_XMM8 || src >= kREG_XMM8)
 		jit->write_ubyte(x64_rex(false, dest, 0, src));
-	jit->write_ubyte(0x66);
 	jit->write_ubyte(0x0F);
 	jit->write_ubyte(0x28);
 	jit->write_ubyte(ia32_modrm(MOD_DISP8, dest & 7, src & 7));
@@ -456,9 +464,9 @@ inline void X64_Movapd_Rm_Disp8(JitWriter *jit, jit_uint8_t dest, jit_uint8_t sr
 
 inline void X64_Movupd_Rm_Disp8(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, jit_int8_t disp)
 {
+	jit->write_ubyte(0x66);
 	if (dest >= kREG_XMM8 || src >= kREG_XMM8)
 		jit->write_ubyte(x64_rex(false, dest, 0, src));
-	jit->write_ubyte(0x66);
 	jit->write_ubyte(0x0F);
 	jit->write_ubyte(0x10);
 	jit->write_ubyte(ia32_modrm(MOD_DISP8, dest & 7, src & 7));
@@ -467,24 +475,24 @@ inline void X64_Movupd_Rm_Disp8(JitWriter *jit, jit_uint8_t dest, jit_uint8_t sr
 
 inline void X64_Movapd_Rm_Disp32(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, jit_int32_t disp)
 {
+	jit->write_ubyte(0x66);
 	if (dest >= kREG_XMM8 || src >= kREG_XMM8)
 		jit->write_ubyte(x64_rex(false, dest, 0, src));
-	jit->write_ubyte(0x66);
 	jit->write_ubyte(0x0F);
 	jit->write_ubyte(0x28);
 	jit->write_ubyte(ia32_modrm(MOD_DISP32, dest & 7, src & 7));
-	jit->write_byte(disp);
+	jit->write_int32(disp);
 }
 
 inline void X64_Movupd_Rm_Disp32(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src, jit_int32_t disp)
 {
+	jit->write_ubyte(0x66);
 	if (dest >= kREG_XMM8 || src >= kREG_XMM8)
 		jit->write_ubyte(x64_rex(false, dest, 0, src));
-	jit->write_ubyte(0x66);
 	jit->write_ubyte(0x0F);
 	jit->write_ubyte(0x10);
 	jit->write_ubyte(ia32_modrm(MOD_DISP32, dest & 7, src & 7));
-	jit->write_byte(disp);
+	jit->write_int32(disp);
 }
 
 inline void X64_Cld(JitWriter *jit)

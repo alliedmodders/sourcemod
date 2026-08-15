@@ -389,7 +389,7 @@ inline jit_uint8_t Write_PushPOD(JitWriter *jit, const SourceHook::PassInfo *inf
 			if (g_StackUsage + 8 < SCHAR_MAX)
 				X64_Mov_RmRSP_Disp8_Reg(jit, reg2, (jit_int8_t)g_StackUsage + 8);
 			else
-				X64_Mov_RmRSP_Disp32_Reg(jit, reg2, (jit_int8_t)g_StackUsage + 8);
+				X64_Mov_RmRSP_Disp32_Reg(jit, reg2, g_StackUsage + 8);
 			g_StackUsage += 16;
 		} else {
 			g_StackUsage += 8;
@@ -470,25 +470,28 @@ inline void Write_PushFloat(JitWriter *jit, const SourceHook::PassInfo *info, un
 
 				if (!offset) {
 					X64_Movaps_Rm(jit, floatReg, kREG_EBX);
-					X64_Movups_Rm_Disp8(jit, floatReg2, kREG_EBX, offset+8);
 				} else if (offset < SCHAR_MAX) {
 					if (offset % 16 == 0)
 						X64_Movaps_Rm_Disp8(jit, floatReg, kREG_EBX, (jit_int8_t)offset);
 					else
 						X64_Movups_Rm_Disp8(jit, floatReg, kREG_EBX, (jit_int8_t)offset);
-					if ((offset + 8) % 16 == 0)
-						X64_Movaps_Rm_Disp8(jit, floatReg2, kREG_EBX, (jit_int8_t)offset+8);
-					else
-						X64_Movups_Rm_Disp8(jit, floatReg2, kREG_EBX, (jit_int8_t)offset+8);
 				} else {
 					if (offset % 16 == 0)
 						X64_Movaps_Rm_Disp32(jit, floatReg, kREG_EBX, offset);
 					else
 						X64_Movups_Rm_Disp32(jit, floatReg, kREG_EBX, offset);
+				}
+
+				if (offset + 8 < SCHAR_MAX) {
 					if ((offset + 8) % 16 == 0)
-						X64_Movaps_Rm_Disp32(jit, floatReg2, kREG_EBX, offset+8);
+						X64_Movaps_Rm_Disp8(jit, floatReg2, kREG_EBX, (jit_int8_t)(offset + 8));
 					else
-						X64_Movups_Rm_Disp32(jit, floatReg2, kREG_EBX, offset+8);
+						X64_Movups_Rm_Disp8(jit, floatReg2, kREG_EBX, (jit_int8_t)(offset + 8));
+				} else {
+					if ((offset + 8) % 16 == 0)
+						X64_Movaps_Rm_Disp32(jit, floatReg2, kREG_EBX, offset + 8);
+					else
+						X64_Movups_Rm_Disp32(jit, floatReg2, kREG_EBX, offset + 8);
 				}
 		}
 	} else if (info->flags & PASSFLAG_BYREF) {
@@ -529,9 +532,9 @@ inline void Write_PushFloat(JitWriter *jit, const SourceHook::PassInfo *info, un
 					X64_Movups_Rm_Disp8_Reg(jit, kREG_RSP, floatReg2, (jit_int8_t)g_StackUsage+8);
 			} else {
 				if ((g_StackUsage + 8) % 16 == 0)
-					X64_Movaps_Rm_Disp32_Reg(jit, kREG_RSP, floatReg, g_StackUsage+8);
+					X64_Movaps_Rm_Disp32_Reg(jit, kREG_RSP, floatReg2, g_StackUsage+8);
 				else
-					X64_Movups_Rm_Disp32_Reg(jit, kREG_RSP, floatReg, g_StackUsage+8);
+					X64_Movups_Rm_Disp32_Reg(jit, kREG_RSP, floatReg2, g_StackUsage+8);
 			}
 			g_StackUsage += 16;
 		} else {
@@ -566,9 +569,9 @@ inline uint8_t MapFloatToIntReg(uint8_t floatReg)
 
 inline void Write_VarArgFloatCopy(JitWriter *jit, const SourceHook::PassInfo *info, uint8_t *floatRegs)
 {
-	if (!floatRegs || floatRegs[0] == STACK_PARAM)
+	if (!floatRegs || MapFloatToIntReg(floatRegs[0]) == INVALID_REG)
 		return;
-		
+
 	uint8_t intReg1 = MapFloatToIntReg(floatRegs[0]);
 
 	switch (info->size)
@@ -585,11 +588,11 @@ inline void Write_VarArgFloatCopy(JitWriter *jit, const SourceHook::PassInfo *in
 			//movq intReg1, floatReg[0]
 			//movq intReg2, floatReg[1]
 			X64_Movq_Reg_Xmm(jit, intReg1, floatRegs[0]);
-			if (floatRegs[1] != STACK_PARAM)
+			if (MapFloatToIntReg(floatRegs[1]) != INVALID_REG)
 			{
 				int intReg2 = MapFloatToIntReg(floatRegs[1]);
 				X64_Movq_Reg_Xmm(jit, intReg2, floatRegs[1]);
-			} 
+			}
 			break;
 	}
 }
