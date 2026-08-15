@@ -9,8 +9,8 @@ env:
   DUMP_SYMS_VERSION: '2.3.7'
   # Used for caching
   # TODO: Handle this better so that we don't have to update this in lockstep with checkout-deps
-  MARIADB_CONNECTOR_C_VERSION: '3.4.8'
-  MARIADB_CONNECTOR_C_RELEASE: '3.4.8-sm.1'
+  MARIADB_CONNECTOR_C_VERSION: '3.4.9'
+  MARIADB_CONNECTOR_C_RELEASE: '3.4.9-sm.5'
   MMSOURCE_VERSION: '1.12'
 jobs:
   build:

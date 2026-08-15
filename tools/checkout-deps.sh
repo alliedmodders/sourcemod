@@ -5,8 +5,8 @@ trap "exit" INT
 
 download_mariadb=1
 
-mariadb_version=${MARIADB_CONNECTOR_C_VERSION:-3.4.8}
-mariadb_release=${MARIADB_CONNECTOR_C_RELEASE:-3.4.8-sm.1}
+mariadb_version=${MARIADB_CONNECTOR_C_VERSION:-3.4.9}
+mariadb_release=${MARIADB_CONNECTOR_C_RELEASE:-3.4.9-sm.5}
 mariadb_repo=alliedmodders/mariadb-connector-c
 
 # List of HL2SDK branch names to download.
