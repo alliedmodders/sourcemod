@@ -312,6 +312,8 @@ inline void X64_Movaps_Rm_Disp8_Reg(JitWriter *jit, jit_uint8_t dest, jit_uint8_
 	jit->write_ubyte(0x0F);
 	jit->write_ubyte(0x29);
 	jit->write_ubyte(ia32_modrm(MOD_DISP8, src & 7, dest & 7));
+	if ((dest & 7) == kREG_RSP)
+		jit->write_ubyte(ia32_sib(NOSCALE, kREG_NOIDX, dest & 7));
 	jit->write_byte(disp);
 }
 
@@ -322,6 +324,8 @@ inline void X64_Movups_Rm_Disp8_Reg(JitWriter *jit, jit_uint8_t dest, jit_uint8_
 	jit->write_ubyte(0x0F);
 	jit->write_ubyte(0x11);
 	jit->write_ubyte(ia32_modrm(MOD_DISP8, src & 7, dest & 7));
+	if ((dest & 7) == kREG_RSP)
+		jit->write_ubyte(ia32_sib(NOSCALE, kREG_NOIDX, dest & 7));
 	jit->write_byte(disp);
 }
 
@@ -332,6 +336,8 @@ inline void X64_Movaps_Rm_Disp32_Reg(JitWriter *jit, jit_uint8_t dest, jit_uint8
 	jit->write_ubyte(0x0F);
 	jit->write_ubyte(0x29);
 	jit->write_ubyte(ia32_modrm(MOD_DISP32, src & 7, dest & 7));
+	if ((dest & 7) == kREG_RSP)
+		jit->write_ubyte(ia32_sib(NOSCALE, kREG_NOIDX, dest & 7));
 	jit->write_byte(disp);
 }
 
@@ -342,6 +348,8 @@ inline void X64_Movups_Rm_Disp32_Reg(JitWriter *jit, jit_uint8_t dest, jit_uint8
 	jit->write_ubyte(0x0F);
 	jit->write_ubyte(0x11);
 	jit->write_ubyte(ia32_modrm(MOD_DISP32, src & 7, dest & 7));
+	if ((dest & 7) == kREG_RSP)
+		jit->write_ubyte(ia32_sib(NOSCALE, kREG_NOIDX, dest & 7));
 	jit->write_byte(disp);
 }
 

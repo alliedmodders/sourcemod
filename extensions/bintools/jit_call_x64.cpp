@@ -529,9 +529,9 @@ inline void Write_PushFloat(JitWriter *jit, const SourceHook::PassInfo *info, un
 					X64_Movups_Rm_Disp8_Reg(jit, kREG_RSP, floatReg2, (jit_int8_t)g_StackUsage+8);
 			} else {
 				if ((g_StackUsage + 8) % 16 == 0)
-					X64_Movaps_Rm_Disp32_Reg(jit, kREG_RSP, floatReg, g_StackUsage+8);
+					X64_Movaps_Rm_Disp32_Reg(jit, kREG_RSP, floatReg2, g_StackUsage+8);
 				else
-					X64_Movups_Rm_Disp32_Reg(jit, kREG_RSP, floatReg, g_StackUsage+8);
+					X64_Movups_Rm_Disp32_Reg(jit, kREG_RSP, floatReg2, g_StackUsage+8);
 			}
 			g_StackUsage += 16;
 		} else {
