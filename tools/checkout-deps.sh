@@ -3,22 +3,21 @@
 
 trap "exit" INT
 
-download_mysql=1
-download_mysql_debug=1
+download_mariadb=1
+
+mariadb_version=${MARIADB_CONNECTOR_C_VERSION:-3.4.8}
+mariadb_release=${MARIADB_CONNECTOR_C_RELEASE:-3.4.8-sm.1}
+mariadb_repo=alliedmodders/mariadb-connector-c
 
 # List of HL2SDK branch names to download.
 # ./checkout-deps.sh -s tf2,css
-# Disable downloading of mysql libraries.
+# Disable downloading of MariaDB Connector/C libraries.
 # ./checkout-deps.sh -m
-# Disable downloading of mysql debug libraries on Windows.
-# ./checkout-deps.sh -d
 while getopts ":s:m" opt; do
   case $opt in
     s) IFS=', ' read -r -a sdks <<< "$OPTARG"
     ;;
-    m) download_mysql=0
-    ;;
-    d) download_mysql_debug=0
+    m) download_mariadb=0
     ;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
@@ -46,73 +45,66 @@ if [ ! -d "sourcemod" ]; then
   fi
 fi
 
-getmysql ()
+download_file ()
 {
-  if [ ! -d $mysqlfolder ]; then
-    if [ `command -v wget` ]; then
-      wget -q $mysqlurl -O $mysqlfolder.$archive_ext
-    elif [ `command -v curl` ]; then
-      curl -sS -o $mysqlfolder.$archive_ext $mysqlurl
-    else
-      echo "Failed to locate wget or curl. Install one of these programs to download MySQL."
-      exit 1
-    fi
-    $decomp $mysqlfolder.$archive_ext
-    mv $mysqlver $mysqlfolder
-    rm $mysqlfolder.$archive_ext
+  if command -v wget >/dev/null; then
+    wget -q "$1" -O "$2"
+  elif command -v curl >/dev/null; then
+    curl -fsSL "$1" -o "$2"
+  else
+    echo "Failed to locate wget or curl. Install one of these programs to download MariaDB Connector/C."
+    exit 1
   fi
 }
 
-# 32-bit MySQL
-mysqlfolder=mysql-5.7
+verify_checksum ()
+{
+  local archive=$1
+  local sums=$2
+  local entry
+  entry=$(grep -E "[[:space:]][*]?$archive$" "$sums")
+  if [ -z "$entry" ]; then
+    echo "No checksum found for $archive"
+    exit 1
+  fi
+  if command -v sha256sum >/dev/null; then
+    printf '%s\n' "$entry" | sha256sum -c -
+  else
+    printf '%s\n' "$entry" | shasum -a 256 -c -
+  fi
+}
+
+getmariadb ()
+{
+  local arch=$1
+  local platform=$2
+  local folder="mariadb-connector-c-$mariadb_version-$arch"
+  local archive="mariadb-connector-c-$mariadb_version-$platform-$arch.$archive_ext"
+  local release_url="https://github.com/$mariadb_repo/releases/download/v$mariadb_release"
+  local sums=SHA256SUMS
+
+  if [ ! -d "$folder" ]; then
+    download_file "$release_url/$sums" "$sums"
+    download_file "$release_url/$archive" "$archive"
+    verify_checksum "$archive" "$sums"
+    $decomp "$archive"
+    if [ ! -d "$folder" ]; then
+      echo "MariaDB Connector/C archive did not contain $folder"
+      exit 1
+    fi
+    rm "$archive" "$sums"
+  fi
+}
+
+if [ $download_mariadb -eq 1 ]; then
+  mariadb_platform=linux
 if [ $ismac -eq 1 ]; then
-  mysqlfolder=mysql-5.5
-  mysqlver=mysql-5.5.28-osx10.5-x86
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.5/$mysqlver.$archive_ext
+  mariadb_platform=macos
 elif [ $iswin -eq 1 ]; then
-  mysqlver=mysql-5.7.44-win32
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.7/$mysqlver.$archive_ext
-  # The folder in the zip archive does not contain the substring "-noinstall", so strip it
-  mysqlver=${mysqlver/-noinstall}
-else
-  mysqlver=mysql-5.7.44-linux-glibc2.12-i686
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.7/$mysqlver.$archive_ext
+  mariadb_platform=windows
 fi
-if [ $download_mysql -eq 1 ]; then
-  getmysql
-fi
-
-# 64-bit MySQL
-mysqlfolder=mysql-5.7-x86_64
-if [ $ismac -eq 1 ]; then
-  mysqlfolder=mysql-5.5-x86_64
-  mysqlver=mysql-5.5.28-osx10.5-x86_64
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.5/$mysqlver.$archive_ext
-elif [ $iswin -eq 1 ]; then
-  mysqlver=mysql-5.7.44-winx64
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.7/$mysqlver.$archive_ext
-else
-  mysqlver=mysql-5.7.44-linux-glibc2.12-x86_64
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.7/$mysqlver.$archive_ext
-fi
-if [ $download_mysql -eq 1 ]; then
-  getmysql
-fi
-
-if [ $iswin -eq 1 ] && [ $download_mysql_debug -eq 1 ]; then
-  mysqlfolder=mysql-5.7-debug
-  mysqlver=mysql-5.7.44-win32
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.7/$mysqlver-debug-test.$archive_ext
-  getmysql
-  cp -r $mysqlfolder/lib/* mysql-5.7/lib
-  rm -rf $mysqlfolder
-
-  mysqlfolder=mysql-5.7-debug-x86_64
-  mysqlver=mysql-5.7.44-winx64
-  mysqlurl=https://cdn.mysql.com/archives/mysql-5.7/$mysqlver-debug-test.$archive_ext
-  getmysql
-  cp -r $mysqlfolder/lib/* mysql-5.7-x86_64/lib
-  rm -rf $mysqlfolder
+  getmariadb x86 "$mariadb_platform"
+  getmariadb x86_64 "$mariadb_platform"
 fi
 
 checkout ()

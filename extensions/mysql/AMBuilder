@@ -1,46 +1,45 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-if SM.mysql_root:
+if SM.mariadb_root:
   for cxx in builder.targets:
     arch = cxx.target.arch
     binary = SM.ExtLibrary(builder, cxx, 'dbi.mysql.ext')
     binary.compiler.cxxincludes += [
-      os.path.join(SM.mysql_root[arch], 'include'),
+      os.path.join(SM.mariadb_root[arch], 'include', 'mariadb'),
       os.path.join(SM.mms_root, 'core', 'sourcehook')
     ]
     if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
       binary.compiler.cxxflags += ['-fno-rtti']
     elif binary.compiler.family == 'msvc':
       binary.compiler.cxxflags += ['/GR-']
-      if builder.options.debug == '1':
-        binary.compiler.cflags += ['/MDd']
-      else:
-        binary.compiler.cflags += ['/MD']
 
     if binary.compiler.target.platform == 'linux' or binary.compiler.target.platform == 'mac':
       binary.compiler.postlink += [
-        os.path.join(SM.mysql_root[arch], 'lib', 'libmysqlclient.a'),
+        os.path.join(SM.mariadb_root[arch], 'lib', 'libmariadbclient.a'),
         '-lz',
         '-lpthread',
         '-lm',
       ]
     if binary.compiler.target.platform == 'linux':
-      binary.compiler.postlink += ['-lrt']
+      binary.compiler.postlink += ['-lrt', '-ldl', '-lssl', '-lcrypto']
     elif binary.compiler.target.platform == 'windows':
       binary.compiler.defines += ['WIN32_LEAN_AND_MEAN']
       if builder.options.debug == '1':
         binary.compiler.defines += ['_ITERATOR_DEBUG_LEVEL=2']
         binary.compiler.postlink += [
-          os.path.join(SM.mysql_root[arch], 'lib', 'debug', 'mysqlclient.lib'),
+          os.path.join(SM.mariadb_root[arch], 'lib', 'debug', 'mariadbclient.lib'),
         ]
       else:
         binary.compiler.postlink += [
-          os.path.join(SM.mysql_root[arch], 'lib', 'mysqlclient.lib'),
+          os.path.join(SM.mariadb_root[arch], 'lib', 'mariadbclient.lib'),
         ]
       binary.compiler.postlink += [
         'crypt32.lib',
-        'wsock32.lib'
+        'secur32.lib',
+        'bcrypt.lib',
+        'ws2_32.lib',
+        'shlwapi.lib',
       ]
 
     binary.sources += [
@@ -59,4 +58,3 @@ if SM.mysql_root:
       binary.compiler.defines += ['HAVE_STRUCT_TIMESPEC']
 
     SM.extensions += [builder.Add(binary)]
-

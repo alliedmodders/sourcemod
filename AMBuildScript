@@ -45,7 +45,7 @@ class SMConfig(object):
     self.extensions = []
     self.generated_headers = None
     self.mms_root = None
-    self.mysql_root = {}
+    self.mariadb_root = {}
     self.spcomp = None
     self.spcomp_bins = []
     self.smx_files = {}
@@ -141,28 +141,26 @@ class SMConfig(object):
 
     if builder.options.hasMySql:
       if 'x86' in self.target_archs:
-        if builder.options.mysql_path:
-          self.mysql_root['x86'] = builder.options.mysql_path
+        mariadb_path = getattr(builder.options, 'mariadb_path',
+                               getattr(builder.options, 'mysql_path', None))
+        if mariadb_path:
+          self.mariadb_root['x86'] = mariadb_path
         else:
-          for i in range(10):
-            self.mysql_root['x86'] = ResolveEnvPath('MYSQL57', 'mysql-5.' + str(i))
-            if self.mysql_root['x86']:
-              break
-        if not self.mysql_root['x86'] or not os.path.isdir(self.mysql_root['x86']):
-          raise Exception('Could not find a path to MySQL. Configure with --no-mysql to disable it.')
-        self.mysql_root['x86'] = Normalize(self.mysql_root['x86'])
+          self.mariadb_root['x86'] = ResolveEnvPath('MARIADB_CONNECTOR_C', 'mariadb-connector-c-3.4.8-x86')
+        if not self.mariadb_root['x86'] or not os.path.isdir(self.mariadb_root['x86']):
+          raise Exception('Could not find an x86 MariaDB Connector/C path. Configure with --no-mysql to disable it.')
+        self.mariadb_root['x86'] = Normalize(self.mariadb_root['x86'])
 
       if 'x86_64' in self.target_archs:
-        if builder.options.mysql64_path:
-          self.mysql_root['x86_64'] = builder.options.mysql64_path
+        mariadb64_path = getattr(builder.options, 'mariadb64_path',
+                                 getattr(builder.options, 'mysql64_path', None))
+        if mariadb64_path:
+          self.mariadb_root['x86_64'] = mariadb64_path
         else:
-          for i in range(10):
-            self.mysql_root['x86_64'] = ResolveEnvPath('MYSQL57_64', 'mysql-5.' + str(i) + '-x86_64')
-            if self.mysql_root['x86_64']:
-              break
-        if not self.mysql_root['x86_64'] or not os.path.isdir(self.mysql_root['x86_64']):
-          raise Exception('Could not find a path to 64-bit MySQL!')
-        self.mysql_root['x86_64'] = Normalize(self.mysql_root['x86_64'])
+          self.mariadb_root['x86_64'] = ResolveEnvPath('MARIADB_CONNECTOR_C_64', 'mariadb-connector-c-3.4.8-x86_64')
+        if not self.mariadb_root['x86_64'] or not os.path.isdir(self.mariadb_root['x86_64']):
+          raise Exception('Could not find an x86_64 MariaDB Connector/C path.')
+        self.mariadb_root['x86_64'] = Normalize(self.mariadb_root['x86_64'])
 
   def configure(self):
     builder.AddConfigureFile('pushbuild.txt')
