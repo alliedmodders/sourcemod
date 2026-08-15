@@ -30,8 +30,62 @@ param(
         'contagion',
         'doi',
         'pvkii'
-        )
+        ),
+    [switch]$NoMariaDB
 )
+
+$MARIADB_CONNECTOR_C_VERSION = if ($env:MARIADB_CONNECTOR_C_VERSION) { $env:MARIADB_CONNECTOR_C_VERSION } else { '3.4.9' }
+$MARIADB_CONNECTOR_C_RELEASE = if ($env:MARIADB_CONNECTOR_C_RELEASE) { $env:MARIADB_CONNECTOR_C_RELEASE } else { '3.4.9-sm.5' }
+$MARIADB_CONNECTOR_C_REPOSITORY = 'alliedmodders/mariadb-connector-c'
+
+Function Get-MariaDBConnectorC
+{
+    param(
+        [Parameter(Mandatory=$true)][string]$Architecture
+    )
+
+    $folder = "mariadb-connector-c-$MARIADB_CONNECTOR_C_VERSION-$Architecture"
+    if (Test-Path $folder -PathType Container)
+    {
+        return
+    }
+
+    $releaseUrl = "https://github.com/$MARIADB_CONNECTOR_C_REPOSITORY/releases/download/v$MARIADB_CONNECTOR_C_RELEASE"
+    $archiveName = "mariadb-connector-c-$MARIADB_CONNECTOR_C_VERSION-windows-$Architecture.zip"
+    $checksumPath = Join-Path (Resolve-Path '.') 'SHA256SUMS'
+    $archivePath = Join-Path (Resolve-Path '.') $archiveName
+
+    Invoke-WebRequest -Uri "$releaseUrl/SHA256SUMS" -OutFile $checksumPath
+    Invoke-WebRequest -Uri "$releaseUrl/$archiveName" -OutFile $archivePath
+
+    $expected = Get-Content -LiteralPath $checksumPath |
+        ForEach-Object {
+            $fields = $_ -split '\s+'
+            if ($fields.Length -ge 2 -and $fields[-1].TrimStart('*') -eq $archiveName)
+            {
+                $fields[0]
+            }
+        } |
+        Select-Object -First 1
+    if (-not $expected)
+    {
+        throw "No SHA256 checksum was published for $archiveName."
+    }
+
+    $actual = (Get-FileHash -Algorithm SHA256 -LiteralPath $archivePath).Hash
+    if ($actual -ne $expected)
+    {
+        throw "SHA256 verification failed for $archiveName."
+    }
+
+    Expand-Archive -LiteralPath $archivePath -DestinationPath .
+    if (-not (Test-Path $folder -PathType Container))
+    {
+        throw "MariaDB Connector/C archive did not contain $folder."
+    }
+
+    Remove-Item -LiteralPath $archivePath, $checksumPath
+}
 
 Function Get-Repository
 {
@@ -73,6 +127,12 @@ if (-not (Test-Path "sourcemod" -PathType Container))
 {
     Write-Error "Could not find a SourceMod repository; make sure you aren't running this script inside it."
     Exit 1
+}
+
+if (-not $NoMariaDB)
+{
+    Get-MariaDBConnectorC -Architecture 'x86'
+    Get-MariaDBConnectorC -Architecture 'x86_64'
 }
 
 Get-Repository -Name "mmsource-1.12" -Branch "1.12-dev" -Repo "https://github.com/alliedmodders/metamod-source.git"

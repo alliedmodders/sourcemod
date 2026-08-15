@@ -9,7 +9,8 @@ env:
   DUMP_SYMS_VERSION: '2.3.7'
   # Used for caching
   # TODO: Handle this better so that we don't have to update this in lockstep with checkout-deps
-  MYSQL_VERSION: '5.7'
+  MARIADB_CONNECTOR_C_VERSION: '3.4.9'
+  MARIADB_CONNECTOR_C_RELEASE: '3.4.9-sm.5'
   MMSOURCE_VERSION: '1.12'
 jobs:
   build:
@@ -96,13 +97,13 @@ jobs:
       - name: Cache dependencies
         uses: actions/cache@v6
         env:
-          cache-name: hl2sdk-mysql-mmsource
+          cache-name: hl2sdk-mariadb-connector-c-mmsource
         with:
           path: ${{ steps.path_helper.outputs.dependencies }}
-          key: ${{ runner.os }}-build-${{ env.cache-name }}-mysql${{ env.MYSQL_VERSION }}-mmsource${{ env.MMSOURCE_VERSION }}-${{ join(fromJson(steps.sdk_list.outputs.sdk_list), '') }}
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-mariadb${{ env.MARIADB_CONNECTOR_C_RELEASE }}-mmsource${{ env.MMSOURCE_VERSION }}-${{ join(fromJson(steps.sdk_list.outputs.sdk_list), '') }}
           restore-keys: |
-            ${{ runner.os }}-build-${{ env.cache-name }}-mysql${{ env.MYSQL_VERSION }}-mmsource${{ env.MMSOURCE_VERSION }}-
-            ${{ runner.os }}-build-${{ env.cache-name }}-mysql${{ env.MYSQL_VERSION }}-
+            ${{ runner.os }}-build-${{ env.cache-name }}-mariadb${{ env.MARIADB_CONNECTOR_C_RELEASE }}-mmsource${{ env.MMSOURCE_VERSION }}-
+            ${{ runner.os }}-build-${{ env.cache-name }}-mariadb${{ env.MARIADB_CONNECTOR_C_RELEASE }}-
       
       - name: Install dependencies
         shell: bash
@@ -150,8 +151,8 @@ jobs:
             --targets=${{ env.ARCH }} \
             '--mms-path=${{ steps.path_helper.outputs.dependencies }}/mmsource-${{ env.MMSOURCE_VERSION }}' \
             '--hl2sdk-root=${{ steps.path_helper.outputs.dependencies }}' \
-            '--mysql-path=${{ steps.path_helper.outputs.dependencies }}/mysql-${{ env.MYSQL_VERSION }}' \
-            '--mysql64-path=${{ steps.path_helper.outputs.dependencies }}/mysql-${{ env.MYSQL_VERSION }}-x86_64'
+            '--mariadb-path=${{ steps.path_helper.outputs.dependencies }}/mariadb-connector-c-${{ env.MARIADB_CONNECTOR_C_VERSION }}-x86' \
+            '--mariadb64-path=${{ steps.path_helper.outputs.dependencies }}/mariadb-connector-c-${{ env.MARIADB_CONNECTOR_C_VERSION }}-x86_64'
           ambuild
 
           mkdir -p package/addons/sourcemod/configs/geoip
