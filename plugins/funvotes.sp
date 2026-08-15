@@ -60,6 +60,11 @@ ConVar g_Cvar_Gravity;
 ConVar g_Cvar_Alltalk;
 ConVar g_Cvar_FF;
 
+// CSGO alltalk replacements
+bool g_bIsCSGO = false;
+ConVar g_Cvar_TalkEnemyDead;
+ConVar g_Cvar_TalkEnemyLiving;
+
 // ConVar g_Cvar_Show = null;
 
 enum voteType
@@ -118,6 +123,15 @@ public void OnPluginStart()
 	g_Cvar_Gravity = FindConVar("sv_gravity");
 	g_Cvar_Alltalk = FindConVar("sv_alltalk");
 	g_Cvar_FF = FindConVar("mp_friendlyfire");
+
+	char game[128];
+	GetGameFolderName(game, sizeof(game));
+	if (StrEqual(game, "csgo", false))
+	{
+		g_bIsCSGO = true;
+		g_Cvar_TalkEnemyDead = FindConVar("sv_talk_enemy_dead");
+		g_Cvar_TalkEnemyLiving = FindConVar("sv_talk_enemy_living");
+	}
 	
 	/*
 	g_Cvar_Show = FindConVar("sm_vote_show");
@@ -275,9 +289,21 @@ public int Handler_VoteCallback(Menu menu, MenuAction action, int param1, int pa
 				
 				case (alltalk):
 				{
-					PrintToChatAll("[SM] %t", "Cvar changed", "sv_alltalk", (g_Cvar_Alltalk.BoolValue ? "0" : "1"));
-					LogAction(-1, -1, "Changing alltalk to %s due to vote.", (g_Cvar_Alltalk.BoolValue ? "0" : "1"));
-					g_Cvar_Alltalk.BoolValue = !g_Cvar_Alltalk.BoolValue;
+					if (!g_bIsCSGO)
+					{
+						PrintToChatAll("[SM] %t", "Cvar changed", "sv_alltalk", (g_Cvar_Alltalk.BoolValue ? "0" : "1"));
+						LogAction(-1, -1, "Changing alltalk to %s due to vote.", (g_Cvar_Alltalk.BoolValue ? "0" : "1"));
+						g_Cvar_Alltalk.BoolValue = !g_Cvar_Alltalk.BoolValue;
+					}
+					else
+					{
+						bool value = !(g_Cvar_TalkEnemyLiving.BoolValue && g_Cvar_TalkEnemyDead.BoolValue);
+						PrintToChatAll("[SM] %t", "Cvar changed", "sv_talk_enemy_living", (!value ? "0" : "1"));
+						PrintToChatAll("[SM] %t", "Cvar changed", "sv_talk_enemy_dead", (!value ? "0" : "1"));
+						LogAction(-1, -1, "Changing alltalk to %s due to vote.", (!value ? "0" : "1"));
+						g_Cvar_TalkEnemyLiving.BoolValue = value;
+						g_Cvar_TalkEnemyDead.BoolValue = value;
+					}
 				}
 				
 				case (ff):
