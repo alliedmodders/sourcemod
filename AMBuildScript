@@ -146,7 +146,7 @@ class SMConfig(object):
         if mariadb_path:
           self.mariadb_root['x86'] = mariadb_path
         else:
-          self.mariadb_root['x86'] = ResolveEnvPath('MARIADB_CONNECTOR_C', 'mariadb-connector-c-3.4.8-x86')
+          self.mariadb_root['x86'] = ResolveEnvPath('MARIADB_CONNECTOR_C', 'mariadb-connector-c-x86')
         if not self.mariadb_root['x86'] or not os.path.isdir(self.mariadb_root['x86']):
           raise Exception('Could not find an x86 MariaDB Connector/C path. Configure with --no-mysql to disable it.')
         self.mariadb_root['x86'] = Normalize(self.mariadb_root['x86'])
@@ -157,7 +157,7 @@ class SMConfig(object):
         if mariadb64_path:
           self.mariadb_root['x86_64'] = mariadb64_path
         else:
-          self.mariadb_root['x86_64'] = ResolveEnvPath('MARIADB_CONNECTOR_C_64', 'mariadb-connector-c-3.4.8-x86_64')
+          self.mariadb_root['x86_64'] = ResolveEnvPath('MARIADB_CONNECTOR_C_64', 'mariadb-connector-c-x86_64')
         if not self.mariadb_root['x86_64'] or not os.path.isdir(self.mariadb_root['x86_64']):
           raise Exception('Could not find an x86_64 MariaDB Connector/C path.')
         self.mariadb_root['x86_64'] = Normalize(self.mariadb_root['x86_64'])
