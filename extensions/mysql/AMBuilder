@@ -17,12 +17,21 @@ if SM.mariadb_root:
     if binary.compiler.target.platform == 'linux' or binary.compiler.target.platform == 'mac':
       binary.compiler.postlink += [
         os.path.join(SM.mariadb_root[arch], 'lib', 'libmariadbclient.a'),
+      ]
+    if binary.compiler.target.platform == 'linux':
+      binary.compiler.postlink += [
+        '-Wl,-Bstatic',
+        '-lssl',
+        '-lcrypto',
+        '-Wl,-Bdynamic',
         '-lz',
         '-lpthread',
         '-lm',
+        '-lrt',
+        '-ldl',
       ]
-    if binary.compiler.target.platform == 'linux':
-      binary.compiler.postlink += ['-lrt', '-ldl', '-lssl', '-lcrypto']
+    elif binary.compiler.target.platform == 'mac':
+      binary.compiler.postlink += ['-lz', '-lpthread', '-lm']
     elif binary.compiler.target.platform == 'windows':
       binary.compiler.defines += ['WIN32_LEAN_AND_MEAN']
       if builder.options.debug == '1':
