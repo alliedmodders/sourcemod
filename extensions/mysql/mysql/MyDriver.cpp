@@ -107,6 +107,13 @@ MYSQL *Connect(const DatabaseInfo *info, char *error, size_t maxlength)
 	mysql_options(mysql, MYSQL_OPT_READ_TIMEOUT, (const char *)&timeout);
 	mysql_options(mysql, MYSQL_OPT_WRITE_TIMEOUT, (const char *)&timeout);
 
+	/* MariaDB Connector/C 3.3.10 and newer enable server certificate
+	 * verification by default, which requires TLS. Disabling it keeps
+	 * legacy behavior of allowing unencrypted connections.
+	 */
+	bool verify_server_cert = false;
+	mysql_options(mysql, MYSQL_OPT_SSL_VERIFY_SERVER_CERT, (const char *)&verify_server_cert);
+
 	/* Have MySQL automatically reconnect if it times out or loses connection.
 	 * This will prevent "MySQL server has gone away" errors after a while.
 	 */
