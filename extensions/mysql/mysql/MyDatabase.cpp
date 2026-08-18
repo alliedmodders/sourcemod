@@ -157,8 +157,6 @@ const char *MyDatabase::GetError(int *errCode)
 
 bool MyDatabase::QuoteString(const char *str, char buffer[], size_t maxlength, size_t *newSize)
 {
-	std::lock_guard<std::recursive_mutex> lock(m_FullLock);
-
 	unsigned long size = static_cast<unsigned long>(strlen(str));
 	unsigned long needed = size * 2 + 1;
 
