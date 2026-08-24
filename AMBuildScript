@@ -438,11 +438,19 @@ class SMConfig(object):
       self.libamtl[cxx.target.arch] = libamtl.binary
 
   def BinaryOutputName(self, binary, binary_type):
+    target = binary.compiler.target
     if binary_type == 'program':
-      return binary.compiler.vendor.nameForExecutable(binary.name_)
-    if binary_type == 'library':
-      return binary.compiler.vendor.nameForSharedLibrary(binary.name_)
-    raise Exception('Unsupported binary type: {}'.format(binary_type))
+      name_fn = binary.compiler.vendor.nameForExecutable
+    elif binary_type == 'library':
+      name_fn = binary.compiler.vendor.nameForSharedLibrary
+    else:
+      raise Exception('Unsupported binary type: {}'.format(binary_type))
+
+    try:
+      return name_fn(binary.name_, target)
+    except TypeError:
+      # Older AMBuild versions did not require the target argument.
+      return name_fn(binary.name_)
 
   def AddVersioning(self, binary, binary_type):
     if binary.compiler.target.platform == 'windows':
