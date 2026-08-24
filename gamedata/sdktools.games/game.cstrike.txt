@@ -36,66 +36,66 @@
 			}
 			"GiveNamedItem"
 			{
-				"windows"	"408"
-				"windows64"	"408"
-				"linux"		"409"
-				"linux64"	"409"
+				"windows"	"409"
+				"windows64"	"409"
+				"linux"		"410"
+				"linux64"	"410"
 			}
 			"RemovePlayerItem"
 			{
-				"windows"	"276"
-				"windows64"	"276"
-				"linux"		"277"
-				"linux64"	"277"
+				"windows"	"277"
+				"windows64"	"277"
+				"linux"		"278"
+				"linux64"	"278"
 			}
 			"Weapon_GetSlot"
 			{
-				"windows"	"274"
-				"windows64"	"274"
-				"linux"		"275"
-				"linux64"	"275"
+				"windows"	"275"
+				"windows64"	"275"
+				"linux"		"276"
+				"linux64"	"276"
 			}
 			"Ignite"
 			{
-				"windows"	"215"
-				"windows64"	"215"
-				"linux"		"216"
-				"linux64"	"216"
+				"windows"	"216"
+				"windows64"	"216"
+				"linux"		"217"
+				"linux64"	"217"
 			}
 			"Extinguish"
 			{
-				"windows"	"219"
-				"windows64"	"219"
-				"linux"		"220"
-				"linux64"	"220"
+				"windows"	"220"
+				"windows64"	"220"
+				"linux"		"221"
+				"linux64"	"221"
 			}
 			"Teleport"
 			{
-				"windows"	"110"
-				"windows64"	"110"
-				"linux"		"111"
-				"linux64"	"111"
+				"windows"	"111"
+				"windows64"	"111"
+				"linux"		"112"
+				"linux64"	"112"
 			}
 			"CommitSuicide"
 			{
-				"windows"	"447"
-				"windows64"	"447"
-				"linux"		"447"
-				"linux64"	"447"
+				"windows"	"448"
+				"windows64"	"448"
+				"linux"		"448"
+				"linux64"	"448"
 			}
 			"GetVelocity"
 			{
-				"windows"	"143"
-				"windows64"	"143"
-				"linux"		"144"
-				"linux64"	"144"
+				"windows"	"144"
+				"windows64"	"144"
+				"linux"		"145"
+				"linux64"	"145"
 			}
 			"EyeAngles"
 			{
-				"windows"	"134"
-				"windows64"	"134"
-				"linux"		"135"
-				"linux64"	"135"
+				"windows"	"135"
+				"windows64"	"135"
+				"linux"		"136"
+				"linux64"	"136"
 			}
 			"AcceptInput"
 			{
@@ -113,10 +113,10 @@
 			}
 			"WeaponEquip"
 			{
-				"windows"	"267"
-				"windows64"	"267"
-				"linux"		"268"
-				"linux64"	"268"
+				"windows"	"268"
+				"windows64"	"268"
+				"linux"		"269"
+				"linux64"	"269"
 			}
 			"Activate"
 			{
@@ -127,24 +127,24 @@
 			}
 			"PlayerRunCmd"
 			{
-				"windows"	"426"
-				"windows64"	"426"
-				"linux"		"427"
-				"linux64"	"427"
+				"windows"	"427"
+				"windows64"	"427"
+				"linux"		"428"
+				"linux64"	"428"
 			}
 			"GiveAmmo"
 			{
-				"windows"	"258"
-				"windows64"	"258"
-				"linux"		"259"
-				"linux64"	"259"
+				"windows"	"259"
+				"windows64"	"259"
+				"linux"		"260"
+				"linux64"	"260"
 			}
 			"GetAttachment"
 			{
-				"windows"	"211"
-				"windows64"	"211"
-				"linux"		"212"
-				"linux64"	"212"
+				"windows"	"212"
+				"windows64"	"212"
+				"linux"		"213"
+				"linux64"	"213"
 			}
 		}
 
