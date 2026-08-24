@@ -364,7 +364,9 @@ void VoteMenuHandler::StartVoting()
 
 	m_bStarted = true;
 
-	m_pHandler->OnMenuVoteStart(m_pCurMenu);
+	IBaseMenu *menu = m_pCurMenu;
+	AutoHandleRooter ahr(menu->GetHandle());
+	m_pHandler->OnMenuVoteStart(menu);
 
 	if (!m_bStarted)
 	{
