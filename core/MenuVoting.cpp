@@ -41,6 +41,7 @@
 #include <const.h>
 #include <ITranslator.h>
 #include "logic_bridge.h"
+#include "AutoHandleRooter.h"
 
 float g_next_vote = 0.0f;
 
@@ -363,7 +364,14 @@ void VoteMenuHandler::StartVoting()
 
 	m_bStarted = true;
 
-	m_pHandler->OnMenuVoteStart(m_pCurMenu);
+	IBaseMenu *menu = m_pCurMenu;
+	AutoHandleRooter ahr(menu->GetHandle());
+	m_pHandler->OnMenuVoteStart(menu);
+
+	if (!m_bStarted)
+	{
+		return;
+	}
 
 	m_displayTimer = g_Timers.CreateTimer(this, 1.0, NULL, TIMER_FLAG_REPEAT|TIMER_FLAG_NO_MAPCHANGE);
 
@@ -426,6 +434,7 @@ void VoteMenuHandler::EndVoting()
 		IBaseMenu *menu = m_pCurMenu;
 		IMenuHandler *handler = m_pHandler;
 		InternalReset();
+		AutoHandleRooter ahr(menu ? menu->GetHandle() : BAD_HANDLE);
 		handler->OnMenuVoteCancel(menu, VoteCancel_Generic);
 		handler->OnMenuEnd(menu, MenuEnd_VotingCancelled);
 		return;
@@ -455,6 +464,7 @@ void VoteMenuHandler::EndVoting()
 		IBaseMenu *menu = m_pCurMenu;
 		IMenuHandler *handler = m_pHandler;
 		InternalReset();
+		AutoHandleRooter ahr(menu ? menu->GetHandle() : BAD_HANDLE);
 		handler->OnMenuVoteCancel(menu, VoteCancel_NoVotes);
 		handler->OnMenuEnd(menu, MenuEnd_VotingCancelled);
 		return;
@@ -486,6 +496,7 @@ void VoteMenuHandler::EndVoting()
 	InternalReset();
 
 	/* Send vote info */
+	AutoHandleRooter ahr(menu ? menu->GetHandle() : BAD_HANDLE);
 	handler->OnMenuVoteResults(menu, &vote);
 	handler->OnMenuEnd(menu, MenuEnd_VotingDone);
 }

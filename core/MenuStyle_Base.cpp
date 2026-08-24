@@ -97,6 +97,9 @@ void BaseMenuStyle::_CancelClientMenu(int client, MenuCancelReason reason, bool 
 		RemoveClientFromWatch(client);
 	}
 
+	Handle_t hndl = menu ? menu->GetHandle() : BAD_HANDLE;
+	AutoHandleRooter ahr(hndl);
+
 	/* Fire callbacks */
 	mh->OnMenuCancel(menu, client, reason);
 	
@@ -575,6 +578,8 @@ bool BaseMenuStyle::RedoClientMenu(int client, ItemOrder order)
 #endif
 	CBaseMenuPlayer *player = GetMenuPlayer(client);
 	menu_states_t &states = player->states;
+
+	AutoHandleRooter ahr(states.menu ? states.menu->GetHandle() : BAD_HANDLE);
 
 	player->bAutoIgnore = true;
 	IMenuPanel *display = g_Menus.RenderMenu(client, states, order);

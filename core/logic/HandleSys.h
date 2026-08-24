@@ -243,27 +243,4 @@ private:
 
 extern HandleSystem g_HandleSys;
 
-struct AutoHandleRooter
-{
-public:
-	AutoHandleRooter(Handle_t hndl)
-	{
-		if (hndl != BAD_HANDLE)
-			this->hndl = g_HandleSys.FastCloneHandle(hndl);
-		else
-			this->hndl = BAD_HANDLE;
-	}
-
-	~AutoHandleRooter()
-	{
-		if (hndl != BAD_HANDLE)
-		{
-			HandleSecurity sec(g_pCoreIdent, g_pCoreIdent);
-			g_HandleSys.FreeHandle(hndl, &sec);
-		}
-	}
-private:
-	Handle_t hndl;
-};
-
 #endif //_INCLUDE_SOURCEMOD_HANDLESYSTEM_H_
