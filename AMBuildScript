@@ -437,17 +437,24 @@ class SMConfig(object):
       libamtl = builder.Build('public/amtl/amtl/AMBuilder', extra_vars)
       self.libamtl[cxx.target.arch] = libamtl.binary
 
-  def AddVersioning(self, binary):
+  def BinaryOutputName(self, binary, binary_type):
+    if binary_type == 'program':
+      return binary.compiler.vendor.nameForExecutable(binary.name_)
+    if binary_type == 'library':
+      return binary.compiler.vendor.nameForSharedLibrary(binary.name_)
+    raise Exception('Unsupported binary type: {}'.format(binary_type))
+
+  def AddVersioning(self, binary, binary_type):
     if binary.compiler.target.platform == 'windows':
       binary.sources += ['version.rc']
       binary.compiler.rcdefines += [
-        'BINARY_NAME="{0}"'.format(binary.outputFile),
+        'BINARY_NAME="{0}"'.format(self.BinaryOutputName(binary, binary_type)),
         'RC_COMPILE',
       ]
       if self.use_auto_versioning():
         binary.compiler.rcdefines += ['SM_GENERATED_BUILD']
     elif binary.compiler.target.platform == 'mac':
-      if binary.type == 'library':
+      if binary_type == 'library':
         binary.compiler.postlink += [
           '-compatibility_version', '1.0.0',
           '-current_version', self.productVersion
@@ -459,7 +466,7 @@ class SMConfig(object):
     
   def LibraryBuilder(self, compiler, name):
     binary = compiler.Library(name)
-    self.AddVersioning(binary)
+    self.AddVersioning(binary, 'library')
     if binary.compiler.like('msvc'):
       binary.compiler.linkflags += ['/SUBSYSTEM:WINDOWS']
     self.AddCxxCompat(binary)
@@ -474,7 +481,7 @@ class SMConfig(object):
 
   def ProgramBuilder(self, compiler, name):
     binary = compiler.Program(name)
-    self.AddVersioning(binary)
+    self.AddVersioning(binary, 'program')
     if '-static-libgcc' in binary.compiler.linkflags:
       binary.compiler.linkflags.remove('-static-libgcc')
     if self.enable_asan:
@@ -564,14 +571,14 @@ class SMConfig(object):
     binary = project.Configure(compiler, name,
                                '{0} - {1} {2}'.format(self.tag, sdk['name'], compiler.target.arch))
     self.AddCxxCompat(binary)
-    self.AddVersioning(binary)
+    self.AddVersioning(binary, 'library')
     return self.ConfigureForHL2(context, binary, sdk)
 
   def HL2ExtConfig(self, project, context, compiler, name, sdk):
     binary = project.Configure(compiler, name,
                                '{0} - {1} {2}'.format(self.tag, sdk['name'], compiler.target.arch))
     self.AddCxxCompat(binary)
-    self.AddVersioning(binary)
+    self.AddVersioning(binary, 'library')
     self.ConfigureForHL2(context, binary, sdk)
     self.ConfigureForExtension(context, binary.compiler)
     return binary
