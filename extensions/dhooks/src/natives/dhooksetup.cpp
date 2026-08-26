@@ -88,7 +88,7 @@ cell_t DHookSetup_SetFromConf(SourcePawn::IPluginContext* context, const cell_t*
 	context->LocalToString(params[4], &key);
 
 	// Only change offset if HookSetup is a virtual hook
-	auto virtual_setup = dynamic_cast<handle::DynamicHook*>(setup);
+	auto virtual_setup = setup->IsVirtualHook() ? static_cast<handle::DynamicHook*>(setup) : nullptr;
 	if (virtual_setup) {
 		int offset = 0;
 		if (source == sp::SDKConf_Virtual && conf->GetOffset(key, &offset)) {
@@ -99,7 +99,7 @@ cell_t DHookSetup_SetFromConf(SourcePawn::IPluginContext* context, const cell_t*
 	}
 
 	// Only change address if HookSetup is an address hook
-	auto detour_setup = dynamic_cast<handle::DynamicDetour*>(setup);
+	auto detour_setup = setup->IsVirtualHook() ? nullptr : static_cast<handle::DynamicDetour*>(setup);
 	if (detour_setup) {
 		void* addr = nullptr;
 		if (source == sp::SDKConf_Signature && conf->GetMemSig(key, &addr)) {

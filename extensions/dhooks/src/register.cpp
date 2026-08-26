@@ -68,6 +68,24 @@ std::optional<AsmRegCode> Translate_DHookRegister(sp::DHookRegister reg) {
 #else
 		return KHook::Asm::edi;
 #endif
+#ifdef DHOOKS_X86_64
+		case sp::DHookRegister_R8:
+		return KHook::Asm::r8;
+		case sp::DHookRegister_R9:
+		return KHook::Asm::r9;
+		case sp::DHookRegister_R10:
+		return KHook::Asm::r10;
+		case sp::DHookRegister_R11:
+		return KHook::Asm::r11;
+		case sp::DHookRegister_R12:
+		return KHook::Asm::r12;
+		case sp::DHookRegister_R13:
+		return KHook::Asm::r13;
+		case sp::DHookRegister_R14:
+		return KHook::Asm::r14;
+		case sp::DHookRegister_R15:
+		return KHook::Asm::r15;
+#endif
     }
 	return {};
 }
@@ -90,6 +108,24 @@ std::optional<AsmFloatReg> Translate_DHookRegister_Float(sp::DHookRegister reg) 
 			return KHook::Asm::xmm6;
 		case sp::DHookRegister_XMM7:
 			return KHook::Asm::xmm7;
+#ifdef DHOOKS_X86_64
+		case sp::DHookRegister_XMM8:
+			return KHook::Asm::xmm8;
+		case sp::DHookRegister_XMM9:
+			return KHook::Asm::xmm9;
+		case sp::DHookRegister_XMM10:
+			return KHook::Asm::xmm10;
+		case sp::DHookRegister_XMM11:
+			return KHook::Asm::xmm11;
+		case sp::DHookRegister_XMM12:
+			return KHook::Asm::xmm12;
+		case sp::DHookRegister_XMM13:
+			return KHook::Asm::xmm13;
+		case sp::DHookRegister_XMM14:
+			return KHook::Asm::xmm14;
+		case sp::DHookRegister_XMM15:
+			return KHook::Asm::xmm15;
+#endif
 	}
 	return {};
 }

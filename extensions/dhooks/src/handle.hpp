@@ -61,6 +61,8 @@ public:
 	virtual ~HookSetup() = default;
 	static SourceMod::HandleType_t HANDLE_TYPE;
 
+	virtual bool IsVirtualHook() const { return false; }
+
 	bool IsImmutable() const { return _immutable; }
 	void SetImmutable() { _immutable = true; }
 
@@ -93,6 +95,8 @@ public:
 	static SourceMod::HandleType_t HANDLE_TYPE;
 
 	virtual ~DynamicHook();
+
+	bool IsVirtualHook() const override { return true; }
 
 	void SetOffset(int offset) {
 		if (offset < 0) {

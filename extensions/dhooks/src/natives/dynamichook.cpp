@@ -10,13 +10,17 @@ inline handle::DynamicHook* Get(SourcePawn::IPluginContext* context, const cell_
 	security.pOwner = globals::myself->GetIdentity();
 	security.pIdentity = globals::myself->GetIdentity();
 	SourceMod::Handle_t hndl = static_cast<SourceMod::Handle_t>(param);
-	handle::DynamicHook* obj = nullptr;
+	handle::HookSetup* obj = nullptr;
 	SourceMod::HandleError chnderr = globals::handlesys->ReadHandle(hndl, handle::DynamicHook::HANDLE_TYPE, &security, (void **)&obj);
 	if (chnderr != SourceMod::HandleError_None) {
 		context->ThrowNativeError("Invalid DynamicHook Handle %x (error %i: %s)", hndl, chnderr, globals::HandleErrorToString(chnderr));
 		return nullptr;
 	}
-	return obj;
+	if (!obj->IsVirtualHook()) {
+		context->ThrowNativeError("Hook not setup for a virtual hook.");
+		return nullptr;
+	}
+	return static_cast<handle::DynamicHook*>(obj);
 }
 
 cell_t DynamicHook_DynamicHook(SourcePawn::IPluginContext* context, const cell_t* params) {
