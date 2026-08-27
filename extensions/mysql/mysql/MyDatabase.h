@@ -33,6 +33,7 @@
 #define _INCLUDE_SM_MYSQL_DATABASE_H_
 
 #include <am-refcounting-threadsafe.h>
+#include <atomic>
 #include <mutex>
 #include "MyDriver.h"
 
@@ -69,8 +70,13 @@ public: //IDatabase
 public:
 	const DatabaseInfo &GetInfo();
 private:
+	void RefreshEscapeContext();
+private:
 	MYSQL *m_mysql;
 	std::recursive_mutex m_FullLock;
+
+	std::atomic<bool> m_bCanEscapeLocally{false};
+	bool m_bNoBackslashEscapes = false;
 
 	/* ---------- */
 	DatabaseInfo m_Info;
