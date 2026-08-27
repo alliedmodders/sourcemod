@@ -86,6 +86,93 @@ DBType GetOurType(enum_field_types type)
 	return DBType_Unknown;
 }
 
+// Reimplements mysql_cset_escape_slashes() for charsets where no byte of an mb
+// sequence can be below 0x80 which makes escaping independent of the connection.
+static size_t EscapeStringBackslashes(char *to, const char *from, size_t length)
+{
+	char *start = to;
+
+	for (const char *end = from + length; from < end; from++)
+	{
+		char esc = '\0';
+
+		switch (*from)
+		{
+			case 0:
+				esc = '0';
+				break;
+			case '\n':
+				esc = 'n';
+				break;
+			case '\r':
+				esc = 'r';
+				break;
+			case '\\':
+			case '\'':
+			case '"':
+				esc = *from;
+				break;
+			case '\032':
+				esc = 'Z';
+				break;
+		}
+
+		if (esc)
+		{
+			*to++ = '\\';
+			*to++ = esc;
+		}
+		else
+		{
+			*to++ = *from;
+		}
+	}
+
+	*to = '\0';
+
+	return (size_t)(to - start);
+}
+
+static bool IsByteWiseEscapable(const MY_CHARSET_INFO &cs)
+{
+	if (cs.mbmaxlen <= 1)
+	{
+		return true;
+	}
+
+	// big5, gbk, sjis, etc. can end a sequence in 0x5c; UTF-8 can't.
+	return cs.csname != NULL
+		&& (strcmp(cs.csname, "utf8") == 0
+			|| strcmp(cs.csname, "utf8mb3") == 0
+			|| strcmp(cs.csname, "utf8mb4") == 0);
+}
+
+// Caches whether QuoteString() can escape without the connection. Must be called
+// with m_FullLock held.
+void MyDatabase::RefreshEscapeContext()
+{
+	if (m_bNoBackslashEscapes)
+	{
+		return;
+	}
+
+	// Escaping a lone backslash reveals whether the server has NO_BACKSLASH_ESCAPES
+	// without reading server_status out of the connection struct. Check it, because
+	// sql_mode can change while a query is in flight, and mishandling here could
+	// allow for injection.
+	char probe[3];
+	if (mysql_real_escape_string(m_mysql, probe, "\\", 1) != 2)
+	{
+		m_bNoBackslashEscapes = true;
+		m_bCanEscapeLocally = false;
+		return;
+	}
+
+	MY_CHARSET_INFO cs;
+	mysql_get_character_set_info(m_mysql, &cs);
+	m_bCanEscapeLocally = IsByteWiseEscapable(cs);
+}
+
 MyDatabase::MyDatabase(MYSQL *mysql, const DatabaseInfo *info, bool persistent)
 : m_mysql(mysql), m_bPersistent(persistent)
 {
@@ -101,6 +188,9 @@ MyDatabase::MyDatabase(MYSQL *mysql, const DatabaseInfo *info, bool persistent)
 	m_Info.driver = NULL;
 	m_Info.maxTimeout = info->maxTimeout;
 	m_Info.port = info->port;
+
+	// Nothing else can reach the connection yet, so no lock is needed here.
+	RefreshEscapeContext();
 
 	// DBI, for historical reasons, guarantees an initial refcount of 1.
 	AddRef();
@@ -157,8 +247,6 @@ const char *MyDatabase::GetError(int *errCode)
 
 bool MyDatabase::QuoteString(const char *str, char buffer[], size_t maxlength, size_t *newSize)
 {
-	std::lock_guard<std::recursive_mutex> lock(m_FullLock);
-
 	unsigned long size = static_cast<unsigned long>(strlen(str));
 	unsigned long needed = size * 2 + 1;
 
@@ -171,7 +259,24 @@ bool MyDatabase::QuoteString(const char *str, char buffer[], size_t maxlength, s
 		return false;
 	}
 
-	needed = mysql_real_escape_string(m_mysql, buffer, str, size);
+	// Refresh only while the connection is idle; blocking would stall the game
+	// thread for as long as a threaded query takes to come back.
+	if (m_FullLock.try_lock())
+	{
+		RefreshEscapeContext();
+		m_FullLock.unlock();
+	}
+
+	if (m_bCanEscapeLocally)
+	{
+		needed = static_cast<unsigned long>(EscapeStringBackslashes(buffer, str, size));
+	}
+	else
+	{
+		std::lock_guard<std::recursive_mutex> lock(m_FullLock);
+		needed = mysql_real_escape_string(m_mysql, buffer, str, size);
+	}
+
 	if (newSize)
 	{
 		*newSize = (size_t)needed;
@@ -313,6 +418,10 @@ bool MyDatabase::SetCharacterSet(const char *characterset)
 	bool res;
 	LockForFullAtomicOperation();
 	res = mysql_set_character_set(m_mysql, characterset) == 0 ? true : false;
+	if (res)
+	{
+		RefreshEscapeContext();
+	}
 	UnlockFromFullAtomicOperation();
 	return res;
 }
