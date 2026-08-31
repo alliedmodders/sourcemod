@@ -438,7 +438,7 @@ class SMConfig(object):
         return lambda builder, name: self.StaticLibrary(builder, cxx, name)
       extra_vars = {'Configure': get_configure_fn(cxx)}
       libamtl = builder.Build('public/amtl/amtl/AMBuilder', extra_vars)
-      self.libamtl[cxx.target.arch] = libamtl.binary
+      self.libamtl[cxx.target] = libamtl.binary
 
   def BinaryOutputName(self, binary, binary_type):
     target = binary.compiler.target

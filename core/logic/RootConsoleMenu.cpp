@@ -236,7 +236,7 @@ void RootConsoleMenu::OnRootConsoleCommand(const char *cmdname, const ICommandAr
 	{
 		ConsolePrint(" SourceMod Version Information:");
 		ConsolePrint("    SourceMod Version: %s", SOURCEMOD_VERSION);
-		if (g_pPawnEnv->IsJitEnabled())
+		if (g_pPawnEnv->IsJitAllowed())
 			ConsolePrint("    SourcePawn Engine: %s (build %s)", g_pPawnEnv->GetEngineName(), g_pPawnEnv->GetVersionString());
 		else
 			ConsolePrint("    SourcePawn Engine: %s (build %s NO JIT)", g_pPawnEnv->GetEngineName(), g_pPawnEnv->GetVersionString());

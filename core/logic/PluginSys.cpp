@@ -486,10 +486,9 @@ bool CPlugin::TryCompile()
 	char fullpath[PLATFORM_MAX_PATH];
 	g_pSM->BuildPath(Path_SM, fullpath, sizeof(fullpath), "plugins/%s", m_filename);
 
-	char loadmsg[255];
-	m_pRuntime.reset(g_pPawnEnv->LoadBinaryFromFile(fullpath, loadmsg, sizeof(loadmsg)));
+	m_pRuntime.reset(g_pPawnEnv->LoadBinaryFromFile(fullpath));
 	if (!m_pRuntime) {
-		EvictWithError(Plugin_BadLoad, "Unable to load plugin (%s)", loadmsg);
+		EvictWithError(Plugin_BadLoad, "Unable to load plugin (%s)", m_filename);
 		return false;
 	}
 
