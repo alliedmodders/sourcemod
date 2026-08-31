@@ -37,6 +37,7 @@
 #include "CellArray.h"
 #include <IHandleSys.h>
 #include <amtl/am-raii.h>
+#include <sourcepawn/vm/base-runtime.h>
 
 /***********************************
  *   About the double array hack   *
@@ -269,21 +270,21 @@ static cell_t sm_SortStrings_Legacy(IPluginContext *pContext, const cell_t *para
 	return 1;
 }
 
-static IPluginContext* sSortContext = nullptr;
+static sp::BaseRuntime* sSortRuntime = nullptr;
 
 int sort_strings_asc(const void *blk1, const void *blk2)
 {
 	cell_t str_addr1 = *(cell_t *)blk1;
 	cell_t str_addr2 = *(cell_t *)blk2;
 
-	ARRAY_PTR h1, h2;
-	if (sSortContext->LocalToArrayPtr(str_addr1, &h1) != SP_ERROR_NONE ||
-		sSortContext->LocalToArrayPtr(str_addr2, &h2) != SP_ERROR_NONE)
+	sp::ARRAY_PTR h1, h2;
+	if (sSortRuntime->LocalToArrayPtr(str_addr1, &h1) != SP_ERROR_NONE ||
+		sSortRuntime->LocalToArrayPtr(str_addr2, &h2) != SP_ERROR_NONE)
 	{
 		return 0;
 	}
-	char *str1 = (char *)sSortContext->GetArrayData(h1);
-	char *str2 = (char *)sSortContext->GetArrayData(h2);
+	char *str1 = (char *)sSortRuntime->GetArrayData(h1);
+	char *str2 = (char *)sSortRuntime->GetArrayData(h2);
 
 	if (!str1 || !str2)
 		return 0;
@@ -296,14 +297,14 @@ int sort_strings_desc(const void *blk1, const void *blk2)
 	cell_t str_addr1 = *(cell_t *)blk1;
 	cell_t str_addr2 = *(cell_t *)blk2;
 
-	ARRAY_PTR h1, h2;
-	if (sSortContext->LocalToArrayPtr(str_addr1, &h1) != SP_ERROR_NONE ||
-		sSortContext->LocalToArrayPtr(str_addr2, &h2) != SP_ERROR_NONE)
+	sp::ARRAY_PTR h1, h2;
+	if (sSortRuntime->LocalToArrayPtr(str_addr1, &h1) != SP_ERROR_NONE ||
+		sSortRuntime->LocalToArrayPtr(str_addr2, &h2) != SP_ERROR_NONE)
 	{
 		return 0;
 	}
-	char *str1 = (char *)sSortContext->GetArrayData(h1);
-	char *str2 = (char *)sSortContext->GetArrayData(h2);
+	char *str1 = (char *)sSortRuntime->GetArrayData(h1);
+	char *str2 = (char *)sSortRuntime->GetArrayData(h2);
 
 	if (!str1 || !str2)
 		return 0;
@@ -313,19 +314,19 @@ int sort_strings_desc(const void *blk1, const void *blk2)
 
 static cell_t sm_SortStrings(IPluginContext *pContext, const cell_t *params)
 {
-	auto rt = pContext->GetRuntime();
+	auto rt = pContext->GetBaseRuntime();
 	if (!rt->UsesDirectArrays())
 		return sm_SortStrings_Legacy(pContext, params);
 
-	ARRAY_PTR handle;
-	if (pContext->LocalToArrayPtr(params[1], &handle) != SP_ERROR_NONE)
+	sp::ARRAY_PTR handle;
+	if (rt->LocalToArrayPtr(params[1], &handle) != SP_ERROR_NONE)
 		return 0;
 
-	cell_t *array = (cell_t *)pContext->GetArrayData(handle);
+	cell_t *array = (cell_t *)rt->GetArrayData(handle);
 	cell_t array_size = params[2];
 	cell_t type = params[3];
 
-	ke::SaveAndSet<IPluginContext*> set_context(&sSortContext, pContext);
+	ke::SaveAndSet<sp::BaseRuntime*> set_runtime(&sSortRuntime, rt);
 
 	if (type == Sort_Ascending)
 	{
@@ -498,15 +499,15 @@ static int sort2d_amx_custom(const void *elem1, const void *elem2)
 
 static cell_t sm_SortCustom2D(IPluginContext *pContext, const cell_t *params)
 {
-	auto rt = pContext->GetRuntime();
+	auto rt = pContext->GetBaseRuntime();
 	if (!rt->UsesDirectArrays())
 		return sm_SortCustom2D_Legacy(pContext, params);
 
-	ARRAY_PTR handle;
-	if (pContext->LocalToArrayPtr(params[1], &handle) != SP_ERROR_NONE)
+	sp::ARRAY_PTR handle;
+	if (rt->LocalToArrayPtr(params[1], &handle) != SP_ERROR_NONE)
 		return 0;
 
-	cell_t *array = (cell_t *)pContext->GetArrayData(handle);
+	cell_t *array = (cell_t *)rt->GetArrayData(handle);
 	cell_t array_size = params[2];
 	IPluginFunction *pFunction;
 

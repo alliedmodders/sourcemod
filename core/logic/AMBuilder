@@ -8,6 +8,8 @@ for cxx in builder.targets:
     os.path.join(builder.sourcePath, 'core', 'logic'),
     os.path.join(builder.sourcePath, 'public'),
     os.path.join(builder.sourcePath, 'sourcepawn', 'include'),
+    os.path.join(builder.sourcePath, 'sourcepawn'),
+    os.path.join(builder.sourcePath, 'sourcepawn', 'vm'),
     os.path.join(builder.sourcePath, 'public', 'amtl', 'amtl'),
     os.path.join(builder.sourcePath, 'public', 'amtl'),
     os.path.join(SM.mms_root, 'core', 'sourcehook')
@@ -24,11 +26,12 @@ for cxx in builder.targets:
     binary.compiler.cflags += ['-Wno-deprecated-declarations']
     binary.compiler.postlink += ['-framework', 'CoreServices', '-lm']
 
-  arch = binary.compiler.target.arch
+  target = binary.compiler.target
   binary.compiler.linkflags += [
-    SP.static_libsp[arch],
-    SP.libamtl[arch],
-    SP.zlib[arch],
+    SP.static_libsp[target],
+    SP.libamtl[target],
+    SP.zlib[target],
+    SP.mimalloc[target],
   ]
 
   if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':
