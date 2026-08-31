@@ -271,7 +271,7 @@ class SMConfig(object):
       '-fvisibility=hidden',
     ]
 
-    cxx.cxxflags += ['-std=c++17']
+    cxx.cxxflags += ['-std=c++20']
 
     cxx.cxxflags += [
       '-fno-threadsafe-statics',
@@ -326,6 +326,9 @@ class SMConfig(object):
     if cxx.version >= 'clang-21.0':
         cxx.cflags += ['-Wno-uninitialized-const-pointer']
 
+    if cxx.version >= 'clang-16.0' or cxx.version >= 'apple-clang-15.0':
+        cxx.cxxflags += ['-Wno-deprecated-anon-enum-enum-conversion']
+
     if have_gcc:
       cxx.cflags += ['-Wno-maybe-uninitialized']
 
@@ -356,7 +359,7 @@ class SMConfig(object):
       '/EHsc',
       '/GR-',
       '/TP',
-      '/std:c++17',
+      '/std:c++20',
     ]
     cxx.linkflags += [
       'kernel32.lib',
