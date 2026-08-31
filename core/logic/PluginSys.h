@@ -125,13 +125,13 @@ public:
 	}
 
 	struct ExtVar {
-		char *name;
-		char *file;
+		std::string name;
+		std::string file;
 		bool autoload;
 		bool required;
 	};
 
-	typedef ke::Function<bool(const sp_pubvar_t *, const ExtVar& ext)> ExtVarCallback;
+	typedef ke::Function<bool(const char *pubvar_name, const ExtVar& ext)> ExtVarCallback;
 	bool ForEachExtVar(const ExtVarCallback& callback);
 
 	void ForEachLibrary(ke::Function<void(const char *)> callback);
