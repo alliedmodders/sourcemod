@@ -138,9 +138,10 @@ namespace SourceMod
 	 * V7 - added OnDependenciesDropped() to IExtensionInterface.
 	 * V8 - added OnCoreMapEnd() to IExtensionInterface.
 	 * V9 - SourcePawn API revamp
+	 * V10 - SourcePawn 2 API.
 	 */
-	#define SMINTERFACE_EXTENSIONAPI_VERSION_MIN	9
-	#define SMINTERFACE_EXTENSIONAPI_VERSION		9
+	#define SMINTERFACE_EXTENSIONAPI_VERSION_MIN	10
+	#define SMINTERFACE_EXTENSIONAPI_VERSION		10
 
 	/**
 	 * @brief The interface an extension must expose.
