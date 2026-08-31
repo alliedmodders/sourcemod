@@ -680,6 +680,9 @@ for spcomp in SP.spcomp:
         SM.spcomp = spcomp
     SM.spcomp_bins.append(spcomp)
 
+for spcomp in SP.oldspcomp:
+    SM.spcomp_bins.append(spcomp)
+
 # If we have a universal binary, ignore all other spcomps.
 if SM.spcomp.target.arch == 'universal':
     SM.spcomp_bins = [SM.spcomp]
