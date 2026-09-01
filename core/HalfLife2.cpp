@@ -1376,15 +1376,15 @@ public:
 
 	void Purge()
 	{
-		if (!IsExternallyAllocated())
+		if (!this->IsExternallyAllocated())
 		{
-			if (m_pMemory)
+			if (this->m_pMemory)
 			{
 				UTLMEMORY_TRACK_FREE();
-				g_pMemAlloc->Free((void*)m_pMemory);
-				m_pMemory = 0;
+				g_pMemAlloc->Free((void*)this->m_pMemory);
+				this->m_pMemory = 0;
 			}
-			m_nAllocationCount = 0;
+			this->m_nAllocationCount = 0;
 		}
 		BaseClass::Purge();
 	}

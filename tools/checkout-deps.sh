@@ -137,7 +137,7 @@ origin=
 checkout
 
 if [ -z ${sdks+x} ]; then
-  sdks=( csgo hl2dm nucleardawn l4d2 dods l4d css tf2 insurgency sdk2013 doi )
+  sdks=( csgo hl2dm nucleardawn l4d2 dods l4d css tf2 insurgency sdk2013 doi mcv )
 
   if [ $ismac -eq 0 ]; then
     # Add these SDKs for Windows or Linux
