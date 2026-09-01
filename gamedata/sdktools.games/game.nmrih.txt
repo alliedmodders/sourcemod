@@ -10,19 +10,10 @@
  */
 
 "Games"
-{
-	/* General GameRules */
-	"#default"
+{	
+	/* No More Room in Hell */
+	"nmrih"
 	{
-		"Offsets"
-		{
-			/* Offset into CreateGameRulesObject */
-			"g_pGameRules"
-			{
-				"windows"	"5"
-			}
-		}
-		
 		"Signatures"
 		{
 			/* This signature sometimes has multiple matches, but this
@@ -36,153 +27,181 @@
 			"CreateGameRulesObject"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x6A\x01"
+				"windows"	"\x55\x8B\xEC\x8B\x0D\x2A\x2A\x2A\x2A\x85\xC9\x74\x2A\x8B\x01\x6A\x01\xFF\x50\x34"
+				"windows64"	"\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x30\x48\x8B\xF9\x48\x8B\x0D\xD4\xA3\x75\x00"
 			}
+
 			"g_pGameRules"
 			{
 				"library"	"server"
 				"linux"		"@g_pGameRules"
-				"mac"		"@g_pGameRules"
+				"linux64"	"@g_pGameRules"
 			}
-		}
-	}
 
-	/* CBaseEntityOutput::FireOutput */
-	"#default"
-	{
-		"Signatures"
-		{
+			/* CBaseEntityOutput::FireOutput */
 			"FireOutput"
 			{
 				"library"	"server"
 				"windows"	"\x55\x8B\xEC\x81\xEC\x24\x01\x00\x00\x53\x8B\x5D\x20\x8B\xC1\x56\x57"
+				"windows64"	"\x4C\x8B\xDC\x55\x41\x55\x41\x56\x41\x57\x49\x8D\xAB\xD8\xFE\xFF\xFF"
 				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
-				"mac"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
-		}
-	}
 
-	/* CBaseAnimating::LookupAttachment */
-	"#default"
-	{
-		"Signatures"
-		{
+			/* CBaseAnimating::LookupAttachment */
 			"LookupAttachment"
 			{
 				"library"	"server"
-				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x80\xBE\x35\x03\x00\x00\x00\x75\x2A\x83\xBE\xA8\x04\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x86\xA8\x04\x00\x00\x85\xC0\x74\x2A\x83\x38\x00\x74\x2A\xFF\x75\x08\x50\xE8\x2A\x2A\x2A\x2A\x83\xC4\x08\x40"
+				"windows"	"\x55\x8B\xEC\x56\x8B\xF1\x80\xBE\x31\x03\x00\x00\x00\x75\x2A\x83\xBE\x9C\x04\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x85\xC0\x74\x2A\x8B\xCE\xE8\x2A\x2A\x2A\x2A\x8B\x86\x9C\x04\x00\x00\x85\xC0\x74\x2A\x83\x38\x00\x74\x2A\xFF\x75\x08\x50\xE8\x2A\x2A\x2A\x2A\x83\xC4\x08\x40"
+				"windows64"	"\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x80\xB9\xF5\x03\x00\x00\x00\x48\x8B\xFA\x48\x8B\xD9\x75\x2A\x48\x83\xB9\xC8\x05\x00\x00\x00\x75\x2A\xE8\x2A\x2A\x2A\x2A\x48\x85\xC0\x74\x2A\x48\x8B\xCB\xE8\x2A\x2A\x2A\x2A\x48\x8B\x8B\xC8\x05\x00\x00\x48\x85\xC9\x74\x2A\x48\x83\x39\x00\x74\x2A\x48\x8B\xD7\xE8"
 				"linux"		"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
-				"mac"		"@_ZN14CBaseAnimating16LookupAttachmentEPKc"
 			}
 		}
-	}
-	
-	/* No More Room in Hell */
-	"nmrih"
-	{
+
 		"Offsets"
 		{
+			/* Offset into CreateGameRulesObject */
+			"g_pGameRules"
+			{
+				"windows"	"5"
+				"windows64"	"16"
+			}
+
 			"SetOwnerEntity"
 			{
 				"windows"	"18"
+				"windows64"	"18"
 				"linux"		"19"
-				"mac"		"19"
+				"linux64"	"19"
 			}
+
 			"GiveNamedItem"
 			{
-				"windows"	"420"
-				"linux"		"421"
-				"mac"		"421"
+				"windows"	"424"
+				"windows64"	"424"
+				"linux"		"425"
+				"linux64"	"425"
 			}
+
 			"RemovePlayerItem"
 			{
-				"windows"	"278"
-				"linux"		"279"
-				"mac"		"279"
+				"windows"	"281"
+				"windows64"	"281"
+				"linux"		"282"
+				"linux64"	"282"
 			}
+
 			"Weapon_GetSlot"
 			{
-				"windows"	"276"
-				"linux"		"277"
-				"mac"		"277"
+				"windows"	"279"
+				"windows64"	"279"
+				"linux"		"280"
+				"linux64"	"280"
 			}
+
 			"Ignite"
 			{
-				"windows"	"214"
-				"linux"		"215"
-				"mac"		"215"
+				// TODO: This appears to be off by one and calling IgniteLifetime.
+				// But subtracting one to call Ignite instead results in a crash..
+				"windows"	"218"
+				"windows64"	"218"
+				"linux"		"219"
+				"linux64"	"219"
 			}
+
 			"Extinguish"
 			{
-				"windows"	"218"
-				"linux"		"219"
-				"mac"		"219"
+				"windows"	"221"
+				"windows64"	"221"
+				"linux"		"222"
+				"linux64"	"222"
 			}
+
 			"Teleport"
 			{
-				"windows"	"112"
-				"linux"		"113"
-				"mac"		"113"
+				"windows"	"116"
+				"windows64"	"116"
+				"linux"		"117"
+				"linux64"	"117"
 			}
+
 			"CommitSuicide"
 			{
-				"windows"	"459"
-				"linux"		"459"
-				"mac"		"459"
+				"windows"	"462"
+				"windows64"	"462"
+				"linux"		"463"
+				"linux64"	"463"
 			}
+
 			"GetVelocity"
 			{
 				"windows"	"144"
+				"windows64"	"144"
 				"linux"		"145"
-				"mac"		"145"
+				"linux64"	"145"
 			}
+
 			"EyeAngles"
 			{
 				"windows"	"135"
+				"windows64"	"135"
 				"linux"		"136"
-				"mac"		"136"
+				"linux64"	"136"
 			}
+
 			"AcceptInput"
 			{
 				"windows"	"38"
+				"windows64"	"38"
 				"linux"		"39"
-				"mac"		"39"
+				"linux64"	"39"
 			}
+
 			"SetEntityModel"
 			{
 				"windows"	"26"
+				"windows64"	"26"
 				"linux"		"27"
-				"mac"		"27"
+				"linux64"	"27"
 			}
+
 			"WeaponEquip"
 			{
-				"windows"	"269"
-				"linux"		"270"
-				"mac"		"270"
+				"windows"	"272"
+				"windows64"	"272"
+				"linux"		"273"
+				"linux64"	"273"
 			}
+
 			"Activate"
 			{
 				"windows"	"35"
+				"windows64"	"35"
 				"linux"		"36"
-				"mac"		"36"
+				"linux64"	"36"
 			}
+
 			"PlayerRunCmd"
 			{
-				"windows"	"438"
-				"linux"		"439"
-				"mac"		"439"
+				"windows"	"442"
+				"windows64"	"442"
+				"linux"		"443"
+				"linux64"	"443"
 			}
+
 			"GiveAmmo"
 			{
-				"windows"	"260"
-				"linux"		"260"
-				"mac"		"260"
+				"windows"	"263"
+				"windows64"	"263"
+				"linux"		"263"
+				"linux64"	"263"
 			}
+
 			"GetAttachment"
 			{
-				"windows"	"210"
-				"linux"		"211"
-				"mac"		"211"
+				"windows"	"213"
+				"windows64"	"213"
+				"linux"		"214"
+				"linux64"	"214"
 			}
 		}
 		
