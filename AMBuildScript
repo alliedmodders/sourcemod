@@ -329,6 +329,10 @@ class SMConfig(object):
     if cxx.version >= 'clang-16.0' or cxx.version >= 'apple-clang-15.0':
         cxx.cxxflags += ['-Wno-deprecated-anon-enum-enum-conversion']
 
+    # C++20 deprecates volatile ++/-- and compound assignment (P1152R4).
+    if cxx.version >= 'clang-12.0' or cxx.version >= 'apple-clang-13.0':
+        cxx.cxxflags += ['-Wno-deprecated-volatile']
+
     if have_gcc:
       cxx.cflags += ['-Wno-maybe-uninitialized']
 

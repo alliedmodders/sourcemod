@@ -24,6 +24,7 @@ for cxx in builder.targets:
     os.path.join(SM.mms_root, 'core', 'sourcehook'),
     os.path.join(builder.sourcePath, 'extensions', 'dhooks'),
     os.path.join(builder.sourcePath, 'public', 'jit'),
+    os.path.join(builder.sourcePath, 'sourcepawn'),
     os.path.join(builder.sourcePath, 'sourcepawn', 'include'),
     os.path.join(builder.sourcePath, 'sourcepawn', 'vm'),
     os.path.join(builder.sourcePath, 'extensions', 'dhooks', 'DynamicHooks'),

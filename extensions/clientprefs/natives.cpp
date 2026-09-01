@@ -29,6 +29,8 @@
  * Version: $Id$
  */
 
+#include <inttypes.h>
+
 #include "extension.h"
 #include "cookie.h"
 #include "menus.h"
