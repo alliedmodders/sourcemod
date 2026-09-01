@@ -226,7 +226,11 @@ stock void PrintToConsoleAll(const char[] format, any ...)
 		if (IsClientInGame(i))
 		{
 			SetGlobalTransTarget(i);
+#if defined __sourcepawn2
+			FormatEx(buffer, sizeof(buffer), format, ...);
+#else
 			VFormat(buffer, sizeof(buffer), format, 2);
+#endif
 			PrintToConsole(i, "%s", buffer);
 		}
 	}

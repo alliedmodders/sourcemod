@@ -230,6 +230,9 @@ static cell_t sm_format(IPluginContext *pCtx, const cell_t *params)
 static char g_vformatbuf[2048];
 static cell_t sm_vformat(IPluginContext *pContext, const cell_t *params)
 {
+	if (pContext->GetBaseRuntime()->AsV2() != nullptr)
+		return pContext->ThrowNativeError("VFormat is not supported in SourcePawn 2 plugins");
+
 	int vargPos = static_cast<int>(params[4]);
 
 	/* Get the parent parameter array */
