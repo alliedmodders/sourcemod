@@ -119,11 +119,15 @@ native void SortCustom1D(int[] array, int array_size, SortFunc1D sortfunc, Handl
  *                      0 if first is equal to second
  *                      1 if first should go after second
  */
+#if defined __sourcepawn2
+typedef SortFunc2D = function int (int[] elem1, int[] elem2, const int[][] array, Handle hndl);
+#else
 typeset SortFunc2D
 {
 	function int (int[] elem1, int[] elem2, const int[][] array, Handle hndl);
 	function int (char[] elem1, char[] elem2, const char[][] array, Handle hndl);
 };
+#endif
 
 /**
  * Sorts a custom 2D array.  You must pass in a comparison function.
@@ -134,6 +138,31 @@ typeset SortFunc2D
  * @param hndl          Optional Handle to pass through the comparison calls.
  */
 native void SortCustom2D(any[][] array, int array_size, SortFunc2D sortfunc, Handle hndl=INVALID_HANDLE);
+
+#if defined __sourcepawn2
+/**
+ * Sort comparison function for 2D char-array elements (sub-strings).
+ *
+ * @param elem1         First string to compare.
+ * @param elem2         Second string to compare.
+ * @param array         Array that is being sorted (order is undefined).
+ * @param hndl          Handle optionally passed in while sorting.
+ * @return              -1 if first should go before second
+ *                      0 if first is equal to second
+ *                      1 if first should go after second
+ */
+typedef SortFunc2DStrings = function int (char[] elem1, char[] elem2, const char[][] array, Handle hndl);
+
+/**
+ * Sorts a custom 2D char-array.  You must pass in a comparison function.
+ *
+ * @param array         Array to sort.
+ * @param array_size    Size of the major array to sort (first index, outermost).
+ * @param sortfunc      Sort comparison function to use.
+ * @param hndl          Optional Handle to pass through the comparison calls.
+ */
+native void SortCustom2DStrings(char[][] array, int array_size, SortFunc2DStrings sortfunc, Handle hndl=INVALID_HANDLE);
+#endif
 
 /**
  * Sort an ADT Array. Specify the type as Integer, Float, or String.

@@ -163,7 +163,7 @@ void Test_Sort2D() {
         "sidluke",
         "sniperbeamer"
     };
-    SortCustom2D(view_as<any>(strarray), sizeof(strarray), Custom2DSortString);
+    SortCustom2DStrings(strarray, sizeof(strarray), Custom2DSortString);
     AssertStrArrayEq("SortCustom2D char[][] Ascending", strarray, expected_ascending, sizeof(strarray));
 }
 

@@ -696,6 +696,7 @@ REGISTER_NATIVES(sortNatives)
 	{"SortStrings",             sm_SortStrings},
 	{"SortCustom1D",            sm_SortCustom1D},
 	{"SortCustom2D",            sm_SortCustom2D},
+	{"SortCustom2DStrings",     sm_SortCustom2D},
 	{"SortADTArray",            sm_SortADTArray},
 	{"SortADTArrayCustom",      sm_SortADTArrayCustom},
 	
