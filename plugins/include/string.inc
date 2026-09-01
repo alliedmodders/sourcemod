@@ -165,6 +165,7 @@ native int Format(char[] buffer, int maxlength, const char[] format, any ...);
  */
 native int FormatEx(char[] buffer, int maxlength, const char[] format, any ...);
 
+#if !defined __sourcepawn2
 /**
  * Formats a string according to the SourceMod format rules (see documentation).
  * @note This is the same as Format(), except it grabs parameters from a 
@@ -181,6 +182,7 @@ native int FormatEx(char[] buffer, int maxlength, const char[] format, any ...);
  * @error               Invalid argument index.
  */
 native int VFormat(char[] buffer, int maxlength, const char[] format, int varpos);
+#endif
 
 /**
  * Converts a string to an integer.

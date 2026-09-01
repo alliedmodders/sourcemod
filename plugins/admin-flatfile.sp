@@ -79,7 +79,7 @@ void ParseError(const char[] format, any ...)
 		g_LoggedFileName = true;
 	}
 	
-	VFormat(buffer, sizeof(buffer), format, 2);
+	FormatEx(buffer, sizeof(buffer), format, ...);
 	
 	LogError(" (line %d) %s", g_CurrentLine, buffer);
 	
