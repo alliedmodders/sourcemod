@@ -36,8 +36,8 @@
 			{
 				"windows"	"181"
 				"windows64"	"181"
-				"linux"		"182"
-				"linux64"	"182"
+				"linux"		"183"
+				"linux64"	"183"
 			}
 			"OnTakeDamage"
 			{
