@@ -165,7 +165,12 @@ native int Format(char[] buffer, int maxlength, const char[] format, any ...);
  */
 native int FormatEx(char[] buffer, int maxlength, const char[] format, any ...);
 
-#if !defined __sourcepawn2
+#if defined __sourcepawn2
+
+// #pragma deprecated VFormat got replaced by spreading the variable arguments in SourcePawn 2: Format(buffer, sizeof(buffer), format, ...)
+#define VFormat(%1,%2,%3,%4) Format(%1, %2, %3, ...)
+
+#else
 /**
  * Formats a string according to the SourceMod format rules (see documentation).
  * @note This is the same as Format(), except it grabs parameters from a 
