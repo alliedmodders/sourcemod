@@ -39,12 +39,15 @@
 
 #include "smsdk_ext.h"
 
+#define SM_CA_BUNDLE_PATH "configs/ca-bundle.crt"
+extern char CABundlePath[PLATFORM_MAX_PATH];
+
 
 /**
  * @brief Sample implementation of the SDK Extension.
  * Note: Uncomment one of the pre-defined virtual functions in order to use it.
  */
-class CurlExt : public SDKExtension
+class CurlExt : public SDKExtension, IFeatureProvider
 {
 public:
 	/**
@@ -116,9 +119,9 @@ public:
 	 */
 	//virtual bool SDK_OnMetamodPauseChange(bool paused, char *error, size_t maxlength);
 #endif
-};
 
-size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...);
-size_t UTIL_FormatArgs(char *buffer, size_t maxlength, const char *fmt, va_list ap);
+public: // IFeatureProvider
+	virtual FeatureStatus GetFeatureStatus(FeatureType type, const char *name);
+};
 
 #endif // _INCLUDE_SOURCEMOD_EXTENSION_PROPER_H_
