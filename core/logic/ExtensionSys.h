@@ -42,6 +42,7 @@
 #include "NativeOwner.h"
 #include "ShareSys.h"
 #include <bridge/include/IExtensionBridge.h>
+#include <am-function.h>
 
 class CPlayer;
 
@@ -175,6 +176,7 @@ public:
 	void TryAutoload();
 	void AddLibrary(IExtension *pSource, const char *library);
 	bool LibraryExists(const char *library);
+	void ForEachLibrary(ke::Function<void(const char *)> callback);
 	void CallOnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax);
 	void CallOnCoreMapEnd();
 	void AddRawDependency(IExtension *ext, IdentityToken_t *other, void *iface);
