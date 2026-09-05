@@ -113,8 +113,6 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	sharesys->AddNatives(myself, g_TFNatives);
 	sharesys->RegisterLibrary(myself, "tf2");
 
-	plsys->AddPluginsListener(this);
-
 	playerhelpers->RegisterCommandTargetProcessor(this);
 
 	g_critForward = forwards->CreateForward("TF2_CalcIsAttackCritical", ET_Hook, 4, NULL, Param_Cell, Param_Cell, Param_String, Param_CellByRef);
@@ -132,6 +130,9 @@ bool TF2Tools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	m_TeleportDetourEnabled = false;
 
 	g_HolidayManager.OnSDKLoad(late);
+
+	plsys->AddPluginsListener(&m_ConstsManager);
+	plsys->AddPluginsListener(this);
 
 	return true;
 }
@@ -195,6 +196,7 @@ void TF2Tools::SDK_OnUnload()
 	playerhelpers->UnregisterCommandTargetProcessor(this);
 
 	plsys->RemovePluginsListener(this);
+	plsys->RemovePluginsListener(&m_ConstsManager);
 
 	forwards->ReleaseForward(g_critForward);
 	forwards->ReleaseForward(g_addCondForward);
