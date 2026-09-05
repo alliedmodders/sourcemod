@@ -274,6 +274,11 @@ typeset SDKHookCB
 	// WeaponSwitchPost
 	function void (int client, int weapon);
 
+	// WeaponCanUsePost
+	// WeaponSwitchPost
+	// WeaponCanSwitchToPost
+	function void (int client, int weapon, bool success);
+
 	// GetMaxHealth (ep2v and later)
 	function Action (int entity, int &maxhealth);
 
@@ -332,7 +337,7 @@ typeset SDKHookCB
 	// Reload
 	function Action (int weapon);
 
-	// Reload post
+	// ReloadPost
 	function void (int weapon, bool bSuccessful);
 
 	// CanBeAutobalanced
