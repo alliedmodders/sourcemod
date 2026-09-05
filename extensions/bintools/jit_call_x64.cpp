@@ -891,8 +891,7 @@ inline void Write_CallFunction(JitWriter *jit, FuncAddrMethod method, CallWrappe
 	if (method == FuncAddr_Direct)
 	{
 		int64_t diff = (intptr_t)pWrapper->GetCalleeAddr() - ((intptr_t)jit->outbase + jit->get_outputpos() + 5);
-		int32_t upperBits = (diff >> 32);
-		if (upperBits == 0 || upperBits == -1) {
+		if (jit->outbase && diff == (int64_t)(int32_t)diff) {
 			//call <addr>
 			jitoffs_t call = X64_Call_Imm32(jit, 0);
 			X64_Write_Jump32_Abs(jit, call, pWrapper->GetCalleeAddr());
