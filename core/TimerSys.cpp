@@ -144,18 +144,18 @@ private:
  * that a drastic jump in time will continue acting normally.  Users 
  * may not expect this, but... I think it is the best solution.
  */
-inline double CalcNextThink(double last, float interval, bool useTickInterval = false)
-{
-    const float intervalAccuracy = useTickInterval ? gpGlobals->interval_per_tick : TIMER_MIN_ACCURACY;
-	if (g_fUniversalTime - last - interval <= intervalAccuracy)
+  inline double CalcNextThink(double last, float interval)
+  {
+	const double next = last + interval;
+	if (g_fUniversalTime - next <= TIMER_MIN_ACCURACY)
 	{
-		return last + interval;
+		return next;
 	}
 	else
 	{
 		return g_fUniversalTime + interval;
 	}
-}
+  }
 
 void ITimer::Initialize(ITimedEvent *pCallbacks, float fInterval, double fToExec, void *pData, int flags)
 {
