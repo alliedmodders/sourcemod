@@ -251,7 +251,7 @@ void TimerSystem::GameFrame(bool simulating)
 	}
 }
 
-void TimerSystem::ProcessRepeatTimers(double curtime, List<ITimer*>& timerList, bool isHighSpeed)
+void TimerSystem::ProcessRepeatTimers(double curtime, List<ITimer*>& timerList)
 {
     ITimer *pTimer;
 	TimerIter iter;
@@ -272,7 +272,7 @@ void TimerSystem::ProcessRepeatTimers(double curtime, List<ITimer*>& timerList, 
 				continue;
 			}
 			pTimer->m_InExec = false;
-			pTimer->m_ToExec = CalcNextThink(pTimer->m_ToExec, pTimer->m_Interval, isHighSpeed);
+			pTimer->m_ToExec = CalcNextThink(pTimer->m_ToExec, pTimer->m_Interval);
 		}
 		iter++;
 	}
@@ -288,29 +288,36 @@ void TimerSystem::RunFrame(bool timerThink)
 	for (iter=m_SingleTimers.begin(); iter!=m_SingleTimers.end(); )
 	{
 		pTimer = (*iter);
-		if (curtime >= pTimer->m_ToExec)
-		{
-			pTimer->m_InExec = true;
-			pTimer->m_Listener->OnTimer(pTimer, pTimer->m_pData);
-			pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
-			iter = m_SingleTimers.erase(iter);
-			m_FreeTimers.push(pTimer);
-		} 
-		else 
-		{
-			break;
-		}
+
+        // m_SingleTimers is sorted
+        if (curtime < pTimer->m_ToExec)
+        {
+            break;
+        }
+
+        if (timerThink || pTimer->m_Flags & TIMER_FLAG_TICK_PRECISE)
+        {
+            pTimer->m_InExec = true;
+            pTimer->m_Listener->OnTimer(pTimer, pTimer->m_pData);
+            pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
+            iter = m_SingleTimers.erase(iter);
+            m_FreeTimers.push(pTimer);
+        }
+        else
+        {
+            iter++;
+        }
 	}
 
     //// Repeating timers
     // Most repeating timers do not need to be updated every frame 
     if (timerThink)
     {
-        ProcessRepeatTimers(curtime, m_LowSpeedLoopTimers, false);
+        ProcessRepeatTimers(curtime, m_LowSpeedLoopTimers);
     }
 
     // High speed repeating timers will always update
-    ProcessRepeatTimers(curtime, m_HighSpeedLoopTimers, true);
+    ProcessRepeatTimers(curtime, m_HighSpeedLoopTimers);
 }
 
 ITimer *TimerSystem::CreateTimer(ITimedEvent *pCallbacks, float fInterval, void *pData, int flags)

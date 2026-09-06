@@ -83,7 +83,7 @@ public:
 	void RemoveMapChangeTimers();
 	void GameFrame(bool simulating);
 private:
-    void ProcessRepeatTimers(double curtime, List<ITimer*>& timerList, bool isHighSpeed);
+    void ProcessRepeatTimers(double curtime, List<ITimer*>& timerList);
 private:
     List<ITimer*> m_SingleTimers;
     List<ITimer*> m_LowSpeedLoopTimers;
