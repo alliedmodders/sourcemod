@@ -46,7 +46,7 @@ typedef List<ITimer *>::iterator TimerIter;
 class SourceMod::ITimer
 {
 public:
-	void Initialize(ITimedEvent *pCallbacks, float fInterval, float fToExec, void *pData, int flags);
+	void Initialize(ITimedEvent *pCallbacks, float fInterval, double fToExec, void *pData, int flags);
 	ITimedEvent *m_Listener;
 	void *m_pData;
 	float m_Interval;

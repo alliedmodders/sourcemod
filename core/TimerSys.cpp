@@ -157,7 +157,7 @@ inline double CalcNextThink(double last, float interval, bool useTickInterval = 
 	}
 }
 
-void ITimer::Initialize(ITimedEvent *pCallbacks, float fInterval, float fToExec, void *pData, int flags)
+void ITimer::Initialize(ITimedEvent *pCallbacks, float fInterval, double fToExec, void *pData, int flags)
 {
 	m_Listener = pCallbacks;
 	m_Interval = fInterval;
@@ -317,7 +317,7 @@ ITimer *TimerSystem::CreateTimer(ITimedEvent *pCallbacks, float fInterval, void 
 {
 	ITimer *pTimer;
 	TimerIter iter;
-	float to_exec = GetSimulatedTime() + fInterval;
+	const double to_exec = GetSimulatedTime() + fInterval;
 
 	if (m_FreeTimers.empty())
 	{
