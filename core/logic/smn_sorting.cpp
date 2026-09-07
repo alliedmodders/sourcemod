@@ -319,7 +319,7 @@ static cell_t sm_SortStrings(IPluginContext *pContext, const cell_t *params)
 		return sm_SortStrings_Legacy(pContext, params);
 
 	sp::ARRAY_PTR handle;
-	if (rt->LocalToArrayPtr(params[1], &handle) != SP_ERROR_NONE)
+	if (rt->ParamToArrayPtr(params[1], &handle) != SP_ERROR_NONE)
 		return 0;
 
 	cell_t *array = (cell_t *)rt->GetArrayData(handle);
@@ -504,7 +504,7 @@ static cell_t sm_SortCustom2D(IPluginContext *pContext, const cell_t *params)
 		return sm_SortCustom2D_Legacy(pContext, params);
 
 	sp::ARRAY_PTR handle;
-	if (rt->LocalToArrayPtr(params[1], &handle) != SP_ERROR_NONE)
+	if (rt->ParamToArrayPtr(params[1], &handle) != SP_ERROR_NONE)
 		return 0;
 
 	cell_t *array = (cell_t *)rt->GetArrayData(handle);
