@@ -247,11 +247,6 @@ void ShareSystem::RegisterLibrary(IExtension *myself, const char *name)
 	g_Extensions.AddLibrary(myself, name);
 }
 
-void ShareSystem::OverrideNatives(IExtension *myself, const sp_nativeinfo_t *natives)
-{
-	assert(false);
-}
-
 RefPtr<Native> ShareSystem::FindNative(const char *name)
 {
 	NativeCache::Result r = m_NtvCache.find(name);

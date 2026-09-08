@@ -68,9 +68,6 @@ public: //IExtension
 	const char *GetFilename();
 	const char *GetPath() const;
 	IdentityToken_t *GetIdentity();
-	ITERATOR *FindFirstDependency(IExtension **pOwner, SMInterface **pInterface);
-	bool FindNextDependency(ITERATOR *iter, IExtension **pOwner, SMInterface **pInterface);
-	void FreeDependencyIterator(ITERATOR *iter);
 	bool IsRunning(char *error, size_t maxlength);
 public:
 	void SetError(const char *error);

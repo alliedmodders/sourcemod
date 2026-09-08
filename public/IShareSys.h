@@ -233,14 +233,6 @@ namespace SourceMod
 		virtual void RegisterLibrary(IExtension *myself, const char *name) =0;
 
 		/**
-		 * @brief Deprecated. Does nothing.
-		 *
-		 * @param myself        Ignored.
-		 * @param natives       Ignored.
-		 */
-		virtual void OverrideNatives(IExtension *myself, const sp_nativeinfo_t *natives) =0;
-
-		/**
 		 * @brief Adds a capability provider. Feature providers are used by
 		 * plugins to determine if a feature exists at runtime. This is
 		 * distinctly different from checking for a native, because natives

@@ -98,7 +98,6 @@ public: //IShareSys
 	void DestroyIdentity(IdentityToken_t *identity);
 	void AddDependency(IExtension *myself, const char *filename, bool require, bool autoload);
 	void RegisterLibrary(IExtension *myself, const char *name);
-	void OverrideNatives(IExtension *myself, const sp_nativeinfo_t *natives);
 	void AddCapabilityProvider(IExtension *myself, IFeatureProvider *provider,
 		                       const char *name);
 	void DropCapabilityProvider(IExtension *myself, IFeatureProvider *provider,

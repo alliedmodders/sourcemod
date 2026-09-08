@@ -49,7 +49,6 @@ struct edict_t;
 namespace SourceMod
 {
 	class IExtensionInterface;
-	typedef void *		ITERATOR;		/**< Generic pointer for dependency iterators */
 
 	/** 
 	 * @brief Encapsulates an IExtensionInterface.
@@ -87,32 +86,6 @@ namespace SourceMod
 		virtual IdentityToken_t *GetIdentity() =0;
 
 		/**
-		 * @brief Deprecated, do not use.
-		 *
-		 * @param pOwner        Unused
-		 * @param pInterface    Unused
-		 * @return              nullptr
-		 */
-		virtual ITERATOR *FindFirstDependency(IExtension **pOwner, SMInterface **pInterface) =0;
-
-		/**
-		 * @brief Deprecated, do not use.
-		 *
-		 * @param iter          Unused
-		 * @param pOwner        Unused
-		 * @param pInterface    Unused
-		 * @return              false
-		 */
-		virtual bool FindNextDependency(ITERATOR *iter, IExtension **pOwner, SMInterface **pInterface) =0;
-
-		/**
-		 * @brief Deprecated, do not use.
-		 *
-		 * @param iter          Unused
-		 */
-		virtual void FreeDependencyIterator(ITERATOR *iter) =0;
-
-		/**
 		 * @brief Queries the extension to see its run state.
 		 *
 		 * @param error			Error buffer (may be NULL).
@@ -142,7 +115,7 @@ namespace SourceMod
 	 * V8 - added OnCoreMapEnd() to IExtensionInterface.
 	 * V9 - SourcePawn API revamp
 	 * V10 - SourcePawn 2 API.
-	 * V11 - removed UnloadExtension() from IExtensionManager.
+	 * V11 - removed deprecated unload, dependency, and native override APIs.
 	 */
 	#define SMINTERFACE_EXTENSIONAPI_VERSION_MIN	11
 	#define SMINTERFACE_EXTENSIONAPI_VERSION		11
@@ -193,28 +166,6 @@ namespace SourceMod
 		 * @param pause		True if pausing, false if unpausing.
 		 */
 		virtual void OnExtensionPauseChange(bool pause) =0;
-
-		/**
-		 * @brief Deprecated, never called.  Clean up in OnExtensionUnload()
-		 * or OnDependenciesDropped() instead.
-		 *
-		 * @param pInterface		Unused.
-		 * @return					false
-		 */
-		virtual bool QueryInterfaceDrop(SMInterface *pInterface)
-		{
-			return false;
-		}
-
-		/**
-		 * @brief Deprecated, never called.  Clean up in OnExtensionUnload()
-		 * or OnDependenciesDropped() instead.
-		 *
-		 * @param pInterface		Unused.
-		 */
-		virtual void NotifyInterfaceDrop(SMInterface *pInterface)
-		{
-		}
 
 		/**
 		 * @brief Return false to tell Core that your extension should be considered unusable.

@@ -374,22 +374,6 @@ bool CLocalExtension::IsLoaded()
 	return (m_pLib != NULL);
 }
 
-// note: dependency iteration deprecated since 1.10
-ITERATOR *CExtension::FindFirstDependency(IExtension **pOwner, SMInterface **pInterface)
-{
-	return nullptr;
-}
-
-bool CExtension::FindNextDependency(ITERATOR *iter, IExtension **pOwner, SMInterface **pInterface)
-{
-	return false;
-}
-
-void CExtension::FreeDependencyIterator(ITERATOR *iter)
-{
-
-}
-
 void CExtension::AddInterface(SMInterface *pInterface)
 {
 	m_Interfaces.push_back(pInterface);
@@ -979,10 +963,7 @@ void CExtensionManager::CallOnCoreMapStart(edict_t *pEdictList, int edictCount, 
 		{
 			continue;
 		}
-		if (pAPI->GetExtensionVersion() > 3)
-		{
-			pAPI->OnCoreMapStart(pEdictList, edictCount, clientMax);
-		}
+		pAPI->OnCoreMapStart(pEdictList, edictCount, clientMax);
 	}
 }
 
@@ -997,10 +978,7 @@ void CExtensionManager::CallOnCoreMapEnd()
 		{
 			continue;
 		}
-		if (pAPI->GetExtensionVersion() > 7)
-		{
-			pAPI->OnCoreMapEnd();
-		}
+		pAPI->OnCoreMapEnd();
 	}
 }
 

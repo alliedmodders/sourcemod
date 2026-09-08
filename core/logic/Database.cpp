@@ -691,8 +691,3 @@ std::string DBManager::GetDefaultDriverName()
 	ConfDbInfoList &list = m_Builder.GetConfigList();
 	return list.GetDefaultDriver();
 }
-
-void DBManager::AddDependency(IExtension *myself, IDBDriver *driver)
-{
-	/* Deprecated no-op, see IDBManager::AddDependency(). */
-}
