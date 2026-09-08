@@ -64,8 +64,6 @@ bool ClientPrefs::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	TQueryOp *op = new TQueryOp(Query_Connect, 0);
 	dbi->AddToThreadQueue(op, PrioQueue_High);
 
-	dbi->AddDependency(myself, Driver);
-
 	sharesys->AddNatives(myself, g_ClientPrefNatives);
 	sharesys->RegisterLibrary(myself, "clientprefs");
 	identity = sharesys->CreateIdentity(sharesys->CreateIdentType("ClientPrefs"), this);
@@ -160,22 +158,6 @@ void ClientPrefs::SDK_OnAllLoaded()
 	playerhelpers->AddClientListener(&g_CookieManager);
 }
 
-bool ClientPrefs::QueryInterfaceDrop(SMInterface *pInterface)
-{
-	if ((void *)pInterface == (void *)(Database->GetDriver()))
-	{
-		return false;
-	}
-
-	return true;
-}
-
-void ClientPrefs::NotifyInterfaceDrop(SMInterface *pInterface)
-{
-	if (Database && (void *)pInterface == (void *)(Database->GetDriver()))
-		Database = NULL;
-}
-
 void ClientPrefs::SDK_OnDependenciesDropped()
 {
 	// At this point, we're guaranteed that DBI has flushed the worker thread
@@ -234,7 +216,6 @@ void ClientPrefs::AttemptReconnection()
 	if (now < nextReconnectAttempt)
 		return;
 
-	IDBDriver *oldDriver = Driver;
 	char error[256];
 	if (!this->RefreshDatabaseInfo(error, sizeof(error)))
 	{
@@ -242,9 +223,6 @@ void ClientPrefs::AttemptReconnection()
 		nextReconnectAttempt = now + kReconnectRetryDelay;
 		return;
 	}
-
-	if (Driver != oldDriver)
-		dbi->AddDependency(myself, Driver);
 
 	g_pSM->LogMessage(myself, "Attempting to reconnect to database...");
 	databaseLoading = true;

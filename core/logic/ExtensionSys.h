@@ -74,8 +74,6 @@ public: //IExtension
 	bool IsRunning(char *error, size_t maxlength);
 public:
 	void SetError(const char *error);
-	void AddDependency(const IfaceInfo *pInfo);
-	void AddChildDependent(CExtension *pOther, SMInterface *iface);
 	void AddInterface(SMInterface *pInterface);
 	void AddPlugin(CPlugin *pPlugin);
 	void MarkAllLoaded();
@@ -85,7 +83,6 @@ public:
 	virtual bool Load(char *error, size_t maxlength);
 	virtual bool IsLoaded() =0;
 	virtual void Unload() =0;
-	virtual bool Reload(char *error, size_t maxlength) =0;
 	virtual bool IsSameFile(const char* file) =0;
 protected:
 	void Initialize(const char *filename, const char *path, bool bRequired = true);
@@ -99,11 +96,8 @@ protected:
 	String m_RealFile;
 	String m_Path;
 	String m_Error;
-	List<IfaceInfo> m_Deps;			/** Dependencies */
-	List<IfaceInfo> m_ChildDeps;	/** Children who might depend on us */
 	List<SMInterface *> m_Interfaces;
 	List<String> m_Libraries;
-	unsigned int unload_code;
 	bool m_bFullyLoaded;
 	bool m_bRequired;
 };
@@ -116,7 +110,6 @@ public:
 	bool Load(char *error, size_t maxlength);
 	bool IsLoaded();
 	void Unload();
-	bool Reload(char *error, size_t maxlength);
 	bool IsExternal();
 	bool IsSameFile(const char *file);
 private:
@@ -132,7 +125,6 @@ public:
 	bool Load(char *error, size_t maxlength);
 	bool IsLoaded();
 	void Unload();
-	bool Reload(char *error, size_t maxlength);
 	bool IsExternal();
 	bool IsSameFile(const char *file);
 };
@@ -167,7 +159,6 @@ public: //IRootConsoleCommand
 	void OnRootConsoleCommand(const char *cmdname, const ICommandArgs *command) override;
 public:
 	IExtension *LoadAutoExtension(const char *path, bool bErrorOnMissing=true);
-	void BindDependency(IExtension *pOwner, IfaceInfo *pInfo);
 	void AddInterface(IExtension *pOwner, SMInterface *pInterface);
 	void BindChildPlugin(IExtension *pParent, SMPlugin *pPlugin);
 	void MarkAllLoaded();
@@ -177,7 +168,6 @@ public:
 	bool LibraryExists(const char *library);
 	void CallOnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax);
 	void CallOnCoreMapEnd();
-	void AddRawDependency(IExtension *ext, IdentityToken_t *other, void *iface);
 	const CVector<IExtension *> *ListExtensions();
 	void FreeExtensionList(const CVector<IExtension *> *list);
 public:
@@ -188,8 +178,6 @@ public:
 		CExtension *p = (CExtension *)pExt;
 		return p;
 	}
-private:
-	CExtension *FindByOrder(unsigned int num);
 private:
 	List<CExtension *> m_Libs;
 };

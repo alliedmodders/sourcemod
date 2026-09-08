@@ -694,5 +694,5 @@ std::string DBManager::GetDefaultDriverName()
 
 void DBManager::AddDependency(IExtension *myself, IDBDriver *driver)
 {
-	g_Extensions.AddRawDependency(myself, driver->GetIdentity(), driver);
+	/* Deprecated no-op, see IDBManager::AddDependency(). */
 }

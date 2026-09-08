@@ -52,8 +52,6 @@ public: /* SDKExtension */
 	bool SDK_OnLoad(char *error, size_t maxlength, bool late);
 	void SDK_OnUnload();
 public: /* IExtension */
-	bool QueryInterfaceDrop(SMInterface *pInterface);
-	void NotifyInterfaceDrop(SMInterface *pInterface);
 	const char *GetExtensionVerString();
 	const char *GetExtensionDateString();
 public: /* IThread */

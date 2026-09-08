@@ -167,7 +167,6 @@ bool ShareSystem::RequestInterface(const char *iface_name,
 {
 	/* See if the interface exists */
 	SMInterface *iface;
-	IExtension *iface_owner = nullptr;
 	bool found = false;
 	for (auto iter = m_Interfaces.begin(); iter!=m_Interfaces.end(); iter++)
 	{
@@ -177,7 +176,6 @@ bool ShareSystem::RequestInterface(const char *iface_name,
 		{
 			if (iface->GetInterfaceVersion() == iface_vers || iface->IsVersionCompatible(iface_vers))
 			{
-				iface_owner = info.owner;
 				found = true;
 				break;
 			}
@@ -187,15 +185,6 @@ bool ShareSystem::RequestInterface(const char *iface_name,
 	if (!found)
 	{
 		return false;
-	}
-
-	/* Add a dependency node */
-	if (iface_owner)
-	{
-		IfaceInfo info;
-		info.iface = iface;
-		info.owner = iface_owner;
-		g_Extensions.BindDependency(myself, &info);
 	}
 
 	if (pIface)

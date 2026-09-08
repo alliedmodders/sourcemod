@@ -86,10 +86,6 @@ public:
 	 */
 	virtual void SDK_OnAllLoaded();
 
-	virtual bool QueryInterfaceDrop(SMInterface *pInterface);
-
-	virtual void NotifyInterfaceDrop(SMInterface *pInterface);
-
 	const char *GetExtensionVerString();
 	const char *GetExtensionDateString();
 

@@ -336,16 +336,6 @@ bool SDKHooks::QueryRunning(char* error, size_t maxlength)
 	return true;
 }
 
-bool SDKHooks::QueryInterfaceDrop(SMInterface* pInterface)
-{
-	if (pInterface == g_pBinTools)
-	{
-		return false;
-	}
-
-	return IExtensionInterface::QueryInterfaceDrop(pInterface);
-}
-
 #define KILL_HOOK_IF_ACTIVE(hook) \
 	if (hook != 0) \
 	{ \

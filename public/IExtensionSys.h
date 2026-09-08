@@ -38,7 +38,10 @@
 
 /**
  * @file IExtensionSys.h
- * @brief Defines the interface for loading/unloading/managing extensions.
+ * @brief Defines the interface for loading and managing extensions.
+ *
+ * Extensions are loaded for the lifetime of SourceMod; they are only ever
+ * unloaded when SourceMod itself shuts down.
  */
 
 struct edict_t;
@@ -172,7 +175,8 @@ namespace SourceMod
 			bool late) =0;
 
 		/**
-		 * @brief Called when the extension is about to be unloaded.
+		 * @brief Called when the extension is about to be unloaded, during
+		 * SourceMod shutdown.
 		 */
 		virtual void OnExtensionUnload() =0;
 
@@ -190,20 +194,11 @@ namespace SourceMod
 		virtual void OnExtensionPauseChange(bool pause) =0;
 
 		/**
-		 * @brief Asks the extension whether it's safe to remove an external 
-		 * interface it's using.  If it's not safe, return false, and the 
-		 * extension will be unloaded afterwards.
+		 * @brief Deprecated, never called.  Clean up in OnExtensionUnload()
+		 * or OnDependenciesDropped() instead.
 		 *
-		 * NOTE: It is important to also hook NotifyInterfaceDrop() in order to clean 
-		 * up resources.
-		 *
-		 * @param pInterface		Pointer to interface being dropped.  This 
-		 * 							pointer may be opaque, and it should not 
-		 *							be queried using SMInterface functions unless 
-		 *							it can be verified to match an existing 
-		 *							pointer of known type.
-		 * @return					True to continue, false to unload this 
-		 * 							extension afterwards.
+		 * @param pInterface		Unused.
+		 * @return					false
 		 */
 		virtual bool QueryInterfaceDrop(SMInterface *pInterface)
 		{
@@ -211,12 +206,10 @@ namespace SourceMod
 		}
 
 		/**
-		 * @brief Notifies the extension that an external interface it uses is being removed.
+		 * @brief Deprecated, never called.  Clean up in OnExtensionUnload()
+		 * or OnDependenciesDropped() instead.
 		 *
-		 * @param pInterface		Pointer to interface being dropped.  This
-		 * 							pointer may be opaque, and it should not 
-		 *							be queried using SMInterface functions unless 
-		 *							it can be verified to match an existing 
+		 * @param pInterface		Unused.
 		 */
 		virtual void NotifyInterfaceDrop(SMInterface *pInterface)
 		{
@@ -321,11 +314,11 @@ namespace SourceMod
 		}
 
 		/**
-		 * @brief Called once all dependencies have been unloaded. This is
-		 * called AFTER OnExtensionUnload(), but before the extension library
-		 * has been unloaded. It can be used as an alternate unload hook for
-		 * cases where having no dependent plugins would make shutdown much
-		 * simplier.
+		 * @brief Called once all dependencies have been dropped during
+		 * shutdown. This is called AFTER OnExtensionUnload(), but before the
+		 * extension library has been unloaded. It can be used as an alternate
+		 * unload hook for cases where having no dependent plugins would make
+		 * shutdown much simplier.
 		 */
 		virtual void OnDependenciesDropped()
 		{
@@ -431,11 +424,11 @@ namespace SourceMod
 			size_t maxlength) =0;
 
 		/**
-		 * @brief Attempts to unload an extension.  External extensions must 
-		 * call this before unloading.
+		 * @brief Deprecated, always fails.  An external extension must refuse
+		 * to be unloaded once it has loaded.
 		 *
-		 * @param pExt			IExtension pointer.
-		 * @return				True if successful, false otherwise.
+		 * @param pExt			Unused.
+		 * @return				false
 		 */
 		virtual bool UnloadExtension(IExtension *pExt) =0;
 	};
