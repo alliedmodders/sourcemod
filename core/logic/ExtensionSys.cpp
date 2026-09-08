@@ -678,12 +678,6 @@ void CExtensionManager::OnPluginDestroyed(IPlugin *plugin)
 	}
 }
 
-bool CExtensionManager::UnloadExtension(IExtension *_pExt)
-{
-	/* Deprecated, see Shutdown() for the only path that unloads extensions. */
-	return false;
-}
-
 void CExtensionManager::MarkAllLoaded()
 {
 	List<CExtension *>::iterator iter;

@@ -145,7 +145,6 @@ public: //IExtensionManager
 	IExtension *LoadExtension(const char *path, 
 		char *error,
 		size_t maxlength);
-	bool UnloadExtension(IExtension *pExt);
 	IExtension *FindExtensionByFile(const char *file);
 	IExtension *FindExtensionByName(const char *ext);
 	IExtension *LoadExternal(IExtensionInterface *pInterface,

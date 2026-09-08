@@ -52,7 +52,7 @@ namespace SourceMod
 	typedef void *		ITERATOR;		/**< Generic pointer for dependency iterators */
 
 	/** 
-	 * @brief Encapsulates an IExtensionInterface and its dependencies.
+	 * @brief Encapsulates an IExtensionInterface.
 	 */
 	class IExtension
 	{
@@ -142,9 +142,10 @@ namespace SourceMod
 	 * V8 - added OnCoreMapEnd() to IExtensionInterface.
 	 * V9 - SourcePawn API revamp
 	 * V10 - SourcePawn 2 API.
+	 * V11 - removed UnloadExtension() from IExtensionManager.
 	 */
-	#define SMINTERFACE_EXTENSIONAPI_VERSION_MIN	10
-	#define SMINTERFACE_EXTENSIONAPI_VERSION		10
+	#define SMINTERFACE_EXTENSIONAPI_VERSION_MIN	11
+	#define SMINTERFACE_EXTENSIONAPI_VERSION		11
 
 	/**
 	 * @brief The interface an extension must expose.
@@ -353,10 +354,10 @@ namespace SourceMod
 	#define SOURCEMOD_NOTICE_EXTENSIONS					"SM_ExtensionsAttachable"
 
 	#define SMINTERFACE_EXTENSIONMANAGER_NAME			"IExtensionManager"
-	#define SMINTERFACE_EXTENSIONMANAGER_VERSION		2
+	#define SMINTERFACE_EXTENSIONMANAGER_VERSION		3
 
 	/**
-	 * @brief Manages the loading/unloading of extensions.
+	 * @brief Manages the loading of extensions.
 	 */
 	class IExtensionManager : public SMInterface
 	{
@@ -371,7 +372,7 @@ namespace SourceMod
 		}
 		virtual bool IsVersionCompatible(unsigned int version)
 		{
-			if (version < 2)
+			if (version < 3)
 			{
 				return false;
 			}
@@ -422,15 +423,6 @@ namespace SourceMod
 			const char *filename,
 			char *error,
 			size_t maxlength) =0;
-
-		/**
-		 * @brief Deprecated, always fails.  An external extension must refuse
-		 * to be unloaded once it has loaded.
-		 *
-		 * @param pExt			Unused.
-		 * @return				false
-		 */
-		virtual bool UnloadExtension(IExtension *pExt) =0;
 	};
 
 	#define SM_IFACEPAIR(name) SMINTERFACE_##name##_NAME, SMINTERFACE_##name##_VERSION

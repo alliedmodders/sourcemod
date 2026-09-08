@@ -121,7 +121,7 @@ namespace SourceMod
 	};
 
 	/**
-	 * @brief Tracks dependencies and fires dependency listeners.
+	 * @brief Tracks dependencies.
 	 */
 	class IShareSys
 	{
@@ -129,7 +129,7 @@ namespace SourceMod
 		/**
 		 * @brief Adds an interface to the global interface system.
 		 *
-		 * @param myself		Object adding this interface, in order to track dependencies.
+		 * @param myself		Object adding this interface, in order to track ownership.
 		 * @param iface			Interface pointer (must be unique).
 		 * @return				True on success, false otherwise.
 		 */
@@ -137,11 +137,10 @@ namespace SourceMod
 
 		/**
 		 * @brief Requests an interface from the global interface system.
-		 * If found, the interface's internal reference count will be increased.
 		 *
 		 * @param iface_name	Interface name.
 		 * @param iface_vers	Interface version to attempt to match.
-		 * @param myself		Object requesting this interface, in order to track dependencies.
+		 * @param myself		Unused.
 		 * @param pIface		Pointer to store the return value in.
 		 */
 		virtual bool RequestInterface(const char *iface_name, 
