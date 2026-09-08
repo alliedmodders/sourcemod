@@ -80,9 +80,6 @@ bool SmUpdater::SDK_OnLoad(char *error, size_t maxlength, bool late)
 
 void SmUpdater::SDK_OnUnload()
 {
-	/* An interface drop might have killed this thread.  
-	 * But if the handle is still there, we have to wait.
-	 */
 	if (update_thread != NULL)
 	{
 		update_thread->WaitForThread();
@@ -94,27 +91,6 @@ void SmUpdater::SDK_OnUnload()
 	while (iter != update_errors.end())
 	{
 		iter = update_errors.erase(iter);
-	}
-}
-
-bool SmUpdater::QueryInterfaceDrop(SourceMod::SMInterface *pInterface)
-{
-	if (pInterface == webternet)
-	{
-		return false;
-	}
-
-	return true;
-}
-
-void SmUpdater::NotifyInterfaceDrop(SMInterface *pInterface)
-{
-	if (pInterface == webternet)
-	{
-		/* Can't be in the thread if we're losing this extension. */
-		update_thread->WaitForThread();
-		update_thread->DestroyThis();
-		update_thread = NULL;
 	}
 }
 

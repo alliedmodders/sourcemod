@@ -38,7 +38,10 @@
 
 /**
  * @file IExtensionSys.h
- * @brief Defines the interface for loading/unloading/managing extensions.
+ * @brief Defines the interface for loading and managing extensions.
+ *
+ * Extensions are loaded for the lifetime of SourceMod; they are only ever
+ * unloaded when SourceMod itself shuts down.
  */
 
 struct edict_t;
@@ -46,10 +49,9 @@ struct edict_t;
 namespace SourceMod
 {
 	class IExtensionInterface;
-	typedef void *		ITERATOR;		/**< Generic pointer for dependency iterators */
 
 	/** 
-	 * @brief Encapsulates an IExtensionInterface and its dependencies.
+	 * @brief Encapsulates an IExtensionInterface.
 	 */
 	class IExtension
 	{
@@ -84,32 +86,6 @@ namespace SourceMod
 		virtual IdentityToken_t *GetIdentity() =0;
 
 		/**
-		 * @brief Deprecated, do not use.
-		 *
-		 * @param pOwner        Unused
-		 * @param pInterface    Unused
-		 * @return              nullptr
-		 */
-		virtual ITERATOR *FindFirstDependency(IExtension **pOwner, SMInterface **pInterface) =0;
-
-		/**
-		 * @brief Deprecated, do not use.
-		 *
-		 * @param iter          Unused
-		 * @param pOwner        Unused
-		 * @param pInterface    Unused
-		 * @return              false
-		 */
-		virtual bool FindNextDependency(ITERATOR *iter, IExtension **pOwner, SMInterface **pInterface) =0;
-
-		/**
-		 * @brief Deprecated, do not use.
-		 *
-		 * @param iter          Unused
-		 */
-		virtual void FreeDependencyIterator(ITERATOR *iter) =0;
-
-		/**
 		 * @brief Queries the extension to see its run state.
 		 *
 		 * @param error			Error buffer (may be NULL).
@@ -139,9 +115,10 @@ namespace SourceMod
 	 * V8 - added OnCoreMapEnd() to IExtensionInterface.
 	 * V9 - SourcePawn API revamp
 	 * V10 - SourcePawn 2 API.
+	 * V11 - removed deprecated unload, dependency, and native override APIs.
 	 */
-	#define SMINTERFACE_EXTENSIONAPI_VERSION_MIN	10
-	#define SMINTERFACE_EXTENSIONAPI_VERSION		10
+	#define SMINTERFACE_EXTENSIONAPI_VERSION_MIN	11
+	#define SMINTERFACE_EXTENSIONAPI_VERSION		11
 
 	/**
 	 * @brief The interface an extension must expose.
@@ -172,7 +149,8 @@ namespace SourceMod
 			bool late) =0;
 
 		/**
-		 * @brief Called when the extension is about to be unloaded.
+		 * @brief Called when the extension is about to be unloaded, during
+		 * SourceMod shutdown.
 		 */
 		virtual void OnExtensionUnload() =0;
 
@@ -188,39 +166,6 @@ namespace SourceMod
 		 * @param pause		True if pausing, false if unpausing.
 		 */
 		virtual void OnExtensionPauseChange(bool pause) =0;
-
-		/**
-		 * @brief Asks the extension whether it's safe to remove an external 
-		 * interface it's using.  If it's not safe, return false, and the 
-		 * extension will be unloaded afterwards.
-		 *
-		 * NOTE: It is important to also hook NotifyInterfaceDrop() in order to clean 
-		 * up resources.
-		 *
-		 * @param pInterface		Pointer to interface being dropped.  This 
-		 * 							pointer may be opaque, and it should not 
-		 *							be queried using SMInterface functions unless 
-		 *							it can be verified to match an existing 
-		 *							pointer of known type.
-		 * @return					True to continue, false to unload this 
-		 * 							extension afterwards.
-		 */
-		virtual bool QueryInterfaceDrop(SMInterface *pInterface)
-		{
-			return false;
-		}
-
-		/**
-		 * @brief Notifies the extension that an external interface it uses is being removed.
-		 *
-		 * @param pInterface		Pointer to interface being dropped.  This
-		 * 							pointer may be opaque, and it should not 
-		 *							be queried using SMInterface functions unless 
-		 *							it can be verified to match an existing 
-		 */
-		virtual void NotifyInterfaceDrop(SMInterface *pInterface)
-		{
-		}
 
 		/**
 		 * @brief Return false to tell Core that your extension should be considered unusable.
@@ -321,11 +266,11 @@ namespace SourceMod
 		}
 
 		/**
-		 * @brief Called once all dependencies have been unloaded. This is
-		 * called AFTER OnExtensionUnload(), but before the extension library
-		 * has been unloaded. It can be used as an alternate unload hook for
-		 * cases where having no dependent plugins would make shutdown much
-		 * simplier.
+		 * @brief Called once all dependencies have been dropped during
+		 * shutdown. This is called AFTER OnExtensionUnload(), but before the
+		 * extension library has been unloaded. It can be used as an alternate
+		 * unload hook for cases where having no dependent plugins would make
+		 * shutdown much simplier.
 		 */
 		virtual void OnDependenciesDropped()
 		{
@@ -360,10 +305,10 @@ namespace SourceMod
 	#define SOURCEMOD_NOTICE_EXTENSIONS					"SM_ExtensionsAttachable"
 
 	#define SMINTERFACE_EXTENSIONMANAGER_NAME			"IExtensionManager"
-	#define SMINTERFACE_EXTENSIONMANAGER_VERSION		2
+	#define SMINTERFACE_EXTENSIONMANAGER_VERSION		3
 
 	/**
-	 * @brief Manages the loading/unloading of extensions.
+	 * @brief Manages the loading of extensions.
 	 */
 	class IExtensionManager : public SMInterface
 	{
@@ -378,7 +323,7 @@ namespace SourceMod
 		}
 		virtual bool IsVersionCompatible(unsigned int version)
 		{
-			if (version < 2)
+			if (version < 3)
 			{
 				return false;
 			}
@@ -429,15 +374,6 @@ namespace SourceMod
 			const char *filename,
 			char *error,
 			size_t maxlength) =0;
-
-		/**
-		 * @brief Attempts to unload an extension.  External extensions must 
-		 * call this before unloading.
-		 *
-		 * @param pExt			IExtension pointer.
-		 * @return				True if successful, false otherwise.
-		 */
-		virtual bool UnloadExtension(IExtension *pExt) =0;
 	};
 
 	#define SM_IFACEPAIR(name) SMINTERFACE_##name##_NAME, SMINTERFACE_##name##_VERSION

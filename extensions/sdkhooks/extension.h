@@ -195,8 +195,6 @@ public:
 	 */
 	virtual bool QueryRunning(char *error, size_t maxlength);
 
-	virtual bool QueryInterfaceDrop(SMInterface* pInterface);
-
 	/** Returns version string */
 	virtual const char *GetExtensionVerString();
 

@@ -91,8 +91,6 @@ public:
 	 * @return			True if working, false otherwise.
 	 */
 	virtual bool QueryRunning(char *error, size_t maxlength);
-	//virtual bool QueryInterfaceDrop(SMInterface *pInterface);
-	virtual void NotifyInterfaceDrop(SMInterface *pInterface);
 	virtual void OnCoreMapEnd();
 public:
 #if defined SMEXT_CONF_METAMOD

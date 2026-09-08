@@ -59,7 +59,6 @@ public:
 };
 
 bool SM_LoadExtension(char *error, size_t maxlength);
-void SM_UnloadExtension();
 
 extern IShareSys *sharesys;
 extern IExtension *myself;

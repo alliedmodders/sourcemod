@@ -50,7 +50,6 @@ public:
 	virtual void CallOnCoreMapStart(edict_t *edictList, int edictCount, int maxClients) = 0;
 	virtual IExtension *GetExtensionFromIdent(IdentityToken_t *token) = 0;
 	virtual void BindChildPlugin(IExtension *ext, SMPlugin *plugin) = 0;
-	virtual void AddRawDependency(IExtension *myself, IdentityToken_t *token, void *iface) = 0;
 	virtual const CVector<IExtension *> *ListExtensions() = 0;
 	virtual void FreeExtensionList(const CVector<IExtension *> *list) = 0;
 	virtual void CallOnCoreMapEnd() = 0;

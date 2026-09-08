@@ -51,7 +51,6 @@ void CExtension::Initialize(const char *filename, const char *path, bool bRequir
 	m_bRequired = bRequired;
 	m_pAPI = NULL;
 	m_pIdentToken = NULL;
-	unload_code = 0;
 	m_bFullyLoaded = false;
 	m_File.assign(filename);
 	m_Path.assign(path);
@@ -244,23 +243,6 @@ void CLocalExtension::Unload()
 	m_bFullyLoaded = false;
 }
 
-bool CRemoteExtension::Reload(char *error, size_t maxlength)
-{
-	ke::SafeStrcpy(error, maxlength, "Remote extensions do not support reloading");
-	return false;
-}
-
-bool CLocalExtension::Reload(char *error, size_t maxlength)
-{
-	if (m_pLib == NULL) // FIXME: just load it instead?
-		return false;
-	
-	m_pAPI->OnExtensionUnload();
-	Unload();
-	
-	return Load(error, maxlength);
-}
-
 bool CRemoteExtension::IsExternal()
 {
 	return true;
@@ -392,51 +374,6 @@ bool CLocalExtension::IsLoaded()
 	return (m_pLib != NULL);
 }
 
-void CExtension::AddDependency(const IfaceInfo *pInfo)
-{
-	if (m_Deps.find(*pInfo) == m_Deps.end())
-	{
-		m_Deps.push_back(*pInfo);
-	}
-}
-
-void CExtension::AddChildDependent(CExtension *pOther, SMInterface *iface)
-{
-	IfaceInfo info;
-	info.iface = iface;
-	info.owner = pOther;
-
-	List<IfaceInfo>::iterator iter;
-	for (iter = m_ChildDeps.begin();
-		 iter != m_ChildDeps.end();
-		 iter++)
-	{
-		IfaceInfo &other = (*iter);
-		if (other == info)
-		{
-			return;
-		}
-	}
-
-	m_ChildDeps.push_back(info);
-}
-
-// note: dependency iteration deprecated since 1.10
-ITERATOR *CExtension::FindFirstDependency(IExtension **pOwner, SMInterface **pInterface)
-{
-	return nullptr;
-}
-
-bool CExtension::FindNextDependency(ITERATOR *iter, IExtension **pOwner, SMInterface **pInterface)
-{
-	return false;
-}
-
-void CExtension::FreeDependencyIterator(ITERATOR *iter)
-{
-
-}
-
 void CExtension::AddInterface(SMInterface *pInterface)
 {
 	m_Interfaces.push_back(pInterface);
@@ -491,7 +428,37 @@ void CExtensionManager::Shutdown()
 
 	while ((iter = m_Libs.begin()) != m_Libs.end())
 	{
-		UnloadExtension((*iter));
+		CExtension *pExt = (*iter);
+		m_Libs.erase(iter);
+
+		/* Tell it to unload */
+		if (pExt->IsLoaded())
+			pExt->GetAPI()->OnExtensionUnload();
+
+		g_ShareSys.RemoveInterfaces(pExt);
+
+		/* Unbind our natives from Core */
+		if (pExt->IsLoaded())
+			pExt->DropEverything();
+
+		IdentityToken_t *pIdentity;
+		if ((pIdentity = pExt->GetIdentity()) != NULL)
+		{
+			SMGlobalClass *glob = SMGlobalClass::head;
+			while (glob)
+			{
+				glob->OnSourceModIdentityDropped(pIdentity);
+				glob = glob->m_pGlobalClassNext;
+			}
+		}
+
+		// Everything has been informed that we're unloading, so give the
+		// extension one last notification.
+		if (pExt->IsLoaded())
+			pExt->GetAPI()->OnDependenciesDropped();
+
+		pExt->Unload();
+		delete pExt;
 	}
 }
 
@@ -671,34 +638,6 @@ IExtension *CExtensionManager::LoadExtension(const char *file, char *error, size
 	return pExt;
 }
 
-void CExtensionManager::BindDependency(IExtension *pRequester, IfaceInfo *pInfo)
-{
-	CExtension *pExt = (CExtension *)pRequester;
-	CExtension *pOwner = (CExtension *)pInfo->owner;
-
-	pExt->AddDependency(pInfo);
-
-	IExtensionInterface *pAPI = pExt->GetAPI();
-	if (pAPI && !pAPI->QueryInterfaceDrop(pInfo->iface))
-	{
-		pOwner->AddChildDependent(pExt, pInfo->iface);
-	}
-}
-
-void CExtensionManager::AddRawDependency(IExtension *ext, IdentityToken_t *other, void *iface)
-{
-	CExtension *pExt = (CExtension *)ext;
-	CExtension *pOwner = GetExtensionFromIdent(other);
-
-	IfaceInfo info;
-
-	info.iface = (SMInterface *)iface;
-	info.owner = pOwner;
-
-	pExt->AddDependency(&info);
-	pOwner->AddChildDependent(pExt, (SMInterface *)iface);
-}
-
 void CExtensionManager::AddInterface(IExtension *pOwner, SMInterface *pInterface)
 {
 	CExtension *pExt = (CExtension *)pOwner;
@@ -721,148 +660,6 @@ void CExtensionManager::OnPluginDestroyed(IPlugin *plugin)
 	{
 		(*iter)->DropRefsTo(static_cast<CPlugin *>(plugin));
 	}
-}
-
-CExtension *CExtensionManager::FindByOrder(unsigned int num)
-{
-	if (num < 1 || num > m_Libs.size())
-	{
-		return NULL;
-	}
-
-	List<CExtension *>::iterator iter = m_Libs.begin();
-
-	while (iter != m_Libs.end())
-	{
-		if (--num == 0)
-		{
-			return (*iter);
-		}
-		iter++;
-	}
-
-	return NULL;
-}
-
-bool CExtensionManager::UnloadExtension(IExtension *_pExt)
-{
-	if (!_pExt)
-		return false;
-
-	CExtension *pExt = (CExtension *)_pExt;
-
-	if (m_Libs.find(pExt) == m_Libs.end())
-		return false;
-
-	/* Tell it to unload */
-	if (pExt->IsLoaded())
-		pExt->GetAPI()->OnExtensionUnload();
-
-	// Remove us from internal lists. Note that because we do this, it's
-	// possible that our extension could be added back if another plugin
-	// tries to load during this process. If we ever find this to happen,
-	// we can just block plugin loading.
-	g_ShareSys.RemoveInterfaces(_pExt);
-	m_Libs.remove(pExt);
-
-	List<CExtension *> UnloadQueue;
-
-	/* Handle dependencies */
-	if (pExt->IsLoaded())
-	{
-		/* Unload any dependent plugins */
-		List<CPlugin *>::iterator p_iter = pExt->m_Dependents.begin();
-		while (p_iter != pExt->m_Dependents.end())
-		{
-			/* We have to manually unlink ourselves here, since we're no longer being managed */
-			scripts->UnloadPlugin((*p_iter));
-			p_iter = pExt->m_Dependents.erase(p_iter);
-		}
-
-		List<String>::iterator s_iter;
-		for (s_iter = pExt->m_Libraries.begin();
-			 s_iter != pExt->m_Libraries.end();
-			 s_iter++)
-		{
-			scripts->OnLibraryAction((*s_iter).c_str(), LibraryAction_Removed);
-		}
-
-		/* Notify and/or unload all dependencies */
-		List<CExtension *>::iterator c_iter;
-		CExtension *pDep;
-		IExtensionInterface *pAPI;
-		for (c_iter = m_Libs.begin(); c_iter != m_Libs.end(); c_iter++)
-		{
-			pDep = (*c_iter);
-			if ((pAPI=pDep->GetAPI()) == NULL)
-				continue;
-			if (pDep == pExt)
-				continue;
-			/* Now, get its dependency list */
-			bool dropped = false;
-			List<IfaceInfo>::iterator i_iter = pDep->m_Deps.begin();
-			while (i_iter != pDep->m_Deps.end())
-			{
-				if ((*i_iter).owner == _pExt)
-				{
-					if (!pAPI->QueryInterfaceDrop((*i_iter).iface))
-					{
-						if (!dropped)
-						{
-							dropped = true;
-							UnloadQueue.push_back(pDep);
-						}
-					}
-					pAPI->NotifyInterfaceDrop((*i_iter).iface);
-					i_iter = pDep->m_Deps.erase(i_iter);
-				}
-				else
-				{
-					i_iter++;
-				}
-			}
-			/* Flush out any back references to this plugin */
-			i_iter = pDep->m_ChildDeps.begin();
-			while (i_iter != pDep->m_ChildDeps.end())
-			{
-				if ((*i_iter).owner == pExt)
-					i_iter = pDep->m_ChildDeps.erase(i_iter);
-				else
-					i_iter++;
-			}
-		}
-
-		/* Unbind our natives from Core */
-		pExt->DropEverything();
-	}
-
-	IdentityToken_t *pIdentity;
-	if ((pIdentity = pExt->GetIdentity()) != NULL)
-	{
-		SMGlobalClass *glob = SMGlobalClass::head;
-		while (glob)
-		{
-			glob->OnSourceModIdentityDropped(pIdentity);
-			glob = glob->m_pGlobalClassNext;
-		}
-	}
-
-	// Everything has been informed that we're unloading, so give the
-	// extension one last notification.
-	if (pExt->IsLoaded() && pExt->GetAPI()->GetExtensionVersion() >= 7)
-		pExt->GetAPI()->OnDependenciesDropped();
-
-	pExt->Unload();
-	delete pExt;
-
-	List<CExtension *>::iterator iter;
-	for (iter=UnloadQueue.begin(); iter!=UnloadQueue.end(); iter++)
-	{
-		/* NOTE: This is safe because the unload function backs out of anything not present */
-		UnloadExtension((*iter));
-	}
-
-	return true;
 }
 
 void CExtensionManager::MarkAllLoaded()
@@ -1073,174 +870,12 @@ void CExtensionManager::OnRootConsoleCommand(const char *cmdname, const ICommand
 			}
 			return;
 		}
-		else if (strcmp(cmd, "unload") == 0)
-		{
-			if (argcount < 4)
-			{
-				rootmenu->ConsolePrint("[SM] Usage: sm exts unload <#> [code]");
-				return;
-			}
-
-			const char *arg = command->Arg(3);
-			unsigned int num = atoi(arg);
-			CExtension *pExt = FindByOrder(num);
-
-			if (!pExt)
-			{
-				rootmenu->ConsolePrint("[SM] Extension number %d was not found.", num);
-				return;
-			}
-
-			if (argcount > 4 && pExt->unload_code)
-			{
-				const char *unload = command->Arg(4);
-				if (pExt->unload_code == (unsigned)atoi(unload))
-				{
-					char filename[PLATFORM_MAX_PATH];
-					ke::SafeStrcpy(filename, PLATFORM_MAX_PATH, pExt->GetFilename());
-					UnloadExtension(pExt);
-					rootmenu->ConsolePrint("[SM] Extension %s is now unloaded.", filename);
-				}
-				else
-				{
-					rootmenu->ConsolePrint("[SM] Please try again, the correct unload code is \"%d\"", pExt->unload_code);
-				}
-				return;
-			}
-
-			if (!pExt->IsLoaded() 
-				|| (!pExt->m_ChildDeps.size() && !pExt->m_Dependents.size()))
-			{
-				char filename[PLATFORM_MAX_PATH];
-				ke::SafeStrcpy(filename, PLATFORM_MAX_PATH, pExt->GetFilename());
-				UnloadExtension(pExt);
-				rootmenu->ConsolePrint("[SM] Extension %s is now unloaded.", filename);
-				return;
-			}
-			else
-			{
-				List<CPlugin *> plugins;
-				if (pExt->m_ChildDeps.size())
-				{
-					rootmenu->ConsolePrint("[SM] Unloading %s will unload the following extensions: ", pExt->GetFilename());
-					List<CExtension *>::iterator iter;
-					CExtension *pOther;
-					/* Get list of all extensions */
-					for (iter=m_Libs.begin(); iter!=m_Libs.end(); iter++)
-					{
-						List<IfaceInfo>::iterator i_iter;
-						pOther = (*iter);
-						if (!pOther->IsLoaded() || pOther == pExt)
-						{
-							continue;
-						}
-						/* Get their dependencies */
-						for (i_iter=pOther->m_Deps.begin();
-							 i_iter!=pOther->m_Deps.end();
-							 i_iter++)
-						{
-							/* Is this dependency to us? */
-							if ((*i_iter).owner != pExt)
-							{
-								continue;
-							}
-							/* Will our dependent care? */
-							if (!pExt->GetAPI()->QueryInterfaceDrop((*i_iter).iface))
-							{
-								rootmenu->ConsolePrint(" -> %s", pOther->GetFilename());
-								/* Add to plugin unload list */
-								List<CPlugin *>::iterator p_iter;
-								for (p_iter=pOther->m_Dependents.begin();
-									 p_iter!=pOther->m_Dependents.end();
-									 p_iter++)
-								{
-									if (plugins.find((*p_iter)) == plugins.end())
-									{
-										plugins.push_back((*p_iter));
-									}
-								}
-							}
-						}
-					}
-				}
-				if (pExt->m_Dependents.size())
-				{
-					rootmenu->ConsolePrint("[SM] Unloading %s will unload the following plugins: ", pExt->GetFilename());
-					List<CPlugin *>::iterator iter;
-					CPlugin *pPlugin;
-					for (iter = pExt->m_Dependents.begin(); iter != pExt->m_Dependents.end(); iter++)
-					{
-						pPlugin = (*iter);
-						if (plugins.find(pPlugin) == plugins.end())
-						{
-							plugins.push_back(pPlugin);
-						}
-					}
-					for (iter = plugins.begin(); iter != plugins.end(); iter++)
-					{
-						pPlugin = (*iter);
-						rootmenu->ConsolePrint(" -> %s", pPlugin->GetFilename());
-					}
-				}
-				pExt->unload_code = (rand() % 877) + 123;	//123 to 999
-				rootmenu->ConsolePrint("[SM] To verify unloading %s, please use the following: ", pExt->GetFilename());
-				rootmenu->ConsolePrint("[SM] sm exts unload %d %d", num, pExt->unload_code);
-
-				return;
-			}
-		}
-		else if (strcmp(cmd, "reload") == 0)
-		{
-			if (argcount < 4)
-			{
-				rootmenu->ConsolePrint("[SM] Usage: sm exts reload <#>");
-				return;
-			}
-			
-			const char *arg = command->Arg(3);
-			unsigned int num = atoi(arg);
-			CExtension *pExt = FindByOrder(num);
-
-			if (!pExt)
-			{
-				rootmenu->ConsolePrint("[SM] Extension number %d was not found.", num);
-				return;
-			}
-			
-			if (pExt->IsLoaded())
-			{
-				char filename[PLATFORM_MAX_PATH];
-				char error[255];
-				
-				ke::SafeStrcpy(filename, PLATFORM_MAX_PATH, pExt->GetFilename());
-				
-				if (pExt->Reload(error, sizeof(error)))
-				{
-					rootmenu->ConsolePrint("[SM] Extension %s is now reloaded.", filename);
-				}
-				else
-				{
-					rootmenu->ConsolePrint("[SM] Extension %s failed to reload: %s", filename, error);
-				}
-					
-				return;
-			} 
-			else
-			{
-				rootmenu->ConsolePrint("[SM] Extension %s is not loaded.", pExt->GetFilename());
-				
-				return;
-			}
-			
-		}
 	}
 
 	rootmenu->ConsolePrint("SourceMod Extensions Menu:");
 	rootmenu->DrawGenericOption("info", "Extra extension information");
 	rootmenu->DrawGenericOption("list", "List extensions");
 	rootmenu->DrawGenericOption("load", "Load an extension");
-	rootmenu->DrawGenericOption("reload", "Reload an extension");
-	rootmenu->DrawGenericOption("unload", "Unload an extension");
 }
 
 CExtension *CExtensionManager::GetExtensionFromIdent(IdentityToken_t *ptr)
@@ -1328,10 +963,7 @@ void CExtensionManager::CallOnCoreMapStart(edict_t *pEdictList, int edictCount, 
 		{
 			continue;
 		}
-		if (pAPI->GetExtensionVersion() > 3)
-		{
-			pAPI->OnCoreMapStart(pEdictList, edictCount, clientMax);
-		}
+		pAPI->OnCoreMapStart(pEdictList, edictCount, clientMax);
 	}
 }
 
@@ -1346,10 +978,7 @@ void CExtensionManager::CallOnCoreMapEnd()
 		{
 			continue;
 		}
-		if (pAPI->GetExtensionVersion() > 7)
-		{
-			pAPI->OnCoreMapEnd();
-		}
+		pAPI->OnCoreMapEnd();
 	}
 }
 

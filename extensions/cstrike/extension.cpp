@@ -202,21 +202,6 @@ bool CStrike::QueryRunning(char *error, size_t maxlength)
 	return true;
 }
 
-bool CStrike::QueryInterfaceDrop(SMInterface *pInterface)
-{
-	if (pInterface == g_pBinTools)
-	{
-		return false;
-	}
-
-	return IExtensionInterface::QueryInterfaceDrop(pInterface);
-}
-
-void CStrike::NotifyInterfaceDrop(SMInterface *pInterface)
-{
-	g_RegNatives.UnregisterAll();
-}
-
 size_t UTIL_Format(char *buffer, size_t maxlength, const char *fmt, ...)
 {
 	va_list ap;

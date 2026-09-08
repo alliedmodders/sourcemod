@@ -77,11 +77,6 @@ bool SM_LoadExtension(char *error, size_t maxlength)
 	return true;
 }
 
-void SM_UnloadExtension()
-{
-	smexts->UnloadExtension(myself);	
-}
-
 bool MyExtension::OnExtensionLoad(IExtension *me,
 		IShareSys *sys, 
 		char *error, 

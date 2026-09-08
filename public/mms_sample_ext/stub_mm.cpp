@@ -48,7 +48,15 @@ bool StubPlugin::Load(PluginId id, ISmmAPI *ismm, char *error, size_t maxlen, bo
 
 bool StubPlugin::Unload(char *error, size_t maxlen)
 {
-	SM_UnloadExtension();
+	/* SourceMod does not support unloading extensions, so we cannot detach. */
+	if (myself != NULL)
+	{
+		if (error && maxlen)
+		{
+			UTIL_Format(error, maxlen, "This plugin cannot be unloaded while attached to SourceMod");
+		}
+		return false;
+	}
 
 	SH_REMOVE_HOOK(IServerGameDLL, ServerActivate, server, SH_STATIC(Hook_ServerActivate), true);
 

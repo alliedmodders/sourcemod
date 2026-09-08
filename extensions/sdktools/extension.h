@@ -88,8 +88,6 @@ public: //public SDKExtension
 	virtual void SDK_OnAllLoaded();
 	//virtual void SDK_OnPauseChange(bool paused);
 	virtual bool QueryRunning(char *error, size_t maxlength);
-	virtual bool QueryInterfaceDrop(SMInterface *pInterface);
-	virtual void NotifyInterfaceDrop(SMInterface *pInterface);
 	virtual void OnCoreMapStart(edict_t *pEdictList, int edictCount, int clientMax);
 	const char *GetExtensionVerString();
 	const char *GetExtensionDateString();

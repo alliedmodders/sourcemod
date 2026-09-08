@@ -88,9 +88,6 @@ public: //SDKExtension
 	 */
 	virtual bool QueryRunning(char *error, size_t maxlength);
 
-	void NotifyInterfaceDrop(SMInterface *pInterface);
-	bool QueryInterfaceDrop(SMInterface *pInterface);
-
 	const char *GetExtensionVerString();
 	const char *GetExtensionDateString();
 public: //ICommandTargetProcessor

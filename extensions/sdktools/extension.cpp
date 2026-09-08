@@ -383,38 +383,6 @@ bool SDKTools::QueryRunning(char *error, size_t maxlength)
 	return true;
 }
 
-bool SDKTools::QueryInterfaceDrop(SMInterface *pInterface)
-{
-	if (pInterface == g_pBinTools)
-	{
-		return false;
-	}
-
-	return IExtensionInterface::QueryInterfaceDrop(pInterface);
-}
-
-void SDKTools::NotifyInterfaceDrop(SMInterface *pInterface)
-{
-	SourceHook::List<ValveCall *>::iterator iter;
-	for (iter = g_RegCalls.begin();
-		iter != g_RegCalls.end();
-		iter++)
-	{
-		delete (*iter);
-	}
-	g_RegCalls.clear();
-	ShutdownHelpers();
-
-	g_TEManager.Shutdown();
-	s_TempEntHooks.Shutdown();
-
-	if (g_pAcceptInput)
-	{
-		g_pAcceptInput->Destroy();
-		g_pAcceptInput = NULL;
-	}
-}
-
 bool SDKTools::RegisterConCommandBase(ConCommandBase *pVar)
 {
 	return g_SMAPI->RegisterConCommandBase(g_PLAPI, pVar);

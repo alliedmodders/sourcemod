@@ -42,7 +42,7 @@
  */
 
 #define SMINTERFACE_DBI_NAME		"IDBI"
-#define SMINTERFACE_DBI_VERSION		10
+#define SMINTERFACE_DBI_VERSION		11
 
 namespace SourceMod
 {
@@ -921,14 +921,6 @@ namespace SourceMod
 		 * @return				True on success, false on failure.
 		 */
 		virtual bool AddToThreadQueue(IDBThreadOperation *op, PrioQueueLevel prio) =0;
-
-		/**
-		 * @brief Adds a dependency from one extension to the owner of a driver.
-		 * 
-		 * @param myself		Extension that is using the IDBDriver.
-		 * @param driver		Driver that is being used.
-		 */
-		virtual void AddDependency(IExtension *myself, IDBDriver *driver) =0;
 	};
 }
 

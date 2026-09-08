@@ -240,31 +240,6 @@ bool TF2Tools::QueryRunning(char *error, size_t maxlength)
 	return true;
 }
 
-bool TF2Tools::QueryInterfaceDrop(SMInterface *pInterface)
-{
-	if (pInterface == g_pBinTools)
-	{
-		return false;
-	}
-
-	if (pInterface == g_pSDKHooks)
-	{
-		return false;
-	}
-
-	if (pInterface == g_pSDKTools)
-	{
-		g_pSDKTools = NULL;
-	}
-
-	return IExtensionInterface::QueryInterfaceDrop(pInterface);
-}
-
-void TF2Tools::NotifyInterfaceDrop(SMInterface *pInterface)
-{
-	g_RegNatives.UnregisterAll();
-}
-
 void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax)
 {
 	g_resourceEntity = FindResourceEntity();
