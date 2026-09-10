@@ -32,7 +32,7 @@
 #define _INCLUDE_CREGEX_H
 
 #include <string>
-#include <am-string.h>
+#include <vector>
 
 #include "pcre2.h"
 
