@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -28,18 +28,27 @@
  *
  * Version: $Id$
  */
-#include <am-string.h>
-
 #ifndef _INCLUDE_CREGEX_H
 #define _INCLUDE_CREGEX_H
+
+#include <string>
+#include <am-string.h>
+
+#include "pcre2.h"
 
 #define MAX_MATCHES 20
 #define MAX_CAPTURES MAX_MATCHES*3
 
+struct RegexOffsetPair
+{
+	size_t start;
+	size_t end;
+};
+
 struct RegexMatch
 {
 	int mSubStringCount;
-	int mVector[MAX_CAPTURES];
+	std::vector<RegexOffsetPair> mVector;
 };
 
 class RegEx
@@ -50,19 +59,19 @@ public:
 	bool isFree(bool set=false, bool val=false);
 	void Clear();
 
-	int Compile(const char *pattern, int iFlags);
+	bool Compile(const char *pattern, uint32_t iFlags);
 	int Match(const char *const str, const size_t offset);
 	int MatchAll(const char *str);
 	void ClearMatch();
-	bool GetSubstring(int s, char buffer[], int max, int match);
+	bool GetSubstring(int s, char buffer[], int max, size_t match);
 public:
-	int mErrorOffset;
+	PCRE2_SIZE mErrorOffset;
 	int mErrorCode;
-	const char *mError;
-	int mMatchCount;
-	RegexMatch mMatches[MAX_MATCHES];
+	std::string mError;
+	std::vector<RegexMatch> mMatches;
 private:
-	pcre *re;
+	pcre2_code *re;
+	bool mAnchored;
 	bool mFree;
 	char *subject;
 };

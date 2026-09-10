@@ -14,20 +14,22 @@ for cxx in builder.targets:
   arch = binary.compiler.target.arch
   if binary.compiler.target.platform == 'linux':
     if arch == 'x86':
-      path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_linux', 'libpcre.a')
+      path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_linux', 'libpcre2-8.a')
     elif arch == 'x86_64':
-      path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_linux64', 'libpcre.a')
+      path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_linux64', 'libpcre2-8.a')
   elif binary.compiler.target.platform == 'windows':
     if arch == 'x86':
-      path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_win', 'pcre.lib')
+      path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_win', 'pcre2-8-static.lib')
     elif arch == 'x86_64':
-      path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_win64', 'pcre.lib')
+      path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_win64', 'pcre2-8-static.lib')
   elif binary.compiler.target.platform == 'mac':
     if arch == 'x86':
-      path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_darwin', 'libpcre.a')
+      path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_darwin', 'libpcre2-8.a')
     elif arch == 'x86_64':
-      path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_darwin64', 'libpcre.a')
+      path = os.path.join(builder.sourcePath, 'extensions', 'regex', 'lib_darwin64', 'libpcre2-8.a')
   binary.compiler.postlink += [path]
+
+  binary.compiler.defines += ['PCRE2_STATIC', 'PCRE2_CODE_UNIT_WIDTH=8']
 
   binary.sources += [
     'extension.cpp',

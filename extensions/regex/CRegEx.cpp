@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -29,9 +29,8 @@
  * Version: $Id$
  */
 
-#define PCRE_STATIC
+#include <utility>
 
-#include "pcre.h"
 #include "CRegEx.h"
 #include "extension.h"
 
@@ -39,26 +38,26 @@ RegEx::RegEx()
 {
 	mErrorOffset = 0;
 	mErrorCode = 0;
-	mError = nullptr;
 	re = nullptr;
+	mAnchored = false;
 	mFree = true;
 	subject = nullptr;
-	mMatchCount = 0;
 }
 
 void RegEx::Clear ()
 {
 	mErrorOffset = 0;
 	mErrorCode = 0;
-	mError = nullptr;
+	mError.clear();
 	if (re)
-		pcre_free(re);
+		pcre2_code_free(re);
 	re = nullptr;
+	mAnchored = false;
 	mFree = true;
 	if (subject)
 		free(subject);
 	subject = nullptr;
-	mMatchCount = 0;
+	mMatches.clear();
 }
 
 RegEx::~RegEx()
@@ -77,21 +76,29 @@ bool RegEx::isFree(bool set, bool val)
 	}
 }
 
-int RegEx::Compile(const char *pattern, int iFlags)
+bool RegEx::Compile(const char *pattern, uint32_t iFlags)
 {
 	if (!mFree)
 		Clear();
-		
-	re = pcre_compile2(pattern, iFlags, &mErrorCode, &mError, &mErrorOffset, nullptr);
+
+	// store if we have PCRE2_ANCHORED set so we can pass them into pcre2_match later to match pcre1 behavior
+	if (iFlags & PCRE2_ANCHORED)
+	{
+		mAnchored = true;
+	}
+	re = pcre2_compile(reinterpret_cast<PCRE2_SPTR8>(pattern), PCRE2_ZERO_TERMINATED, iFlags, &mErrorCode, &mErrorOffset, nullptr);
 
 	if (re == nullptr)
 	{
-		return 0;
+		PCRE2_UCHAR buffer[256];
+		int len = pcre2_get_error_message(mErrorCode, buffer, sizeof(buffer));
+		mError.assign(reinterpret_cast<char *>(buffer), len);
+		return false;
 	}
 
 	mFree = false;
 
-	return 1;
+	return true;
 }
 
 int RegEx::Match(const char *const str, const size_t offset)
@@ -100,28 +107,45 @@ int RegEx::Match(const char *const str, const size_t offset)
 
 	if (mFree || re == nullptr)
 		return -1;
-		
+
+	pcre2_match_data* matchData = pcre2_match_data_create_from_pattern(re, nullptr);
 	this->ClearMatch();
 
 	//save str
 	subject = strdup(str);
 
-	rc = pcre_exec(re, nullptr, subject, strlen(subject), offset, 0, mMatches[0].mVector, MAX_CAPTURES);
+	uint32_t options = 0;
+	if (mAnchored)
+	{
+		options |= PCRE2_ANCHORED;
+	}
+	rc = pcre2_match(re, reinterpret_cast<PCRE2_SPTR8>(subject), strlen(subject), offset, options, matchData, nullptr);
 
 	if (rc < 0)
 	{
-		if (rc == PCRE_ERROR_NOMATCH)
+		if (rc == PCRE2_ERROR_NOMATCH)
 		{
+			pcre2_match_data_free(matchData);
 			return 0;
 		} else {
+			pcre2_match_data_free(matchData);
 			mErrorCode = rc;
 			return -1;
 		}
 	}
 
-	mMatches[0].mSubStringCount = rc;
-	mMatchCount = 1;
+	PCRE2_SIZE* ovector = pcre2_get_ovector_pointer(matchData);
+	uint32_t ovectorCount = pcre2_get_ovector_count(matchData);
+	RegexMatch match;
+	match.mSubStringCount = rc;
+	match.mVector.reserve(ovectorCount);
+	for (int i = 0; i < rc; i++)
+	{
+		match.mVector.emplace_back(RegexOffsetPair{ .start = ovector[2 * i], .end = ovector[2* i + 1] });
+	}
+	mMatches.push_back(std::move(match));
 
+	pcre2_match_data_free(matchData);
 	return 1;
 }
 
@@ -132,6 +156,7 @@ int RegEx::MatchAll(const char *str)
 	if (mFree || re == nullptr)
 		return -1;
 
+	pcre2_match_data* matchData = pcre2_match_data_create_from_pattern(re, nullptr);
 	this->ClearMatch();
 
 	//save str
@@ -140,29 +165,43 @@ int RegEx::MatchAll(const char *str)
 
 	size_t offset = 0;
 	unsigned int matches = 0;
-
-	while (matches < MAX_MATCHES && offset < len && (rc = pcre_exec(re, 0, subject, len, offset, 0, mMatches[matches].mVector, MAX_CAPTURES)) >= 0)
+	uint32_t options = 0;
+	if (mAnchored)
 	{
-		offset = mMatches[matches].mVector[1];
-		mMatches[matches].mSubStringCount = rc;
-
-		matches++;
+		options |= PCRE2_ANCHORED;
 	}
 
-	if (rc < PCRE_ERROR_NOMATCH || (rc == PCRE_ERROR_NOMATCH && matches == 0))
+	while (offset < len && (rc = pcre2_match(re, reinterpret_cast<PCRE2_SPTR8>(subject), len, offset, options, matchData, nullptr)) >= 0)
 	{
-		if (rc == PCRE_ERROR_NOMATCH)
+		PCRE2_SIZE* ovector = pcre2_get_ovector_pointer(matchData);
+		uint32_t ovectorCount = pcre2_get_ovector_count(matchData);
+		offset = ovector[1];
+
+		RegexMatch match;
+		match.mSubStringCount = rc;
+		match.mVector.reserve(ovectorCount);
+		for (int i = 0; i < rc; i++)
 		{
+			match.mVector.emplace_back(RegexOffsetPair{ .start = ovector[2 * i], .end = ovector[2 * i + 1] });
+		}
+		mMatches.push_back(std::move(match));
+	}
+
+	if (rc < PCRE2_ERROR_NOMATCH || (rc == PCRE2_ERROR_NOMATCH && matches == 0))
+	{
+		if (rc == PCRE2_ERROR_NOMATCH)
+		{
+			pcre2_match_data_free(matchData);
 			return 0;
 		}
 		else {
+			pcre2_match_data_free(matchData);
 			mErrorCode = rc;
 			return -1;
 		}
 	}
 
-	mMatchCount = matches;
-
+	pcre2_match_data_free(matchData);
 	return 1;
 }
 
@@ -171,22 +210,25 @@ void RegEx::ClearMatch()
 	// Clears match results
 	mErrorOffset = 0;
 	mErrorCode = 0;
-	mError = nullptr;
+	mError.clear();
 	if (subject)
 		free(subject);
 	subject = nullptr;
-	mMatchCount = 0;
+	mMatches.clear();
 }
 
-bool RegEx::GetSubstring(int s, char buffer[], int max, int match)
+bool RegEx::GetSubstring(int s, char buffer[], int max, size_t match)
 {
 	int i = 0;
+
+	if (match >= mMatches.size())
+		return false;
 
 	if (s >= mMatches[match].mSubStringCount || s < 0)
 		return false;
 
-	char *substr_a = subject + mMatches[match].mVector[2 * s];
-	int substr_l = mMatches[match].mVector[2 * s + 1] - mMatches[match].mVector[2 * s];
+	char *substr_a = subject + mMatches[match].mVector[s].start;
+	size_t substr_l = mMatches[match].mVector[s].end - mMatches[match].mVector[s].start;
 
 	for (i = 0; i<substr_l; i++)
 	{
