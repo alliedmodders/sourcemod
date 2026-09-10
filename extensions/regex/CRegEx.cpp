@@ -164,7 +164,6 @@ int RegEx::MatchAll(const char *str)
 	size_t len = strlen(subject);
 
 	size_t offset = 0;
-	unsigned int matches = 0;
 	uint32_t options = 0;
 	if (mAnchored)
 	{
@@ -187,7 +186,7 @@ int RegEx::MatchAll(const char *str)
 		mMatches.push_back(std::move(match));
 	}
 
-	if (rc < PCRE2_ERROR_NOMATCH || (rc == PCRE2_ERROR_NOMATCH && matches == 0))
+	if (rc < PCRE2_ERROR_NOMATCH || (rc == PCRE2_ERROR_NOMATCH && mMatches.size() == 0))
 	{
 		if (rc == PCRE2_ERROR_NOMATCH)
 		{
