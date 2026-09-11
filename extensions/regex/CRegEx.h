@@ -36,9 +36,6 @@
 
 #include "pcre2.h"
 
-#define MAX_MATCHES 20
-#define MAX_CAPTURES MAX_MATCHES*3
-
 struct RegexOffsetPair
 {
 	size_t start;
