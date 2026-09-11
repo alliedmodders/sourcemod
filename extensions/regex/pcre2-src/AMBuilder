@@ -13,6 +13,8 @@ for cxx in builder.targets:
         binary.compiler.defines += ['PLATFORM_LINUX']
 
     binary.compiler.defines += ['PCRE2_CODE_UNIT_WIDTH=8', 'HAVE_CONFIG_H']
+    if builder.options.debug == '1':
+        binary.compiler.defines += ['PCRE2_DEBUG']
 
     binary.sources += [
         'src/pcre2_auto_possess.c',
