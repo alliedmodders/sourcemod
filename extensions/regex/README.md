@@ -15,7 +15,7 @@ cmake -B build \
     -DPCRE2_BUILD_PCRE2_32=OFF \
     -DPCRE2_BUILD_PCRE2GREP=OFF \
     -DPCRE2_BUILD_TESTS=OFF \
-    -DPCRE2_SUPPORT_JIT=ON
+    -DPCRE2_SUPPORT_JIT=OFF
 ```
 
 Use the -A flag to specify what architecture you want on Windows
