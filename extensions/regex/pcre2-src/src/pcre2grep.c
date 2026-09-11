@@ -45,7 +45,15 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 #ifdef HAVE_CONFIG_H
+#if defined PLATFORM_WINDOWS
+#include "config-sm-win.h"
+#elif defined PLATFORM_APPLE
+#include "config-sm-mac.h"
+#elif defined PLATFORM_LINUX
+#include "config-sm-linux.h"
+#else
 #include "config.h"
+#endif
 #endif
 
 #include "pcre2_util.h"

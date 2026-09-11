@@ -53,7 +53,15 @@ inclusion of config.h. */
 
 #if defined HAVE_CONFIG_H && !defined PCRE2_CONFIG_H_IDEMPOTENT_GUARD
 #define PCRE2_CONFIG_H_IDEMPOTENT_GUARD
+#if defined PLATFORM_WINDOWS
+#include "config-sm-win.h"
+#elif defined PLATFORM_APPLE
+#include "config-sm-mac.h"
+#elif defined PLATFORM_LINUX
+#include "config-sm-linux.h"
+#else
 #include "config.h"
+#endif
 #endif
 
 
