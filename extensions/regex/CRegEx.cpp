@@ -29,6 +29,7 @@
  * Version: $Id$
  */
 
+#include <memory>
 #include <utility>
 
 #include "CRegEx.h"
@@ -108,7 +109,10 @@ int RegEx::Match(const char *const str, const size_t offset)
 	if (mFree || re == nullptr)
 		return -1;
 
-	pcre2_match_data* matchData = pcre2_match_data_create_from_pattern(re, nullptr);
+	std::unique_ptr<pcre2_match_data, decltype(&pcre2_match_data_free)> matchData (
+		pcre2_match_data_create_from_pattern(re, nullptr),
+		&pcre2_match_data_free
+	);
 	this->ClearMatch();
 
 	//save str
@@ -119,23 +123,21 @@ int RegEx::Match(const char *const str, const size_t offset)
 	{
 		options |= PCRE2_ANCHORED;
 	}
-	rc = pcre2_match(re, reinterpret_cast<PCRE2_SPTR8>(subject), strlen(subject), offset, options, matchData, nullptr);
+	rc = pcre2_match(re, reinterpret_cast<PCRE2_SPTR8>(subject), strlen(subject), offset, options, matchData.get(), nullptr);
 
 	if (rc < 0)
 	{
 		if (rc == PCRE2_ERROR_NOMATCH)
 		{
-			pcre2_match_data_free(matchData);
 			return 0;
 		} else {
-			pcre2_match_data_free(matchData);
 			mErrorCode = rc;
 			return -1;
 		}
 	}
 
-	PCRE2_SIZE* ovector = pcre2_get_ovector_pointer(matchData);
-	uint32_t ovectorCount = pcre2_get_ovector_count(matchData);
+	PCRE2_SIZE* ovector = pcre2_get_ovector_pointer(matchData.get());
+	uint32_t ovectorCount = pcre2_get_ovector_count(matchData.get());
 	RegexMatch match;
 	match.mSubStringCount = rc;
 	match.mVector.reserve(ovectorCount);
@@ -145,7 +147,6 @@ int RegEx::Match(const char *const str, const size_t offset)
 	}
 	mMatches.push_back(std::move(match));
 
-	pcre2_match_data_free(matchData);
 	return 1;
 }
 
@@ -156,7 +157,10 @@ int RegEx::MatchAll(const char *str)
 	if (mFree || re == nullptr)
 		return -1;
 
-	pcre2_match_data* matchData = pcre2_match_data_create_from_pattern(re, nullptr);
+	std::unique_ptr<pcre2_match_data, decltype(&pcre2_match_data_free)> matchData (
+		pcre2_match_data_create_from_pattern(re, nullptr),
+		&pcre2_match_data_free
+	);
 	this->ClearMatch();
 
 	//save str
@@ -170,10 +174,11 @@ int RegEx::MatchAll(const char *str)
 		options |= PCRE2_ANCHORED;
 	}
 
-	while (offset < len && (rc = pcre2_match(re, reinterpret_cast<PCRE2_SPTR8>(subject), len, offset, options, matchData, nullptr)) >= 0)
+	while (offset < len && (rc = pcre2_match(re, reinterpret_cast<PCRE2_SPTR8>(subject), len, offset, options,
+		matchData.get(), nullptr)) >= 0)
 	{
-		PCRE2_SIZE* ovector = pcre2_get_ovector_pointer(matchData);
-		uint32_t ovectorCount = pcre2_get_ovector_count(matchData);
+		PCRE2_SIZE* ovector = pcre2_get_ovector_pointer(matchData.get());
+		uint32_t ovectorCount = pcre2_get_ovector_count(matchData.get());
 		offset = ovector[1];
 
 		RegexMatch match;
@@ -190,17 +195,14 @@ int RegEx::MatchAll(const char *str)
 	{
 		if (rc == PCRE2_ERROR_NOMATCH)
 		{
-			pcre2_match_data_free(matchData);
 			return 0;
 		}
 		else {
-			pcre2_match_data_free(matchData);
 			mErrorCode = rc;
 			return -1;
 		}
 	}
 
-	pcre2_match_data_free(matchData);
 	return 1;
 }
 
