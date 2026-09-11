@@ -186,7 +186,7 @@ int RegEx::MatchAll(const char *str)
 		mMatches.push_back(std::move(match));
 	}
 
-	if (rc < PCRE2_ERROR_NOMATCH || (rc == PCRE2_ERROR_NOMATCH && mMatches.size() == 0))
+	if (rc < PCRE2_ERROR_NOMATCH || (rc == PCRE2_ERROR_NOMATCH && mMatches.empty()))
 	{
 		if (rc == PCRE2_ERROR_NOMATCH)
 		{
