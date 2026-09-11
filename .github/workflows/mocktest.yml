@@ -37,19 +37,19 @@ jobs:
       - name: Build MetaMod:Source
         working-directory: metamod-source
         run: |
-          python3 configure.py --enable-optimize --sdks=mock --targets=x86_64
+          python3 configure.py --enable-optimize --sdks=mock --targets=x86,x86_64
           ambuild objdir
       
       - name: Build SourceMod
         working-directory: sourcemod
         run: |
-          python3 configure.py --no-mysql --enable-optimize --sdks=mock --targets=x86_64
+          python3 configure.py --no-mysql --enable-optimize --sdks=mock --targets=x86,x86_64
           ambuild objdir
       
       - name: Build hl2sdk-mock
         working-directory: hl2sdk-mock
         run: |
-          python3 configure.py --enable-optimize --targets=x86_64
+          python3 configure.py --enable-optimize --targets=x86,x86_64
           ambuild objdir
       
       - name: Setup gamedir
@@ -75,22 +75,31 @@ jobs:
         working-directory: hl2sdk-mock
         shell: bash
         run: |
-          for f in ../gamedir/addons/sourcemod/plugins/optional/*.smx; do
+          for arch in x86 x86_64; do
             echo "==================================="
-            echo "Running $(basename $f)..."
+            echo "Testing $arch..."
             echo "==================================="
-            timeout 60 ./objdir/dist/x86_64/srcds -game_dir ../gamedir +map de_thunder -command "sm plugins load optional/$(basename $f)" -run -run-ticks 20 |
-            {
-              failed=0
-              while IFS= read -r line; do
-                echo "$line"
-                if [[ "$line" == *"FAIL"* ]]; then
-                  failed=1
+            for f in ../gamedir/addons/sourcemod/plugins/optional/*.smx; do
+              echo "==================================="
+              echo "Running $(basename $f)..."
+              echo "==================================="
+              timeout 60 ./objdir/dist/$arch/srcds -game_dir ../gamedir +map de_thunder -command "sm plugins load optional/$(basename $f)" -run -run-ticks 20 |
+              {
+                failed=0
+                succeeded=0
+                while IFS= read -r line; do
+                  echo "$line"
+                  if [[ "$line" == *"FAIL"* || "$line" == *"Exception reported"* ]]; then
+                    failed=1
+                  fi
+                  if [[ "$line" == *" OK"* ]]; then
+                    succeeded=1
+                  fi
+                done
+                if [ "$failed" = "1" ] || [ "$succeeded" = "0" ]; then
+                  echo "$(basename $f) failed."
+                  exit 1
                 fi
-              done
-              if [ "$failed" = "1" ]; then
-                echo "$(basename $f) failed."
-                exit 1
-              fi
-            }
+              }
+            done
           done
