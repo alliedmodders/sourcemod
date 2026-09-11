@@ -41,6 +41,7 @@
 #include <IBinTools.h>
 #include <server_class.h>
 #include <igameevents.h>
+#include "constmanager.h"
 
 namespace SourceMod {
 	class ISDKTools;
@@ -120,6 +121,7 @@ private:
 	bool m_CondChecksEnabled;
 	bool m_RulesDetoursEnabled;
 	bool m_TeleportDetourEnabled;
+	ConstManager m_ConstsManager;
 };
 
 enum TFClassType
