@@ -1,3 +1,4 @@
+# vim: set sts=4 sw=4 tw=99 et ft=python:
 # pylint: disable=all
 
 builder.SetBuildFolder('libpcre2')
