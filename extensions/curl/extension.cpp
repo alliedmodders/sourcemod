@@ -45,8 +45,6 @@ CurlExt curl_ext;		/**< Global singleton for extension's main interface */
 
 SMEXT_LINK(&curl_ext);
 
-char CABundlePath[PLATFORM_MAX_PATH];
-
 bool CurlExt::SDK_OnLoad(char *error, size_t maxlength, bool late)
 {
 	long flags;
@@ -71,8 +69,6 @@ bool CurlExt::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	}
 
 	sharesys->AddCapabilityProvider(myself, this, FEATURECAP_WEBTERNET_TLS);
-
-	smutils->BuildPath(Path_SM, CABundlePath, sizeof(CABundlePath), SM_CA_BUNDLE_PATH);
 
 	return true;
 }

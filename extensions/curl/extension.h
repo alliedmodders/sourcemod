@@ -39,10 +39,6 @@
 
 #include "smsdk_ext.h"
 
-#define SM_CA_BUNDLE_PATH "configs/ca-bundle.crt"
-extern char CABundlePath[PLATFORM_MAX_PATH];
-
-
 /**
  * @brief Sample implementation of the SDK Extension.
  * Note: Uncomment one of the pre-defined virtual functions in order to use it.

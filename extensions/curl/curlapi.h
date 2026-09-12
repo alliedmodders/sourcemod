@@ -32,7 +32,6 @@
 #ifndef _INCLUDE_SOURCEMOD_CURLAPI_IMPL_H_
 #define _INCLUDE_SOURCEMOD_CURLAPI_IMPL_H_
 
-#include "extension.h"
 #include <IWebternet.h>
 #include <curl/curl.h>
 
