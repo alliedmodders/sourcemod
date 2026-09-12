@@ -59,6 +59,7 @@ WebTransfer *WebTransfer::CreateWebSession()
 	}
 	curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1);
 	curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
+	curl_easy_setopt(curl, CURLOPT_SSL_OPTIONS, CURLSSLOPT_NATIVE_CA);
 
 	return easy;
 }
