@@ -17,9 +17,24 @@ for cxx in builder.targets:
     libcurl[binary.compiler.target.arch].binary,
   ]
   if binary.compiler.target.platform == 'linux':
-    binary.compiler.postlink += ['-lrt']
+    binary.compiler.postlink += [
+      '-Wl,-Bstatic',
+      '-lssl',
+      '-lcrypto',
+      '-Wl,-Bdynamic',
+      '-lrt',
+      '-ldl',
+      '-pthreads',
+      '-lz',
+    ]
   elif binary.compiler.target.platform == 'windows':
-    binary.compiler.postlink += ['ws2_32.lib']
+    binary.compiler.postlink += [
+      'crypt32.lib',
+      'secur32.lib',
+      'bcrypt.lib',
+      'ws2_32.lib',
+      'shlwapi.lib',
+    ]
 
   binary.sources += [
     'extension.cpp',

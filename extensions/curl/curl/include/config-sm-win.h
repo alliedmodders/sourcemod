@@ -65,7 +65,7 @@
 #define CURL_DISABLE_LDAPS 1
 
 /* to disable --libcurl C code generation option */
-/* #undef CURL_DISABLE_LIBCURL_OPTION */
+#define CURL_DISABLE_LIBCURL_OPTION 1
 
 /* disable mime API */
 /* #undef CURL_DISABLE_MIME */
@@ -115,5 +115,8 @@
 /* to disable TFTP */
 #define CURL_DISABLE_TFTP 1
 
-/* if mbedTLS is enabled */
-#define USE_MBEDTLS 1
+/* to enable SSPI support */
+#define USE_WINDOWS_SSPI 1
+
+/* to enable Windows SSL  */
+#define USE_SCHANNEL 1

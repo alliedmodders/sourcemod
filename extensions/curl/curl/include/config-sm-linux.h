@@ -65,7 +65,7 @@
 #define CURL_DISABLE_LDAPS 1
 
 /* to disable --libcurl C code generation option */
-/* #undef CURL_DISABLE_LIBCURL_OPTION */
+#define CURL_DISABLE_LIBCURL_OPTION 1
 
 /* disable mime API */
 /* #undef CURL_DISABLE_MIME */
@@ -137,7 +137,11 @@
 #define ENABLE_IPV6 1
 
 /* Define to the type of arg 2 for gethostname. */
+#if defined(__x86_64__)
 #define GETHOSTNAME_TYPE_ARG2 size_t
+#elif defined(i386) || defined(__i386__) || defined(__i386)
+#define GETHOSTNAME_TYPE_ARG2 unsigned int
+#endif
 
 /* Define to 1 if you have the alarm function. */
 #define HAVE_ALARM 1
@@ -345,7 +349,7 @@
 /* #undef HAVE_IOCTLSOCKET_CAMEL */
 
 /* Define to 1 if you have a working IoctlSocket camel case FIONBIO function.
-   */
+ */
 /* #undef HAVE_IOCTLSOCKET_CAMEL_FIONBIO */
 
 /* Define to 1 if you have a working ioctlsocket FIONBIO function. */
@@ -391,13 +395,13 @@
 /* #undef HAVE_LIBSSH2 */
 
 /* Define to 1 if you have the `ssl' library (-lssl). */
-/* #undef HAVE_LIBSSL */
+#define HAVE_LIBSSL 1
 
 /* Define to 1 if you have the `wolfssh' library (-lwolfssh). */
 /* #undef HAVE_LIBWOLFSSH */
 
 /* if zlib is available */
-/* #undef HAVE_LIBZ */
+#define HAVE_LIBZ 1
 
 /* Define to 1 if you have the `zstd' library (-lzstd). */
 /* #undef HAVE_LIBZSTD */
@@ -454,33 +458,33 @@
 /* #undef HAVE_NGTCP2_NGTCP2_H */
 
 /* if you have an old MIT Kerberos version, lacking GSS_C_NT_HOSTBASED_SERVICE
-   */
+ */
 /* #undef HAVE_OLD_GSSMIT */
 
 /* Define to 1 if using OpenSSL 3 or later. */
 /* #undef HAVE_OPENSSL3 */
 
 /* Define to 1 if you have the <openssl/crypto.h> header file. */
-/* #undef HAVE_OPENSSL_CRYPTO_H */
+#define HAVE_OPENSSL_CRYPTO_H 1
 
 /* Define to 1 if you have the <openssl/err.h> header file. */
-/* #undef HAVE_OPENSSL_ERR_H */
+#define HAVE_OPENSSL_ERR_H 1
 
 /* Define to 1 if you have the <openssl/pem.h> header file. */
-/* #undef HAVE_OPENSSL_PEM_H */
+#define HAVE_OPENSSL_PEM_H 1
 
 /* Define to 1 if you have the <openssl/rsa.h> header file. */
-/* #undef HAVE_OPENSSL_RSA_H */
+#define HAVE_OPENSSL_RSA_H 1
 
 /* if you have the functions SSL_CTX_set_srp_username and
-   SSL_CTX_set_srp_password */
-/* #undef HAVE_OPENSSL_SRP */
+ *   SSL_CTX_set_srp_password */
+#define HAVE_OPENSSL_SRP 1
 
 /* Define to 1 if you have the <openssl/ssl.h> header file. */
-/* #undef HAVE_OPENSSL_SSL_H */
+#define HAVE_OPENSSL_SSL_H 1
 
 /* Define to 1 if you have the <openssl/x509.h> header file. */
-/* #undef HAVE_OPENSSL_X509_H */
+#define HAVE_OPENSSL_X509_H 1
 
 /* Define to 1 if you have the <pem.h> header file. */
 /* #undef HAVE_PEM_H */
@@ -768,7 +772,11 @@
 /* #undef NTLM_WB_FILE */
 
 /* cpu-machine-OS */
+#if defined(__x86_64__)
 #define OS "x86_64-pc-linux-gnu"
+#elif defined(i386) || defined(__i386__) || defined(__i386)
+#define OS "i686-pc-linux-gnu"
+#endif
 
 /* Name of package */
 #define PACKAGE "curl"
@@ -801,7 +809,12 @@
 #define SIZEOF_INT 4
 
 /* Size of long in number of bytes */
+#if defined(__x86_64__)
 #define SIZEOF_LONG 8
+#elif defined(i386) || defined(__i386__) || defined(__i386)
+#define SIZEOF_LONG 4
+#endif
+
 
 /* Size of long long in number of bytes */
 /* #undef SIZEOF_LONG_LONG */
@@ -810,10 +823,18 @@
 #define SIZEOF_OFF_T 8
 
 /* Size of size_t in number of bytes */
+#if defined(__x86_64__)
 #define SIZEOF_SIZE_T 8
+#elif defined(i386) || defined(__i386__) || defined(__i386)
+#define SIZEOF_SIZE_T 4
+#endif
 
 /* Size of time_t in number of bytes */
+#if defined(__x86_64__)
 #define SIZEOF_TIME_T 8
+#elif defined(i386) || defined(__i386__) || defined(__i386)
+#define SIZEOF_TIME_T 4
+#endif
 
 /* Define to 1 if all of the C90 standard headers exist (not just the ones
    required in a freestanding environment). This macro is provided for
@@ -857,7 +878,7 @@
 /* #undef USE_MANUAL */
 
 /* if mbedTLS is enabled */
-#define USE_MBEDTLS 1
+/* #undef USE_MBEDTLS */
 
 /* if msh3 is in use */
 /* #undef USE_MSH3 */
@@ -887,7 +908,7 @@
 /* #undef USE_OPENLDAP */
 
 /* if OpenSSL is in use */
-/* #undef USE_OPENSSL */
+#define USE_OPENSSL 1
 
 /* if quiche is in use */
 /* #undef USE_QUICHE */
@@ -955,7 +976,9 @@
 #endif
 
 /* Number of bits in a file offset, on hosts where this is settable. */
+#if defined(i386) || defined(__i386__) || defined(__i386)
 #define _FILE_OFFSET_BITS 64
+#endif
 
 /* Define for large files, on AIX-style hosts. */
 /* #undef _LARGE_FILES */

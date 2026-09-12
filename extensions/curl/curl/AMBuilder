@@ -1,4 +1,4 @@
-# vim: sts=2 ts=8 sw=2 tw=99 et ft=python: 
+# vim: sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os, platform
 
 builder.SetBuildFolder('libcurl')
@@ -11,9 +11,8 @@ for cxx in builder.targets:
     os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl', 'lib'),
     os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl', 'lib', 'lib'),
     os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl', 'lib', 'include'),
-    os.path.join(builder.sourcePath, 'extensions', 'curl', 'mbedtls', 'lib', 'include')
   ]
-  
+
   binary.compiler.defines += [
     'BUILDING_LIBCURL',
     'CURL_STATICLIB',
@@ -21,15 +20,10 @@ for cxx in builder.targets:
   ]
 
   if binary.compiler.target.platform == 'linux':
-    binary.compiler.defines += ['_GNU_SOURCE']
-    binary.compiler.cflags += ['-Wno-constant-conversion']
-
-  if binary.compiler.family == 'clang':
-    # https://llvm.org/bugs/show_bug.cgi?id=16428
-    binary.compiler.cflags += ['-Wno-attributes']
+    binary.compiler.defines += ['_GNU_SOURCE', 'CURL_USE_OPENSSL']
 
   binary.sources += [
-    #LIB_CFILES
+    # LIB_CFILES
     'lib/lib/altsvc.c',
     'lib/lib/asyn-thread.c',
     'lib/lib/base64.c',
@@ -46,6 +40,7 @@ for cxx in builder.targets:
     'lib/lib/curl_multibyte.c',
     'lib/lib/curl_path.c',
     'lib/lib/curl_range.c',
+    'lib/lib/curl_sspi.c',
     'lib/lib/curl_threads.c',
     'lib/lib/doh.c',
     'lib/lib/dynbuf.c',
@@ -61,18 +56,26 @@ for cxx in builder.targets:
     'lib/lib/getinfo.c',
     'lib/lib/hash.c',
     'lib/lib/headers.c',
+    'lib/lib/hmac.c',
     'lib/lib/hostasyn.c',
     'lib/lib/hostip.c',
     'lib/lib/hostip4.c',
     'lib/lib/hostip6.c',
+    'lib/lib/hostsyn.c',
     'lib/lib/hsts.c',
     'lib/lib/http.c',
+    'lib/lib/http_aws_sigv4.c',
     'lib/lib/http_chunks.c',
+    'lib/lib/http_digest.c',
+    'lib/lib/http_negotiate.c',
     'lib/lib/http_proxy.c',
+    'lib/lib/idn_win32.c',
     'lib/lib/if2ip.c',
     'lib/lib/inet_ntop.c',
     'lib/lib/inet_pton.c',
     'lib/lib/llist.c',
+    'lib/lib/md4.c',
+    'lib/lib/md5.c',
     'lib/lib/mime.c',
     'lib/lib/mprintf.c',
     'lib/lib/multi.c',
@@ -103,13 +106,21 @@ for cxx in builder.targets:
     'lib/lib/version.c',
     'lib/lib/warnless.c',
 
-    #LIB_VTLS_CFILES
-    'lib/lib/vtls/mbedtls.c',
-    'lib/lib/vtls/mbedtls_threadlock.c',
+    # LIB_VTLS_CFILES
+    'lib/lib/vtls/hostcheck.c',
+    'lib/lib/vtls/keylog.c',
+    'lib/lib/vtls/openssl.c',
+    'lib/lib/vtls/schannel.c',
+    'lib/lib/vtls/schannel_verify.c',
+    'lib/lib/vtls/sectransp.c',
     'lib/lib/vtls/vtls.c',
-    
+    'lib/lib/vtls/x509asn1.c',
+
     # LIB_VAUTH_CFILES
     'lib/lib/vauth/vauth.c',
+    'lib/lib/vauth/digest.c',
+    'lib/lib/vauth/digest_sspi.c',
+    'lib/lib/vauth/spnego_sspi.c',
   ]
 
   if binary.compiler.target.platform == 'windows':
