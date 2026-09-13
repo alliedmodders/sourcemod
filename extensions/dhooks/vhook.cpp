@@ -512,7 +512,7 @@ void *Callback(DHooksCallback *dg, void **argStack)
 		} else {
 			if (dg->int64_address) {
 				std::int64_t addr = reinterpret_cast<std::int64_t>(thisAddr);
-				dg->plugin_callback->PushArray(reinterpret_cast<cell_t*>(&addr), 2);
+				dg->plugin_callback->PushInt64(addr);
 			} else {
 				dg->plugin_callback->PushCell((cell_t)thisAddr);
 			}
@@ -710,7 +710,7 @@ float Callback_float(DHooksCallback *dg, void **argStack)
 		} else {
 			if (dg->int64_address) {
 				std::int64_t addr = reinterpret_cast<std::int64_t>(thisAddr);
-				dg->plugin_callback->PushArray(reinterpret_cast<cell_t*>(&addr), 2);
+				dg->plugin_callback->PushInt64(addr);
 			} else {
 				dg->plugin_callback->PushCell((cell_t)thisAddr);
 			}
@@ -881,7 +881,7 @@ SDKVector *Callback_vector(DHooksCallback *dg, void **argStack)
 		} else {
 			if (dg->int64_address) {
 				std::int64_t addr = reinterpret_cast<std::int64_t>(thisAddr);
-				dg->plugin_callback->PushArray(reinterpret_cast<cell_t*>(&addr), 2);
+				dg->plugin_callback->PushInt64(addr);
 			} else {
 				dg->plugin_callback->PushCell((cell_t)thisAddr);
 			}
@@ -1049,7 +1049,7 @@ string_t *Callback_stringt(DHooksCallback *dg, void **argStack)
 		} else {
 			if (dg->int64_address) {
 				std::int64_t addr = reinterpret_cast<std::int64_t>(thisAddr);
-				dg->plugin_callback->PushArray(reinterpret_cast<cell_t*>(&addr), 2);
+				dg->plugin_callback->PushInt64(addr);
 			} else {
 				dg->plugin_callback->PushCell((cell_t)thisAddr);
 			}

@@ -385,7 +385,7 @@ ReturnAction_t HandleDetour(HookType_t hookType, CHook* pDetour)
 			} else {
 				if (pWrapper->int64_address) {
 					std::int64_t addr = reinterpret_cast<std::int64_t>(thisAddr);
-					pWrapper->plugin_callback->PushArray(reinterpret_cast<cell_t*>(&addr), 2);
+					pWrapper->plugin_callback->PushInt64(addr);
 				} else {
 					pWrapper->plugin_callback->PushCell((cell_t)thisAddr);
 				}
