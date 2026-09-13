@@ -41,3 +41,4 @@ objdir
 
 .vs/*
 .vscode/*
+graphify-out/*

@@ -1,0 +1,63 @@
+diff --git a/extensions/bintools/x64_macros.h b/extensions/bintools/x64_macros.h
+--- a/extensions/bintools/x64_macros.h
++++ b/extensions/bintools/x64_macros.h
+@@ -187,9 +187,9 @@
+ 
+-inline void X64_Mov_RmRSP_Disp32_Reg(JitWriter *jit, jit_uint8_t src, jit_int8_t disp)
++inline void X64_Mov_RmRSP_Disp32_Reg(JitWriter *jit, jit_uint8_t src, jit_int32_t disp)
+ {
+ 	jit->write_ubyte(x64_rex(true, src, 0, kREG_RSP));
+ 	jit->write_ubyte(IA32_MOV_RM_REG);
+ 	jit->write_ubyte(ia32_modrm(MOD_DISP32, src & 7, kREG_RSP));
+ 	jit->write_ubyte(ia32_sib(NOSCALE, kREG_NOIDX, kREG_RSP));
+-	jit->write_byte(disp);
++	jit->write_int32(disp);
+ }
+@@ -336,7 +336,7 @@
+ 	jit->write_ubyte(0x0F);
+ 	jit->write_ubyte(0x29);
+ 	jit->write_ubyte(ia32_modrm(MOD_DISP32, src & 7, dest & 7));
+ 	if ((dest & 7) == kREG_RSP)
+ 		jit->write_ubyte(ia32_sib(NOSCALE, kREG_NOIDX, dest & 7));
+-	jit->write_byte(disp);
++	jit->write_int32(disp);
+ }
+@@ -348,7 +348,7 @@
+ 	jit->write_ubyte(0x0F);
+ 	jit->write_ubyte(0x11);
+ 	jit->write_ubyte(ia32_modrm(MOD_DISP32, src & 7, dest & 7));
+ 	if ((dest & 7) == kREG_RSP)
+ 		jit->write_ubyte(ia32_sib(NOSCALE, kREG_NOIDX, dest & 7));
+-	jit->write_byte(disp);
++	jit->write_int32(disp);
+ }
+@@ -418,5 +418,5 @@
+ 	jit->write_ubyte(0x0F);
+ 	jit->write_ubyte(0x28);
+ 	jit->write_ubyte(ia32_modrm(MOD_DISP32, dest & 7, src & 7));
+-	jit->write_byte(disp);
++	jit->write_int32(disp);
+ }
+@@ -428,5 +428,5 @@
+ 	jit->write_ubyte(0x0F);
+ 	jit->write_ubyte(0x10);
+ 	jit->write_ubyte(ia32_modrm(MOD_DISP32, dest & 7, src & 7));
+-	jit->write_byte(disp);
++	jit->write_int32(disp);
+ }
+@@ -480,6 +480,6 @@
+ 	jit->write_ubyte(0x66);
+ 	jit->write_ubyte(0x0F);
+ 	jit->write_ubyte(0x28);
+ 	jit->write_ubyte(ia32_modrm(MOD_DISP32, dest & 7, src & 7));
+-	jit->write_byte(disp);
++	jit->write_int32(disp);
+ }
+@@ -491,6 +491,6 @@
+ 	jit->write_ubyte(0x66);
+ 	jit->write_ubyte(0x0F);
+ 	jit->write_ubyte(0x10);
+ 	jit->write_ubyte(ia32_modrm(MOD_DISP32, dest & 7, src & 7));
+-	jit->write_byte(disp);
++	jit->write_int32(disp);
+ }
