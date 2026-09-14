@@ -1,12 +1,12 @@
 # vim: set sts=2 ts=8 sw=2 tw=99 et ft=python:
 import os
 
-libcurl = builder.Build('curl/AMBuilder')
+libcurl = builder.Build('AMBuilder.libcurl')
 
 for cxx in builder.targets:
   binary = SM.ExtLibrary(builder, cxx, 'webternet.ext')
   binary.compiler.includes += [
-    os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl', 'lib', 'include')
+    os.path.join(builder.sourcePath, 'extensions', 'curl', 'lib', 'include')
   ]
   binary.compiler.defines += ['CURL_STATICLIB']
   if binary.compiler.family == 'gcc' or binary.compiler.family == 'clang':

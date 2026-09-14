@@ -7,10 +7,10 @@ rvalue = {}
 for cxx in builder.targets:
   binary = SM.StaticLibrary(builder, cxx, 'curl')
   binary.compiler.includes += [
-    os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl', 'include'),
-    os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl', 'lib'),
-    os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl', 'lib', 'lib'),
-    os.path.join(builder.sourcePath, 'extensions', 'curl', 'curl', 'lib', 'include'),
+    os.path.join(builder.sourcePath, 'extensions', 'curl', 'include'),
+    os.path.join(builder.sourcePath, 'extensions', 'curl', 'lib'),
+    os.path.join(builder.sourcePath, 'extensions', 'curl', 'lib', 'lib'),
+    os.path.join(builder.sourcePath, 'extensions', 'curl', 'lib', 'include'),
   ]
 
   binary.compiler.defines += [
