@@ -1780,82 +1780,81 @@ void TestTranslates()
 
     SetTestContext("Test Translates");
 
-    int lang = GetLanguageByCode("en");
-
-    // Base
-    AssertFmtTR1("'%T'",        "Unable to target",     lang,                       "'You cannot target this player.'");
-    AssertFmtTR2("'%T'",        "Chat admins",          lang, 0,                    "'(ADMINS) Console'");
-    AssertFmtTR2("'%T'",        "Vote Delay Seconds",   lang, 77777777,             "'You must wait 77777777 seconds before starting another vote.'");
-    AssertFmtTR3("'%T'",        "Vote Select",          lang, "player1", "option2", "'player1 has chosen option2.'");
-
-    // Precision
-    AssertFmtTR1("'%.T'",       "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%.0T'",      "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%.32T'",     "Unable to target",     lang, "'You cannot target this player.'");
-
-    // Width
-    AssertFmtTR1("'%T'",        "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%0T'",       "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%32T'",      "Unable to target",     lang, "'You cannot target this player.'");
-
-    // Precision & Width
-    AssertFmtTR1("'%0.T'",      "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%0.0T'",     "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%0.32T'",    "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%32.T'",     "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%32.0T'",    "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%32.32T'",   "Unable to target",     lang, "'You cannot target this player.'");
-
-    // Flags
-    AssertFmtTR1("'%0T'",       "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-T'",       "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-0T'",      "Unable to target",     lang, "'You cannot target this player.'");
-
-    // Flags & Precision
-    AssertFmtTR1("'%0.T'",      "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%0.0T'",     "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%0.32T'",    "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-.T'",      "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-.0T'",     "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-.32T'",    "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-0.T'",     "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-0.0T'",    "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-0.32T'",   "Unable to target",     lang, "'You cannot target this player.'");
-
-    // Flags & Width
-    AssertFmtTR1("'%0T'",       "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%00T'",      "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%032T'",     "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-T'",       "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-0T'",      "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-32T'",     "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-0T'",      "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-00T'",     "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-032T'",    "Unable to target",     lang, "'You cannot target this player.'");
-
-    // Flags & Precision & Width
-    AssertFmtTR1("'%00.T'",     "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%00.0T'",    "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%00.32T'",   "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%032.T'",    "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%032.0T'",   "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%032.32T'",  "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-0.T'",     "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-0.0T'",    "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-0.32T'",   "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-32.T'",    "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-32.0T'",   "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-32.32T'",  "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-00.T'",    "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-00.0T'",   "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-00.32T'",  "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-032.T'",   "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-032.0T'",  "Unable to target",     lang, "'You cannot target this player.'");
-    AssertFmtTR1("'%-032.32T'", "Unable to target",     lang, "'You cannot target this player.'");
-
     // Ensure that the global language target is English
     // otherwise it may deviate from the expected value
-    AssertEq("Server Language", GetServerLanguage(), lang);
+    AssertEq("Server Language", GetServerLanguage(), GetLanguageByCode("en"));
+
+    // Base
+    AssertFmtTR1("'%T'",        "Unable to target",     0,                       "'You cannot target this player.'");
+    AssertFmtTR2("'%T'",        "Chat admins",          0, 0,                    "'(ADMINS) Console'");
+    AssertFmtTR2("'%T'",        "Vote Delay Seconds",   0, 77777777,             "'You must wait 77777777 seconds before starting another vote.'");
+    AssertFmtTR3("'%T'",        "Vote Select",          0, "player1", "option2", "'player1 has chosen option2.'");
+
+    // Precision
+    AssertFmtTR1("'%.T'",       "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%.0T'",      "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%.32T'",     "Unable to target",     0, "'You cannot target this player.'");
+
+    // Width
+    AssertFmtTR1("'%T'",        "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%0T'",       "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%32T'",      "Unable to target",     0, "'You cannot target this player.'");
+
+    // Precision & Width
+    AssertFmtTR1("'%0.T'",      "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%0.0T'",     "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%0.32T'",    "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%32.T'",     "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%32.0T'",    "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%32.32T'",   "Unable to target",     0, "'You cannot target this player.'");
+
+    // Flags
+    AssertFmtTR1("'%0T'",       "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-T'",       "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-0T'",      "Unable to target",     0, "'You cannot target this player.'");
+
+    // Flags & Precision
+    AssertFmtTR1("'%0.T'",      "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%0.0T'",     "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%0.32T'",    "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-.T'",      "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-.0T'",     "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-.32T'",    "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-0.T'",     "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-0.0T'",    "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-0.32T'",   "Unable to target",     0, "'You cannot target this player.'");
+
+    // Flags & Width
+    AssertFmtTR1("'%0T'",       "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%00T'",      "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%032T'",     "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-T'",       "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-0T'",      "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-32T'",     "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-0T'",      "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-00T'",     "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-032T'",    "Unable to target",     0, "'You cannot target this player.'");
+
+    // Flags & Precision & Width
+    AssertFmtTR1("'%00.T'",     "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%00.0T'",    "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%00.32T'",   "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%032.T'",    "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%032.0T'",   "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%032.32T'",  "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-0.T'",     "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-0.0T'",    "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-0.32T'",   "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-32.T'",    "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-32.0T'",   "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-32.32T'",  "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-00.T'",    "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-00.0T'",   "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-00.32T'",  "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-032.T'",   "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-032.0T'",  "Unable to target",     0, "'You cannot target this player.'");
+    AssertFmtTR1("'%-032.32T'", "Unable to target",     0, "'You cannot target this player.'");
+
     SetGlobalTransTarget(LANG_SERVER);
 
     // Base
