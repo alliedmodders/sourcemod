@@ -2,7 +2,7 @@
 {
 	"Played sound to target"
 	{
-		"chi"		"播放音乐给 {1}"
+		"chi"		"播放声音给 {1}"
 	}
 
 }

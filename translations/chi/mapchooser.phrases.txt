@@ -2,7 +2,7 @@
 {
 	"Vote Nextmap"
 	{
-		"chi"		"下一幅地图投票了!"
+		"chi"		"为下一张地图投票！"
 	}
 
 	"Nextmap Voting Started"
@@ -12,12 +12,12 @@
 
 	"Nextmap Voting Finished"
 	{
-		"chi"		" 地图投票已结束. 下一幅地图将为 {1}. ( 得票{2}%% , {3}票 )"
+		"chi"		"地图投票已结束. 下一幅地图为 {1}. (得票{2}%% , {3}票)"
 	}
 
 	"Current Map Extended"
 	{
-		"chi"		"当前地图已被延长. ( 得票{1}%% , {2}票 )"
+		"chi"		"当前地图已被延长. (得票{1}%% , {2}票)"
 	}
 
 	"Extend Map"
@@ -27,12 +27,12 @@
 
 	"Dont Change"
 	{
-		"chi"		"请勿更换"
+		"chi"		"不更换"
 	}
 
 	"Current Map Stays"
 	{
-		"chi"		"当前地图已被延长! 投票显示! (得票 {1}%% 共 {2} 票)"
+		"chi"		"当前地图已被延长! (得票 {1}%% 共 {2} 票)"
 	}
 
 	"Changed Next Map"

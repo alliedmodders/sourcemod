@@ -37,12 +37,12 @@
 
 	"Choose Option"
 	{
-		"chi"		"择取选项"
+		"chi"		"选择选项"
 	}
 
 	"Client Settings"
 	{
-		"chi"		"客户端设定"
+		"chi"		"客户端设置"
 	}
 
 }
