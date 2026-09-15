@@ -25,6 +25,11 @@
 		"chi"		"地图投票: {1}"
 	}
 
+	"Map Vote In Use"
+	{
+		"chi"		"另外一名管理员正在使用地图投票菜单"
+	}
+
 	"Change Map To"
 	{
 		"chi"		"更换地图为 {1}?"
@@ -73,11 +78,6 @@
 	"Confirm Vote"
 	{
 		"chi"		"确认投票"
-	}
-
-	"Map Vote In Use"
-	{
-		"chi"		"地图投票正被调用"
 	}
 
 	"Start the Vote"
