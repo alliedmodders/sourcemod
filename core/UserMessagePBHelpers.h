@@ -85,7 +85,7 @@
 		return false;                                         \
 	}
 
-typedef List<Handle_t> PBHandleList;
+typedef std::list<Handle_t> PBHandleList;
 
 class SMProtobufMessage
 {
@@ -97,7 +97,7 @@ public:
 
 	~SMProtobufMessage()
 	{
-		PBHandleList::iterator iter = childHandles.begin();
+		auto iter = childHandles.begin();
 		while (iter != childHandles.end())
 		{
 			Handle_t &hndl = (*iter);
