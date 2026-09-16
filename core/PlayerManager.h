@@ -39,16 +39,14 @@
 #include <IPlayerHelpers.h>
 #include <IAdminSystem.h>
 #include <ITranslator.h>
-#include <sh_string.h>
-#include <sh_list.h>
-#include <sh_vector.h>
+#include <string>
+#include <list>
+#include <vector>
 #include <am-string.h>
 #include <am-deque.h>
 #include "ConVarManager.h"
 
 #include <steam/steamclientpublic.h>
-
-using namespace SourceHook;
 
 class IClient;
 

@@ -43,15 +43,13 @@
 #include "sm_globals.h"
 #include "sourcemm_api.h"
 #include <IForwardSys.h>
-#include <sh_list.h>
-#include <sh_string.h>
+#include <list>
+#include <string>
 #include <IRootConsoleMenu.h>
 #include <IAdminSystem.h>
 #include "concmd_cleaner.h"
 #include "GameHooks.h"
 #include <sm_namehashset.h>
-
-using namespace SourceHook;
 
 struct CmdHook;
 struct ConCmdInfo;

@@ -34,10 +34,8 @@
 
 #include <IWebternet.h>
 #include <ITextParsers.h>
-#include <sh_string.h>
+#include <string>
 #include "MemoryDownloader.h"
-
-using namespace SourceHook;
 
 struct UpdatePart
 {

@@ -41,8 +41,6 @@
 
 #define DEFAULT_UPDATE_URL			"http://www.sourcemod.net/update/"
 
-using namespace SourceHook;
-
 SmUpdater g_Updater;		/**< Global singleton for extension's main interface */
 SMEXT_LINK(&g_Updater);
 

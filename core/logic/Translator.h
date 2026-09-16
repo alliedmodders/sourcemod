@@ -34,8 +34,8 @@
 
 #include "common_logic.h"
 #include <sm_hashmap.h>
-#include <sh_string.h>
-#include <sh_vector.h>
+#include <string>
+#include <vector>
 #include "sm_memtable.h"
 #include "ITextParsers.h"
 #include <ITranslator.h>
@@ -44,7 +44,6 @@
 /* :TODO: write a templatized version of tries? */
 
 using namespace SourceMod;
-using namespace SourceHook;
 class Translator;
 
 enum PhraseParseState

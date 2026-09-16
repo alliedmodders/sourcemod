@@ -30,7 +30,7 @@
 #include "ConVarManager.h"
 #include "HalfLife2.h"
 #include "sm_stringutil.h"
-#include <sh_vector.h>
+#include <vector>
 #include <sm_namehashset.h>
 #include "logic_bridge.h"
 #include "sourcemod.h"

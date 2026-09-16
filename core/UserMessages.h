@@ -41,7 +41,6 @@
 #include <list>
 #include <stack>
 
-using namespace SourceHook;
 using namespace SourceMod;
 
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
