@@ -34,10 +34,8 @@
 
 #include "sm_globals.h"
 #include <ISourceMod.h>
-#include <sh_stack.h>
-#include <sh_vector.h>
-
-using namespace SourceHook;
+#include <stack>
+#include <vector>
 
 #if defined _DEBUG
 # define IF_DEBUG_SPEW
@@ -147,7 +145,7 @@ private:
 	bool m_ExecOnMapEnd;
 	unsigned int m_target;
 	bool m_GotBasePath;
-	CVector<GAME_FRAME_HOOK> m_frame_hooks;
+	std::vector<GAME_FRAME_HOOK> m_frame_hooks;
 };
 
 void UTIL_ConsolePrintVa(const char *fmt, va_list ap);

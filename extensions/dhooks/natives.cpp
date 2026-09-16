@@ -42,7 +42,7 @@ enum SDKFuncConfSource
 	SDKConf_Address
 };
 
-using ParamVector = SourceHook::CVector<ParamInfo>;
+using ParamVector = std::vector<ParamInfo>;
 
 bool GetHandleIfValidOrError(HandleType_t type, void **object, IPluginContext *pContext, cell_t param)
 {

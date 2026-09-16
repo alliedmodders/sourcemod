@@ -41,12 +41,10 @@
 #include <sourcemod_version.h>
 #include <amtl/os/am-path.h>
 #include <amtl/os/am-fsutil.h>
-#include <sh_list.h>
+#include <list>
 #include <IForwardSys.h>
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/ILogger.h>
-
-using namespace SourceHook;
 
 #ifdef PLATFORM_WINDOWS
 ConVar sm_corecfgfile("sm_corecfgfile", "addons\\sourcemod\\configs\\core.cfg", 0, "SourceMod core configuration file");
@@ -399,9 +397,9 @@ inline bool SM_CvarExistsInConfig(ke::HashMap<std::string, std::string, StringPo
 	return cvars.find(cvar_name).found();
 }
 
-bool SM_CvarExistsInPlugin(List<const ConVar *> &convars, const char *cvar_name)
+bool SM_CvarExistsInPlugin(std::list<const ConVar *> &convars, const char *cvar_name)
 {
-	for (List<const ConVar *>::iterator iter = convars.begin(); iter != convars.end(); iter++)
+	for (auto iter = convars.begin(); iter != convars.end(); iter++)
 	{
 		const ConVar *cvar = (*iter);
 #if SOURCE_ENGINE >= SE_ORANGEBOX
@@ -425,7 +423,7 @@ bool SM_CvarExistsInPlugin(List<const ConVar *> &convars, const char *cvar_name)
 bool SM_ConfigCheckRegeneration(
 	const char *file,
 	ke::HashMap<std::string, std::string, StringPolicy> &existing_cvars,
-	List<const ConVar *> &convars)
+	std::list<const ConVar *> &convars)
 {
 	FILE *fp = fopen(file, "rt");
 	if (!fp)
@@ -438,7 +436,7 @@ bool SM_ConfigCheckRegeneration(
 	fclose(fp);
 
 	/* #1. Check if the plugin's cvar list has a cvar that doesn't exist in the config file. */
-	for (List<const ConVar *>::iterator iter = convars.begin(); iter != convars.end(); iter++)
+	for (auto iter = convars.begin(); iter != convars.end(); iter++)
 	{
 		const ConVar *cvar = (*iter);
 #if SOURCE_ENGINE >= SE_ORANGEBOX
@@ -478,7 +476,7 @@ inline void SM_ExecuteConfigFile(const char *file)
 bool SM_GenerateConfigFile(
 	IPlugin *pl,
 	const char *file,
-	List<const ConVar *> &convars,
+	std::list<const ConVar *> &convars,
 	bool needs_regeneration = false,
 	ke::HashMap<std::string, std::string, StringPolicy> *existing_cvars = NULL)
 {
@@ -510,7 +508,7 @@ bool SM_GenerateConfigFile(
 	fprintf(fp, "\n\n");
 
 	float x;
-	for (List<const ConVar *>::iterator iter = convars.begin(); iter != convars.end(); iter++)
+	for (auto iter = convars.begin(); iter != convars.end(); iter++)
 	{
 		const ConVar *cvar = (*iter);
 #if SOURCE_ENGINE >= SE_ORANGEBOX
@@ -683,7 +681,7 @@ bool SM_ExecuteConfig(IPlugin *pl, AutoConfig *cfg, bool can_create)
 		return can_create;
 	}
 
-	List<const ConVar *> *convars = NULL;
+	std::list<const ConVar *> *convars = NULL;
 	if (!pl->GetProperty("ConVarList", (void **)&convars, false) || !convars)
 	{
 		if (file_exists)

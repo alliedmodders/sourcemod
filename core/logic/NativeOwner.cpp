@@ -49,7 +49,7 @@ unsigned int CNativeOwner::GetMarkSerial()
 
 void CNativeOwner::AddDependent(CPlugin *pPlugin)
 {
-	if (m_Dependents.find(pPlugin) == m_Dependents.end())
+	if (std::find(m_Dependents.begin(), m_Dependents.end(), pPlugin) == m_Dependents.end())
 		m_Dependents.push_back(pPlugin);
 }
 
@@ -78,10 +78,8 @@ void CNativeOwner::UnbindWeakRef(const WeakNative &ref)
 
 void CNativeOwner::DropEverything()
 {
-	List<WeakNative>::iterator iter;
-
 	/* Unbind and remove all weak references to us */
-	iter = m_WeakRefs.begin();
+	auto iter = m_WeakRefs.begin();
 	while (iter != m_WeakRefs.end())
 	{
 		UnbindWeakRef((*iter));
@@ -103,9 +101,7 @@ void CNativeOwner::DropEverything()
 
 void CNativeOwner::DropWeakRefsTo(CPlugin *pPlugin)
 {
-	List<WeakNative>::iterator iter;
-
-	iter = m_WeakRefs.begin();
+	auto iter = m_WeakRefs.begin();
 	while (iter != m_WeakRefs.end())
 	{
 		WeakNative & ref = (*iter);

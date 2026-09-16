@@ -83,15 +83,15 @@ private:
 	void ParseWarning(const char *message, ...);
 private:
 	StringHashMap<int> m_PhraseLookup;
-	String m_File;
+	std::string m_File;
 	Translator *m_pTranslator;
 	PhraseParseState m_ParseState;
 	int m_CurPhrase;
 	BaseMemTable *m_pMemory;
 	BaseStringTable *m_pStringTab;
 	unsigned int m_LangCount;
-	String m_ParseError;
-	String m_LastPhraseString;
+	std::string m_ParseError;
+	std::string m_LastPhraseString;
 	bool m_FileLogged;
 };
 
@@ -152,13 +152,13 @@ public: //ITranslator
 private:
 	bool AddLanguage(const char *langcode, const char *description);
 private:
-	CVector<Language *> m_Languages;
-	CVector<CPhraseFile *> m_Files;
+	std::vector<Language *> m_Languages;
+	std::vector<CPhraseFile *> m_Files;
 	BaseStringTable *m_pStringTab;
 	StringHashMap<unsigned int> m_LCodeLookup;
 	StringHashMap<unsigned int> m_LAliases;
 	bool m_InLanguageSection;
-	String m_CustomError;
+	std::string m_CustomError;
 	unsigned int m_ServerLang;
 	char m_InitialLang[4];
 };

@@ -82,8 +82,7 @@ void NextMapManager::OnSourceModShutdown()
 		SH_REMOVE_HOOK(ConCommand, Dispatch, changeLevelCmd, SH_STATIC(CmdChangeLevelCallback), false);
 	}
 
-	SourceHook::List<MapChangeData *>::iterator iter;
-	iter = m_mapHistory.begin();
+	auto iter = m_mapHistory.begin();
 
 	while (iter != m_mapHistory.end())
 	{
@@ -186,7 +185,7 @@ void NextMapManager::OnSourceModLevelChange( const char *mapName )
 			historydiff = (m_mapHistory.size() * -1);
 		}
 
-		for (SourceHook::List<MapChangeData *>::iterator iter = m_mapHistory.begin(); historydiff++ < 0; iter = m_mapHistory.erase(iter))
+		for (auto iter = m_mapHistory.begin(); historydiff++ < 0; iter = m_mapHistory.erase(iter))
 		{
 			delete (MapChangeData *)*iter;
 		}
@@ -213,7 +212,7 @@ void NextMapManager::ForceChangeLevel( const char *mapName, const char* changeRe
 NextMapManager::NextMapManager()
 {
 	m_tempChangeInfo = MapChangeData();
-	m_mapHistory = SourceHook::List<MapChangeData *>();
+	m_mapHistory = std::list<MapChangeData *>();
 }
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX

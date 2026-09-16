@@ -233,8 +233,7 @@ AdminCache::~AdminCache()
 	DumpAdminCache(AdminCache_Overrides, false);
 	DumpAdminCache(AdminCache_Groups, false);
 
-	List<AuthMethod *>::iterator iter;
-	for (iter=m_AuthMethods.begin();
+	for (auto iter=m_AuthMethods.begin();
 		 iter!=m_AuthMethods.end();
 		 iter++)
 	{
@@ -759,8 +758,7 @@ bool AdminCache::GetGroupCommandOverride(GroupId id, const char *name, OverrideT
 
 AuthMethod *AdminCache::GetMethodByIndex(unsigned int index)
 {
-	List<AuthMethod *>::iterator iter;
-	for (iter=m_AuthMethods.begin();
+	for (auto iter=m_AuthMethods.begin();
 		 iter!=m_AuthMethods.end();
 		 iter++)
 	{
@@ -974,8 +972,7 @@ void AdminCache::InvalidateAdminCache(bool unlink_admins)
 		}
 	}
 	/* Wipe the identity cache first */
-	List<AuthMethod *>::iterator iter;
-	for (iter=m_AuthMethods.begin();
+	for (auto iter=m_AuthMethods.begin();
 		 iter!=m_AuthMethods.end();
 		 iter++)
 	{
@@ -998,7 +995,6 @@ void AdminCache::InvalidateAdminCache(bool unlink_admins)
 
 void AdminCache::DumpAdminCache(AdminCachePart part, bool rebuild)
 {
-	List<IAdminListener *>::iterator iter;
 	IAdminListener *pListener;
 
 	if (part == AdminCache_Overrides)
@@ -1007,7 +1003,7 @@ void AdminCache::DumpAdminCache(AdminCachePart part, bool rebuild)
 		DumpCommandOverrideCache(Override_CommandGroup);
 		if (rebuild && !m_destroying)
 		{
-			for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+			for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 			{
 				pListener = (*iter);
 				pListener->OnRebuildOverrideCache();
@@ -1021,7 +1017,7 @@ void AdminCache::DumpAdminCache(AdminCachePart part, bool rebuild)
 			InvalidateGroupCache();
 			if (rebuild && !m_destroying)
 			{
-				for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+				for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 				{
 					pListener = (*iter);
 					pListener->OnRebuildGroupCache();
@@ -1033,7 +1029,7 @@ void AdminCache::DumpAdminCache(AdminCachePart part, bool rebuild)
 		InvalidateAdminCache(true);
 		if (rebuild && !m_destroying)
 		{
-			for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+			for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 			{
 				pListener = (*iter);
 				pListener->OnRebuildAdminCache((part == AdminCache_Groups));
@@ -1058,9 +1054,8 @@ const char *AdminCache::GetAdminName(AdminId id)
 
 bool AdminCache::GetMethodIndex(const char *name, unsigned int *_index)
 {
-	List<AuthMethod *>::iterator iter;
 	unsigned int index = 0;
-	for (iter=m_AuthMethods.begin();
+	for (auto iter=m_AuthMethods.begin();
 		 iter!=m_AuthMethods.end();
 		 iter++,index++)
 	{
@@ -1962,8 +1957,7 @@ AdminUser *AdminCache::GetUser(AdminId aid)
 
 const char *AdminCache::GetMethodName(unsigned int index)
 {
-	List<AuthMethod *>::iterator iter;
-	for (iter=m_AuthMethods.begin();
+	for (auto iter=m_AuthMethods.begin();
 		iter!=m_AuthMethods.end();
 		iter++)
 	{

@@ -38,8 +38,8 @@
 #include "sm_stringutil.h"
 #include "CellRecipientFilter.h"
 #include "sm_globals.h"
-#include <sh_list.h>
-#include <sh_stack.h>
+#include <list>
+#include <stack>
 
 using namespace SourceHook;
 using namespace SourceMod;
@@ -72,8 +72,7 @@ struct ListenerInfo
 	bool IsNew;
 };
 
-typedef List<ListenerInfo *> MsgList;
-typedef List<ListenerInfo *>::iterator MsgIter;
+typedef std::list<ListenerInfo *> MsgList;
 
 class UserMessages : 
 	public IUserMessages,
@@ -130,9 +129,9 @@ private:
 #endif
 	void _DecRefCounter();
 private:
-	List<ListenerInfo *> m_msgHooks[255];
-	List<ListenerInfo *> m_msgIntercepts[255];
-	CStack<ListenerInfo *> m_FreeListeners;
+	std::list<ListenerInfo *> m_msgHooks[255];
+	std::list<ListenerInfo *> m_msgIntercepts[255];
+	std::stack<ListenerInfo *> m_FreeListeners;
 	IRecipientFilter *m_CurRecFilter;
 #ifndef USE_PROTOBUF_USERMESSAGES
 	unsigned char m_pBase[2500];

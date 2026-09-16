@@ -33,15 +33,12 @@
 #define _INCLUDE_SOURCEMOD_CTIMERSYS_H_
 
 #include <ITimerSystem.h>
-#include <sh_stack.h>
-#include <sh_list.h>
+#include <stack>
+#include <list>
 #include "sourcemm_api.h"
 #include "sm_globals.h"
 
-using namespace SourceHook;
 using namespace SourceMod;
-
-typedef List<ITimer *>::iterator TimerIter;
 
 class SourceMod::ITimer
 {
@@ -83,12 +80,12 @@ public:
 	void RemoveMapChangeTimers();
 	void GameFrame(bool simulating);
 private:
-    void ProcessRepeatTimers(double curtime, List<ITimer*>& timerList);
+    void ProcessRepeatTimers(double curtime, std::list<ITimer*>& timerList);
 private:
-    List<ITimer*> m_SingleTimers;
-    List<ITimer*> m_LowSpeedLoopTimers;
-    List<ITimer*> m_HighSpeedLoopTimers;
-	CStack<ITimer *> m_FreeTimers;
+    std::list<ITimer*> m_SingleTimers;
+    std::list<ITimer*> m_LowSpeedLoopTimers;
+    std::list<ITimer*> m_HighSpeedLoopTimers;
+	std::stack<ITimer *> m_FreeTimers;
 	IMapTimer *m_pMapTimer;
 
 	/* This is stuff for our manual ticking escapades. */

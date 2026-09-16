@@ -137,7 +137,7 @@ struct ConCmdInfo
 	};
 };
 
-typedef List<ConCmdInfo *> ConCmdList;
+typedef std::list<ConCmdInfo *> ConCmdList;
 
 class ConCmdManager :
 	public SMGlobalClass,
@@ -180,7 +180,7 @@ private:
 	bool CheckAccess(int client, const char *cmd, AdminCmdInfo *pAdmin);
 	ConCmdInfo *FindInTrie(const char *name);
 public:
-	inline const List<ConCmdInfo *> & GetCommandList()
+	inline const std::list<ConCmdInfo *> & GetCommandList()
 	{
 		return m_CmdList;
 	}

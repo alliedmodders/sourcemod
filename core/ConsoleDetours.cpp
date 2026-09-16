@@ -76,7 +76,7 @@ class GenericCommandHooker : public IConCommandLinkListener
 		int hook;
 		unsigned int refcount;
 	};
-	CVector<HackInfo> vtables;
+	std::vector<HackInfo> vtables;
 	bool enabled;
 	SourceHook::MemFuncInfo dispatch;
 
@@ -144,7 +144,7 @@ class GenericCommandHooker : public IConCommandLinkListener
 			vtables[i].refcount = 0;
 		for (ConCommandBaseIterator iter; iter.IsValid(); iter.Next())
 			MakeHookable(iter.Get());
-		CVector<HackInfo>::iterator iter = vtables.begin();
+		auto iter = vtables.begin();
 		while (iter != vtables.end())
 		{
 			if ((*iter).refcount)
@@ -191,7 +191,7 @@ class GenericCommandHooker : public IConCommandLinkListener
 		if (vtables[index].refcount == 0)
 		{
 			SH_REMOVE_HOOK_ID(vtables[index].hook);
-			vtables.erase(vtables.iterAt(index));
+			vtables.erase(vtables.begin() + index);
 		}
 	}
 

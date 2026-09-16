@@ -72,8 +72,8 @@ namespace SourceMod
 		MemoryDownloader mdl;
 		unsigned int ustate;
 		unsigned int ignoreLevel;
-		SourceHook::String curfile;
-		SourceHook::String url;
+		std::string curfile;
+		std::string url;
 		char checksum[33];
 		UpdatePart *partFirst;
 		UpdatePart *partLast;

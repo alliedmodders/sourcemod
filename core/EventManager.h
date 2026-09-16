@@ -35,15 +35,13 @@
 #include "sm_globals.h"
 #include "sourcemm_api.h"
 #include <sm_namehashset.h>
-#include <sh_list.h>
-#include <sh_stack.h>
+#include <list>
+#include <stack>
 #include <IHandleSys.h>
 #include <IForwardSys.h>
 #include <IPluginSys.h>
 
 class IClient;
-
-using namespace SourceHook;
 
 struct EventInfo
 {
@@ -140,9 +138,9 @@ private: // IGameEventManager2 hooks
 private:
 	HandleType_t m_EventType;
 	NameHashSet<EventHook *> m_EventHooks;
-	CStack<EventInfo *> m_FreeEvents;
-	CStack<EventHook *> m_EventStack;
-	CStack<IGameEvent *> m_EventCopies;
+	std::stack<EventInfo *> m_FreeEvents;
+	std::stack<EventHook *> m_EventStack;
+	std::stack<IGameEvent *> m_EventCopies;
 };
 
 extern EventManager g_EventManager;

@@ -32,7 +32,7 @@
 #include <stdio.h>
 #include "sourcemod.h"
 #include "sourcemm_api.h"
-#include <sh_string.h>
+#include <string>
 #include "CoreConfig.h"
 #include "Logger.h"
 #include "sm_stringutil.h"
@@ -58,7 +58,7 @@ SH_DECL_HOOK0(IVEngineServer, GetMapEntitiesString, SH_NOATTRIB, 0, const char *
 
 SourceModBase g_SourceMod;
 
-SourceHook::String g_BaseDir;
+std::string g_BaseDir;
 ISourcePawnEnvironment *g_pPawnEnv = NULL;
 IdentityToken_t *g_pCoreIdent = NULL;
 IForward *g_pOnMapInit = nullptr;
@@ -667,7 +667,7 @@ void SourceModBase::RemoveGameFrameHook(GAME_FRAME_HOOK hook)
 	{
 		if (m_frame_hooks[i] == hook)
 		{
-			m_frame_hooks.erase(m_frame_hooks.iterAt(i));
+			m_frame_hooks.erase(m_frame_hooks.begin() + i);
 			return;
 		}
 	}

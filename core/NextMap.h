@@ -34,7 +34,7 @@
 
 #include "sm_globals.h"
 #include <eiface.h>
-#include "sh_list.h"
+#include <list>
 #include "sm_stringutil.h"
 #include <amtl/am-string.h>
 
@@ -92,7 +92,7 @@ public:
 #endif
 
 public:
-	SourceHook::List<MapChangeData *> m_mapHistory;
+	std::list<MapChangeData *> m_mapHistory;
 
 private:
 	MapChangeData m_tempChangeInfo;

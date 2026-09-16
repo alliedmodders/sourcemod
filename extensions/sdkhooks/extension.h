@@ -6,7 +6,7 @@
 #include "smsdk_ext.h"
 #include <ISDKHooks.h>
 #include <convar.h>
-#include <sh_list.h>
+#include <list>
 #include <am-vector.h>
 #include <vtable_hook_helper.h>
 
@@ -262,7 +262,7 @@ public:  // ISDKHooks
 public:	// IServerGameDLL
 	void LevelShutdown();
 private:
-	SourceHook::List<ISMEntityListener *> m_EntListeners;
+	std::list<ISMEntityListener *> m_EntListeners;
 
 public:
 	/**

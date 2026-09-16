@@ -1854,9 +1854,8 @@ void SDKHooks::HandleEntityCreated(CBaseEntity *pEntity, int index, cell_t ref)
 	cell_t bcompatRef = gamehelpers->EntityToBCompatRef(pEntity);
 
 	// Send OnEntityCreated to SM listeners
-	SourceHook::List<ISMEntityListener *>::iterator iter;
 	ISMEntityListener *pListener = NULL;
-	for (iter = m_EntListeners.begin(); iter != m_EntListeners.end(); iter++)
+	for (auto iter = m_EntListeners.begin(); iter != m_EntListeners.end(); iter++)
 	{
 		pListener = (*iter);
 		pListener->OnEntityCreated(pEntity, pName ? pName : "");
@@ -1875,9 +1874,8 @@ void SDKHooks::HandleEntityDeleted(CBaseEntity *pEntity)
 	cell_t bcompatRef = gamehelpers->EntityToBCompatRef(pEntity);
 
 	// Send OnEntityDestroyed to SM listeners
-	SourceHook::List<ISMEntityListener *>::iterator iter;
 	ISMEntityListener *pListener = NULL;
-	for (iter = m_EntListeners.begin(); iter != m_EntListeners.end(); iter++)
+	for (auto iter = m_EntListeners.begin(); iter != m_EntListeners.end(); iter++)
 	{
 		pListener = (*iter);
 		pListener->OnEntityDestroyed(pEntity);

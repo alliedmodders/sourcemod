@@ -26,7 +26,7 @@
 // or <http://www.sourcemod.net/license.php>.
 
 #include "sm_globals.h"
-#include <sh_list.h>
+#include <list>
 #include <convar.h>
 #include "concmd_cleaner.h"
 #include "sm_stringutil.h"
@@ -45,8 +45,6 @@ SH_DECL_HOOK1_void(ICvar, RegisterConCommand, SH_NOATTRIB, 0, ConCommandBase *);
 SH_DECL_HOOK1_void(ICvar, RegisterConCommandBase, SH_NOATTRIB, 0, ConCommandBase *);
 #endif
 
-using namespace SourceHook;
-
 struct ConCommandInfo
 {
 	ConCommandBase *pBase;
@@ -54,7 +52,7 @@ struct ConCommandInfo
 	char name[64];
 };
 
-List<ConCommandInfo *> tracked_bases;
+std::list<ConCommandInfo *> tracked_bases;
 IConCommandLinkListener *IConCommandLinkListener::head = NULL;
 
 ConCommandBase *FindConCommandBase(const char *name);
@@ -99,7 +97,7 @@ public:
 	void UnlinkConCommandBase(ConCommandBase *pBase)
 	{
 		ConCommandInfo *pInfo;
-		List<ConCommandInfo *>::iterator iter = tracked_bases.begin();
+		auto iter = tracked_bases.begin();
 
 		IConCommandLinkListener *listener = IConCommandLinkListener::head;
 		while (listener)
@@ -137,10 +135,9 @@ public:
 
 	void RemoveTarget(ConCommandBase *pBase, IConCommandTracker *cls)
 	{
-		List<ConCommandInfo *>::iterator iter;
 		ConCommandInfo *pInfo;
 
-		iter = tracked_bases.begin();
+		auto iter = tracked_bases.begin();
 		while (iter != tracked_bases.end())
 		{
 			pInfo = (*iter);
