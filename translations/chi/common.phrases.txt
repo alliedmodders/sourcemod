@@ -22,17 +22,17 @@
 
 	"More than one client matches"
 	{
-		"chi"		"存在多个符合样式 \"{1}\" 的客户端"
+		"chi"		"存在多个符合表达式 \"{1}\" 的客户端"
 	}
 
 	"More than one client matched"
 	{
-		"chi"		"存在多个符合所提样式的客户端."
+		"chi"		"存在多个符合表达式的客户端."
 	}
 
 	"Player no longer available"
 	{
-		"chi"		"您选定的玩家已不再适用."
+		"chi"		"您选定的玩家不可用."
 	}
 
 	"Kick player"

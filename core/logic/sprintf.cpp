@@ -337,7 +337,7 @@ void AddFloat(char **buf_p, size_t &maxlen, double fval, int width, int prec, in
 			val = (int)(fval / tmp);
 			*buf++ = '0' + val;
 			fval -= val * tmp;
-			tmp *= 0.1;
+			tmp /= 10.0;
 		}
 		maxlen--;
 	}
@@ -360,7 +360,7 @@ void AddFloat(char **buf_p, size_t &maxlen, double fval, int width, int prec, in
 		}
 		else
 		{
-			tmp *= 0.1;
+			tmp /= 10.0;
 			val = (int)(fval / tmp);
 			*buf++ = '0' + val;
 			fval -= val * tmp;
@@ -1401,4 +1401,3 @@ done:
 	*param = arg;
 	return (maxlen - llen - 1);
 }
-
