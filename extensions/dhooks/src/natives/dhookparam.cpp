@@ -494,6 +494,34 @@ cell_t DHookParam_IsNullParam(SourcePawn::IPluginContext* context, const cell_t*
 	return context->ThrowNativeError("Param is not a pointer!");
 }
 
+cell_t DHookParam_GetParamAddress(SourcePawn::IPluginContext* context, const cell_t* params) {
+	cell_t shift = (context->GetRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE) ? 1 : 0;
+
+	auto obj = Get(context, params[shift + 1]);
+	if (obj == nullptr) {
+		return 0;
+	}
+
+	int index = GetParam(context, obj, params[shift + 2]);
+	if (index == -1) {
+		return 0;
+	}
+
+	const auto& var = obj->GetCapsule()->GetParameters()[index];
+	if (!sp::HookParamTypeIsPtr(var.dhook_type)) {
+		return context->ThrowNativeError("Param is not a pointer!");
+	}
+
+	void* ptr = *obj->Get<void*>(index);
+	if (shift != 0) {
+		cell_t* sp_addr;
+		context->LocalToPhysAddr(params[1], &sp_addr);
+
+		*reinterpret_cast<std::int64_t*>(sp_addr) = reinterpret_cast<std::uintptr_t>(ptr);
+	}
+	return static_cast<cell_t>(reinterpret_cast<std::uintptr_t>(ptr));
+}
+
 void init(std::vector<sp_nativeinfo_t>& natives) {
 	sp_nativeinfo_t list[] = {
 		{"DHookGetParam",                   DHookParam_GetParam},
@@ -508,6 +536,7 @@ void init(std::vector<sp_nativeinfo_t>& natives) {
 		{"DHookSetParamObjectPtrVarVector", DHookParam_SetParamObjectPtrVarVector},
 		{"DHookGetParamObjectPtrString",    DHookParam_GetParamObjectPtrString},
 		{"DHookIsNullParam",                DHookParam_IsNullParam},
+		{"DHookGetParamAddress",            DHookParam_GetParamAddress},
 		{"DHookParam.Get",                  DHookParam_GetParam},
 		{"DHookParam.Set",                  DHookParam_SetParam},
 		{"DHookParam.GetVector",            DHookParam_GetParamVector},
@@ -519,7 +548,8 @@ void init(std::vector<sp_nativeinfo_t>& natives) {
 		{"DHookParam.GetObjectVarVector",   DHookParam_GetParamObjectPtrVarVector},
 		{"DHookParam.SetObjectVarVector",   DHookParam_SetParamObjectPtrVarVector},
 		{"DHookParam.GetObjectVarString",   DHookParam_GetParamObjectPtrString},
-		{"DHookParam.IsNull",               DHookParam_IsNullParam}
+		{"DHookParam.IsNull",               DHookParam_IsNullParam},
+		{"DHookParam.GetAddress",           DHookParam_GetParamAddress}
 	};
 	natives.insert(natives.end(), std::begin(list), std::end(list));
 }
