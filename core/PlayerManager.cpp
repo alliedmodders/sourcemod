@@ -587,7 +587,11 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 			m_AuthQueue[++m_AuthQueue[0]] = client;
 		}
 
-		m_UserIdLookUp[engine->GetPlayerUserId(pEntity)] = client;
+		int userid = engine->GetPlayerUserId(pEntity);
+		if (userid >= 0 && userid <= USHRT_MAX)
+		{
+			m_UserIdLookUp[userid] = client;
+		}
 	}
 	else
 	{
@@ -1552,8 +1556,10 @@ void PlayerManager::InvalidatePlayer(CPlayer *pPlayer)
 	}
 	
 	auto userid = engine->GetPlayerUserId(pPlayer->m_pEdict);
-	if (userid != -1)
+	if (userid >= 0 && userid <= USHRT_MAX)
+	{
 		m_UserIdLookUp[userid] = 0;
+	}
 
 	pPlayer->Disconnect();
 }
