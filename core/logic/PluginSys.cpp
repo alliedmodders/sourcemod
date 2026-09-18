@@ -1284,7 +1284,7 @@ bool CPlugin::ForEachExtVar(const ExtVarCallback& callback)
 	return true;
 }
 
-void CPlugin::ForEachLibrary(ke::Function<void(const char *)> callback)
+void CPlugin::ForEachLibrary(std::function<void(const char *)> callback)
 {
 	for (auto iter = m_Libraries.begin(); iter != m_Libraries.end(); iter++)
 		callback((*iter).c_str());
@@ -1296,7 +1296,7 @@ void CPlugin::AddRequiredLib(const char *name)
 		m_RequiredLibs.push_back(name);
 }
 
-bool CPlugin::ForEachRequiredLib(ke::Function<bool(const char *)> callback)
+bool CPlugin::ForEachRequiredLib(std::function<bool(const char *)> callback)
 {
 	for (auto iter = m_RequiredLibs.begin(); iter != m_RequiredLibs.end(); iter++) {
 		if (!callback((*iter).c_str()))
@@ -2392,7 +2392,7 @@ void CPluginManager::FreePluginList(const std::vector<SMPlugin *> *list)
 	delete const_cast<std::vector<SMPlugin *> *>(list);
 }
 
-void CPluginManager::ForEachPlugin(ke::Function<void(CPlugin *)> callback)
+void CPluginManager::ForEachPlugin(std::function<void(CPlugin *)> callback)
 {
 	for (PluginIter iter(m_plugins); !iter.done(); iter.next())
 		callback(*iter);

@@ -31,8 +31,6 @@
 #include <list>
 #include <utility>
 
-#include <amtl/am-function.h>
-
 namespace SourceMod {
 
 // ReentrantList is a wrapper around a std::list, with special attention twoard

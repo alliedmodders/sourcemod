@@ -27,11 +27,11 @@
 #ifndef _include_sourcemod_logic_frame_tasks_h_
 #define _include_sourcemod_logic_frame_tasks_h_
 
-#include <am-function.h>
+#include <functional>
 
 namespace SourceMod {
 
-void ScheduleTaskForNextFrame(ke::Function<void()>&& task);
+void ScheduleTaskForNextFrame(std::function<void()>&& task);
 
 void RunScheduledFrameTasks(bool simulating);
 

@@ -30,7 +30,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <IAdminSystem.h>
-#include <amtl/am-function.h>
+#include <functional>
 
 // SDK types.
 #if defined(SM_LOGIC)
@@ -62,7 +62,7 @@ struct DatabaseInfo;
 class IPlayerInfoBridge;
 class ICommandArgs;
 
-typedef ke::Function<bool(int client, const ICommandArgs*)> CommandFunc;
+typedef std::function<bool(int client, const ICommandArgs*)> CommandFunc;
 
 class CoreProvider
 {
