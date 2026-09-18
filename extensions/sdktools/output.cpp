@@ -33,6 +33,8 @@
 #include "output.h"
 #include "am-string.h"
 
+#include <list>
+
 ISourcePawnEngine *spengine = NULL;
 EntityOutputManager g_OutputManager;
 CDetour *fireOutputDetour = NULL;
@@ -138,11 +140,9 @@ bool EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 
 	if (!pOutputName->hooks.empty())
 	{
-		SourceHook::List<omg_hooks *>::iterator _iter;
-
 		omg_hooks *hook;
 
-		_iter = pOutputName->hooks.begin();
+		auto _iter = pOutputName->hooks.begin();
 
 		// by default we'll call the game's output func, unless a plugin overrides it
 		bool fireOriginal = true;
@@ -221,7 +221,7 @@ omg_hooks *EntityOutputManager::NewHook()
 	}
 	else
 	{
-		hook = g_OutputManager.FreeHooks.front();
+		hook = g_OutputManager.FreeHooks.top();
 		g_OutputManager.FreeHooks.pop();
 	}
 
@@ -256,14 +256,14 @@ void EntityOutputManager::CleanUpHook(omg_hooks *hook)
 	OnHookRemoved();
 
 	IPlugin *pPlugin = plsys->FindPluginByContext(hook->pf->GetParentContext());
-	SourceHook::List<omg_hooks *> *pList = NULL;
+	std::list<omg_hooks *> *pList = NULL;
 
 	if (!pPlugin->GetProperty("OutputHookList", (void **)&pList, false) || !pList)
 	{
 		return;
 	}
 
-	SourceHook::List<omg_hooks *>::iterator p_iter = pList->begin();
+	auto p_iter = pList->begin();
 
 	omg_hooks *pluginHook;
 
@@ -283,11 +283,11 @@ void EntityOutputManager::CleanUpHook(omg_hooks *hook)
 
 void EntityOutputManager::OnPluginDestroyed(IPlugin *plugin)
 {
-	SourceHook::List<omg_hooks *> *pList = NULL;
+	std::list<omg_hooks *> *pList = NULL;
 
 	if (plugin->GetProperty("OutputHookList", (void **)&pList, true))
 	{
-		SourceHook::List<omg_hooks *>::iterator p_iter = pList->begin();
+		auto p_iter = pList->begin();
 		omg_hooks *hook;
 
 		while (p_iter != pList->end())

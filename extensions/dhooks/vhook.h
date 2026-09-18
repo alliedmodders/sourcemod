@@ -34,7 +34,6 @@
 
 #include "extension.h"
 #include <sourcehook.h>
-#include <sh_vector.h>
 #include <sourcehook_pibuilder.h>
 #include <registers.h>
 #include <vector>
@@ -153,7 +152,7 @@ public:
 class DHooksInfo
 {
 public:
-	SourceHook::CVector<ParamInfo> params;
+	std::vector<ParamInfo> params;
 	int offset;
 	unsigned int returnFlag;
 	ReturnType returnType;
@@ -273,7 +272,7 @@ public:
 	HookType hookType;
 	CallingConvention callConv;
 	ThisPointerType thisType;
-	SourceHook::CVector<ParamInfo> params;
+	std::vector<ParamInfo> params;
 	int offset;
 	void *funcAddr;
 	IPluginFunction *callback;

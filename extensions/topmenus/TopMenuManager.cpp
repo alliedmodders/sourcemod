@@ -56,9 +56,7 @@ ITopMenu *TopMenuManager::CreateTopMenu(ITopMenuObjectCallbacks *callbacks)
 
 void TopMenuManager::OnClientConnected(int client)
 {
-	List<TopMenu *>::iterator iter;
-
-	for (iter = m_TopMenus.begin(); iter != m_TopMenus.end(); iter++)
+	for (auto iter = m_TopMenus.begin(); iter != m_TopMenus.end(); iter++)
 	{
 		(*iter)->OnClientConnected(client);
 	}
@@ -66,9 +64,7 @@ void TopMenuManager::OnClientConnected(int client)
 
 void TopMenuManager::OnClientDisconnected(int client)
 {
-	List<TopMenu *>::iterator iter;
-
-	for (iter = m_TopMenus.begin(); iter != m_TopMenus.end(); iter++)
+	for (auto iter = m_TopMenus.begin(); iter != m_TopMenus.end(); iter++)
 	{
 		(*iter)->OnClientDisconnected(client);
 	}
@@ -81,9 +77,7 @@ void TopMenuManager::OnServerActivated(int max_clients)
 		return;
 	}
 
-	List<TopMenu *>::iterator iter;
-
-	for (iter = m_TopMenus.begin(); iter != m_TopMenus.end(); iter++)
+	for (auto iter = m_TopMenus.begin(); iter != m_TopMenus.end(); iter++)
 	{
 		(*iter)->OnServerActivated(max_clients);
 	}
@@ -93,7 +87,7 @@ void TopMenuManager::OnServerActivated(int max_clients)
 
 void TopMenuManager::OnPluginUnloaded(IPlugin *plugin)
 {
-	List<TopMenu *>::iterator iter = m_TopMenus.begin();
+	auto iter = m_TopMenus.begin();
 
 	while (iter != m_TopMenus.end())
 	{
@@ -120,9 +114,7 @@ void TopMenuManager::DestroyTopMenu(ITopMenu *topmenu)
 
 void TopMenuManager::OnMaxPlayersChanged( int newvalue )
 {
-	List<TopMenu *>::iterator iter;
-
-	for (iter = m_TopMenus.begin(); iter != m_TopMenus.end(); iter++)
+	for (auto iter = m_TopMenus.begin(); iter != m_TopMenus.end(); iter++)
 	{
 		(*iter)->OnMaxPlayersChanged(newvalue);
 	}

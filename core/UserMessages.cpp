@@ -72,12 +72,11 @@ UserMessages::UserMessages()
 
 UserMessages::~UserMessages()
 {
-	CStack<ListenerInfo *>::iterator iter;
-	for (iter=m_FreeListeners.begin(); iter!=m_FreeListeners.end(); iter++)
+	while (!m_FreeListeners.empty())
 	{
-		delete (*iter);
+		delete m_FreeListeners.top();
+		m_FreeListeners.pop();
 	}
-	m_FreeListeners.popall();
 }
 
 void UserMessages::OnSourceModStartup(bool late)
@@ -413,7 +412,7 @@ bool UserMessages::InternalHook(int msg_id, IBitBufUserMessageListener *pListene
 	{
 		pInfo = new ListenerInfo;
 	} else {
-		pInfo = m_FreeListeners.front();
+		pInfo = m_FreeListeners.top();
 		m_FreeListeners.pop();
 	}
 
@@ -465,7 +464,6 @@ bool UserMessages::InternalUnhook(int msg_id, IBitBufUserMessageListener *pListe
 #endif
 {
 	MsgList *pList;
-	MsgIter iter;
 	ListenerInfo *pInfo;
 	bool deleted = false;
 
@@ -475,7 +473,7 @@ bool UserMessages::InternalUnhook(int msg_id, IBitBufUserMessageListener *pListe
 	}
 
 	pList = (intercept) ? &m_msgIntercepts[msg_id] : &m_msgHooks[msg_id];
-	for (iter=pList->begin(); iter!=pList->end(); iter++)
+	for (auto iter=pList->begin(); iter!=pList->end(); iter++)
 	{
 		pInfo = (*iter);
 		if (pInfo->Callback == pListener && pInfo->IsNew == isNew)
@@ -645,13 +643,12 @@ void UserMessages::OnMessageEnd_Post()
 	}
 
 	MsgList *pList;
-	MsgIter iter;
 	ListenerInfo *pInfo;
 
 	m_InHook = false;
 
 	pList = &m_msgIntercepts[m_CurId];
-	for (iter=pList->begin(); iter!=pList->end(); )
+	for (auto iter=pList->begin(); iter!=pList->end(); )
 	{
 		pInfo = (*iter);
 		if (m_BlockEndPost && !pInfo->IsNew)
@@ -678,7 +675,7 @@ void UserMessages::OnMessageEnd_Post()
 	}
 
 	pList = &m_msgHooks[m_CurId];
-	for (iter=pList->begin(); iter!=pList->end(); )
+	for (auto iter=pList->begin(); iter!=pList->end(); )
 	{
 		pInfo = (*iter);
 		if (m_BlockEndPost && !pInfo->IsNew)
@@ -713,7 +710,6 @@ void UserMessages::OnMessageEnd_Pre()
 	}
 
 	MsgList *pList;
-	MsgIter iter;
 	ListenerInfo *pInfo;
 
 	ResultType res;
@@ -721,7 +717,7 @@ void UserMessages::OnMessageEnd_Pre()
 	bool handled = false;
 
 	pList = &m_msgIntercepts[m_CurId];
-	for (iter=pList->begin(); iter!=pList->end(); )
+	for (auto iter=pList->begin(); iter!=pList->end(); )
 	{
 		pInfo = (*iter);
 		pInfo->IsHooked = true;
@@ -805,7 +801,7 @@ void UserMessages::OnMessageEnd_Pre()
 #endif
 
 		pList = &m_msgHooks[m_CurId];
-		for (iter=pList->begin(); iter!=pList->end(); )
+		for (auto iter=pList->begin(); iter!=pList->end(); )
 		{
 			pInfo = (*iter);
 			pInfo->IsHooked = true;

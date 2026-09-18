@@ -40,7 +40,7 @@ SH_DECL_HOOK4_void(IServerPluginHelpers, CreateMessage, SH_NOATTRIB, false, edic
 ValveMenuStyle g_ValveMenuStyle;
 extern const char *g_OptionNumTable[];
 extern const char *g_OptionCmdTable[];
-CallClass<IServerPluginHelpers> *g_pSPHCC = NULL;
+SourceHook::CallClass<IServerPluginHelpers> *g_pSPHCC = NULL;
 
 ValveMenuStyle::ValveMenuStyle() : m_players(new CValveMenuPlayer[256+1])
 {

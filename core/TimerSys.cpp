@@ -178,12 +178,11 @@ TimerSystem::TimerSystem()
 
 TimerSystem::~TimerSystem()
 {
-	CStack<ITimer *>::iterator iter;
-	for (iter=m_FreeTimers.begin(); iter!=m_FreeTimers.end(); iter++)
+	while (!m_FreeTimers.empty())
 	{
-		delete (*iter);
+		delete m_FreeTimers.top();
+		m_FreeTimers.pop();
 	}
-	m_FreeTimers.popall();
 }
 
 void TimerSystem::OnSourceModAllInitialized()
@@ -251,13 +250,12 @@ void TimerSystem::GameFrame(bool simulating)
 	}
 }
 
-void TimerSystem::ProcessRepeatTimers(double curtime, List<ITimer*>& timerList)
+void TimerSystem::ProcessRepeatTimers(double curtime, std::list<ITimer*>& timerList)
 {
     ITimer *pTimer;
-	TimerIter iter;
 
     ResultType res;
-	for (iter=timerList.begin(); iter!=timerList.end(); )
+	for (auto iter=timerList.begin(); iter!=timerList.end(); )
 	{
 		pTimer = (*iter);
 		if (curtime >= pTimer->m_ToExec)
@@ -284,8 +282,7 @@ void TimerSystem::RunFrame(bool timerThink)
 
     //// One-off timers
     ITimer *pTimer;
-	TimerIter iter;
-	for (iter=m_SingleTimers.begin(); iter!=m_SingleTimers.end(); )
+	for (auto iter=m_SingleTimers.begin(); iter!=m_SingleTimers.end(); )
 	{
 		pTimer = (*iter);
 
@@ -323,14 +320,13 @@ void TimerSystem::RunFrame(bool timerThink)
 ITimer *TimerSystem::CreateTimer(ITimedEvent *pCallbacks, float fInterval, void *pData, int flags)
 {
 	ITimer *pTimer;
-	TimerIter iter;
 	const double to_exec = GetSimulatedTime() + fInterval;
 
 	if (m_FreeTimers.empty())
 	{
 		pTimer = new ITimer;
 	} else {
-		pTimer = m_FreeTimers.front();
+		pTimer = m_FreeTimers.top();
 		m_FreeTimers.pop();
 	}
 
@@ -338,21 +334,21 @@ ITimer *TimerSystem::CreateTimer(ITimedEvent *pCallbacks, float fInterval, void 
 
 	if (flags & TIMER_FLAG_REPEAT)
 	{
-        List<ITimer*>& timerList = pTimer->m_Flags & TIMER_FLAG_TICK_PRECISE ? m_HighSpeedLoopTimers : m_LowSpeedLoopTimers; 
+        std::list<ITimer*>& timerList = pTimer->m_Flags & TIMER_FLAG_TICK_PRECISE ? m_HighSpeedLoopTimers : m_LowSpeedLoopTimers; 
         timerList.push_back(pTimer);
 		goto return_timer;
 	}
 
 	if (m_SingleTimers.size() >= 1)
 	{
-		iter = --m_SingleTimers.end();
+		auto iter = --m_SingleTimers.end();
 		if ((*iter)->m_ToExec <= to_exec)
 		{
 			goto normal_insert_end;
 		}
 	}
 
-	for (iter=m_SingleTimers.begin(); iter!=m_SingleTimers.end(); iter++)
+	for (auto iter=m_SingleTimers.begin(); iter!=m_SingleTimers.end(); iter++)
 	{
 		if ((*iter)->m_ToExec >= to_exec)
 		{
@@ -398,7 +394,7 @@ void TimerSystem::FireTimerOnce(ITimer *pTimer, bool delayExec)
 			return;
 		}
 
-        List<ITimer*>& timerList = pTimer->m_Flags & TIMER_FLAG_TICK_PRECISE ? m_HighSpeedLoopTimers : m_LowSpeedLoopTimers; 
+        std::list<ITimer*>& timerList = pTimer->m_Flags & TIMER_FLAG_TICK_PRECISE ? m_HighSpeedLoopTimers : m_LowSpeedLoopTimers; 
 		pTimer->m_Listener->OnTimerEnd(pTimer, pTimer->m_pData);
 		timerList.remove(pTimer);
 		m_FreeTimers.push(pTimer);
@@ -423,7 +419,7 @@ void TimerSystem::KillTimer(ITimer *pTimer)
 
 	if (pTimer->m_Flags & TIMER_FLAG_REPEAT)
 	{
-        List<ITimer*>& timerList = pTimer->m_Flags & TIMER_FLAG_TICK_PRECISE ? m_HighSpeedLoopTimers : m_LowSpeedLoopTimers; 
+        std::list<ITimer*>& timerList = pTimer->m_Flags & TIMER_FLAG_TICK_PRECISE ? m_HighSpeedLoopTimers : m_LowSpeedLoopTimers; 
 		timerList.remove(pTimer);
 	} else {
 		m_SingleTimers.remove(pTimer);
@@ -432,10 +428,10 @@ void TimerSystem::KillTimer(ITimer *pTimer)
 	m_FreeTimers.push(pTimer);
 }
 
-CStack<ITimer *> s_tokill;
+std::stack<ITimer *> s_tokill;
 void TimerSystem::RemoveMapChangeTimers()
 {
-    const auto KillMapchangeTimers = [](List<ITimer*>& timerList) {
+    const auto KillMapchangeTimers = [](std::list<ITimer*>& timerList) {
         for (ITimer* pTimer : timerList)
         {
             if (pTimer->m_Flags & TIMER_FLAG_NO_MAPCHANGE)
@@ -452,7 +448,7 @@ void TimerSystem::RemoveMapChangeTimers()
 
 	while (!s_tokill.empty())
 	{
-		KillTimer(s_tokill.front());
+		KillTimer(s_tokill.top());
 		s_tokill.pop();
 	}
 }

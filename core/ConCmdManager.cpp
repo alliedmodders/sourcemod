@@ -76,7 +76,7 @@ void ConCmdManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *na
 	if (!m_Cmds.retrieve(name, &pInfo))
 		return;
 
-	CmdHookList::iterator iter = pInfo->hooks.begin();
+	auto iter = pInfo->hooks.begin();
 	while (iter != pInfo->hooks.end())
 	{
 		CmdHook *hook = *iter;
@@ -87,7 +87,7 @@ void ConCmdManager::OnUnlinkConCommandBase(ConCommandBase *pBase, const char *na
 		// The list is guaranteed to exist.
 		PluginHookList *list;
 		pPlugin->GetProperty("CommandList", (void **)&list, false);
-		for (PluginHookList::iterator hiter = list->begin(); hiter != list->end(); hiter++)
+		for (auto hiter = list->begin(); hiter != list->end(); hiter++)
 		{
 			if (*hiter == hook)
 			{
@@ -112,7 +112,7 @@ void ConCmdManager::OnPluginDestroyed(IPlugin *plugin)
 	if (!plugin->GetProperty("CommandList", (void **)&pList, true))
 		return;
 
-	PluginHookList::iterator iter = pList->begin();
+	auto iter = pList->begin();
 	while (iter != pList->end())
 	{
 		CmdHook *hook = *iter;
@@ -163,7 +163,7 @@ ResultType ConCmdManager::DispatchClientCommand(int client, const char *cmd, int
 	}
 
 	cell_t result = type;
-	for (CmdHookList::iterator iter = pInfo->hooks.begin(); iter != pInfo->hooks.end(); iter++)
+	for (auto iter = pInfo->hooks.begin(); iter != pInfo->hooks.end(); iter++)
 	{
 		CmdHook *hook = *iter;
 
@@ -235,7 +235,7 @@ bool ConCmdManager::InternalDispatch(int client, const ICommandArgs *args)
 	                 : client;
 	int dedicatedClient = engine->IsDedicatedServer() ? 0 : g_Players.ListenClient();
 
-	for (CmdHookList::iterator iter = pInfo->hooks.begin(); iter != pInfo->hooks.end(); iter++)
+	for (auto iter = pInfo->hooks.begin(); iter != pInfo->hooks.end(); iter++)
 	{
 		CmdHook *hook = *iter;
 
@@ -398,7 +398,7 @@ void RegisterInPlugin(CmdHook *hook)
 	const char *orig = hook->info->pCmd->GetName();
 
 	/* Insert this into the help list, SORTED alphabetically. */
-	PluginHookList::iterator iter = pList->begin();
+	auto iter = pList->begin();
 	while (iter != pList->end())
 	{
 		const char *cmd = (*iter)->info->pCmd->GetName();
@@ -415,7 +415,7 @@ void RegisterInPlugin(CmdHook *hook)
 
 void ConCmdManager::AddToCmdList(ConCmdInfo *info)
 {
-	List<ConCmdInfo *>::iterator iter = m_CmdList.begin();
+	auto iter = m_CmdList.begin();
 	ConCmdInfo *pInfo;
 	bool inserted = false;
 	const char *orig = NULL;
@@ -451,7 +451,7 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 		if (!m_Cmds.retrieve(cmd, &pInfo))
 			return;
 
-		for (CmdHookList::iterator iter = pInfo->hooks.begin(); iter != pInfo->hooks.end(); iter++)
+		for (auto iter = pInfo->hooks.begin(); iter != pInfo->hooks.end(); iter++)
 		{
 			if (!iter->admin)
 				continue;
@@ -471,7 +471,7 @@ void ConCmdManager::UpdateAdminCmdFlags(const char *cmd, OverrideType type, Flag
 
 		RefPtr<CommandGroup> group(r->value);
 
-		for (PluginHookList::iterator iter = group->hooks.begin(); iter != group->hooks.end(); iter++)
+		for (auto iter = group->hooks.begin(); iter != group->hooks.end(); iter++)
 		{
 			CmdHook *hook = *iter;
 			if (!remove)
@@ -613,7 +613,7 @@ void ConCmdManager::OnRootConsoleCommand(const char *cmdname, const ICommandArgs
 		const char *help;
 		UTIL_ConsolePrint("[SM] Listing commands for: %s", plname);
 		UTIL_ConsolePrint("  %-17.16s %-8.7s %s", "[Name]", "[Type]", "[Help]");
-		for (PluginHookList::iterator iter = pList->begin(); iter != pList->end(); iter++)
+		for (auto iter = pList->begin(); iter != pList->end(); iter++)
 		{
 			CmdHook *hook = *iter;
 			if (hook->type == CmdHook::Server)

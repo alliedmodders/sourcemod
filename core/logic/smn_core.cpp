@@ -60,7 +60,7 @@
 #include <bridge/include/CoreProvider.h>
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/IExtensionBridge.h>
-#include <sh_vector.h>
+#include <vector>
 
 using namespace SourceMod;
 using namespace SourcePawn;
@@ -129,7 +129,7 @@ class CMMPluginIterator
 	  public IPluginsListener
 {
 public:
-	CMMPluginIterator(const CVector<SMPlugin *> *list)
+	CMMPluginIterator(const std::vector<SMPlugin *> *list)
 		: m_hasStarted(false)
 	{
 		for(auto iter = list->begin(); iter != list->end(); ++iter) {

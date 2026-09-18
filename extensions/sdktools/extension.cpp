@@ -237,8 +237,7 @@ void SDKTools::OnHandleDestroy(HandleType_t type, void *object)
 
 void SDKTools::SDK_OnUnload()
 {
-	SourceHook::List<ValveCall *>::iterator iter;
-	for (iter = g_RegCalls.begin();
+	for (auto iter = g_RegCalls.begin();
 		 iter != g_RegCalls.end();
 		 iter++)
 	{
@@ -395,8 +394,7 @@ bool SDKTools::QueryInterfaceDrop(SMInterface *pInterface)
 
 void SDKTools::NotifyInterfaceDrop(SMInterface *pInterface)
 {
-	SourceHook::List<ValveCall *>::iterator iter;
-	for (iter = g_RegCalls.begin();
+	for (auto iter = g_RegCalls.begin();
 		iter != g_RegCalls.end();
 		iter++)
 	{

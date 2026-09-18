@@ -35,6 +35,7 @@
 #include <am-refcounting.h>
 #include "SqDatabase.h"
 #include "SqResults.h"
+#include <string>
 
 class SqQuery : 
 	public IPreparedQuery
@@ -86,7 +87,7 @@ private:
 	sqlite3_stmt *m_pStmt;
 	SqResults *m_pResults;
 	unsigned int m_ParamCount;
-	String m_LastError;
+	std::string m_LastError;
 	int m_LastErrorCode;
 	unsigned int m_AffectedRows;
 	unsigned int m_InsertID;

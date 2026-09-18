@@ -29,17 +29,16 @@
 
 #include "common_logic.h"
 #include <IRootConsoleMenu.h>
-#include <sh_list.h>
-#include <sh_string.h>
+#include <list>
+#include <string>
 #include <sm_namehashset.h>
 
 using namespace SourceMod;
-using namespace SourceHook;
 
 struct ConsoleEntry
 {
-	String command;
-	String description;
+	std::string command;
+	std::string description;
 	IRootConsoleCommand *cmd;
 
 	static inline bool matches(const char *name, const ConsoleEntry *entry)
@@ -84,7 +83,7 @@ public:
 	void GotRootCmd(const ICommandArgs *cmd);
 private:
 	NameHashSet<ConsoleEntry *> m_Commands;
-	List<ConsoleEntry *> m_Menu;
+	std::list<ConsoleEntry *> m_Menu;
 };
 
 extern RootConsoleMenu g_RootMenu;

@@ -65,7 +65,7 @@ IForward *ServerExitHibernation = NULL;
 
 const unsigned int *g_NumPlayersToAuth = NULL;
 int lifestate_offset = -1;
-List<ICommandTargetProcessor *> target_processors;
+std::list<ICommandTargetProcessor *> target_processors;
 
 ConVar sm_debug_connect("sm_debug_connect", "1", 0, "Log Debug information about potential connection issues.");
 
@@ -348,8 +348,7 @@ void PlayerManager::OnServerActivate(edict_t *pEdictList, int edictCount, int cl
 	m_onActivate->Execute(NULL);
 	m_onActivate2->Execute(NULL);
 
-	List<IClientListener *>::iterator iter;
-	for (iter = m_hooks.begin(); iter != m_hooks.end(); iter++)
+	for (auto iter = m_hooks.begin(); iter != m_hooks.end(); iter++)
 	{
 		if ((*iter)->GetClientListenerVersion() >= 5)
 		{
@@ -451,9 +450,8 @@ void PlayerManager::RunAuthChecks()
 			const char *steamId = pPlayer->GetSteam2Id();
 
 			/* Send to extensions */
-			List<IClientListener *>::iterator iter;
 			IClientListener *pListener;
-			for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+			for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 			{
 				pListener = (*iter);
 				pListener->OnClientAuthorized(client, steamId ? steamId : authstr);
@@ -565,9 +563,8 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 		pPlayer->m_OriginalLangId = pPlayer->m_LangId;
 	}
 	
-	List<IClientListener *>::iterator iter;
 	IClientListener *pListener = NULL;
-	for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+	for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 	{
 		pListener = (*iter);
 		if (!pListener->InterceptClientConnect(client, reject, maxrejectlen))
@@ -611,9 +608,8 @@ bool PlayerManager::OnClientConnect_Post(edict_t *pEntity, const char *pszName, 
 
 	if (orig_value)
 	{
-		List<IClientListener *>::iterator iter;
 		IClientListener *pListener = NULL;
-		for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+		for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 		{
 			pListener = (*iter);
 			pListener->OnClientConnected(client);
@@ -726,9 +722,8 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 			/* :TODO: kick the bot if it's rejected */
 			return;
 		}
-		List<IClientListener *>::iterator iter;
 		IClientListener *pListener = NULL;
-		for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+		for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 		{
 			pListener = (*iter);
 			pListener->OnClientConnected(client);
@@ -748,7 +743,7 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		const char *steamId = pPlayer->GetSteam2Id();
 
 		/* Now do authorization */
-		for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+		for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 		{
 			pListener = (*iter);
 			pListener->OnClientAuthorized(client, steamId ? steamId : pPlayer->m_AuthID.c_str());
@@ -779,9 +774,8 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 	pPlayer->Connect();
 	m_PlayerCount++;
 
-	List<IClientListener *>::iterator iter;
 	IClientListener *pListener = NULL;
-	for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+	for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 	{
 		pListener = (*iter);
 		pListener->OnClientPutInServer(client);
@@ -862,9 +856,8 @@ void PlayerManager::OnClientDisconnect(edict_t *pEntity)
 		m_PlayerCount--;
 	}
 
-	List<IClientListener *>::iterator iter;
 	IClientListener *pListener = NULL;
-	for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+	for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 	{
 		pListener = (*iter);
 		pListener->OnClientDisconnecting(client);
@@ -893,9 +886,8 @@ void PlayerManager::OnClientDisconnect_Post(edict_t *pEntity)
 	m_cldisconnect_post->PushCell(client);
 	m_cldisconnect_post->Execute(&res, NULL);
 
-	List<IClientListener *>::iterator iter;
 	IClientListener *pListener = NULL;
-	for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+	for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 	{
 		pListener = (*iter);
 		pListener->OnClientDisconnected(client);
@@ -1073,7 +1065,7 @@ void ListPluginsToClient(CPlayer *player, const CCommand &args)
 		return;
 	}
 
-	SourceHook::List<SMPlugin *> m_FailList;
+	std::list<SMPlugin *> m_FailList;
 
 	size_t i = 0;
 	for (; i < plugins->size(); i++)
@@ -1240,7 +1232,7 @@ void PlayerManager::OnClientCommandKeyValues(edict_t *pEntity, KeyValues *pComma
 
 	KeyValueStack *pStk = new KeyValueStack;
 	pStk->pBase = pCommand;
-	pStk->pCurRoot.push(pStk->pBase);
+	pStk->pCurRoot.push_front(pStk->pBase);
 	pStk->m_bDeleteOnDestroy = false;
 
 	Handle_t hndl = handlesys->CreateHandle(g_KeyValueType, pStk, g_pCoreIdent, g_pCoreIdent, NULL);
@@ -1285,7 +1277,7 @@ void PlayerManager::OnClientCommandKeyValues_Post(edict_t *pEntity, KeyValues *p
 
 	KeyValueStack *pStk = new KeyValueStack;
 	pStk->pBase = pCommand;
-	pStk->pCurRoot.push(pStk->pBase);
+	pStk->pCurRoot.push_front(pStk->pBase);
 	pStk->m_bDeleteOnDestroy = false;
 
 	Handle_t hndl = handlesys->CreateHandle(g_KeyValueType, pStk, g_pCoreIdent, g_pCoreIdent, NULL);
@@ -1381,9 +1373,8 @@ void PlayerManager::OnClientSettingsChanged(edict_t *pEntity)
 	}
 
 	/* Notify Extensions */
-	List<IClientListener *>::iterator iter;
 	IClientListener *pListener = NULL;
-	for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+	for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 	{
 		pListener = (*iter);
 		if (pListener->GetClientListenerVersion() >= 13)
@@ -1892,8 +1883,7 @@ void PlayerManager::ProcessCommandTarget(cmd_target_info_t *info)
 		}
 	}
 
-	List<ICommandTargetProcessor *>::iterator iter;
-	for (iter = target_processors.begin(); iter != target_processors.end(); iter++)
+	for (auto iter = target_processors.begin(); iter != target_processors.end(); iter++)
 	{
 		ICommandTargetProcessor *pProcessor = (*iter);
 		if (pProcessor->ProcessCommandTarget(info))
@@ -1976,9 +1966,8 @@ void PlayerManager::MaxPlayersChanged( int newvalue /*= -1*/ )
 	}
 
 	/* Notify Extensions */
-	List<IClientListener *>::iterator iter;
 	IClientListener *pListener = NULL;
-	for (iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
+	for (auto iter=m_hooks.begin(); iter!=m_hooks.end(); iter++)
 	{
 		pListener = (*iter);
 		if (pListener->GetClientListenerVersion() >= 8)
@@ -2501,8 +2490,7 @@ void CPlayer::DoPostConnectAuthorization()
 {
 	bool delay = false;
 
-	List<IClientListener *>::iterator iter;
-	for (iter = g_Players.m_hooks.begin();
+	for (auto iter = g_Players.m_hooks.begin();
 		 iter != g_Players.m_hooks.end();
 		 iter++)
 	{
@@ -2561,8 +2549,7 @@ void CPlayer::NotifyPostAdminChecks()
 	/* Block beforehand so they can't double-call */
 	m_bAdminCheckSignalled = true;
 
-	List<IClientListener *>::iterator iter;
-	for (iter = g_Players.m_hooks.begin();
+	for (auto iter = g_Players.m_hooks.begin();
 		iter != g_Players.m_hooks.end();
 		iter++)
 	{

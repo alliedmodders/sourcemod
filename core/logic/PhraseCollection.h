@@ -33,10 +33,9 @@
 #define _INCLUDE_SOURCEMOD_PHRASECOLLECTION_H_
 
 #include <string.h>
-#include <sh_vector.h>
+#include <vector>
 #include <ITranslator.h>
 
-using namespace SourceHook;
 using namespace SourceMod;
 
 class CPhraseCollection : public IPhraseCollection
@@ -60,7 +59,7 @@ public:
 		size_t *pOutLength,
 		const char **pFailPhrase);
 private:
-	CVector<IPhraseFile *> m_Files;
+	std::vector<IPhraseFile *> m_Files;
 };
 
 #endif //_INCLUDE_SOURCEMOD_PHRASECOLLECTION_H_
