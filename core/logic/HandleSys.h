@@ -37,7 +37,7 @@
 #include <memory>
 
 #include <amtl/am-string.h>
-#include <amtl/am-function.h>
+#include <functional>
 #include <IHandleSys.h>
 #include <sm_namehashset.h>
 #include "common_logic.h"
@@ -123,7 +123,7 @@ struct QHandleType
 	}
 };
 
-typedef ke::Function<void(const char *)> HandleReporter;
+typedef std::function<void(const char *)> HandleReporter;
 
 class HandleSystem : 
 	public IHandleSys

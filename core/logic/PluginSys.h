@@ -56,7 +56,7 @@
 #include "PhraseCollection.h"
 #include <am-string.h>
 #include <bridge/include/IScriptManager.h>
-#include <am-function.h>
+#include <functional>
 #include <ReentrantList.h>
 
 class CPlayer;
@@ -129,10 +129,10 @@ public:
 		bool required;
 	};
 
-	typedef ke::Function<bool(const char *pubvar_name, const ExtVar& ext)> ExtVarCallback;
+	typedef std::function<bool(const char *pubvar_name, const ExtVar& ext)> ExtVarCallback;
 	bool ForEachExtVar(const ExtVarCallback& callback);
 
-	void ForEachLibrary(ke::Function<void(const char *)> callback);
+	void ForEachLibrary(std::function<void(const char *)> callback);
 public:
 	/**
 	 * Creates a plugin object with default values.
@@ -215,7 +215,7 @@ public:
 	}
 
 	void AddRequiredLib(const char *name);
-	bool ForEachRequiredLib(ke::Function<bool(const char *)> callback);
+	bool ForEachRequiredLib(std::function<bool(const char *)> callback);
 
 	bool HasMissingFakeNatives() const {
 		return m_FakeNativesMissing;
@@ -426,7 +426,7 @@ public:
 
 	void _SetPauseState(CPlugin *pPlugin, bool pause);
 
-	void ForEachPlugin(ke::Function<void(CPlugin *)> callback);
+	void ForEachPlugin(std::function<void(CPlugin *)> callback);
 private:
 	LoadRes LoadPlugin(CPlugin **pPlugin, const char *path, bool debug, PluginType type);
 

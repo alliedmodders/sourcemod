@@ -34,7 +34,7 @@
 #include <iserverplugin.h>
 #include <amtl/am-refcounting.h>
 #include <amtl/am-vector.h>
-#include <amtl/am-function.h>
+#include <functional>
 
 class ConVar;
 class CCommand;
@@ -63,7 +63,7 @@ class CommandHook : public ke::Refcounted<CommandHook>
 {
 public:
 	// return false to RETURN_META(MRES_IGNORED), or true to SUPERCEDE.
-	typedef ke::Function<bool(int, const ICommandArgs *)> Callback;
+	typedef std::function<bool(int, const ICommandArgs *)> Callback;
 
 public:
 	CommandHook(ConCommand *cmd, const Callback &callback, bool post);
