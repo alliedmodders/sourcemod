@@ -143,31 +143,23 @@ void SoundHooks::OnPluginUnloaded(IPlugin *plugin)
 
 	if (m_AmbientCount)
 	{
-		for (auto iter=m_AmbientFuncs.begin(); iter!=m_AmbientFuncs.end(); )
+		for (FuncIter iter(m_AmbientFuncs); !iter.done(); iter.next())
 		{
 			if ((*iter)->GetParentContext() == pContext)
 			{
-				iter = m_AmbientFuncs.erase(iter);
+				iter.remove();
 				_DecRefCounter(AMBIENT_SOUND_HOOK);
-			}
-			else
-			{
-				iter++;
 			}
 		}
 	}
 	if (m_NormalCount)
 	{
-		for (auto iter=m_NormalFuncs.begin(); iter!=m_NormalFuncs.end(); )
+		for (FuncIter iter(m_NormalFuncs); !iter.done(); iter.next())
 		{
 			if ((*iter)->GetParentContext() == pContext)
 			{
-				iter = m_NormalFuncs.erase(iter);
+				iter.remove();
 				_DecRefCounter(NORMAL_SOUND_HOOK);
-			}
-			else
-			{
-				iter++;
 			}
 		}
 	}
@@ -191,31 +183,31 @@ bool SoundHooks::RemoveHook(int type, IPluginFunction *pFunc)
 {
 	if (type == NORMAL_SOUND_HOOK)
 	{
-		auto iter = std::find(m_NormalFuncs.begin(), m_NormalFuncs.end(), pFunc);
-		if (iter != m_NormalFuncs.end())
+		for (FuncIter iter(m_NormalFuncs); !iter.done(); iter.next())
 		{
-			m_NormalFuncs.erase(iter);
-			_DecRefCounter(NORMAL_SOUND_HOOK);
-			return true;
+			if (*iter == pFunc)
+			{
+				iter.remove();
+				_DecRefCounter(NORMAL_SOUND_HOOK);
+				return true;
+			}
 		}
-		else
-		{
-			return false;
-		}
+
+		return false;
 	}
 	else if (type == AMBIENT_SOUND_HOOK)
 	{
-		auto iter = std::find(m_AmbientFuncs.begin(), m_AmbientFuncs.end(), pFunc);
-		if (iter != m_AmbientFuncs.end())
+		for (FuncIter iter(m_AmbientFuncs); !iter.done(); iter.next())
 		{
-			m_AmbientFuncs.erase(iter);
-			_DecRefCounter(AMBIENT_SOUND_HOOK);
-			return true;
+			if (*iter == pFunc)
+			{
+				iter.remove();
+				_DecRefCounter(AMBIENT_SOUND_HOOK);
+				return true;
+			}
 		}
-		else
-		{
-			return false;
-		}
+
+		return false;
 	}
 
 	return false;
@@ -230,7 +222,7 @@ void SoundHooks::OnEmitAmbientSound(int entindex, const Vector &pos, const char 
 	char buffer[PLATFORM_MAX_PATH];
 	ke::SafeStrcpy(buffer, sizeof(buffer), samp);
 
-	for (auto iter=m_AmbientFuncs.begin(); iter!=m_AmbientFuncs.end(); iter++)
+	for (FuncIter iter(m_AmbientFuncs); !iter.done(); iter.next())
 	{
 		pFunc = (*iter);
 		pFunc->PushStringEx(buffer, sizeof(buffer), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
@@ -353,7 +345,7 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 	int nSeed = 0;
 #endif
 
-	for (auto iter=m_NormalFuncs.begin(); iter!=m_NormalFuncs.end(); iter++)
+	for (FuncIter iter(m_NormalFuncs); !iter.done(); iter.next())
 	{
 		int players[SM_MAXPLAYERS], size;
 		size = _FillInPlayers(players, &filter);
@@ -516,7 +508,7 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 	int nSeed = 0;
 #endif
 
-	for (auto iter=m_NormalFuncs.begin(); iter!=m_NormalFuncs.end(); iter++)
+	for (FuncIter iter(m_NormalFuncs); !iter.done(); iter.next())
 	{
 		int players[SM_MAXPLAYERS], size;
 		size = _FillInPlayers(players, &filter);

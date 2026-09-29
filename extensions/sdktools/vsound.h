@@ -32,9 +32,9 @@
 #ifndef _INCLUDE_SOURCEMOD_VSOUND_H_
 #define _INCLUDE_SOURCEMOD_VSOUND_H_
 
-#include <list>
 #include "extension.h"
 #include "CellRecipientFilter.h"
+#include <ReentrantList.h>
 
 #define NORMAL_SOUND_HOOK		0
 #define AMBIENT_SOUND_HOOK		1
@@ -97,8 +97,9 @@ private:
 	void _IncRefCounter(int type);
 	void _DecRefCounter(int type);
 private:
-	std::list<IPluginFunction *> m_AmbientFuncs;
-	std::list<IPluginFunction *> m_NormalFuncs;
+	typedef ReentrantList<IPluginFunction *>::iterator FuncIter;
+	ReentrantList<IPluginFunction *> m_AmbientFuncs;
+	ReentrantList<IPluginFunction *> m_NormalFuncs;
 	size_t m_NormalCount;
 	size_t m_AmbientCount;
 };
