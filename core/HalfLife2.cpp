@@ -1065,7 +1065,7 @@ CBaseEntity *CHalfLife2::ReferenceToEntity(cell_t entRef)
 	{
 		/* Proper ent reference */
 		int hndlValue = entRef & ~ENTREF_MASK;
-#if SOURCE_ENGINE == SE_TF2
+#if SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_HL2DM
 		auto hndl = CBaseHandle::UnsafeFromIndex(hndlValue);
 #else
 		CBaseHandle hndl(hndlValue);
@@ -1173,7 +1173,7 @@ int CHalfLife2::ReferenceToIndex(cell_t entRef)
 	{
 		/* Proper ent reference */
 		int hndlValue = entRef & ~ENTREF_MASK;
-#if SOURCE_ENGINE == SE_TF2
+#if SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_HL2DM
 		auto hndl = CBaseHandle::UnsafeFromIndex(hndlValue);
 #else
 		CBaseHandle hndl(hndlValue);
@@ -1243,7 +1243,7 @@ cell_t CHalfLife2::ReferenceToBCompatRef(cell_t entRef)
 	}
 
 	int hndlValue = entRef & ~ENTREF_MASK;
-#if SOURCE_ENGINE == SE_TF2
+#if SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_HL2DM
 	auto hndl = CBaseHandle::UnsafeFromIndex(hndlValue);
 #else
 	CBaseHandle hndl(hndlValue);
