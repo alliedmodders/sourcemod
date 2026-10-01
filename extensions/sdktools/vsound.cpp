@@ -243,6 +243,7 @@ bool SoundHooks::RemoveHook(int type, IPluginFunction *pFunc)
 void SoundHooks::OnEmitAmbientSound(int entindex, const Vector &pos, const char *samp, float vol, 
 									soundlevel_t soundlevel, int fFlags, int pitch, float delay)
 {
+	AutoHookRef ref(this, AMBIENT_SOUND_HOOK);
 	IPluginFunction *pFunc;
 	bool changed = false;
 
@@ -291,8 +292,7 @@ void SoundHooks::OnEmitAmbientSound(int entindex, const Vector &pos, const char 
 		}
 	}
 
-	// If a callback removed the last hook, we've been unhooked and can't recall
-	if (changed && m_AmbientCount)
+	if (changed)
 	{
 		Vector vec2;
 		vec2.x = sp_ctof(committed.pos[0]);
@@ -378,6 +378,7 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 							 float soundtime, int speakerentity)
 #endif
 {
+	AutoHookRef ref(this, NORMAL_SOUND_HOOK);
 	IPluginFunction *pFunc;
 	bool changed = false;
 
@@ -472,8 +473,7 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 		}
 	}
 
-	// If a callback removed the last hook, we've been unhooked and can't recall
-	if (changed && m_NormalCount)
+	if (changed)
 	{
 #if SOURCE_ENGINE >= SE_PORTAL2
 		if (strcmp(pSoundEntry, committed.soundEntry) != 0 || strcmp(pSample, committed.sample) != 0)
@@ -555,6 +555,7 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 							 float soundtime, int speakerentity)
 #endif
 {
+	AutoHookRef ref(this, NORMAL_SOUND_HOOK);
 	IPluginFunction *pFunc;
 	bool changed = false;
 
@@ -649,8 +650,7 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 		}
 	}
 
-	// If a callback removed the last hook, we've been unhooked and can't recall
-	if (changed && m_NormalCount)
+	if (changed)
 	{
 #if SOURCE_ENGINE >= SE_PORTAL2
 		if (strcmp(pSoundEntry, committed.soundEntry) != 0 || strcmp(pSample, committed.sample) != 0)

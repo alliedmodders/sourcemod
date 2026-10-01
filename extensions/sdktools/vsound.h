@@ -97,6 +97,22 @@ private:
 	void _IncRefCounter(int type);
 	void _DecRefCounter(int type);
 private:
+	class AutoHookRef
+	{
+	public:
+		AutoHookRef(SoundHooks *hooks, int type) : m_Hooks(hooks), m_Type(type)
+		{
+			m_Hooks->_IncRefCounter(m_Type);
+		}
+		~AutoHookRef()
+		{
+			m_Hooks->_DecRefCounter(m_Type);
+		}
+	private:
+		SoundHooks *m_Hooks;
+		int m_Type;
+	};
+private:
 	typedef ReentrantList<IPluginFunction *>::iterator FuncIter;
 	ReentrantList<IPluginFunction *> m_AmbientFuncs;
 	ReentrantList<IPluginFunction *> m_NormalFuncs;
