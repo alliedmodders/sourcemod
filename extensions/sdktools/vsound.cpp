@@ -52,6 +52,33 @@ SH_DECL_HOOK14_void(IEngineSound, EmitSound, SH_NOATTRIB, 1, IRecipientFilter &,
 
 bool g_InSoundHook = false;
 
+struct AmbientSoundParams
+{
+	char sample[PLATFORM_MAX_PATH];
+	int entity;
+	float volume;
+	int level;
+	int pitch;
+	cell_t pos[3];
+	int flags;
+	float delay;
+};
+
+struct NormalSoundParams
+{
+	int clients[SM_MAXPLAYERS];
+	int numClients;
+	char sample[PLATFORM_MAX_PATH];
+	int entity;
+	int channel;
+	float volume;
+	int level;
+	int pitch;
+	int flags;
+	char soundEntry[PLATFORM_MAX_PATH];
+	int seed;
+};
+
 /***************************
 *                          *
 * Sound Related Hook Class *
@@ -143,31 +170,23 @@ void SoundHooks::OnPluginUnloaded(IPlugin *plugin)
 
 	if (m_AmbientCount)
 	{
-		for (auto iter=m_AmbientFuncs.begin(); iter!=m_AmbientFuncs.end(); )
+		for (FuncIter iter(m_AmbientFuncs); !iter.done(); iter.next())
 		{
 			if ((*iter)->GetParentContext() == pContext)
 			{
-				iter = m_AmbientFuncs.erase(iter);
+				iter.remove();
 				_DecRefCounter(AMBIENT_SOUND_HOOK);
-			}
-			else
-			{
-				iter++;
 			}
 		}
 	}
 	if (m_NormalCount)
 	{
-		for (auto iter=m_NormalFuncs.begin(); iter!=m_NormalFuncs.end(); )
+		for (FuncIter iter(m_NormalFuncs); !iter.done(); iter.next())
 		{
 			if ((*iter)->GetParentContext() == pContext)
 			{
-				iter = m_NormalFuncs.erase(iter);
+				iter.remove();
 				_DecRefCounter(NORMAL_SOUND_HOOK);
-			}
-			else
-			{
-				iter++;
 			}
 		}
 	}
@@ -191,31 +210,31 @@ bool SoundHooks::RemoveHook(int type, IPluginFunction *pFunc)
 {
 	if (type == NORMAL_SOUND_HOOK)
 	{
-		auto iter = std::find(m_NormalFuncs.begin(), m_NormalFuncs.end(), pFunc);
-		if (iter != m_NormalFuncs.end())
+		for (FuncIter iter(m_NormalFuncs); !iter.done(); iter.next())
 		{
-			m_NormalFuncs.erase(iter);
-			_DecRefCounter(NORMAL_SOUND_HOOK);
-			return true;
+			if (*iter == pFunc)
+			{
+				iter.remove();
+				_DecRefCounter(NORMAL_SOUND_HOOK);
+				return true;
+			}
 		}
-		else
-		{
-			return false;
-		}
+
+		return false;
 	}
 	else if (type == AMBIENT_SOUND_HOOK)
 	{
-		auto iter = std::find(m_AmbientFuncs.begin(), m_AmbientFuncs.end(), pFunc);
-		if (iter != m_AmbientFuncs.end())
+		for (FuncIter iter(m_AmbientFuncs); !iter.done(); iter.next())
 		{
-			m_AmbientFuncs.erase(iter);
-			_DecRefCounter(AMBIENT_SOUND_HOOK);
-			return true;
+			if (*iter == pFunc)
+			{
+				iter.remove();
+				_DecRefCounter(AMBIENT_SOUND_HOOK);
+				return true;
+			}
 		}
-		else
-		{
-			return false;
-		}
+
+		return false;
 	}
 
 	return false;
@@ -224,23 +243,35 @@ bool SoundHooks::RemoveHook(int type, IPluginFunction *pFunc)
 void SoundHooks::OnEmitAmbientSound(int entindex, const Vector &pos, const char *samp, float vol, 
 									soundlevel_t soundlevel, int fFlags, int pitch, float delay)
 {
+	AutoHookRef ref(this, AMBIENT_SOUND_HOOK);
 	IPluginFunction *pFunc;
-	cell_t vec[3] = {sp_ftoc(pos.x), sp_ftoc(pos.y), sp_ftoc(pos.z)};
-	cell_t res = static_cast<ResultType>(Pl_Continue);
-	char buffer[PLATFORM_MAX_PATH];
-	ke::SafeStrcpy(buffer, sizeof(buffer), samp);
+	bool changed = false;
 
-	for (auto iter=m_AmbientFuncs.begin(); iter!=m_AmbientFuncs.end(); iter++)
+	AmbientSoundParams committed;
+	ke::SafeStrcpy(committed.sample, sizeof(committed.sample), samp);
+	committed.entity = entindex;
+	committed.volume = vol;
+	committed.level = soundlevel;
+	committed.pitch = pitch;
+	committed.pos[0] = sp_ftoc(pos.x);
+	committed.pos[1] = sp_ftoc(pos.y);
+	committed.pos[2] = sp_ftoc(pos.z);
+	committed.flags = fFlags;
+	committed.delay = delay;
+
+	for (FuncIter iter(m_AmbientFuncs); !iter.done(); iter.next())
 	{
+		AmbientSoundParams params = committed;
 		pFunc = (*iter);
-		pFunc->PushStringEx(buffer, sizeof(buffer), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
-		pFunc->PushCellByRef(&entindex);
-		pFunc->PushFloatByRef(&vol);
-		pFunc->PushCellByRef(reinterpret_cast<cell_t *>(&soundlevel));
-		pFunc->PushCellByRef(&pitch);
-		pFunc->PushArray(vec, 3, SM_PARAM_COPYBACK);
-		pFunc->PushCellByRef(&fFlags);
-		pFunc->PushFloatByRef(&delay);
+		pFunc->PushStringEx(params.sample, sizeof(params.sample), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+		pFunc->PushCellByRef(&params.entity);
+		pFunc->PushFloatByRef(&params.volume);
+		pFunc->PushCellByRef(&params.level);
+		pFunc->PushCellByRef(&params.pitch);
+		pFunc->PushArray(params.pos, 3, SM_PARAM_COPYBACK);
+		pFunc->PushCellByRef(&params.flags);
+		pFunc->PushFloatByRef(&params.delay);
+		cell_t res = static_cast<ResultType>(Pl_Continue);
 		g_InSoundHook = true;
 		pFunc->Execute(&res);
 		g_InSoundHook = false;
@@ -254,14 +285,22 @@ void SoundHooks::OnEmitAmbientSound(int entindex, const Vector &pos, const char 
 			}
 		case Pl_Changed:
 			{
-				Vector vec2;
-				vec2.x = sp_ctof(vec[0]);
-				vec2.y = sp_ctof(vec[1]);
-				vec2.z = sp_ctof(vec[2]);
-				RETURN_META_NEWPARAMS(MRES_IGNORED, &IVEngineServer::EmitAmbientSound,
-										(entindex, vec2, buffer, vol, soundlevel, fFlags, pitch, delay));
+				committed = params;
+				changed = true;
+				break;
 			}
 		}
+	}
+
+	if (changed)
+	{
+		Vector vec2;
+		vec2.x = sp_ctof(committed.pos[0]);
+		vec2.y = sp_ctof(committed.pos[1]);
+		vec2.z = sp_ctof(committed.pos[2]);
+		RETURN_META_NEWPARAMS(MRES_IGNORED, &IVEngineServer::EmitAmbientSound,
+								(committed.entity, vec2, committed.sample, committed.volume, static_cast<soundlevel_t>(committed.level),
+								committed.flags, committed.pitch, committed.delay));
 	}
 }
 
@@ -339,37 +378,44 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 							 float soundtime, int speakerentity)
 #endif
 {
+	AutoHookRef ref(this, NORMAL_SOUND_HOOK);
 	IPluginFunction *pFunc;
-	cell_t res = static_cast<ResultType>(Pl_Continue);
-	char buffer[PLATFORM_MAX_PATH];
-	ke::SafeStrcpy(buffer, sizeof(buffer), pSample);
+	bool changed = false;
 
-	char soundEntry[PLATFORM_MAX_PATH] = "";
+	NormalSoundParams committed;
+	committed.numClients = _FillInPlayers(committed.clients, &filter);
+	ke::SafeStrcpy(committed.sample, sizeof(committed.sample), pSample);
+	committed.entity = iEntIndex;
+	committed.channel = iChannel;
+	committed.volume = flVolume;
+	committed.level = iSoundlevel;
+	committed.pitch = iPitch;
+	committed.flags = iFlags;
 #if SOURCE_ENGINE >= SE_PORTAL2
-	Q_strncpy(soundEntry, pSoundEntry, sizeof(soundEntry));
+	Q_strncpy(committed.soundEntry, pSoundEntry, sizeof(committed.soundEntry));
+	committed.seed = nSeed;
+#else
+	committed.soundEntry[0] = '\0';
+	committed.seed = 0;
 #endif
 
-#if SOURCE_ENGINE < SE_PORTAL2
-	int nSeed = 0;
-#endif
-
-	for (auto iter=m_NormalFuncs.begin(); iter!=m_NormalFuncs.end(); iter++)
+	for (FuncIter iter(m_NormalFuncs); !iter.done(); iter.next())
 	{
-		int players[SM_MAXPLAYERS], size;
-		size = _FillInPlayers(players, &filter);
+		NormalSoundParams params = committed;
 		pFunc = (*iter);
 
-		pFunc->PushArray(players, SM_ARRAYSIZE(players), SM_PARAM_COPYBACK);
-		pFunc->PushCellByRef(&size);
-		pFunc->PushStringEx(buffer, sizeof(buffer), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
-		pFunc->PushCellByRef(&iEntIndex);
-		pFunc->PushCellByRef(&iChannel);
-		pFunc->PushFloatByRef(&flVolume);
-		pFunc->PushCellByRef(reinterpret_cast<cell_t *>(&iSoundlevel));
-		pFunc->PushCellByRef(&iPitch);
-		pFunc->PushCellByRef(&iFlags);
-		pFunc->PushStringEx(soundEntry, sizeof(soundEntry), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
-		pFunc->PushCellByRef(&nSeed);
+		pFunc->PushArray(params.clients, SM_ARRAYSIZE(params.clients), SM_PARAM_COPYBACK);
+		pFunc->PushCellByRef(&params.numClients);
+		pFunc->PushStringEx(params.sample, sizeof(params.sample), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+		pFunc->PushCellByRef(&params.entity);
+		pFunc->PushCellByRef(&params.channel);
+		pFunc->PushFloatByRef(&params.volume);
+		pFunc->PushCellByRef(&params.level);
+		pFunc->PushCellByRef(&params.pitch);
+		pFunc->PushCellByRef(&params.flags);
+		pFunc->PushStringEx(params.soundEntry, sizeof(params.soundEntry), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+		pFunc->PushCellByRef(&params.seed);
+		cell_t res = static_cast<ResultType>(Pl_Continue);
 		g_InSoundHook = true;
 		pFunc->Execute(&res);
 		g_InSoundHook = false;
@@ -387,90 +433,98 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 			}
 		case Pl_Changed:
 			{
-				if (size < 0 || size > SM_ARRAYSIZE(players))
+				int size = params.numClients;
+				if (size < 0 || size > SM_ARRAYSIZE(params.clients))
 				{
 					pFunc->GetParentContext()->BlamePluginError(pFunc, "Callback-provided size %d is invalid", size);
-
-#if SOURCE_ENGINE >= SE_PORTAL2
-					RETURN_META_VALUE(MRES_IGNORED, -1);
-#else
-					return;
-#endif
+					break;
 				}
 
 				/* Client validation */
+				bool valid = true;
 				for (int i = 0; i < size; i++)
 				{
-					int client = players[i];
+					int client = params.clients[i];
 					IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(client);
 
 					if (!pPlayer)
 					{
 						pFunc->GetParentContext()->BlamePluginError(pFunc, "Callback-provided client index %d is invalid", client);
-
-#if SOURCE_ENGINE >= SE_PORTAL2
-						RETURN_META_VALUE(MRES_IGNORED, -1);
-#else
-						return;
-#endif
+						valid = false;
+						break;
 					} else if (!pPlayer->IsInGame()) {
 						// Shift array down to remove non-ingame client
-						memmove(&players[i], &players[i+1], (size-i-1) * sizeof(int));
+						memmove(&params.clients[i], &params.clients[i+1], (size-i-1) * sizeof(int));
 						--i;
 						--size;
 					}
 				}
 
-#if SOURCE_ENGINE >= SE_PORTAL2
-				if (strcmp(pSoundEntry, soundEntry) != 0 || strcmp(pSample, buffer) != 0)
+				if (!valid)
 				{
-					if (strcmp(soundEntry, buffer) == 0)
-						nSoundEntryHash = -1;
-					else if (strcmp(soundEntry, "") != 0)
-						nSoundEntryHash = GenerateSoundEntryHash(soundEntry);
+					break;
 				}
-#endif
 
-				CellRecipientFilter crf;
-				crf.Initialize(players, size);
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
-				RETURN_META_VALUE_NEWPARAMS(
-					MRES_IGNORED,
-					-1,
-					static_cast<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float, soundlevel_t, 
-					int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *)>(&IEngineSound::EmitSound), 
-					(crf, iEntIndex, iChannel, soundEntry, nSoundEntryHash, buffer, flVolume, iSoundlevel, nSeed, iFlags, iPitch, pOrigin,
-					pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity, nullptr)
-					);
-#elif SOURCE_ENGINE >= SE_PORTAL2
-				RETURN_META_VALUE_NEWPARAMS(
-					MRES_IGNORED,
-					-1,
-					static_cast<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float, soundlevel_t, 
-					int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(&IEngineSound::EmitSound), 
-					(crf, iEntIndex, iChannel, soundEntry, nSoundEntryHash, buffer, flVolume, iSoundlevel, nSeed, iFlags, iPitch, pOrigin,
-					pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity)
-					);
-#elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
-				RETURN_META_NEWPARAMS(
-					MRES_IGNORED,
-					static_cast<void (IEngineSound::*)(IRecipientFilter &, int, int, const char*, float, soundlevel_t, 
-					int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(&IEngineSound::EmitSound), 
-					(crf, iEntIndex, iChannel, buffer, flVolume, iSoundlevel, iFlags, iPitch, iSpecialDSP, pOrigin, 
-					pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity)
-					);
-#else
-				RETURN_META_NEWPARAMS(
-					MRES_IGNORED,
-					static_cast<void (IEngineSound::*)(IRecipientFilter &, int, int, const char*, float, soundlevel_t, 
-					int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(&IEngineSound::EmitSound), 
-					(crf, iEntIndex, iChannel, buffer, flVolume, iSoundlevel, iFlags, iPitch, pOrigin, 
-					pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity)
-					);
-#endif
+				params.numClients = size;
+				committed = params;
+				changed = true;
+				break;
 			}
 		}
+	}
+
+	if (changed)
+	{
+#if SOURCE_ENGINE >= SE_PORTAL2
+		if (strcmp(pSoundEntry, committed.soundEntry) != 0 || strcmp(pSample, committed.sample) != 0)
+		{
+			if (strcmp(committed.soundEntry, committed.sample) == 0)
+				nSoundEntryHash = -1;
+			else if (strcmp(committed.soundEntry, "") != 0)
+				nSoundEntryHash = GenerateSoundEntryHash(committed.soundEntry);
+		}
+#endif
+
+		CellRecipientFilter crf;
+		crf.Initialize(committed.clients, committed.numClients);
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+		RETURN_META_VALUE_NEWPARAMS(
+			MRES_IGNORED,
+			-1,
+			static_cast<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float, soundlevel_t,
+			int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *)>(&IEngineSound::EmitSound),
+			(crf, committed.entity, committed.channel, committed.soundEntry, nSoundEntryHash, committed.sample, committed.volume,
+			static_cast<soundlevel_t>(committed.level), committed.seed, committed.flags, committed.pitch, pOrigin,
+			pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity, nullptr)
+			);
+#elif SOURCE_ENGINE >= SE_PORTAL2
+		RETURN_META_VALUE_NEWPARAMS(
+			MRES_IGNORED,
+			-1,
+			static_cast<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float, soundlevel_t,
+			int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(&IEngineSound::EmitSound),
+			(crf, committed.entity, committed.channel, committed.soundEntry, nSoundEntryHash, committed.sample, committed.volume,
+			static_cast<soundlevel_t>(committed.level), committed.seed, committed.flags, committed.pitch, pOrigin,
+			pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity)
+			);
+#elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
+		RETURN_META_NEWPARAMS(
+			MRES_IGNORED,
+			static_cast<void (IEngineSound::*)(IRecipientFilter &, int, int, const char*, float, soundlevel_t,
+			int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(&IEngineSound::EmitSound),
+			(crf, committed.entity, committed.channel, committed.sample, committed.volume, static_cast<soundlevel_t>(committed.level),
+			committed.flags, committed.pitch, iSpecialDSP, pOrigin, pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity)
+			);
+#else
+		RETURN_META_NEWPARAMS(
+			MRES_IGNORED,
+			static_cast<void (IEngineSound::*)(IRecipientFilter &, int, int, const char*, float, soundlevel_t,
+			int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(&IEngineSound::EmitSound),
+			(crf, committed.entity, committed.channel, committed.sample, committed.volume, static_cast<soundlevel_t>(committed.level),
+			committed.flags, committed.pitch, pOrigin, pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity)
+			);
+#endif
 	}
 
 #if SOURCE_ENGINE >= SE_PORTAL2
@@ -501,38 +555,44 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 							 float soundtime, int speakerentity)
 #endif
 {
+	AutoHookRef ref(this, NORMAL_SOUND_HOOK);
 	IPluginFunction *pFunc;
-	cell_t res = static_cast<ResultType>(Pl_Continue);
-	cell_t sndlevel = static_cast<cell_t>(ATTN_TO_SNDLVL(flAttenuation));
-	char buffer[PLATFORM_MAX_PATH];
-	ke::SafeStrcpy(buffer, sizeof(buffer), pSample);
+	bool changed = false;
 
-	char soundEntry[PLATFORM_MAX_PATH] = "";
+	NormalSoundParams committed;
+	committed.numClients = _FillInPlayers(committed.clients, &filter);
+	ke::SafeStrcpy(committed.sample, sizeof(committed.sample), pSample);
+	committed.entity = iEntIndex;
+	committed.channel = iChannel;
+	committed.volume = flVolume;
+	committed.level = ATTN_TO_SNDLVL(flAttenuation);
+	committed.pitch = iPitch;
+	committed.flags = iFlags;
 #if SOURCE_ENGINE >= SE_PORTAL2
-	Q_strncpy(soundEntry, pSoundEntry, sizeof(soundEntry));
+	Q_strncpy(committed.soundEntry, pSoundEntry, sizeof(committed.soundEntry));
+	committed.seed = nSeed;
+#else
+	committed.soundEntry[0] = '\0';
+	committed.seed = 0;
 #endif
 
-#if SOURCE_ENGINE < SE_PORTAL2
-	int nSeed = 0;
-#endif
-
-	for (auto iter=m_NormalFuncs.begin(); iter!=m_NormalFuncs.end(); iter++)
+	for (FuncIter iter(m_NormalFuncs); !iter.done(); iter.next())
 	{
-		int players[SM_MAXPLAYERS], size;
-		size = _FillInPlayers(players, &filter);
+		NormalSoundParams params = committed;
 		pFunc = (*iter);
 
-		pFunc->PushArray(players, SM_ARRAYSIZE(players), SM_PARAM_COPYBACK);
-		pFunc->PushCellByRef(&size);
-		pFunc->PushStringEx(buffer, sizeof(buffer), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
-		pFunc->PushCellByRef(&iEntIndex);
-		pFunc->PushCellByRef(&iChannel);
-		pFunc->PushFloatByRef(&flVolume);
-		pFunc->PushCellByRef(&sndlevel);
-		pFunc->PushCellByRef(&iPitch);
-		pFunc->PushCellByRef(&iFlags);
-		pFunc->PushStringEx(soundEntry, sizeof(soundEntry), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
-		pFunc->PushCellByRef(&nSeed);
+		pFunc->PushArray(params.clients, SM_ARRAYSIZE(params.clients), SM_PARAM_COPYBACK);
+		pFunc->PushCellByRef(&params.numClients);
+		pFunc->PushStringEx(params.sample, sizeof(params.sample), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+		pFunc->PushCellByRef(&params.entity);
+		pFunc->PushCellByRef(&params.channel);
+		pFunc->PushFloatByRef(&params.volume);
+		pFunc->PushCellByRef(&params.level);
+		pFunc->PushCellByRef(&params.pitch);
+		pFunc->PushCellByRef(&params.flags);
+		pFunc->PushStringEx(params.soundEntry, sizeof(params.soundEntry), SM_PARAM_STRING_COPY, SM_PARAM_COPYBACK);
+		pFunc->PushCellByRef(&params.seed);
+		cell_t res = static_cast<ResultType>(Pl_Continue);
 		g_InSoundHook = true;
 		pFunc->Execute(&res);
 		g_InSoundHook = false;
@@ -550,90 +610,98 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 			}
 		case Pl_Changed:
 			{
-				if (size < 0 || size > SM_ARRAYSIZE(players))
+				int size = params.numClients;
+				if (size < 0 || size > SM_ARRAYSIZE(params.clients))
 				{
 					pFunc->GetParentContext()->BlamePluginError(pFunc, "Callback-provided size %d is invalid", size);
-
-#if SOURCE_ENGINE >= SE_PORTAL2
-					RETURN_META_VALUE(MRES_IGNORED, -1);
-#else
-					return;
-#endif
+					break;
 				}
 
 				/* Client validation */
+				bool valid = true;
 				for (int i = 0; i < size; i++)
 				{
-					int client = players[i];
+					int client = params.clients[i];
 					IGamePlayer *pPlayer = playerhelpers->GetGamePlayer(client);
 
 					if (!pPlayer)
 					{
 						pFunc->GetParentContext()->BlamePluginError(pFunc, "Client index %d is invalid", client);
-
-#if SOURCE_ENGINE >= SE_PORTAL2
-						RETURN_META_VALUE(MRES_IGNORED, -1);
-#else
-						return;
-#endif
+						valid = false;
+						break;
 					} else if (!pPlayer->IsInGame()) {
 						// Shift array down to remove non-ingame client
-						memmove(&players[i], &players[i+1], (size-i-1) * sizeof(int));
+						memmove(&params.clients[i], &params.clients[i+1], (size-i-1) * sizeof(int));
 						--i;
 						--size;
 					}
 				}
 
-#if SOURCE_ENGINE >= SE_PORTAL2
-				if (strcmp(pSoundEntry, soundEntry) != 0 || strcmp(pSample, buffer) != 0)
+				if (!valid)
 				{
-					if (strcmp(soundEntry, buffer) == 0)
-						nSoundEntryHash = -1;
-					else if (strcmp(soundEntry, "") != 0)
-						nSoundEntryHash = GenerateSoundEntryHash(soundEntry);
+					break;
 				}
-#endif
 
-				CellRecipientFilter crf;
-				crf.Initialize(players, size);
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
-				RETURN_META_VALUE_NEWPARAMS(
-					MRES_IGNORED,
-					-1,
-					static_cast<int (IEngineSound::*)(IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, float, 
-					int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *)>(&IEngineSound::EmitSound), 
-					(crf, iEntIndex, iChannel, soundEntry, nSoundEntryHash, buffer, flVolume, SNDLVL_TO_ATTN(static_cast<soundlevel_t>(sndlevel)),
-					nSeed, iFlags, iPitch, pOrigin, pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity, pUnknown)
-					);
-#elif SOURCE_ENGINE >= SE_PORTAL2
-				RETURN_META_VALUE_NEWPARAMS(
-					MRES_IGNORED,
-					-1,
-					static_cast<int (IEngineSound::*)(IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, float, 
-					int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(&IEngineSound::EmitSound), 
-					(crf, iEntIndex, iChannel, soundEntry, nSoundEntryHash, buffer, flVolume, SNDLVL_TO_ATTN(static_cast<soundlevel_t>(sndlevel)),
-					nSeed, iFlags, iPitch, pOrigin, pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity)
-					);
-#elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
-	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
-RETURN_META_NEWPARAMS(
-					MRES_IGNORED,
-					static_cast<void (IEngineSound::*)(IRecipientFilter &, int, int, const char *, float, float, 
-					int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(&IEngineSound::EmitSound), 
-					(crf, iEntIndex, iChannel, buffer, flVolume, SNDLVL_TO_ATTN(static_cast<soundlevel_t>(sndlevel)), 
-					iFlags, iPitch, iSpecialDSP, pOrigin, pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity)
-					);
-#else
-				RETURN_META_NEWPARAMS(
-					MRES_IGNORED,
-					static_cast<void (IEngineSound::*)(IRecipientFilter &, int, int, const char *, float, float, 
-					int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(&IEngineSound::EmitSound), 
-					(crf, iEntIndex, iChannel, buffer, flVolume, SNDLVL_TO_ATTN(static_cast<soundlevel_t>(sndlevel)), 
-					iFlags, iPitch, pOrigin, pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity)
-					);
-#endif
+				params.numClients = size;
+				committed = params;
+				changed = true;
+				break;
 			}
 		}
+	}
+
+	if (changed)
+	{
+#if SOURCE_ENGINE >= SE_PORTAL2
+		if (strcmp(pSoundEntry, committed.soundEntry) != 0 || strcmp(pSample, committed.sample) != 0)
+		{
+			if (strcmp(committed.soundEntry, committed.sample) == 0)
+				nSoundEntryHash = -1;
+			else if (strcmp(committed.soundEntry, "") != 0)
+				nSoundEntryHash = GenerateSoundEntryHash(committed.soundEntry);
+		}
+#endif
+
+		CellRecipientFilter crf;
+		crf.Initialize(committed.clients, committed.numClients);
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+		RETURN_META_VALUE_NEWPARAMS(
+			MRES_IGNORED,
+			-1,
+			static_cast<int (IEngineSound::*)(IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, float,
+			int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *)>(&IEngineSound::EmitSound),
+			(crf, committed.entity, committed.channel, committed.soundEntry, nSoundEntryHash, committed.sample, committed.volume,
+			SNDLVL_TO_ATTN(static_cast<soundlevel_t>(committed.level)), committed.seed, committed.flags, committed.pitch,
+			pOrigin, pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity, pUnknown)
+			);
+#elif SOURCE_ENGINE >= SE_PORTAL2
+		RETURN_META_VALUE_NEWPARAMS(
+			MRES_IGNORED,
+			-1,
+			static_cast<int (IEngineSound::*)(IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, float,
+			int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(&IEngineSound::EmitSound),
+			(crf, committed.entity, committed.channel, committed.soundEntry, nSoundEntryHash, committed.sample, committed.volume,
+			SNDLVL_TO_ATTN(static_cast<soundlevel_t>(committed.level)), committed.seed, committed.flags, committed.pitch,
+			pOrigin, pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity)
+			);
+#elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
+	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
+		RETURN_META_NEWPARAMS(
+			MRES_IGNORED,
+			static_cast<void (IEngineSound::*)(IRecipientFilter &, int, int, const char *, float, float,
+			int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(&IEngineSound::EmitSound),
+			(crf, committed.entity, committed.channel, committed.sample, committed.volume, SNDLVL_TO_ATTN(static_cast<soundlevel_t>(committed.level)),
+			committed.flags, committed.pitch, iSpecialDSP, pOrigin, pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity)
+			);
+#else
+		RETURN_META_NEWPARAMS(
+			MRES_IGNORED,
+			static_cast<void (IEngineSound::*)(IRecipientFilter &, int, int, const char *, float, float,
+			int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(&IEngineSound::EmitSound),
+			(crf, committed.entity, committed.channel, committed.sample, committed.volume, SNDLVL_TO_ATTN(static_cast<soundlevel_t>(committed.level)),
+			committed.flags, committed.pitch, pOrigin, pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity)
+			);
+#endif
 	}
 
 #if SOURCE_ENGINE >= SE_PORTAL2
