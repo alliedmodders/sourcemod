@@ -9,13 +9,17 @@ inline handle::DynamicDetour* Get(SourcePawn::IPluginContext* context, const cel
 	security.pOwner = globals::myself->GetIdentity();
 	security.pIdentity = globals::myself->GetIdentity();
 	SourceMod::Handle_t hndl = static_cast<SourceMod::Handle_t>(param);
-	handle::DynamicDetour* obj = nullptr;
+	handle::HookSetup* obj = nullptr;
 	SourceMod::HandleError chnderr = globals::handlesys->ReadHandle(hndl, handle::DynamicDetour::HANDLE_TYPE, &security, (void **)&obj);
 	if (chnderr != SourceMod::HandleError_None) {
 		context->ThrowNativeError("Invalid DynamicDetour Handle %x (error %i: %s)", hndl, chnderr, globals::HandleErrorToString(chnderr));
 		return nullptr;
 	}
-	return obj;
+	if (obj->IsVirtualHook()) {
+		context->ThrowNativeError("Hook not setup for a detour.");
+		return nullptr;
+	}
+	return static_cast<handle::DynamicDetour*>(obj);
 }
 
 cell_t DynamicDetour_DynamicDetour(SourcePawn::IPluginContext* context, const cell_t* params) {

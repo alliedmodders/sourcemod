@@ -20,16 +20,20 @@ sources = [
 ]
 
 for cxx in builder.targets:
-  if cxx.target.platform != 'linux' or cxx.target.arch != 'x86_64':
+  if cxx.target.arch != 'x86_64':
+    continue
+
+  if cxx.target.platform == 'linux':
+    abi_source = 'src/abi/system_v_amd64.cpp'
+  elif cxx.target.platform == 'windows':
+    abi_source = 'src/abi/msvc_amd64.cpp'
+  else:
     continue
 
   binary = SM.ExtLibrary(builder, cxx, 'dhooks.ext')
   binary.compiler.includes += [os.path.join(builder.sourcePath, 'extensions', 'dhooks', 'src')]
   binary.sources += sources
-
-  if cxx.target.platform == 'linux':
-    if cxx.target.arch == 'x86_64':
-      binary.sources += ['src/abi/system_v_amd64.cpp']
+  binary.sources += [abi_source]
 
   if binary.compiler.target.arch == "x86":
     binary.compiler.defines += ['DHOOKS_X86']

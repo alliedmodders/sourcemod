@@ -95,8 +95,8 @@ void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post) const {
 	void* delete_op = nullptr;
 	size_t return_size = 0;
 
-    if constexpr(!std::is_same<RETURN, void>::value) {	
-		return_ptr = new RETURN;
+    if constexpr(!std::is_same<RETURN, void>::value) {
+		return_ptr = new RETURN();
 		init_op = reinterpret_cast<void*>(::KHook::init_operator<RETURN>);
 		delete_op = reinterpret_cast<void*>(::KHook::deinit_operator<RETURN>);
 		return_size = sizeof(RETURN);
@@ -169,7 +169,7 @@ void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post) const {
                 KHook::Action this_action = KHook::Action::Ignore;
                 if (result == (cell_t)sp::MRES_Supercede) {
                     this_action = KHook::Action::Supersede;
-                } else if (result != (cell_t)sp::MRES_Ignored) {
+                } else if (result == (cell_t)sp::MRES_Override || result == (cell_t)sp::MRES_ChangedOverride) {
                     this_action = KHook::Action::Override;
                 }
                 if (this_action > final_action) {
