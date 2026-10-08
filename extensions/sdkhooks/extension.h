@@ -26,6 +26,7 @@
 #define GAMEDESC_CAN_CHANGE
 #endif
 
+#include <optional>
 
 /**
  * Globals
@@ -271,6 +272,7 @@ public:
 	cell_t Call(int entity, SDKHookType type, int other=INVALID_EHANDLE_INDEX);
 	cell_t Call(CBaseEntity *pEnt, SDKHookType type, int other=INVALID_EHANDLE_INDEX);
 	cell_t Call(CBaseEntity *pEnt, SDKHookType type, CBaseEntity *pOther);
+	cell_t Call(CBaseEntity *pEnt, SDKHookType type, CBaseEntity *pOther, std::optional<cell_t> originalreturn);
 	void SetupHooks();
 
 	HookReturn Hook(int entity, SDKHookType type, IPluginFunction *pCallback);

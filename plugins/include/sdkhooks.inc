@@ -267,12 +267,21 @@ typeset SDKHookCB
 	// WeaponSwitch
 	function Action (int client, int weapon);
 
-	// WeaponCanSwitchToPost
-	// WeaponCanUsePost
 	// WeaponDropPost
 	// WeaponEquipPost
-	// WeaponSwitchPost
 	function void (int client, int weapon);
+
+	// WeaponCanUsePost
+	// WeaponSwitchPost
+	// WeaponCanSwitchToPost
+	// Note: A newer version of this callback is available below
+	function void (int client, int weapon);
+
+	// WeaponCanUsePost
+	// WeaponSwitchPost
+	// WeaponCanSwitchToPost
+	// Note: The success parameter is the boolean return value of the hooked function that the game is using
+	function void (int client, int weapon, bool success);
 
 	// GetMaxHealth (ep2v and later)
 	function Action (int entity, int &maxhealth);
@@ -332,7 +341,7 @@ typeset SDKHookCB
 	// Reload
 	function Action (int weapon);
 
-	// Reload post
+	// ReloadPost
 	function void (int weapon, bool bSuccessful);
 
 	// CanBeAutobalanced
