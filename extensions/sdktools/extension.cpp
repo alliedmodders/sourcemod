@@ -452,6 +452,7 @@ bool SDKTools::LevelInit(char const *pMapName, char const *pMapEntities, char co
 
 void SDKTools::LevelShutdown()
 {
+	g_OutputManager.OnMapEnd();
 	ClearValveGlobals();
 }
 
