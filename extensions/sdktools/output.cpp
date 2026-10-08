@@ -155,11 +155,10 @@ bool EntityOutputManager::FireEventDetour(void *pOutput, CBaseEntity *pActivator
 
 			cell_t ref = gamehelpers->EntityToReference(pCaller);
 			
-			if (hook->entity_ref != -1 
-					&& gamehelpers->ReferenceToIndex(hook->entity_ref) == gamehelpers->ReferenceToIndex(ref)
-					&& ref != hook->entity_ref)
+			if (hook->entity_ref != -1
+					&& gamehelpers->ReferenceToEntity(hook->entity_ref) == nullptr)
 			{
-				// same entity index but different reference. Entity has changed, kill the hook.
+				// The hooked entity no longer exists, remove the hook.
 				_iter = pOutputName->hooks.erase(_iter);
 				CleanUpHook(hook);
 
@@ -279,6 +278,43 @@ void EntityOutputManager::CleanUpHook(omg_hooks *hook)
 			p_iter++;
 		}
 	}
+}
+
+void EntityOutputManager::OnMapEnd()
+{
+	IPluginIterator *plugins = plsys->GetPluginIterator();
+	for (; plugins->MorePlugins(); plugins->NextPlugin())
+	{
+		std::list<omg_hooks *> *pList = NULL;
+		if (!plugins->GetPlugin()->GetProperty("OutputHookList", (void **)&pList, false) || !pList)
+		{
+			continue;
+		}
+
+		auto iter = pList->begin();
+		while (iter != pList->end())
+		{
+			omg_hooks *hook = *iter;
+			if (hook->entity_ref == -1)
+			{
+				iter++;
+				continue;
+			}
+
+			if (hook->in_use)
+			{
+				hook->delete_me = true;
+				iter++;
+				continue;
+			}
+
+			iter = pList->erase(iter);
+			hook->m_parent->hooks.remove(hook);
+			FreeHooks.push(hook);
+			OnHookRemoved();
+		}
+	}
+	plugins->Release();
 }
 
 void EntityOutputManager::OnPluginDestroyed(IPlugin *plugin)

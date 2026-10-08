@@ -98,6 +98,7 @@ public:
 	bool FireEventDetour(void *pOutput, CBaseEntity *pActivator, CBaseEntity *pCaller, float fDelay);
 
 	void OnPluginDestroyed(IPlugin *plugin);
+	void OnMapEnd();
 
 	OutputNameStruct *FindOutputPointer(const char *classname, const char *outputname, bool create);
 
