@@ -11,8 +11,8 @@
 			}
 			"CanBeAutobalanced"
 			{
-				"windows64"	"528"
-				"linux64"	"531"
+				"windows64"	"529"
+				"linux64"	"532"
 			}
 			"EndTouch"
 			{

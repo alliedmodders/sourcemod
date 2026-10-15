@@ -42,8 +42,8 @@
 			}
 			"CommitSuicide"
 			{
-				"windows64"	"508"
-				"linux64"	"508"
+				"windows64"	"509"
+				"linux64"	"509"
 			}
 			"GetVelocity"
 			{
