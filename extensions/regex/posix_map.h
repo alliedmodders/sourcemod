@@ -2,7 +2,7 @@
 
 /*
 	Maps pcre_compile2 error codes to posix error codes.
-	From pcreposix.c and pcreposix.h
+	From pcre2posix.c and pcre2posix.h
 */
 
 // posix error codes
@@ -29,8 +29,8 @@ enum {
 };
 
 // pcre compile error -> posix compile error
-const int pcre_posix_compile_error_map[] = {
-	0,           /* no error */
+static const int eint1[] = {
+	0,           /* No error */
 	REG_EESCAPE, /* \ at end of pattern */
 	REG_EESCAPE, /* \c at end of pattern */
 	REG_EESCAPE, /* unrecognized character follows \ */
@@ -42,95 +42,56 @@ const int pcre_posix_compile_error_map[] = {
 	REG_ERANGE,  /* range out of order in character class */
 	REG_BADRPT,  /* nothing to repeat */
 	/* 10 */
-	REG_BADRPT,  /* operand of unlimited repeat could match the empty string */
 	REG_ASSERT,  /* internal error: unexpected repeat */
-	REG_BADPAT,  /* unrecognized character after (? */
+	REG_BADPAT,  /* unrecognized character after (? or (?- */
 	REG_BADPAT,  /* POSIX named classes are supported only within a class */
+	REG_BADPAT,  /* POSIX collating elements are not supported */
 	REG_EPAREN,  /* missing ) */
 	/* 15 */
 	REG_ESUBREG, /* reference to non-existent subpattern */
-	REG_INVARG,  /* erroffset passed as NULL */
-	REG_INVARG,  /* unknown option bit(s) set */
-	REG_EPAREN,  /* missing ) after comment */
+	REG_INVARG,  /* pattern passed as NULL */
+	REG_INVARG,  /* unknown compile-time option bit(s) */
+	REG_EPAREN,  /* missing ) after (?# comment */
 	REG_ESIZE,   /* parentheses nested too deeply */
 	/* 20 */
 	REG_ESIZE,   /* regular expression too large */
 	REG_ESPACE,  /* failed to get memory */
-	REG_EPAREN,  /* unmatched parentheses */
-	REG_ASSERT,  /* internal error: code overflow */
-	REG_BADPAT,  /* unrecognized character after (?< */
-	/* 25 */
-	REG_BADPAT,  /* lookbehind assertion is not fixed length */
-	REG_BADPAT,  /* malformed number or name after (?( */
-	REG_BADPAT,  /* conditional group contains more than two branches */
-	REG_BADPAT,  /* assertion expected after (?( */
-	REG_BADPAT,  /* (?R or (?[+-]digits must be followed by ) */
-	/* 30 */
-	REG_ECTYPE,  /* unknown POSIX class name */
-	REG_BADPAT,  /* POSIX collating elements are not supported */
-	REG_INVARG,  /* this version of PCRE is not compiled with PCRE_UTF8 support */
-	REG_BADPAT,  /* spare error */
-	REG_BADPAT,  /* character value in \x{} or \o{} is too large */
-	/* 35 */
-	REG_BADPAT,  /* invalid condition (?(0) */
-	REG_BADPAT,  /* \C not allowed in lookbehind assertion */
-	REG_EESCAPE, /* PCRE does not support \L, \l, \N, \U, or \u */
-	REG_BADPAT,  /* number after (?C is > 255 */
-	REG_BADPAT,  /* closing ) for (?C expected */
-	/* 40 */
-	REG_BADPAT,  /* recursive call could loop indefinitely */
-	REG_BADPAT,  /* unrecognized character after (?P */
-	REG_BADPAT,  /* syntax error in subpattern name (missing terminator) */
-	REG_BADPAT,  /* two named subpatterns have the same name */
-	REG_BADPAT,  /* invalid UTF-8 string */
-	/* 45 */
-	REG_BADPAT,  /* support for \P, \p, and \X has not been compiled */
-	REG_BADPAT,  /* malformed \P or \p sequence */
-	REG_BADPAT,  /* unknown property name after \P or \p */
-	REG_BADPAT,  /* subpattern name is too long (maximum 32 characters) */
-	REG_BADPAT,  /* too many named subpatterns (maximum 10,000) */
-	/* 50 */
-	REG_BADPAT,  /* repeated subpattern is too long */
-	REG_BADPAT,  /* octal value is greater than \377 (not in UTF-8 mode) */
-	REG_BADPAT,  /* internal error: overran compiling workspace */
-	REG_BADPAT,  /* internal error: previously-checked referenced subpattern not found */
-	REG_BADPAT,  /* DEFINE group contains more than one branch */
-	/* 55 */
-	REG_BADPAT,  /* repeating a DEFINE group is not allowed */
-	REG_INVARG,  /* inconsistent NEWLINE options */
-	REG_BADPAT,  /* \g is not followed followed by an (optionally braced) non-zero number */
-	REG_BADPAT,  /* a numbered reference must not be zero */
-	REG_BADPAT,  /* an argument is not allowed for (*ACCEPT), (*FAIL), or (*COMMIT) */
-	/* 60 */
-	REG_BADPAT,  /* (*VERB) not recognized */
-	REG_BADPAT,  /* number is too big */
-	REG_BADPAT,  /* subpattern name expected */
-	REG_BADPAT,  /* digit expected after (?+ */
-	REG_BADPAT,  /* ] is an invalid data character in JavaScript compatibility mode */
-	/* 65 */
-	REG_BADPAT,  /* different names for subpatterns of the same number are not allowed */
-	REG_BADPAT,  /* (*MARK) must have an argument */
-	REG_INVARG,  /* this version of PCRE is not compiled with PCRE_UCP support */
-	REG_BADPAT,  /* \c must be followed by an ASCII character */
-	REG_BADPAT,  /* \k is not followed by a braced, angle-bracketed, or quoted name */
-	/* 70 */
-	REG_BADPAT,  /* internal error: unknown opcode in find_fixedlength() */
-	REG_BADPAT,  /* \N is not supported in a class */
-	REG_BADPAT,  /* too many forward references */
-	REG_BADPAT,  /* disallowed UTF-8/16/32 code point (>= 0xd800 && <= 0xdfff) */
-	REG_BADPAT,  /* invalid UTF-16 string (should not occur) */
-	/* 75 */
-	REG_BADPAT,  /* overlong MARK name */
-	REG_BADPAT,  /* character value in \u.... sequence is too large */
-	REG_BADPAT,  /* invalid UTF-32 string (should not occur) */
-	REG_BADPAT,  /* setting UTF is disabled by the application */
-	REG_BADPAT,  /* non-hex character in \\x{} (closing brace missing?) */
-	/* 80 */
-	REG_BADPAT,  /* non-octal character in \o{} (closing brace missing?) */
-	REG_BADPAT,  /* missing opening brace after \o */
-	REG_BADPAT,  /* parentheses too deeply nested */
-	REG_BADPAT,  /* invalid range in character class */
-	REG_BADPAT,  /* group name must start with a non-digit */
-	/* 85 */
-	REG_BADPAT   /* parentheses too deeply nested (stack check) */
+	REG_EPAREN,  /* unmatched closing parenthesis */
+	REG_ASSERT   /* internal error: code overflow */
 };
+
+static const int eint2[] = {
+	30, REG_ECTYPE,  /* unknown POSIX class name */
+	32, REG_INVARG,  /* this version of PCRE2 does not have Unicode support */
+	37, REG_EESCAPE, /* PCRE2 does not support \L, \l, \N{name}, \U, or \u */
+	56, REG_INVARG,  /* internal error: unknown newline setting */
+	92, REG_INVARG,  /* invalid option bits with PCRE2_LITERAL */
+	98, REG_EESCAPE, /* missing digit after \0 in NO_BS0 mode */
+	99, REG_EESCAPE, /* \K in lookaround */
+	102, REG_EESCAPE  /* \ddd octal > \377 in PYTHON_OCTAL mode */
+};
+
+inline int PCRE2ErrorToPosixError(int errorcode)
+{
+	static constexpr int COMPILE_ERROR_BASE = 100;
+
+	if (errorcode < COMPILE_ERROR_BASE)
+	{
+		return REG_BADPAT;
+	}
+
+	errorcode -= COMPILE_ERROR_BASE;
+
+	if (errorcode < (int)(sizeof(eint1)/sizeof(const int)))
+	{
+		return eint1[errorcode];
+	}
+	for (int i = 0; i < sizeof(eint2)/sizeof(const int); i += 2)
+	{
+		if (errorcode == eint2[i])
+		{
+			return eint2[i+1];
+		}
+	}
+	return REG_BADPAT;
+}
