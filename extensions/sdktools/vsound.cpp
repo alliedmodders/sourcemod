@@ -287,7 +287,7 @@ KHook::Return<void> SoundHooks::OnEmitAmbientSound(IVEngineServer* this_ptr, int
 		vec2.x = sp_ctof(committed.pos[0]);
 		vec2.y = sp_ctof(committed.pos[1]);
 		vec2.z = sp_ctof(committed.pos[2]);
-		return KHook::Recall<IVEngineServer, void, int, const Vector &, const char *, float, soundlevel_t, int, int, float>(&IVEngineServer::EmitAmbientSound, KHook::Return<void>{ KHook::Action::Ignore }, this_ptr, committed.entity, vec2, committed.sample, committed.volume, static_cast<soundlevel_t>(committed.level),
+		return KHook::Recall<void (IVEngineServer::*)(int, const Vector &, const char *, float, soundlevel_t, int, int, float)>(&IVEngineServer::EmitAmbientSound, KHook::Return<void>{ KHook::Action::Ignore }, this_ptr, committed.entity, vec2, committed.sample, committed.volume, static_cast<soundlevel_t>(committed.level),
 								committed.flags, committed.pitch, committed.delay);
 	}
 	return { KHook::Action::Ignore };
@@ -477,8 +477,8 @@ KHook::Return<void> SoundHooks::OnEmitSound(IEngineSound* this_ptr, IRecipientFi
 		CellRecipientFilter crf;
 		crf.Initialize(committed.clients, committed.numClients);
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
-		return KHook::Recall<IEngineSound, int, IRecipientFilter &, int, int, const char*, unsigned int, const char*, float, soundlevel_t, 
-			int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *>(
+		return KHook::Recall<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float, soundlevel_t, 
+			int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *)>(
 			&IEngineSound::EmitSound,
 			KHook::Return<int>{ KHook::Action::Ignore, -1 },
 			this_ptr,
@@ -487,8 +487,8 @@ KHook::Return<void> SoundHooks::OnEmitSound(IEngineSound* this_ptr, IRecipientFi
 			pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity, nullptr
 			);
 #elif SOURCE_ENGINE >= SE_PORTAL2
-		return KHook::Recall<IEngineSound, int, IRecipientFilter &, int, int, const char*, unsigned int, const char*, float, soundlevel_t, 
-			int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int>(
+		return KHook::Recall<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float, soundlevel_t, 
+			int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(
 			&IEngineSound::EmitSound,
 			KHook::Return<int>{ KHook::Action::Ignore, -1 },
 			this_ptr,
@@ -498,8 +498,8 @@ KHook::Return<void> SoundHooks::OnEmitSound(IEngineSound* this_ptr, IRecipientFi
 			);
 #elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
 	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
-		return KHook::Recall<IEngineSound, void, IRecipientFilter &, int, int, const char*, float, soundlevel_t, 
-			int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int>(
+		return KHook::Recall<void (IEngineSound::*)(IRecipientFilter &, int, int, const char*, float, soundlevel_t, 
+			int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(
 			&IEngineSound::EmitSound,
 			KHook::Return<void>{ KHook::Action::Ignore },
 			this_ptr,
@@ -507,8 +507,8 @@ KHook::Return<void> SoundHooks::OnEmitSound(IEngineSound* this_ptr, IRecipientFi
 			committed.flags, committed.pitch, iSpecialDSP, pOrigin, pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity
 			);
 #else
-		return KHook::Recall<IEngineSound, void, IRecipientFilter &, int, int, const char*, float, soundlevel_t, 
-			int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int>(
+		return KHook::Recall<void (IEngineSound::*)(IRecipientFilter &, int, int, const char*, float, soundlevel_t, 
+			int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(
 			&IEngineSound::EmitSound,
 			KHook::Return<void>{ KHook::Action::Ignore },
 			this_ptr,
@@ -654,8 +654,8 @@ KHook::Return<void> SoundHooks::OnEmitSound2(IEngineSound* this_ptr, IRecipientF
 		CellRecipientFilter crf;
 		crf.Initialize(committed.clients, committed.numClients);
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
-		return KHook::Recall<IEngineSound, int, IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, float, 
-			int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *>(
+		return KHook::Recall<int (IEngineSound::*)(IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, float, 
+			int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *)>(
 			&IEngineSound::EmitSound,
 			KHook::Return<int>{ KHook::Action::Ignore, -1 },
 			this_ptr,
@@ -664,9 +664,9 @@ KHook::Return<void> SoundHooks::OnEmitSound2(IEngineSound* this_ptr, IRecipientF
 			pOrigin, pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity, pUnknown
 			);
 #elif SOURCE_ENGINE >= SE_PORTAL2
-		return KHook::Recall<IEngineSound, int, IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, float, 
-			int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int>(
-			&IEngineSound::EmitSound, 
+		return KHook::Recall<int (IEngineSound::*)(IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, float, 
+			int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(
+			&IEngineSound::EmitSound,
 			KHook::Return<int>{ KHook::Action::Ignore, -1 },
 			this_ptr,
 			crf, committed.entity, committed.channel, committed.soundEntry, nSoundEntryHash, committed.sample, committed.volume,
@@ -675,8 +675,8 @@ KHook::Return<void> SoundHooks::OnEmitSound2(IEngineSound* this_ptr, IRecipientF
 			);
 #elif SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_SDK2013 \
 	|| SOURCE_ENGINE == SE_BMS || SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_PVKII
-		return KHook::Recall<IEngineSound, void, IRecipientFilter &, int, int, const char *, float, float, 
-			int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int>(
+		return KHook::Recall<void (IEngineSound::*)(IRecipientFilter &, int, int, const char *, float, float, 
+			int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(
 			&IEngineSound::EmitSound,
 			KHook::Return<void>{ KHook::Action::Ignore },
 			this_ptr,
@@ -684,8 +684,8 @@ KHook::Return<void> SoundHooks::OnEmitSound2(IEngineSound* this_ptr, IRecipientF
 			committed.flags, committed.pitch, iSpecialDSP, pOrigin, pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity
 			);
 #else
-		return KHook::Recall<IEngineSound, void, IRecipientFilter &, int, int, const char *, float, float, 
-			int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int>(
+		return KHook::Recall<void (IEngineSound::*)(IRecipientFilter &, int, int, const char *, float, float, 
+			int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>(
 			&IEngineSound::EmitSound,
 			KHook::Return<void>{ KHook::Action::Ignore },
 			this_ptr,

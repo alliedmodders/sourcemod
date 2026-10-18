@@ -39,6 +39,7 @@
 #include <list>
 #include <string>
 #include <IForwardSys.h>
+#include <IAdminSystem.h>
 #include <sm_hashmap.h>
 #include <sm_namehashset.h>
 

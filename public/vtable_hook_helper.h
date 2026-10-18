@@ -126,12 +126,12 @@ private:
 		}
 
 		RETURN _KHOOK_CALLBACK_PRE(ARGS... args) {
-			auto real_this = (Self*)KHook::GetContext();
+			auto real_this = KHook::GetContext<Self>();
 			return real_this->_KHOOK_CALLBACK(true, (CLASSNAME*)this, args...);
 		}
 
 		RETURN _KHOOK_CALLBACK_POST(ARGS... args) {
-			auto real_this = (Self*)KHook::GetContext();
+			auto real_this = KHook::GetContext<Self>();
 			return real_this->_KHOOK_CALLBACK(false, (CLASSNAME*)this, args...);
 		}
 
@@ -159,7 +159,7 @@ private:
 		}
 
 		static void _KHOOK_REMOVE(KHook::HookID_t) {
-			delete (Self*)KHook::GetContext();
+			delete KHook::GetContext<Self>();
 		}
 
 		KHook::HookID_t _id;
