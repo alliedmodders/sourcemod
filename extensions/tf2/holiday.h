@@ -50,27 +50,26 @@ public: //IPluginsListener
 	void OnPluginUnloaded(IPlugin *plugin);
 
 public:
-	bool Hook_IsHolidayActive(int holiday);
-	void Hook_LevelShutdown();
+	KHook::Return<bool> Hook_IsHolidayActive(class CTFGameRules* pGameRules, int holiday);
+	KHook::Return<void> Hook_LevelShutdown(IServerGameDLL*);
 
 private:
-	bool IsHookEnabled() const { return m_iHookID != 0; }
-	void *GetGameRules();
+	bool IsHookEnabled() const;
+	class CTFGameRules *GetGameRules();
 	void HookIfNecessary();
 	void Unhook();
 
 private:
-	int m_iHookID;
 	IForward *m_isHolidayForward;
 	bool m_bInMap;
 };
 
-inline void *HolidayManager::GetGameRules()
+inline class CTFGameRules *HolidayManager::GetGameRules()
 {
 	if (!g_pSDKTools)
 		return NULL;
 
-	return g_pSDKTools->GetGameRules();
+	return (class CTFGameRules *)g_pSDKTools->GetGameRules();
 }
 
 extern HolidayManager g_HolidayManager;

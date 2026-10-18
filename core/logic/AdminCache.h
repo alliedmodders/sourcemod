@@ -33,12 +33,13 @@
 #define _INCLUDE_SOURCEMOD_ADMINCACHE_H_
 
 #include "common_logic.h"
-#include <IAdminSystem.h>
+#include "sm_hashmap.h"
 #include "sm_memtable.h"
 #include <sm_trie.h>
 #include <list>
 #include <string>
 #include <IForwardSys.h>
+#include <IAdminSystem.h>
 #include <sm_hashmap.h>
 #include <sm_namehashset.h>
 

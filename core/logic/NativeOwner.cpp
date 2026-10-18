@@ -50,7 +50,9 @@ unsigned int CNativeOwner::GetMarkSerial()
 void CNativeOwner::AddDependent(CPlugin *pPlugin)
 {
 	if (std::find(m_Dependents.begin(), m_Dependents.end(), pPlugin) == m_Dependents.end())
+	{
 		m_Dependents.push_back(pPlugin);
+	}
 }
 
 void CNativeOwner::AddWeakRef(const WeakNative & ref)

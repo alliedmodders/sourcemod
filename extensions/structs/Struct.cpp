@@ -81,9 +81,7 @@ void StructInfo::AddMember( const char *name, MemberInfo *member )
 
 StructInfo::~StructInfo()
 {
-	SourceHook::List<MemberInfo *>::iterator iter;
-
-	iter = membersList.begin();
+	auto iter = membersList.begin();
 
 	while (iter != membersList.end())
 	{

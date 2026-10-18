@@ -56,6 +56,11 @@ class IClient;
 
 #define MIN_API_FOR_ADMINCALLS		7
 
+// mock lacks NetworkIDValidated; episode1/darkm (< SE_ORANGEBOX) predate it.
+#if SOURCE_ENGINE >= SE_ORANGEBOX && SOURCE_ENGINE != SE_MOCK
+#define SM_HAS_NETWORKID_VALIDATED 1
+#endif
+
 union serial_t
 {
 	uint32_t   value;
@@ -176,32 +181,49 @@ public:
 	CPlayer *GetPlayerByIndex(int client) const;
 	void RunAuthChecks();
 public:
-	bool OnClientConnect(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
-	bool OnClientConnect_Post(edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
-	void OnClientPutInServer(edict_t *pEntity, char const *playername);
-	void OnClientDisconnect(edict_t *pEntity);
-	void OnClientDisconnect_Post(edict_t *pEntity);
+	KHook::Virtual<IServerGameClients, bool, edict_t*, const char*, const char*, char*, int> m_HookClientConnect;
+	KHook::Return<bool> OnClientConnect(IServerGameClients*, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
+	KHook::Return<bool> OnClientConnect_Post(IServerGameClients*, edict_t *pEntity, const char *pszName, const char *pszAddress, char *reject, int maxrejectlen);
+	KHook::Virtual<IServerGameClients, void, edict_t*, const char*> m_HookClientPutInServer;
+	KHook::Return<void> OnClientPutInServer(IServerGameClients*, edict_t *pEntity, char const *playername);
+	KHook::Virtual<IServerGameClients, void, edict_t*> m_HookClientDisconnect;
+	KHook::Return<void> OnClientDisconnect(IServerGameClients*, edict_t *pEntity);
+	KHook::Return<void> OnClientDisconnect_Post(IServerGameClients*, edict_t *pEntity);
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-	void OnClientCommand(edict_t *pEntity, const CCommand &args);
+	KHook::Virtual<IServerGameClients, void, edict_t*, const CCommand&> m_HookClientCommand;
+	KHook::Return<void> OnClientCommand(IServerGameClients*, edict_t *pEntity, const CCommand &args);
 #if SOURCE_ENGINE >= SE_EYE
-	void OnClientCommandKeyValues(edict_t *pEntity, KeyValues *pCommand);
-	void OnClientCommandKeyValues_Post(edict_t *pEntity, KeyValues *pCommand);
+	KHook::Virtual<IServerGameClients, void, edict_t*, KeyValues*> m_HookClientCommandKeyValues;
+	KHook::Return<void> OnClientCommandKeyValues(IServerGameClients*, edict_t *pEntity, KeyValues *pCommand);
+	KHook::Return<void> OnClientCommandKeyValues_Post(IServerGameClients*, edict_t *pEntity, KeyValues *pCommand);
 #endif
 #else
-	void OnClientCommand(edict_t *pEntity);
+	KHook::Virtual<IServerGameClients, void, edict_t*> m_HookClientCommand;
+	KHook::Return<void> OnClientCommand(IServerGameClients*, edict_t *pEntity);
 #endif
-	void OnClientSettingsChanged(edict_t *pEntity);
+	KHook::Virtual<IServerGameClients, void, edict_t*> m_HookClientSettingsChanged;
+	KHook::Return<void> OnClientSettingsChanged(IServerGameClients*, edict_t *pEntity);
 	//void OnClientSettingsChanged_Pre(edict_t *pEntity);
-#if SOURCE_ENGINE >= SE_ORANGEBOX && SOURCE_ENGINE != SE_MOCK
+#if SM_HAS_NETWORKID_VALIDATED
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
-	void OnNetworkIDValidated(const char *pszUserName, const char *pszNetworkID, CSteamID steamID);
+	KHook::Return<void> OnNetworkIDValidated(IServerGameClients*, const char *pszUserName, const char *pszNetworkID, CSteamID steamID);
+	KHook::Virtual<IServerGameClients, void, const char *, const char *, CSteamID> m_HookOnNetworkIDValidated;
 #else
-	void OnNetworkIDValidated(const char *pszUserName, const char *pszNetworkID);
+	KHook::Return<void> OnNetworkIDValidated(IServerGameClients*, const char *pszUserName, const char *pszNetworkID);
+	KHook::Virtual<IServerGameClients, void, const char *, const char *> m_HookOnNetworkIDValidated;
 #endif
 #endif
 	void OnClientLanguageChanged(int client, unsigned int language);
-	void OnServerHibernationUpdate(bool bHibernating);
-	void OnClientPrintf(edict_t *pEdict, const char *szMsg);
+	KHook::Virtual<IServerGameDLL, void, edict_t*, int, int> m_HookServerActivate;
+	KHook::Return<void> OnServerActivate(IServerGameDLL*, edict_t *pEdictList, int edictCount, int clientMax);
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
+	KHook::Virtual<IServerGameDLL, void, bool> m_HookOnServerHibernationUpdate;
+#elif SOURCE_ENGINE > SE_EYE
+	KHook::Virtual<IServerGameDLL, void, bool> m_HookSetServerHibernation;
+#endif
+	KHook::Return<void> OnServerHibernationUpdate(IServerGameDLL*, bool bHibernating);
+	KHook::Virtual<IVEngineServer, void, edict_t*, const char*> m_HookClientPrintf;
+	KHook::Return<void> OnClientPrintf(IVEngineServer*, edict_t *pEdict, const char *szMsg);
 	void OnPrintfFrameAction(unsigned int serial);
 public: //IPlayerManager
 	void AddClientListener(IClientListener *listener);
@@ -247,7 +269,6 @@ public:
 	bool HandleConVarQuery(QueryCvarCookie_t cookie, int client, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue);
 #endif
 private:
-	void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
 	void InvalidatePlayer(CPlayer *pPlayer);
 private:
 	std::list<IClientListener *> m_hooks;
@@ -287,9 +308,9 @@ private:
 };
 
 #if SOURCE_ENGINE >= SE_ORANGEBOX
-void CmdMaxplayersCallback(const CCommand &command);
+KHook::Return<void> CmdMaxplayersCallback(ConCommand*, const CCommand &command);
 #else
-void CmdMaxplayersCallback();
+KHook::Return<void> CmdMaxplayersCallback(ConCommand*);
 #endif
 
 extern void ClientConsolePrint(edict_t *e, const char *fmt, ...);
