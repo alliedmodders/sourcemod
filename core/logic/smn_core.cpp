@@ -35,7 +35,6 @@
 #include <iomanip>
 #include <sstream>
 #include <list>
-#include <vector>
 #include "common_logic.h"
 #include "Logger.h"
 
@@ -59,6 +58,7 @@
 #include <bridge/include/CoreProvider.h>
 #include <bridge/include/IScriptManager.h>
 #include <bridge/include/IExtensionBridge.h>
+#include <vector>
 
 using namespace SourceMod;
 using namespace SourcePawn;

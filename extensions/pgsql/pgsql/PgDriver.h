@@ -41,8 +41,9 @@
 
 #include <libpq-fe.h>
 
-#include <mutex>
+#include <string>
 #include <list>
+#include <mutex>
 
 using namespace SourceMod;
 

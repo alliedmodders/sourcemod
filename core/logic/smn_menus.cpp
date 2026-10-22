@@ -30,6 +30,8 @@
  */
 
 #include "common_logic.h"
+#include <stack>
+#include <vector>
 #include <IMenuManager.h>
 #include <IPlayerHelpers.h>
 #include "DebugReporter.h"
@@ -39,9 +41,6 @@
 #include <ISourceMod.h>
 #include <stdlib.h>
 #include <bridge/include/IScriptManager.h>
-#include <stack>
-#include <list>
-#include <vector>
 
 #if defined CreateMenu
 #undef CreateMenu

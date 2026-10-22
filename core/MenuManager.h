@@ -36,8 +36,8 @@
 #include <vector>
 #include <stack>
 #include <list>
-#include <string>
 #include "sm_globals.h"
+#include <string>
 
 using namespace SourceMod;
 
