@@ -285,7 +285,7 @@ void EntityOutputManager::OnMapEnd()
 	IPluginIterator *plugins = plsys->GetPluginIterator();
 	for (; plugins->MorePlugins(); plugins->NextPlugin())
 	{
-		std::list<omg_hooks *> *pList = NULL;
+		SourceHook::List<omg_hooks *> *pList = NULL;
 		if (!plugins->GetPlugin()->GetProperty("OutputHookList", (void **)&pList, false) || !pList)
 		{
 			continue;
