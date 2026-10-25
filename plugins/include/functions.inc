@@ -307,6 +307,7 @@ native void Call_PushCell(any value);
  * Pushes a 64-bit integer, such as an Address, onto the current call.
  *
  * @note Cannot be used before a call has been started.
+ * @note Plugins compiled before Address became an int64, or with oldspcomp, receive the low 32 bits as a cell.
  *
  * @param value         64-bit integer value to push.
  * @error               Called before a call has been started.
