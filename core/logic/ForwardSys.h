@@ -138,4 +138,7 @@ private:
 
 extern CForwardManager g_Forwards;
 
+// Invokes a plugin function, adapting 64-bit integer arguments for plugins that take an Address as a single cell.
+bool InvokePluginFunction(IPluginFunction *func, const sp::CallArgs& args, cell_t *result);
+
 #endif //_INCLUDE_SOURCEMOD_FORWARDSYSTEM_H_

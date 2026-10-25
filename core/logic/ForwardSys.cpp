@@ -210,6 +210,30 @@ CForward *CForward::CreateForward(const char *name, ExecType et, unsigned int nu
 	return new CForward(et, name, _types, num_params);
 }
 
+bool InvokePluginFunction(IPluginFunction *func, const CallArgs& args, cell_t *result)
+{
+	bool has_int64 = false;
+	for (uint32_t i = 0; i < args.argc; i++)
+		has_int64 |= args.argv[i].type == CallArgs::ARG_INT64;
+
+	// Plugins compiled before Address became an int64, or with oldspcomp, take an Address as one cell and cannot read
+	// an int64 argument. Like DHooks, pass them the low 32 bits instead.
+	if (has_int64 && func->GetParentRuntime()->FindPubvarByName("__Int64_Address__", nullptr) != SP_ERROR_NONE) {
+		CallArgs legacy_args = args;
+		for (uint32_t i = 0; i < legacy_args.argc; i++) {
+			auto& arg = legacy_args.argv[i];
+			if (arg.type != CallArgs::ARG_INT64)
+				continue;
+			arg.u.value = static_cast<cell_t>(arg.u.i64);
+			arg.type = CallArgs::ARG_CELL;
+			arg.flags = 0;
+		}
+		return func->Invoke(legacy_args, result);
+	}
+
+	return func->Invoke(args, result);
+}
+
 bool CForward::ProcessArguments(const CallArgs& args) {
 	if (args.error)
 		return !SetError(SP_ERROR_PARAMS_MAX);
@@ -302,7 +326,7 @@ int CForward::Execute(const sp::CallArgs& in_args, cell_t *result, IForwardFilte
 
 		ExceptionHandler eh(func->GetParentRuntime());
 
-		if (!func->Invoke(args, &cur_result))
+		if (!InvokePluginFunction(func, args, &cur_result))
 			continue;
 
 		success++;
