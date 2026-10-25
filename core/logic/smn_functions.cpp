@@ -32,7 +32,6 @@
 #include <memory>
 
 #include "common_logic.h"
-#include "ForwardSys.h"
 #include <IPluginSys.h>
 #include <IHandleSys.h>
 #include <IForwardSys.h>
@@ -587,7 +586,7 @@ static cell_t sm_CallFinish(IPluginContext *pContext, const cell_t *params)
 		IPluginFunction *pFunction = s_pFunction;
 		ResetCall();
 		ExceptionHandler eh(pContext);
-		if (!InvokePluginFunction(pFunction, local_args, result))
+		if (!pFunction->Invoke(local_args, result))
 			return eh.Code();
 	} else {
 		IForward *pForward = s_pForward;
