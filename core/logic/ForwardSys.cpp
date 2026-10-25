@@ -250,6 +250,10 @@ bool CForward::ProcessArguments(const CallArgs& args) {
 				if (pt != Param_String)
 					return !SetError(SP_ERROR_PARAM);
 				break;
+			case CallArgs::ARG_INT64:
+				if (pt != Param_Int64)
+					return !SetError(SP_ERROR_PARAM);
+				break;
 		}
 	}
 

@@ -392,6 +392,29 @@ static cell_t sm_CallPushCell(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t sm_CallPushInt64(IPluginContext *pContext, const cell_t *params)
+{
+	cell_t *addr;
+
+	if (!s_CallStarted)
+	{
+		return pContext->ThrowNativeError("Cannot push parameters when there is no call in progress");
+	}
+
+	// 64-bit integer arguments are passed by reference.
+	if (int err = pContext->LocalToPhysAddr(params[1], &addr); err != SP_ERROR_NONE)
+		return pContext->ThrowNativeErrorEx(err, nullptr);
+
+	int64_t value;
+	memcpy(&value, addr, sizeof(value));
+	sArgs.PushInt64(value);
+
+	if (sArgs.error)
+		return pContext->ThrowNativeErrorEx(SP_ERROR_PARAMS_MAX, nullptr);
+
+	return 1;
+}
+
 static cell_t sm_CallPushFloat(IPluginContext *pContext, const cell_t *params)
 {
 	int err;
@@ -656,6 +679,7 @@ REGISTER_NATIVES(functionNatives)
 	{"Call_StartForward",                   sm_CallStartForward},
 	{"Call_PushCell",                       sm_CallPushCell},
 	{"Call_PushCellRef",                    sm_CallPushCellRef},
+	{"Call_PushInt64",                      sm_CallPushInt64},
 	{"Call_PushFloat",                      sm_CallPushFloat},
 	{"Call_PushFloatRef",                   sm_CallPushFloatRef},
 	{"Call_PushArray",                      sm_CallPushArray},
