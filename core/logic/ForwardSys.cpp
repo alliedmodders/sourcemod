@@ -212,11 +212,11 @@ CForward *CForward::CreateForward(const char *name, ExecType et, unsigned int nu
 
 bool CForward::ProcessArguments(const CallArgs& args) {
 	if (args.error)
-		return !!SetError(SP_ERROR_PARAMS_MAX);
+		return !SetError(SP_ERROR_PARAMS_MAX);
 
 	for (uint32_t i = 0; i < args.argc; i++) {
 		if (i >= m_numparams)
-			return !!SetError(SP_ERROR_PARAM);
+			return !SetError(SP_ERROR_PARAM);
 
 		ParamType pt = m_types[i];
 		if (pt == Param_Any)
@@ -227,28 +227,28 @@ bool CForward::ProcessArguments(const CallArgs& args) {
 			case CallArgs::ARG_CELL:
 				if (arg.flags & CallArgs::FLAG_CELL_TYPE_FLOAT) {
 					if (pt != Param_Float)
-						return !!SetError(SP_ERROR_PARAM);
+						return !SetError(SP_ERROR_PARAM);
 				} else {
 					if (pt != Param_Cell)
-						return !!SetError(SP_ERROR_PARAM);
+						return !SetError(SP_ERROR_PARAM);
 				}
 				break;
 			case CallArgs::ARG_CELL_BY_REF:
 				if (arg.flags & CallArgs::FLAG_CELL_TYPE_FLOAT) {
 					if (pt != Param_FloatByRef)
-						return !!SetError(SP_ERROR_PARAM);
+						return !SetError(SP_ERROR_PARAM);
 				} else {
 					if (pt != Param_CellByRef)
-						return !!SetError(SP_ERROR_PARAM);
+						return !SetError(SP_ERROR_PARAM);
 				}
 				break;
 			case CallArgs::ARG_ARRAY:
 				if (pt != Param_Array)
-					return !!SetError(SP_ERROR_PARAM);
+					return !SetError(SP_ERROR_PARAM);
 				break;
 			case CallArgs::ARG_CHAR_ARRAY:
 				if (pt != Param_String)
-					return !!SetError(SP_ERROR_PARAM);
+					return !SetError(SP_ERROR_PARAM);
 				break;
 		}
 	}
