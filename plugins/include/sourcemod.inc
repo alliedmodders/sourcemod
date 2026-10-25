@@ -82,7 +82,7 @@ typedef Address = int64;
 public const int64 __Int64_Address__ = 0;
 
 /**< Equivallent to nullptr */
-public const Address Address_Null = 0;
+#define Address_Null view_as<Address>(0)
 /**< Size of a pointer in bytes (same as `sizeof(void*)`) */
 public const Address Address_PointerSize = 0;
 
