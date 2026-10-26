@@ -43,7 +43,8 @@ typedef ReentrantList<IPluginFunction *>::iterator FuncIter;
 using AddressMask = uint32_t;
 static_assert(SP_MAX_EXEC_PARAMS <= sizeof(AddressMask) * 8, "AddressMask must have a bit for every parameter");
 
-// Invokes a plugin function, passing the given Address arguments as one cell to plugins that take an Address as one cell.
+// Invokes a plugin function, passing the given Address arguments as one cell to plugins compiled before SourceMod 1.13,
+// and refusing to pass those plugins any other int64 argument.
 bool InvokePluginFunction(IPluginFunction *func, const sp::CallArgs& args, AddressMask addresses, cell_t *result);
 
 class CForward : public IChangeableForward

@@ -307,6 +307,9 @@ native void Call_PushCell(any value);
 /**
  * Pushes a 64-bit integer onto the current call.
  *
+ * @note Plugins compiled before SourceMod 1.13 cannot receive a 64-bit integer.
+ *       Calling one of them fails with an error. Use Call_PushAddress for an
+ *       Address.
  * @note Cannot be used before a call has been started.
  *
  * @param value         64-bit integer value to push.
@@ -317,7 +320,7 @@ native void Call_PushInt64(int64 value);
 /**
  * Pushes an Address onto the current call.
  *
- * @note Unlike Call_PushInt64, plugins compiled before Address became 64-bit
+ * @note Unlike Call_PushInt64, plugins compiled before SourceMod 1.13
  *       receive the low 32 bits of the address.
  * @note Cannot be used before a call has been started.
  *

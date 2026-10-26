@@ -216,16 +216,27 @@ CForward *CForward::CreateForward(const char *name, ExecType et, unsigned int nu
 
 bool InvokePluginFunction(IPluginFunction *func, const CallArgs& args, AddressMask addresses, cell_t *result)
 {
-	// Plugins compiled before Address became an int64, or with oldspcomp, take an Address as one cell and cannot read
-	// an int64 argument. Like DHooks, pass them the low 32 bits instead.
-	if (!addresses || func->GetParentRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE)
+	// Plugins compiled before SourceMod 1.13 take an Address as one cell and cannot read an int64 argument. Like DHooks,
+	// pass them the low 32 bits of an Address instead. Any other int64 has no single cell equivalent, so they cannot be
+	// called with one.
+	bool has_int64 = false;
+	for (uint32_t i = 0; i < args.argc; i++)
+		has_int64 |= args.argv[i].type == CallArgs::ARG_INT64;
+	if (!has_int64 || func->GetParentRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE)
 		return func->Invoke(args, result);
 
 	CallArgs legacy_args = args;
 	for (uint32_t i = 0; i < legacy_args.argc; i++) {
 		auto& arg = legacy_args.argv[i];
-		if (!(addresses & (1u << i)) || arg.type != CallArgs::ARG_INT64)
+		if (arg.type != CallArgs::ARG_INT64)
 			continue;
+		if (!(addresses & (1u << i))) {
+			IPluginContext *ctx = func->GetParentRuntime()->GetDefaultContext();
+			IPlugin *plugin = pluginsys->FindPluginByContext(ctx);
+			ctx->ReportError("Plugin \"%s\" was compiled before SourceMod 1.13 and cannot receive int64 argument %u",
+				plugin ? plugin->GetFilename() : "<unknown>", i + 1);
+			return false;
+		}
 		arg.u.value = static_cast<cell_t>(arg.u.i64);
 		arg.type = CallArgs::ARG_CELL;
 		arg.flags = 0;

@@ -109,7 +109,7 @@ namespace SourceMod
 		Param_CellByRef = SP_PARAMTYPE_CELL|SP_PARAMFLAG_BYREF,		/**< Only a cell by reference can be pushed */
 		Param_FloatByRef = SP_PARAMTYPE_FLOAT|SP_PARAMFLAG_BYREF,	/**< Only a float by reference can be pushed */
 		Param_Int64 = SP_PARAMTYPE_INT64,			/**< Only 64-bit integers can be pushed */
-		Param_SMAddress = SP_PARAMTYPE_SMADDRESS,	/**< Only Addresses can be pushed; plugins that take an Address as one cell get the low 32 bits */
+		Param_SMAddress = SP_PARAMTYPE_SMADDRESS,	/**< Only Addresses can be pushed; plugins compiled before SourceMod 1.13 get the low 32 bits */
 	};
 	
 	struct ByrefInfo
