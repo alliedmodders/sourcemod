@@ -32,6 +32,7 @@
 #include <memory>
 
 #include "common_logic.h"
+#include "ForwardSys.h"
 #include <IPluginSys.h>
 #include <IHandleSys.h>
 #include <IForwardSys.h>
@@ -43,6 +44,7 @@ HandleType_t g_PrivateFwdType = 0;
 
 static bool s_CallStarted = false;
 static sp::CallArgs sArgs;
+static AddressMask s_Addresses = 0;
 static IPluginFunction *s_pFunction = NULL;
 static IForward *s_pForward = NULL;
 
@@ -98,6 +100,7 @@ inline void ResetCall()
 	s_pFunction = NULL;
 	s_pForward = NULL;
 	sArgs.Reset();
+	s_Addresses = 0;
 }
 
 static cell_t sm_GetFunctionByName(IPluginContext *pContext, const cell_t *params)
@@ -415,6 +418,15 @@ static cell_t sm_CallPushInt64(IPluginContext *pContext, const cell_t *params)
 	return 1;
 }
 
+static cell_t sm_CallPushAddress(IPluginContext *pContext, const cell_t *params)
+{
+	uint32_t index = sArgs.argc;
+	cell_t ret = sm_CallPushInt64(pContext, params);
+	if (s_CallStarted && !sArgs.error)
+		s_Addresses |= 1u << index;
+	return ret;
+}
+
 static cell_t sm_CallPushFloat(IPluginContext *pContext, const cell_t *params)
 {
 	int err;
@@ -579,6 +591,7 @@ static cell_t sm_CallFinish(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeErrorEx(err, nullptr);
 
 	auto local_args = sArgs;
+	auto local_addresses = s_Addresses;
 
 	// Note: ExceptionHandler and Execute() swallow exceptions, so this is okay.
 	if (s_pFunction)
@@ -586,7 +599,7 @@ static cell_t sm_CallFinish(IPluginContext *pContext, const cell_t *params)
 		IPluginFunction *pFunction = s_pFunction;
 		ResetCall();
 		ExceptionHandler eh(pContext);
-		if (!pFunction->Invoke(local_args, result))
+		if (!InvokePluginFunction(pFunction, local_args, local_addresses, result))
 			return eh.Code();
 	} else {
 		IForward *pForward = s_pForward;
@@ -680,6 +693,7 @@ REGISTER_NATIVES(functionNatives)
 	{"Call_PushCell",                       sm_CallPushCell},
 	{"Call_PushCellRef",                    sm_CallPushCellRef},
 	{"Call_PushInt64",                      sm_CallPushInt64},
+	{"Call_PushAddress",                    sm_CallPushAddress},
 	{"Call_PushFloat",                      sm_CallPushFloat},
 	{"Call_PushFloatRef",                   sm_CallPushFloatRef},
 	{"Call_PushArray",                      sm_CallPushArray},

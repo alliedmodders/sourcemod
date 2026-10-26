@@ -174,7 +174,8 @@ void CForwardManager::OnPluginPauseChange(IPlugin *plugin, bool paused)
  *************************************/
 
 CForward::CForward(ExecType et, const char *name, const ParamType *types, unsigned num_params)
-	: m_numparams(0),
+	: m_addresses(0),
+	  m_numparams(0),
 	  m_ExecType(et),
 	  m_errstate(SP_ERROR_NONE),
 	  m_ExecDepth(0),
@@ -182,8 +183,11 @@ CForward::CForward(ExecType et, const char *name, const ParamType *types, unsign
 {
 	ke::SafeStrcpy(m_name, sizeof(m_name), name ? name : "");
 
-	for (unsigned i = 0; i < num_params; i++)
+	for (unsigned i = 0; i < num_params; i++) {
 		m_types[i] = types[i];
+		if (types[i] == Param_SMAddress)
+			m_addresses |= 1u << i;
+	}
 
 	m_numparams = num_params;
 }
@@ -208,6 +212,25 @@ CForward *CForward::CreateForward(const char *name, ExecType et, unsigned int nu
 	}
 
 	return new CForward(et, name, _types, num_params);
+}
+
+bool InvokePluginFunction(IPluginFunction *func, const CallArgs& args, AddressMask addresses, cell_t *result)
+{
+	// Plugins compiled before Address became an int64, or with oldspcomp, take an Address as one cell and cannot read
+	// an int64 argument. Like DHooks, pass them the low 32 bits instead.
+	if (!addresses || func->GetParentRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE)
+		return func->Invoke(args, result);
+
+	CallArgs legacy_args = args;
+	for (uint32_t i = 0; i < legacy_args.argc; i++) {
+		auto& arg = legacy_args.argv[i];
+		if (!(addresses & (1u << i)) || arg.type != CallArgs::ARG_INT64)
+			continue;
+		arg.u.value = static_cast<cell_t>(arg.u.i64);
+		arg.type = CallArgs::ARG_CELL;
+		arg.flags = 0;
+	}
+	return func->Invoke(legacy_args, result);
 }
 
 bool CForward::ProcessArguments(const CallArgs& args) {
@@ -251,7 +274,7 @@ bool CForward::ProcessArguments(const CallArgs& args) {
 					return !SetError(SP_ERROR_PARAM);
 				break;
 			case CallArgs::ARG_INT64:
-				if (pt != Param_Int64)
+				if (pt != Param_Int64 && pt != Param_SMAddress)
 					return !SetError(SP_ERROR_PARAM);
 				break;
 		}
@@ -302,7 +325,7 @@ int CForward::Execute(const sp::CallArgs& in_args, cell_t *result, IForwardFilte
 
 		ExceptionHandler eh(func->GetParentRuntime());
 
-		if (!func->Invoke(args, &cur_result))
+		if (!InvokePluginFunction(func, args, m_addresses, &cur_result))
 			continue;
 
 		success++;
