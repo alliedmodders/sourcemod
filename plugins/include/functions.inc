@@ -468,14 +468,33 @@ typeset NativeCall
 }
 
 /**
+ * Flags for dynamic natives.
+ */
+enum NativeFlags
+{
+	NativeFlag_None           = 0,
+	NativeFlag_ReturnsInt64   = (1<<0),  /**< The native is declared as returning a 64-bit integer */
+	NativeFlag_ReturnsAddress = (1<<1)   /**< The native is declared as returning an Address */
+};
+
+/**
  * Creates a dynamic native.  This should only be called in AskPluginLoad(), or
  * else you risk not having your native shared with other plugins.
+ *
+ * @note A native declared as returning an Address must be created with
+ *       NativeFlag_ReturnsAddress, and one returning any other int64 with
+ *       NativeFlag_ReturnsInt64. Its return value can be set with
+ *       SetNativeReturnAddress or SetNativeReturnInt64, or returned as a cell,
+ *       which is zero-extended. Plugins compiled before SourceMod 1.13 receive
+ *       the low 32 bits of an Address, and cannot call a native returning any
+ *       other int64.
  *
  * @param name          Name of the dynamic native; must be unique among
  *                      all other registered dynamic natives.
  * @param func          Function to use as the dynamic native.
+ * @param flags         Flags for the native.
  */
-native void CreateNative(const char[] name, NativeCall func);
+native void CreateNative(const char[] name, NativeCall func, NativeFlags flags = NativeFlag_None);
 
 /**
  * Throws an error in the calling plugin of a native, instead of your own plugin.
@@ -534,11 +553,90 @@ native int SetNativeString(int param, const char[] source, int maxlength, bool u
 /**
  * Gets a cell from a native parameter.
  *
+ * @note For an int64 parameter, such as an Address, this returns a reference
+ *       to the value. Use GetNativeAddress or GetNativeInt64 to read the value
+ *       instead.
+ *
  * @param param         Parameter number, starting from 1.
  * @return              Cell value at the parameter number.
  * @error               Invalid parameter number or calling from a non-native function.
  */
 native any GetNativeCell(int param);
+
+/**
+ * Gets a 64-bit integer from a native parameter.
+ *
+ * @note Plugins compiled before SourceMod 1.13 cannot pass a 64-bit integer.
+ *       Calling this for one of them fails with an error.
+ *       Use GetNativeAddress for an Address.
+ *
+ * @param param         Parameter number, starting from 1.
+ * @return              64-bit integer value at the parameter number.
+ * @error               Invalid parameter number, calling from a non-native function,
+ *                      or a caller compiled before SourceMod 1.13.
+ */
+native int64 GetNativeInt64(int param);
+
+/**
+ * Gets an Address from a native parameter.
+ *
+ * @note Callers compiled before SourceMod 1.13 pass a single cell, which is
+ *       zero-extended.
+ *
+ * @param param         Parameter number, starting from 1.
+ * @return              Address at the parameter number.
+ * @error               Invalid parameter number or calling from a non-native function.
+ */
+native Address GetNativeAddress(int param);
+
+/**
+ * Sets a 64-bit integer from a native parameter, by reference.
+ *
+ * @note Plugins compiled before SourceMod 1.13 cannot receive a 64-bit
+ *       integer. Calling this for one of them fails with an error.
+ *       Use SetNativeAddressRef for an Address.
+ *
+ * @param param         Parameter number, starting from 1.
+ * @param value         64-bit integer value at the parameter number to set by reference.
+ * @error               Invalid parameter number, calling from a non-native function,
+ *                      or a caller compiled before SourceMod 1.13.
+ */
+native void SetNativeInt64Ref(int param, int64 value);
+
+/**
+ * Sets an Address from a native parameter, by reference.
+ *
+ * @note Callers compiled before SourceMod 1.13 receive the low 32 bits.
+ *
+ * @param param         Parameter number, starting from 1.
+ * @param value         Address at the parameter number to set by reference.
+ * @error               Invalid parameter number or calling from a non-native function.
+ */
+native void SetNativeAddressRef(int param, Address value);
+
+/**
+ * Sets the return value of a native created with NativeFlag_ReturnsInt64.
+ * This value is returned instead of the native function's return value.
+ *
+ * @param value         64-bit integer value to return.
+ * @return              0, so a native can return SetNativeReturnInt64(value).
+ * @error               Calling from a non-native function, or the native was not
+ *                      created with NativeFlag_ReturnsInt64.
+ */
+native any SetNativeReturnInt64(int64 value);
+
+/**
+ * Sets the return value of a native created with NativeFlag_ReturnsAddress.
+ * This value is returned instead of the native function's return value.
+ *
+ * @note Callers compiled before SourceMod 1.13 receive the low 32 bits.
+ *
+ * @param value         Address to return.
+ * @return              0, so a native can return SetNativeReturnAddress(value).
+ * @error               Calling from a non-native function, or the native was not
+ *                      created with NativeFlag_ReturnsAddress.
+ */
+native any SetNativeReturnAddress(Address value);
 
 /**
  * Gets a function pointer from a native parameter.
@@ -588,6 +686,66 @@ native int GetNativeArray(int param, any[] local, int size);
  * @error               Invalid parameter number or calling from a non-native function.
  */
 native int SetNativeArray(int param, const any[] local, int size);
+
+/**
+ * Gets an array of 64-bit integers from a native parameter (always by reference).
+ *
+ * @note Plugins compiled before SourceMod 1.13 cannot pass a 64-bit integer.
+ *       Calling this for one of them fails with an error.
+ *       Use GetNativeAddressArray for Addresses.
+ *
+ * @param param         Parameter number, starting from 1.
+ * @param local         Local array to copy into.
+ * @param size          Maximum size of local array.
+ * @return              SP_ERROR_NONE on success, anything else on failure.
+ * @error               Invalid parameter number, calling from a non-native function,
+ *                      or a caller compiled before SourceMod 1.13.
+ */
+native int GetNativeInt64Array(int param, int64[] local, int size);
+
+/**
+ * Gets an array of Addresses from a native parameter (always by reference).
+ *
+ * @note Callers compiled before SourceMod 1.13 pass an array of single cells,
+ *       which are zero-extended.
+ *
+ * @param param         Parameter number, starting from 1.
+ * @param local         Local array to copy into.
+ * @param size          Maximum size of local array.
+ * @return              SP_ERROR_NONE on success, anything else on failure.
+ * @error               Invalid parameter number or calling from a non-native function.
+ */
+native int GetNativeAddressArray(int param, Address[] local, int size);
+
+/**
+ * Copies a local array of 64-bit integers into a native parameter array (always by reference).
+ *
+ * @note Plugins compiled before SourceMod 1.13 cannot receive a 64-bit
+ *       integer. Calling this for one of them fails with an error.
+ *       Use SetNativeAddressArray for Addresses.
+ *
+ * @param param         Parameter number, starting from 1.
+ * @param local         Local array to copy from.
+ * @param size          Size of the local array to copy.
+ * @return              SP_ERROR_NONE on success, anything else on failure.
+ * @error               Invalid parameter number, calling from a non-native function,
+ *                      or a caller compiled before SourceMod 1.13.
+ */
+native int SetNativeInt64Array(int param, const int64[] local, int size);
+
+/**
+ * Copies a local array of Addresses into a native parameter array (always by reference).
+ *
+ * @note Callers compiled before SourceMod 1.13 receive the low 32 bits of each
+ *       value.
+ *
+ * @param param         Parameter number, starting from 1.
+ * @param local         Local array to copy from.
+ * @param size          Size of the local array to copy.
+ * @return              SP_ERROR_NONE on success, anything else on failure.
+ * @error               Invalid parameter number or calling from a non-native function.
+ */
+native int SetNativeAddressArray(int param, const Address[] local, int size);
 
 /**
  * Check if the native parameter is the NULL_VECTOR.
