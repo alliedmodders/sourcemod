@@ -122,7 +122,7 @@ public:
 	void BeginBindingFor(CPlugin *pPlugin);
 	void BindNativesToPlugin(CPlugin *pPlugin, bool bCoreOnly);
 	void BindNativeToPlugin(CPlugin *pPlugin, const ke::RefPtr<Native> &pEntry);
-	ke::AlreadyRefed<Native> AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func);
+	ke::AlreadyRefed<Native> AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func, int flags = 0);
 	ke::RefPtr<Native> FindNative(const char *name);
 private:
 	ke::AlreadyRefed<Native> AddNativeToCache(CNativeOwner *pOwner, const sp_nativeinfo_t *ntv);
