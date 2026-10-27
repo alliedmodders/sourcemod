@@ -8,7 +8,7 @@
  * This program is free software; you can redistribute it and/or modify it under
  * the terms of the GNU General Public License, version 3.0, as published by the
  * Free Software Foundation.
- * 
+ *
  * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
@@ -32,7 +32,8 @@
 #include <sourcemod_version.h>
 #include "extension.h"
 #include <sh_string.h>
-#include "pcre.h"
+#include "pcre2.h"
+#include "PCRECompat.h"
 #include "posix_map.h"
 #include "CRegEx.h"
 using namespace SourceHook;
@@ -80,14 +81,14 @@ static cell_t CompileRegex(IPluginContext *pCtx, const cell_t *params)
 	pCtx->LocalToString(params[1], &regex);
 
 	RegEx *x = new RegEx();
-	
-	if (x->Compile(regex, params[2]) == 0)
+
+	if (!(x->Compile(regex, PCREOptionsToPCRE2Options(params[2]))))
 	{
 		cell_t *eError;
 		pCtx->LocalToPhysAddr(params[5], &eError);
-		const char *err = x->mError;
+		const char *err = x->mError.c_str();
 		// Convert error code to posix error code but use pcre's error string since it is more detailed.
-		*eError = pcre_posix_compile_error_map[x->mErrorCode];
+		*eError = PCRE2ErrorToPosixError(x->mErrorCode);
 		pCtx->StringToLocal(params[3], params[4], err ? err:"unknown");
 		delete x;
 		return 0;
@@ -101,7 +102,7 @@ static cell_t CompileRegex(IPluginContext *pCtx, const cell_t *params)
 		pCtx->ReportError("Allocation of regex handle failed, error code #%d", error);
 		return 0;
 	}
-	
+
 	return regexHandle;
 }
 
@@ -140,22 +141,22 @@ static cell_t MatchRegex(IPluginContext *pCtx, const cell_t *params)
 		/* there was a match error.  move on. */
 		cell_t *res;
 		pCtx->LocalToPhysAddr(params[3], &res);
-		*res = x->mErrorCode;
+		*res = PCRE2ErrorToRegexError(x->mErrorCode);
 		/* only clear the match results, since the regex object
 		   may still be referenced later */
 		x->ClearMatch();
 
 		return -1;
 	}
-	else if (e == 0) 
+	else if (e == 0)
 	{
 		/* only clear the match results, since the regex object
 		   may still be referenced later */
 		x->ClearMatch();
 
 		return 0;
-	} 
-	else 
+	}
+	else
 	{
 		return x->mMatches[0].mSubStringCount;
 	}
@@ -193,7 +194,7 @@ static cell_t MatchRegexAll(IPluginContext *pCtx, const cell_t *params)
 		/* there was a match error.  move on. */
 		cell_t *res;
 		pCtx->LocalToPhysAddr(params[3], &res);
-		*res = x->mErrorCode;
+		*res = PCRE2ErrorToRegexError(x->mErrorCode);
 		/* only clear the match results, since the regex object
 		may still be referenced later */
 		x->ClearMatch();
@@ -210,7 +211,7 @@ static cell_t MatchRegexAll(IPluginContext *pCtx, const cell_t *params)
 	}
 	else
 	{
-		return x->mMatchCount;
+		return static_cast<cell_t>(x->mMatches.size());
 	}
 }
 
@@ -242,12 +243,12 @@ static cell_t GetRegexSubString(IPluginContext *pCtx, const cell_t *params)
 		match = params[5];
 	}
 
-	if(match >= x->mMatchCount || match < 0)
+	if(static_cast<size_t>(match) >= x->mMatches.size() || match < 0)
 		return pCtx->ThrowNativeError("Invalid match index passed.\n");
 
 	char *buffer;
 	pCtx->LocalToString(params[3], &buffer);
-	
+
 	return x->GetSubstring(params[2], buffer, params[4], match);
 }
 
@@ -271,7 +272,7 @@ static cell_t GetRegexMatchCount(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Regex data not found\n");
 	}
 
-	return x->mMatchCount;
+	return static_cast<cell_t>(x->mMatches.size());
 }
 
 static cell_t GetRegexCaptureCount(IPluginContext *pCtx, const cell_t *params)
@@ -294,7 +295,7 @@ static cell_t GetRegexCaptureCount(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Regex data not found\n");
 	}
 
-	if (params[2] >= x->mMatchCount || params[2] < 0)
+	if (static_cast<size_t>(params[2]) >= x->mMatches.size() || params[2] < 0)
 		return pCtx->ThrowNativeError("Invalid match index passed.\n");
 
 	return x->mMatches[params[2]].mSubStringCount;
@@ -320,10 +321,10 @@ static cell_t GetRegexOffset(IPluginContext *pCtx, const cell_t *params)
 		return pCtx->ThrowNativeError("Regex data not found\n");
 	}
 
-	if (params[2] >= x->mMatchCount || params[2] < 0)
+	if (static_cast<cell_t>(params[2]) >= x->mMatches.size() || params[2] < 0)
 		return pCtx->ThrowNativeError("Invalid match index passed.\n");
 
-	return x->mMatches[params[2]].mVector[1];
+	return static_cast<cell_t>(x->mMatches[params[2]].mVector[0].end);
 }
 
 void RegexHandler::OnHandleDestroy(HandleType_t type, void *object)
@@ -334,7 +335,7 @@ void RegexHandler::OnHandleDestroy(HandleType_t type, void *object)
 	delete x;
 }
 
-const sp_nativeinfo_t regex_natives[] = 
+const sp_nativeinfo_t regex_natives[] =
 {
 	{"GetRegexSubString",			GetRegexSubString},
 	{"MatchRegex",					MatchRegex},
