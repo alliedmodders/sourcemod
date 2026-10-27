@@ -42,9 +42,7 @@ void StructManager::AddStruct( const char *name, StructInfo *str )
 
 StructManager::~StructManager()
 {
-	SourceHook::List<StructInfo *>::iterator iter;
-
-	iter = structsList.begin();
+	auto iter = structsList.begin();
 
 	while (iter != structsList.end())
 	{

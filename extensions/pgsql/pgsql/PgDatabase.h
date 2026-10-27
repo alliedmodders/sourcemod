@@ -34,6 +34,7 @@
 
 #include <amtl/am-refcounting-threadsafe.h>
 #include <mutex>
+#include <string>
 #include "PgDriver.h"
 
 class PgQuery;

@@ -34,12 +34,12 @@
 
 #include "common_logic.h"
 #include <sm_hashmap.h>
-#include <string>
-#include <vector>
 #include "sm_memtable.h"
 #include "ITextParsers.h"
 #include <ITranslator.h>
 #include "PhraseCollection.h"
+#include <vector>
+#include <string>
 
 /* :TODO: write a templatized version of tries? */
 

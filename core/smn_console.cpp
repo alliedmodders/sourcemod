@@ -1356,7 +1356,7 @@ static cell_t FakeClientCommandKeyValues(IPluginContext *pContext, const cell_t 
 
 	if (g_Players.InClientCommandKeyValuesHook())
 	{
-		SH_CALL(serverClients, &IServerGameClients::ClientCommandKeyValues)(pPlayer->GetEdict(), pStk->pBase);
+		KHook::CallOriginal(&IServerGameClients::ClientCommandKeyValues, serverClients, pPlayer->GetEdict(), pStk->pBase);
 	}
 	else
 	{
@@ -1515,7 +1515,6 @@ static cell_t sm_CommandIteratorPlugin(IPluginContext *pContext, const cell_t *p
 	{
 		return pContext->ThrowNativeError("Invalid CommandIterator Handle %x", params[1]);
 	}
-
 	const std::list<ConCmdInfo *> &cmds = g_ConCmds.GetCommandList();
 	if (!iter->started || iter->iter == cmds.end())
 	{

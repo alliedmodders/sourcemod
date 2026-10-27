@@ -33,9 +33,6 @@
 #define _INCLUDE_SOURCEMOD_CRITICALS_H_
 
 #include "extension.h"
-#include <jit/jit_helpers.h>
-#include <jit/x86/x86_macros.h>
-#include "CDetour/detours.h"
 #include "ISDKHooks.h"
 
 class CritManager : public ISMEntityListener
@@ -58,10 +55,10 @@ private:
 
 public:
 	// CritHook
-	bool Hook_CalcIsAttackCriticalHelper();
-	bool Hook_CalcIsAttackCriticalHelperNoCrits();
+	KHook::Return<bool> Hook_CalcIsAttackCriticalHelper(CBaseEntity*);
+	KHook::Return<bool> Hook_CalcIsAttackCriticalHelperNoCrits(CBaseEntity*);
 private:
-	bool Hook_CalcIsAttackCriticalHelpers(bool noCrits);
+	KHook::Return<bool> Hook_CalcIsAttackCriticalHelpers(CBaseEntity*, bool noCrits);
 
 private:
 	bool m_enabled;

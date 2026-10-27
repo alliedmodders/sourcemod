@@ -30,8 +30,6 @@
  */
 
 #include "common_logic.h"
-#include <stack>
-#include <vector>
 #include <IMenuManager.h>
 #include <IPlayerHelpers.h>
 #include "DebugReporter.h"
@@ -41,6 +39,9 @@
 #include <ISourceMod.h>
 #include <stdlib.h>
 #include <bridge/include/IScriptManager.h>
+#include <stack>
+#include <list>
+#include <vector>
 
 #if defined CreateMenu
 #undef CreateMenu
@@ -214,12 +215,12 @@ public:
 	 */
 	virtual void OnPluginUnloaded(IPlugin *plugin)
 	{
-		for (size_t i = 0; i < m_PanelHandlers.size(); i++)
+		for (auto e : m_PanelHandlers)
 		{
-			if (m_PanelHandlers[i]->m_pPlugin == plugin)
+			if (e->m_pPlugin == plugin)
 			{
-				m_PanelHandlers[i]->m_pPlugin = NULL;
-				m_PanelHandlers[i]->m_pFunc = NULL;
+				e->m_pPlugin = nullptr;
+				e->m_pFunc = nullptr;
 			}
 		}
 	}

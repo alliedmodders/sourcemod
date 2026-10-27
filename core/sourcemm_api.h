@@ -40,6 +40,7 @@
 #include <filesystem.h>
 #include <IEngineSound.h>
 #include <toolframework/itoolentity.h>
+#include <khook.hpp>
 
 /**
  * @file Contains wrappers around required Metamod:Source API exports
@@ -78,8 +79,6 @@ extern ICvar *icvar;
 extern ISmmPluginManager *g_pMMPlugins;
 extern CGlobalVars *gpGlobals;
 extern IGameEventManager2 *gameevents;
-extern SourceHook::CallClass<IVEngineServer> *enginePatch;
-extern SourceHook::CallClass<IServerGameDLL> *gamedllPatch;
 extern IPlayerInfoManager *playerinfo;
 extern IBaseFileSystem *basefilesystem;
 extern IFileSystem *filesystem;
@@ -90,9 +89,6 @@ extern IServerTools *servertools;
 extern IServerPluginHelpers *serverpluginhelpers;
 extern IServerPluginCallbacks *vsp_interface;
 extern int vsp_version;
-
-#define ENGINE_CALL(func)		SH_CALL(enginePatch, &IVEngineServer::func)
-#define SERVER_CALL(func)		SH_CALL(gamedllPatch, &IServerGameDLL::func)
 
 PLUGIN_GLOBALVARS();
 

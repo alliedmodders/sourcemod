@@ -24,7 +24,7 @@ jobs:
         name: Clone metamod-source
         with:
           repository: alliedmodders/metamod-source
-          ref: 1.12-dev
+          ref: master
           submodules: recursive
           path: metamod-source
       

@@ -34,7 +34,6 @@
 
 #include "extension.h"
 #include "cookie.h"
-#include "sh_string.h"
 
 enum querytype
 {
