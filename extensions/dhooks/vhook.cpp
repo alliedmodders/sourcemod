@@ -245,6 +245,7 @@ DHooksManager::DHooksManager(HookSetup *setup, void *iface, IPluginFunction *rem
 	this->remove_callback = remove_callback;
 	this->callback->offset = setup->offset;
 	this->callback->plugin_callback = plugincb;
+	this->callback->int64_address = plugincb && plugincb->GetParentRuntime()->FindPubvarByName("__Int64_Address__", nullptr) == SP_ERROR_NONE;
 	this->callback->returnFlag = setup->returnFlag;
 	this->callback->thisType = setup->thisType;
 	this->callback->post = post;
