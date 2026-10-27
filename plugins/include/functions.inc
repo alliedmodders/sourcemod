@@ -48,7 +48,9 @@ enum ParamType
 	Param_String        = (3<<1)|SP_PARAMFLAG_BYREF,    /**< Only strings can be pushed */
 	Param_Array         = (4<<1)|SP_PARAMFLAG_BYREF,    /**< Only arrays can be pushed */
 	Param_CellByRef     = (1<<1)|SP_PARAMFLAG_BYREF,    /**< Only a cell by reference can be pushed */
-	Param_FloatByRef    = (2<<1)|SP_PARAMFLAG_BYREF     /**< Only a float by reference can be pushed */
+	Param_FloatByRef    = (2<<1)|SP_PARAMFLAG_BYREF,    /**< Only a float by reference can be pushed */
+	Param_Int64         = (5<<1),                       /**< Only 64-bit integers can be pushed */
+	Param_SMAddress     = (6<<1)                        /**< Only Addresses can be pushed */
 };
 
 /**
@@ -301,6 +303,31 @@ native void Call_StartFunction(Handle plugin, Function func);
  * @error               Called before a call has been started.
  */
 native void Call_PushCell(any value);
+
+/**
+ * Pushes a 64-bit integer onto the current call.
+ *
+ * @note Plugins compiled before SourceMod 1.13 cannot receive a 64-bit integer.
+ *       Calling one of them fails with an error. Use Call_PushAddress for an
+ *       Address.
+ * @note Cannot be used before a call has been started.
+ *
+ * @param value         64-bit integer value to push.
+ * @error               Called before a call has been started.
+ */
+native void Call_PushInt64(int64 value);
+
+/**
+ * Pushes an Address onto the current call.
+ *
+ * @note Unlike Call_PushInt64, plugins compiled before SourceMod 1.13
+ *       receive the low 32 bits of the address.
+ * @note Cannot be used before a call has been started.
+ *
+ * @param value         Address to push.
+ * @error               Called before a call has been started.
+ */
+native void Call_PushAddress(Address value);
 
 /**
  * Pushes a cell by reference onto the current call.

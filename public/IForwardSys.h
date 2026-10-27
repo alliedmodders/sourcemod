@@ -93,6 +93,8 @@ namespace SourceMod
 	#define SP_PARAMTYPE_FLOAT	(2<<1)
 	#define SP_PARAMTYPE_STRING	(3<<1)|SP_PARAMFLAG_BYREF
 	#define SP_PARAMTYPE_ARRAY	(4<<1)|SP_PARAMFLAG_BYREF
+	#define SP_PARAMTYPE_INT64	(5<<1)
+	#define SP_PARAMTYPE_SMADDRESS	(6<<1)
 
 	/**
 	 * @brief Describes the various ways to pass parameters to plugins.
@@ -106,6 +108,8 @@ namespace SourceMod
 		Param_Array = SP_PARAMTYPE_ARRAY,			/**< Only arrays can be pushed */
 		Param_CellByRef = SP_PARAMTYPE_CELL|SP_PARAMFLAG_BYREF,		/**< Only a cell by reference can be pushed */
 		Param_FloatByRef = SP_PARAMTYPE_FLOAT|SP_PARAMFLAG_BYREF,	/**< Only a float by reference can be pushed */
+		Param_Int64 = SP_PARAMTYPE_INT64,			/**< Only 64-bit integers can be pushed */
+		Param_SMAddress = SP_PARAMTYPE_SMADDRESS,	/**< Only Addresses can be pushed; plugins compiled before SourceMod 1.13 get the low 32 bits */
 	};
 	
 	struct ByrefInfo

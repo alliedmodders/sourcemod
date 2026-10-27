@@ -39,6 +39,14 @@ typedef ReentrantList<IPluginFunction *>::iterator FuncIter;
 /* :TODO: a global name max define for sourcepawn, should mirror compiler's sNAMEMAX */
 #define FORWARDS_NAME_MAX		64
 
+// The argument positions that hold an Address, one bit per position.
+using AddressMask = uint32_t;
+static_assert(SP_MAX_EXEC_PARAMS <= sizeof(AddressMask) * 8, "AddressMask must have a bit for every parameter");
+
+// Invokes a plugin function, passing the given Address arguments as one cell to plugins compiled before SourceMod 1.13,
+// and refusing to pass those plugins any other int64 argument.
+bool InvokePluginFunction(IPluginFunction *func, const sp::CallArgs& args, AddressMask addresses, cell_t *result);
+
 class CForward : public IChangeableForward
 {
 	friend class CForwardManager;
@@ -88,6 +96,7 @@ protected:
 	/* Type and name information */
 	sp::CallArgs default_args_;
 	ParamType m_types[SP_MAX_EXEC_PARAMS];
+	AddressMask m_addresses;
 	char m_name[FORWARDS_NAME_MAX+1];
 	unsigned int m_numparams;
 	ExecType m_ExecType;
