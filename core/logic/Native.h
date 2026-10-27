@@ -41,18 +41,24 @@
 
 class CNativeOwner;
 
+// Flags passed to CreateNative, see NativeFlags in functions.inc.
+#define NATIVEFLAG_RETURNS_INT64 (1<<0)
+#define NATIVEFLAG_RETURNS_ADDRESS (1<<1)
+
 struct FakeNative
 {
-	FakeNative(const char *name, IPluginFunction *fun)
+	FakeNative(const char *name, IPluginFunction *fun, int flags)
 		: name(name),
 		  ctx(fun->GetParentContext()),
-		  call(fun)
+		  call(fun),
+		  flags(flags)
 	{
 	}
 
 	std::string name;
 	IPluginContext *ctx;
 	IPluginFunction *call;
+	int flags;
 	ke::RefPtr<INativeCallback> wrapper;
 };
 
