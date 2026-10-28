@@ -71,6 +71,20 @@ jobs:
             echo "Compiling $(basename $f)"
             ../gamedir/addons/sourcemod/scripting/spcomp64 -i ../gamedir/addons/sourcemod/scripting/include -o "../gamedir/addons/sourcemod/plugins/optional/$(basename $f .sp).smx" -E "$f"
           done
+
+          for dir in ../sourcemod/plugins/testsuite/mock/multi/*/; do
+            [ -d "$dir" ] || continue
+            suite=$(basename "$dir")
+            mkdir -p "../gamedir/addons/sourcemod/plugins/optional/multi/$suite"
+            inc_args=(-i ../gamedir/addons/sourcemod/scripting/include)
+            if [ -d "${dir}include" ]; then
+              inc_args+=(-i "${dir}include")
+            fi
+            for f in "$dir"*.sp; do
+              echo "Compiling multi/$suite/$(basename $f)"
+              ../gamedir/addons/sourcemod/scripting/spcomp64 "${inc_args[@]}" -o "../gamedir/addons/sourcemod/plugins/optional/multi/$suite/$(basename $f .sp).smx" -E "$f"
+            done
+          done
       
       - name: Test
         working-directory: hl2sdk-mock
@@ -104,3 +118,44 @@ jobs:
               }
             done
           done
+
+      - name: Test multi-plugin suites
+        working-directory: hl2sdk-mock
+        shell: bash
+        run: |
+          for arch in x86 x86_64; do
+            echo "==================================="
+            echo "Testing multi-plugin suites on $arch..."
+            echo "==================================="
+            for dir in ../gamedir/addons/sourcemod/plugins/optional/multi/*/; do
+              [ -d "$dir" ] || continue
+              suite=$(basename "$dir")
+              echo "==================================="
+              echo "Running multi-plugin suite $suite..."
+              echo "==================================="
+              {
+                for f in "$dir"*.smx; do
+                  echo "sm plugins load optional/multi/$suite/$(basename $f)"
+                done
+                echo "run"
+              } | timeout 60 ./objdir/dist/$arch/srcds -game_dir ../gamedir +map de_thunder -run-ticks 20 |
+              {
+                failed=0
+                succeeded=0
+                while IFS= read -r line; do
+                  echo "$line"
+                  if [[ "$line" == *"FAIL"* || "$line" == *"Exception reported"* ]]; then
+                    failed=1
+                  fi
+                  if [[ "$line" == *" OK"* ]]; then
+                    succeeded=1
+                  fi
+                done
+                if [ "$failed" = "1" ] || [ "$succeeded" = "0" ]; then
+                  echo "Multi-plugin suite $suite failed."
+                  exit 1
+                fi
+              }
+            done
+          done
+
