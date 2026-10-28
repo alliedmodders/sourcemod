@@ -45,6 +45,7 @@
 #include "Translator.h"
 #include "Logger.h"
 #include "frame_tasks.h"
+#include "RTTINative.h"
 #include <amtl/am-string.h>
 #include <bridge/include/IVEngineServerBridge.h>
 #include <bridge/include/CoreProvider.h>
@@ -470,6 +471,8 @@ APLRes CPlugin::AskPluginLoad()
 {
 	assert(m_status == Plugin_Created);
 	m_status = Plugin_Loaded;
+
+	AutoRegisterPluginRTTINatives(this);
 
 	bool haveNewAPL = true;
 	IPluginFunction *pFunction = m_pRuntime->GetFunctionByName("AskPluginLoad2");

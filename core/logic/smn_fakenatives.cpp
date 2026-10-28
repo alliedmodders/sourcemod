@@ -35,6 +35,7 @@
 #include "common_logic.h"
 #include "ShareSys.h"
 #include "PluginSys.h"
+#include "RTTINative.h"
 #include "sprintf.h"
 
 using namespace SourceHook;
@@ -42,6 +43,43 @@ using namespace SourceHook;
 static cell_t s_curparams[SP_MAX_EXEC_PARAMS+1];
 static FakeNative *s_curnative = NULL;
 static IPluginContext *s_curcaller = NULL;
+
+ScopedFakeNativeCall::ScopedFakeNativeCall(FakeNative *native, IPluginContext *pContext, const cell_t *params, cell_t offset)
+{
+	pSaveNative_ = s_curnative;
+	pSaveCaller_ = s_curcaller;
+	if (pSaveNative_ != NULL)
+	{
+		for (cell_t i = 0; i <= s_curparams[0] && i <= SP_MAX_EXEC_PARAMS; i++)
+		{
+			save_params_[i] = s_curparams[i];
+		}
+	}
+
+	s_curnative = native;
+	s_curcaller = pContext;
+	cell_t count = (params[0] >= offset) ? (params[0] - offset) : 0;
+	if (count > SP_MAX_EXEC_PARAMS)
+		count = SP_MAX_EXEC_PARAMS;
+	s_curparams[0] = count;
+	for (cell_t i = 1; i <= s_curparams[0] && i <= SP_MAX_EXEC_PARAMS; i++)
+	{
+		s_curparams[i] = params[i + offset];
+	}
+}
+
+ScopedFakeNativeCall::~ScopedFakeNativeCall()
+{
+	s_curnative = pSaveNative_;
+	s_curcaller = pSaveCaller_;
+	if (pSaveNative_ != NULL)
+	{
+		for (cell_t i = 0; i <= save_params_[0] && i <= SP_MAX_EXEC_PARAMS; i++)
+		{
+			s_curparams[i] = save_params_[i];
+		}
+	}
+}
 
 cell_t FakeNativeRouter(IPluginContext *pContext, const cell_t *params, void *pData)
 {
@@ -61,26 +99,7 @@ cell_t FakeNativeRouter(IPluginContext *pContext, const cell_t *params, void *pD
 
 	CPlugin *pCaller = g_PluginSys.GetPluginByCtx(pContext);
 
-	/* Save any old data on the stack */
-	FakeNative *pSaveNative = s_curnative;
-	IPluginContext *pSaveCaller = s_curcaller;
-	cell_t save_params[SP_MAX_EXEC_PARAMS+1];
-	if (pSaveNative != NULL)
-	{
-		/* Copy all old parameters */
-		for (cell_t i=0; i<=s_curparams[0]; i++)
-		{
-			save_params[i] = s_curparams[i];
-		}
-	}
-
-	/* Save the current parameters */
-	s_curnative = native;
-	s_curcaller = pContext;
-	for (cell_t i=0; i<=params[0]; i++)
-	{
-		s_curparams[i] = params[i];
-	}
+	ScopedFakeNativeCall scope(native, pContext, params, 0);
 
 	// Push info and execute. If Invoke() fails, the error will propagate up.
 	// We still carry on below to clear our global state.
@@ -88,17 +107,6 @@ cell_t FakeNativeRouter(IPluginContext *pContext, const cell_t *params, void *pD
 	native->call->PushCell(pCaller->GetMyHandle());
 	native->call->PushCell(params[0]);
 	native->call->Invoke(&result);
-
-	/* Restore everything from the stack if necessary */
-	s_curnative = pSaveNative;
-	s_curcaller = pSaveCaller;
-	if (pSaveNative != NULL)
-	{
-		for (cell_t i=0; i<=save_params[0]; i++)
-		{
-			s_curparams[i] = save_params[i];
-		}
-	}
 
 	return result;
 }

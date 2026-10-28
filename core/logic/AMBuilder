@@ -68,6 +68,7 @@ for cxx in builder.targets:
     'smn_datapacks.cpp',
     'smn_gameconfigs.cpp',
     'smn_fakenatives.cpp',
+    'RTTINative.cpp',
     'GameConfigs.cpp',
     'sm_crc32.cpp',
     'smn_profiler.cpp',
