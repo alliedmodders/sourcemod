@@ -143,21 +143,6 @@ static inline void PopulateHolidayVar(IPluginRuntime *pRuntime, const char *pszN
 void HolidayManager::OnPluginLoaded(IPlugin *plugin)
 {
 	HookIfNecessary();
-
-	auto *pRuntime = plugin->GetRuntime();
-	PopulateHolidayVar(pRuntime, "TFHoliday_Birthday");
-	PopulateHolidayVar(pRuntime, "TFHoliday_Halloween");
-	PopulateHolidayVar(pRuntime, "TFHoliday_Christmas");
-	PopulateHolidayVar(pRuntime, "TFHoliday_CommunityUpdate");
-	PopulateHolidayVar(pRuntime, "TFHoliday_EndOfTheLine");
-	PopulateHolidayVar(pRuntime, "TFHoliday_ValentinesDay");
-	PopulateHolidayVar(pRuntime, "TFHoliday_MeetThePyro");
-	PopulateHolidayVar(pRuntime, "TFHoliday_FullMoon");
-	PopulateHolidayVar(pRuntime, "TFHoliday_HalloweenOrFullMoon");
-	PopulateHolidayVar(pRuntime, "TFHoliday_HalloweenOrFullMoonOrValentines");
-	PopulateHolidayVar(pRuntime, "TFHoliday_AprilFools");
-	PopulateHolidayVar(pRuntime, "TFHoliday_Soldier");
-	PopulateHolidayVar(pRuntime, "TFHoliday_Summer");
 }
 
 void HolidayManager::OnPluginUnloaded(IPlugin *plugin)
