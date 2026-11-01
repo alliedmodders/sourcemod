@@ -199,7 +199,7 @@ public:
 	}
 	const char* GetGameBinArchSubdirectory() override
 	{
-#if defined( KE_ARCH_X64 ) && SOURCE_ENGINE >= SE_BLADE
+#if defined( KE_ARCH_X64 ) && SOURCE_ENGINE >= SE_BLADE && SOURCE_ENGINE != SE_OUTBREAK
 #if defined( PLATFORM_WINDOWS )
 #if SOURCE_ENGINE == SE_MCV
 		return "win64" PLATFORM_SEP;
@@ -214,7 +214,7 @@ public:
 #else
 		// Already included in the GameBin path(s), if required
 		return "";
-#endif // defined( KE_ARCH_X64 ) && SOURCE_ENGINE >= SE_BLADE
+#endif // defined( KE_ARCH_X64 ) && SOURCE_ENGINE >= SE_BLADE && SOURCE_ENGINE != SE_OUTBREAK
 	}
 	bool SupportsAsync() override
 	{
@@ -247,6 +247,9 @@ public:
 	{
 #if SOURCE_ENGINE == SE_MOCK || SOURCE_ENGINE == SE_DARKMESSIAH
 		return SourceMod::AsyncStatus_FileOpenError;
+#elif SOURCE_ENGINE == SE_OUTBREAK
+		return filesystem->AsyncWrite(filename, "GAME", data, size, false, append,
+			reinterpret_cast<FSAsyncControl_t *>(control));
 #else
 		return filesystem->AsyncWrite(filename, data, size, false, append,
 			reinterpret_cast<FSAsyncControl_t *>(control));
@@ -508,6 +511,8 @@ void UTIL_ConsolePrint(const char *fmt, ...)
 #define GAMEFIX "2.pvkii"
 #elif SOURCE_ENGINE == SE_MCV
 #define GAMEFIX "2.mcv"
+#elif SOURCE_ENGINE == SE_OUTBREAK
+#define GAMEFIX "2.outbreak"
 #elif SOURCE_ENGINE == SE_MOCK
 #define GAMEFIX "2.mock"
 #else
@@ -636,6 +641,8 @@ const char *CoreProviderImpl::GetSourceEngineName()
 	return "pvkii";
 #elif SOURCE_ENGINE == SE_MCV
 	return "mcv";
+#elif SOURCE_ENGINE == SE_OUTBREAK
+	return "outbreak";
 #endif
 }
 
@@ -651,11 +658,12 @@ bool CoreProviderImpl::SymbolsAreHidden()
 	|| (SOURCE_ENGINE == SE_NUCLEARDAWN) \
 	|| (SOURCE_ENGINE == SE_LEFT4DEAD2)  \
 	|| (SOURCE_ENGINE == SE_INSURGENCY)  \
-	|| (SOURCE_ENGINE == SE_DOI)  \
+	|| (SOURCE_ENGINE == SE_DOI)         \
 	|| (SOURCE_ENGINE == SE_BLADE)       \
-	|| (SOURCE_ENGINE == SE_CSGO) \
-	|| (SOURCE_ENGINE == SE_PVKII) \
-	|| (SOURCE_ENGINE == SE_MCV)
+	|| (SOURCE_ENGINE == SE_CSGO)        \
+	|| (SOURCE_ENGINE == SE_PVKII)       \
+	|| (SOURCE_ENGINE == SE_MCV)         \
+	|| (SOURCE_ENGINE == SE_OUTBREAK)
 	return true;
 #else
 	return false;

@@ -43,11 +43,14 @@
 
 using namespace SourceMod;
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
 #define USE_PROTOBUF_USERMESSAGES
 #endif
 
 #ifdef USE_PROTOBUF_USERMESSAGES
+#ifdef GetMessage
+#undef GetMessage
+#endif
 #include <google/protobuf/message.h>
 #include <google/protobuf/descriptor.h>
 #include <netmessages.pb.h>
@@ -100,12 +103,12 @@ public: //IUserMessages
 		bool intercept=false);
 	UserMessageType GetUserMessageType() const;
 public:
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
 	void OnSendUserMessage_Pre(IRecipientFilter &filter, int msg_type, const protobuf::Message &msg);
 	void OnSendUserMessage_Post(IRecipientFilter &filter, int msg_type, const protobuf::Message &msg);
 #endif
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
 	protobuf::Message *OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name);
 	protobuf::Message *OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name);
 #elif SOURCE_ENGINE >= SE_LEFT4DEAD

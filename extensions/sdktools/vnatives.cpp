@@ -266,7 +266,7 @@ static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 
 	return gamehelpers->EntityToBCompatRef(pEntity);
 }
-#elif SOURCE_ENGINE == SE_LEFT4DEAD2
+#elif SOURCE_ENGINE == SE_LEFT4DEAD2 || SOURCE_ENGINE == SE_OUTBREAK
 // CBaseEntity *CTerrorPlayer::GiveNamedItem( const char *pchName, int iSubType, bool bForce, CBaseEntity *pUnk)
 static cell_t GiveNamedItem(IPluginContext *pContext, const cell_t *params)
 {
@@ -996,7 +996,8 @@ static cell_t FindEntityByClassname(IPluginContext *pContext, const cell_t *para
 	|| SOURCE_ENGINE == SE_SDK2013 \
 	|| SOURCE_ENGINE == SE_BLADE   \
 	|| SOURCE_ENGINE == SE_NUCLEARDAWN \
-	|| SOURCE_ENGINE == SE_PVKII
+	|| SOURCE_ENGINE == SE_PVKII \
+	|| SOURCE_ENGINE == SE_OUTBREAK
 
 	static bool bHasServerTools3 = !!g_SMAPI->GetServerFactory(false)("VSERVERTOOLS003", nullptr);
 	if (bHasServerTools3)
@@ -1090,7 +1091,7 @@ static cell_t CreateEntityByName(IPluginContext *pContext, const cell_t *params)
 
 	char *classname;
 	pContext->LocalToString(params[1], &classname);
-#if SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_BLADE && SOURCE_ENGINE != SE_MCV
+#if SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_BLADE && SOURCE_ENGINE != SE_MCV && SOURCE_ENGINE != SE_OUTBREAK
 	CBaseEntity *pEntity = (CBaseEntity *)servertools->CreateEntityByName(classname);
 #else
 	CBaseEntity *pEntity = (CBaseEntity *)servertools->CreateItemEntityByName(classname);

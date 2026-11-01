@@ -77,7 +77,11 @@ public:
 	/**
 	 * @brief Map change hook
 	 */
+#if SOURCE_ENGINE == SE_OUTBREAK
+	bool LevelInit(char const *pMapName, void *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
+#else
 	bool LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
+#endif
 
 	/**
 	 * @brief Level shutdown hook
@@ -136,7 +140,9 @@ public: // ISourceMod
 private:
 	void ShutdownServices();
 private:
+#if SOURCE_ENGINE != SE_OUTBREAK
 	const char* GetMapEntitiesString();
+#endif
 	char m_SMBaseDir[PLATFORM_MAX_PATH];
 	char m_SMRelDir[PLATFORM_MAX_PATH];
 	char m_ModDir[32];

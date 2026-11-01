@@ -22,7 +22,7 @@
 #endif
 #if SOURCE_ENGINE != SE_HL2DM && SOURCE_ENGINE != SE_DODS && SOURCE_ENGINE != SE_CSS && SOURCE_ENGINE != SE_TF2 && \
 	SOURCE_ENGINE != SE_LEFT4DEAD2 && SOURCE_ENGINE != SE_CSGO && SOURCE_ENGINE != SE_NUCLEARDAWN && \
-	SOURCE_ENGINE != SE_BLADE && SOURCE_ENGINE != SE_MCV
+	SOURCE_ENGINE != SE_BLADE && SOURCE_ENGINE != SE_MCV && SOURCE_ENGINE != SE_OUTBREAK
 #define GAMEDESC_CAN_CHANGE
 #endif
 
@@ -282,7 +282,11 @@ public:
 #ifdef GAMEDESC_CAN_CHANGE
 	const char *Hook_GetGameDescription();
 #endif
+#if SOURCE_ENGINE == SE_OUTBREAK
+	bool Hook_LevelInit(char const *pMapName, void *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
+#else
 	bool Hook_LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
+#endif
 
 	/**
 	 * CBaseEntity Hook Handlers

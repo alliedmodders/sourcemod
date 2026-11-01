@@ -53,7 +53,11 @@
  * @brief Implements SDK Tools extension code.
  */
 
+#if SOURCE_ENGINE == SE_OUTBREAK
+SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, void *, const char *, const char *, bool, bool);
+#else
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
+#endif
 SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
 #if SOURCE_ENGINE == SE_CSS || SOURCE_ENGINE == SE_CSGO
 SH_DECL_HOOK1_void_vafmt(IVEngineServer, ClientCommand, SH_NOATTRIB, 0, edict_t *);
@@ -108,7 +112,7 @@ extern sp_nativeinfo_t g_ClientNatives[];
 
 static void InitSDKToolsAPI();
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
 CDetour *g_WriteBaselinesDetour = NULL;
 
 DETOUR_DECL_MEMBER3(CNetworkStringTableContainer__WriteBaselines, void, char const *, mapName, void *, buffer, int, currentTick)
@@ -209,7 +213,7 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	m_CSGOBadList.add("m_bIsQuestEligible");
 #endif
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
 	g_WriteBaselinesDetour = DETOUR_CREATE_MEMBER(CNetworkStringTableContainer__WriteBaselines, "WriteBaselines");
 	if (g_WriteBaselinesDetour) {
 		g_WriteBaselinesDetour->EnableDetour();
@@ -246,7 +250,7 @@ void SDKTools::SDK_OnUnload()
 	g_RegCalls.clear();
 	ShutdownHelpers();
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
 	if (g_WriteBaselinesDetour) {
 		g_WriteBaselinesDetour->DisableDetour();
 		g_WriteBaselinesDetour = NULL;
@@ -418,7 +422,11 @@ bool SDKTools::RegisterConCommandBase(ConCommandBase *pVar)
 	return g_SMAPI->RegisterConCommandBase(g_PLAPI, pVar);
 }
 
+#if SOURCE_ENGINE == SE_OUTBREAK
+bool SDKTools::LevelInit(char const *pMapName, void *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
+#else
 bool SDKTools::LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
+#endif
 {
 	m_bAnyLevelInited = true;
 

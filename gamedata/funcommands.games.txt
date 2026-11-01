@@ -92,6 +92,7 @@
 		{
 			"game"	"left4dead"
 			"game"	"left4dead2"
+			"game"	"l4d2outbreak"
 		}
 		
 		"Keys"

@@ -151,7 +151,7 @@ private:
 	bool m_bIsReplay = false;
 	serial_t m_Serial;
 	CSteamID m_SteamId;
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
 	QueryCvarCookie_t m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
 	std::deque<std::string> m_PrintfBuffer;
@@ -193,7 +193,7 @@ public:
 	void OnClientSettingsChanged(edict_t *pEntity);
 	//void OnClientSettingsChanged_Pre(edict_t *pEntity);
 #if SOURCE_ENGINE >= SE_ORANGEBOX && SOURCE_ENGINE != SE_MOCK
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
 	void OnNetworkIDValidated(const char *pszUserName, const char *pszNetworkID, CSteamID steamID);
 #else
 	void OnNetworkIDValidated(const char *pszUserName, const char *pszNetworkID);
@@ -243,7 +243,7 @@ public:
 	{
 		return m_bInCCKVHook;
 	}
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
 	bool HandleConVarQuery(QueryCvarCookie_t cookie, int client, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue);
 #endif
 private:

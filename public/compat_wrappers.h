@@ -42,7 +42,8 @@ typedef int QueryCvarCookie_t;
 #if SOURCE_ENGINE >= SE_ORANGEBOX
 	#define CONVAR_REGISTER(object)				ConVar_Register(0, object)
 
-	inline bool IsFlagSet(ConCommandBase *cmd, int flag)
+	template <typename FlagType>
+	inline bool IsFlagSet(ConCommandBase *cmd, FlagType flag)
 	{
 		return cmd->IsFlagSet(flag);
 	}
@@ -74,7 +75,8 @@ typedef int QueryCvarCookie_t;
 		static int MaxCommandLength() { return 512; }
 	};
 
-	inline bool IsFlagSet(ConCommandBase *cmd, int flag)
+	template <typename FlagType>
+	inline bool IsFlagSet(ConCommandBase *cmd, FlagType flag)
 	{
 		return cmd->IsBitSet(flag);
 	}

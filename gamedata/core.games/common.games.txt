@@ -107,6 +107,7 @@
 			"engine"			"contagion"
 			"engine"			"pvkii"
 			"engine"			"mcv"
+			"game"				"l4d2outbreak"
 		}
 		
 		"Offsets"
@@ -198,6 +199,7 @@
 			"game"					"dystopia"
 			"game"					"treason"
 			"game"					"tf2classified"
+			"game"					"l4d2outbreak"
 		}
 
 		"Keys"
@@ -256,6 +258,7 @@
 			"game"					"dystopia"
 			"game"					"treason"
 			"game"					"tf2classified"
+			"game"					"l4d2outbreak"
 		}
 		
 		"Keys"
@@ -323,6 +326,7 @@
 			"game"					"dystopia"
 			"game"					"treason"
 			"game"					"tf2classified"
+			"game"					"l4d2outbreak"
 		}
 		
 		"Keys"
@@ -377,6 +381,7 @@
 			"engine"	"insurgency"
 			"engine"	"mcv"
 			"engine"	"doi"
+			"engine"	"outbreak"
 		}
 		
 		"Keys"
@@ -400,6 +405,7 @@
 			"engine"	"left4dead"
 			"engine"	"left4dead2"
 			"engine"	"nucleardawn"
+			"engine"	"outbreak"
 		}
 
 		"Keys"

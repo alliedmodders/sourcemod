@@ -38,6 +38,9 @@ SH_DECL_HOOK8_void(IVEngineServer, EmitAmbientSound, SH_NOATTRIB, 0, int, const 
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 SH_DECL_HOOK18(IEngineSound, EmitSound, SH_NOATTRIB, 0, int, IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, float, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *);
 SH_DECL_HOOK18(IEngineSound, EmitSound, SH_NOATTRIB, 1, int, IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *);
+#elif SOURCE_ENGINE == SE_OUTBREAK
+SH_DECL_HOOK18(IEngineSound, EmitSound, SH_NOATTRIB, 0, SoundEventGuid_t, IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, float, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *);
+SH_DECL_HOOK18(IEngineSound, EmitSound, SH_NOATTRIB, 1, SoundEventGuid_t, IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *);
 #elif SOURCE_ENGINE >= SE_PORTAL2
 SH_DECL_HOOK17(IEngineSound, EmitSound, SH_NOATTRIB, 0, int, IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, float, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
 SH_DECL_HOOK17(IEngineSound, EmitSound, SH_NOATTRIB, 1, int, IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int);
@@ -360,6 +363,11 @@ int SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChanne
 							 float flVolume, soundlevel_t iSoundlevel, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
 							 const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 							 float soundtime, int speakerentity, void *pUnknown)
+#elif SOURCE_ENGINE == SE_OUTBREAK
+SoundEventGuid_t SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChannel, const char *pSoundEntry, unsigned int nSoundEntryHash, const char *pSample, 
+							 float flVolume, soundlevel_t iSoundlevel, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
+							 const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
+							 float soundtime, int speakerentity, void *pUnknown)
 #elif SOURCE_ENGINE >= SE_PORTAL2
 int SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChannel, const char *pSoundEntry, unsigned int nSoundEntryHash, const char *pSample, 
 							 float flVolume, soundlevel_t iSoundlevel, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
@@ -497,6 +505,16 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 			static_cast<soundlevel_t>(committed.level), committed.seed, committed.flags, committed.pitch, pOrigin,
 			pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity, nullptr)
 			);
+#elif SOURCE_ENGINE == SE_OUTBREAK
+		RETURN_META_VALUE_NEWPARAMS(
+			MRES_IGNORED,
+			-1,
+			static_cast<SoundEventGuid_t (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float, soundlevel_t,
+			int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *)>(&IEngineSound::EmitSound),
+			(crf, committed.entity, committed.channel, committed.soundEntry, nSoundEntryHash, committed.sample, committed.volume,
+			static_cast<soundlevel_t>(committed.level), committed.seed, committed.flags, committed.pitch, pOrigin,
+			pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity, nullptr)
+			);
 #elif SOURCE_ENGINE >= SE_PORTAL2
 		RETURN_META_VALUE_NEWPARAMS(
 			MRES_IGNORED,
@@ -534,6 +552,11 @@ void SoundHooks::OnEmitSound(IRecipientFilter &filter, int iEntIndex, int iChann
 
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 int SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChannel, const char *pSoundEntry, unsigned int nSoundEntryHash, const char *pSample, 
+							 float flVolume, float flAttenuation, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
+							 const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
+							 float soundtime, int speakerentity, void *pUnknown)
+#elif SOURCE_ENGINE == SE_OUTBREAK
+SoundEventGuid_t SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChannel, const char *pSoundEntry, unsigned int nSoundEntryHash, const char *pSample, 
 							 float flVolume, float flAttenuation, int nSeed, int iFlags, int iPitch, const Vector *pOrigin, 
 							 const Vector *pDirection, CUtlVector<Vector> *pUtlVecOrigins, bool bUpdatePositions, 
 							 float soundtime, int speakerentity, void *pUnknown)
@@ -674,6 +697,16 @@ void SoundHooks::OnEmitSound2(IRecipientFilter &filter, int iEntIndex, int iChan
 			SNDLVL_TO_ATTN(static_cast<soundlevel_t>(committed.level)), committed.seed, committed.flags, committed.pitch,
 			pOrigin, pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity, pUnknown)
 			);
+#elif SOURCE_ENGINE == SE_OUTBREAK
+		RETURN_META_VALUE_NEWPARAMS(
+			MRES_IGNORED,
+			-1,
+			static_cast<SoundEventGuid_t (IEngineSound::*)(IRecipientFilter &, int, int, const char *, unsigned int, const char *, float, float,
+			int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *)>(&IEngineSound::EmitSound),
+			(crf, committed.entity, committed.channel, committed.soundEntry, nSoundEntryHash, committed.sample, committed.volume,
+			SNDLVL_TO_ATTN(static_cast<soundlevel_t>(committed.level)), committed.seed, committed.flags, committed.pitch,
+			pOrigin, pDirection, pUtlVecOrigins, bUpdatePositions, soundtime, speakerentity, pUnknown)
+			);
 #elif SOURCE_ENGINE >= SE_PORTAL2
 		RETURN_META_VALUE_NEWPARAMS(
 			MRES_IGNORED,
@@ -714,7 +747,7 @@ bool GetSoundParams(CSoundParameters *soundParams, const char *soundname, cell_t
 	if ( !soundname[0] )
 		return false;
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
 	HSOUNDSCRIPTHASH index = soundemitterbase->HashSoundName(soundname);
 	
 	if(!soundemitterbase->IsValidHash(index))
@@ -727,7 +760,7 @@ bool GetSoundParams(CSoundParameters *soundParams, const char *soundname, cell_t
 #endif // SOURCE_ENGINE >= SE_PORTAL2
 	if (!soundemitterbase->IsValidIndex(index))
 		return false;
-#endif // SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+#endif // SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
 
 	gender_t gender = GENDER_NONE;
 
@@ -973,9 +1006,34 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 			player[0] = cl_array[i];
 			crf.Reset();
 			crf.Initialize(player, 1);
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
 			if (g_InSoundHook)
 			{
+#if SOURCE_ENGINE == SE_OUTBREAK
+				SH_CALL(enginesoundPatch, 
+					static_cast<SoundEventGuid_t (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float, 
+					soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *)>
+
+					(&IEngineSound::EmitSound))
+					(crf, 
+					player[0], 
+					channel, 
+					sample, 
+					-1, 
+					sample, 
+					vol, 
+					(soundlevel_t)level, 
+					0, 
+					flags, 
+					pitch, 
+					pOrigin,
+					pDir,
+					pOrigVec,
+					updatePos,
+					soundtime,
+					speakerentity,
+					nullptr);
+#else
 				SH_CALL(enginesoundPatch, 
 					static_cast<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float, 
 					soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *)>
@@ -999,6 +1057,7 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 					soundtime,
 					speakerentity,
 					nullptr);
+#endif
 			}
 			else
 			{
@@ -1151,9 +1210,33 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 #endif
 		}
 	} else {
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
 		if (g_InSoundHook)
 		{
+#if SOURCE_ENGINE == SE_OUTBREAK
+			SH_CALL(enginesoundPatch, 
+				static_cast<SoundEventGuid_t (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float, 
+				soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *)>
+				(&IEngineSound::EmitSound))
+				(crf, 
+				entity, 
+				channel, 
+				sample, 
+				-1, 
+				sample, 
+				vol, 
+				(soundlevel_t)level, 
+				0, 
+				flags, 
+				pitch, 
+				pOrigin,
+				pDir,
+				pOrigVec,
+				updatePos,
+				soundtime,
+				speakerentity,
+				nullptr);
+#else
 			SH_CALL(enginesoundPatch, 
 				static_cast<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float, 
 				soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *)>
@@ -1176,6 +1259,7 @@ static cell_t EmitSound(IPluginContext *pContext, const cell_t *params)
 				soundtime,
 				speakerentity,
 				nullptr);
+#endif
 		}
 		else
 		{
@@ -1439,8 +1523,14 @@ static cell_t EmitSoundEntry(IPluginContext *pContext, const cell_t *params)
 			if (g_InSoundHook)
 			{
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
-SH_CALL(enginesoundPatch,
+				SH_CALL(enginesoundPatch,
 					static_cast<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float,
+					soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *)>
+					(&IEngineSound::EmitSound))(crf, player[0], channel, soundEntry, soundEntryHash, sample, vol, (soundlevel_t)level, seed,
+					flags, pitch, pOrigin, pDir, pOrigVec, updatePos, soundtime, speakerentity, nullptr);
+#elif SOURCE_ENGINE == SE_OUTBREAK
+				SH_CALL(enginesoundPatch,
+					static_cast<SoundEventGuid_t (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float,
 					soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *)>
 					(&IEngineSound::EmitSound))(crf, player[0], channel, soundEntry, soundEntryHash, sample, vol, (soundlevel_t)level, seed,
 					flags, pitch, pOrigin, pDir, pOrigVec, updatePos, soundtime, speakerentity, nullptr);
@@ -1465,6 +1555,12 @@ SH_CALL(enginesoundPatch,
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 			SH_CALL(enginesoundPatch,
 				static_cast<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float,
+				soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *)>
+				(&IEngineSound::EmitSound))(crf, entity, channel, soundEntry, soundEntryHash, sample, vol, (soundlevel_t)level,
+				seed, flags, pitch, pOrigin, pDir, pOrigVec, updatePos, soundtime, speakerentity, nullptr);
+#elif SOURCE_ENGINE == SE_OUTBREAK
+			SH_CALL(enginesoundPatch,
+				static_cast<SoundEventGuid_t (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float,
 				soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int, void *)>
 				(&IEngineSound::EmitSound))(crf, entity, channel, soundEntry, soundEntryHash, sample, vol, (soundlevel_t)level,
 				seed, flags, pitch, pOrigin, pDir, pOrigVec, updatePos, soundtime, speakerentity, nullptr);

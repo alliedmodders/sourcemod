@@ -81,7 +81,7 @@ SH_DECL_HOOK1_void(IServerGameClients, ClientSettingsChanged, SH_NOATTRIB, 0, ed
 
 // mock lacks NetworkIDValidated; episode1/darkm (< SE_ORANGEBOX) predate it.
 #if SOURCE_ENGINE >= SE_ORANGEBOX && SOURCE_ENGINE != SE_MOCK
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
 SH_DECL_HOOK3_void(IServerGameClients, NetworkIDValidated, SH_NOATTRIB, 0, const char *, const char *, CSteamID);
 #else
 SH_DECL_HOOK2_void(IServerGameClients, NetworkIDValidated, SH_NOATTRIB, 0, const char *, const char *);
@@ -508,7 +508,7 @@ void PlayerManager::RunAuthChecks()
 }
 
 #if defined SM_HAS_NETWORKID_VALIDATED
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
 void PlayerManager::OnNetworkIDValidated(const char *pszUserName, const char *pszNetworkID, CSteamID steamID)
 #else
 void PlayerManager::OnNetworkIDValidated(const char *pszUserName, const char *pszNetworkID)
@@ -546,7 +546,7 @@ bool PlayerManager::OnClientConnect(edict_t *pEntity, const char *pszName, const
 	/* Get the client's language */
 	if (m_QueryLang)
 	{
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
 		pPlayer->m_LangId = translator->GetServerLanguage();
 #else
 		const char *name;
@@ -703,7 +703,7 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 			&& ((!m_bIsReplayActive && newCount == 1)
 				|| (m_bIsReplayActive && newCount == 2))
 			&& (m_SourceTVUserId == userId
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_MCV
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
 				// It seems likely that MCV will change this at some point, but it's GOTV at the moment.
 				|| strcmp(playername, "GOTV") == 0
 #elif SOURCE_ENGINE == SE_BLADE
@@ -762,7 +762,7 @@ void PlayerManager::OnClientPutInServer(edict_t *pEntity, const char *playername
 		}
 		pPlayer->Authorize_Post();
 	}
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
 	else if(m_QueryLang)
 	{
 		// Not a bot
@@ -826,7 +826,8 @@ void PlayerManager::OnServerHibernationUpdate(bool bHibernating)
 			CPlayer *pPlayer = &m_Players[i];
 			if (pPlayer->IsConnected() && pPlayer->IsFakeClient())
 			{
-#if SOURCE_ENGINE < SE_LEFT4DEAD || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_NUCLEARDAWN || SOURCE_ENGINE == SE_MCV
+#if SOURCE_ENGINE < SE_LEFT4DEAD || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_NUCLEARDAWN || \
+	SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
 				// These games have the bug fixed where hltv/replay was getting kicked on hibernation
 				if (pPlayer->IsSourceTV() || pPlayer->IsReplay())
 					continue;
@@ -2016,7 +2017,7 @@ void CmdMaxplayersCallback()
 	g_Players.MaxPlayersChanged();
 }
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
 bool PlayerManager::HandleConVarQuery(QueryCvarCookie_t cookie, int client, EQueryCvarValueStatus result, const char *cvarName, const char *cvarValue)
 {
 	for (int i = 1; i <= m_maxClients; i++)
@@ -2254,7 +2255,7 @@ void CPlayer::Disconnect()
 	m_bIsSourceTV = false;
 	m_bIsReplay = false;
 	m_Serial.value = -1;
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
 	m_LanguageCookie = InvalidQueryCvarCookie;
 #endif
 	ClearNetchannelQueue();
@@ -2478,6 +2479,8 @@ void CPlayer::Kick(const char *str)
 	{
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 		pClient->Disconnect(str);
+#elif SOURCE_ENGINE == SE_OUTBREAK
+		pClient->Disconnect(NETWORK_DISCONNECT_KICKED);
 #else
 		pClient->Disconnect("%s", str);
 #endif

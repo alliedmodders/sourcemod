@@ -49,7 +49,11 @@
 #include <bridge/include/IProviderCallbacks.h>
 #include <bridge/include/ILogger.h>
 
+#if SOURCE_ENGINE == SE_OUTBREAK
+SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, void *, const char *, const char *, bool, bool);
+#else
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
+#endif
 SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
 SH_DECL_HOOK1_void(IServerGameDLL, GameFrame, SH_NOATTRIB, false, bool);
 SH_DECL_HOOK1_void(IServerGameDLL, Think, SH_NOATTRIB, false, bool);
@@ -198,7 +202,9 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 
 	/* Hook this now so we can detect startup without calling StartSourceMod() */
 	SH_ADD_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(this, &SourceModBase::LevelInit), false);
+#if SOURCE_ENGINE != SE_OUTBREAK
 	SH_ADD_HOOK(IVEngineServer, GetMapEntitiesString, engine, SH_MEMBER(this, &SourceModBase::GetMapEntitiesString), false);
+#endif
 
 	/* Only load if we're not late */
 	if (!late)
@@ -276,7 +282,11 @@ void SourceModBase::StartSourceMod(bool late)
 }
 
 static bool g_LevelEndBarrier = false;
+#if SOURCE_ENGINE == SE_OUTBREAK
+bool SourceModBase::LevelInit(char const *pMapName, void *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
+#else
 bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
+#endif
 {
 	/* Seed rand() globally per map */
 	srand(time(NULL));
@@ -325,13 +335,16 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 
 	g_LevelEndBarrier = true;
 
+#if SOURCE_ENGINE != SE_OUTBREAK
 	int parseError;
 	size_t position;
 	bool success = logicore.ParseEntityLumpString(pMapEntities, parseError, position);
 
 	logicore.SetEntityLumpWritable(true);
+#endif
 	g_pOnMapInit->PushString(pMapName);
 	g_pOnMapInit->Execute();
+#if SOURCE_ENGINE != SE_OUTBREAK
 	logicore.SetEntityLumpWritable(false);
 
 	if (!success)
@@ -341,8 +354,12 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 	}
 
 	RETURN_META_VALUE_NEWPARAMS(MRES_HANDLED, true, &IServerGameDLL::LevelInit, (pMapName, logicore.GetEntityLumpString(), pOldLevel, pLandmarkName, loadGame, background));
+#else
+	RETURN_META_VALUE(MRES_IGNORED, true);
+#endif
 }
 
+#if SOURCE_ENGINE != SE_OUTBREAK
 const char *SourceModBase::GetMapEntitiesString()
 {
 	const char *pNewMapEntities = logicore.GetEntityLumpString();
@@ -352,6 +369,7 @@ const char *SourceModBase::GetMapEntitiesString()
 	}
 	RETURN_META_VALUE(MRES_IGNORED, NULL);
 }
+#endif
 
 void SourceModBase::LevelShutdown()
 {
@@ -465,7 +483,9 @@ void SourceModBase::CloseSourceMod()
 		return;
 
 	SH_REMOVE_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(this, &SourceModBase::LevelInit), false);
+#if SOURCE_ENGINE != SE_OUTBREAK
 	SH_REMOVE_HOOK(IVEngineServer, GetMapEntitiesString, engine, SH_MEMBER(this, &SourceModBase::GetMapEntitiesString), false);
+#endif
 
 	if (g_Loaded)
 	{
