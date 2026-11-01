@@ -232,7 +232,7 @@ public Action Command_Nominate(int client, int args)
 
 		// Display results to the client and end
 		Menu menu = new Menu(MenuHandler_MapSelect, MENU_ACTIONS_DEFAULT|MenuAction_DrawItem|MenuAction_DisplayItem);
-		menu.SetTitle("Select map");
+		menu.SetTitle("%T", "Select Title", client);
 		
 		for (int i = 0; i < results.Length; i++)
 		{

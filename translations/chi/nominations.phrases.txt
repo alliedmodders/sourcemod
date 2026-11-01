@@ -40,6 +40,11 @@
 		"chi"		"预订地图:"
 	}
 
+	"Select Title"
+	{
+		"chi"		"选择地图"
+	}
+
 	"Can't Nominate Current Map"
 	{
 		"chi"		"您所选的图正在游玩, 无法预订"
