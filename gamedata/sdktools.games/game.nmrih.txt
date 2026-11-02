@@ -126,8 +126,8 @@
 
 			"CommitSuicide"
 			{
-				"windows"	"462"
-				"windows64"	"462"
+				"windows"	"463"
+				"windows64"	"463"
 				"linux"		"463"
 				"linux64"	"463"
 			}
