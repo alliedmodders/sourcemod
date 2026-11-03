@@ -185,7 +185,7 @@ public:
 
 	Handle_t GetMyHandle();
 
-	bool AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func);
+	bool AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func, int flags = 0);
 	void AddConfig(bool autoCreate, const char *cfg, const char *folder);
 	size_t GetConfigCount();
 	AutoConfig *GetConfig(size_t i);
