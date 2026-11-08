@@ -79,7 +79,7 @@ bool GeoIP_Extension::SDK_OnLoad(char *error, size_t maxlength, bool late)
 				{
 					libsys->PathFormat(database, sizeof(database), "%s/%s", m_GeoipDir, name);
 
-					if (libsys->FileTime(database, FileTime_LastChange, &mtime) && mtime > modTime)
+					if (libsys->FileTime(database, FileTime_LastChange, &mtime) && (m_GeoipDb[0] == '\0' || mtime > modTime))
 					{
 						modTime = mtime;
 						ke::SafeStrcpy(m_GeoipDb, sizeof(m_GeoipDb), database);
