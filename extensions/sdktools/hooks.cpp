@@ -208,7 +208,8 @@ void CHookManager::OnClientConnected(int client)
 	}
 	
 	std::vector<CVTableHook *> &netProcessVoiceData = m_netProcessVoiceData;
-	void** vtable = *(void***)pClient;
+	IClientMessageHandler *pHandler = (IClientMessageHandler *)((intptr_t)(pClient) + sizeof(void *));
+	void** vtable = *(void***)pHandler;
 	for (size_t i = 0; i < netProcessVoiceData.size(); ++i)
 	{
 		if (vtable == netProcessVoiceData[i]->GetVTablePtr())
