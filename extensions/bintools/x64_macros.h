@@ -236,6 +236,42 @@ inline void X64_Add_Rm_Imm32(JitWriter *jit, jit_uint8_t reg, jit_int32_t value,
 	IA32_Add_Rm_Imm32(jit, reg & 7, value, mode);
 }
 
+inline void X64_MovScalar_Rm_Disp(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src,
+                                jit_int32_t disp, size_t size)
+{
+	jit->write_ubyte(size == 4 ? 0xF3 : 0xF2); // movss / movsd
+	if (dest >= kREG_XMM8 || src >= kREG_R8)
+		jit->write_ubyte(x64_rex(false, dest, 0, src));
+	jit->write_ubyte(0x0F);
+	jit->write_ubyte(0x10);
+	bool disp8 = disp >= -128 && disp <= 127;
+	jit->write_ubyte(ia32_modrm(disp8 ? MOD_DISP8 : MOD_DISP32, dest & 7, src & 7));
+	if ((src & 7) == kREG_RSP)
+		jit->write_ubyte(ia32_sib(NOSCALE, kREG_NOIDX, src & 7));
+	if (disp8)
+		jit->write_byte((jit_int8_t)disp);
+	else
+		jit->write_int32(disp);
+}
+
+inline void X64_MovScalar_Rm_Disp_Reg(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src,
+                                    jit_int32_t disp, size_t size)
+{
+	jit->write_ubyte(size == 4 ? 0xF3 : 0xF2); // movss / movsd
+	if (src >= kREG_XMM8 || dest >= kREG_R8)
+		jit->write_ubyte(x64_rex(false, src, 0, dest));
+	jit->write_ubyte(0x0F);
+	jit->write_ubyte(0x11);
+	bool disp8 = disp >= -128 && disp <= 127;
+	jit->write_ubyte(ia32_modrm(disp8 ? MOD_DISP8 : MOD_DISP32, src & 7, dest & 7));
+	if ((dest & 7) == kREG_RSP)
+		jit->write_ubyte(ia32_sib(NOSCALE, kREG_NOIDX, dest & 7));
+	if (disp8)
+		jit->write_byte((jit_int8_t)disp);
+	else
+		jit->write_int32(disp);
+}
+
 inline void X64_Movaps_Rm(JitWriter *jit, jit_uint8_t dest, jit_uint8_t src)
 {
 	if (dest >= kREG_XMM8 || src >= kREG_XMM8)
