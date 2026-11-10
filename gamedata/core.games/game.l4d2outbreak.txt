@@ -28,6 +28,12 @@
 				"windows64"	"8"
 				"linux64"	"8"
 			}
+
+			"GetDataDescMap"
+			{
+				"windows64"		"13"
+				"linux64"		"14"
+			}
 		}
 	}
 }

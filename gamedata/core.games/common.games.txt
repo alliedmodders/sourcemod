@@ -107,7 +107,6 @@
 			"engine"			"contagion"
 			"engine"			"pvkii"
 			"engine"			"mcv"
-			"game"				"l4d2outbreak"
 		}
 		
 		"Offsets"
