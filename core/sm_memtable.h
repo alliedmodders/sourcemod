@@ -32,6 +32,7 @@
 #ifndef _INCLUDE_SOURCEMOD_CORE_STRINGTABLE_H_
 #define _INCLUDE_SOURCEMOD_CORE_STRINGTABLE_H_
 
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -57,6 +58,10 @@ public:
 	 */
 	int CreateMem(unsigned int addsize, void **addr)
 	{
+		/* Align each block like malloc() does, as callers store structures in them */
+		const unsigned int align = alignof(max_align_t);
+		tail = (tail + align - 1) & ~(align - 1);
+
 		int idx = (int)tail;
 
 		while (tail + addsize >= size) {
