@@ -133,7 +133,7 @@ public: //ICommandTargetProcessor
 public:
 
 #if SOURCE_ENGINE == SE_OUTBREAK
-	bool LevelInit(char const *pMapName, void *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
+	bool LevelInit(char const *pMapName, CMapEntityDataList *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
 #else
 	bool LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
 #endif

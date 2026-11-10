@@ -54,7 +54,7 @@
  */
 
 #if SOURCE_ENGINE == SE_OUTBREAK
-SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, void *, const char *, const char *, bool, bool);
+SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, CMapEntityDataList *, const char *, const char *, bool, bool);
 #else
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 #endif
@@ -423,7 +423,7 @@ bool SDKTools::RegisterConCommandBase(ConCommandBase *pVar)
 }
 
 #if SOURCE_ENGINE == SE_OUTBREAK
-bool SDKTools::LevelInit(char const *pMapName, void *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
+bool SDKTools::LevelInit(char const *pMapName, CMapEntityDataList *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
 #else
 bool SDKTools::LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
 #endif

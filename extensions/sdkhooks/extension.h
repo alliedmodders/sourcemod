@@ -283,7 +283,7 @@ public:
 	const char *Hook_GetGameDescription();
 #endif
 #if SOURCE_ENGINE == SE_OUTBREAK
-	bool Hook_LevelInit(char const *pMapName, void *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
+	bool Hook_LevelInit(char const *pMapName, CMapEntityDataList *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
 #else
 	bool Hook_LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
 #endif

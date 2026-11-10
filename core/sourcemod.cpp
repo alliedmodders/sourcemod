@@ -33,6 +33,7 @@
 #include "sourcemod.h"
 #include "sourcemm_api.h"
 #include <string>
+#include <memory>
 #include "CoreConfig.h"
 #include "Logger.h"
 #include "sm_stringutil.h"
@@ -50,7 +51,7 @@
 #include <bridge/include/ILogger.h>
 
 #if SOURCE_ENGINE == SE_OUTBREAK
-SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, void *, const char *, const char *, bool, bool);
+SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, CMapEntityDataList *, const char *, const char *, bool, bool);
 #else
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, false, bool, const char *, const char *, const char *, const char *, bool, bool);
 #endif
@@ -58,7 +59,59 @@ SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
 SH_DECL_HOOK1_void(IServerGameDLL, GameFrame, SH_NOATTRIB, false, bool);
 SH_DECL_HOOK1_void(IServerGameDLL, Think, SH_NOATTRIB, false, bool);
 SH_DECL_HOOK1_void(IVEngineServer, ServerCommand, SH_NOATTRIB, false, const char *);
+#if SOURCE_ENGINE == SE_OUTBREAK
+SH_DECL_HOOK0(IVEngineServer, GetMapEntityList, const, 0, const CMapEntityDataList *);
+#else
 SH_DECL_HOOK0(IVEngineServer, GetMapEntitiesString, SH_NOATTRIB, 0, const char *);
+#endif
+
+#if SOURCE_ENGINE == SE_OUTBREAK
+// Build only at the tail: CUtlBlockVector's generic shifting operations assume
+// contiguous storage. The SDK pair is a non-owning ABI description.
+class OutbreakEntityLumpWriter : public IEntityLumpWriter
+{
+public:
+	void Reset() override
+	{
+		entities.Purge();
+		strings.clear();
+	}
+	bool AppendEntity() override
+	{
+		entities.AddToTail();
+		return true;
+	}
+	bool AppendPair(const char *key, const char *value) override
+	{
+		if (!entities.Count())
+			return false;
+		auto &entry = entities.Element(entities.Count() - 1);
+		// The linked list reserves the largest unsigned-short index as invalid.
+		if (entry.Count() >= entry.InvalidIndex())
+			return false;
+		CMapEntityDataPair pair;
+		pair.m_pszKey = CopyString(key);
+		pair.m_pszValue = CopyString(value);
+		entry.AddToTail(pair);
+		return true;
+	}
+	CMapEntityDataList entities;
+
+private:
+	char *CopyString(const char *value)
+	{
+		auto copy = std::make_unique<char[]>(strlen(value) + 1);
+		strcpy(copy.get(), value);
+		char *result = copy.get();
+		strings.push_back(std::move(copy));
+		return result;
+	}
+	std::vector<std::unique_ptr<char[]>> strings;
+};
+
+static OutbreakEntityLumpWriter s_OutbreakEntityLump;
+static bool s_OutbreakEntityLumpAvailable = false;
+#endif
 
 SourceModBase g_SourceMod;
 
@@ -202,7 +255,9 @@ bool SourceModBase::InitializeSourceMod(char *error, size_t maxlength, bool late
 
 	/* Hook this now so we can detect startup without calling StartSourceMod() */
 	SH_ADD_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(this, &SourceModBase::LevelInit), false);
-#if SOURCE_ENGINE != SE_OUTBREAK
+#if SOURCE_ENGINE == SE_OUTBREAK
+	SH_ADD_HOOK(IVEngineServer, GetMapEntityList, engine, SH_MEMBER(this, &SourceModBase::GetMapEntityList), false);
+#else
 	SH_ADD_HOOK(IVEngineServer, GetMapEntitiesString, engine, SH_MEMBER(this, &SourceModBase::GetMapEntitiesString), false);
 #endif
 
@@ -283,7 +338,7 @@ void SourceModBase::StartSourceMod(bool late)
 
 static bool g_LevelEndBarrier = false;
 #if SOURCE_ENGINE == SE_OUTBREAK
-bool SourceModBase::LevelInit(char const *pMapName, void *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
+bool SourceModBase::LevelInit(char const *pMapName, CMapEntityDataList *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
 #else
 bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
 #endif
@@ -335,18 +390,35 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 
 	g_LevelEndBarrier = true;
 
-#if SOURCE_ENGINE != SE_OUTBREAK
+#if SOURCE_ENGINE == SE_OUTBREAK
+	// Keep the replacement alive through LevelShutdown and until the next map.
+	s_OutbreakEntityLumpAvailable = false;
+	s_OutbreakEntityLump.Reset();
+	auto writer = logicore.GetEntityLumpWriter();
+	writer->Reset();
+	if (pMapEntities)
+	{
+		for (int i = 0; i < pMapEntities->Count(); i++)
+		{
+			writer->AppendEntity();
+			const auto &entry = pMapEntities->Element(i);
+			FOR_EACH_LL(entry, pair)
+			{
+				writer->AppendPair(entry[pair].m_pszKey, entry[pair].m_pszValue);
+			}
+		}
+	}
+#else
 	int parseError;
 	size_t position;
 	bool success = logicore.ParseEntityLumpString(pMapEntities, parseError, position);
-
-	logicore.SetEntityLumpWritable(true);
 #endif
+	logicore.SetEntityLumpWritable(true);
 	g_pOnMapInit->PushString(pMapName);
 	g_pOnMapInit->Execute();
-#if SOURCE_ENGINE != SE_OUTBREAK
 	logicore.SetEntityLumpWritable(false);
 
+#if SOURCE_ENGINE != SE_OUTBREAK
 	if (!success)
 	{
 		logger->LogError("Map entity lump parsing for %s failed with error code %d on position %d", pMapName, parseError, position);
@@ -355,11 +427,27 @@ bool SourceModBase::LevelInit(char const *pMapName, char const *pMapEntities, ch
 
 	RETURN_META_VALUE_NEWPARAMS(MRES_HANDLED, true, &IServerGameDLL::LevelInit, (pMapName, logicore.GetEntityLumpString(), pOldLevel, pLandmarkName, loadGame, background));
 #else
-	RETURN_META_VALUE(MRES_IGNORED, true);
+	if (!pMapEntities || !logicore.CopyEntityLump(&s_OutbreakEntityLump))
+	{
+		s_OutbreakEntityLump.Reset();
+		logger->LogError("Could not rebuild map entity list for %s", pMapName);
+		RETURN_META_VALUE(MRES_IGNORED, true);
+	}
+	s_OutbreakEntityLumpAvailable = true;
+	RETURN_META_VALUE_NEWPARAMS(MRES_HANDLED, true, &IServerGameDLL::LevelInit, (pMapName, &s_OutbreakEntityLump.entities, pOldLevel, pLandmarkName, loadGame, background));
 #endif
 }
 
-#if SOURCE_ENGINE != SE_OUTBREAK
+#if SOURCE_ENGINE == SE_OUTBREAK
+const CMapEntityDataList *SourceModBase::GetMapEntityList() const
+{
+	if (s_OutbreakEntityLumpAvailable)
+	{
+		RETURN_META_VALUE(MRES_SUPERCEDE, &s_OutbreakEntityLump.entities);
+	}
+	RETURN_META_VALUE(MRES_IGNORED, nullptr);
+}
+#else
 const char *SourceModBase::GetMapEntitiesString()
 {
 	const char *pNewMapEntities = logicore.GetEntityLumpString();
@@ -483,7 +571,9 @@ void SourceModBase::CloseSourceMod()
 		return;
 
 	SH_REMOVE_HOOK(IServerGameDLL, LevelInit, gamedll, SH_MEMBER(this, &SourceModBase::LevelInit), false);
-#if SOURCE_ENGINE != SE_OUTBREAK
+#if SOURCE_ENGINE == SE_OUTBREAK
+	SH_REMOVE_HOOK(IVEngineServer, GetMapEntityList, engine, SH_MEMBER(this, &SourceModBase::GetMapEntityList), false);
+#else
 	SH_REMOVE_HOOK(IVEngineServer, GetMapEntitiesString, engine, SH_MEMBER(this, &SourceModBase::GetMapEntitiesString), false);
 #endif
 
@@ -493,6 +583,11 @@ void SourceModBase::CloseSourceMod()
 		LevelShutdown();
 		ShutdownServices();
 	}
+
+#if SOURCE_ENGINE == SE_OUTBREAK
+	s_OutbreakEntityLumpAvailable = false;
+	s_OutbreakEntityLump.Reset();
+#endif
 
 	/* Rest In Peace */
 	sCoreProviderImpl.ShutdownBridge();
