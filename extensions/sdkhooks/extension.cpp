@@ -532,6 +532,11 @@ cell_t SDKHooks::Call(CBaseEntity *pEnt, SDKHookType type, int other)
 
 cell_t SDKHooks::Call(CBaseEntity *pEnt, SDKHookType type, CBaseEntity *pOther)
 {
+	return Call(pEnt, type, pOther, {});
+}
+
+cell_t SDKHooks::Call(CBaseEntity *pEnt, SDKHookType type, CBaseEntity *pOther, std::optional<cell_t> originalreturn)
+{
 	cell_t ret = Pl_Continue;
 
 	CVTableHook vhook(pEnt);
@@ -553,6 +558,10 @@ cell_t SDKHooks::Call(CBaseEntity *pEnt, SDKHookType type, CBaseEntity *pOther)
 			IPluginFunction *callback = callbackList[entry];
 			callback->PushCell(entity);
 			callback->PushCell(other);
+
+			if (originalreturn) {
+				callback->PushCell(originalreturn.value());
+			}
 
 			cell_t res;
 			callback->Execute(&res);
@@ -1788,7 +1797,8 @@ bool SDKHooks::Hook_WeaponCanSwitchTo(CBaseCombatWeapon *pWeapon)
 
 bool SDKHooks::Hook_WeaponCanSwitchToPost(CBaseCombatWeapon *pWeapon)
 {
-	Call(META_IFACEPTR(CBaseEntity), SDKHook_WeaponCanSwitchToPost, pWeapon);
+	cell_t origreturn = META_RESULT_ORIG_RET(bool) ? 1 : 0;
+	Call(META_IFACEPTR(CBaseEntity), SDKHook_WeaponCanSwitchToPost, pWeapon, origreturn);
 	RETURN_META_VALUE(MRES_IGNORED, true);
 }
 
@@ -1804,7 +1814,8 @@ bool SDKHooks::Hook_WeaponCanUse(CBaseCombatWeapon *pWeapon)
 
 bool SDKHooks::Hook_WeaponCanUsePost(CBaseCombatWeapon *pWeapon)
 {
-	Call(META_IFACEPTR(CBaseEntity), SDKHook_WeaponCanUsePost, pWeapon);
+	cell_t origreturn = META_RESULT_ORIG_RET(bool) ? 1 : 0;
+	Call(META_IFACEPTR(CBaseEntity), SDKHook_WeaponCanUsePost, pWeapon, origreturn);
 	RETURN_META_VALUE(MRES_IGNORED, true);
 }
 
@@ -1852,7 +1863,8 @@ bool SDKHooks::Hook_WeaponSwitch(CBaseCombatWeapon *pWeapon, int viewmodelindex)
 
 bool SDKHooks::Hook_WeaponSwitchPost(CBaseCombatWeapon *pWeapon, int viewmodelindex)
 {
-	cell_t result = Call(META_IFACEPTR(CBaseEntity), SDKHook_WeaponSwitchPost, pWeapon);
+	cell_t origreturn = META_RESULT_ORIG_RET(bool) ? 1 : 0;
+	cell_t result = Call(META_IFACEPTR(CBaseEntity), SDKHook_WeaponSwitchPost, pWeapon, origreturn);
 	RETURN_META_VALUE(MRES_IGNORED, true);
 }
 
