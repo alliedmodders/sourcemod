@@ -19,6 +19,7 @@ if 'tf2' in SM.sdks:
       'teleporter.cpp',
       'gameplayrules.cpp',
       'conditions.cpp',
+      'constmanager.cpp',
       '../../public/smsdk_ext.cpp'
     ]
     binary.compiler.defines += ['HAVE_STRING_H']
