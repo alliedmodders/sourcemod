@@ -166,11 +166,11 @@ class SMConfig(object):
     builder.AddConfigureFile('pushbuild.txt')
     
     allowed_archs = ['x86_64']
-    if builder.host.platform == 'mac':
-        if getattr(builder.options, 'scripting_only', False):
-            allowed_archs += ['arm64']
-    else:
+    if builder.host.platform != 'mac':
         allowed_archs += ['x86']
+    # --scripting-only builds only spcomp, which also builds for arm64
+    if getattr(builder.options, 'scripting_only', False):
+        allowed_archs += ['arm64']
 
     if not set(self.target_archs).issubset(allowed_archs):
       raise Exception('Unknown target architecture: {0}'.format(self.target_archs))
@@ -635,10 +635,13 @@ class SafetyHookShim(object):
     self.all_targets = {}
     self.libsafetyhook = {}
 
-SafetyHook = SafetyHookShim()
-SafetyHook.all_targets = SM.all_targets
-builder.Build('public/safetyhook/AMBuilder', {'SafetyHook': SafetyHook })
-SM.libsafetyhook = SafetyHook.libsafetyhook
+# SafetyHook is only linked by the extensions that use CDetour (SM.AddCDetour), and
+# --scripting-only builds no extensions
+if not getattr(builder.options, 'scripting_only', False):
+  SafetyHook = SafetyHookShim()
+  SafetyHook.all_targets = SM.all_targets
+  builder.Build('public/safetyhook/AMBuilder', {'SafetyHook': SafetyHook })
+  SM.libsafetyhook = SafetyHook.libsafetyhook
 
 class SPRoot(object):
   def __init__(self):
