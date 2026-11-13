@@ -146,55 +146,6 @@ static const char* GetEntityLumpString()
 	return g_strMapEntities.c_str();
 }
 
-class EntityLumpWriter : public IEntityLumpWriter
-{
-public:
-	void Reset() override
-	{
-		lastParseResult = lumpmanager->Parse("");
-		g_strMapEntities.clear();
-	}
-	bool AppendEntity() override
-	{
-		lumpmanager->Append();
-		return true;
-	}
-	bool AppendPair(const char *key, const char *value) override
-	{
-		if (!lumpmanager->Length())
-			return false;
-		auto entry = lumpmanager->Get(lumpmanager->Length() - 1).lock();
-		entry->emplace_back(key, value);
-		return true;
-	}
-};
-
-static IEntityLumpWriter *GetEntityLumpWriter()
-{
-	static EntityLumpWriter writer;
-	return &writer;
-}
-
-static bool CopyEntityLump(IEntityLumpWriter *writer)
-{
-	writer->Reset();
-	for (size_t i = 0; i < lumpmanager->Length(); i++)
-	{
-		auto entry = lumpmanager->Get(i).lock();
-		// Match the string exporter: empty entries do not spawn entities.
-		if (entry->empty())
-			continue;
-		if (!writer->AppendEntity())
-			return false;
-		for (const auto &pair : *entry)
-		{
-			if (!writer->AppendPair(pair.first.c_str(), pair.second.c_str()))
-				return false;
-		}
-	}
-	return true;
-}
-
 // Defined in smn_filesystem.cpp.
 extern bool OnLogPrint(const char *msg);
 
@@ -276,8 +227,6 @@ static sm_logic_t logic =
 	SetEntityLumpWritable,
 	ParseEntityLumpString,
 	GetEntityLumpString,
-	GetEntityLumpWriter,
-	CopyEntityLump,
 	logic_shutdown,
 	logic_SetJitEnabled,
 	logic_SetDebugMetadataFlags,

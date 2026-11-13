@@ -235,8 +235,4 @@
 	{
 		"game"		"ship"
 	}
-	"game.l4d2outbreak.txt"
-	{
-		"game"		"l4d2outbreak"
-	}
 }

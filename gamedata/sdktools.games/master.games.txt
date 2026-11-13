@@ -292,8 +292,4 @@
 	{
 		"game"		"tf2classified"
 	}
-	"game.l4d2outbreak.txt"
-	{
-		"game"		"l4d2outbreak"
-	}
 }

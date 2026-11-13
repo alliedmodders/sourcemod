@@ -49,8 +49,6 @@
 #include <berimbau_usermessages.pb.h>
 #elif SOURCE_ENGINE == SE_MCV
 #include <vietnam_usermessages.pb.h>
-#elif SOURCE_ENGINE == SE_OUTBREAK
-#include <terror_usermessages.pb.h>
 #endif
 
 #if SOURCE_ENGINE == SE_TF2 || SOURCE_ENGINE == SE_DODS || SOURCE_ENGINE == SE_HL2DM || SOURCE_ENGINE == SE_CSS
@@ -192,8 +190,7 @@ void CHalfLife2::InitLogicalEntData()
 	|| SOURCE_ENGINE == SE_BMS     \
 	|| SOURCE_ENGINE == SE_BLADE   \
 	|| SOURCE_ENGINE == SE_NUCLEARDAWN \
-	|| SOURCE_ENGINE == SE_PVKII \
-	|| SOURCE_ENGINE == SE_OUTBREAK
+	|| SOURCE_ENGINE == SE_PVKII
 
 	if (g_SMAPI->GetServerFactory(false)("VSERVERTOOLS003", nullptr))
 	{
@@ -490,11 +487,7 @@ ServerClass *CHalfLife2::FindEntityServerClass(CBaseEntity *pEntity)
 		return nullptr;
 	}
 
-#if SOURCE_ENGINE == SE_OUTBREAK
-	return pNetwork->GetServerClassForModify();
-#else
 	return pNetwork->GetServerClass();
-#endif
 }
 
 DataTableInfo *CHalfLife2::_FindServerClass(const char *classname)
@@ -648,14 +641,9 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 			char buffer[253];
 			ke::SafeSprintf(buffer, sizeof(buffer), "%s\1\n", msg);
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
-#if SOURCE_ENGINE == SE_OUTBREAK
-			CUsrMsg_SayText *pMsg;
-			if ((pMsg = (CUsrMsg_SayText *)g_UserMsgs.StartProtobufMessage(m_SayTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
-#else
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 			CCSUsrMsg_SayText *pMsg;
 			if ((pMsg = (CCSUsrMsg_SayText *)g_UserMsgs.StartProtobufMessage(m_SayTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
-#endif
 			{
 				return false;
 			}
@@ -680,14 +668,9 @@ bool CHalfLife2::TextMsg(int client, int dest, const char *msg)
 		}
 	}
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
-#if SOURCE_ENGINE == SE_OUTBREAK
-	CUsrMsg_TextMsg *pMsg;
-	if ((pMsg = (CUsrMsg_TextMsg *)g_UserMsgs.StartProtobufMessage(m_MsgTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
-#else
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	CCSUsrMsg_TextMsg *pMsg;
 	if ((pMsg = (CCSUsrMsg_TextMsg *)g_UserMsgs.StartProtobufMessage(m_MsgTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
-#endif
 	{
 		return false;
 	}
@@ -722,14 +705,9 @@ bool CHalfLife2::HintTextMsg(int client, const char *msg)
 {
 	cell_t players[] = {client};
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
-#if SOURCE_ENGINE == SE_OUTBREAK
-	CUsrMsg_HintText *pMsg;
-	if ((pMsg = (CUsrMsg_HintText *)g_UserMsgs.StartProtobufMessage(m_HinTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
-#else
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	CCSUsrMsg_HintText *pMsg;
 	if ((pMsg = (CCSUsrMsg_HintText *)g_UserMsgs.StartProtobufMessage(m_HinTextMsg, players, 1, USERMSG_RELIABLE)) == NULL)
-#endif
 	{
 		return false;
 	}
@@ -757,14 +735,9 @@ bool CHalfLife2::HintTextMsg(int client, const char *msg)
 
 bool CHalfLife2::HintTextMsg(cell_t *players, int count, const char *msg)
 {
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
-#if SOURCE_ENGINE == SE_OUTBREAK
-	CUsrMsg_HintText *pMsg;
-	if ((pMsg = (CUsrMsg_HintText *)g_UserMsgs.StartProtobufMessage(m_HinTextMsg, players, count, USERMSG_RELIABLE)) == NULL)
-#else
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	CCSUsrMsg_HintText *pMsg;
 	if ((pMsg = (CCSUsrMsg_HintText *)g_UserMsgs.StartProtobufMessage(m_HinTextMsg, players, count, USERMSG_RELIABLE)) == NULL)
-#endif
 	{
 		return false;
 	}
@@ -797,14 +770,9 @@ bool CHalfLife2::ShowVGUIMenu(int client, const char *name, KeyValues *data, boo
 	int count = 0;
 	cell_t players[] = {client};
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
-#if SOURCE_ENGINE == SE_OUTBREAK
-	CUsrMsg_VGUIMenu *pMsg;
-	if ((pMsg = (CUsrMsg_VGUIMenu *)g_UserMsgs.StartProtobufMessage(m_VGUIMenu, players, 1, USERMSG_RELIABLE)) == NULL)
-#else
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	CCSUsrMsg_VGUIMenu *pMsg;
 	if ((pMsg = (CCSUsrMsg_VGUIMenu *)g_UserMsgs.StartProtobufMessage(m_VGUIMenu, players, 1, USERMSG_RELIABLE)) == NULL)
-#endif
 	{
 		return false;
 	}
@@ -827,17 +795,13 @@ bool CHalfLife2::ShowVGUIMenu(int client, const char *name, KeyValues *data, boo
 		SubKey = data->GetFirstSubKey();
 	}
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	pMsg->set_name(name);
 	pMsg->set_show(show);
 
 	while (SubKey)
 	{
-#if SOURCE_ENGINE == SE_OUTBREAK
-		CUsrMsg_VGUIMenu_Subkey *key = pMsg->add_subkeys();
-#else
 		CCSUsrMsg_VGUIMenu_Subkey *key = pMsg->add_subkeys();
-#endif
 		key->set_name(SubKey->GetName());
 		key->set_str(SubKey->GetString());
 		SubKey = SubKey->GetNextKey();
@@ -1692,13 +1656,12 @@ uint64_t CHalfLife2::GetServerSteamId64() const
 	|| SOURCE_ENGINE == SE_EYE         \
 	|| SOURCE_ENGINE == SE_HL2DM       \
 	|| SOURCE_ENGINE == SE_INSURGENCY  \
-	|| SOURCE_ENGINE == SE_DOI         \
+	|| SOURCE_ENGINE == SE_DOI  \
 	|| SOURCE_ENGINE == SE_SDK2013     \
 	|| SOURCE_ENGINE == SE_ALIENSWARM  \
-	|| SOURCE_ENGINE == SE_TF2         \
-	|| SOURCE_ENGINE == SE_PVKII       \
-	|| SOURCE_ENGINE == SE_MCV         \
-	|| SOURCE_ENGINE == SE_OUTBREAK
+	|| SOURCE_ENGINE == SE_TF2 \
+	|| SOURCE_ENGINE == SE_PVKII \
+	|| SOURCE_ENGINE == SE_MCV
 	const CSteamID *sid = engine->GetGameServerSteamID();
 	if (sid)
 	{

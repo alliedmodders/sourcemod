@@ -89,15 +89,14 @@ CTakeDamageInfoHack::CTakeDamageInfoHack( CBaseEntity *pInflictor, CBaseEntity *
 	m_flRadius = 0.0f;
 #endif
 
-#if SOURCE_ENGINE == SE_INSURGENCY || SOURCE_ENGINE == SE_DOI || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || \
-	SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
+#if SOURCE_ENGINE == SE_INSURGENCY || SOURCE_ENGINE == SE_DOI || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	m_iDamagedOtherPlayers = 0;
 	m_iObjectsPenetrated = 0;
 	m_uiBulletID = 0;
 	m_uiRecoilIndex = 0;
 #endif
 
-#if SOURCE_ENGINE == SE_LEFT4DEAD2 || SOURCE_ENGINE == SE_OUTBREAK
+#if SOURCE_ENGINE == SE_LEFT4DEAD2
 	m_vecDamageDirection.Init();
 	m_iDamageStats = 0;
 	m_iDamageVictimIndex = 0;

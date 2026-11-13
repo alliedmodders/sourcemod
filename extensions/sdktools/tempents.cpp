@@ -331,8 +331,7 @@ void TempEntityManager::Initialize()
 	|| SOURCE_ENGINE == SE_BMS     \
 	|| SOURCE_ENGINE == SE_BLADE   \
 	|| SOURCE_ENGINE == SE_NUCLEARDAWN \
-	|| SOURCE_ENGINE == SE_PVKII \
-	|| SOURCE_ENGINE == SE_OUTBREAK
+	|| SOURCE_ENGINE == SE_PVKII
 
 	if (g_SMAPI->GetServerFactory(false)("VSERVERTOOLS003", nullptr))
 	{

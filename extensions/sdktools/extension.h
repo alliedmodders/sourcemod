@@ -62,7 +62,7 @@
 #endif
 
 #if SOURCE_ENGINE == SE_ALIENSWARM || SOURCE_ENGINE == SE_PORTAL2 || SOURCE_ENGINE == SE_INSURGENCY || SOURCE_ENGINE == SE_DOI \
-	|| SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
+	|| SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_MCV
 #define CLIENTVOICE_HOOK_SUPPORT
 #else
 #include <inetmsghandler.h>
@@ -131,12 +131,7 @@ public: //ITimedEvent
 public: //ICommandTargetProcessor
 	bool ProcessCommandTarget(cmd_target_info_t *info);
 public:
-
-#if SOURCE_ENGINE == SE_OUTBREAK
-	bool LevelInit(char const *pMapName, CMapEntityDataList *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
-#else
 	bool LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
-#endif
 	void LevelShutdown();
 	void OnServerActivate(edict_t *pEdictList, int edictCount, int clientMax);
 public:

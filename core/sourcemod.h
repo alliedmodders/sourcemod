@@ -37,11 +37,6 @@
 #include <stack>
 #include <vector>
 
-#if SOURCE_ENGINE == SE_OUTBREAK
-#include "sm_convar.h"
-#include <eiface.h>
-#endif
-
 #if defined _DEBUG
 # define IF_DEBUG_SPEW
 # define ENDIF_DEBUG_SPEW
@@ -57,7 +52,7 @@
  * @brief Implements SourceMod's global overall management, API, and logic
  */
 
-class SourceModBase :
+class SourceModBase : 
 	public ISourceMod,
 	public SMGlobalClass
 {
@@ -82,11 +77,7 @@ public:
 	/**
 	 * @brief Map change hook
 	 */
-#if SOURCE_ENGINE == SE_OUTBREAK
-	bool LevelInit(char const *pMapName, CMapEntityDataList *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
-#else
 	bool LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
-#endif
 
 	/**
 	 * @brief Level shutdown hook
@@ -145,11 +136,7 @@ public: // ISourceMod
 private:
 	void ShutdownServices();
 private:
-#if SOURCE_ENGINE == SE_OUTBREAK
-	const CMapEntityDataList *GetMapEntityList() const;
-#else
 	const char* GetMapEntitiesString();
-#endif
 	char m_SMBaseDir[PLATFORM_MAX_PATH];
 	char m_SMRelDir[PLATFORM_MAX_PATH];
 	char m_ModDir[32];

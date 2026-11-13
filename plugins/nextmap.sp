@@ -63,7 +63,6 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 			|| StrEqual(game, "dystopia", false)
 			|| StrEqual(game, "synergy", false)
 			|| StrEqual(game, "left4dead2", false)
-			|| StrEqual(game, "l4d2outbreak", false)
 			|| StrEqual(game, "garrysmod", false)
 			|| StrEqual(game, "swarm", false)
 			|| StrEqual(game, "reactivedrop", false)

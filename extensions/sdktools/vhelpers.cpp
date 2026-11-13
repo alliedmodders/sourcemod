@@ -834,11 +834,7 @@ CON_COMMAND(sm_dump_classes, "Dumps the class list as a text file")
 	for ( int i = dict->m_Factories.First(); i != dict->m_Factories.InvalidIndex(); i = dict->m_Factories.Next( i ) )
 	{
 		IServerNetworkable *entity = dict->Create(dict->m_Factories.GetElementName(i));
-#if SOURCE_ENGINE == SE_OUTBREAK
-		ServerClass *sclass = entity->GetServerClassForModify();
-#else
 		ServerClass *sclass = entity->GetServerClass();
-#endif
 		fprintf(fp,"%s - %s\n",sclass->GetName(), dict->m_Factories.GetElementName(i));
 		
 		if (!gamehelpers->FindDataMapInfo(gamehelpers->GetDataMap(entity->GetBaseEntity()), "m_iEFlags", &info))
@@ -1014,11 +1010,7 @@ CON_COMMAND(sm_dump_datamaps, "Dumps the data map list as a text file")
 	for ( int i = dict->m_Factories.First(); i != dict->m_Factories.InvalidIndex(); i = dict->m_Factories.Next( i ) )
 	{
 		IServerNetworkable *entity = dict->Create(dict->m_Factories.GetElementName(i));
-#if SOURCE_ENGINE == SE_OUTBREAK
-		ServerClass *sclass = entity->GetServerClassForModify();
-#else
 		ServerClass *sclass = entity->GetServerClass();
-#endif
 		datamap_t *pMap = gamehelpers->GetDataMap(entity->GetBaseEntity());
 
 		fprintf(fp,"%s - %s\n", sclass->GetName(), dict->m_Factories.GetElementName(i));
@@ -1166,11 +1158,7 @@ CON_COMMAND(sm_dump_datamaps_xml, "Dumps the data map list as an XML file")
 	for (int i = dict->m_Factories.First(); i != dict->m_Factories.InvalidIndex(); i = dict->m_Factories.Next(i))
 	{
 		IServerNetworkable *entity = dict->Create(dict->m_Factories.GetElementName(i));
-#if SOURCE_ENGINE == SE_OUTBREAK
-		ServerClass *sclass = entity->GetServerClassForModify();
-#else
 		ServerClass *sclass = entity->GetServerClass();
-#endif
 		datamap_t *pMap = gamehelpers->GetDataMap(entity->GetBaseEntity());
 
 		fprintf(fp, " <serverclass name='%s' element='%s'>\n", sclass->GetName(), dict->m_Factories.GetElementName(i));

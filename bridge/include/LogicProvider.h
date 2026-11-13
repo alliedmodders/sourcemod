@@ -52,14 +52,6 @@ class ITextParsers;
 class ILogger;
 class ICellArray;
 
-class IEntityLumpWriter
-{
-public:
-	virtual void Reset() = 0;
-	virtual bool AppendEntity() = 0;
-	virtual bool AppendPair(const char *key, const char *value) = 0;
-};
-
 struct sm_logic_t
 {
 	SMGlobalClass	*head;
@@ -82,8 +74,6 @@ struct sm_logic_t
 	void			(*SetEntityLumpWritable)(bool writable);
 	bool			(*ParseEntityLumpString)(const char *entityString, int &status, size_t &position);
 	const char *	(*GetEntityLumpString)();
-	IEntityLumpWriter *(*GetEntityLumpWriter)();
-	bool            (*CopyEntityLump)(IEntityLumpWriter *writer);
 	void            (*Shutdown)();
 	void            (*SetJitEnabled)(bool enabled);
 	void            (*SetDebugMetadataFlags)(int flags);

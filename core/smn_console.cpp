@@ -51,10 +51,7 @@
 #include <bridge/include/ILogger.h>
 #include <ITranslator.h>
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
-#ifdef GetMessage
-#undef GetMessage
-#endif
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 #include <netmessages.pb.h>
 #endif
 
@@ -69,29 +66,6 @@
 #else
 #define NET_SETCONVAR	5
 #endif
-
-// SourcePawn exposes command and convar flags as a 32-bit int. Outbreak's
-// engine stores the native mask as uint64, so keep the conversion at this API
-// boundary and preserve the low 32-bit bit pattern.
-static int GetConCommandBaseFlags(const ConCommandBase *cmd)
-{
-#if SOURCE_ENGINE == SE_OUTBREAK
-	return static_cast<int>(static_cast<uint32>(cmd->GetFlags()));
-#else
-	return cmd->m_nFlags;
-#endif
-}
-
-static void SetConCommandBaseFlags(ConCommandBase *cmd, int flags)
-{
-#if SOURCE_ENGINE == SE_OUTBREAK
-	uint64 newFlags = static_cast<uint32>(flags);
-	cmd->RemoveFlags(~newFlags);
-	cmd->AddFlags(newFlags);
-#else
-	cmd->m_nFlags = flags;
-#endif
-}
 
 enum ConVarBounds
 {
@@ -167,14 +141,14 @@ public:
 		if (m_CmdFlags.retrieve(name, &pCmd))
 		{
 			TrackConCommandBase(pCmd, this);
-			*flags = GetConCommandBaseFlags(pCmd);
+			*flags = pCmd->m_nFlags;
 			return true;
 		}
 		else if ((pCmd=FindCommandBase(name)))
 		{
 			m_CmdFlags.insert(name, pCmd);
 			TrackConCommandBase(pCmd, this);
-			*flags = GetConCommandBaseFlags(pCmd);
+			*flags = pCmd->m_nFlags;
 			return true;
 		}
 		else
@@ -187,14 +161,14 @@ public:
 		ConCommandBase *pCmd;
 		if (m_CmdFlags.retrieve(name, &pCmd))
 		{
-			SetConCommandBaseFlags(pCmd, flags);
+			pCmd->m_nFlags = flags;
 			TrackConCommandBase(pCmd, this);
 			return true;
 		}
 		else if ((pCmd=FindCommandBase(name)))
 		{
 			m_CmdFlags.insert(name, pCmd);
-			SetConCommandBaseFlags(pCmd, flags);
+			pCmd->m_nFlags = flags;
 			TrackConCommandBase(pCmd, this);
 			return true;
 		}
@@ -576,7 +550,7 @@ static cell_t sm_GetConVarFlags(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 
-	return GetConCommandBaseFlags(pConVar);
+	return pConVar->m_nFlags;
 }
 
 static cell_t sm_GetConVarPlugin(IPluginContext *pContext, const cell_t *params)
@@ -606,7 +580,7 @@ static cell_t sm_SetConVarFlags(IPluginContext *pContext, const cell_t *params)
 		return pContext->ThrowNativeError("Invalid convar handle %x (error %d)", hndl, err);
 	}
 
-	SetConCommandBaseFlags(pConVar, params[2]);
+	pConVar->m_nFlags = params[2];
 
 	return 1;
 }
@@ -1180,7 +1154,7 @@ static cell_t FindFirstConCommand(IPluginContext *pContext, const cell_t *params
 
 	pContext->StringToLocalUTF8(params[1], params[2], pConCmd->GetName(), NULL);
 	*pIsCmd = pConCmd->IsCommand() ? 1 : 0;
-	*pFlags = GetConCommandBaseFlags(pConCmd);
+	*pFlags = pConCmd->m_nFlags;
 
 	if (params[6])
 	{
@@ -1229,7 +1203,7 @@ static cell_t FindNextConCommand(IPluginContext *pContext, const cell_t *params)
 
 	pContext->StringToLocalUTF8(params[2], params[3], pConCmd->GetName(), NULL);
 	*pIsCmd = pConCmd->IsCommand() ? 1 : 0;
-	*pFlags = GetConCommandBaseFlags(pConCmd);
+	*pFlags = pConCmd->m_nFlags;
 
 	if (params[7])
 	{
@@ -1258,7 +1232,7 @@ static cell_t SendConVarValue(IPluginContext *pContext, const cell_t *params)
 	char data[256];
 	bf_write buffer(data, sizeof(data));
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	CNETMsg_SetConVar msg;
 	CMsg_CVars_CVar *cvar = msg.mutable_convars()->add_cvars();
 
@@ -1481,7 +1455,7 @@ static cell_t sm_CommandIteratorConVarFlags(IPluginContext *pContext, const cell
 	}
 	
 	ConCmdInfo *pInfo = (*(iter->iter));
-	return GetConCommandBaseFlags(pInfo->pCmd);
+	return pInfo->pCmd->m_nFlags;
 }
 
 static cell_t sm_CommandIteratorGetDesc(IPluginContext *pContext, const cell_t *params)

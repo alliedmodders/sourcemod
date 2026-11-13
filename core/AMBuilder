@@ -42,12 +42,11 @@ project.sources += [
   'GameHooks.cpp',
 ]
 
-# SDK name to shipping gamedir, mostly
+# SDK name to shipping gamedir
 pb_gamedir_map = {
   'csgo': 'csgo',
   'blade': 'berimbau',
   'mcv': 'vietnam',
-  'outbreak': 'terror'
 }
 
 # SDK name to source code gamedir
@@ -55,7 +54,6 @@ pb_gamesrcdir_map = {
   'csgo': 'cstrike15',
   'blade': 'berimbau',
   'mcv': 'vietnam',
-  'outbreak': 'terror',
 }
 
 for sdk_target in SM.sdk_targets:
@@ -63,7 +61,7 @@ for sdk_target in SM.sdk_targets:
   cxx = sdk_target.cxx
 
   binary_name = 'sourcemod.' + sdk['extension']
-  needs_protobuf = sdk['name'] in ['csgo', 'blade', 'mcv', 'outbreak']
+  needs_protobuf = sdk['name'] in ['csgo', 'blade', 'mcv']
 
   binary = SM.HL2Config(project, builder, cxx, binary_name, sdk)
   SM.ConfigureForExtension(builder, binary.compiler)
@@ -78,16 +76,9 @@ for sdk_target in SM.sdk_targets:
       os.path.join(sdk['path'], 'public', 'engine', 'protobuf'),
       os.path.join(sdk['path'], 'public', 'game', 'shared', pb_gamedir_map[sdk['name']], 'protobuf')
     ]
-    if sdk['name'] == 'outbreak':
-      compiler.cxxincludes += [
-        # Outbreak has "base" usermessages split from the game-specific ones
-        os.path.join(sdk['path'], 'public', 'game', 'shared', 'protobuf')
-      ]
     protobuf_version = "2.5.0"
     if sdk['name'] == 'mcv':
       protobuf_version = "3.2.0"
-    elif sdk['name'] == 'outbreak':
-      protobuf_version = "3.17.3"
     compiler.cxxincludes += [
       os.path.join(sdk['path'], 'common', 'protobuf-' + protobuf_version, 'src')
     ]
@@ -149,12 +140,6 @@ for sdk_target in SM.sdk_targets:
       binary.sources += [
         os.path.join(sdk['path'], 'public', 'game', 'shared', pb_gamedir_map[sdk['name']], 'protobuf', pb_gamesrcdir_map[sdk['name']] + '_gcmessages.pb.cc'),
         os.path.join(sdk['path'], 'public', 'engine', 'protobuf', 'engine_gcmessages.pb.cc'),
-      ]
-    if sdk['name'] == 'outbreak':
-      binary.sources += [
-        os.path.join(sdk['path'], 'public', 'engine', 'protobuf', 'network_connection.pb.cc'),
-        os.path.join(sdk['path'], 'public', 'game', 'shared', 'protobuf', 'base_usermessages.pb.cc'),
-        os.path.join(sdk['path'], 'public', 'game', 'shared', 'protobuf', 'base_usermessage_helpers.cpp'),
       ]
 
 SM.binaries += builder.Add(project)

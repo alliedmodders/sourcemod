@@ -49,8 +49,6 @@
 #include <game/shared/berimbau/protobuf/berimbau_usermessages.pb.h>
 #elif SOURCE_ENGINE == SE_MCV
 #include <game/shared/vietnam/protobuf/vietnam_usermessages.pb.h>
-#elif SOURCE_ENGINE == SE_OUTBREAK
-#include <game/shared/protobuf/base_usermessages.pb.h>
 #endif
 
 extern const char *g_RadioNumTable[];
@@ -188,8 +186,6 @@ void CRadioStyle::OnUserMessage(int msg_id, bf_write *bf, IRecipientFilter *pFil
 
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	int c = ((CCSUsrMsg_ShowMenu &)msg).display_time();
-#elif SOURCE_ENGINE == SE_OUTBREAK
-	int c = ((CUsrMsg_ShowMenu &)msg).display_time();
 #else
 	bf_read br(bf->GetBasePointer(), 3);
 
@@ -506,13 +502,9 @@ void CRadioMenuPlayer::Radio_Refresh()
 		time = menuHoldTime - (unsigned int)(gpGlobals->curtime - menuStartTime);
 	}
 
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV || SOURCE_ENGINE == SE_OUTBREAK
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	// TODO: find what happens past 240 on CS:GO
-#if SOURCE_ENGINE == SE_OUTBREAK
-	CUsrMsg_ShowMenu *msg = (CUsrMsg_ShowMenu *)g_UserMsgs.StartProtobufMessage(g_ShowMenuId, players, 1, USERMSG_BLOCKHOOKS);
-#else
-    CCSUsrMsg_ShowMenu *msg = (CCSUsrMsg_ShowMenu *)g_UserMsgs.StartProtobufMessage(g_ShowMenuId, players, 1, USERMSG_BLOCKHOOKS);
-#endif
+	CCSUsrMsg_ShowMenu *msg = (CCSUsrMsg_ShowMenu *)g_UserMsgs.StartProtobufMessage(g_ShowMenuId, players, 1, USERMSG_BLOCKHOOKS);
 	if (!msg)
 	{
 		return;

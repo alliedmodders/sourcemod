@@ -154,11 +154,7 @@ CUtlVector<IEntityListener *> *EntListeners()
  * IServerGameDLL & IVEngineServer Hooks
  */
 SH_DECL_HOOK0_void(IServerGameDLL, LevelShutdown, SH_NOATTRIB, false);
-#if SOURCE_ENGINE == SE_OUTBREAK
-SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, 0, bool, const char *, CMapEntityDataList *, const char *, const char *, bool, bool);
-#else
 SH_DECL_HOOK6(IServerGameDLL, LevelInit, SH_NOATTRIB, 0, bool, const char *, const char *, const char *, const char *, bool, bool);
-#endif
 #ifdef GAMEDESC_CAN_CHANGE
 SH_DECL_HOOK0(IServerGameDLL, GetGameDescription, SH_NOATTRIB, 0, const char *);
 #endif
@@ -968,11 +964,7 @@ const char *SDKHooks::Hook_GetGameDescription()
 }
 #endif
 
-#if SOURCE_ENGINE == SE_OUTBREAK
-bool SDKHooks::Hook_LevelInit(char const *pMapName, CMapEntityDataList *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
-#else
 bool SDKHooks::Hook_LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background)
-#endif
 {
 	// Call OnLevelInit forward
 	g_pOnLevelInit->PushString(pMapName);
