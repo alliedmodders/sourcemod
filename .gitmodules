@@ -12,3 +12,6 @@
 [submodule "public/safetyhook"]
 	path = public/safetyhook
 	url = https://github.com/alliedmodders/safetyhook
+[submodule "extensions/regex/pcre2"]
+	path = extensions/regex/pcre2
+	url = https://github.com/PCRE2Project/pcre2
