@@ -804,9 +804,9 @@ void CPlugin::DropEverything()
 	CNativeOwner::DropEverything();
 }
 
-bool CPlugin::AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func)
+bool CPlugin::AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func, int flags)
 {
-	ke::RefPtr<Native> entry = g_ShareSys.AddFakeNative(pFunc, name, func);
+	ke::RefPtr<Native> entry = g_ShareSys.AddFakeNative(pFunc, name, func, flags);
 	if (!entry)
 		return false;
 
