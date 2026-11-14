@@ -1113,10 +1113,24 @@ void GameBinPathManager::Init()
 	
 	for (std::string path; std::getline(iss, path, ';');)
 	{
-		if (m_lookup.find(path) == m_lookup.cend())
+		if (path.length() == 0)
+			continue;
+
+		// On some games, e.g. Day of Infamy, EXECUTABLE_PATH is the dedicated server's root rather than
+		// its bin folder, which has the engine's libraries (bin/engine_srv.so): search that too
+		std::string bin_path = path;
+		if (bin_path.back() != PLATFORM_SEP_CHAR)
+			bin_path += PLATFORM_SEP;
+		bin_path += "bin" PLATFORM_SEP;
+		bin_path += bridge->filesystem->GetGameBinArchSubdirectory();
+
+		for (const std::string& candidate : {path, bin_path})
 		{
-			m_lookup.insert(path);
-			m_ordered.push_back(path);
+			if (m_lookup.find(candidate) == m_lookup.cend())
+			{
+				m_lookup.insert(candidate);
+				m_ordered.push_back(candidate);
+			}
 		}
 	}
 }
