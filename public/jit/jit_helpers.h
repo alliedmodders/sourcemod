@@ -34,6 +34,7 @@
 
 #include <sp_vm_types.h>
 #include <sp_vm_api.h>
+#include <string.h>
 
 #if defined HAVE_STDINT_H && !defined WIN32
 #include <stdint.h>
@@ -87,7 +88,7 @@ public:
 	{
 		if (outbase)
 		{
-			*(unsigned short *)outptr = c;
+			memcpy(outptr, &c, sizeof(c));
 		}
 		outptr += sizeof(unsigned short);
 	}
@@ -103,7 +104,7 @@ public:
 	{
 		if (outbase)
 		{
-			*(jit_int32_t *)outptr = c;
+			memcpy(outptr, &c, sizeof(c));
 		}
 		outptr += sizeof(jit_int32_t);
 	}
@@ -111,7 +112,7 @@ public:
 	{
 		if (outbase)
 		{
-			*(jit_uint32_t *)outptr = c;
+			memcpy(outptr, &c, sizeof(c));
 		}
 		outptr += sizeof(jit_uint32_t);
 	}
@@ -119,7 +120,7 @@ public:
 	{
 		if (outbase)
 		{
-			*(jit_int64_t *)outptr = c;
+			memcpy(outptr, &c, sizeof(c));
 		}
 		outptr += sizeof(jit_int64_t);
 	}
@@ -127,7 +128,7 @@ public:
 	{
 		if (outbase)
 		{
-			*(jit_uint64_t *)outptr = c;
+			memcpy(outptr, &c, sizeof(c));
 		}
 		outptr += sizeof(jit_uint64_t);
 	}
