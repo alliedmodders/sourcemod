@@ -28,10 +28,6 @@ public:
     std::optional<AsmRegCode> reg_index;
     std::optional<AsmFloatRegCode> float_reg_index;
     std::optional<size_t> reg_offset;
-    Alignment alignment;
-    // Atm it's exactly the same as _dhook_size
-    // We differentiate it anyways, to avoid having to refactor the JIT
-    std::size_t type_size;
 };
 
 struct ReturnVariable {
