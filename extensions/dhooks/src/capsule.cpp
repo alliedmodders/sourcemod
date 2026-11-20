@@ -275,15 +275,15 @@ Capsule::Capsule(void* address, void** vtable, std::uint32_t vtable_index, sp::C
 
 	abi::JIT_Align(_jit);
 	auto offset_to_make_return = _jit.get_outputpos();
-	abi::JIT_MakeReturn(_jit, _return);
+	abi::JIT_MakeReturn(conv, _stack_size, _jit, _return);
 
 	abi::JIT_Align(_jit);
 	auto offset_to_call_original = _jit.get_outputpos();
-	abi::JIT_CallOriginal(_jit, _return, &_original_function, _stack_size, &_jit_start);
+	abi::JIT_CallOriginal(conv, _jit, _return, &_original_function, _stack_size, &_jit_start);
 
 	abi::JIT_Align(_jit);
 	auto offset_to_recall = _jit.get_outputpos();
-	abi::JIT_Recall(_jit, _save_general_register, _save_float_register, _stack_size, &_jit_start);
+	abi::JIT_Recall(conv, _jit, _save_general_register, _save_float_register, _stack_size, &_jit_start);
 
 	_jit_start = reinterpret_cast<std::uintptr_t>(_jit.GetData());
 

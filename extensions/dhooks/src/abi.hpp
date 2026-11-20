@@ -17,8 +17,16 @@ bool AreParamsEquivalent(const std::vector<Variable>& params_lh, const std::vect
 
 bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnVariable& ret, size_t& stack_size);
 void JIT_CallMemberFunction(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], bool save_float_register[MAX_FLOAT_REGISTERS], void* this_ptr, const void* mfp, bool post);
-void JIT_MakeReturn(AsmJit& jit, ReturnVariable& ret);
-void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original_function, size_t stack_size, std::uintptr_t* jit_start);
-void JIT_Recall(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], bool save_float_register[MAX_FLOAT_REGISTERS], size_t stack_size, std::uintptr_t* call_function);
+#if defined(DHOOKS_X86)
+void JIT_MakeReturn(sp::CallingConvention conv, size_t stack_size, AsmJit& jit, ReturnVariable& ret);
+#else
+// amd64 has no callee-popped argument area.
+void JIT_MakeReturn(sp::CallingConvention conv, AsmJit& jit, ReturnVariable& ret);
+inline void JIT_MakeReturn(sp::CallingConvention conv, size_t, AsmJit& jit, ReturnVariable& ret) {
+	JIT_MakeReturn(conv, jit, ret);
+}
+#endif
+void JIT_CallOriginal(sp::CallingConvention conv, AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original_function, size_t stack_size, std::uintptr_t* jit_start);
+void JIT_Recall(sp::CallingConvention conv, AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], bool save_float_register[MAX_FLOAT_REGISTERS], size_t stack_size, std::uintptr_t* call_function);
 
 }

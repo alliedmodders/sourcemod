@@ -62,7 +62,7 @@ protected:
     static_assert(KHook::Asm::R15 == (MAX_GENERAL_REGISTERS - 1), "Mismatch in register index");
     static_assert(KHook::Asm::XMM15 == (MAX_FLOAT_REGISTERS - 1), "Mismatch in register index");
 #elif defined(DHOOKS_X86)
-    static_assert(KHook::Asm::RSP == (MAX_GENERAL_REGISTERS - 1), "Mismatch in register index");
+    static_assert(KHook::Asm::EDI == (MAX_GENERAL_REGISTERS - 1), "Mismatch in register index");
     static_assert(KHook::Asm::XMM7 == (MAX_FLOAT_REGISTERS - 1), "Mismatch in register index");
 #endif
 
@@ -148,7 +148,7 @@ void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post) const {
                         hook.callback->PushCell(entity_index.value_or(-1));
                     } else if (hook.this_pointer_type == sp::ThisPointer_Address) {
                         if (hook.using_int64_address) {
-                            hook.callback->PushArray((cell_t*)&sm_address, 2);
+                            hook.callback->PushInt64(sm_address);
                         } else {
                             hook.callback->PushCell(reinterpret_cast<std::intptr_t>(this_ptr));
                         }

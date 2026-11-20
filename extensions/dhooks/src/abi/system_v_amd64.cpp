@@ -204,7 +204,7 @@ void JIT_CallMemberFunction(AsmJit& jit, bool save_general_register[MAX_GENERAL_
 	jit.push(rbp);
 	jit.mov(rbp, rsp);
 
-	static constexpr size_t stack_size = (MAX_GENERAL_REGISTERS * 0x8) + (MAX_FLOAT_REGISTERS * 0x10);
+	static constexpr size_t stack_size = (MAX_GENERAL_REGISTERS * sizeof(GeneralRegister)) + (MAX_FLOAT_REGISTERS * sizeof(FloatRegister));
 	static_assert(stack_size % 16 == 0); // System-V requires the stack to be aligned for any call operation
 	jit.sub(rsp, stack_size);
 
@@ -217,10 +217,15 @@ void JIT_CallMemberFunction(AsmJit& jit, bool save_general_register[MAX_GENERAL_
 		}
 		if (reg == STACK_REG) {
 			// We modified the stack, so RSP no longer holds the correct value
-			jit.lea(rax, rsp(stack_size));
-			jit.mov(rsp(i * 0x8), rax);
+			jit.lea(rax, rsp(stack_size + 8));
+			jit.mov(rsp(i * sizeof(GeneralRegister)), rax);
+		} else if (reg == rbp) {
+			// RBP has been modified above, so fetch its real value
+			jit.mov(rbp, rsp(stack_size));
+			jit.mov(rsp(i * sizeof(GeneralRegister)), rbp);
+			jit.lea(rbp, rsp(stack_size));
 		} else {
-			jit.mov(rsp(i * 0x8), reg);
+			jit.mov(rsp(i * sizeof(GeneralRegister)), reg);
 		}
 	}
 
@@ -229,7 +234,7 @@ void JIT_CallMemberFunction(AsmJit& jit, bool save_general_register[MAX_GENERAL_
 		if (!save_float_register[i]) {
 			continue;
 		}
-		jit.movsd(rsp(i * 0x10 + (MAX_GENERAL_REGISTERS * 0x8)), reg);
+		jit.movsd(rsp(i * sizeof(FloatRegister) + (MAX_GENERAL_REGISTERS * sizeof(GeneralRegister))), reg);
 	}
 	// void Capsule::PrePostHookLoop(std::uint8_t* saved_register, bool post)
 	jit.mov(rdx, post);
@@ -242,7 +247,7 @@ void JIT_CallMemberFunction(AsmJit& jit, bool save_general_register[MAX_GENERAL_
 	jit.pop(rbp);
 }
 
-void JIT_MakeReturn(AsmJit& jit, ReturnVariable& ret) {
+void JIT_MakeReturn(sp::CallingConvention, AsmJit& jit, ReturnVariable& ret) {
 	jit.push(rbp); // Re-align stack
 	jit.sub(rsp, 0x10); // Make space to save data
 	jit.mov(rbp, rsp);
@@ -313,7 +318,7 @@ void JIT_MakeReturn(AsmJit& jit, ReturnVariable& ret) {
 	jit.retn();
 }
 
-void JIT_Recall(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], bool save_float_register[MAX_FLOAT_REGISTERS], size_t stack_size, std::uintptr_t* jit_start) {
+void JIT_Recall(sp::CallingConvention, AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], bool save_float_register[MAX_FLOAT_REGISTERS], size_t stack_size, std::uintptr_t* jit_start) {
 	jit.push(rbp);
 	jit.mov(rbp, rsp);
 
@@ -393,7 +398,7 @@ void JIT_Recall(AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], 
 	jit.retn();
 }
 
-void JIT_CallOriginal(AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original_function, size_t stack_size, std::uintptr_t* jit_start) {
+void JIT_CallOriginal(sp::CallingConvention, AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original_function, size_t stack_size, std::uintptr_t* jit_start) {
 	auto start = jit.get_outputpos();
 
 	// save rax (and re-align stack)
