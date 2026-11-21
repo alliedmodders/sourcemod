@@ -22,6 +22,7 @@ class ExtensionBridge : public SDKExtension, public SourceMod::IPluginsListener 
 		gNatives.push_back({nullptr, nullptr});
 		sharesys->AddNatives(myself, gNatives.data());
 		sharesys->AddDependency(myself, "sdktools.ext", true, true);
+		sharesys->RegisterLibrary(myself, "dhooks");
 
 		dhooks::globals::gameconfs->AddUserConfigHook("Functions", &dhooks::globals::dhooks_config);
 		plsys->AddPluginsListener(this);
