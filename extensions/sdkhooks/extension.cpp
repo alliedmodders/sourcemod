@@ -126,6 +126,31 @@ IForward *g_pOnLevelInit = NULL;
 
 IGameConfig *g_pGameConf = NULL;
 
+// Adds a listener to the game's entity listeners, growing their vector with the game's allocator,
+// tier0's: CUtlVector grows with malloc and realloc, which the game's libraries route to tier0
+// (memoverride.cpp) but SourceMod's extensions don't. While the vector is empty or full, e.g. when the
+// extension loads at the server's start, the C runtime's block would be the vector's, which the game's
+// next growth hands to tier0's realloc: a block that allocator never made.
+void AddGameEntityListener(CUtlVector<IEntityListener *> *listeners, IEntityListener *listener)
+{
+	struct Access : CUtlVector<IEntityListener *>
+	{
+		static CUtlMemory<IEntityListener *> &Memory(CUtlVector<IEntityListener *> *vector)
+		{
+			return static_cast<Access *>(vector)->m_Memory;
+		}
+	};
+	CUtlMemory<IEntityListener *> &memory = Access::Memory(listeners);
+	if (listeners->Count() >= memory.NumAllocated())
+	{
+		int count = memory.NumAllocated() > 0 ? memory.NumAllocated() * 2 : 4;
+		IEntityListener **elements = memory.Detach();
+		elements = (IEntityListener **)g_pMemAlloc->Realloc(elements, count * sizeof(IEntityListener *));
+		memory.AssumeMemory(elements, count);
+	}
+	listeners->AddToTail(listener);
+}
+
 CUtlVector<IEntityListener *> *EntListeners()
 {
 	void *gEntList = gamehelpers->GetGlobalEntityList();
@@ -241,7 +266,7 @@ bool SDKHooks::SDK_OnLoad(char *error, size_t maxlength, bool late)
 	}
 	else
 	{
-		entListeners->AddToTail(this);
+		AddGameEntityListener(entListeners, this);
 	}
 
 
