@@ -379,58 +379,222 @@ void JIT_MakeReturn(sp::CallingConvention conv, size_t stack_size, AsmJit& jit, 
 
 void JIT_CallOriginal(sp::CallingConvention conv, AsmJit& jit, ReturnVariable& ret, std::uintptr_t* original_function, size_t stack_size, std::uintptr_t* jit_start) {
 	auto start = jit.get_outputpos();
+	const auto cls = Classify_ReturnType(ret).value();
 
-	// save eax (and re-align stack)
-	jit.push(eax);
+	// save ecx (and re-align stack)
+	jit.push(ecx);
 
 	// Ensure stack size is 8 mod 16
 	// When we will push the return address it will be
 	// 12 mod 16, which is how the stack should be aligned
+	const size_t original_stack_size = stack_size;
 	stack_size = ((stack_size + 15) & ~15) + 8;
 	jit.sub(esp, stack_size);
 
 	// Now copy stack over
-	for (int i = 0; i < stack_size; i += sizeof(void*)) {
-		// Skip saved EAX, skip return address
-		jit.mov(eax, esp(stack_size + sizeof(void*) + sizeof(void*) + i));
-		jit.mov(esp(i), eax);
+	for (int i = 0; i < original_stack_size; i += sizeof(void*)) {
+		// Skip saved ECX, skip return address
+		jit.mov(ecx, esp(stack_size + sizeof(void*) + sizeof(void*) + i));
+		jit.mov(esp(i), ecx);
 	}
 
 	// Setup the return address to later in this function
-	jit.mov(eax, reinterpret_cast<std::uintptr_t>(jit_start));
-	jit.mov(eax, eax());
-	jit.add(eax, INT32_MAX);
+	jit.mov(ecx, reinterpret_cast<std::uintptr_t>(jit_start));
+	jit.mov(ecx, ecx());
+	jit.add(ecx, INT32_MAX);
 	auto add = jit.get_outputpos();
 
 	// Place the return address
-	jit.push(eax);
+	jit.push(ecx);
 
-	jit.mov(eax, reinterpret_cast<std::uintptr_t>(original_function));
-	jit.mov(eax, eax());
+	jit.mov(ecx, reinterpret_cast<std::uintptr_t>(original_function));
+	jit.mov(ecx, ecx());
 
 	// Place the call address
-	jit.push(eax);
+	jit.push(ecx);
 
-	// Restore eax
-	jit.mov(rax, esp(sizeof(void*) + sizeof(void*) + stack_size));
+	// Restore ecx
+	jit.mov(ecx, esp(sizeof(void*) + sizeof(void*) + stack_size));
 
 	// Jump to original function
 	jit.retn();
 
 	jit.rewrite<std::int32_t>(add - sizeof(std::int32_t), jit.get_outputpos());
 
-	if (conv != sp::CallConv_STDCALL && conv != sp::CallConv_FASTCALL) {
-		// Free up the stack, the provided stack_size already takes into account
-		// the hidden return pointer if it exists
-		jit.add(rsp, stack_size);
+	if (conv == sp::CallConv_STDCALL || conv == sp::CallConv_FASTCALL) {
+		// The callee cleaned the stack size, but we need to clean our padding
+		jit.add(esp, (stack_size - original_stack_size));
+	} else {
+		// Pop the whole thing otherwise
+		if (cls == TypeClass::MEMORY) {
+			jit.add(esp, stack_size - sizeof(void*));
+		} else {
+			jit.add(esp, stack_size);
+		}
 	}
 
-	const auto cls = Classify_ReturnType(ret).value();
-	// TO-DO
+	// Stack is back to being aligned
+
+	// Make some space for local save data, and make it 16 bytes for simplicity
+	static constexpr size_t local_data_size = 0x10;
+	jit.sub(esp, local_data_size);
+
+	std::uintptr_t init_op = 0;
+	std::uintptr_t deinit_op = 0;
+	switch (cls) {
+		case TypeClass::VOID:
+		break;
+		case TypeClass::INTEGER:
+			jit.mov(esp(), eax);
+
+			init_op = reinterpret_cast<std::uintptr_t>(KHook::init_operator<std::uintptr_t>);
+			deinit_op = reinterpret_cast<std::uintptr_t>(KHook::deinit_operator<std::uintptr_t>);
+		break;
+		case TypeClass::FLOAT:
+			jit.fstp(esp(), x87Size::Float32);
+
+			init_op = reinterpret_cast<std::uintptr_t>(KHook::init_operator<float>);
+			deinit_op = reinterpret_cast<std::uintptr_t>(KHook::deinit_operator<float>);
+		break;
+		case TypeClass::MEMORY:
+			if (conv == sp::CallConv_FASTCALL) {
+				// Grab the hidden return pointer from the saved ECX
+				jit.mov(eax, esp(local_data_size));
+				jit.mov(esp(), eax);
+			} else {
+				// Else grab the hidden return pointer from the call stack
+				jit.mov(eax, esp(local_data_size + sizeof(void*) + sizeof(void*)));
+				jit.mov(esp(), eax);
+			}
+
+			if (ret.dhook_type == sp::ReturnType_String) {
+				init_op = reinterpret_cast<std::uintptr_t>(KHook::init_operator<sdk::string_t>);
+				deinit_op = reinterpret_cast<std::uintptr_t>(KHook::deinit_operator<sdk::string_t>);
+			} else if (ret.dhook_type == sp::ReturnType_Vector) {
+				init_op = reinterpret_cast<std::uintptr_t>(KHook::init_operator<sdk::Vector>);
+				deinit_op = reinterpret_cast<std::uintptr_t>(KHook::deinit_operator<sdk::Vector>);
+			} else {
+				std::abort();
+			}
+			break;
+		default:
+		std::abort();
+		return;
+	}
+
+	// KHook::SaveReturnValue(KHook::Action action, void* ptr_to_return, std::size_t return_size, void* init_op, void* delete_op, bool original)
+	jit.push(true); // original
+
+	if (cls == TypeClass::VOID) {
+		jit.push(0x0); // deinit_op
+		jit.push(0x0); // init_op
+		jit.push(0x0); // return_size
+		jit.push(0x0); // ptr_to_return
+	} else {
+		jit.push(deinit_op);      // deinit_op
+		jit.push(init_op);        // init_op
+		jit.push(ret.dhook_size); // return_size
+		if (cls == TypeClass::MEMORY) {
+			jit.push(esp(sizeof(void*) * 4));
+		} else {
+			jit.lea(eax, esp(sizeof(void*) * 4));
+			jit.push(eax);        // ptr_to_return
+		}
+	}
+	
+	jit.push((std::uint8_t)KHook::Action::Ignore); // action
+
+	jit.mov(eax, reinterpret_cast<std::uintptr_t>(::KHook::SaveReturnValue));
+	jit.call(eax);
+
+	// Free the stack + local save data + ECX
+	jit.add(esp, (6 * sizeof(void*)) + local_data_size + sizeof(void*));
+
+	// Return now, stack clean-up will be implicitly handled by khook
+	jit.retn();
 }
 
-void JIT_Recall(sp::CallingConvention conv, AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], bool save_float_register[MAX_FLOAT_REGISTERS], size_t stack_size, std::uintptr_t* jit_start) {
-	// TO-DO
+void JIT_Recall(sp::CallingConvention, AsmJit& jit, bool save_general_register[MAX_GENERAL_REGISTERS], bool save_float_register[MAX_FLOAT_REGISTERS], size_t stack_size, std::uintptr_t* jit_start) {
+	jit.push(ebp);
+	jit.mov(ebp, esp);
+	jit.push(ebx);
+	jit.push(esi);
+	jit.push(edi);
+
+	// 1st - ebp(8) - is ptr to function to call
+	// 2nd - ebp(12) - is ptr to registers
+	jit.mov(esi, ebp(sizeof(void*) * 3));
+
+	// Align the copied arguments and leave space to save our frame pointer.
+	const size_t local_stack_size = stack_size + (16 - (stack_size % 16)) % 16 + 12;
+	jit.sub(esp, local_stack_size);
+	jit.mov(esp(local_stack_size - sizeof(void*)), ebp);
+
+	if (stack_size != 0) {
+		if (save_general_register[STACK_REG] == false) {
+			// What the hell
+			std::abort();
+		}
+		// Have EAX act as the previous stack, skipping its return address.
+		jit.mov(eax, esi(sizeof(GeneralRegister) * STACK_REG));
+		jit.add(eax, sizeof(void*));
+		jit.mov(edi, esp);
+
+		// memcpy(destination, source, stack_size)
+		jit.sub(esp, 4);
+		jit.push(stack_size);
+		jit.push(eax);
+		jit.push(edi);
+		jit.mov(eax, reinterpret_cast<std::uintptr_t>(memcpy));
+		jit.call(eax);
+		jit.add(esp, 16);
+	}
+
+	// Figure out the return address.
+	jit.mov(eax, reinterpret_cast<std::uintptr_t>(jit_start));
+	jit.mov(eax, eax());
+	jit.add(eax, INT32_MAX);
+	auto add = jit.get_outputpos();
+	jit.push(eax);
+
+	// Prepare function to call before restoring EBP.
+	jit.push(ebp(sizeof(void*) * 2));
+
+	// Restore the registers.
+	for (size_t i = 0; i < MAX_FLOAT_REGISTERS; i++) {
+		auto reg = AsmFloatReg((AsmFloatRegCode)i);
+		if (!save_float_register[i]) {
+			continue;
+		}
+		jit.movsd(reg, esi(i * sizeof(FloatRegister) + (MAX_GENERAL_REGISTERS * sizeof(GeneralRegister))));
+	}
+
+	for (size_t i = 0; i < MAX_GENERAL_REGISTERS; i++) {
+		auto reg = AsmReg((AsmRegCode)i);
+		if (!save_general_register[i]) {
+			continue;
+		}
+		// Stack isn't a register to restore, and ESI still holds our snapshot.
+		if (reg != STACK_REG && reg != esi) {
+			jit.mov(reg, esi(sizeof(GeneralRegister) * i));
+		}
+	}
+	// ESI is restored last.
+	if (save_general_register[ESI]) {
+		jit.mov(esi, esi(sizeof(GeneralRegister) * ESI));
+	}
+
+	// Call the recall.
+	jit.retn();
+	// Rewrite the add value.
+	jit.rewrite<std::int32_t>(add - sizeof(std::int32_t), jit.get_outputpos());
+
+	jit.lea(esp, ebp(-12));
+	jit.pop(edi);
+	jit.pop(esi);
+	jit.pop(ebx);
+	jit.pop(ebp);
+	jit.retn();
 }
 
 }
