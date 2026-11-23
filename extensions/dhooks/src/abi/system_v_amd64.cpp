@@ -190,9 +190,19 @@ bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnV
 				return false;
 			}
 		} else {
+			if (param.dhook_custom_register == sp::DHookRegister::DHookRegister_EBP || param.dhook_custom_register == sp::DHookRegister::DHookRegister_RBP) {
+				globals::sourcemod->LogError(globals::myself, "Usage of EBP/RBP as register parameter isn't supported!");
+				return false;
+			}
+
 			param.reg_index = Translate_DHookRegister(param.dhook_custom_register);
 			param.float_reg_index = Translate_DHookRegister_Float(param.dhook_custom_register);
 			param.reg_offset = {};
+
+			if ((!param.reg_index && !param.float_reg_index) || (param.reg_index && param.float_reg_index)) {
+				globals::sourcemod->LogError(globals::myself, "Invalid register was provided for parameter (%d)!", i);
+				return false;
+			}
 		}
 	}}
 	/* Stack size here only means the size the parameters occupy, so remove the space occupied by return address */
@@ -373,13 +383,13 @@ void JIT_Recall(sp::CallingConvention, AsmJit& jit, bool save_general_register[M
 		jit.movsd(reg, rsi(i * 0x10 + (MAX_GENERAL_REGISTERS * 0x8)));
 	}
 
-	for (size_t i = 1; i < MAX_GENERAL_REGISTERS; i++) {
+	for (size_t i = 0; i < MAX_GENERAL_REGISTERS; i++) {
 		auto reg = AsmReg((AsmRegCode)i);
 		if (!save_general_register[i]) {
 			continue;
 		}
 		// Stack isn't a register to restore
-		if (reg != STACK_REG && reg != rsi) {
+		if (reg != STACK_REG && reg != rsi && reg != rbp) {
 			jit.mov(reg, rsi(sizeof(GeneralRegister) * i));
 		}
 	}
@@ -405,13 +415,14 @@ void JIT_CallOriginal(sp::CallingConvention, AsmJit& jit, ReturnVariable& ret, s
 	jit.push(rax);
 
 	// Ensure stack size is aligned on 16 bytes
+	const size_t original_stack_size = stack_size;
 	stack_size = (stack_size + 15) & ~15;
 	jit.sub(rsp, stack_size);
 
 	// Now copy stack over
-	for (int i = 0; i < stack_size; i += sizeof(void*)) {
+	for (int i = 0; i < original_stack_size; i += sizeof(void*)) {
 		// Skip saved RAX, skip return value
-		jit.mov(rax, rsp(stack_size + 0x8 + 0x8 + i));
+		jit.mov(rax, rsp(stack_size + sizeof(void*) + sizeof(void*) + i));
 		jit.mov(rsp(i), rax);
 	}
 

@@ -212,6 +212,11 @@ bool Proccess(sp::CallingConvention conv, std::vector<Variable>& params, ReturnV
 				return false;
 			}
 		} else {
+			if (param.dhook_custom_register == sp::DHookRegister::DHookRegister_EBP || param.dhook_custom_register == sp::DHookRegister::DHookRegister_RBP) {
+				globals::sourcemod->LogError(globals::myself, "Usage of EBP/RBP as register parameter isn't supported!");
+				return false;
+			}
+
 			param.reg_index = Translate_DHookRegister(param.dhook_custom_register);
 			param.float_reg_index = Translate_DHookRegister_Float(param.dhook_custom_register);
 
@@ -575,7 +580,7 @@ void JIT_Recall(sp::CallingConvention, AsmJit& jit, bool save_general_register[M
 			continue;
 		}
 		// Stack isn't a register to restore, and ESI still holds our snapshot.
-		if (reg != STACK_REG && reg != esi) {
+		if (reg != STACK_REG && reg != esi && reg != ebp) {
 			jit.mov(reg, esi(sizeof(GeneralRegister) * i));
 		}
 	}
