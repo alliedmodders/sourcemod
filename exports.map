@@ -1,0 +1,11 @@
+{
+    global:
+        CreateInterface_MMS;
+        CreateInterface;
+        logic_load;
+        get_textparsers;
+        GetSMExtAPI;
+        GetSourcePawnFactory;
+    local:
+        *;
+};

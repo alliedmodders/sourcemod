@@ -420,7 +420,8 @@ class SMConfig(object):
     elif cxx.family == 'clang':
       cxx.linkflags += ['-lgcc_eh']
     cxx.linkflags += ['-static-libstdc++']
-    cxx.linkflags += ['-Wl,--exclude-libs=libstdc++.a']
+    cxx.linkflags += ['-Wl,--version-script=' + os.path.join(builder.sourcePath, "exports.map")]
+    cxx.linkdeps += [os.path.join(builder.sourcePath, "exports.map")]
 
   def configure_mac(self, cxx):
     cxx.defines += ['OSX', '_OSX', 'POSIX', 'KE_ABSOLUTELY_NO_STL']
