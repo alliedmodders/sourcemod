@@ -578,6 +578,11 @@ bool HandleSystem::CheckAccess(QHandle *pHandle, HandleAccessRight right, const 
 
 HandleError HandleSystem::CloneHandle(QHandle *pHandle, unsigned int index, Handle_t *newhandle, IdentityToken_t *newOwner)
 {
+	if (pHandle->is_destroying)
+	{
+		return HandleError_Freed;
+	}
+
 	/* Get a new Handle ID */
 	unsigned int new_index;
 	QHandle *pNewHandle;
