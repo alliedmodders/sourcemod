@@ -191,7 +191,9 @@ static cell_t sm_RoundToNearest(IPluginContext *pCtx, const cell_t *params)
 {
 	float val = sp_ctof(params[1]);
 
-	return (int)val;
+	// Round half to even (IEEE default), matching the inlined
+	// OP_RND_TO_NEAREST that legacy SourcePawn plugins have always used.
+	return (cell_t)rintf(val);
 }
 
 static cell_t sm_RoundToFloor(IPluginContext *pCtx, const cell_t *params)
