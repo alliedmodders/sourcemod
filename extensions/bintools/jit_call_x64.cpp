@@ -414,11 +414,11 @@ inline void Write_PushFloat(JitWriter *jit, const PassInfo& info, unsigned int o
 	if (info.flags & PASSFLAG_BYVAL)
 	{
 		// Read only the argument's bytes; the parameter buffer may be unaligned.
-		if (info->size == 4 || info->size == 8)
+		if (info.size == 4 || info.size == 8)
 		{
-			X64_MovScalar_Rm_Disp(jit, floatReg, kREG_RBX, offset, info->size);
+			X64_MovScalar_Rm_Disp(jit, floatReg, kREG_RBX, offset, info.size);
 		}
-		else if (info->size == 16)
+		else if (info.size == 16)
 		{
 			floatReg2 = needStack ? NextScratchFloatReg() : NextFloatReg(8);
 			X64_MovScalar_Rm_Disp(jit, floatReg, kREG_RBX, offset, 8);
@@ -434,8 +434,8 @@ inline void Write_PushFloat(JitWriter *jit, const PassInfo& info, unsigned int o
 	{
 		// Stack argument slots are eight bytes, even for a four-byte float.
 		X64_MovScalar_Rm_Disp_Reg(jit, kREG_RSP, floatReg, g_StackUsage,
-		                          info->size == 4 ? 4 : 8);
-		if (info->size == 16)
+		                          info.size == 4 ? 4 : 8);
+		if (info.size == 16)
 		{
 			X64_MovScalar_Rm_Disp_Reg(jit, kREG_RSP, floatReg2, g_StackUsage + 8, 8);
 			g_StackUsage += 16;
