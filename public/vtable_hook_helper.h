@@ -67,7 +67,7 @@ public:
 			_ctx = nullptr;
 			_pre = nullptr;
 			_post = nullptr;
-			KHook::RemoveHook(_id);
+			KHook::RemoveHook(_id, true);
 		}
 
 		__Internal(void** vtable, std::int32_t index, CONTEXT* ctx, KHook::Return<RETURN> (CONTEXT::*pre)(CLASSNAME*, ARGS...), KHook::Return<RETURN> (CONTEXT::*post)(CLASSNAME*, ARGS...))
