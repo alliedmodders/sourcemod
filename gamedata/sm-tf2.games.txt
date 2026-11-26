@@ -195,10 +195,10 @@
 			// CTFGameRules::IsHolidayActive
 			"IsHolidayActive"
 			{
-				"windows"	"139"
-				"windows64"	"139"
-				"linux"		"140"
-				"linux64"	"140"
+				"windows"	"140"
+				"windows64"	"140"
+				"linux"		"141"
+				"linux64"	"141"
 			}
 		}
 	}
