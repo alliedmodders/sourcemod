@@ -469,14 +469,14 @@ inline uint8_t MapFloatToIntReg(uint8_t floatReg)
 	}
 }
 
-inline void Write_VarArgFloatCopy(JitWriter *jit, const PassInfo *info, uint8_t *floatRegs)
+inline void Write_VarArgFloatCopy(JitWriter *jit, const PassInfo& info, uint8_t *floatRegs)
 {
 	if (!floatRegs || MapFloatToIntReg(floatRegs[0]) == INVALID_REG)
 		return;
 
 	uint8_t intReg1 = MapFloatToIntReg(floatRegs[0]);
 
-	switch (info->size)
+	switch (info.size)
 	{
 		case 4:
 			//movd intReg1, floatReg[0]
@@ -692,14 +692,14 @@ inline void Write_PushObject(JitWriter *jit, const PassInfo& info, unsigned int 
 		return;
 
 #elif defined PLATFORM_WINDOWS
-		if (info->size > 8 || (info->size & (info->size - 1)) != 0)
+		if (info.size > 8 || (info.size & (info.size - 1)) != 0)
 			goto push_byref;
 		else {
 			PassInfo podInfo;
 			podInfo.size = info.size;
 			podInfo.type = PassType_Basic;
 			podInfo.flags = PASSFLAG_BYVAL;
-			Write_PushPOD(jit, &podInfo, offset);
+			Write_PushPOD(jit, podInfo, offset);
 		}
 		
 		return;
@@ -1032,11 +1032,11 @@ skip_retbuffer:
 		case PassType::PassType_Float:
 			{
 #ifdef PLATFORM_WINDOWS
-				if ((info->flags & PASSFLAG_BYVAL) && (pWrapper->GetFunctionFlags() & FNFLAG_VARARGS))
+				if ((info->info.flags & PASSFLAG_BYVAL) && (pWrapper->GetFunctionFlags() & FNFLAG_VARARGS))
 				{
 					uint8_t floatRegs[2];
-					Write_PushFloat(jit, info, offset, floatRegs);
-					Write_VarArgFloatCopy(jit, info, floatRegs);
+					Write_PushFloat(jit, info->info, offset, floatRegs);
+					Write_VarArgFloatCopy(jit, info->info, floatRegs);
 				}
 				else
 #endif
