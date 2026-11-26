@@ -73,6 +73,8 @@ cell_t DynamicDetour_Disable(SourcePawn::IPluginContext* context, const cell_t* 
 void init(std::vector<sp_nativeinfo_t>& natives) {
 	sp_nativeinfo_t list[] = {
 		{"DHookCreateDetour",                  DynamicDetour_DynamicDetour},
+		{"DHookEnableDetour",                  DynamicDetour_Enable},
+		{"DHookDisableDetour",                 DynamicDetour_Disable},
 		{"DynamicDetour.DynamicDetour",        DynamicDetour_DynamicDetour},
 		/* DynamicDetour.FromConf is implemented in dhooksetup.cpp */
 		{"DynamicDetour.Enable",               DynamicDetour_Enable},
