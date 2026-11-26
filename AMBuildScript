@@ -360,7 +360,6 @@ class SMConfig(object):
     ]
     cxx.cxxflags += [
       '/EHsc',
-      '/GR-',
       '/TP',
       '/std:c++20',
     ]
