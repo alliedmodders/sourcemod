@@ -209,10 +209,10 @@ bool SDKTools::SDK_OnLoad(char *error, size_t maxlength, bool late)
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
 	void* addr = nullptr;
 	if (!g_pGameConf->GetMemSig("WriteBaselines", &addr) || addr == nullptr) {
-		ke::SafeSprintf(error, maxlength, "Failed to find WriteBaselines signature -- stringtable error workaround disabled.");
-		return false;
+		g_pSM->LogError(myself, "Failed to find WriteBaselines signature -- stringtable error workaround disabled.");
+	} else {
+		g_WriteBaselinesDetour.Configure(addr);
 	}
-	g_WriteBaselinesDetour.Configure(addr);
 #endif
 
 	return true;
