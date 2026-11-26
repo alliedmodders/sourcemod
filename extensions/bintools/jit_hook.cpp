@@ -224,7 +224,7 @@ inline void Write_Call_Handler(JitWriter *jit, void *addr)
 	IA32_Write_Jump32_Abs(jit, call, addr);
 }
 
-inline void Write_Copy_RetVal(JitWriter *jit, SourceHook::PassInfo *pRetInfo)
+inline void Write_Copy_RetVal(JitWriter *jit, PassInfo *pRetInfo)
 {
 	/* If the return value is a reference the size will probably be >sizeof(void *)
 	* for objects, we need to fix that so we can actually return the reference.
@@ -235,8 +235,8 @@ inline void Write_Copy_RetVal(JitWriter *jit, SourceHook::PassInfo *pRetInfo)
 		size = sizeof(void *);
 	}
 
-	if (pRetInfo->type == SourceHook::PassInfo::PassType_Float &&
-		pRetInfo->flags & SourceHook::PassInfo::PassFlag_ByVal)
+	if (pRetInfo->type == PassType_Float &&
+		pRetInfo->flags & PASSFLAG_BYVAL)
 	{
 		switch (size)
 		{
@@ -254,8 +254,8 @@ inline void Write_Copy_RetVal(JitWriter *jit, SourceHook::PassInfo *pRetInfo)
 			}
 		}
 	}
-	else if (pRetInfo->type == SourceHook::PassInfo::PassType_Object &&
-		pRetInfo->flags & SourceHook::PassInfo::PassFlag_ByVal)
+	else if (pRetInfo->type == PassType_Object &&
+		pRetInfo->flags & PASSFLAG_BYVAL)
 	{
 		//cld
 		//push edi
@@ -361,9 +361,9 @@ void *JIT_HookCompile(HookWrapper *pWrapper)
 
 	/* Check if the return value is returned in memory */
 	bool RetInMemory = false;
-	SourceHook::PassInfo *pRetInfo = &pWrapper->GetProtoInfo()->retPassInfo;
-	if ((pRetInfo->type == SourceHook::PassInfo::PassType_Object) && 
-		(pRetInfo->flags & SourceHook::PassInfo::PassFlag_ByVal))
+	PassInfo *pRetInfo = &pWrapper->GetProtoInfo()->retPassInfo;
+	if ((pRetInfo->type == PassType_Object) && 
+		(pRetInfo->flags & PASSFLAG_BYVAL))
 	{
 		RetInMemory = true;
 	}

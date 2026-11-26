@@ -469,7 +469,7 @@ inline uint8_t MapFloatToIntReg(uint8_t floatReg)
 	}
 }
 
-inline void Write_VarArgFloatCopy(JitWriter *jit, const SourceHook::PassInfo *info, uint8_t *floatRegs)
+inline void Write_VarArgFloatCopy(JitWriter *jit, const PassInfo *info, uint8_t *floatRegs)
 {
 	if (!floatRegs || MapFloatToIntReg(floatRegs[0]) == INVALID_REG)
 		return;
@@ -695,10 +695,10 @@ inline void Write_PushObject(JitWriter *jit, const PassInfo& info, unsigned int 
 		if (info->size > 8 || (info->size & (info->size - 1)) != 0)
 			goto push_byref;
 		else {
-			SourceHook::PassInfo podInfo;
-			podInfo.size = info->size;
-			podInfo.type = SourceHook::PassInfo::PassType_Basic;
-			podInfo.flags = SourceHook::PassInfo::PassFlag_ByVal;
+			PassInfo podInfo;
+			podInfo.size = info.size;
+			podInfo.type = PassType_Basic;
+			podInfo.flags = PASSFLAG_BYVAL;
 			Write_PushPOD(jit, &podInfo, offset);
 		}
 		
