@@ -75,7 +75,7 @@ bool EntityOutputManager::IsEnabled()
 }
 
 #if defined PLATFORM_WINDOWS && defined KE_ARCH_X86
-KHook::Return<void> Hook_FireOutput(CBaseEntity* this_ptr, int what, int the, int hell, int msvc, void*, CBaseEntity* pActivator, CBaseEntity* pCaller, float fDelay)
+KHook::Return<void> EntityOutputManager::Hook_FireOutput(CBaseEntity* this_ptr, int what, int the, int hell, int msvc, void*, CBaseEntity* pActivator, CBaseEntity* pCaller, float fDelay)
 #else
 KHook::Return<void> EntityOutputManager::Hook_FireOutput(CBaseEntity* this_ptr, void*, CBaseEntity* pActivator, CBaseEntity* pCaller, float fDelay)
 #endif
