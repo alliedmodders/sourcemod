@@ -109,6 +109,7 @@
 		"Keys"
 		{
 			"GameRulesProxy"	"CINSRulesProxy"
+			"GameRulesDataTable"	"ins_gamerules_data"
 		}
 		
 		"Offsets"
