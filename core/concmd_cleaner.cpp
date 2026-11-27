@@ -34,17 +34,6 @@
 #include "compat_wrappers.h"
 #include <amtl/am-string.h>
 
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-SH_DECL_HOOK1_void(ICvar, UnregisterConCommand, SH_NOATTRIB, 0, ConCommandBase *);
-#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
-SH_DECL_HOOK2_void(ICvar, RegisterConCommand, SH_NOATTRIB, 0, ConCommandBase *, bool);
-#else
-SH_DECL_HOOK1_void(ICvar, RegisterConCommand, SH_NOATTRIB, 0, ConCommandBase *);
-#endif
-#else
-SH_DECL_HOOK1_void(ICvar, RegisterConCommandBase, SH_NOATTRIB, 0, ConCommandBase *);
-#endif
-
 struct ConCommandInfo
 {
 	ConCommandBase *pBase;
@@ -60,30 +49,12 @@ ConCommandBase *FindConCommandBase(const char *name);
 class ConCommandCleaner : public SMGlobalClass
 {
 public:
-	void OnSourceModAllInitialized()
-	{
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-		SH_ADD_HOOK(ICvar, UnregisterConCommand, icvar, SH_MEMBER(this, &ConCommandCleaner::UnlinkConCommandBase), false);
-		SH_ADD_HOOK(ICvar, RegisterConCommand, icvar, SH_MEMBER(this, &ConCommandCleaner::LinkConCommandBase), false);
-#else
-		SH_ADD_HOOK(ICvar, RegisterConCommandBase, icvar, SH_MEMBER(this, &ConCommandCleaner::LinkConCommandBase), false);
-#endif
-	}
-
-	void OnSourceModShutdown()
-	{
-#if SOURCE_ENGINE >= SE_ORANGEBOX
-		SH_REMOVE_HOOK(ICvar, UnregisterConCommand, icvar, SH_MEMBER(this, &ConCommandCleaner::UnlinkConCommandBase), false);
-		SH_REMOVE_HOOK(ICvar, RegisterConCommand, icvar, SH_MEMBER(this, &ConCommandCleaner::LinkConCommandBase), false);
-#else
-		SH_REMOVE_HOOK(ICvar, RegisterConCommandBase, icvar, SH_MEMBER(this, &ConCommandCleaner::LinkConCommandBase), false);
-#endif
-	}
-
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
-	void LinkConCommandBase(ConCommandBase *pBase, bool unknown)
+	KHook::Virtual<ICvar, void, ConCommandBase*, bool> m_HookLinkConCommandBase;
+	KHook::Return<void> LinkConCommandBase(ICvar*, ConCommandBase *pBase, bool unknown)
 #else
-	void LinkConCommandBase(ConCommandBase *pBase)
+	KHook::Virtual<ICvar, void, ConCommandBase*> m_HookLinkConCommandBase;
+	KHook::Return<void> LinkConCommandBase(ICvar*, ConCommandBase *pBase)
 #endif
 	{
 		IConCommandLinkListener *listener = IConCommandLinkListener::head;
@@ -92,9 +63,12 @@ public:
 			listener->OnLinkConCommand(pBase);
 			listener = listener->next;
 		}
+
+		return { KHook::Action::Ignore };
 	}
 
-	void UnlinkConCommandBase(ConCommandBase *pBase)
+	KHook::Virtual<ICvar, void, ConCommandBase*> m_HookUnlinkConCommandBase;
+	KHook::Return<void> UnlinkConCommandBase(ICvar*, ConCommandBase *pBase)
 	{
 		ConCommandInfo *pInfo;
 		auto iter = tracked_bases.begin();
@@ -110,16 +84,17 @@ public:
 		{
 		    if ((*iter)->pBase == pBase)
 		    {
-			pInfo = (*iter);
-			iter = tracked_bases.erase(iter);
-			pInfo->cls->OnUnlinkConCommandBase(pBase, pBase->GetName());
-			delete pInfo;
+				pInfo = (*iter);
+				iter = tracked_bases.erase(iter);
+				pInfo->cls->OnUnlinkConCommandBase(pBase, pBase->GetName());
+				delete pInfo;
 		    }
 		    else
 		    {
-			iter++;
+				iter++;
 		    }
 		}
+		return { KHook::Action::Ignore };
 	}
 
 	void AddTarget(ConCommandBase *pBase, IConCommandTracker *cls)
@@ -152,6 +127,35 @@ public:
 			}
 		}
 	}
+
+	virtual void OnSourceModAllInitialized() override
+	{
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+		m_HookUnlinkConCommandBase.Add(icvar);
+		m_HookLinkConCommandBase.Add(icvar);
+#else
+		m_HookLinkConCommandBase.Add(icvar);
+#endif
+	}
+
+	virtual void OnSourceModShutdown() override
+	{
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+		m_HookUnlinkConCommandBase.Remove(icvar);
+		m_HookLinkConCommandBase.Remove(icvar);
+#else
+		m_HookLinkConCommandBase.Remove(icvar);
+#endif
+	}
+
+	ConCommandCleaner() :
+#if SOURCE_ENGINE >= SE_ORANGEBOX
+	m_HookLinkConCommandBase(&ICvar::RegisterConCommand, this, &ConCommandCleaner::LinkConCommandBase, nullptr),
+	m_HookUnlinkConCommandBase(&ICvar::UnregisterConCommand, this, &ConCommandCleaner::UnlinkConCommandBase, nullptr)
+#else
+	m_HookLinkConCommandBase(&ICvar::RegisterConCommandBase, this, &ConCommandCleaner::LinkConCommandBase, nullptr)
+#endif
+	{}
 } s_ConCmdTracker;
 
 void TrackConCommandBase(ConCommandBase *pBase, IConCommandTracker *me)
@@ -166,5 +170,5 @@ void UntrackConCommandBase(ConCommandBase *pBase, IConCommandTracker *me)
 
 void Global_OnUnlinkConCommandBase(ConCommandBase *pBase)
 {
-	s_ConCmdTracker.UnlinkConCommandBase(pBase);
+	s_ConCmdTracker.UnlinkConCommandBase(icvar, pBase);
 }

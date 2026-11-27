@@ -39,6 +39,7 @@
 #include "sm_memtable.h"
 #include <sm_namehashset.h>
 
+
 using namespace SourceMod;
 
 #define TOPMENU_DISPLAY_BUFFER_SIZE 128

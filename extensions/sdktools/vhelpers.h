@@ -32,7 +32,7 @@
 #ifndef _INCLUDE_SDKTOOLS_VHELPERS_H_
 #define _INCLUDE_SDKTOOLS_VHELPERS_H_
 
-#include <sh_list.h>
+#include <list>
 #include <eiface.h>
 #include <IBinTools.h>
 

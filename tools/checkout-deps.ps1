@@ -115,6 +115,7 @@ Function Get-Repository
         }
         & git checkout $Branch 2>&1 | Write-Host
         & git pull origin $Branch 2>&1 | Write-Host
+        & git submodule update --recursive 2>&1 | Write-Host
         If ($Origin)
         {
             & git remote set-url origin $Origin 2>&1 | Write-Host
@@ -135,7 +136,7 @@ if (-not $NoMariaDB)
     Get-MariaDBConnectorC -Architecture 'x86_64'
 }
 
-Get-Repository -Name "mmsource-1.12" -Branch "1.12-dev" -Repo "https://github.com/alliedmodders/metamod-source.git"
+Get-Repository -Name "mmsource-2.0" -Branch "master" -Repo "https://github.com/alliedmodders/metamod-source.git"
 
 if (-not (Test-Path "hl2sdk-proxy-repo" -PathType Container))
 {

@@ -153,8 +153,8 @@ cell_t HookEntityOutput(IPluginContext *pContext, const cell_t *params)
 
 	g_OutputManager.OnHookAdded();
 
-	IPlugin *pPlugin = plsys->FindPluginByContext(pContext);
 	std::list<omg_hooks *> *pList = NULL;
+	IPlugin *pPlugin = plsys->FindPluginByContext(pContext);
 
 	if (!pPlugin->GetProperty("OutputHookList", (void **)&pList, false) || !pList)
 	{

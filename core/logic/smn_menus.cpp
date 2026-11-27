@@ -214,12 +214,12 @@ public:
 	 */
 	virtual void OnPluginUnloaded(IPlugin *plugin)
 	{
-		for (size_t i = 0; i < m_PanelHandlers.size(); i++)
+		for (auto e : m_PanelHandlers)
 		{
-			if (m_PanelHandlers[i]->m_pPlugin == plugin)
+			if (e->m_pPlugin == plugin)
 			{
-				m_PanelHandlers[i]->m_pPlugin = NULL;
-				m_PanelHandlers[i]->m_pFunc = NULL;
+				e->m_pPlugin = nullptr;
+				e->m_pFunc = nullptr;
 			}
 		}
 	}

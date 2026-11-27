@@ -101,22 +101,22 @@ public: //IUserMessages
 	UserMessageType GetUserMessageType() const;
 public:
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
-	void OnSendUserMessage_Pre(IRecipientFilter &filter, int msg_type, const protobuf::Message &msg);
-	void OnSendUserMessage_Post(IRecipientFilter &filter, int msg_type, const protobuf::Message &msg);
+	KHook::Return<void> OnSendUserMessage_Pre(IVEngineServer*, IRecipientFilter &filter, int msg_type, const protobuf::Message &msg);
+	KHook::Return<void> OnSendUserMessage_Post(IVEngineServer*, IRecipientFilter &filter, int msg_type, const protobuf::Message &msg);
 #endif
 
 #if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
-	protobuf::Message *OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name);
-	protobuf::Message *OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name);
+	KHook::Return<protobuf::Message*> OnStartMessage_Pre(IVEngineServer*, IRecipientFilter *filter, int msg_type, const char *msg_name);
+	KHook::Return<protobuf::Message*> OnStartMessage_Post(IVEngineServer*, IRecipientFilter *filter, int msg_type, const char *msg_name);
 #elif SOURCE_ENGINE >= SE_LEFT4DEAD
-	bf_write *OnStartMessage_Pre(IRecipientFilter *filter, int msg_type, const char *msg_name);
-	bf_write *OnStartMessage_Post(IRecipientFilter *filter, int msg_type, const char *msg_name);
+	KHook::Return<bf_write*> OnStartMessage_Pre(IVEngineServer*, IRecipientFilter *filter, int msg_type, const char *msg_name);
+	KHook::Return<bf_write*> OnStartMessage_Post(IVEngineServer*, IRecipientFilter *filter, int msg_type, const char *msg_name);
 #else
-	bf_write *OnStartMessage_Pre(IRecipientFilter *filter, int msg_type);
-	bf_write *OnStartMessage_Post(IRecipientFilter *filter, int msg_type);
+	KHook::Return<bf_write*> OnStartMessage_Pre(IVEngineServer*, IRecipientFilter *filter, int msg_type);
+	KHook::Return<bf_write*> OnStartMessage_Post(IVEngineServer*, IRecipientFilter *filter, int msg_type);
 #endif
-	void OnMessageEnd_Pre();
-	void OnMessageEnd_Post();
+	KHook::Return<void> OnMessageEnd_Pre(IVEngineServer*);
+	KHook::Return<void> OnMessageEnd_Post(IVEngineServer*);
 private:
 #ifdef USE_PROTOBUF_USERMESSAGES
 	const protobuf::Message *GetMessagePrototype(int msg_type);
@@ -141,7 +141,7 @@ private:
 	// The engine used to provide this. Now we track it.
 	protobuf::Message *m_OrigBuffer;
 	protobuf::Message *m_FakeEngineBuffer;
-	META_RES m_FakeMetaRes;
+	KHook::Action m_FakeMetaRes;
 
 	protobuf::Message *m_InterceptBuffer;
 #endif
@@ -157,6 +157,17 @@ private:
 	bool m_InExec;
 	int m_CurFlags;
 	int m_CurId;
+protected:
+#if SOURCE_ENGINE == SE_CSGO || SOURCE_ENGINE == SE_BLADE || SOURCE_ENGINE == SE_MCV
+	KHook::Virtual<IVEngineServer, void, IRecipientFilter&, int, const protobuf::Message&> m_SendUserMessage;
+#else
+#if SOURCE_ENGINE >= SE_LEFT4DEAD
+	KHook::Virtual<IVEngineServer, bf_write*, IRecipientFilter*, int, const char*> m_UserMessageBegin;
+#else
+	KHook::Virtual<IVEngineServer, bf_write*, IRecipientFilter*, int> m_UserMessageBegin;
+#endif
+	KHook::Virtual<IVEngineServer, void> m_MessageEnd;
+#endif // ==SE_CSGO || ==SE_BLADE || ==SE_MCV
 };
 
 extern UserMessages g_UserMsgs;

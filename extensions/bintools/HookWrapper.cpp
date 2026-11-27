@@ -47,8 +47,8 @@ HookWrapper::HookWrapper(SourceHook::ISourceHook *pSH,
 
 	m_pSH = pSH;
 	m_ProtoInfo = *proto;
-	m_ProtoInfo.paramsPassInfo = new SourceHook::PassInfo[argnum + 1];
-	memcpy((void *)m_ProtoInfo.paramsPassInfo, proto->paramsPassInfo, sizeof(SourceHook::PassInfo) * (argnum+1));
+	m_ProtoInfo.paramsPassInfo = new PassInfo[argnum + 1];
+	memcpy((void *)m_ProtoInfo.paramsPassInfo, proto->paramsPassInfo, sizeof(PassInfo) * (argnum+1));
 	m_MemFuncInfo = *memfunc;
 	m_FuncAddr = addr;
 	m_HookWrapper = NULL;
@@ -56,7 +56,7 @@ HookWrapper::HookWrapper(SourceHook::ISourceHook *pSH,
 	/* If the function has parameters calculate the parameter buffer size and offsets */
 	if (argnum > 0)
 	{
-		const SourceHook::PassInfo *info = m_ProtoInfo.paramsPassInfo;
+		PassInfo *info = m_ProtoInfo.paramsPassInfo;
 		m_ParamOffs = new unsigned int[argnum];
 		m_ParamOffs[0] = 0;
 
@@ -65,10 +65,10 @@ HookWrapper::HookWrapper(SourceHook::ISourceHook *pSH,
 			/* The stack should be at least aligned to a 4 byte boundary 
 			* and byref params have the size of pointers 
 			*/
-			if (((info[i].type == SourceHook::PassInfo::PassType_Basic) &&
-				(info[i].flags & SourceHook::PassInfo::PassFlag_ByVal) && 
+			if (((info[i].type == PassType_Basic) &&
+				(info[i].flags & PASSFLAG_BYVAL) && 
 				(info[i].size < sizeof(void *))) ||
-				(info[i].flags & SourceHook::PassInfo::PassFlag_ByRef))
+				(info[i].flags & PASSFLAG_BYREF))
 			{
 				m_ParamSize += sizeof(void *);
 			}
@@ -89,7 +89,7 @@ HookWrapper::HookWrapper(SourceHook::ISourceHook *pSH,
 	size_t retsize = m_ProtoInfo.retPassInfo.size;
 	if (retsize != 0)
 	{
-		if (m_ProtoInfo.retPassInfo.flags & SourceHook::PassInfo::PassFlag_ByRef)
+		if (m_ProtoInfo.retPassInfo.flags & PASSFLAG_BYREF)
 		{
 			m_RetSize = sizeof(void *);
 		}

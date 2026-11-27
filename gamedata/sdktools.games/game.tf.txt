@@ -158,6 +158,11 @@
 				"linux"		"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 				"linux64"	"@_ZN17CBaseEntityOutput10FireOutputE9variant_tP11CBaseEntityS2_f"
 			}
+			"g_pGameRules"
+			{
+				"library"	"server"
+				"linux64"	"@g_pGameRules"
+			}
 		}
 	}
 	

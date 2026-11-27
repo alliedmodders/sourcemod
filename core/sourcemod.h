@@ -34,6 +34,7 @@
 
 #include "sm_globals.h"
 #include <ISourceMod.h>
+#include <khook.hpp>
 #include <stack>
 #include <vector>
 
@@ -73,16 +74,6 @@ public:
 	 * @brief Shuts down all SourceMod components
 	 */
 	void CloseSourceMod();
-
-	/**
-	 * @brief Map change hook
-	 */
-	bool LevelInit(char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
-
-	/**
-	 * @brief Level shutdown hook
-	 */
-	void LevelShutdown();
 
 	/** 
 	 * @brief Returns whether or not a map load is in progress
@@ -136,7 +127,6 @@ public: // ISourceMod
 private:
 	void ShutdownServices();
 private:
-	const char* GetMapEntitiesString();
 	char m_SMBaseDir[PLATFORM_MAX_PATH];
 	char m_SMRelDir[PLATFORM_MAX_PATH];
 	char m_ModDir[32];
@@ -146,6 +136,17 @@ private:
 	unsigned int m_target;
 	bool m_GotBasePath;
 	std::vector<GAME_FRAME_HOOK> m_frame_hooks;
+protected:
+	KHook::Virtual<class IServerGameDLL, bool, const char *, const char *, const char *, const char *, bool, bool> m_HookLevelInit;
+	KHook::Return<bool> Hook_LevelInit(class IServerGameDLL*, char const *pMapName, char const *pMapEntities, char const *pOldLevel, char const *pLandmarkName, bool loadGame, bool background);
+	KHook::Virtual<class IServerGameDLL, void> m_HookLevelShutdown;
+	KHook::Return<void> Hook_LevelShutdown(class IServerGameDLL*);
+	KHook::Virtual<class IServerGameDLL, void, bool> m_HookGameFrame;
+	KHook::Return<void> Hook_GameFrame(class IServerGameDLL*, bool);
+	KHook::Virtual<class IServerGameDLL, void, bool> m_HookThink;
+	KHook::Return<void> Hook_Think(class IServerGameDLL*, bool);
+	KHook::Virtual<class IVEngineServer, const char*> m_HookGetMapEntitiesString;
+	KHook::Return<const char*> Hook_GetMapEntitiesString(class IVEngineServer*);
 };
 
 void UTIL_ConsolePrintVa(const char *fmt, va_list ap);

@@ -30,16 +30,32 @@
  */
 
 #include "teleporter.h"
+#include "extension.h"
 
-CDetour *canPlayerBeTeleportedDetour = NULL;
-
+KHook::HookID_t g_HookCanPlayerBeTeleportedClass = KHook::INVALID_HOOK;
 IForward *g_teleportForward = NULL;
 
 class CTFPlayer;
 
-DETOUR_DECL_MEMBER1(CanPlayerBeTeleported, bool, CTFPlayer *, pPlayer)
+class CanPlayerBeTeleportedClass
+{	
+public:
+	bool MakeReturn(CTFPlayer * pPlayer) {
+		bool ret = *(bool*)::KHook::GetCurrentValuePtr(true);
+		::KHook::DestroyReturnValue();
+		return ret;
+	}
+
+	bool MakeCallOriginal(CTFPlayer * pPlayer) {
+		auto CanPlayerBeTeleported_Actual = KHook::BuildMFP<bool (CanPlayerBeTeleportedClass::*)(CTFPlayer*)>(::KHook::GetOriginalFunction());
+
+		return ::KHook::ManualReturn<bool>({ KHook::Action::Ignore, (this->*CanPlayerBeTeleported_Actual)(pPlayer) }, true);
+	}
+	bool CanPlayerBeTeleported(CTFPlayer * pPlayer); 
+};
+bool CanPlayerBeTeleportedClass::CanPlayerBeTeleported(CTFPlayer* pPlayer)
 {
-	bool origCanTeleport = DETOUR_MEMBER_CALL(CanPlayerBeTeleported)(pPlayer);
+	bool origCanTeleport = *(bool*)KHook::GetCurrentValuePtr();
 
 	cell_t teleporterCell = gamehelpers->EntityToBCompatRef((CBaseEntity *)this);
 	cell_t playerCell = gamehelpers->EntityToBCompatRef((CBaseEntity *)pPlayer);
@@ -47,7 +63,7 @@ DETOUR_DECL_MEMBER1(CanPlayerBeTeleported, bool, CTFPlayer *, pPlayer)
 	if (!g_teleportForward)
 	{
 		g_pSM->LogMessage(myself, "Teleport forward is invalid");
-		return origCanTeleport;
+		return KHook::ManualReturn<bool>({ KHook::Action::Ignore, origCanTeleport });
 	}
 
 	cell_t returnValue = origCanTeleport ? 1 : 0;
@@ -63,21 +79,39 @@ DETOUR_DECL_MEMBER1(CanPlayerBeTeleported, bool, CTFPlayer *, pPlayer)
 	if (result > Pl_Continue)
 	{
 		// plugin wants to override the game (returned something other than Plugin_Continue)
-		return returnValue == 1;
+		return KHook::ManualReturn<bool>({ KHook::Action::Override, returnValue == 1 });
 	}
 	else
 	{
-		return origCanTeleport; // let the game decide
+		return KHook::ManualReturn<bool>({ KHook::Action::Ignore, origCanTeleport }); // let the game decide
 	}
 }
 
 bool InitialiseTeleporterDetour()
 {
-	canPlayerBeTeleportedDetour = DETOUR_CREATE_MEMBER(CanPlayerBeTeleported, "CanPlayerBeTeleported");
+	if (g_HookCanPlayerBeTeleportedClass != KHook::INVALID_HOOK) {
+		return true;
+	}
 
-	if (canPlayerBeTeleportedDetour != NULL)
+	void* addr = nullptr;
+	if (!g_pGameConf->GetMemSig("CanPlayerBeTeleported", &addr) || addr == nullptr) {
+		g_pSM->LogError(myself, "Failed to retrieve CanPlayerBeTeleported.");
+		return false;
+	}
+	g_HookCanPlayerBeTeleportedClass = KHook::SetupHook(
+		addr,
+		nullptr,
+		nullptr,
+		nullptr,
+		KHook::ExtractMFP(&CanPlayerBeTeleportedClass::CanPlayerBeTeleported),
+		KHook::ExtractMFP(&CanPlayerBeTeleportedClass::MakeReturn),
+		KHook::ExtractMFP(&CanPlayerBeTeleportedClass::MakeCallOriginal),
+		100,
+		true
+	);
+
+	if (g_HookCanPlayerBeTeleportedClass != KHook::INVALID_HOOK)
 	{
-		canPlayerBeTeleportedDetour->EnableDetour();
 		return true;
 	}
 
@@ -88,9 +122,6 @@ bool InitialiseTeleporterDetour()
 
 void RemoveTeleporterDetour()
 {
-	if (canPlayerBeTeleportedDetour != NULL)
-	{
-		canPlayerBeTeleportedDetour->Destroy();
-		canPlayerBeTeleportedDetour = NULL;
-	}
+	KHook::RemoveHook(g_HookCanPlayerBeTeleportedClass, false);
+	g_HookCanPlayerBeTeleportedClass = KHook::INVALID_HOOK;
 }

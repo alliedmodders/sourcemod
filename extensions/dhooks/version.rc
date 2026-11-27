@@ -32,7 +32,7 @@ BEGIN
             VALUE "FileDescription", "SourceMod Dynamic Hooks Extension"
             VALUE "FileVersion", SM_VERSION_STRING
             VALUE "InternalName", "SourceMod DHooks Extension"
-            VALUE "LegalCopyright", "Copyright (c) 2021, AlliedModders LLC"
+            VALUE "LegalCopyright", "Copyright (c) 2026, AlliedModders LLC"
             VALUE "OriginalFilename", BINARY_NAME
             VALUE "ProductName", "SourceMod DHooks Extension"
             VALUE "ProductVersion", SM_VERSION_STRING
