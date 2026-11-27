@@ -262,6 +262,11 @@ bool TF2Tools::QueryInterfaceDrop(SMInterface *pInterface)
 
 void TF2Tools::NotifyInterfaceDrop(SMInterface *pInterface)
 {
+	if (pInterface == g_pSDKHooks)
+	{
+		g_pSDKHooks = NULL;
+	}
+
 	g_RegNatives.UnregisterAll();
 }
 
