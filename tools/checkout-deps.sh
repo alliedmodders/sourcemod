@@ -132,7 +132,7 @@ checkout ()
 }
 
 name=mmsource-2.0
-branch=k/sourcehook_alternative
+branch=master
 repo="https://github.com/alliedmodders/metamod-source"
 origin=
 checkout
