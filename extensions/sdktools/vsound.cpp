@@ -1435,7 +1435,7 @@ static cell_t EmitSoundEntry(IPluginContext *pContext, const cell_t *params)
 #else
 				KHook::CallOriginal<int (IEngineSound::*)(IRecipientFilter &, int, int, const char*, unsigned int, const char*, float,
 					soundlevel_t, int, int, int, const Vector *, const Vector *, CUtlVector<Vector> *, bool, float, int)>
-					&IEngineSound::EmitSound, engsound, crf, player[0], channel, soundEntry, soundEntryHash, sample, vol, (soundlevel_t)level, seed,
+					(&IEngineSound::EmitSound, engsound, crf, player[0], channel, soundEntry, soundEntryHash, sample, vol, (soundlevel_t)level, seed,
 					flags, pitch, pOrigin, pDir, pOrigVec, updatePos, soundtime, speakerentity);
 #endif
 			}
