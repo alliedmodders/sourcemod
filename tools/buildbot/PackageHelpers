@@ -24,7 +24,7 @@ class PackageHelpers:
         self.builder.AddCopy(bin_task.binary, self.folder_map[target_folder])
     
     if self.builder.host.platform == 'windows':
-      self.CopyFiles('tools/batchtool', target_folder, '.exe')
+      self.CopyFiles('plugins', target_folder, '.ps1')
     else:
       self.CopyFiles('plugins', target_folder, '.sh')
   
