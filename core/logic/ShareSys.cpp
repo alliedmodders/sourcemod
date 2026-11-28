@@ -425,13 +425,13 @@ private:
 	void* data_;
 };
 
-AlreadyRefed<Native> ShareSystem::AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func)
+AlreadyRefed<Native> ShareSystem::AddFakeNative(IPluginFunction *pFunc, const char *name, SPVM_FAKENATIVE_FUNC func, int flags)
 {
 	RefPtr<Native> entry(FindNative(name));
 	if (entry)
 		return nullptr;
 
-	std::unique_ptr<FakeNative> fake(new FakeNative(name, pFunc));
+	std::unique_ptr<FakeNative> fake(new FakeNative(name, pFunc, flags));
 	fake->wrapper = new DynamicNative(func, fake.get());
 
 	CNativeOwner *owner = g_PluginSys.GetPluginByCtx(fake->ctx);
