@@ -387,6 +387,11 @@ bool CollisionRulesChanged(CBaseEntity *pEntity)
 	// Retrieve m_hOwnerEntity
 	CBaseHandle *hndl = (CBaseHandle *)((uint8_t *)pEntity + offsethOwnerEntity);
 	CBaseEntity *oldOwner = gamehelpers->ReferenceToEntity(hndl->GetEntryIndex());
+	// An invalid handle indexes the last entity slot, and a stale one may index a reused slot
+	if (oldOwner && *hndl != reinterpret_cast<IHandleEntity *>(oldOwner)->GetRefEHandle())
+	{
+		oldOwner = nullptr;
+	}
 
 	// Now change the owner to something else, so we fall through the if statement
 	// when calling CBaseEntity::SetOwnerEntity and only end up calling CBaseEntity::CollisionRulesChanged
